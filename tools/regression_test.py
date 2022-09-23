@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 from typing import Union
 
-import mmcv
+import mmengine
 import openpyxl
 import pandas as pd
 import yaml
@@ -749,7 +749,7 @@ def replace_top_in_pipeline_json(backend_output_path: Path,
     """
 
     sdk_pipeline_json_path = backend_output_path.joinpath('pipeline.json')
-    sdk_pipeline_json = mmcv.load(sdk_pipeline_json_path)
+    sdk_pipeline_json = mmengine.load(sdk_pipeline_json_path)
 
     pipeline_tasks = sdk_pipeline_json.get('pipeline', {}).get('tasks', [])
     for index, task in enumerate(pipeline_tasks):
@@ -763,7 +763,7 @@ def replace_top_in_pipeline_json(backend_output_path: Path,
 
     logger.info(f'sdk_pipeline_json = {sdk_pipeline_json}')
 
-    mmcv.dump(
+    mmengine.dump(
         sdk_pipeline_json, sdk_pipeline_json_path, sort_keys=False, indent=4)
 
     logger.info('replace done')

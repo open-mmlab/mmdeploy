@@ -49,8 +49,8 @@ def parse_args():
 
 
 def generate_onnx(args):
-    import mmcv
-    mmcv.mkdir_or_exist(args.out)
+    import mmengine
+    mmengine.mkdir_or_exist(args.out)
     for conf in CONFIGS:
         config = os.path.join(args.repo_dir, conf[0])
         model = conf[1]

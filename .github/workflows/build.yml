@@ -27,7 +27,6 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0, 1.9.0]
-        mmcv: [1.4.2]
         include:
           - torch: 1.8.0
             torch_version: torch1.8
@@ -43,16 +42,17 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
         run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
-      - name: Install MMCV
-        run: |
-          pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
-          python -c 'import mmcv; print(mmcv.__version__)'
       - name: Install unittest dependencies
         run: |
-          pip install -r requirements.txt
+          pip install openmim
+          pip install -r requirements.txt -r requirements/backends.txt
+          mim install -r requirements/codebases.txt
           pip install -U numpy
+          pip list
       - name: Build and install
-        run: rm -rf .eggs && pip install -e .
+        run: |
+          rm -rf .eggs && pip install -e .
+          python tools/check_env.py
       - name: Run python unittests and generate coverage report
         run: |
           coverage run --branch --source mmdeploy -m pytest -rsE tests
@@ -98,7 +98,6 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.9.0+cu102]
-        mmcv: [1.4.2]
         include:
           - torch: 1.9.0+cu102
             torch_version: torch1.9
@@ -120,13 +119,15 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
-          CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
+          pip install openmim
+          pip install -r requirements.txt -r requirements/backends.txt
+          mim install -r requirements/codebases.txt
           pip install -U pycuda
-          python -m pip install -U numpy
+          pip install -U numpy
+          pip list
       - name: Build and install
         run: |
-          rm -rf .eggs && python -m pip install -e .
+          rm -rf .eggs && pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
         run: |
@@ -143,7 +144,6 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.4.2]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
@@ -166,13 +166,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
-          CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
-          pip install -U pycuda
-          python -m pip install -U numpy
+          pip install openmim
+          pip install -r requirements.txt -r requirements/backends.txt
+          mim install -r requirements/codebases.txt
+          pip install -U pycuda numpy
+          pip list
       - name: Build and install
         run: |
-          rm -rf .eggs && python -m pip install -e .
+          rm -rf .eggs && pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
         run: |

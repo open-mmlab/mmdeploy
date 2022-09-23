@@ -3,6 +3,7 @@ import os.path as osp
 import subprocess
 import tempfile
 
+import mmengine
 import pytest
 import torch
 import torch.nn as nn
@@ -105,11 +106,9 @@ def onnx2backend(backend, onnx_file):
         from_onnx(onnx_file, work_dir, input_info, output_names)
         return backend_file
     elif backend == Backend.RKNN:
-        import mmcv
-
         from mmdeploy.apis.rknn import onnx2rknn
         rknn_file = onnx_file.replace('.onnx', '.rknn')
-        deploy_cfg = mmcv.Config(
+        deploy_cfg = mmengine.Config(
             dict(
                 backend_config=dict(
                     type='rknn',
@@ -120,14 +119,12 @@ def onnx2backend(backend, onnx_file):
         onnx2rknn(onnx_file, rknn_file, deploy_cfg)
         return rknn_file
     elif backend == Backend.ASCEND:
-        import mmcv
-
         from mmdeploy.apis.ascend import from_onnx
         backend_dir = tempfile.TemporaryDirectory().name
         work_dir = backend_dir
         file_name = osp.splitext(osp.split(onnx_file)[1])[0]
         backend_file = osp.join(work_dir, file_name + '.om')
-        model_inputs = mmcv.Config(
+        model_inputs = mmengine.Config(
             dict(input_shapes=dict(input=test_img.shape)))
         from_onnx(onnx_file, work_dir, model_inputs)
         return backend_file

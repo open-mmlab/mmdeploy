@@ -2,6 +2,8 @@
 import math
 import os.path as osp
 
+import mmengine
+
 from mmdeploy.utils import get_root_logger
 
 
@@ -36,8 +38,7 @@ def update_sdk_pipeline(work_dir: str):
     pipeline_path = osp.join(work_dir, 'pipeline.json')
 
     if osp.exists(pipeline_path):
-        import mmcv
-        pipeline = mmcv.load(pipeline_path)
+        pipeline = mmengine.load(pipeline_path)
         tasks = pipeline['pipeline'].get('tasks', [])
 
         for task in tasks:
@@ -45,4 +46,4 @@ def update_sdk_pipeline(work_dir: str):
                 transforms = task['transforms']
                 _try_ori_agnostic_pad(transforms)
 
-        mmcv.dump(pipeline, pipeline_path, sort_keys=False, indent=4)
+        mmengine.dump(pipeline, pipeline_path, sort_keys=False, indent=4)

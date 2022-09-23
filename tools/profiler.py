@@ -5,7 +5,7 @@ import os.path as osp
 
 import numpy as np
 import torch
-from mmcv import DictAction
+from mmengine import DictAction
 from prettytable import PrettyTable
 
 from mmdeploy.apis import build_task_processor

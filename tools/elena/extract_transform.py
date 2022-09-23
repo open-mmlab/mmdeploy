@@ -126,8 +126,9 @@ def generate_source_code(preprocess, transform_static, tag, args):
     static_json_path = osp.join(json_work_dir, f'{tag}_static.json')
     if osp.exists(preprocess_json_path):
         return
-    mmcv.dump(preprocess, preprocess_json_path, sort_keys=False, indent=4)
-    mmcv.dump(transform_static, static_json_path, sort_keys=False, indent=4)
+    mmengine.dump(preprocess, preprocess_json_path, sort_keys=False, indent=4)
+    mmengine.dump(
+        transform_static, static_json_path, sort_keys=False, indent=4)
     gen_cpu_cmd = f'{ELENA_BIN} {static_json_path} cpu'
     res = subprocess.run(gen_cpu_cmd, shell=True)
     if res.returncode == 0:

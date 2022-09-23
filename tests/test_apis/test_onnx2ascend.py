@@ -2,7 +2,7 @@
 import os.path as osp
 import tempfile
 
-import mmcv
+import mmengine
 import pytest
 import torch
 import torch.nn as nn
@@ -62,7 +62,7 @@ def test_onnx2ascend():
     work_dir, _ = osp.split(onnx_file)
     file_name = osp.splitext(onnx_file)[0]
     om_path = osp.join(work_dir, file_name + '.om')
-    model_inputs = mmcv.Config(
+    model_inputs = mmengine.Config(
         dict(
             dynamic_batch_size=[1, 2, 4],
             input_shapes=dict(input=[-1, 3, 224, 224])))

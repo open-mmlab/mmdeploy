@@ -2,7 +2,7 @@
 import os.path as osp
 import tempfile
 
-import mmcv
+import mmengine
 import pytest
 import torch
 import torch.nn as nn
@@ -43,7 +43,7 @@ def generate_onnx_file(model):
 
 
 def get_deploy_cfg():
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(
                 type='rknn',

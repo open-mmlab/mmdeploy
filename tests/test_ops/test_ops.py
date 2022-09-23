@@ -3,7 +3,7 @@ import onnx
 import pytest
 import torch
 import torch.nn as nn
-from mmcv import Config
+from mmengine import Config
 from onnx.helper import (make_graph, make_model, make_node,
                          make_tensor_value_info)
 
