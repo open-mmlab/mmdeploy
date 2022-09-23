@@ -40,7 +40,7 @@ for model in benchmark_test_info['models']:
                 os.system('nvidia-smi >> report.txt')
                 f.close()
             os.system(convert_cmd)
-            profile_cmd = (f'python tools/profile.py {deploy_cfg} ' +
+            profile_cmd = (f'python tools/profiler.py {deploy_cfg} ' +
                            f'{model_cfg} {img_folder} --model tools/' +
                            f'{backend_model} --device {device} --shape ' +
                            f'{shape}')
