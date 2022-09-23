@@ -20,10 +20,10 @@ class MMOCR(MMCodebase):
 
     @classmethod
     def import_module(cls):
-        from mmdet.utils.setup_env import register_all_modules \
-            as register_all_modules_mmdet
-        from mmocr.utils.setup_env import register_all_modules \
-            as register_all_modules_mmocr
+        from mmdet.utils.setup_env import \
+            register_all_modules as register_all_modules_mmdet
+        from mmocr.utils.setup_env import \
+            register_all_modules as register_all_modules_mmocr
         register_all_modules_mmdet(False)
         register_all_modules_mmocr(False)
 

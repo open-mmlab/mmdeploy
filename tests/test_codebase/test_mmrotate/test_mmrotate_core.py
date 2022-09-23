@@ -5,7 +5,6 @@ import pytest
 import torch
 
 from mmdeploy.codebase import import_codebase, import_codebase_rewriter
-from mmdeploy.codebase.base.mmcodebase import CODEBASE
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_onnx_model,
