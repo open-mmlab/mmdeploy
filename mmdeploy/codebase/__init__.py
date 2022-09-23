@@ -33,9 +33,10 @@ def import_codebase(codebase: Codebase, deploy_cfg: Config = None):
         external_module_list += deploy_cfg['codebase_config'].get('module', [])
         dependent_library += deploy_cfg['codebase_config']. \
             get('extra_dependent_library', [])
+    print(f'debugging what is deploy_cfg: {deploy_cfg}')
     for lib in dependent_library:
-        if (lib == deploy_cfg['codebase_config']['type']
-                and len(external_module_list) > 0):
+        if (len(external_module_list) > 0
+                and lib == deploy_cfg['codebase_config']['type']):
             for external_module in external_module_list:
                 importlib.import_module(f'{external_module}')
         else:
