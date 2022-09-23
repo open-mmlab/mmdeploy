@@ -49,6 +49,10 @@ class MMCodebase(metaclass=ABCMeta):
                 deploy_cfg=deploy_cfg,
                 device=device))
 
+    @classmethod
+    def import_module(cls):
+        pass
+
 
 # Note that the build function returns the class instead of its instance.
 
