@@ -1,12 +1,12 @@
 #!/bin/bash
 
 ## parameters
-docker_image=$(grep docker_image ../conf/start.config | sed 's/docker_image=//')
-codebase_list=$(grep codebase_list ../conf/start.config | sed 's/codebase_list=//')
-exec_performance=$(grep exec_performance ../conf/start.config | sed 's/exec_performance=//')
-max_job_nums=$(grep max_job_nums ../conf/start.config | sed 's/max_job_nums=//')
-mmdeploy_branch=$(grep mmdeploy_branch ../conf/start.config | sed 's/mmdeploy_branch=//')
-repo_url=$(grep repo_url ../conf/start.config | sed 's/repo_url=//')
+docker_image=${1:-$(grep docker_image ../conf/start.config | sed 's/docker_image=//')}
+codebase_list=${2:-$(grep codebase_list ../conf/start.config | sed 's/codebase_list=//')}
+exec_performance=${3:-$(grep exec_performance ../conf/start.config | sed 's/exec_performance=//')}
+max_job_nums=${4:-$(grep max_job_nums ../conf/start.config | sed 's/max_job_nums=//')}
+mmdeploy_branch=${5:-$(grep mmdeploy_branch ../conf/start.config | sed 's/mmdeploy_branch=//')}
+repo_url=${6:-$(grep repo_url ../conf/start.config | sed 's/repo_url=//')}
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
@@ -28,7 +28,7 @@ for codebase in ${codebase_list[@]}; do
     read -u1000
     {
         container_name=convert-${codebase}-${time_snap}
-        container_id=$(
+        container_id=${1:-$(}
             docker run -itd \
                 --gpus all \
                 -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
