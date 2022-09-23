@@ -9,13 +9,14 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.config_utils import get_ir_config
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
 try:
+    import_codebase_rewriter(Codebase.MMROTATE)
     import_codebase(Codebase.MMROTATE)
 except ImportError:
     pytest.skip(

@@ -39,8 +39,9 @@ class BaseTask(metaclass=ABCMeta):
         self.experiment_name = experiment_name
 
         # init scope
-        from .. import import_codebase
-        import_codebase(self.codebase, deploy_cfg=self.deploy_cfg)
+        from .. import import_codebase, import_codebase_rewriter
+        import_codebase_rewriter(self.codebase)
+        import_codebase(self.codebase)
 
         from mmengine.registry import DefaultScope
         if not DefaultScope.check_instance_created(self.experiment_name):

@@ -11,11 +11,12 @@ from torch.utils.data.dataset import Dataset
 
 import mmdeploy.apis.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper, WrapFunction
 
+import_codebase_rewriter(Codebase.MMEDIT)
 import_codebase(Codebase.MMEDIT)
 
 model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'

@@ -105,6 +105,11 @@ class MMSegmentation(MMCodebase):
     """mmsegmentation codebase class."""
     task_registry = MMSEG_TASK
 
+    @classmethod
+    def import_module(cls):
+        from mmseg.utils.set_env import register_all_modules
+        register_all_modules(True)
+
 
 @MMSEG_TASK.register_module(Task.SEGMENTATION.value)
 class Segmentation(BaseTask):

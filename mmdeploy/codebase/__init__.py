@@ -1,18 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-
-from mmengine import Config
+from typing import List
 
 from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
-extra_dependent_library = {
-    Codebase.MMOCR: ['mmdet'],
-    Codebase.MMROTATE: ['mmdet']
-}
+
+def import_codebase_rewriter(codebase_type: Codebase,
+                             custom_module_list: List = []):
+    import importlib
+    if len(custom_module_list) > 0:
+        for custom_module in custom_module_list:
+            importlib.import_module(f'{custom_module}')
+    else:
+        importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
 
 
-def import_codebase(codebase: Codebase, deploy_cfg: Config = None):
+def import_codebase(codebase_type: Codebase):
     """Import a codebase package in `mmdeploy.codebase`
 
     The function will check if all dependent libraries are installed.
@@ -22,35 +25,9 @@ def import_codebase(codebase: Codebase, deploy_cfg: Config = None):
 
     Args:
         codebase (Codebase): The codebase to import.
-        deploy_cfg (Config): The config of deployment to get external
-            modules and dependent libraries.
     """
-    codebase_name = codebase.value
-    dependent_library = [codebase_name] + \
-        extra_dependent_library.get(codebase, [])
-    external_module_list = []
-    if deploy_cfg:
-        external_module_list += deploy_cfg['codebase_config'].get('module', [])
-        dependent_library += deploy_cfg['codebase_config']. \
-            get('extra_dependent_library', [])
-    print(f'debugging what is deploy_cfg: {deploy_cfg}')
-    for lib in dependent_library:
-        if (len(external_module_list) > 0
-                and lib == deploy_cfg['codebase_config']['type']):
-            for external_module in external_module_list:
-                importlib.import_module(f'{external_module}')
-        else:
-            if not importlib.util.find_spec(lib):
-                raise ImportError(
-                    f'{lib} has not been installed. '
-                    f'Import mmdeploy.codebase.{codebase_name} failed.')
-
-            importlib.import_module(f'mmdeploy.codebase.{lib}')
-            importlib.import_module(f'{lib}.models')
-            importlib.import_module(f'{lib}.datasets')
-            importlib.import_module(f'{lib}.structures')
-            importlib.import_module(f'{lib}.visualization')
-            importlib.import_module(f'{lib}.engine')
+    codebase = get_codebase_class(codebase_type)
+    codebase.import_module()
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

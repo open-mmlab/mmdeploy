@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmengine
 
-from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
+from mmdeploy.codebase import (BaseTask, get_codebase_class, import_codebase,
+                               import_codebase_rewriter)
 from mmdeploy.utils import get_codebase, get_task_type
 
 
@@ -18,7 +19,9 @@ def build_task_processor(model_cfg: mmengine.Config,
         BaseTask: A task processor.
     """
     codebase_type = get_codebase(deploy_cfg)
-    import_codebase(codebase_type, deploy_cfg=deploy_cfg)
+    custom_module_list = deploy_cfg['codebase_config'].get('module', [])
+    import_codebase_rewriter(codebase_type, custom_module_list)
+    import_codebase(codebase_type)
     codebase = get_codebase_class(codebase_type)
     return codebase.build_task_processor(model_cfg, deploy_cfg, device)
 
@@ -39,7 +42,9 @@ def get_predefined_partition_cfg(deploy_cfg: mmengine.Config,
         dict: A dictionary of partition config.
     """
     codebase_type = get_codebase(deploy_cfg)
-    import_codebase(codebase_type, deploy_cfg=deploy_cfg)
+    custom_module_list = deploy_cfg['codebase_config'].get('module', [])
+    import_codebase_rewriter(codebase_type, custom_module_list)
+    import_codebase(codebase_type)
     task = get_task_type(deploy_cfg)
     codebase = get_codebase_class(codebase_type)
     task_processor_class = codebase.get_task_class(task)

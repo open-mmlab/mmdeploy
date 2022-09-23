@@ -12,3 +12,8 @@ class MMEditing(MMCodebase):
     """mmediting codebase class."""
 
     task_registry = MMEDIT_TASK
+
+    @classmethod
+    def import_module(cls):
+        from mmedit.utils.setup_env import register_all_modules
+        register_all_modules(True)

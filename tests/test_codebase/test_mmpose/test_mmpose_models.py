@@ -3,11 +3,12 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
+    import_codebase_rewriter(Codebase.MMOCR)
     import_codebase(Codebase.MMPOSE)
 except ImportError:
     pytest.skip(

@@ -5,11 +5,12 @@ import pytest
 import torch
 from mmengine import Config
 
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, check_backend,
                                  get_rewrite_outputs)
 
+import_codebase_rewriter(Codebase.MMDET)
 import_codebase(Codebase.MMDET)
 
 

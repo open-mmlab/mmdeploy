@@ -4,12 +4,13 @@ import torch
 from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 64
 
+import_codebase_rewriter(Codebase.MMCLS)
 import_codebase(Codebase.MMCLS)
 
 

@@ -4,13 +4,15 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase.base.mmcodebase import CODEBASE
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_onnx_model,
                                  get_rewrite_outputs)
 
 try:
+    import_codebase_rewriter(Codebase.MMROTATE)
     import_codebase(Codebase.MMROTATE)
 except ImportError:
     pytest.skip(
@@ -293,7 +295,9 @@ def test_poly2obb_le90(backend_type: Backend):
             codebase_config=dict(type='mmrotate', task='RotatedDetection')))
 
     # import rewriter
-    from mmdeploy.codebase import Codebase, import_codebase
+    from mmdeploy.codebase import (Codebase, import_codebase,
+                                   import_codebase_rewriter)
+    import_codebase_rewriter(Codebase.MMROTATE)
     import_codebase(Codebase.MMROTATE)
 
     # wrap function to enable rewrite

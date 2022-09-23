@@ -3,11 +3,12 @@ import mmengine
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
+import_codebase_rewriter(Codebase.MMSEG)
 import_codebase(Codebase.MMSEG)
 
 from .utils import generate_datasample  # noqa: E402

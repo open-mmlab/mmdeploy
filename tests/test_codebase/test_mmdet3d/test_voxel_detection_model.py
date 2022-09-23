@@ -6,11 +6,12 @@ import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 try:
+    import_codebase_rewriter(Codebase.MMDET3D)
     import_codebase(Codebase.MMDET3D)
 except ImportError:
     pytest.skip(

@@ -11,11 +11,12 @@ from torch.utils.data.dataset import Dataset
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
+from mmdeploy.codebase import import_codebase, import_codebase_rewriter
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
 try:
+    import_codebase_rewriter(Codebase.MMROTATE)
     import_codebase(Codebase.MMROTATE)
 except ImportError:
     pytest.skip(
