@@ -22,6 +22,8 @@ def import_codebase(codebase: Codebase, deploy_cfg: Config = None):
 
     Args:
         codebase (Codebase): The codebase to import.
+        deploy_cfg (Config): The config of deployment to get external
+            modules and dependent libraries.
     """
     codebase_name = codebase.value
     dependent_library = [codebase_name] + \

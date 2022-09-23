@@ -62,14 +62,23 @@ def get_task_type(deploy_cfg: Union[str, mmengine.Config]) -> Task:
     return Task.get(task)
 
 
-def export_codebase(codebase: str):
+def register_codebase(codebase: str) -> Codebase:
+    """Register a new codebase which is not included in Codebase.
+
+    Args:
+        codebase (str): The codebase name.
+
+    Returns:
+        Codebase : An enumeration denotes the codebase type.
+    """
     from aenum import extend_enum
     try:
         Codebase.get(codebase)
-    except Exception:
+    except Exception as e:
         logger = get_root_logger()
         extend_enum(Codebase, codebase.upper(), codebase)
-        logger.warn(f'Export a new codebase in Codebase {codebase.upper()}: '
+        logger.warn(f'Failed to get codebase, got: {e}. Then export '
+                    f'a new codebase in Codebase {codebase.upper()}: '
                     f'{codebase}')
     return Codebase.get(codebase)
 
@@ -87,7 +96,7 @@ def get_codebase(deploy_cfg: Union[str, mmengine.Config]) -> Codebase:
     assert 'type' in codebase_config, 'The codebase config of deploy config'\
         'requires a "type" field'
     codebase = codebase_config['type']
-    return export_codebase(codebase)
+    return register_codebase(codebase)
 
 
 def get_backend_config(deploy_cfg: Union[str, mmengine.Config]) -> Dict:
