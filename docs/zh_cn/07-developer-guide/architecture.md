@@ -24,7 +24,7 @@ $ tree -L 1
 ├── service                    # 有些小板子不能跑 python，模型转换用的 C/S 模式。这个目录放 Server
 ├── tests                         # 单元测试
 ├── third_party           # SDK 和 ffi 要的第三方依赖
-└── tools                        # 工具，也是一切功能的入口。除了 deploy.py 还有 onnx2xx.py、profile.py 和 test.py
+└── tools                        # 工具，也是一切功能的入口。除了 deploy.py 还有 onnx2xx.py、profiler.py 和 test.py
 ```
 
 这样大致应该清楚了
