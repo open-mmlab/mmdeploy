@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
+from mmengine import Config
+
 from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
