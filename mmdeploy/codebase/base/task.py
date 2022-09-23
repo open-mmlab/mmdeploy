@@ -40,7 +40,8 @@ class BaseTask(metaclass=ABCMeta):
 
         # init scope
         from .. import import_codebase, import_codebase_rewriter
-        import_codebase_rewriter(self.codebase)
+        custom_module_list = deploy_cfg['codebase_config'].get('module', [])
+        import_codebase_rewriter(self.codebase, custom_module_list)
         import_codebase(self.codebase)
 
         from mmengine.registry import DefaultScope
