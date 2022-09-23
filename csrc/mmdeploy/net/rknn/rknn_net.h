@@ -27,25 +27,17 @@ class RKNNNet : public Net {
 
   Result<void> ForwardAsync(Event* event) override;
 
-  static Result<std::vector<TensorShape> > InferOutputShapes(Span<TensorShape> input_shapes,
-                                                             Span<TensorShape> prev_in_shapes,
-                                                             Span<TensorShape> prev_out_shapes);
-
  private:
-  static Tensor CreateInternalTensor(ppl::nn::Tensor* src, Device device);
-
-  static Result<int64_t> GetBatchSize(Span<TensorShape> shapes);
-
-  static std::vector<TensorShape> GetShapes(Span<Tensor> tensors);
+  void dump_tensor_attr(rknn_tensor_attr* attr);
+  unsigned char* load_model(const char* filename, int* model_size);
 
   Device device_;
   Stream stream_;
   rknn_context ctx_;
-  std::vector<std::unique_ptr<ppl::nn::Engine> > engines_;
-  std::vector<Tensor> inputs_external_;
-  std::vector<Tensor> outputs_external_;
-  std::unique_ptr<ppl::nn::Runtime> runtime_;
-  bool can_infer_output_shapes_{false};
+  std::vector<Tensor> input_tensors_;
+  std::vector<Tensor> output_tensors_;
+  rknn_tensor_attr* input_attrs_;
+  rknn_tensor_attr* output_attrs_;
   static constexpr const auto kHost = Device(0);
 };
 

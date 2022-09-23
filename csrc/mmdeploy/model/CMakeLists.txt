@@ -11,7 +11,7 @@ foreach (MODEL_NAME ${MODEL_NAMES})
     set(TARGET_MODEL_NAME mmdeploy_${MODEL_NAME})
     mmdeploy_add_module(${TARGET_MODEL_NAME} ${MODEL_NAME}_impl.cpp)
     # TODO: stdc++fs only exists in libstdc++
-    if (NOT (MSVC OR ANDROID OR APPLE))
+    if (NOT (MSVC OR ANDROID OR APPLE OR (CMAKE_C_COMPILER MATCHES "aarch64")))
         target_link_libraries(${TARGET_MODEL_NAME} PUBLIC stdc++fs)
     endif ()
     if (${MODEL_NAME} STREQUAL "zip_model")

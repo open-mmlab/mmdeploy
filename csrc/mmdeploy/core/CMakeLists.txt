@@ -65,7 +65,7 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
-if (NOT (MSVC OR ANDROID OR APPLE))
+if (NOT (MSVC OR ANDROID OR APPLE OR (CMAKE_C_COMPILER MATCHES "aarch64")))
     target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
 endif ()
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})

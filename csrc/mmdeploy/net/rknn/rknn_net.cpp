@@ -12,15 +12,19 @@
 
 namespace mmdeploy {
 
-template <typename T>
-Result<std::unique_ptr<T>> rknn_try(T* v) {
-  if (v) {
-    return success(v);
-  }
-  return Status(eFail);
+RKNNNet::~RKNNNet() {}
+
+void RKNNNet::dump_tensor_attr(rknn_tensor_attr* attr) {
+  printf(
+      "  index=%d, name=%s, n_dims=%d, dims=[%d, %d, %d, %d], n_elems=%d, size=%d, fmt=%s, "
+      "type=%s, qnt_type=%s, "
+      "zp=%d, scale=%f\n",
+      attr->index, attr->name, attr->n_dims, attr->dims[0], attr->dims[1], attr->dims[2],
+      attr->dims[3], attr->n_elems, attr->size, get_format_string(attr->fmt),
+      get_type_string(attr->type), get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
 }
 
-static unsigned char* load_model(const char* filename, int* model_size) {
+unsigned char* RKNNNet::load_model(const char* filename, int* model_size) {
   FILE* fp = fopen(filename, "rb");
   if (fp == nullptr) {
     printf("fopen %s fail!\n", filename);
@@ -42,17 +46,6 @@ static unsigned char* load_model(const char* filename, int* model_size) {
   return model;
 }
 
-static Result<DataType> ConvertElementType(InferenceEngine::Precision prec) {}
-
-static Result<InferenceEngine::Precision::ePrecision> ConvertPrecision(DataType type) {}
-
-static Result<std::string> ConvertDeviceName(const Device& device) {
-  if (device.is_host()) {
-    return "CPU";
-  }
-  return Status(eNotSupported);
-}
-
 Result<void> RKNNNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
@@ -67,60 +60,59 @@ Result<void> RKNNNet::Init(const Value& args) {
 
   std::string content;
   OUTCOME_TRY(content, model.ReadFile(config.net));
-  unsigned char* model_ptr = const_cast<unsigned char*>(content.data());
+  char* model_ptr = const_cast<char*>(content.data());
   int ret = rknn_init(&ctx_, model_ptr, content.size(), 0, NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("Load .rknn failed: {}", config.net);
     return Status(eInvalidArgument);
   }
 
-  zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
-  if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
-    MMDEPLOY_WARN("Selected runtime not present. Falling back to CPU.\n");
-    runtime = zdl::DlSystem::Runtime_t::CPU;
+  // Get Model Input Output Info
+  rknn_input_output_num io_num;
+  ret = rknn_query(ctx_, RKNN_QUERY_IN_OUT_NUM, &io_num, sizeof(io_num));
+  if (ret != RKNN_SUCC) {
+    MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
+    return Status(eFail);
+  }
+  printf("model input num: %d, output num: %d\n", io_num.n_input, io_num.n_output);
+
+  printf("input tensors:\n");
+  rknn_tensor_attr input_attrs[io_num.n_input];
+  memset(input_attrs, 0, sizeof(input_attrs));
+  for (int i = 0; i < io_num.n_input; i++) {
+    input_attrs[i].index = i;
+    ret = rknn_query(ctx_, RKNN_QUERY_INPUT_ATTR, &(input_attrs[i]), sizeof(rknn_tensor_attr));
+    if (ret != RKNN_SUCC) {
+      MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
+      return Status(eFail);
+    }
+    dump_tensor_attr(&(input_attrs[i]));
+  }
+  input_attrs_ = input_attrs;
+
+  printf("output tensors:\n");
+  rknn_tensor_attr output_attrs[io_num.n_output];
+  memset(output_attrs, 0, sizeof(output_attrs));
+  for (int i = 0; i < io_num.n_output; i++) {
+    output_attrs[i].index = i;
+    ret = rknn_query(ctx_, RKNN_QUERY_OUTPUT_ATTR, &(output_attrs[i]), sizeof(rknn_tensor_attr));
+    if (ret != RKNN_SUCC) {
+      MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
+      return Status(eFail);
+    }
+    dump_tensor_attr(&(output_attrs[i]));
+  }
+  output_attrs_ = output_attrs;
+
+  for (int i = 0; i < io_num.n_input; ++i) {
+    // TODO get real data type instead of hard code
+    input_tensors_.emplace_back(TensorDesc{device_, DataType::kINT8, {}, "#" + std::to_string(i)});
   }
 
-  zdl::DlSystem::RuntimeList runtimeList;
-  // Add CPU backend to support fallback
-  runtimeList.add(zdl::DlSystem::Runtime_t::CPU);
-  runtimeList.add(runtime);
-  zdl::DlSystem::PlatformConfig platformConfig;
-  Build(container_, runtime, runtimeList, false, platformConfig);
-
-  // init internal input tensor list
-  const auto& inputTensorNamesRef = snpe_->getInputTensorNames();
-  const auto& inputTensorNames = *inputTensorNamesRef;
-  inputs_internal_.resize(inputTensorNames.size());
-
-  for (int i = 0; i < inputTensorNames.size(); ++i) {
-    const auto& inputShape_opt = snpe_->getInputDimensions(inputTensorNames.at(i));
-    const auto& inputShape = *inputShape_opt;
-
-    inputs_internal_[i] = zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(inputShape);
-
-    std::string info =
-        std::string(inputTensorNames.at(i)) + " shape: " + ShapeStr(inputs_internal_[i].get());
-    MMDEPLOY_INFO(info);
-
-    input_tensor_map_.add(inputTensorNames.at(i), inputs_internal_[i].get());
-
-    input_tensors_.emplace_back(TensorDesc{
-        Device("cpu"),
-        DataType::kFLOAT,
-        {},
-        std::string(inputTensorNames.at(i)),
-    });
-  }
-
-  const auto& outputTensorNamesRef = snpe_->getOutputTensorNames();
-  const auto& outputTensorNames = *outputTensorNamesRef;
-  for (int i = 0; i < outputTensorNames.size(); ++i) {
-    output_tensors_.emplace_back(TensorDesc{
-        Device("cpu"),
-        DataType::kFLOAT,
-        {},
-        std::string(outputTensorNames.at(i)),
-    });
+  for (int i = 0; i < io_num.n_output; ++i) {
+    // TODO get real data type instead of hard code
+    output_tensors_.emplace_back(
+        TensorDesc{device_, DataType::kFLOAT, {}, "#" + std::to_string(i)});
   }
 
   return success();
@@ -144,39 +136,39 @@ Result<void> RKNNNet::Reshape(Span<TensorShape> input_shapes) {
 Result<void> RKNNNet::Forward() {
   OUTCOME_TRY(stream_.Wait());
 
-  // reshape network if shape does not match
-  bool need_reshape = false;
-  auto input_shapes = network_.getInputShapes();
-  for (auto& tensor : input_tensors_) {
-    const auto& input_name = tensor.desc().name;
-    const auto& tensor_shape = tensor.desc().shape;
-    auto& size_vector = input_shapes[input_name];
-    bool shape_changed = !std::equal(size_vector.begin(), size_vector.end(), tensor_shape.begin(),
-                                     [](size_t a, int64_t b) { return a == size_t(b); });
-    need_reshape |= shape_changed;
-    if (shape_changed)
-      size_vector = InferenceEngine::SizeVector{tensor_shape.begin(), tensor_shape.end()};
+  rknn_input inputs[input_tensors_.size()];
+  memset(inputs, 0, input_tensors_.size() * sizeof(rknn_input));
+  for (int i = 0; i < input_tensors_.size(); i++) {
+    inputs[i].index = i;
+    inputs[i].pass_through = 0;
+    inputs[i].type = RKNN_TENSOR_UINT8;
+    inputs[i].fmt = RKNN_TENSOR_NHWC;
+    inputs[i].buf = input_tensors_[i].data<uint8_t>();
+    inputs[i].size = input_attrs_[i].n_elems;
   }
 
-  if (need_reshape) {
-    network_.reshape(input_shapes);
-    OUTCOME_TRY(auto device_str, ConvertDeviceName(device_));
-    auto executable_network = core_.LoadNetwork(network_, device_str, net_config_);
-    request_ = executable_network.CreateInferRequest();
+  // Set input
+  int ret = rknn_inputs_set(ctx_, input_tensors_.size(), inputs);
+  if (ret < 0) {
+    MMDEPLOY_ERROR("rknn_input_set fail! ret= {}", ret);
+    return Status(eFail);
   }
 
-  // fill input into request
-  for (auto& tensor : input_tensors_) {
-    OUTCOME_TRY(SetBlob(request_, tensor));
+  // Get output
+  rknn_output outputs[output_tensors_.size()];
+  memset(outputs, 0, output_tensors_.size() * sizeof(rknn_output));
+  for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
+    outputs[i].want_float = 1;
+    outputs[i].index = i;
+    outputs[i].is_prealloc = 0;
   }
 
-  request_.StartAsync();
-  request_.Wait(InferenceEngine::InferRequest::WaitMode::RESULT_READY);
-
-  // read output from request
-  for (auto& tensor : output_tensors_) {
-    OUTCOME_TRY(GetBlob(request_, tensor, stream_));
+  ret = rknn_outputs_get(ctx_, output_tensors_.size(), outputs, NULL);
+  if (ret < 0) {
+    MMDEPLOY_ERROR("rknn_outputs_get fail! ret= {}", ret);
+    return Status(eFail);
   }
+
   OUTCOME_TRY(stream_.Wait());
 
   return success();
