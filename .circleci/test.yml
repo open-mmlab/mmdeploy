@@ -63,16 +63,12 @@ commands:
           command: |
             python -m pip install torch==<< parameters.torch >>+<< parameters.platform >> torchvision==<< parameters.torchvision >>+<< parameters.platform >> -f https://download.pytorch.org/whl/torch_stable.html
   install_mmcv:
-    parameters:
-      version:
-        type: string
-        default: mmcv>=2.0.0rc1
     steps:
       - run:
-          name: Install mmcv-full
+          name: Install mmcv
           command: |
             python -m pip install opencv-python==4.5.4.60 openmim
-            mim install << parameters.version >>
+            python -m mim install mmengine "mmcv>=2.0.0rc1"
   install_mmdeploy:
     description: "Install MMDeploy"
     steps:
