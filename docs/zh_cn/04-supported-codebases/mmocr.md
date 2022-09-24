@@ -1,163 +1,246 @@
-# mmocr 模型支持列表
+# MMOCR 模型部署
 
-mmocr 是一个基于 PyTorch 和 mmdetection 的开源工具箱，用于文本检测，文本识别以及相应的下游任务，例如关键信息提取，是 [OpenMMLab](https://openmmlab.com/)项目的一部分。
+- [安装](#安装)
+  - [安装 mmocr](#安装-mmocr)
+  - [安装 mmdeploy](#安装-mmdeploy)
+- [模型转换](#模型转换)
+  - [文字检测任务模型转换](#文字检测任务模型转换)
+  - [文字识别任务模型转换](#文字识别任务模型转换)
+- [模型规范](#模型规范)
+- [模型推理](#模型推理)
+  - [后端模型推理](#后端模型推理)
+  - [SDK 模型推理](#sdk-模型推理)
+    - [文字检测 SDK 模型推理](#文字检测-sdk-模型推理)
+    - [文字识别 SDK 模型推理](#文字识别-sdk-模型推理)
+- [模型支持列表](#模型支持列表)
+
+______________________________________________________________________
+
+[MMOCR](https://github.com/open-mmlab/mmocr/tree/1.x)，又称 `mmocr`，是基于 PyTorch 和 mmdetection 的开源工具箱，专注于文本检测，文本识别以及相应的下游任务，如关键信息提取。 它是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
 ## 安装
 
-参照 [install.md](https://mmocr.readthedocs.io/en/latest/install.html)。
+### 安装 mmocr
 
-## 支持列表
+请参考[官网安装指南](https://mmocr.readthedocs.io/en/dev-1.x/get_started/install.html).
 
-| Model  | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |                                  Model config                                   |
-| :----- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: | :-----------------------------------------------------------------------------: |
-| DBNet  | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)  |
-| PSENet | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)  |
-| PANet  | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)  |
-| CRNN   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)  |
-| SAR    | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |  [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)  |
-| SATRN  | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     | [config](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn) |
+### 安装 mmdeploy
 
-## 注意事项
+mmdeploy 有以下几种安装方式:
 
-请注意，ncnn、pplnn 和 OpenVINO 仅支持 DBNet 的 DBNet18 配置。
+**方式一：** 安装预编译包
 
-对于在 ICDAR 数据集上预训 [checkpoint](https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm_sbn_600e_icdar2015_20210219-42dbe46a.pth) 的 PANet，如果要将模型转为具有 fp16 TensorRT，请尝试以下脚本。
+> 待 mmdeploy 正式发布 dev-1.x，再补充
 
-```python
-# Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence
+**方式二：** 一键式脚本安装
 
-import torch
-import torch.nn.functional as F
+如果部署平台是 **Ubuntu 18.04 及以上版本**， 请参考[脚本安装说明](../01-how-to-build/build_from_script.md)，完成安装过程。
+比如，以下命令可以安装 mmdeploy 以及配套的推理引擎——`ONNX Runtime`.
 
-from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils.constants import Backend
+```shell
+git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+cd mmdeploy
+python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
+export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
+export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
+```
 
-FACTOR = 32
-ENABLE = False
-CHANNEL_THRESH = 400
+**方式三：** 源码安装
 
+在方式一、二都满足不了的情况下，请参考[源码安装说明](../01-how-to-build/build_from_source.md) 安装 mmdeploy 以及所需推理引擎。
 
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmocr.models.textdet.necks.FPEM_FFM.forward',
-    backend=Backend.TENSORRT.value)
-def fpem_ffm__forward__trt(ctx, self, x: Sequence[torch.Tensor], *args,
-                           **kwargs) -> Sequence[torch.Tensor]:
-    """Rewrite `forward` of FPEM_FFM for tensorrt backend.
+## 模型转换
 
-    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
-    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
-    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
+你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) 把 mmocr 模型一键式转换为推理后端模型。
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the class FPEM_FFM.
-        x (List[Tensor]): A list of feature maps of shape (N, C, H, W).
-
-    Returns:
-        outs (List[Tensor]): A list of feature maps of shape (N, C, H, W).
-    """
-    c2, c3, c4, c5 = x
-    # reduce channel
-    c2 = self.reduce_conv_c2(c2)
-    c3 = self.reduce_conv_c3(c3)
-    c4 = self.reduce_conv_c4(c4)
-
-    if ENABLE:
-        bn_w = self.reduce_conv_c5[1].weight / torch.sqrt(
-            self.reduce_conv_c5[1].running_var + self.reduce_conv_c5[1].eps)
-        bn_b = self.reduce_conv_c5[
-            1].bias - self.reduce_conv_c5[1].running_mean * bn_w
-        bn_w = bn_w.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-        bn_b = bn_b.reshape(1, -1, 1, 1).repeat(1, 1, c5.size(2), c5.size(3))
-        conv_b = self.reduce_conv_c5[0].bias.reshape(1, -1, 1, 1).repeat(
-            1, 1, c5.size(2), c5.size(3))
-        c5 = FACTOR * (self.reduce_conv_c5[:-1](c5)) - (FACTOR - 1) * (
-            bn_w * conv_b + bn_b)
-        c5 = self.reduce_conv_c5[-1](c5)
-    else:
-        c5 = self.reduce_conv_c5(c5)
-
-    # FPEM
-    for i, fpem in enumerate(self.fpems):
-        c2, c3, c4, c5 = fpem(c2, c3, c4, c5)
-        if i == 0:
-            c2_ffm = c2
-            c3_ffm = c3
-            c4_ffm = c4
-            c5_ffm = c5
-        else:
-            c2_ffm += c2
-            c3_ffm += c3
-            c4_ffm += c4
-            c5_ffm += c5
-
-    # FFM
-    c5 = F.interpolate(
-        c5_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    c4 = F.interpolate(
-        c4_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    c3 = F.interpolate(
-        c3_ffm,
-        c2_ffm.size()[-2:],
-        mode='bilinear',
-        align_corners=self.align_corners)
-    outs = [c2_ffm, c3, c4, c5]
-    return tuple(outs)
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.backbones.resnet.BasicBlock.forward',
-    backend=Backend.TENSORRT.value)
-def basic_block__forward__trt(ctx, self, x: torch.Tensor) -> torch.Tensor:
-    """Rewrite `forward` of BasicBlock for tensorrt backend.
-
-    Rewrite this function avoid overflow for tensorrt-fp16 with the checkpoint
-    `https://download.openmmlab.com/mmocr/textdet/panet/panet_r18_fpem_ffm
-    _sbn_600e_icdar2015_20210219-42dbe46a.pth`
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        self: The instance of the class FPEM_FFM.
-        x (Tensor): The input tensor of shape (N, C, H, W).
-
-    Returns:
-        outs (Tensor): The output tensor of shape (N, C, H, W).
-    """
-    if self.conv1.in_channels < CHANNEL_THRESH:
-        return ctx.origin_func(self, x)
-
-    identity = x
-
-    out = self.conv1(x)
-    out = self.norm1(out)
-    out = self.relu(out)
-
-    out = self.conv2(out)
-
-    if torch.abs(self.norm2(out)).max() < 65504:
-        out = self.norm2(out)
-        out += identity
-        out = self.relu(out)
-        return out
-    else:
-        global ENABLE
-        ENABLE = True
-        # the output of the last bn layer exceeds the range of fp16
-        w1 = self.norm2.weight / torch.sqrt(self.norm2.running_var +
-                                            self.norm2.eps)
-        bias = self.norm2.bias - self.norm2.running_mean * w1
-        w1 = w1.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2), out.size(3))
-        bias = bias.reshape(1, -1, 1, 1).repeat(1, 1, out.size(2),
-                                                out.size(3)) + identity
-        out = self.relu(w1 * (out / FACTOR) + bias / FACTOR)
-
-        return out
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmocr)。
+文件的命名模式是：
 
 ```
+{task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
+```
+
+其中：
+
+- **{task}:** mmocr 中的任务
+
+  mmdeploy 支持 mmocr 中的文字检测（text detection）、文字识别（text recognition）任务中的模型。关于`模型-任务`的划分，请参考章节[模型支持列表](#模型支持列表)。
+
+  **请务必**使用对应的部署文件转换相关的模型。
+
+- **{backend}:** 推理后端名称。比如，onnxruntime、tensorrt、pplnn、ncnn、openvino、coreml 等等
+
+- **{precision}:** 推理精度。比如，fp16、int8。不填表示 fp32
+
+- **{static | dynamic}:** 动态、静态 shape
+
+- **{shape}:** 模型输入的 shape 或者 shape 范围
+
+在接下来来的两个章节，我们将分别演示文字检测任务中的`dbnet`模型，和文字识别任务中的`crnn`模型转换 onnx 模型的方法。
+
+### 文字检测任务模型转换
+
+```shell
+cd mmdeploy
+# download dbnet model from mmocr model zoo
+mim download mmocr --config dbnet_resnet18_fpnc_1200e_icdar2015 --dest .
+# convert mmocr model to onnxruntime model with dynamic shape
+python tools/deploy.py \
+    configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py \
+    dbnet_resnet18_fpnc_1200e_icdar2015.py \
+    dbnet_resnet18_fpnc_1200e_icdar2015_20220825_221614-7c0e94f2.pth \
+    demo/resources/text_det.jpg \
+    --work-dir mmdeploy_models/mmocr/dbnet/ort \
+    --device cpu \
+    --show \
+    --dump-info
+```
+
+### 文字识别任务模型转换
+
+```shell
+cd mmdeploy
+# download crnn model from mmocr model zoo
+mim download mmocr --config crnn_mini-vgg_5e_mj --dest .
+# convert mmocr model to onnxruntime model with dynamic shape
+python tools/deploy.py \
+    configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py \
+    crnn_mini-vgg_5e_mj.py \
+    crnn_mini-vgg_5e_mj_20220826_224120-8afbedbb.pth \
+    demo/resources/text_recog.jpg \
+    --work-dir mmdeploy_models/mmocr/crnn/ort \
+    --device cpu \
+    --show \
+    --dump-info
+```
+
+你也可以把它们转为其他后端模型。比如使用`text-detection/text-detection_tensorrt-_dynamic-320x320-2240x2240.py`，把 `dbnet` 模型转为 tensorrt 模型。
+
+```{tip}
+当转 tensorrt 模型时, --device 需要被设置为 "cuda"
+```
+
+## 模型规范
+
+在使用转换后的模型进行推理之前，有必要了解转换结果的结构。 它存放在 `--work-dir` 指定的路路径下。
+
+[文字检测任务模型转换](#文字检测任务模型转换)例子中的`mmdeploy_models/mmocr/dbnet/ort`，结构如下：
+
+```
+mmdeploy_models/mmocr/dbnet/ort
+├── deploy.json
+├── detail.json
+├── end2end.onnx
+└── pipeline.json
+```
+
+重要的是：
+
+- **end2end.onnx**: 推理引擎文件。可用 ONNX Runtime 推理
+- \***.json**:  mmdeploy SDK 推理所需的 meta 信息
+
+整个文件夹被定义为**mmdeploy SDK model**。换言之，**mmdeploy SDK model**既包括推理引擎，也包括推理 meta 信息。
+
+## 模型推理
+
+### 后端模型推理
+
+```python
+from mmdeploy.apis.utils import build_task_processor
+from mmdeploy.utils import get_input_shape, load_config
+import torch
+
+deploy_cfg = 'configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py'
+model_cfg = 'dbnet_resnet18_fpnc_1200e_icdar2015.py'
+device = 'cpu'
+backend_model = ['./mmdeploy_models/mmocr/dbnet/ort/end2end.onnx']
+image = './demo/resources/text_det.jpg'
+
+# read deploy_cfg and model_cfg
+deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+# build task and backend model
+task_processor = build_task_processor(model_cfg, deploy_cfg, device)
+model = task_processor.build_backend_model(backend_model)
+
+# process input image
+input_shape = get_input_shape(deploy_cfg)
+model_inputs, _ = task_processor.create_input(image, input_shape)
+
+# do model inference
+with torch.no_grad():
+    result = model.test_step(model_inputs)
+
+# visualize results
+task_processor.visualize(
+    image=image,
+    model=model,
+    result=result[0],
+    window_name='visualize',
+    output_file='output_ocr.png')
+```
+
+**提示：**
+
+在这个脚本中，把'deploy_cfg', 'model_cfg', 'backend_model' and 'image' 替换为[文字识别任务模型转换](#文字识别任务模型转换)中对应的参数，
+就可以推理 `crnn` onnx 模型了。
+
+### SDK 模型推理
+
+#### 文字检测 SDK 模型推理
+
+你也可以参考如下代码，对 `dbnet` SDK model 进行推理：
+
+```python
+import cv2
+from mmdeploy_python import TextDetector
+
+img = cv2.imread('demo/resources/text_det.jpg')
+# create text detector
+detector = TextDetector(
+    model_path='mmdeploy_models/mmocr/dbnet/ort',
+    device_name='cpu',
+    device_id=0)
+# do model inference
+bboxes = detector(img)
+# draw detected bbox into the input image
+if len(bboxes) > 0:
+    pts = ((bboxes[:, 0:8] + 0.5).reshape(len(bboxes), -1,
+                                          2).astype(int))
+    cv2.polylines(img, pts, True, (0, 255, 0), 2)
+    cv2.imwrite('output_ocr.png', img)
+```
+
+#### 文字识别 SDK 模型推理
+
+```python
+import cv2
+from mmdeploy_python import TextRecognizer
+
+img = cv2.imread('demo/resources/text_recog.jpg')
+# create text recognizer
+recognizer = TextRecognizer(
+  model_path='mmdeploy_models/mmocr/crnn/ort',
+  device_name='cpu',
+  device_id=0
+)
+# do model inference
+texts = recognizer(img)
+# print the result
+print(texts)
+```
+
+除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo)学习其他语言接口的使用方法。
+
+## 模型支持列表
+
+| Model                                                                          | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
+| [DBNet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [PSENet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet) | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [PANet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
+| [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)     | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |
+| [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn) | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
