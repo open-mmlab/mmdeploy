@@ -93,7 +93,7 @@ python tools/deploy.py \
 You can also convert the above model to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit), e.g., converting to tensorrt model by `super-resolution/super-resolution_tensorrt-_dynamic-32x32-512x512.py`.
 
 ```{tip}
-When converting mmocr models to tensorrt models, --device should be set to "cuda"
+When converting mmedit models to tensorrt models, --device should be set to "cuda"
 ```
 
 ## Model specification
