@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_java_api:
+  test_rust_api:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout repository
@@ -30,8 +30,12 @@ jobs:
         run: sudo apt update
       - name: Install dependencies
         run: sudo apt install llvm-dev libclang-dev clang curl wget git-lfs
-      - name: Set up Rust
-        run: curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+      name: Install latest nightly Rust
+        uses: actions-rs/toolchain@v1
+        with:
+            toolchain: nightly
+            override: true
+            components: rustfmt, clippycurl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
       - name: Install onnxruntime
         run: |
           wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
