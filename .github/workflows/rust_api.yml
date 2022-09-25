@@ -29,7 +29,7 @@ jobs:
       - name: update
         run: sudo apt update
       - name: Install dependencies
-        run: pip install llvm-dev libclang-dev clang curl wget git-lfs
+        run: sudo apt install llvm-dev libclang-dev clang curl wget git-lfs
       - name: Set up Rust
         run: curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
       - name: Install onnxruntime
