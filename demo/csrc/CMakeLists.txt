@@ -24,7 +24,7 @@ function(add_example_c task name)
             # Link to MMDeploy libraries
             target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
         endif ()
-        install(TARGETS ${name} RUNTIME DESTINATION bin/c)
+        install(TARGETS ${name} RUNTIME DESTINATION bin)
     endif ()
 endfunction()
 
@@ -46,7 +46,7 @@ function(add_example_cpp task name)
             # Link to MMDeploy libraries
             target_link_libraries(${name} PRIVATE MMDeployLibs ${OpenCV_LIBS})
         endif ()
-        install(TARGETS ${name} RUNTIME DESTINATION bin/cpp)
+        install(TARGETS ${name} RUNTIME DESTINATION bin)
     endif ()
 endfunction()
 
