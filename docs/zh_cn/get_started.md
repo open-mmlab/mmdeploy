@@ -322,9 +322,9 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
-更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)。
+更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/cpp)。
 
-对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
+对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
 #### 加速预处理（实验性功能）
