@@ -31,7 +31,7 @@ jobs:
         with:
             toolchain: nightly
             override: true
-            components: rustfmt, clippycurl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+            components: rustfmt, clippy
       - name: update
         run: sudo apt update
       - name: Install dependencies
