@@ -26,16 +26,16 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: update
-        run: sudo apt update
-      - name: Install dependencies
-        run: sudo apt install llvm-dev libclang-dev clang curl wget git-lfs
-      name: Install latest nightly Rust
+      - name: Install latest nightly Rust
         uses: actions-rs/toolchain@v1
         with:
             toolchain: nightly
             override: true
             components: rustfmt, clippycurl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh
+      - name: update
+        run: sudo apt update
+      - name: Install dependencies
+        run: sudo apt install llvm-dev libclang-dev clang git-lfs
       - name: Install onnxruntime
         run: |
           wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
