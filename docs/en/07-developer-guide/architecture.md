@@ -24,7 +24,7 @@ $ tree -L 1
 ├── service                    # Some small boards not support python, we use C/S mode for model conversion, here is server code
 ├── tests                         # unittest
 ├── third_party           # 3rd party dependencies required by SDK and FFI
-└── tools                        # Tools are also the entrance to all functions, such as onnx2xx.py, profile.py, test.py, etc.
+└── tools                        # Tools are also the entrance to all functions, such as onnx2xx.py, profiler.py, test.py, etc.
 ```
 
 It should be clear
