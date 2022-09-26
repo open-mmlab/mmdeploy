@@ -307,7 +307,6 @@ class PoseDetection(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
-        # TODO: make it work with sdk
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.test_dataloader.dataset.pipeline
