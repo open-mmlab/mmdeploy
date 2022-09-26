@@ -86,7 +86,7 @@ MMDEPLOY_API void mmdeploy_classifier_destroy(mmdeploy_classifier_t classifier);
 
 /**
  * @brief Same as \ref mmdeploy_classifier_create, but allows to control execution context of tasks
- * via exec_info
+ * via context
  */
 MMDEPLOY_API int mmdeploy_classifier_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                                mmdeploy_classifier_t* classifier);

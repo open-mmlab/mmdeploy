@@ -85,7 +85,7 @@ MMDEPLOY_API void mmdeploy_text_detector_destroy(mmdeploy_text_detector_t detect
 
 /**
  * @brief Same as \ref mmdeploy_text_detector_create, but allows to control execution context of
- * tasks via exec_info
+ * tasks via context
  */
 MMDEPLOY_API int mmdeploy_text_detector_create_v2(mmdeploy_model_t model,
                                                   mmdeploy_context_t context,

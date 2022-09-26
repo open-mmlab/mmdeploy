@@ -18,7 +18,7 @@ int mmdeploy_context_create(mmdeploy_context_t* context) {
   return 0;
 }
 
-int mmdeploy_context_create_by_device(const char* device_name, int device_index,
+int mmdeploy_context_create_by_device(const char* device_name, int device_id,
                                       mmdeploy_context_t* context) {
   mmdeploy_device_t device{};
   int ec = MMDEPLOY_SUCCESS;
@@ -27,7 +27,7 @@ int mmdeploy_context_create_by_device(const char* device_name, int device_index,
   if (ec != MMDEPLOY_SUCCESS) {
     return ec;
   }
-  ec = mmdeploy_device_create(device_name, device_index, &device);
+  ec = mmdeploy_device_create(device_name, device_id, &device);
   if (ec != MMDEPLOY_SUCCESS) {
     return ec;
   }

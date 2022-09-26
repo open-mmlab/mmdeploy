@@ -53,8 +53,6 @@ Result<void> Builder::SetInputs() {
     flatten_.push_back(expr.operation == '*');
     broadcast_.push_back(expr.operation == '+');
   }
-  // MMDEPLOY_ERROR("external inputs: {}", inputs_);
-  // MMDEPLOY_ERROR("internal inputs: {}", inputs_internal);
   config_["input"] = to_value(inputs_internal);
   return success();
 }
@@ -68,8 +66,6 @@ Result<void> Builder::SetOutputs() {
     outputs_internal.push_back(expr.rhs);
     unflatten_.push_back(expr.operation == '*');
   }
-  // MMDEPLOY_ERROR("external outputs: {}", outputs_);
-  // MMDEPLOY_ERROR("internal outputs: {}", outputs_internal);
   config_["output"] = to_value(outputs_internal);
   return success();
 }
@@ -129,7 +125,6 @@ Result<std::vector<std::string>> ParseStringArray(const Value& value) {
   } else if (value.is_array()) {
     return from_value<std::vector<std::string>>(value);
   }
-  MMDEPLOY_ERROR("{}", value);
   return Status(eInvalidArgument);
 }
 

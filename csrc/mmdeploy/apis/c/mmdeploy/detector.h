@@ -89,7 +89,7 @@ MMDEPLOY_API void mmdeploy_detector_destroy(mmdeploy_detector_t detector);
 
 /**
  * @brief Same as \ref mmdeploy_detector_create, but allows to control execution context of tasks
- * via exec_info
+ * via context
  */
 MMDEPLOY_API int mmdeploy_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                              mmdeploy_detector_t* detector);

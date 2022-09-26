@@ -132,11 +132,11 @@ MMDEPLOY_API int mmdeploy_context_create(mmdeploy_context_t* context);
 /**
  * Create context
  * @param device_name
- * @param device_index
+ * @param device_id
  * @param context
  * @return
  */
-MMDEPLOY_API int mmdeploy_context_create_by_device(const char* device_name, int device_index,
+MMDEPLOY_API int mmdeploy_context_create_by_device(const char* device_name, int device_id,
                                                    mmdeploy_context_t* context);
 
 /**

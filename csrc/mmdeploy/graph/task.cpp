@@ -39,14 +39,11 @@ Sender<Value> Task::Process(Sender<Value> input) {
   });
 }
 
-TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {
-  // MMDEPLOY_CRITICAL("{}", config_);
-}
+TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {}
 
 namespace {
 
 inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
-  // MMDEPLOY_INFO("config: {}", config);
   auto type = config["module"].get<std::string>();
   auto creator = Registry<Module>::Get().GetCreator(type);
   if (!creator) {
