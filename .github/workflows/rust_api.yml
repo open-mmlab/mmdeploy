@@ -58,6 +58,8 @@ jobs:
         run: git clone https://github.com/liu-mengyang/rust-mmdeploy
       - name: Install converted models
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
+      - name: Setup debug session
+        uses: csexton/debugger-action@master
       - name: Test rustdemo
         run: |
           pushd rust-mmdeploy
