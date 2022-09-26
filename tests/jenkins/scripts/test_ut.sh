@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## parameters
-config="tests/jenkins/conf${1:-default.config}"
+config="tests/jenkins/conf/${1:-default.config}"
 
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
