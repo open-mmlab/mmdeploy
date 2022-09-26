@@ -10,6 +10,7 @@ from .yolo_head import (yolov3_head__predict_by_feat,
                         yolov3_head__predict_by_feat__ncnn)
 from .yolox_head import (yolox_head__predict_by_feat,
                          yolox_head__predict_by_feat__ncnn)
+from .rtmdet_head import rtmdet_head__predict_by_feat
 
 __all__ = [
     'rpn_head__predict_by_feat', 'rpn_head__get_bboxes__ncnn',
@@ -17,5 +18,6 @@ __all__ = [
     'yolox_head__predict_by_feat', 'base_dense_head__predict_by_feat',
     'fovea_head__predict_by_feat', 'base_dense_head__predict_by_feat__ncnn',
     'yolox_head__predict_by_feat__ncnn', 'gfl_head__predict_by_feat',
-    'reppoints_head__predict_by_feat', 'detr_head'
+    'reppoints_head__predict_by_feat', 'detr_head', 
+    'rtmdet_head__predict_by_feat'
 ]
