@@ -219,7 +219,6 @@ data = dict(
         version='v1.0-mini'))
 evaluation = dict(interval=2)
 model = dict(
-    type='FCOSMono3D',
     backbone=dict(
         type='ResNet',
         depth=101,
