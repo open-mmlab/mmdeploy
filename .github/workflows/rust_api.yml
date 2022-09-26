@@ -22,8 +22,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Setup Debug Session
-        uses: csexton/debugger-action@master
+
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:
@@ -60,6 +59,8 @@ jobs:
         run: git clone https://github.com/liu-mengyang/rust-mmdeploy
       - name: Install converted models
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
+      - name: Setup Debug Session
+        uses: csexton/debugger-action@master
       - name: Test rustdemo
         run: |
           pushd rust-mmdeploy
