@@ -7,9 +7,12 @@
 #include <vector>
 
 #include "mmdeploy/core/device.h"
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
+
+namespace framework {
 
 class MMDEPLOY_API Mat final {
  public:
@@ -86,6 +89,10 @@ class MMDEPLOY_API Mat final {
   int size_{0};  // size of elements in mat
   int bytes_{0};
 };
+
+}  // namespace framework
+
+MMDEPLOY_REGISTER_TYPE_ID(framework::Mat, 7);
 
 }  // namespace mmdeploy
 

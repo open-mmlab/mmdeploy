@@ -9,7 +9,7 @@
 #include "mmdeploy/core/device_impl.h"
 #include "mmdeploy/core/types.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class CpuPlatformImpl : public PlatformImpl {
  public:
@@ -146,4 +146,4 @@ class CpuKernelImpl : public KernelImpl {
   Task task_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

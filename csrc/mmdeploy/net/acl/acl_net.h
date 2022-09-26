@@ -7,7 +7,7 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/core/status_code.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class AclNet : public Net {
  public:
@@ -65,6 +65,6 @@ class AclNet : public Net {
   std::vector<Tensor> output_tensor_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_ACL_ACL_NET_H_

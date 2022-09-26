@@ -4,11 +4,11 @@
 
 #include "common.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 class PySegmentor {
  public:
-  PySegmentor(const char *model_path, const char *device_name, int device_id) {
+  PySegmentor(const char* model_path, const char* device_name, int device_id) {
     auto status =
         mmdeploy_segmentor_create_by_path(model_path, device_name, device_id, &segmentor_);
     if (status != MMDEPLOY_SUCCESS) {
@@ -20,14 +20,14 @@ class PySegmentor {
     segmentor_ = {};
   }
 
-  std::vector<py::array_t<int>> Apply(const std::vector<PyImage> &imgs) {
+  std::vector<py::array_t<int>> Apply(const std::vector<PyImage>& imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
-    for (const auto &img : imgs) {
+    for (const auto& img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mmdeploy_segmentation_t *segm{};
+    mmdeploy_segmentation_t* segm{};
     auto status = mmdeploy_segmentor_apply(segmentor_, mats.data(), (int)mats.size(), &segm);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply segmentor, code: " + std::to_string(status));
@@ -47,24 +47,17 @@ class PySegmentor {
   mmdeploy_segmentor_t segmentor_{};
 };
 
-static void register_python_segmentor(py::module &m) {
+static PythonBindingRegisterer register_segmentor{[](py::module& m) {
   py::class_<PySegmentor>(m, "Segmentor")
-      .def(py::init([](const char *model_path, const char *device_name, int device_id) {
+      .def(py::init([](const char* model_path, const char* device_name, int device_id) {
              return std::make_unique<PySegmentor>(model_path, device_name, device_id);
            }),
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
-           [](PySegmentor *self, const PyImage &img) -> py::array {
+           [](PySegmentor* self, const PyImage& img) -> py::array {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PySegmentor::Apply);
-}
+}};
 
-class PythonSegmentorRegisterer {
- public:
-  PythonSegmentorRegisterer() { gPythonBindings().emplace("segmentor", register_python_segmentor); }
-};
-
-static PythonSegmentorRegisterer python_segmentor_registerer;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

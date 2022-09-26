@@ -8,6 +8,7 @@
 #include "mmdeploy/core/device.h"
 
 using namespace mmdeploy;
+using namespace framework;
 using namespace std::string_literals;
 
 TEST_CASE("test cuda", "[cuda]") {

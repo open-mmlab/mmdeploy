@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class CpuHostMemory : public NonCopyable {
  public:
@@ -404,4 +404,4 @@ class CpuPlatformRegisterer {
 
 CpuPlatformRegisterer g_cpu_platform_registerer;
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

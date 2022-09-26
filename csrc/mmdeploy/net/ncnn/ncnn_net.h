@@ -7,7 +7,7 @@
 // It's ncnn's net.h
 #include "net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class NCNNNet : public Net {
  public:
@@ -32,6 +32,6 @@ class NCNNNet : public Net {
   ncnn::Net net_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_NCNN_NCNN_NET_H_

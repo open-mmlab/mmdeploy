@@ -8,12 +8,14 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using Classification = mmdeploy_classification_t;
 
 class Classifier : public NonMovable {
  public:
-  Classifier(const Model& model, const Device& device) {
-    auto ec = mmdeploy_classifier_create(model, device.name(), device.index(), &classifier_);
+  Classifier(const Model& model, const Context& context) {
+    auto ec = mmdeploy_classifier_create_v2(model, context, &classifier_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
@@ -61,6 +63,11 @@ class Classifier : public NonMovable {
  private:
   mmdeploy_classifier_t classifier_{};
 };
+
+}  // namespace cxx
+
+using cxx::Classification;
+using cxx::Classifier;
 
 }  // namespace mmdeploy
 

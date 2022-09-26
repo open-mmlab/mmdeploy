@@ -13,7 +13,7 @@
 #include "mmdeploy/core/device_impl.h"
 #include "mmdeploy/core/logger.h"
 
-namespace mmdeploy::device_allocator {
+namespace mmdeploy::framework::device_allocator {
 
 class Fallback : public AllocatorImpl {
  public:
@@ -347,6 +347,6 @@ inline AllocatorImplPtr CreatePoolBucketizer(size_t min_size, size_t max_size, s
   return CreateBucketizer(min_size, max_size, step_size, creator);
 }
 
-}  // namespace mmdeploy::device_allocator
+}  // namespace mmdeploy::framework::device_allocator
 
 #endif  // MMDEPLOY_SRC_CORE_DEVICE_ALLOCATOR_H_

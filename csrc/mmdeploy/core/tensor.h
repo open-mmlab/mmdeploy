@@ -11,6 +11,8 @@
 
 namespace mmdeploy {
 
+namespace framework {
+
 using TensorShape = std::vector<int64_t>;
 struct TensorDesc {
   Device device;
@@ -79,6 +81,10 @@ class MMDEPLOY_API Tensor {
 };
 
 // static_assert(sizeof(Tensor) == 80);
+
+}  // namespace framework
+
+MMDEPLOY_REGISTER_TYPE_ID(framework::Tensor, 6);
 
 }  // namespace mmdeploy
 

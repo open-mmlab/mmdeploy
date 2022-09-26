@@ -9,6 +9,8 @@
 
 namespace mmdeploy {
 
+using namespace framework;
+
 class MMDEPLOY_API TransformImpl : public Module {
  public:
   TransformImpl() = default;

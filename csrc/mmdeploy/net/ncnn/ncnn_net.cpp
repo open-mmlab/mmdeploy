@@ -7,7 +7,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "ncnn_ops_register.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 NCNNNet::~NCNNNet() {}
 
@@ -150,4 +150,4 @@ class NCNNNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, NCNNNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

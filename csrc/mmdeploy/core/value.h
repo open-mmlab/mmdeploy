@@ -143,40 +143,6 @@ ArchiveType<T&&> cast_by_archive(T&& v) {
   return {std::forward<T>(v)};
 }
 
-template <class T>
-struct is_cast_by_erasure : std::false_type {};
-
-class Device;
-class Buffer;
-class Stream;
-class Event;
-class Model;
-class Tensor;
-class Mat;
-
-template <>
-struct is_cast_by_erasure<Device> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Buffer> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Stream> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Event> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Model> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Tensor> : std::true_type {};
-template <>
-struct is_cast_by_erasure<Mat> : std::true_type {};
-
-MMDEPLOY_REGISTER_TYPE_ID(Device, 1);
-MMDEPLOY_REGISTER_TYPE_ID(Buffer, 2);
-MMDEPLOY_REGISTER_TYPE_ID(Stream, 3);
-MMDEPLOY_REGISTER_TYPE_ID(Event, 4);
-MMDEPLOY_REGISTER_TYPE_ID(Model, 5);
-MMDEPLOY_REGISTER_TYPE_ID(Tensor, 6);
-MMDEPLOY_REGISTER_TYPE_ID(Mat, 7);
-
 template <typename T>
 struct is_value : std::is_same<T, Value> {};
 
@@ -1073,6 +1039,18 @@ inline Value::Value(std::initializer_list<ValueRef> init, bool type_deduction, T
 }
 
 inline Value make_pointer(Value v) { return std::make_shared<Value>(std::move(v)); }
+
+inline void update(Value::Object& dst, const Value::Object& src, int depth) {
+  if (depth < 0) {
+    return;
+  }
+  for (const auto& [key, value] : src) {
+    auto ret = dst.insert({key, value});
+    if (!ret.second && ret.first->second.is_object() && value.is_object()) {
+      update(ret.first->second.object(), value.object(), depth - 1);
+    }
+  }
+}
 
 }  // namespace mmdeploy
 

@@ -8,6 +8,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("test directory model", "[.model][resource]") {
   std::unique_ptr<ModelImpl> model_impl;

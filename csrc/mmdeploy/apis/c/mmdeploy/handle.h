@@ -8,42 +8,42 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/value.h"
-#include "mmdeploy/graph/pipeline.h"
+#include "mmdeploy/graph/common.h"
+#include "mmdeploy/graph/static_router.h"
 
 namespace mmdeploy {
+
+using namespace framework;
 
 namespace {
 
 class AsyncHandle {
  public:
-  AsyncHandle(const char* device_name, int device_id, Value config) {
-    device_ = Device(device_name, device_id);
-    stream_ = Stream(device_);
-    config["context"].update({{"device", device_}, {"stream", stream_}});
-    auto creator = Registry<graph::Node>::Get().GetCreator("Pipeline");
-    if (!creator) {
-      MMDEPLOY_ERROR("Failed to find Pipeline creator. Available nodes: {}",
-                     Registry<graph::Node>::Get().List());
+  AsyncHandle(const char* device_name, int device_id, Value config)
+      : AsyncHandle(SetContext(std::move(config), device_name, device_id)) {}
+
+  explicit AsyncHandle(const Value& config) {
+    if (auto builder = graph::Builder::CreateFromConfig(config).value()) {
+      node_ = builder->Build().value();
+    } else {
+      MMDEPLOY_ERROR("failed to find creator for node");
       throw_exception(eEntryNotFound);
-    }
-    pipeline_ = creator->Create(config);
-    if (!pipeline_) {
-      MMDEPLOY_ERROR("Failed to create pipeline, config: {}", config);
-      throw_exception(eFail);
     }
   }
 
   graph::Sender<Value> Process(graph::Sender<Value> input) {
-    return pipeline_->Process(std::move(input));
+    return node_->Process(std::move(input));
   }
 
-  Device& device() { return device_; }
-  Stream& stream() { return stream_; }
-
  private:
-  Device device_;
-  Stream stream_;
-  std::unique_ptr<graph::Node> pipeline_;
+  static Value SetContext(Value config, const char* device_name, int device_id) {
+    Device device(device_name, device_id);
+    Stream stream(device);
+    config["context"].update({{"device", device}, {"stream", stream}});
+    return config;
+  }
+
+  std::unique_ptr<graph::Node> node_;
 };
 
 }  // namespace

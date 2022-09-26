@@ -2,7 +2,7 @@
 
 #include "mmdeploy/core/utils/stacktrace.h"
 
-#if USE_BOOST_STACKTRACE
+#if MMDEPLOY_STATUS_USE_STACKTRACE
 
 #define BOOST_STACKTRACE_USE_BACKTRACE
 #include "boost/stacktrace.hpp"
