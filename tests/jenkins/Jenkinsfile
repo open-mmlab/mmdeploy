@@ -2,6 +2,11 @@ pipeline {
     agent { label 'deploy_linux' }
     parameters {
         string(
+            name: 'CONFIG', 
+            defaultValue: 'default.config', 
+            description: 'select config'
+        )
+        string(
             name: 'CODEBASES', 
             defaultValue: 'mmdet mmcls mmdet3d mmedit mmocr mmpose mmrotate mmseg', 
             description: 'select codebase'
@@ -49,7 +54,7 @@ pipeline {
                         expression { return params.EXEC_BUILD }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_build.sh '${params.DOCKER_IMAGE}'"
+                        sh "tests/jenkins/scripts/test_build.sh '${params.CONFIG}'"
                     }
                 }
 
@@ -59,7 +64,7 @@ pipeline {
                         expression { return params.EXEC_CONVERT }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_convert.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}' '${params.EXEC_PERFORMANCE}'"
+                        sh "tests/jenkins/scripts/test_convert.sh '${params.CONFIG}'"
                     }
                 }
                 
@@ -69,7 +74,7 @@ pipeline {
                         expression { return params.EXEC_PREBUILD }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_prebuild.sh '${params.DOCKER_IMAGE}'"
+                        sh "tests/jenkins/scripts/test_prebuild.sh '${params.CONFIG}'"
                     }
                 }
 
@@ -79,7 +84,7 @@ pipeline {
                         expression { return params.EXEC_UNITTEST }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_ut.sh '${params.DOCKER_IMAGE}' '${params.CODEBASES}'"
+                        sh "tests/jenkins/scripts/test_ut.sh '${params.CONFIG}'"
                     }
                 }
             }
@@ -87,4 +92,3 @@ pipeline {
 
     }
 }
-
