@@ -79,10 +79,15 @@ ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 ### install cudnn
-RUN wget http://${HOST}/cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
-    tar -zxvf cudnn-${CUDA}-linux-x64-v8.2.1.32.tgz && \
-    cp -r cuda/include/cudnn* /usr/local/cuda-${CUDA}/include/ && \
-    cp -r cuda/lib63/libcudnn* /usr/local/cuda-${CUDA}/lib64/
+RUN wget http://${HOST}/cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
+    tar -zxvf cudnn-11.3-linux-x64-v8.2.1.32.tgz && \
+    cp -r cuda/include/cudnn* /usr/local/cuda-11.3/include/ && \
+    cp -r cuda/lib64/libcudnn* /usr/local/cuda-11.3/lib64/ && \
+    mv cuda cudnn-8.2.1.32 && \
+    wget http://${HOST}/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz && \
+    tar -xvf cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz && \
+    mv cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive cudnn-8.4.1.50
+
 ENV CUDNN_DIR=/root/workspace/cuda
 ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
@@ -134,19 +139,14 @@ RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-pu
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-8.2..8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
-    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
-    wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
-    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
-    wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
-    tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
-
-
-### install tensorrt
 RUN wget http://${HOST}/TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
     tar -zxvf TensorRT-8.2.1.8.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
-    /opt/conda/bin/pip install TensorRT-8.2.1.8/python/tensorrt-8.2.1.8-cp38-none-linux_x86_64.whl && \
+    wget http://${HOST}/TensorRT-8.2.5.1.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz && \
+    tar -zxvf TensorRT-8.2.5.1.Linux.x86_64-gnu.cuda-11.4.cudnn8.2.tar.gz &&\
+    wget http://${HOST}/TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz && \
+    tar -zxvf TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz &&\
     /opt/conda/bin/pip install pycuda
+
 ENV TENSORRT_VERSION=8.2.1.8
 ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.1.8
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
