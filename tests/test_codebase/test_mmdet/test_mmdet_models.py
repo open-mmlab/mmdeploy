@@ -12,14 +12,13 @@ import torch
 from mmengine import Config
 from mmengine.config import ConfigDict
 
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_model_outputs,
                                  get_onnx_model, get_rewrite_outputs)
 
-import_codebase_rewriter(Codebase.MMDET)
 import_codebase(Codebase.MMDET)
 
 

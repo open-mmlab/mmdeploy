@@ -8,11 +8,10 @@ import onnx
 import torch
 from mmedit.models.editors.srcnn import SRCNNNet
 
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase, get_onnx_config
 
-import_codebase_rewriter(Codebase.MMEDIT)
 import_codebase(Codebase.MMEDIT)
 
 img = torch.rand(1, 3, 4, 4)

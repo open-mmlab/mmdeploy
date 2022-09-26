@@ -9,11 +9,10 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
 
-import_codebase_rewriter(Codebase.MMSEG)
 import_codebase(Codebase.MMSEG)
 
 from .utils import generate_datasample  # noqa: E402

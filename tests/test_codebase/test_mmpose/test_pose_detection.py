@@ -6,12 +6,11 @@ import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
 
 try:
-    import_codebase_rewriter(Codebase.MMPOSE)
     import_codebase(Codebase.MMPOSE)
 except ImportError:
     pytest.skip(

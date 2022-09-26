@@ -4,11 +4,10 @@ from mmengine import Config
 from mmengine.structures import BaseDataElement
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-import_codebase_rewriter(Codebase.MMEDIT)
 import_codebase(Codebase.MMEDIT)
 
 

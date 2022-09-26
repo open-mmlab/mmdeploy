@@ -5,17 +5,7 @@ from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
 
-def import_codebase_rewriter(codebase_type: Codebase,
-                             custom_module_list: List = []):
-    import importlib
-    if len(custom_module_list) > 0:
-        for custom_module in custom_module_list:
-            importlib.import_module(f'{custom_module}')
-    else:
-        importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
-
-
-def import_codebase(codebase_type: Codebase):
+def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     """Import a codebase package in `mmdeploy.codebase`
 
     The function will check if all dependent libraries are installed.
@@ -26,6 +16,12 @@ def import_codebase(codebase_type: Codebase):
     Args:
         codebase (Codebase): The codebase to import.
     """
+    import importlib
+    if len(custom_module_list) > 0:
+        for custom_module in custom_module_list:
+            importlib.import_module(f'{custom_module}')
+    else:
+        importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
     codebase = get_codebase_class(codebase_type)
     codebase.import_module()
 

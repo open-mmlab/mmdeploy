@@ -3,7 +3,7 @@ import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase, import_codebase_rewriter
+from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
@@ -12,7 +12,6 @@ IMAGE_W = 256
 
 try:
     import_codebase(Codebase.MMPOSE)
-    import_codebase_rewriter(Codebase.MMPOSE)
 except ImportError:
     pytest.skip(
         f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
