@@ -86,6 +86,17 @@ class VideoRecognition(BaseTask):
                  device: str):
         super(VideoRecognition, self).__init__(model_cfg, deploy_cfg, device)
 
+    def build_data_preprocessor(self):
+        model_cfg = self.model_cfg
+        preprocess_cfg = model_cfg.get('preprocess_cfg', None)
+        from mmengine.registry import MODELS
+        if preprocess_cfg is not None:
+            data_preprocessor = MODELS.build(preprocess_cfg)
+        else:
+            data_preprocessor = BaseDataPreprocessor()
+
+        return data_preprocessor
+
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
                             **kwargs) -> torch.nn.Module:
@@ -121,7 +132,7 @@ class VideoRecognition(BaseTask):
             tuple: (data, img), meta information for the input image and input.
         """
         if isinstance(imgs, (list, tuple)):
-            if not isinstance(imgs[0], str):
+            if not all(isinstance(img, str) for img in imgs):
                 raise AssertionError('imgs must be strings')
         elif isinstance(imgs, str):
             imgs = [imgs]

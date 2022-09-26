@@ -19,7 +19,7 @@ def base_recognizer__forward(ctx,
     Args:
         inputs (torch.Tensor): The input tensor with shape
             (N, C, ...) in general.
-        data_samples (List[``ActionDataSample`1], optional): The
+        data_samples (List[``ActionDataSample``], optional): The
             annotation data of every samples. Defaults to None.
         mode (str): Return what kind of value. Defaults to ``tensor``.
 

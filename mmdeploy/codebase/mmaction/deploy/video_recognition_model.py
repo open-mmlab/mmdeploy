@@ -6,6 +6,7 @@ import mmengine
 import torch
 from mmaction.utils import LabelList
 from mmengine import Config
+from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement, LabelData
 
@@ -41,8 +42,12 @@ class End2EndModel(BaseBackendModel):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         from mmaction.registry import MODELS
-        self.data_preprocessor = MODELS.build(
-            model_cfg.model.data_preprocessor)
+        preprocessor_cfg = model_cfg.model.get('data_preprocessor', None)
+        if preprocessor_cfg is not None:
+            self.data_preprocessor = MODELS.build(
+                model_cfg.model.data_preprocessor)
+        else:
+            self.data_preprocessor = BaseDataPreprocessor()
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
@@ -81,7 +86,7 @@ class End2EndModel(BaseBackendModel):
         Args:
             inputs (torch.Tensor): The input tensor with shape
                 (N, C, ...) in general.
-            data_samples (List[``ActionDataSample`1], optional): The
+            data_samples (List[``ActionDataSample``], optional): The
                 annotation data of every samples. Defaults to None.
             mode (str): Return what kind of value. Defaults to ``predict``.
 
