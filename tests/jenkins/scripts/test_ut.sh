@@ -30,7 +30,8 @@ for codebase in ${codebase_list[@]}; do
     echo "container_id=${container_id}"
     nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} && \
     /root/workspace/mmdeploy_script/docker_exec_ut.sh ${codebase}" >${log_dir}/${codebase}.log 2>&1 &
-    echo "${codebase} unittest finish!"
-    cat ${log_dir}/${codebase}.log
 done
 wait
+
+for codebase in ${codebase_list[@]}; do
+    cat ${log_dir}/${codebase}.log
