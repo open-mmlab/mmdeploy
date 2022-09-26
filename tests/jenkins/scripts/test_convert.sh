@@ -9,6 +9,7 @@ exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//'
 max_job_nums=$(grep max_job_nums ${config} | sed 's/max_job_nums=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
+TENSORRT_VERSION=$(grep tensorrt_version ${config} | sed 's/tensorrt_version=//')
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
@@ -42,7 +43,7 @@ for codebase in ${codebase_list[@]}; do
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-        /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase} ${exec_performance}" >${log_dir}/${codebase}.log 2>&1 &
+        /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase} ${exec_performance} ${TENSORRT_VERSION}" >${log_dir}/${codebase}.log 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"
