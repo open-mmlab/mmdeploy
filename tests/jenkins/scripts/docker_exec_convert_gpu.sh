@@ -51,9 +51,10 @@ TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
 LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 ## init cudnn
-cp -r cudnn-${TENSORRT_VERSION}/include/cudnn* /usr/local/cuda-11.3/include/ && \
-cp -r cudnn-${TENSORRT_VERSION}/lib/libcudnn* /usr/local/cuda-11.3/lib64/ 
-
+if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
+    cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/ && \
+    cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/ 
+fi
 
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
