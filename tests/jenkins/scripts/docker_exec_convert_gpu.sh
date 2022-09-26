@@ -32,10 +32,11 @@ function getFullName() {
 
 ## parameters
 export codebase=$1
-export TENSORRT_VERSION=$(grep tensorrt_version ../conf/start.config | sed 's/tensorrt_version=//')
+export performance=$2
+export TENSORRT_VERSION=$3
 
 getFullName $codebase
-if [ '$2' -eq 'y' ]; then
+if [ performance -eq 'y' ]; then
     exec_performance = '--performance'
 else
     exec_performance = ''
@@ -48,11 +49,11 @@ git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root
 
 ## init tensorrt
 TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
-LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
 
 ## init cudnn
 if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
-    cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/ && \
+    cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/
     cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/ 
 fi
 
