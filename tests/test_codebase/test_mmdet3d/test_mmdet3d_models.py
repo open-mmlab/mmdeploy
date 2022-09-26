@@ -201,7 +201,7 @@ def test_pointpillars_nus(backend_type: Backend):
 
 def get_fcos3d():
     from mmdet3d.models.detectors import FCOSMono3D
-
+    monodet_model_cfg.model.pop('type')
     model = FCOSMono3D(**monodet_model_cfg.model)
     model.requires_grad_(False)
     return model

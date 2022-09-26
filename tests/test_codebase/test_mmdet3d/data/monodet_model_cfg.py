@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 dataset_type = 'NuScenesMonoDataset'
-data_root = 'data/nuscenes/'
+data_root = 'tests/test_codebase/test_mmdet3d/data/nuscenes/'
 class_names = [
     'car', 'truck', 'trailer', 'bus', 'construction_vehicle', 'bicycle',
     'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
@@ -176,9 +176,9 @@ data = dict(
         box_type_3d='Camera'),
     test=dict(
         type='NuScenesMonoDataset',
-        data_root='data/nuscenes/',
-        ann_file='data/nuscenes/nuscenes_infos_val_mono3d.coco.json',
-        img_prefix='data/nuscenes/',
+        data_root=data_root,
+        ann_file=data_root + 'nuscenes_infos_val_mono3d.coco.json',
+        img_prefix=data_root,
         classes=[
             'car', 'truck', 'trailer', 'bus', 'construction_vehicle',
             'bicycle', 'motorcycle', 'pedestrian', 'traffic_cone', 'barrier'
@@ -219,6 +219,7 @@ data = dict(
         version='v1.0-mini'))
 evaluation = dict(interval=2)
 model = dict(
+    type='FCOSMono3D',
     backbone=dict(
         type='ResNet',
         depth=101,

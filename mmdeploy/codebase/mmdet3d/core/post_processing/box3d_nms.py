@@ -3,7 +3,7 @@ import torch
 
 import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.mmcv.ops import ONNXBEVNMSOp, TRTBatchedBEVNMSop
+from mmdeploy.mmcv.ops import ONNXNMSRotatedOp, TRTBatchedBEVNMSop
 
 
 def select_nms_index(scores,
@@ -156,8 +156,8 @@ def _box3d_multiclass_nms(
             attribute scores (optional).
     """
     scores = scores.permute(0, 2, 1)
-    selected_indices = ONNXBEVNMSOp.apply(bboxes_for_nms, scores, nms_thr,
-                                          score_thr)
+    selected_indices = ONNXNMSRotatedOp.apply(bboxes_for_nms, scores, nms_thr,
+                                              score_thr)
 
     return select_nms_index(scores, bboxes, selected_indices, max_num,
                             dir_scores, attr_scores)

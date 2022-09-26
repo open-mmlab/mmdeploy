@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved
-#ifndef TRT_BATCHED_ROTATED_NMS_HPP
-#define TRT_BATCHED_ROTATED_NMS_HPP
+#ifndef TRT_BATCHED_BEV_NMS_HPP
+#define TRT_BATCHED_BEV_NMS_HPP
 #include <string>
 #include <vector>
 
