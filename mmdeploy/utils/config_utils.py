@@ -423,3 +423,8 @@ def get_precision(deploy_cfg: Union[str, mmengine.Config]) -> str:
     if backend == Backend.NCNN and 'precision' in deploy_cfg['backend_config']:
         precision = deploy_cfg['backend_config']['precision']
     return precision
+
+
+def get_codebase_external_module(
+        deploy_cfg: Union[str, mmengine.Config]) -> List:
+    return get_codebase_config(deploy_cfg).get('module', [])
