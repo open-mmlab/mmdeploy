@@ -88,7 +88,7 @@ Result<void> RKNNNet::Init(const Value& args) {
     }
     dump_tensor_attr(&(input_attrs[i]));
   }
-  input_attrs_ = input_attrs;
+  input_attrs_ = std::vector<rknn_tensor_attr>(input_attrs, input_attrs + io_num.n_input);
 
   printf("output tensors:\n");
   rknn_tensor_attr output_attrs[io_num.n_output];
@@ -102,11 +102,11 @@ Result<void> RKNNNet::Init(const Value& args) {
     }
     dump_tensor_attr(&(output_attrs[i]));
   }
-  output_attrs_ = output_attrs;
+  output_attrs_ = std::vector<rknn_tensor_attr>(output_attrs, output_attrs + io_num.n_output);
 
   for (int i = 0; i < io_num.n_input; ++i) {
     // TODO get real data type instead of hard code
-    input_tensors_.emplace_back(TensorDesc{device_, DataType::kINT8, {}, "#" + std::to_string(i)});
+    input_tensors_.emplace_back(TensorDesc{device_, DataType::kFLOAT, {}, "#" + std::to_string(i)});
   }
 
   for (int i = 0; i < io_num.n_output; ++i) {
@@ -141,10 +141,10 @@ Result<void> RKNNNet::Forward() {
   for (int i = 0; i < input_tensors_.size(); i++) {
     inputs[i].index = i;
     inputs[i].pass_through = 0;
-    inputs[i].type = RKNN_TENSOR_UINT8;
+    inputs[i].type = RKNN_TENSOR_FLOAT32;
     inputs[i].fmt = RKNN_TENSOR_NHWC;
-    inputs[i].buf = input_tensors_[i].data<uint8_t>();
-    inputs[i].size = input_attrs_[i].n_elems;
+    inputs[i].buf = input_tensors_[i].data<float>();
+    inputs[i].size = input_attrs_[i].size;
   }
 
   // Set input
@@ -163,14 +163,26 @@ Result<void> RKNNNet::Forward() {
     outputs[i].is_prealloc = 0;
   }
 
+  ret = rknn_run(ctx_, NULL);
+  if (ret < 0) {
+    MMDEPLOY_ERROR("rknn_run fail! ret={}", ret);
+    return Status(eFail);
+  }
+
   ret = rknn_outputs_get(ctx_, output_tensors_.size(), outputs, NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_outputs_get fail! ret= {}", ret);
     return Status(eFail);
   }
-
+  for (int i = 0; i < output_tensors_.size(); i++) {
+    TensorShape tensor_shape;
+    for (int j = 0; j < output_attrs_[i].n_dims; ++j) {
+      tensor_shape.push_back(output_attrs_[i].dims[j]);
+    }
+    output_tensors_[i].Reshape(tensor_shape);
+    memcpy(output_tensors_[i].data<float>(), (float*)outputs[i].buf, output_attrs_[i].size);
+  }
   OUTCOME_TRY(stream_.Wait());
-
   return success();
 }
 

@@ -36,8 +36,8 @@ class RKNNNet : public Net {
   rknn_context ctx_;
   std::vector<Tensor> input_tensors_;
   std::vector<Tensor> output_tensors_;
-  rknn_tensor_attr* input_attrs_;
-  rknn_tensor_attr* output_attrs_;
+  std::vector<rknn_tensor_attr> input_attrs_;
+  std::vector<rknn_tensor_attr> output_attrs_;
   static constexpr const auto kHost = Device(0);
 };
 
