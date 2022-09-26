@@ -1,11 +1,13 @@
 #!/bin/bash
 
 ## parameters
-codebase_list=($2)
-docker_image=$(grep docker_image ../conf/start.config | sed 's/docker_image=//')
-codebase_list=$(grep codebase_list ../conf/start.config | sed 's/codebase_list=//')
-mmdeploy_branch=$(grep mmdeploy_branch ../conf/start.config | sed 's/mmdeploy_branch=//')
-repo_url=$(grep repo_url ../conf/start.config | sed 's/repo_url=//')
+config="tests/jenkins/${1:-default.config}"
+
+docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
+codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
+exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//')
+mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
+repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
