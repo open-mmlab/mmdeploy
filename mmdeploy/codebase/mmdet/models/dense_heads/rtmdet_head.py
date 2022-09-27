@@ -9,7 +9,6 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
