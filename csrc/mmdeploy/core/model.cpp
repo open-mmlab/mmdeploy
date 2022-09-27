@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 Model::Model(const std::string& model_path) {
   if (auto r = Model::Init(model_path); !r) {
@@ -100,4 +100,4 @@ Result<void> ModelRegistry::Register(const std::string& name, Creator creator) {
   return success();
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

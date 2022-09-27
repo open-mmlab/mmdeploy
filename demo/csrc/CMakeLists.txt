@@ -6,8 +6,9 @@ if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
     find_package(MMDeploy REQUIRED)
 endif ()
 
-function(add_example task folder name)
-    if (TARGET mmdeploy_${task})
+
+function(add_example dep folder name)
+    if (NOT dep OR TARGET mmdeploy_${dep})
         # Search for c/cpp sources
         file(GLOB _SRCS ${folder}/${name}.c*)
         add_executable(${name} ${_SRCS})
@@ -35,6 +36,11 @@ add_example(restorer c image_restorer)
 add_example(text_detector c ocr)
 add_example(pose_detector c pose_detection)
 add_example(rotated_detector c rotated_object_detection)
+
+#add_example("" async_ocr)
+#add_example("" async_ocr_v2)
+#add_example("" det_cls)
+#add_example("" det_pose)
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     add_example(classifier cpp classifier)

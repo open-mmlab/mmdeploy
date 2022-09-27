@@ -10,6 +10,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 using namespace std;
 
 TEST_CASE("default mat constructor", "[mat]") {

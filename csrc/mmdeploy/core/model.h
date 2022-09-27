@@ -8,10 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "serialization.h"
 #include "types.h"
 
 namespace mmdeploy {
+
+namespace framework {
 
 struct model_meta_info_t {
   std::string name;
@@ -154,6 +157,10 @@ class MMDEPLOY_API ModelRegistry {
  private:
   std::vector<Entry> entries_;
 };
+
+}  // namespace framework
+
+MMDEPLOY_REGISTER_TYPE_ID(framework::Model, 5);
 
 }  // namespace mmdeploy
 

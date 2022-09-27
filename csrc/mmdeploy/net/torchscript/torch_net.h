@@ -6,7 +6,7 @@
 #include "mmdeploy/core/net.h"
 #include "torch/script.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class TorchNet : public Net {
  public:
@@ -30,6 +30,6 @@ class TorchNet : public Net {
   std::optional<torch::Device> torch_device_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_CSRC_MMDEPLOY_NET_TORCHSCRIPT_TORCH_NET_H_

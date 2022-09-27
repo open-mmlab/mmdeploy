@@ -8,9 +8,7 @@
 #include "mmdeploy/execution/schedulers/single_thread_context.h"
 #include "mmdeploy/execution/schedulers/static_thread_pool.h"
 
-namespace mmdeploy {
-
-namespace _python {
+namespace mmdeploy::python {
 
 struct PySender {
   TypeErasedSender<Value> sender_;
@@ -32,7 +30,7 @@ struct PySender {
       StartDetached(std::move(sender_) |
                     Then([future = object_ptr{new py::object(future)}](const Value& value) mutable {
                       py::gil_scoped_acquire _;
-                      future->attr("set_result")(ConvertToPyObject(value));
+                      future->attr("set_result")(ToPyObject(value));
                       delete future.release();
                     }));
     }
@@ -40,20 +38,9 @@ struct PySender {
   }
 };
 
-}  // namespace _python
-
-using _python::PySender;
-
-static void register_python_executor(py::module& m) {
+static PythonBindingRegisterer register_sender{[](py::module& m) {
   py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
       .def("__await__", &PySender::__await__);
-}
+}};
 
-class PythonExecutorRegisterer {
- public:
-  PythonExecutorRegisterer() { gPythonBindings().emplace("executor", register_python_executor); }
-};
-
-static PythonExecutorRegisterer python_executor_registerer;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

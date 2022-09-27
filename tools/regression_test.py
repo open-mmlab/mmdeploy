@@ -47,7 +47,10 @@ def parse_args():
         help='the dir to save checkpoint for all model',
         default='../mmdeploy_checkpoints')
     parser.add_argument(
-        '--device', type=str, help='Device type, cuda or cpu', default='cuda')
+        '--device',
+        type=str,
+        help='Device type, cuda:id or cpu, cuda:0 as default',
+        default='cuda:0')
     parser.add_argument(
         '--log-level',
         help='set log level',

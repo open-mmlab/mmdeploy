@@ -14,6 +14,9 @@
 #include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
+
+using namespace framework;
+
 namespace trace {
 
 struct CvtColorParam {
@@ -91,9 +94,6 @@ class MMDEPLOY_API Tracer {
   std::optional<DataType> common_dtype_;
   std::vector<trace::TransParamType> trans_;
 };
-
-template <>
-struct is_cast_by_erasure<Tracer> : std::true_type {};
 
 MMDEPLOY_REGISTER_TYPE_ID(Tracer, 9);
 

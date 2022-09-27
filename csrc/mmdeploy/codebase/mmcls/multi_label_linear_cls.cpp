@@ -37,11 +37,11 @@ class MultiLabelLinearClsHead : public MMClassification {
  private:
   Value GetLabels(const Tensor& scores, int class_num) const {
     auto scores_data = scores.data<float>();
-    ClassifyOutput output;
+    Labels output;
     for (int i = 0; i < class_num; ++i) {
-      auto label = ClassifyOutput::Label{i, scores_data[i]};
+      auto label = Label{i, scores_data[i]};
       MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
-      output.labels.push_back(label);
+      output.push_back(label);
     }
     return to_value(std::move(output));
   }

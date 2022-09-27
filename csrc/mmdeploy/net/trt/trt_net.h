@@ -7,7 +7,7 @@
 #include "mmdeploy/core/mpl/span.h"
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace trt_detail {
 
@@ -74,6 +74,6 @@ class TRTNet : public Net {
   Event event_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_TRT_TRT_NET_H_

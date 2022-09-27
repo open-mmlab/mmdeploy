@@ -106,14 +106,6 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(tests/test_csrc)
     endif ()
 
-    if (MMDEPLOY_BUILD_SDK_PYTHON_API)
-        add_subdirectory(csrc/mmdeploy/apis/python)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_JAVA_API)
-        add_subdirectory(csrc/mmdeploy/apis/java)
-    endif ()
-
     if (MMDEPLOY_BUILD_EXAMPLES)
         include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
         add_subdirectory(demo/csrc)

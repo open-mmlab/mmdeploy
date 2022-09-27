@@ -7,7 +7,7 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class NetModule {
  public:
@@ -22,6 +22,6 @@ class NetModule {
   std::unique_ptr<Impl> impl_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_MODULE_NET_MODULE_H_
