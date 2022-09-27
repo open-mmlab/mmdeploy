@@ -45,7 +45,7 @@ class MMDetection3d(MMCodebase):
         return MMDET3D_TASK.build(model_cfg, deploy_cfg, device)
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmdet3d.utils.set_env import register_all_modules
         register_all_modules(True)
 

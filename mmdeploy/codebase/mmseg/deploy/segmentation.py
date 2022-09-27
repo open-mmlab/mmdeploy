@@ -106,7 +106,7 @@ class MMSegmentation(MMCodebase):
     task_registry = MMSEG_TASK
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmseg.utils.set_env import register_all_modules
         register_all_modules(True)
 

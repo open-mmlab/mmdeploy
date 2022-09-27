@@ -115,7 +115,7 @@ class MMPose(MMCodebase):
     task_registry = MMPOSE_TASK
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmpose.utils.setup_env import register_all_modules
         register_all_modules(True)
 

@@ -50,7 +50,7 @@ class MMCodebase(metaclass=ABCMeta):
                 device=device))
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         pass
 
 

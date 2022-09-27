@@ -23,7 +23,7 @@ class MMDetection(MMCodebase):
     task_registry = MMDET_TASK
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmdet.utils.setup_env import register_all_modules
         register_all_modules(True)
 

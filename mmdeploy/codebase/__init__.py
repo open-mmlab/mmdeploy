@@ -23,7 +23,7 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     else:
         importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
     codebase = get_codebase_class(codebase_type)
-    codebase.import_module()
+    codebase.register_all_modules()
 
 
 __all__ = ['MMCodebase', 'BaseTask', 'get_codebase_class']

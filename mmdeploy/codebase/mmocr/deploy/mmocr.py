@@ -19,7 +19,7 @@ class MMOCR(MMCodebase):
     task_registry = MMOCR_TASK
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmdet.utils.setup_env import \
             register_all_modules as register_all_modules_mmdet
         from mmocr.utils.setup_env import \

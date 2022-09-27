@@ -24,7 +24,7 @@ class MMClassification(MMCodebase):
     task_registry = MMCLS_TASK
 
     @classmethod
-    def import_module(cls):
+    def register_all_modules(cls):
         from mmcls.utils.setup_env import register_all_modules
         register_all_modules(True)
 
