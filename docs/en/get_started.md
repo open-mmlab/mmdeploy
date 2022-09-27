@@ -321,9 +321,9 @@ find_package(MMDeploy REQUIRED)
 target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
-For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc).
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/cpp).
 
-For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
 We'll talk about them more in our next release.
 
 #### Accelerate preprocessing（Experimental）
