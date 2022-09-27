@@ -63,7 +63,7 @@ def rtmdet_head__predict_by_feat(ctx,
 
     flatten_cls_scores = [
         cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
-                                                self.cls_out_channels)
+                                              self.cls_out_channels)
         for cls_score in cls_scores
     ]
     flatten_bbox_preds = [
@@ -92,7 +92,6 @@ def rtmdet_head__predict_by_feat(ctx,
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-    keep_top_k = 20
 
     return multiclass_nms(bboxes, scores, max_output_boxes_per_class,
                           iou_threshold, score_threshold, pre_top_k,
