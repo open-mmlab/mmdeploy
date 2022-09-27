@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from operator import itemgetter
-from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import mmengine
 import numpy as np
@@ -181,7 +181,7 @@ class VideoRecognition(BaseTask):
         try:
             import decord
             from moviepy.editor import ImageSequenceClip
-        except:
+        except Exception:
             logger.warn('Please install moviepy and decord to '
                         'enable visualize for mmaction')
 
