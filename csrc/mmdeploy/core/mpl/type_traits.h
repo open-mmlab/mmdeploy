@@ -15,6 +15,35 @@ struct uncvref {
 template <typename T>
 using uncvref_t = typename uncvref<T>::type;
 
+template <class T>
+struct is_cast_by_erasure : std::false_type {};
+
+namespace traits {
+
+using type_id_t = uint64_t;
+
+template <class T>
+struct TypeId {
+  static constexpr type_id_t value = 0;
+};
+
+template <>
+struct TypeId<void> {
+  static constexpr auto value = static_cast<type_id_t>(-1);
+};
+
+// ! This only works when calling inside mmdeploy namespace
+#define MMDEPLOY_REGISTER_TYPE_ID(type, id) \
+  namespace traits {                        \
+  template <>                               \
+  struct TypeId<type> {                     \
+    static constexpr type_id_t value = id;  \
+  };                                        \
+  }                                         \
+  template <>                               \
+  struct is_cast_by_erasure<type> : std::true_type {};
+}  // namespace traits
+
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_SRC_CORE_MPL_TYPE_TRAITS_H_

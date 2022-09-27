@@ -9,6 +9,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("test pplnn net", "[.ppl_net][resource]") {
   auto& gResource = MMDeployTestResources::Get();

@@ -20,6 +20,20 @@ The script will also try to avoid affecting host environment:
 
 - The dependencies of source code compilation are placed in the `mmdeploy-dep` directory at the same level as mmdeploy
 - The script would not modify variables such as PATH, LD_LIBRARY_PATH, PYTHONPATH, etc.
+- The environment variables that need to be modified will be printed, **please pay attention to the final output**
+
+The script will eventually execute `python3 tools/check_env.py`, the successful installation should display the version number of the corresponding backend and `ops_is_available: True`, for example:
+
+```bash
+$ python3 tools/check_env.py
+..
+2022-09-13 14:49:13,767 - mmdeploy - INFO - **********Backend information**********
+2022-09-13 14:49:14,116 - mmdeploy - INFO - onnxruntime: 1.8.0	ops_is_avaliable : True
+2022-09-13 14:49:14,131 - mmdeploy - INFO - tensorrt: 8.4.1.5	ops_is_avaliable : True
+2022-09-13 14:49:14,139 - mmdeploy - INFO - ncnn: 1.0.20220901	ops_is_avaliable : True
+2022-09-13 14:49:14,150 - mmdeploy - INFO - pplnn_is_avaliable: True
+..
+```
 
 Here is the verified installation script. If you want mmdeploy to support multiple backends at the same time, you can execute each script once:
 

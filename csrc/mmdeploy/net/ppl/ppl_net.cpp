@@ -24,7 +24,7 @@
 #include "ppl/nn/engines/riscv/ops.h"
 #endif
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 Result<void> ppl_try(int code) {
   if (code == 0) {
@@ -360,4 +360,4 @@ class PPLNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, PPLNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

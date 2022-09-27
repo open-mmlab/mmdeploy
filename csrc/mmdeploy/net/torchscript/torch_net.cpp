@@ -16,7 +16,7 @@
 MMDEPLOY_API void _mmdeploy_force_link_torchvision() { vision::detail::_register_ops(); }
 #endif
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace {
 
@@ -234,4 +234,4 @@ class TorchNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, TorchNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

@@ -3,12 +3,14 @@
 #ifndef MMDEPLOY_SRC_CORE_NET_H_
 #define MMDEPLOY_SRC_CORE_NET_H_
 
-#include "mpl/span.h"
-#include "registry.h"
-#include "tensor.h"
-#include "value.h"
+#include "mmdeploy/core/mpl/span.h"
+#include "mmdeploy/core/registry.h"
+#include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy {
+
+namespace framework {
 
 class Net {
  public:
@@ -22,7 +24,9 @@ class Net {
   virtual Result<void> ForwardAsync(Event* event) = 0;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(Net);
+}  // namespace framework
+
+MMDEPLOY_DECLARE_REGISTRY(framework::Net);
 
 }  // namespace mmdeploy
 

@@ -1,4 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+// Re-implementation of std::any, relies on static type id instead of RTTI.
+// adjusted from libc++-10
 
 #ifndef MMDEPLOY_CSRC_CORE_MPL_STATIC_ANY_H_
 #define MMDEPLOY_CSRC_CORE_MPL_STATIC_ANY_H_
@@ -9,35 +11,9 @@
 #include <type_traits>
 #include <utility>
 
-// re-implementation of std::any, relies on static type id instead of RTTI.
-// adjusted from libc++-10
+#include "mmdeploy/core/mpl/type_traits.h"
 
 namespace mmdeploy {
-
-namespace traits {
-
-using type_id_t = uint64_t;
-
-template <class T>
-struct TypeId {
-  static constexpr type_id_t value = 0;
-};
-
-template <>
-struct TypeId<void> {
-  static constexpr auto value = static_cast<type_id_t>(-1);
-};
-
-// ! This only works when calling inside mmdeploy namespace
-#define MMDEPLOY_REGISTER_TYPE_ID(type, id) \
-  namespace traits {                        \
-  template <>                               \
-  struct TypeId<type> {                     \
-    static constexpr type_id_t value = id;  \
-  };                                        \
-  }
-
-}  // namespace traits
 
 namespace detail {
 

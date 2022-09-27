@@ -8,7 +8,7 @@
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/tensor.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 /**
  *
  * @param src
@@ -47,6 +47,6 @@ class MMDEPLOY_API SyncOnScopeExit {
   Stream& stream_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_TRANSFORM_UTILS_H

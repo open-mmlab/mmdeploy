@@ -2,7 +2,7 @@
 import torch
 import torch.nn.functional as F
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
+from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
                                      multiclass_nms, pad_with_value)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
@@ -129,14 +129,18 @@ def gfl_head__get_bbox(ctx,
             else:
                 max_scores, _ = nms_pre_score[..., :-1].max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
-            batch_inds = torch.arange(
-                batch_size, device=bbox_pred.device).unsqueeze(-1)
-            prior_inds = batch_inds.new_zeros((1, 1))
-            priors = priors[prior_inds, topk_inds, :]
-            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
-            scores = scores[batch_inds, topk_inds, :]
-            if with_score_factors:
-                score_factors = score_factors[batch_inds, topk_inds, :]
+            bbox_pred, scores, score_factors = gather_topk(
+                bbox_pred,
+                scores,
+                score_factors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=True)
+            priors = gather_topk(
+                priors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=False)
 
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_valid_scores.append(scores)

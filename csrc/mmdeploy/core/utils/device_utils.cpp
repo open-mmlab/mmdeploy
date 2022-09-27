@@ -4,7 +4,7 @@
 
 #include "mmdeploy/core/logger.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream) {
   if (src.device() == device) {
@@ -39,4 +39,4 @@ SyncOnScopeExit::~SyncOnScopeExit() {
   }
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

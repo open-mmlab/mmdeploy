@@ -64,7 +64,7 @@ def process_model_config(model_cfg: mmcv.Config,
         transforms = cfg.data.test.pipeline[1]['transforms']
         for trans in transforms:
             trans_type = trans['type']
-            if trans_type == 'Pad':
+            if trans_type == 'Pad' and 'size_divisor' in trans:
                 trans['size_divisor'] = 1
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
@@ -268,9 +268,10 @@ class RotatedDetection(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        if isinstance(input_data['img'], DataContainer):
-            return input_data['img'].data[0]
-        return input_data['img'][0]
+        img_data = input_data['img'][0]
+        if isinstance(img_data, DataContainer):
+            return img_data.data[0]
+        return img_data
 
     @staticmethod
     def evaluate_outputs(model_cfg,

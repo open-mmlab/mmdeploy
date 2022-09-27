@@ -5,6 +5,7 @@
 
 #include <memory>
 
+#include "common_internal.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/model.h"
 // clang-format on

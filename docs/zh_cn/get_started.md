@@ -135,7 +135,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```shell
 # 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
 wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-v0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
 pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
@@ -322,9 +322,9 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
-更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)。
+更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/cpp)。
 
-对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
+对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
 #### 加速预处理（实验性功能）

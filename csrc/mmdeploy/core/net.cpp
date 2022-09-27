@@ -6,9 +6,6 @@
 
 namespace mmdeploy {
 
-// template class Registry<Net>;
-// template class Creator<Net>;
-
-MMDEPLOY_DEFINE_REGISTRY(Net);
+MMDEPLOY_DEFINE_REGISTRY(framework::Net);
 
 }  // namespace mmdeploy

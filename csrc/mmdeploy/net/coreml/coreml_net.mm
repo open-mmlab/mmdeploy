@@ -11,17 +11,17 @@
 #include <memory>
 
 @interface MMBatchTensorFeatureProvider : NSObject <MLBatchProvider> {
-  const std::vector<mmdeploy::Tensor> *inputs_;
+  const std::vector<mmdeploy::framework::Tensor> *inputs_;
 }
 
-- (instancetype)initWithInputs:(const std::vector<mmdeploy::Tensor> &)inputs;
+- (instancetype)initWithInputs:(const std::vector<mmdeploy::framework::Tensor> &)inputs;
 - (NSInteger)count;
 - (id<MLFeatureProvider>)featuresAtIndex:(NSInteger)index;
 @end
 
 @implementation MMBatchTensorFeatureProvider
 
-- (instancetype)initWithInputs:(const std::vector<mmdeploy::Tensor> &)inputs {
+- (instancetype)initWithInputs:(const std::vector<mmdeploy::framework::Tensor> &)inputs {
   inputs_ = &inputs;
   return self;
 }
@@ -83,7 +83,7 @@
 
 @end
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 namespace coreml {
 
 static Result<void> CheckInputOutputFeatureType(MLFeatureType type) {
