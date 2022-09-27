@@ -30,7 +30,6 @@ Currently mmdeploy support ncnn with PTQ.
 ```bash
 git clone https://github.com/openppl-public/ppq.git
 cd ppq
-git checkout edbecf4 # import some feature
 pip install -r requirements.txt
 python3 setup.py install
 ```
