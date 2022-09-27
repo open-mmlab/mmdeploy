@@ -53,11 +53,22 @@ The currently supported codebases and models are as follows, and more will be in
 
 ### Multiple inference backends are available
 
-Models can be exported and run in the following backends, and more will be compatible
+The supported Device-Platform-InferenceBackend matrix is presented as following, and more will be compatible.
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | RKNN | more                                           |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---- | ---------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | ✔️   | [benchmark](docs/en/03-benchmark/benchmark.md) |
+The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
+
+| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
+| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
 ### Efficient and scalable C/C++ SDK Framework
 
