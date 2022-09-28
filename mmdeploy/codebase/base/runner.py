@@ -1,12 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional, Sequence, Union
+from typing import Dict, Optional, Union
 
-import torch
 from mmengine.device import get_device
 from mmengine.logging import MMLogger
 from mmengine.model import BaseModel
-from mmengine.registry import LOOPS
-from mmengine.runner import Runner, TestLoop, autocast
+from mmengine.runner import Runner
 
 
 class DeployTestRunner(Runner):
@@ -64,38 +62,3 @@ class DeployTestRunner(Runner):
             log_file = self._log_file
 
         return super().build_logger(log_level, log_file, **kwargs)
-
-
-@LOOPS.register_module()
-class DeployTestLoop(TestLoop):
-    """Loop for test. To skip data_preprocessor for SDK.
-
-    Args:
-        runner (Runner): A reference of runner.
-        dataloader (Dataloader or dict): A dataloader object or a dict to
-            build a dataloader.
-        evaluator (Evaluator or dict or list): Used for computing metrics.
-        fp16 (bool): Whether to enable fp16 testing. Defaults to
-            False.
-    """
-
-    @torch.no_grad()
-    def run_iter(self, idx, data_batch: Sequence[dict]) -> None:
-        """Iterate one mini-batch.
-
-        Args:
-            data_batch (Sequence[dict]): Batch of data from dataloader.
-        """
-        self.runner.call_hook(
-            'before_test_iter', batch_idx=idx, data_batch=data_batch)
-        # predictions should be sequence of BaseDataElement
-        with autocast(enabled=self.fp16):
-            # skip data_preprocessor to avoid Normalize and Padding for SDK
-            outputs = self.runner.model._run_forward(
-                data_batch, mode='predict')
-        self.evaluator.process(data_samples=outputs, data_batch=data_batch)
-        self.runner.call_hook(
-            'after_test_iter',
-            batch_idx=idx,
-            data_batch=data_batch,
-            outputs=outputs)

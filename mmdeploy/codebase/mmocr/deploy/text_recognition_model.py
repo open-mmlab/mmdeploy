@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 
 import mmengine
 import torch
@@ -23,10 +23,8 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
-            Config object.
-        model_cfg (str | mmengine.Config): Model config file or loaded Config
-            object.
+        deploy_cfg (mmengine.Config | None): Loaded Config object of MMDeploy.
+        model_cfg (mmengine.Config | None): Loaded Config object of MMOCR.
     """
 
     def __init__(
@@ -34,10 +32,12 @@ class End2EndModel(BaseBackendModel):
         backend: Backend,
         backend_files: Sequence[str],
         device: str,
-        deploy_cfg: Union[str, mmengine.Config] = None,
-        model_cfg: Union[str, mmengine.Config] = None,
+        deploy_cfg: Optional[mmengine.Config] = None,
+        model_cfg: Optional[mmengine.Config] = None,
     ):
-        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg,
+            data_preprocessor=model_cfg.model.data_preprocessor)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
@@ -53,8 +53,6 @@ class End2EndModel(BaseBackendModel):
         if decoder.get('dictionary', None) is None:
             decoder.update(dictionary=self.dictionary)
         self.decoder = MODELS.build(decoder)
-        self.data_preprocessor = MODELS.build(
-            model_cfg.model.data_preprocessor)
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
 
@@ -112,6 +110,10 @@ class End2EndModel(BaseBackendModel):
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmocr format."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs['model_cfg'].model.data_preprocessor = None
+        super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
 
     def forward(self, inputs: Sequence[torch.Tensor],
                 data_samples: RecSampleList, *args, **kwargs):
