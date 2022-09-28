@@ -1,5 +1,4 @@
 #! /bin/bash
-set -e
 
 # check python version is 3.8 or not
 check_python_38(){
@@ -17,12 +16,12 @@ check_python_38(){
 }
 
 install_torch() {
-    version=`python3 -c "import torch; print(torch.__version__)"`
-    if [ ${version} = "1.11.0" ];then
+    version=""`python3 -c "import torch; print(torch.__version__)"`
+    if [ -n "$version" ];then
         return 0
     fi
     TORCH_WHL="torch-1.11.0-cp38-cp38-linux_aarch64.whl"
-    if [ ! -e ${TORCH_WHL} ];then
+    if [ ! -e "${TORCH_WHL}" ];then
         wget -q --show-progress https://nvidia.box.com/shared/static/ssf2v7pf5i245fk4i0q926hy4imzs2ph.whl -O ${TORCH_WHL}
     fi
     python3 -m pip install ${TORCH_WHL}
@@ -33,7 +32,7 @@ install_torch() {
 
 install_torchvision() {
     version=`python3 -c "import torchvision; print(torchvision.__version__)"`
-    if [ ${version} = "0.11.1" ];then
+    if [ -n "$version" ];then
         return 0
     fi
     sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
@@ -79,7 +78,7 @@ install_tensorrt() {
 
 install_mmcv_pycuda() {
     version=`python3 -c "import mmcv; print(mmcv.__version__)"`
-    if [ ${version} = '1.5.1' ];then
+    if [ -n "$version" ];then
         return 0
     fi
 
@@ -146,7 +145,7 @@ install_mmdeploy() {
         -DMMDEPLOY_TARGET_BACKENDS="trt" \
         -DMMDEPLOY_CODEBASES=all \
         -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl
-    make -j$(nproc) && make install
+    make -j 7 && make install
     cd -
     python3 -m pip install -v -e .
     python3 tools/check_env.py
