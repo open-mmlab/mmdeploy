@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
                             get_codebase_config, get_root_logger)
+from mmdeploy.utils.config_utils import get_codebase_external_module
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -40,7 +41,8 @@ class BaseTask(metaclass=ABCMeta):
 
         # init scope
         from .. import import_codebase
-        import_codebase(self.codebase)
+        custom_module_list = get_codebase_external_module(deploy_cfg)
+        import_codebase(self.codebase, custom_module_list)
 
         from mmengine.registry import DefaultScope
         if not DefaultScope.check_instance_created(self.experiment_name):

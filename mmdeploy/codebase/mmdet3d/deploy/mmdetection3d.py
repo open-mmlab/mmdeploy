@@ -41,7 +41,13 @@ class MMDetection3d(MMCodebase):
         Returns:
             BaseTask: A task processor.
         """
+
         return MMDET3D_TASK.build(model_cfg, deploy_cfg, device)
+
+    @classmethod
+    def register_all_modules(cls):
+        from mmdet3d.utils.set_env import register_all_modules
+        register_all_modules(True)
 
     @staticmethod
     def build_dataset(dataset_cfg: Union[str, mmengine.Config], *args,

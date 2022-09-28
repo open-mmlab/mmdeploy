@@ -3,6 +3,7 @@ import mmengine
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
 from mmdeploy.utils import get_codebase, get_task_type
+from mmdeploy.utils.config_utils import get_codebase_external_module
 
 
 def build_task_processor(model_cfg: mmengine.Config,
@@ -18,7 +19,8 @@ def build_task_processor(model_cfg: mmengine.Config,
         BaseTask: A task processor.
     """
     codebase_type = get_codebase(deploy_cfg)
-    import_codebase(codebase_type)
+    custom_module_list = get_codebase_external_module(deploy_cfg)
+    import_codebase(codebase_type, custom_module_list)
     codebase = get_codebase_class(codebase_type)
     return codebase.build_task_processor(model_cfg, deploy_cfg, device)
 
@@ -39,7 +41,8 @@ def get_predefined_partition_cfg(deploy_cfg: mmengine.Config,
         dict: A dictionary of partition config.
     """
     codebase_type = get_codebase(deploy_cfg)
-    import_codebase(codebase_type)
+    custom_module_list = get_codebase_external_module(deploy_cfg)
+    import_codebase(codebase_type, custom_module_list)
     task = get_task_type(deploy_cfg)
     codebase = get_codebase_class(codebase_type)
     task_processor_class = codebase.get_task_class(task)

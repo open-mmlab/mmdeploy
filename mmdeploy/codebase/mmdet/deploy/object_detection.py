@@ -22,6 +22,11 @@ class MMDetection(MMCodebase):
 
     task_registry = MMDET_TASK
 
+    @classmethod
+    def register_all_modules(cls):
+        from mmdet.utils.setup_env import register_all_modules
+        register_all_modules(True)
+
 
 def process_model_config(model_cfg: Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
