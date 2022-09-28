@@ -50,7 +50,9 @@ build_ncnn() {
   fi
   cd ncnn/build_aarch64
   rm -rf CMakeCache.txt
-  cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/aarch64-linux-gnu.toolchain.cmake -DCMAKE_INSTALL_PREFIX=ncnn-aarch64
+  cmake .. \
+    -DCMAKE_TOOLCHAIN_FILE=../toolchains/aarch64-linux-gnu.toolchain.cmake \
+    -DCMAKE_INSTALL_PREFIX=/tmp/ncnn-aarch64
   good_nproc
   jobs=$?
   make -j${jobs}
@@ -67,10 +69,18 @@ build_mmdeploy() {
   fi
   cd build_aarch64
 
+  rm -rf CMakeCache.txt
   cmake .. \
-  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch64-linux-gnu.cmake \
-  -Dncnn_DIR=/tmp/ncnn-aarch64//install/lib/cmake/ncnn \
-  -DOpenCV_DIR=/tmp/ocv-aarch64/install/lib/cmake/opencv4
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch64-linux-gnu.cmake \
+    -DMMDEPLOY_TARGET_DEVICES="cpu" \
+    -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
+    -Dncnn_DIR=/tmp/ncnn-aarch64/lib/cmake/ncnn \
+    -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4
+
+  good_nproc
+  jobs=$?
+  make -j${jobs}
+  make install
 }
 
 if [ ! -e "../mmdeploy-dep" ];then
