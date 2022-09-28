@@ -32,15 +32,10 @@ function getFullName() {
 
 ## parameters
 export codebase=$1
-export performance=$2
+export exec_performance=$2
 export TENSORRT_VERSION=$3
 
 getFullName $codebase
-if [ performance -eq 'y' ]; then
-    exec_performance = '--performance'
-else
-    exec_performance = ''
-fi
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 
 echo "start_time-$(date +%Y%m%d%H%M)"
@@ -48,11 +43,9 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
 
 ## init tensorrt
-TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
-LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
-
-## init cudnn
 if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
+    TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
+    LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
     cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/
     cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/ 
 fi
