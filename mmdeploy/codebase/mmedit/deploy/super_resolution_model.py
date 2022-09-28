@@ -113,8 +113,11 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmedit format."""
 
+    def __init__(self, *args, **kwargs):
+        super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
+
     def forward(self,
-                lq: torch.Tensor,
+                inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 *args,
@@ -135,8 +138,25 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
-        output = self.wrapper.invoke(lq[0].contiguous().detach().cpu().numpy())
-        return [output]
+        if hasattr(self.data_preprocessor, 'destructor'):
+            inputs = self.data_preprocessor.destructor(
+                inputs.to(self.data_preprocessor.input_std.device))
+        outputs = []
+        for i in range(inputs.shape[0]):
+            output = self.wrapper.invoke(inputs[i].permute(
+                1, 2, 0).contiguous().detach().cpu().numpy())
+            outputs.append(
+                torch.from_numpy(output).permute(2, 0, 1).contiguous())
+        outputs = torch.stack(outputs, 0) / 255.
+        if hasattr(self.data_preprocessor, 'destructor'):
+            outputs = self.data_preprocessor.destructor(
+                outputs.to(self.data_preprocessor.outputs_std.device))
+
+        for i, sr_pred in enumerate(outputs):
+            pred = EditDataSample()
+            pred.set_data(dict(pred_img=PixelData(**dict(data=sr_pred))))
+            data_samples[i].set_data(dict(output=pred))
+        return data_samples
 
 
 def build_super_resolution_model(

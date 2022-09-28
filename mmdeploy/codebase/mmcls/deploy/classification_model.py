@@ -90,6 +90,10 @@ class End2EndModel(BaseBackendModel):
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmcls format."""
 
+    def __init__(self, *arg, **kwargs):
+        kwargs['data_preprocessor'] = None
+        super().__init__(*arg, **kwargs)
+
     def forward(self,
                 inputs: Sequence[torch.Tensor],
                 data_samples: Optional[List[BaseDataElement]] = None,
