@@ -21,7 +21,9 @@ elseif (NOT TARGET pybind11)
 endif ()
 
 foreach (task_name ${MMDEPLOY_TASKS})
-    list(APPEND MMDEPLOY_PYTHON_SRCS ${task_name}.cpp)
+    if (EXISTS ${task_name}.cpp)
+        list(APPEND MMDEPLOY_PYTHON_SRCS ${task_name}.cpp)
+    endif ()
 endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
