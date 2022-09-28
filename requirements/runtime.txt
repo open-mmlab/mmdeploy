@@ -1,3 +1,4 @@
+aenum
 grpcio
 h5py
 matplotlib

@@ -12,6 +12,7 @@ from mmengine import Config
 import mmdeploy.utils as util
 from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import target_wrapper
+from mmdeploy.utils.config_utils import get_codebase_external_module
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.test import get_random_name
 
@@ -102,6 +103,21 @@ class TestGetBackendConfig:
     def test_get_backend_config(self):
         backend_config = util.get_backend_config(correct_deploy_path)
         assert isinstance(backend_config, dict) and len(backend_config) == 1
+
+
+class TestGetCodebaseExternalModule:
+
+    def test_get_codebase_external_module_empty(self):
+        assert get_codebase_external_module(Config(dict())) == []
+
+    def test_get_codebase_external_module(self):
+        external_deploy_cfg = dict(
+            onnx_config=dict(),
+            codebase_config=dict(module=['mmyolo.deploy.mmyolo']),
+            backend_config=dict(type='onnxruntime'))
+        custom_module_list = get_codebase_external_module(external_deploy_cfg)
+        assert isinstance(custom_module_list, list) \
+            and len(custom_module_list) == 1
 
 
 class TestGetBackend:

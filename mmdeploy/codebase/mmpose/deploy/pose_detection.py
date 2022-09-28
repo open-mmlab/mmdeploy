@@ -117,6 +117,11 @@ class MMPose(MMCodebase):
     """mmpose codebase class."""
     task_registry = MMPOSE_TASK
 
+    @classmethod
+    def register_all_modules(cls):
+        from mmpose.utils.setup_env import register_all_modules
+        register_all_modules(True)
+
 
 @MMPOSE_TASK.register_module(Task.POSE_DETECTION.value)
 class PoseDetection(BaseTask):

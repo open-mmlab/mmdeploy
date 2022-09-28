@@ -23,6 +23,11 @@ class MMClassification(MMCodebase):
 
     task_registry = MMCLS_TASK
 
+    @classmethod
+    def register_all_modules(cls):
+        from mmcls.utils.setup_env import register_all_modules
+        register_all_modules(True)
+
 
 def process_model_config(model_cfg: Config,
                          imgs: Union[str, np.ndarray],
