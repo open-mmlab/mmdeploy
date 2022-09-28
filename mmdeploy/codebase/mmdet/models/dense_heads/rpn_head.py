@@ -55,7 +55,7 @@ def rpn_head__get_bboxes(ctx,
     @mark('rpn_head', inputs=['cls_scores', 'bbox_preds'])
     def __mark_pred_maps(cls_scores, bbox_preds):
         return cls_scores, bbox_preds
-        
+
     cls_scores, bbox_preds = __mark_pred_maps(cls_scores, bbox_preds)
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
