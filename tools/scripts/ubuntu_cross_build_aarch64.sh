@@ -1,9 +1,9 @@
 #!/bin/bash
-set -ex
-# get appropriate proc number: max(1, nproc-2)
+# set -ex
+# get appropriate proc number: max(1, nproc-3)
 good_nproc() {
   num=`nproc`
-  num=`expr $num - 2`
+  num=`expr $num - 3`
   if [ $num -lt 1 ];then
     return 1
   fi
@@ -32,30 +32,55 @@ build_ocv() {
     mkdir opencv/platforms/linux/cross_build_aarch64
   fi
   cd opencv/platforms/linux/cross_build_aarch64
-  rm -rf CmakeCache
-  cmake -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../arm-gnueabi.toolchain.cmake ../../..
+  rm -rf CMakeCache.txt
+  cmake ../../.. -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
   good_nproc
   jobs=$?
-  echo "using  ${jobs}"
   make -j${jobs}
   make install
   cd -
 }
 
 build_ncnn() {
-  echo ""
+  if [ ! -e "ncnn" ];then
+    git clone https://github.com/tencent/ncnn --branch 20220729 --depth=1
+  fi
+  if [ ! -e "ncnn/build_aarch64" ];then
+    mkdir -p ncnn/build_aarch64
+  fi
+  cd ncnn/build_aarch64
+  rm -rf CMakeCache.txt
+  cmake .. -DCMAKE_TOOLCHAIN_FILE=../toolchains/aarch64-linux-gnu.toolchain.cmake -DCMAKE_INSTALL_PREFIX=ncnn-aarch64
+  good_nproc
+  jobs=$?
+  make -j${jobs}
+  make install
+  cd -
 }
 
 build_mmdeploy() {
-  echo ""
+  git submodule init
+  git submodule update
+
+  if [ ! -e "build_aarch64" ];then
+    mkdir build_aarch64
+  fi
+  cd build_aarch64
+
+  cmake .. \
+  -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/aarch64-linux-gnu.cmake \
+  -Dncnn_DIR=/tmp/ncnn-aarch64//install/lib/cmake/ncnn \
+  -DOpenCV_DIR=/tmp/ocv-aarch64/install/lib/cmake/opencv4
 }
 
-if [ ! -e "mmdeploy-dep" ];then
-  mkdir mmdeploy-dep
+if [ ! -e "../mmdeploy-dep" ];then
+  mkdir ../mmdeploy-dep
 fi
-cd mmdeploy-dep
+cd ../mmdeploy-dep
 
 install_tools
 build_ocv
 build_ncnn
+
+cd ../mmdeploy
 build_mmdeploy
