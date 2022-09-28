@@ -16,7 +16,7 @@ check_python_38(){
 }
 
 install_torch() {
-    version=""`python3 -c "import torch; print(torch.__version__)"`
+    version=`python3 -c "import torch; print(torch.__version__)"`
     if [ -n "$version" ];then
         return 0
     fi
