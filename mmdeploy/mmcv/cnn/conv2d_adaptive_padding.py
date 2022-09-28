@@ -79,21 +79,8 @@ def conv2d_adaptive_padding__forward__tensorrt(ctx, self, x):
     if not is_dynamic_flag:
         x = AdaptivePadOp.apply(x, self.weight.shape[2:], self.stride,
                                 self.dilation)
+        return F.conv2d(x, self.weight, self.bias, self.stride, self.padding,
+                        self.dilation, self.groups)
     else:
-        img_h, img_w = x.size()[-2:]
-        kernel_h, kernel_w = self.weight.size()[-2:]
-        stride_h, stride_w = self.stride
-        output_h = math.ceil(img_h / stride_h)
-        output_w = math.ceil(img_w / stride_w)
-        pad_h = (
-            max((output_h - 1) * self.stride[0] +
-                (kernel_h - 1) * self.dilation[0] + 1 - img_h, 0))
-        pad_w = (
-            max((output_w - 1) * self.stride[1] +
-                (kernel_w - 1) * self.dilation[1] + 1 - img_w, 0))
-        if pad_h > 0 or pad_w > 0:
-            x = F.pad(x, [
-                pad_w // 2, pad_w - pad_w // 2, pad_h // 2, pad_h - pad_h // 2
-            ])
-    return F.conv2d(x, self.weight, self.bias, self.stride, self.padding,
-                    self.dilation, self.groups)
+        x = ctx.origin_func(x)
+        return x
