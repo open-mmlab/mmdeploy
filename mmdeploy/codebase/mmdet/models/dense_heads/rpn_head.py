@@ -4,7 +4,7 @@ import torch
 from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
                                      multiclass_nms,
                                      pad_with_value_if_necessary)
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -51,6 +51,12 @@ def rpn_head__get_bboxes(ctx,
         Else:
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
+    # mark pred_maps
+    @mark('rpn_head', inputs=['cls_scores', 'bbox_preds'])
+    def __mark_pred_maps(cls_scores, bbox_preds):
+        return cls_scores, bbox_preds
+        
+    cls_scores, bbox_preds = __mark_pred_maps(cls_scores, bbox_preds)
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
