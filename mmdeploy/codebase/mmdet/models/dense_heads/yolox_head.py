@@ -49,7 +49,7 @@ def yolox_head__get_bboxes(ctx,
             represents the class label of the corresponding box.
     """
     # mark pred_maps
-    @mark('yolox_head', inputs=['cls_scores', 'bbox_preds', 'objectnesses'])
+    @mark('yolo_head', inputs=['cls_scores', 'bbox_preds', 'objectnesses'])
     def __mark_pred_maps(cls_scores, bbox_preds, objectnesses):
         return cls_scores, bbox_preds, objectnesses
 

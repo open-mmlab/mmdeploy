@@ -2,11 +2,11 @@ _base_ = ['./detection_onnxruntime_static.py']
 
 onnx_config = dict(input_shape=[640, 640])
 partition_config = dict(
-    type='yolox_partition',
+    type='yolo_partition',
     apply_marks=True,
     partition_cfg=[
         dict(
-            save_file='yolox.onnx',
+            save_file='yolo.onnx',
             start=['detector_forward:input'],
-            end=['yolox_head:input'])
+            end=['yolo_head:input'])
     ])
