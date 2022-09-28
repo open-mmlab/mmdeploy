@@ -113,9 +113,6 @@ def base_dense_head__predict_by_feat(
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
-        score_thr = cfg.get('score_thr', 0)
-        mask = scores > score_thr
-        scores = scores.where(mask, scores.new_zeros(1))
         if not is_dynamic_flag:
             priors = priors.data
 
@@ -175,13 +172,6 @@ def base_dense_head__predict_by_feat(
 
     if not with_nms:
         return batch_bboxes, batch_scores
-
-    if cfg.get('min_bbox_size', -1) >= 0:
-        w = batch_bboxes[:, :, 2] - batch_bboxes[:, :, 0]
-        h = batch_bboxes[:, :, 3] - batch_bboxes[:, :, 1]
-        valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
-        if not valid_mask.all():
-            batch_scores = batch_scores * valid_mask.unsqueeze(-1)
 
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
