@@ -6,7 +6,7 @@ project(mmdeploy_python)
 set(MMDEPLOY_PYTHON_SRCS
         common.cpp
         internal.cpp
-        executor.cpp
+#        executor.cpp
         pipeline.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
