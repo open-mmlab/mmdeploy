@@ -3,7 +3,7 @@ globals:
   checkpoint_force_download: False
   images:
     img_face: &img_face ../mmediting/tests/data/face/000001.png
-    img_bg: &img_bg ../mmediting/tests/data/bg/GT26r.jpg
+    img_bg: &img_bg ../mmediting/tests/data/gt/baboon.png
   metric_info: &metric_info
     PSNR: # named after metafile.Results.Metrics
       eval_name: PSNR # test.py --metrics args
