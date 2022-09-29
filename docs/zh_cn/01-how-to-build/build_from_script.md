@@ -6,7 +6,7 @@
 
 - python3 -m pip（必须，conda 或 pyenv 皆可）
 - nvcc（取决于推理后端）
-- cuda（非必须）
+- torch（非必须，可延后安装）
 
 运行这个脚本来安装 mmdeploy + ncnn backend，`nproc` 可以不指定。
 
