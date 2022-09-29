@@ -19,7 +19,7 @@ install_tools() {
   sudo apt install wget git git-lfs
 
   python3 -m pip install cmake==3.22.0
-  
+
   echo 'export PATH=~/.local/bin:${PATH}' >> ~/mmdeploy.env
   export PATH=~/.local/bin:${PATH}
 }
@@ -81,6 +81,14 @@ build_mmdeploy() {
   jobs=$?
   make -j${jobs}
   make install
+
+  ls -lah install/bin/*
+}
+
+print_success() {
+  echo "----------------------------------------------------------------------"
+  echo "Cross build finished, PLS copy bin/model/test_data to the device.. QVQ"
+  echo "----------------------------------------------------------------------"
 }
 
 if [ ! -e "../mmdeploy-dep" ];then
@@ -94,3 +102,4 @@ build_ncnn
 
 cd ../mmdeploy
 build_mmdeploy
+print_success
