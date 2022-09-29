@@ -20,6 +20,10 @@ class MMOCR(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
+        import mmdeploy.codebase.mmocr.models  # noqa: F401
+        import mmdeploy.codebase.mmdet.models
+        import mmdeploy.codebase.mmdet.ops
+        import mmdeploy.codebase.mmdet.structures  # noqa: F401
         from mmdet.utils.setup_env import \
             register_all_modules as register_all_modules_mmdet
         from mmocr.utils.setup_env import \

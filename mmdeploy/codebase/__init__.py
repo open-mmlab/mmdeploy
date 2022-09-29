@@ -20,8 +20,6 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     if len(custom_module_list) > 0:
         for custom_module in custom_module_list:
             importlib.import_module(f'{custom_module}')
-    else:
-        importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
     codebase = get_codebase_class(codebase_type)
     codebase.register_all_modules()
 

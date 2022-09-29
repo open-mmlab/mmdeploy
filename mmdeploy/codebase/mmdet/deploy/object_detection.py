@@ -24,6 +24,9 @@ class MMDetection(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
+        import mmdeploy.codebase.mmdet.models  # noqa: F401
+        import mmdeploy.codebase.mmdet.ops
+        import mmdeploy.codebase.mmdet.structures  # noqa: F401
         from mmdet.utils.setup_env import register_all_modules
         register_all_modules(True)
 

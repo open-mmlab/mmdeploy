@@ -116,6 +116,7 @@ class MMPose(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
+        import mmdeploy.codebase.mmpose.models  # noqa: F401
         from mmpose.utils.setup_env import register_all_modules
         register_all_modules(True)
 
