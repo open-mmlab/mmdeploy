@@ -49,11 +49,7 @@ def test_heatmaphead_predict(backend_type: Backend):
 def get_msmu_head():
     from mmpose.models.heads import MSPNHead
     model = MSPNHead(
-        num_stages=1,
-        num_units=1,
-        out_shape=(32, 48),
-        unit_channels=16,
-        level_indices=[0])
+        num_stages=1, num_units=1, out_shape=(32, 48), unit_channels=16)
     model.requires_grad_(False)
     return model
 
