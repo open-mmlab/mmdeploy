@@ -15,6 +15,7 @@ class MMEditing(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
-        import mmdeploy.codebase.mmedit.models  # noqa: F401
         from mmedit.utils.setup_env import register_all_modules
+
+        import mmdeploy.codebase.mmedit.models  # noqa: F401
         register_all_modules(True)

@@ -25,8 +25,9 @@ class MMClassification(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
-        import mmdeploy.codebase.mmcls.models  # noqa: F401
         from mmcls.utils.setup_env import register_all_modules
+
+        import mmdeploy.codebase.mmcls.models  # noqa: F401
         register_all_modules(True)
 
 

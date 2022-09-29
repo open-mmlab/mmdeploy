@@ -46,8 +46,9 @@ class MMDetection3d(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
-        import mmdeploy.codebase.mmdet3d.models  # noqa: F401
         from mmdet3d.utils.set_env import register_all_modules
+
+        import mmdeploy.codebase.mmdet3d.models  # noqa: F401
         register_all_modules(True)
 
     @staticmethod
