@@ -3,7 +3,8 @@ import os
 import sys
 import time
 
-from ubuntu_utils import cmd_result, cu_version_name, ensure_base_env, get_job
+from ubuntu_utils import (cmd_result, cu_version_name, ensure_base_env,
+                          get_job, pytorch_version)
 
 g_jobs = 2
 
@@ -17,15 +18,9 @@ def install_libtorch(dep_dir):
     if os.path.exists(unzipped_name):
         return os.path.join(dep_dir, unzipped_name)
 
-    torch_version = None
-    try:
-        import torch
-        torch_version = torch.__version__
-    except Exception:
-        pass
-
+    torch_version = pytorch_version()
     if torch_version is None:
-        print('torch version is None, use 1.11.0')
+        print('torch version is None, try 1.11.0')
         torch_version = '1.11.0'
 
     version_name = None

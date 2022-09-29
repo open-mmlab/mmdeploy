@@ -4,6 +4,18 @@ import re
 import time
 
 
+def pytorch_version():
+    version = None
+    try:
+        import torch
+        raw = torch.__version__
+        pattern = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+')
+        version = pattern.findall(raw)[0]
+    except Exception:
+        pass
+    return version
+
+
 def cmd_result(txt: str):
     cmd = os.popen(txt)
     return cmd.read().rstrip().lstrip()
