@@ -137,7 +137,7 @@ def test_unregister():
     assert nodes[0].op_type == 'cummax_default'
     assert nodes[0].domain == 'mmdeploy'
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises((ValueError, RuntimeError)):
         torch.onnx.export(model, x, output_file, opset_version=11)
 
     model = TestModel2().eval()
