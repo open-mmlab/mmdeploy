@@ -46,7 +46,7 @@ def install_libtorch(dep_dir):
         torch_version, version_name)
     url = 'https://download.pytorch.org/libtorch/{}/{}'.format(
         version_name, filename)
-    os.system('wget {} -O libtorch.zip'.format(url))
+    os.system('wget -q --show-progress {} -O libtorch.zip'.format(url))
     os.system('unzip libtorch.zip')
     if not os.path.exists(unzipped_name):
         print(
@@ -80,7 +80,12 @@ def install_mmdeploy(work_dir, libtorch_dir):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -e .')
-    os.system('python3 tools/check_env.py')
+    try:
+        import mmcv
+        print(mmcv.__version__)
+        os.system('python3 tools/check_env.py')
+    except Exception:
+        print('Please install torch & mmcv later.. ≥▽≤')
     return 0
 
 
@@ -106,7 +111,7 @@ def main():
             return -1
         os.mkdir(dep_dir)
 
-    success, envs = ensure_base_env(work_dir, dep_dir)
+    success = ensure_base_env(work_dir, dep_dir)
     if success != 0:
         return -1
 
@@ -118,12 +123,9 @@ def main():
     if install_mmdeploy(work_dir, libtorch_dir) != 0:
         return -1
 
-    if len(envs) > 0:
-        print(
-            'We recommend that you set the following environment variables:\n')
-        for env in envs:
-            print(env)
-            print('\n')
+    if os.path.exists('~/mmdeploy.env'):
+        print('Please source ~/mmdeploy.env to setup your env !')
+        os.system('cat ~/mmdeploy.env')
 
 
 if __name__ == '__main__':

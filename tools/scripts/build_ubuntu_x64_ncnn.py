@@ -9,7 +9,8 @@ g_jobs = 2
 
 
 def install_protobuf(dep_dir) -> int:
-    """build and install protobuf.
+    """build and install protobuf. protobuf seems not support repeated install,
+    so clean build first.
 
     Args:
         wor_dir (_type_): _description_
@@ -29,6 +30,10 @@ def install_protobuf(dep_dir) -> int:
     os.chdir(os.path.join(dep_dir, 'protobuf-3.20.0'))
 
     install_dir = os.path.join(dep_dir, 'pbinstall')
+    if os.path.exists(install_dir):
+        os.system('rm -rf {}'.format(install_dir))
+
+    os.system('make clean')
     os.system('./configure --prefix={}'.format(install_dir))
     os.system('make -j {} && make install'.format(g_jobs))
     protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
@@ -60,6 +65,7 @@ def install_pyncnn(dep_dir):
         os.system('mkdir build')
 
     os.chdir(os.path.join(ncnn_dir, 'build'))
+    os.system('rm -rf CMakeCache.txt')
     pb_install = os.path.join(dep_dir, 'pbinstall')
     pb_bin = os.path.join(pb_install, 'bin', 'protoc')
     pb_lib = os.path.join(pb_install, 'lib', 'libprotobuf.so')
@@ -117,7 +123,13 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -v -e .')
-    os.system('python3 tools/check_env.py')
+
+    try:
+        import mmcv
+        print(mmcv.__version__)
+        os.system('python3 tools/check_env.py')
+    except Exception:
+        print('Please install torch & mmcv later.. ╮(╯▽╰)╭')
     return 0
 
 
@@ -143,7 +155,7 @@ def main():
             return -1
         os.mkdir(dep_dir)
 
-    success, envs = ensure_base_env(work_dir, dep_dir)
+    success = ensure_base_env(work_dir, dep_dir)
     if success != 0:
         return -1
 
@@ -155,12 +167,9 @@ def main():
     if install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir) != 0:
         return -1
 
-    if len(envs) > 0:
-        print(
-            'We recommend that you set the following environment variables:\n')
-        for env in envs:
-            print(env)
-            print('\n')
+    if os.path.exists('~/mmdeploy.env'):
+        print('Please source ~/mmdeploy.env to setup your env !')
+        os.system('cat ~/mmdeploy.env')
 
 
 if __name__ == '__main__':

@@ -63,7 +63,6 @@ def ensure_base_env(work_dir, dep_dir):
     * mmcv (not compulsory)
     """
 
-    envs = []
     print('-' * 10 + 'ensure base env' + '-' * 10)
     print(description)
 
@@ -83,18 +82,18 @@ def ensure_base_env(work_dir, dep_dir):
     cmake = cmd_result('which cmake')
     if cmake is None or len(cmake) < 1:
         print('cmake not found, try install cmake ..', end='')
-        os.system('python3 -m pip install cmake>=3.14.0')
+        os.system('python3 -m pip install cmake')
 
         cmake = cmd_result('which cmake')
         if cmake is None or len(cmake) < 1:
             env = 'export PATH=${PATH}:~/.local/bin'
             os.system(env)
-            envs.append(env)
+            os.system(""" echo '{}' >> ~/mmdeploy.env """.format(env))
 
             cmake = cmd_result('which cmake')
             if cmake is None or len(cmake) < 1:
                 print('Check cmake failed.')
-                return -1, envs
+                return -1
         print('success')
 
     # check  make
@@ -109,7 +108,7 @@ def ensure_base_env(work_dir, dep_dir):
         make = cmd_result('which make')
         if make is None or len(make) < 1:
             print('Check make failed.')
-            return -1, envs
+            return -1
         print('success')
 
     # check g++ version
@@ -130,7 +129,7 @@ def ensure_base_env(work_dir, dep_dir):
         gplus = cmd_result('which g++-7')
         if gplus is None or len(gplus) < 1:
             print('Check g++-7 failed.')
-            return -1, envs
+            return -1
         os.system(
             '{} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200'  # noqa: E501
             .format(sudo))
@@ -197,7 +196,7 @@ def ensure_base_env(work_dir, dep_dir):
         ocv = cmd_result('which opencv_version')
         if ocv is None or len(ocv) < 1:
             print('Check ocv failed.')
-            return -1, envs
+            return -1
         print('success')
 
     # print all
@@ -221,7 +220,7 @@ def ensure_base_env(work_dir, dep_dir):
 
     print('mmcv version\t:{}'.format(mmcv_version))
     if mmcv_version is None:
-        print('\t please install an mm serials algorithm later.')
+        print('\t please install mmcv later.')
         time.sleep(2)
 
     print('torch version\t:{}'.format(torch_version))
@@ -241,4 +240,4 @@ def ensure_base_env(work_dir, dep_dir):
     print('dep dir \t:{}'.format(dep_dir))
 
     print('\n')
-    return 0, envs
+    return 0

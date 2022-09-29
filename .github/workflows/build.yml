@@ -68,7 +68,7 @@ jobs:
           submodules: 'recursive'
       - name: update
         run: sudo apt update
-      - name: build-aarch64
+      - name: gcc-multilib
         run: |
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           sudo apt update
