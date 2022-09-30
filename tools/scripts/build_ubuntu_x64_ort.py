@@ -41,9 +41,9 @@ def install_mmdeploy(work_dir, ort_dir):
     if not os.path.exists('build'):
         os.system('mkdir build')
 
+    os.system('rm -rf build/CMakeCache.txt')
+
     cmd = 'cd build && cmake ..'
-    cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
-    cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '

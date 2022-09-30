@@ -85,9 +85,9 @@ def install_mmdeploy(work_dir, pplnn_cmake_dir, pplcv_cmake_dir, build_cuda):
     if not os.path.exists('build'):
         os.system('mkdir build')
 
+    os.system('rm -rf build/CMakeCache.txt')
+
     cmd = 'cd build && cmake ..'
-    cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
-    cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
@@ -138,19 +138,6 @@ def main():
     success = ensure_base_env(work_dir, dep_dir)
     if success != 0:
         return -1
-
-    # enable g++ and gcc
-    gplus = cmd_result('which g++')
-    if gplus is None or len(gplus) < 1:
-        sudo = 'sudo'
-        if 'root' in cmd_result('whoami'):
-            sudo = ''
-        os.system(
-            '{} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200'  # noqa: E501
-            .format(sudo))
-        os.system(
-            '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
-            .format(sudo))
 
     # install pplcv and pplnn
     nvcc = cmd_result('which nvcc')

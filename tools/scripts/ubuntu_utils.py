@@ -22,15 +22,15 @@ def cmd_result(txt: str):
 
 
 def get_job(argv) -> int:
-    # get nprocs, if user not specified, use max(2, nproc-1)
+    # get nprocs, if user not specified, use max(1, nproc-2)
     job = 2
     if len(argv) <= 1:
         print('your can use `python3 {} N` to set make -j [N]'.format(argv[0]))
         nproc = cmd_result('nproc')
         if nproc is not None and len(nproc) > 0:
-            job = max(int(nproc) - 1, 2)
+            job = max(int(nproc) - 2, 1)
         else:
-            job = 2
+            job = 1
     else:
         job = int(argv[1])
     return job
@@ -67,7 +67,7 @@ def ensure_base_env(work_dir, dep_dir):
     check python, root, pytorch version, auto install these binary:
 
     * make
-    * g++-7
+    * g++
     * git
     * wget
     * unzip
@@ -124,10 +124,10 @@ def ensure_base_env(work_dir, dep_dir):
         print('success')
 
     # check g++ version
-    gplus = cmd_result('which g++-7')
+    gplus = cmd_result('which g++')
     if gplus is None or len(gplus) < 1:
         # install g++
-        print('g++-7 not found, try install g++-7 ..', end='')
+        print('g++ not found, try install g++ ..', end='')
         os.system(
             '{} DEBIAN_FRONTEND="noninteractive" apt install software-properties-common -y'  # noqa: E501
             .format(sudo))  # noqa: E501
@@ -136,18 +136,12 @@ def ensure_base_env(work_dir, dep_dir):
             os.system(
                 '{} add-apt-repository ppa:ubuntu-toolchain-r/test -y'.format(
                     sudo))
-        os.system('{} apt install gcc-7 g++-7 -y'.format(sudo))
+        os.system('{} apt install gcc g++ -y'.format(sudo))
 
-        gplus = cmd_result('which g++-7')
+        gplus = cmd_result('which g++')
         if gplus is None or len(gplus) < 1:
-            print('Check g++-7 failed.')
+            print('Check g++ failed.')
             return -1
-        os.system(
-            '{} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200'  # noqa: E501
-            .format(sudo))
-        os.system(
-            '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
-            .format(sudo))
         print('success')
 
     # wget
@@ -228,7 +222,7 @@ def ensure_base_env(work_dir, dep_dir):
         cmd_result(" make --version  | head -n 1 | awk '{print $3}' ")))
 
     print('wget bin\t:{}'.format(wget))
-    print('g++-7 bin\t:{}'.format(gplus))
+    print('g++ bin\t:{}'.format(gplus))
 
     print('mmcv version\t:{}'.format(mmcv_version))
     if mmcv_version is None:

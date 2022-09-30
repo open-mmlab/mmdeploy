@@ -156,7 +156,7 @@ bool SubgraphMatcher::SubgraphMatcherImpl::matchAttributes(const Node* n1, Node*
         n1is = n1->is(attr_name);
         n2is = n2->is(attr_name);
         if (n1is.size() != n2is.size()) return false;
-        for (int i = 0; i < n1is.size(); ++i) {
+        for (size_t i = 0; i < n1is.size(); ++i) {
           if (n1is[i] != n2is[i]) return false;
         }
         break;
@@ -164,7 +164,7 @@ bool SubgraphMatcher::SubgraphMatcherImpl::matchAttributes(const Node* n1, Node*
         n1fs = n1->fs(attr_name);
         n2fs = n2->fs(attr_name);
         if (n1fs.size() != n2fs.size()) return false;
-        for (int i = 0; i < n1fs.size(); ++i) {
+        for (size_t i = 0; i < n1fs.size(); ++i) {
           if (n1fs[i] != n2fs[i]) return false;
         }
         break;

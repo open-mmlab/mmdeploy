@@ -39,6 +39,13 @@ def install_protobuf(dep_dir) -> int:
     protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
 
     print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
+
+    os.system(""" echo 'export PATH={}:$PATH' >> ~/mmdeploy.env """.format(
+        os.path.join(dep_dir, 'pbinstall', 'bin')))
+    os.system(
+        """ echo 'export LD_LIBRARY_PATH={}:$LD_LIBRARY_PATH' >> ~/mmdeploy.env """  # noqa: E501
+        .format(os.path.join(dep_dir, 'pbinstall', 'lib')))
+
     return 0
 
 
@@ -107,9 +114,9 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
     pb_lib = os.path.join(pb_install, 'lib', 'libprotobuf.so')
     pb_include = os.path.join(pb_install, 'include')
 
+    os.system('rm -rf build/CMakeCache.txt')
+
     cmd = 'cd build && cmake ..'
-    cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
-    cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
@@ -123,7 +130,8 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -v -e .')
-
+    os.system(""" echo 'export PATH={}:$PATH' >> ~/mmdeploy.env """.format(
+        os.path.join(work_dir, 'mmdeploy', 'backend', 'ncnn')))
     try:
         import mmcv
         print(mmcv.__version__)
