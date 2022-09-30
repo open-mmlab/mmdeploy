@@ -4,8 +4,8 @@ mmdeploy chose ncnn as the inference backend for aarch64 embedded linux devices.
 
 Host
 
-- model conversing
-- cross build SDK and so for embedded devices
+- model conversion
+- cross build SDK and demo for embedded devices
 
 Device
 
