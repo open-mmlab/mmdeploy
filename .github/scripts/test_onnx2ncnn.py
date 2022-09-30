@@ -55,7 +55,7 @@ def generate_onnx(args):
         config = os.path.join(args.repo_dir, conf[0])
         model = conf[1]
         convert_cmd = [
-            'python3', 'tools/deploy.py',
+            'python', 'tools/deploy.py',
             'configs/mmcls/classification_ncnn_static.py', config, model,
             'cat-dog.png', '--work-dir', 'work_dir', '--device', 'cpu'
         ]

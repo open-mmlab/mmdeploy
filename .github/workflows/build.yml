@@ -41,7 +41,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
-        run: pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
         run: |
           python -m pip install openmim
@@ -53,7 +53,7 @@ jobs:
           python -m pip list
       - name: Build and install
         run: |
-          rm -rf .eggs && pip install -e .
+          rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
       - name: Run python unittests and generate coverage report
         run: |
@@ -131,7 +131,7 @@ jobs:
           python -m pip list
       - name: Build and install
         run: |
-          rm -rf .eggs && pip install -e .
+          rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
         run: |
@@ -180,7 +180,7 @@ jobs:
           python -m pip list
       - name: Build and install
         run: |
-          rm -rf .eggs && pip install -e .
+          rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
         run: |

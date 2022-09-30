@@ -6,8 +6,8 @@ if [ $# != 2 ]; then
 fi
 
 if [ "$1" == 'mmcls' ]; then
-    mim install $(cat mmdeploy/requirements/codebases.txt | grep mmcls)
-    mim download mmcls --config resnet18_8xb32_in1k --dest .
+    python3 -m mim install $(cat mmdeploy/requirements/codebases.txt | grep mmcls)
+    python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest .
     python3 mmdeploy/tools/deploy.py \
             mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py \
             ./resnet18_8xb32_in1k.py \

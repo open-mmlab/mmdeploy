@@ -69,4 +69,4 @@ jobs:
       - name: Run tests
         run: |
           echo $(pwd)
-          python3 .github/scripts/quantize_to_ncnn.py
+          python .github/scripts/quantize_to_ncnn.py

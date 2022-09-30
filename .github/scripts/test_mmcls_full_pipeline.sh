@@ -2,11 +2,11 @@
 
 set -e
 # print env
-python3 tools/check_env.py
+python tools/check_env.py
 
 deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
 device=cpu
-mim download mmcls --config resnet18_8xb32_in1k --dest ../
+python -m mim download mmcls --config resnet18_8xb32_in1k --dest ../
 model_cfg=../resnet18_8xb32_in1k.py
 checkpoint=../resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
@@ -22,7 +22,7 @@ echo "--------------------------------------------------------------------------
 
 mkdir -p $work_dir
 
-python3 tools/deploy.py \
+python tools/deploy.py \
   $deploy_cfg \
   $model_cfg \
   $checkpoint \
@@ -37,7 +37,7 @@ unzip data/imagenet-val100.zip -d data/
 
 echo "Running test with ort"
 
-python3 tools/test.py \
+python tools/test.py \
   $deploy_cfg \
   $model_cfg \
   --model $work_dir/end2end.onnx \
@@ -54,7 +54,7 @@ echo "Running test with sdk"
 # change topk for test
 sed -i 's/"topk": 5/"topk": 1000/g' work_dir/pipeline.json
 
-python3 tools/test.py \
+python tools/test.py \
   $sdk_cfg \
   $model_cfg \
   --model $work_dir \

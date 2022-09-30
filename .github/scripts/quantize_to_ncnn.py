@@ -47,7 +47,7 @@ def main():
         model_cfg = conf[2]
         deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
         quant_cmd = [
-            'python3', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
+            'python', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
             '--deploy-cfg', deploy_cfg, '--model-cfg', model_cfg, '--out-onnx',
             'quant.onnx', '--out-table', 'ncnn.table', '--image-dir', data_dir
         ]
