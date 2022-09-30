@@ -9,7 +9,7 @@ It is recommended to create a virtual environment for the project.
 1. get RKNN-Toolkit2 through:
 
    ```
-   git clone https://github.com/rockchip-linux/rknn-toolkit2
+   git clone git@github.com:rockchip-linux/rknn-toolkit2.git
    ```
 
 2. install RKNN python package following [official doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc). In our testing, we used the rknn-toolkit 1.2.0 with commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`.
@@ -24,7 +24,7 @@ It is recommended to create a virtual environment for the project.
    torchvision==0.9.0
    ```
 
-To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
+To work with models from [MMClassification](https://mmclassification.readthedocs.io/en/latest/getting_started.html), you may need to install it additionally.
 
 ## Usage
 
@@ -32,11 +32,11 @@ Example:
 
 ```bash
 python tools/deploy.py \
-    configs/mmdet/detection/detection_rknn_static.py \
-    /mmdetection_dir/mmdetection/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
-    /tmp/snapshots/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
-    tests/data/tiger.jpeg \
-    --work-dir ../deploy_result \
+    configs/mmcls/classification_rknn_static.py \
+    /mmclassification_dir/configs/resnet/resnet50_8xb32_in1k.py \
+    https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
+    /mmclassification_dir/demo/demo.JPEG \
+    --work-dir ../resnet50 \
     --device cpu
 ```
 
@@ -59,11 +59,69 @@ backend_config = dict(
 
 The contents of `common_config` are for `rknn.config()`. The contents of `quantization_config` are used to control `rknn.build()`.
 
+## Build SDK with Rockchip NPU
+
+1. get rknpu2 through:
+
+   ```
+   git clone git@github.com:rockchip-linux/rknpu2.git
+   ```
+
+2. for linux, download gcc cross compiler. The download link of the compiler from the official user guide of `rknpu2` was deprecated. You may use another verified [link](https://gitlab.com/firefly-linux/prebuilts/gcc/linux-x86/aarch64/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/-/tree/firefly/aarch64-rockchip-linux-gnu). After download the compiler, you may open the terminal, set `TOOL_CHAIN` and `RKNPU2_DIR` by `export TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DIR=/path/to/rknpu2`.
+
+3. after the above preparition, run the following commands:
+
+```shell
+cd /path/to/mmdeploy
+mkdir -p build && rm -rf build/CM* && cd build
+export LD_LIBRARY_PATH=$TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
+cmake \
+    -DCMAKE_C_COMPILER=$TOOL_CHAIN/bin/aarch64-rockchip-linux-gnu-gcc \
+    -DCMAKE_CXX_COMPILER=$TOOL_CHAIN/bin/aarch64-rockchip-linux-gnu-g++ \
+    -DMMDEPLOY_BUILD_SDK=ON \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DOpenCV_DIR=${RKNPU2_DIR}/examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV \
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+    -DMMDEPLOY_TARGET_DEVICES="cpu" \
+    -DMMDEPLOY_TARGET_BACKENDS="rknn" \
+    -DMMDEPLOY_CODEBASES=all \
+    -DMMDEPLOY_BUILD_TEST=ON \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
+    ..
+make && make install
+```
+
+## Run the demo with SDK
+
+First make sure that`--dump-info`is used during convert model, so that the working directory has the files required by the SDK such as `pipeline.json`.
+
+`adb push` the model directory, executable file and .so to the device.
+
+```bash
+cd /path/to/mmdeploy
+adb push resnet50  /data/local/tmp/resnet50
+adb push /mmclassification_dir/demo/demo.JPEG /data/local/tmp/resnet50/demo.JPEG
+cd build
+adb push lib /data/local/tmp/lib
+adb push bin/image_classification /data/local/tmp/image_classification
+```
+
+Set up environment variable and execute the sample.
+
+```bash
+adb shell
+cd /data/local/tmp
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib
+./image_classification cpu ./resnet50  ./resnet50/demo.JPEG
+..
+label: 65, score: 0.95
+```
+
 ## Troubleshooting
 
 - Quantization fails.
 
-  Empirically, RKNN require the inputs not normalized if `do_quantization` is set to `False`. Please modify the settings of `Normalize` in the `model_cfg` from
+  Empirically, RKNN require the inputs not normalized if `do_quantization` is set to `True`. Please modify the settings of `Normalize` in the `model_cfg` from
 
   ```python
   img_norm_cfg = dict(
