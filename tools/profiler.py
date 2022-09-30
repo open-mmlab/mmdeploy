@@ -140,7 +140,10 @@ def main():
         ]
     image_files = image_files[:total_nrof_image]
     with TimeCounter.activate(
-            warmup=args.warmup, log_interval=20, with_sync=with_sync):
+            warmup=args.warmup,
+            log_interval=20,
+            with_sync=with_sync,
+            batch_size=args.batch_size):
         for i in range(0, total_nrof_image, args.batch_size):
             batch_files = image_files[i:(i + args.batch_size)]
             data, _ = task_processor.create_input(batch_files, input_shape)
