@@ -95,8 +95,14 @@ $ ls -lah install/bin/*
 
 确认转换模型用了 `--dump-info`，这样 `resnet18` 目录才有 `pipeline.json` 等 SDK 所需文件。
 
-把 dump 好的模型目录(resnet18)、可执行文件(image_classification)、测试图片(tests/data/tiger.jpeg)拷贝到设备中
+把 dump 好的模型目录(resnet18)、可执行文件(image_classification)、测试图片(tests/data/tiger.jpeg)、交叉编译的 OpenCV(/tmp/ocv-aarch64) 拷贝到设备中
 
 ```bash
 ./image_classification cpu ./resnet18  tiger.jpeg
+..
+label: 292, score: 0.9261
+label: 282, score: 0.0726
+label: 290, score: 0.0008
+label: 281, score: 0.0002
+label: 340, score: 0.0001
 ```
