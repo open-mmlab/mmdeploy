@@ -136,10 +136,10 @@ def main():
                 with_sync=with_sync,
                 file=args.log2file):
             outputs = task_processor.single_gpu_test(model, data_loader,
-                                                     args.show, args.show_dir)
+                                                     args.show, args.show-dir)
     else:
         outputs = task_processor.single_gpu_test(model, data_loader, args.show,
-                                                 args.show_dir)
+                                                 args.show-dir)
     task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
                                     args.out, args.metric_options,
                                     args.format_only, args.log2file)
