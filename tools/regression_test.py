@@ -589,21 +589,22 @@ def run_cmd(cmd_lines: List[str], log_path: Path):
         sep = r'`'
     else:  # 'Linux', 'Darwin'
         sep = '\\'
-    cmd_str = f' {sep}\n'.join(cmd_lines) + '\n'
+    cmd_for_run = ' '.join(cmd_lines)
+    cmd_for_log = f' {sep}\n'.join(cmd_lines) + '\n'
     parent_path = log_path.parent
     if not parent_path.exists():
         parent_path.mkdir(parents=True, exist_ok=True)
     logger = get_root_logger()
     logger.info(100 * '-')
-    logger.info(f'Start running cmd\n{cmd_str}')
+    logger.info(f'Start running cmd\n{cmd_for_log}')
     logger.info(f'Logging log to \n{log_path}')
 
     with open(log_path, 'w', encoding='utf-8') as file_handler:
         # write cmd
-        file_handler.write(f'Command:\n{cmd_str}\n')
+        file_handler.write(f'Command:\n{cmd_for_log}\n')
         file_handler.flush()
         process_res = subprocess.Popen(
-            cmd_str,
+            cmd_for_run,
             cwd=str(Path(__file__).absolute().parent.parent),
             shell=True,
             stdout=file_handler,
