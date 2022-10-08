@@ -4,14 +4,19 @@ project(mmdeploy_rknn_net)
 
 add_library(rknn SHARED IMPORTED)
 
-if (NOT EXISTS $ENV{RKNN_ROOT}/runtime/RK3588/Linux/librknn_api/aarch64/)
-  message(ERROR "RKNN_ROOT directory not exist:  $ENV{RKNN_ROOT}/runtime/RK3588/Linux/librknn_api/aarch64/")
+if( CMAKE_TOOLCHAIN_FILE )
+  include(${CMAKE_TOOLCHAIN_FILE})
 endif()
-message(STATUS "RKNN lib directory $ENV{RKNN_ROOT}/runtime/RK3588/Linux/librknn_api/aarch64/")
+
+if(DEFINED ENV{RKNPU2_DIR})
+    file(TO_CMAKE_PATH $ENV{RKNPU2_DIR} RKNPU2_DIR)
+else()
+    message(FATAL_ERROR "RKNPU2_DIR env must be defined")
+endif()
 
 set_target_properties(rknn PROPERTIES
-  IMPORTED_LOCATION "$ENV{RKNN_ROOT}/runtime/RK3588/Linux/librknn_api/aarch64/librknnrt.so"
-  INTERFACE_INCLUDE_DIRECTORIES "$ENV{RKNN_ROOT}/runtime/RK3588/Linux/librknn_api/include"
+  IMPORTED_LOCATION "${RKNPU2_DIR}/runtime/RK3588/Linux/librknn_api/aarch64/librknnrt.so"
+  INTERFACE_INCLUDE_DIRECTORIES "${RKNPU2_DIR}/runtime/RK3588/Linux/librknn_api/include"
 )
 
 mmdeploy_add_module(${PROJECT_NAME} rknn_net.cpp)

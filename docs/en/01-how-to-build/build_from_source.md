@@ -39,3 +39,4 @@ Please visit the following links to find out how to build MMDeploy according to 
 - [NVIDIA Jetson](jetsons.md)
 - [SNPE](snpe.md)
 - [RISC-V](riscv.md)
+- [Rockchip](rockchip.md)
