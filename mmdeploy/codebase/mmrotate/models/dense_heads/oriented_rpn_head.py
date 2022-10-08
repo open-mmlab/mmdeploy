@@ -38,7 +38,7 @@ def oriented_rpn_head__get_bboxes(ctx,
             (batch_size, num_priors * 1, H, W). Default None.
         img_metas (list[dict]):  Meta information of the image, e.g.,
             image size, scaling factor, etc.
-        cfg (mmcv.Config | None): Test / postprocessing configuration,
+        cfg (mmengine.Config | None): Test / postprocessing configuration,
             if None, test_cfg would be used. Default: None.
         rescale (bool): If True, return boxes in original image space.
             Default False.

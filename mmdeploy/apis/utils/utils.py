@@ -2,8 +2,26 @@
 import mmengine
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
-from mmdeploy.utils import get_codebase, get_task_type
+from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
+                            parse_device_id)
 from mmdeploy.utils.config_utils import get_codebase_external_module
+
+
+def check_backend_device(deploy_cfg: mmengine.Config, device: str):
+    """Check if device is appropriate for the backend.
+
+    Args:
+        deploy_cfg (str | mmengine.Config): Deployment config file.
+        device (str): A string specifying device type.
+    """
+    backend = get_backend(deploy_cfg).value
+    device_id = parse_device_id(device)
+    mismatch = dict(
+        tensorrt=lambda id: id == -1,
+        openvino=lambda id: id > -1,
+    )
+    if backend in mismatch and mismatch[backend](device_id):
+        raise ValueError(f'{device} is invalid for the backend {backend}')
 
 
 def build_task_processor(model_cfg: mmengine.Config,
@@ -18,6 +36,7 @@ def build_task_processor(model_cfg: mmengine.Config,
     Returns:
         BaseTask: A task processor.
     """
+    check_backend_device(deploy_cfg=deploy_cfg, device=device)
     codebase_type = get_codebase(deploy_cfg)
     custom_module_list = get_codebase_external_module(deploy_cfg)
     import_codebase(codebase_type, custom_module_list)

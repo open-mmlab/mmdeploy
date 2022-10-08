@@ -184,6 +184,32 @@ def test_size_of_tensor_static():
     'outputs: {}'.format(rewrite_outputs)
 
 
+@backend_checker(Backend.ASCEND)
+def test_size__ascend():
+
+    def model_func(input):
+        x = torch.Tensor.size(input, -1)
+        return torch.tensor(x)
+
+    input = torch.zeros([1, 2, 3, 4])
+    deploy_cfg_ascend = Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[dict(input_shapes=dict(input=input.shape))]),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    wrapped_func = WrapFunction(model_func)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ascend,
+        run_with_backend=True)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '
+    'outputs: {}'.format(rewrite_outputs)
+
+
 class TestTopk:
 
     input = torch.rand(1, 5, 5, 5)
@@ -286,6 +312,32 @@ def test_normalize_ncnn(input, dim):
     assert osp.exists(bin_path)
 
 
+@backend_checker(Backend.ASCEND)
+def test_getitem__ascend():
+
+    input = torch.rand(1, 2, 3)
+
+    def tensor_getitem(x):
+        return x[..., -1]
+
+    # create wrapped model
+    wrapped_func = WrapFunction(tensor_getitem)
+    import tempfile
+
+    import onnx
+
+    from mmdeploy.core import RewriterContext
+    onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
+
+    # convert model
+    with RewriterContext(
+            cfg={}, backend=Backend.ASCEND.value, opset=11), torch.no_grad():
+        torch.onnx.export(wrapped_func, input, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    nodes = onnx_model.graph.node
+    assert nodes is not None
+
+
 @backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize(
     'input',
@@ -341,3 +393,141 @@ def test_tensor_setitem(x, y):
     nodes = onnx_model.graph.node
     for node in nodes:
         assert node.op_type != 'ScatterND'
+
+
+@backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.skipif(
+    parse(torch.__version__) < parse('1.9.0'), reason='requires torch>1.8.0')
+@pytest.mark.parametrize('x', [torch.rand(1, 3, 16, 16)])
+def test_tensor_setitem_scalar(x):
+    import onnx
+
+    from mmdeploy.utils.test import get_onnx_model
+
+    def setitem_slice(x):
+        H, W = x.shape[-2:]
+        x[:, 1:3] = 1
+        x[:, :, 4:H - 4, 4:W - 4] = x.new_tensor(2)
+        return x
+
+    wrapped_func = WrapFunction(setitem_slice)
+    model_inputs = {'x': x}
+
+    deploy_cfg = Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg)
+
+    onnx_model = onnx.load(ir_file_path)
+    nodes = onnx_model.graph.node
+    for node in nodes:
+        assert node.op_type != 'ScatterND'
+
+
+@pytest.mark.parametrize('output_size', [1, 3])
+def test_adaptive_avg_pool2d(output_size):
+    input = torch.rand(1, 3, 6, 6)
+    model = WrapFunction(F.adaptive_avg_pool2d, output_size=output_size)
+    pytorch_output = model(input)
+    deploy_cfg_ort = Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert torch.allclose(pytorch_output, rewrite_output[0])
+
+
+@backend_checker(Backend.TENSORRT)
+def test_scaled_dot_product_attention():
+    L = 10
+    B = 1
+    E = 4
+    q = k = v = torch.rand(B, L, E)
+    attn_mask = torch.rand(B, L, L)
+
+    from torch.nn.functional import _scaled_dot_product_attention
+    model = WrapFunction(_scaled_dot_product_attention)
+    pytorch_output = model(q, k, v, attn_mask)
+    deploy_cfg_ort = Config(
+        dict(
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['q', 'k', 'v', 'attn_mask'],
+                output_names=['output', 'attn']),
+            backend_config=dict(
+                type='tensorrt',
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            q=dict(
+                                min_shape=q.shape,
+                                opt_shape=q.shape,
+                                max_shape=q.shape),
+                            k=dict(
+                                min_shape=k.shape,
+                                opt_shape=k.shape,
+                                max_shape=k.shape),
+                            v=dict(
+                                min_shape=v.shape,
+                                opt_shape=v.shape,
+                                max_shape=v.shape),
+                            attn_mask=dict(
+                                min_shape=attn_mask.shape,
+                                opt_shape=attn_mask.shape,
+                                max_shape=attn_mask.shape)))
+                ]),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={
+            'q': q,
+            'k': k,
+            'v': v,
+            'attn_mask': attn_mask
+        },
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert torch.allclose(pytorch_output[0],
+                          rewrite_output[0].to(pytorch_output[0].device))
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('num', [5, 7])
+def test_mod__tensorrt(num):
+    input = torch.rand(1, 3, 6, 6).cuda()
+    model = WrapFunction(lambda input: input % num)
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'], shape=[1, 3, 6, 6]),
+        run_with_backend=True)
+    assert torch.allclose(
+        pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)
+
+
+@backend_checker(Backend.TENSORRT)
+def test_prepare_onnx_paddings__tensorrt():
+    input = torch.rand(1, 3, 6, 6).cuda()
+
+    def _pad_(x):
+        a, b = [torch.tensor(2)] * 2
+        x = torch.nn.ZeroPad2d((0, a, 0, b))(x)
+        return x
+
+    model = WrapFunction(_pad_)
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'x': input},
+        deploy_cfg=get_trt_config(['output'], shape=[1, 3, 6, 6]),
+        run_with_backend=True)
+    assert torch.allclose(
+        pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)

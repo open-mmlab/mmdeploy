@@ -94,7 +94,14 @@ class MMDEPLOY_API Model {
    */
   explicit operator bool() const { return impl_ != nullptr; }
 
+  /**
+   * @brief get model_path that init with DirectoryModel
+   * @return file path of an sdk model
+   */
+  const std::string& GetModelPath() const;
+
  private:
+  std::string model_path_;
   std::shared_ptr<ModelImpl> impl_;
   deploy_meta_info_t meta_;
 };

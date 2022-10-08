@@ -115,9 +115,9 @@ Result<void> Tensor::CopyFrom(const Tensor& tensor, Stream stream) {
   if (!stream) {
     auto device = desc_.device.is_device() ? desc_.device : tensor.desc().device;
     auto default_stream = Stream::GetDefault(device);
-    OUTCOME_TRY(default_stream.Copy(tensor.buffer(), buffer_));
+    OUTCOME_TRY(default_stream.Copy(tensor.buffer(), buffer_, tensor.byte_size()));
   } else {
-    OUTCOME_TRY(stream.Copy(tensor.buffer(), buffer_));
+    OUTCOME_TRY(stream.Copy(tensor.buffer(), buffer_, tensor.byte_size()));
   }
   return success();
 }
@@ -141,9 +141,9 @@ Result<void> Tensor::CopyTo(Tensor& tensor, Stream stream) const {
   if (!stream) {
     Device device = desc_.device.is_device() ? desc_.device : tensor.desc().device;
     Stream default_stream = Stream::GetDefault(device);
-    return default_stream.Copy(buffer_, tensor.buffer());
+    return default_stream.Copy(buffer_, tensor.buffer(), byte_size());
   } else {
-    return stream.Copy(buffer_, tensor.buffer());
+    return stream.Copy(buffer_, tensor.buffer(), byte_size());
   }
 }
 
@@ -158,9 +158,9 @@ Result<void> Tensor::CopyFrom(void* host_ptr, Stream stream) {
   Allocate();
   if (!stream) {
     auto default_stream = Stream::GetDefault(desc_.device);
-    return default_stream.Copy(host_ptr, buffer_, buffer_.GetSize());
+    return default_stream.Copy(host_ptr, buffer_, byte_size());
   } else {
-    return stream.Copy(host_ptr, buffer_, buffer_.GetSize());
+    return stream.Copy(host_ptr, buffer_, byte_size());
   }
 }
 
@@ -174,9 +174,9 @@ Result<void> Tensor::CopyTo(void* host_ptr, Stream stream) const {
   }
   if (!stream) {
     auto default_stream = Stream::GetDefault(desc_.device);
-    return default_stream.Copy(buffer_, host_ptr, buffer_.GetSize());
+    return default_stream.Copy(buffer_, host_ptr, byte_size());
   } else {
-    return stream.Copy(buffer_, host_ptr, buffer_.GetSize());
+    return stream.Copy(buffer_, host_ptr, byte_size());
   }
 }
 

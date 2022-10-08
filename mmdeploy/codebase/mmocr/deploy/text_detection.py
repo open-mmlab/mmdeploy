@@ -8,7 +8,6 @@ from mmengine import Config
 from mmengine.dataset import pseudo_collate
 from mmengine.dist import cast_data_device
 from mmengine.model import BaseDataPreprocessor
-from torch import nn
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_input_shape
@@ -184,21 +183,6 @@ class TextDetection(BaseTask):
         if metainfo is not None:
             visualizer.dataset_meta = metainfo
         return visualizer
-
-    @staticmethod
-    def run_inference(model: nn.Module,
-                      model_inputs: Dict[str, torch.Tensor]) -> list:
-        """Run inference once for a segmentation model of mmseg.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        return model(**model_inputs, return_loss=False, rescale=True)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:

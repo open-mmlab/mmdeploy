@@ -35,12 +35,16 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config] = None,
-                 data_preprocessor: Optional[Union[dict, nn.Module]] = None):
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 **kwargs):
         super(End2EndModel, self).__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         self.device = device
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
@@ -123,6 +127,40 @@ class SDKEnd2EndModel(End2EndModel):
         from mmcls.models.heads.cls_head import ClsHead
         predict = ClsHead._get_predictions(
             None, cls_score, data_samples=data_samples)
+        return predict
+
+
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNEnd2EndModel(End2EndModel):
+    """RKNN inference class, converts RKNN output to mmcls format."""
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict') -> Any:
+        """Run forward inference.
+
+        Args:
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
+        cls_score = self.wrapper({self.input_name: inputs})[0]
+
+        from mmcls.models.heads.cls_head import ClsHead
+        predict = ClsHead._get_predictions(
+            None, cls_score, data_samples=data_samples)
+
         return predict
 
 

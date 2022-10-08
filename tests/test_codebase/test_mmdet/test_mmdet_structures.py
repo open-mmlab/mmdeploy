@@ -10,7 +10,10 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, check_backend,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])

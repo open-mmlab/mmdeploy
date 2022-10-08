@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.codebase.mmpose.deploy.pose_detection import PoseDetection
+from .pose_detection import MMPose, PoseDetection
 
-__all__ = ['PoseDetection']
+__all__ = ['PoseDetection', 'MMPose']

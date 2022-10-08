@@ -2,8 +2,7 @@
 from typing import Optional, Sequence
 
 import mmcv
-from mmcv import FileClient
-from mmengine import Config
+from mmengine import Config, FileClient
 from torch.utils.data import Dataset
 
 from mmdeploy.apis import build_task_processor

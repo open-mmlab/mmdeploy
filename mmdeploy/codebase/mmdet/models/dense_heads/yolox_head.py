@@ -8,7 +8,7 @@ from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend
 
 
@@ -57,6 +57,13 @@ def yolox_head__predict_by_feat(ctx,
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
     """
+    # mark pred_maps
+    @mark('yolo_head', inputs=['cls_scores', 'bbox_preds', 'objectnesses'])
+    def __mark_pred_maps(cls_scores, bbox_preds, objectnesses):
+        return cls_scores, bbox_preds, objectnesses
+
+    cls_scores, bbox_preds, objectnesses = __mark_pred_maps(
+        cls_scores, bbox_preds, objectnesses)
     assert len(cls_scores) == len(bbox_preds) == len(objectnesses)
     device = cls_scores[0].device
     cfg = self.test_cfg if cfg is None else cfg
@@ -83,7 +90,6 @@ def yolox_head__predict_by_feat(ctx,
     score_factor = torch.cat(flatten_objectness, dim=1).sigmoid()
     flatten_bbox_preds = torch.cat(flatten_bbox_preds, dim=1)
     flatten_priors = torch.cat(mlvl_priors)
-
     bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
     # directly multiply score factor and feed to nms
     scores = cls_scores * (score_factor.unsqueeze(-1))
@@ -101,7 +107,6 @@ def yolox_head__predict_by_feat(ctx,
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
-    keep_top_k = 20
 
     return multiclass_nms(bboxes, scores, max_output_boxes_per_class,
                           iou_threshold, score_threshold, pre_top_k,

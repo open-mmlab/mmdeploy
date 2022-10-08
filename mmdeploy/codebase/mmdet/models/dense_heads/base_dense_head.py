@@ -2,6 +2,7 @@
 from typing import List, Optional
 
 import torch
+from mmdet.models.dense_heads import PAAHead
 from mmdet.models.task_modules.coders import (DeltaXYWHBBoxCoder,
                                               DistancePointBBoxCoder,
                                               TBLRBBoxCoder)
@@ -9,7 +10,8 @@ from mmdet.structures.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
+                                     pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER
@@ -111,29 +113,41 @@ def base_dense_head__predict_by_feat(
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
         bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
-        score_thr = cfg.get('score_thr', 0)
-        mask = scores > score_thr
-        scores = scores.where(mask, scores.new_zeros(1))
         if not is_dynamic_flag:
             priors = priors.data
-        if cfg.get('nms_pre', -1) == -1:
-            # align with mmdet base_dense_head filter_scores_and_topk
-            pre_topk = scores.shape[-2] * scores.shape[-1] - 1
 
         if pre_topk > 0:
-            _, topk_inds = scores.reshape(batch_size, -1).topk(pre_topk, dim=1)
-            topk_inds = torch.stack(
-                [topk_inds // self.num_classes, topk_inds % self.num_classes],
-                dim=-1)
-            batch_inds = torch.arange(
-                batch_size, device=bbox_pred.device).unsqueeze(-1)
-
-            prior_inds = batch_inds.new_zeros((1, 1))
-            priors = priors[prior_inds, topk_inds[..., 0], :]
-            bbox_pred = bbox_pred[batch_inds, topk_inds[..., 0], :]
-            scores = scores[batch_inds, topk_inds[..., 0], :]
+            priors = pad_with_value_if_necessary(priors, 1, pre_topk)
+            bbox_pred = pad_with_value_if_necessary(bbox_pred, 1, pre_topk)
+            scores = pad_with_value_if_necessary(scores, 1, pre_topk, 0.)
             if with_score_factors:
-                score_factors = score_factors[batch_inds, topk_inds[..., 0], :]
+                score_factors = pad_with_value_if_necessary(
+                    score_factors, 1, pre_topk, 0.)
+
+            nms_pre_score = scores
+            if with_score_factors:
+                nms_pre_score = nms_pre_score * score_factors
+                if isinstance(self, PAAHead):
+                    nms_pre_score = nms_pre_score.sqrt()
+
+            # Get maximum scores for foreground classes.
+            if self.use_sigmoid_cls:
+                max_scores, _ = nms_pre_score.max(-1)
+            else:
+                max_scores, _ = nms_pre_score[..., :-1].max(-1)
+            _, topk_inds = max_scores.topk(pre_topk)
+            bbox_pred, scores, score_factors = gather_topk(
+                bbox_pred,
+                scores,
+                score_factors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=True)
+            priors = gather_topk(
+                priors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=False)
 
         mlvl_valid_bboxes.append(bbox_pred)
         mlvl_valid_scores.append(scores)
@@ -153,16 +167,11 @@ def base_dense_head__predict_by_feat(
 
     if with_score_factors:
         batch_scores = batch_scores * batch_score_factors
+        if isinstance(self, PAAHead):
+            batch_scores = batch_scores.sqrt()
 
     if not with_nms:
         return batch_bboxes, batch_scores
-
-    if cfg.get('min_bbox_size', -1) >= 0:
-        w = batch_bboxes[:, :, 2] - batch_bboxes[:, :, 0]
-        h = batch_bboxes[:, :, 3] - batch_bboxes[:, :, 1]
-        valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
-        if not valid_mask.all():
-            batch_scores = batch_scores * valid_mask.unsqueeze(-1)
 
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
@@ -347,6 +356,8 @@ def base_dense_head__predict_by_feat__ncnn(
             0, 2, 1).unsqueeze(3) * batch_mlvl_score_factors.permute(
                 0, 2, 1).unsqueeze(3)
         batch_mlvl_scores = batch_mlvl_scores.squeeze(3).permute(0, 2, 1)
+        if isinstance(self, PAAHead):
+            batch_mlvl_scores = batch_mlvl_scores.sqrt()
 
     # flatten for ncnn DetectionOutput op inputs.
     batch_mlvl_vars = vars.expand_as(batch_mlvl_priors)

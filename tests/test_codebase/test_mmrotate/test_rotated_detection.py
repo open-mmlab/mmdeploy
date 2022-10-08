@@ -43,9 +43,15 @@ deploy_cfg = mmcv.Config(
             input_names=['input'],
             output_names=['dets', 'labels'])))
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 def test_build_pytorch_model():

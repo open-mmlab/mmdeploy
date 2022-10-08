@@ -39,7 +39,10 @@ def process_model_config(
     sdk_pipeline = []
     channel_order = 'rgb'
     if input_shape is None:
-        input_shape = np.array(cfg.codec.input_size)
+        codec = cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[0]
+        input_shape = np.array(codec['input_size'])
 
     idx = 0
     while idx < len(test_pipeline):
@@ -174,7 +177,7 @@ class PoseDetection(BaseTask):
         return model.eval().to(self.device)
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None,
                      data_preprocessor: Optional[BaseDataPreprocessor] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:

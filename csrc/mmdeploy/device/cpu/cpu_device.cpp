@@ -105,7 +105,7 @@ Result<void> CpuPlatformImpl::CopyImpl(const void* src, void* dst, size_t src_si
     task();
     return success();
   }
-  if (st.GetDevice() != Device(0, 0)) {
+  if (st.GetDevice().platform_id() != 0) {
     return Status(eInvalidArgument);
   }
   auto cpu_stream = static_cast<CpuStreamImpl*>(st.GetNative());
@@ -126,6 +126,7 @@ Result<void> CpuPlatformImpl::Copy(const void* host_ptr, Buffer dst, size_t size
   }
   return CopyImpl(host_ptr, dst_ptr, size, dst.GetSize(), 0, dst_offset, size, stream);
 }
+
 Result<void> CpuPlatformImpl::Copy(Buffer src, void* host_ptr, size_t size, size_t src_offset,
                                    Stream stream) {
   auto src_ptr = src.GetNative();
@@ -145,7 +146,7 @@ Result<void> CpuPlatformImpl::Copy(Buffer src, Buffer dst, size_t size, size_t s
     return Status(eInvalidArgument);
   }
   auto device = src.GetDevice();
-  if (device.platform_id() != 0 || device != dst.GetDevice()) {
+  if (device.platform_id() != 0 || device.platform_id() != dst.GetDevice().platform_id()) {
     return Status(eInvalidArgument);
   }
   return CopyImpl(src_ptr, dst_ptr, src.GetSize(), dst.GetSize(), src_offset, dst_offset, size,

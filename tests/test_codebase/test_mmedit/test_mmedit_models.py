@@ -1,18 +1,22 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import tempfile
-from typing import Dict
+from typing import Dict, List, Optional
 
 import mmengine
 import onnx
+import pytest
 import torch
-from mmedit.models.editors.srcnn import SRCNNNet
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase, get_onnx_config
 
-import_codebase(Codebase.MMEDIT)
+try:
+    import_codebase(Codebase.MMEDIT)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
 
 img = torch.rand(1, 3, 4, 4)
 model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -46,8 +50,6 @@ deploy_cfg = mmengine.Config(
 
 
 def test_base_edit_model_forward():
-    from typing import List, Optional
-
     from mmedit.models.base_models.base_edit_model import BaseEditModel
     from mmedit.structures import EditDataSample
 
@@ -83,6 +85,8 @@ def test_base_edit_model_forward():
 
 
 def test_srcnn():
+    from mmedit.models.editors.srcnn import SRCNNNet
+
     pytorch_model = SRCNNNet()
     model_inputs = {'x': img}
 
