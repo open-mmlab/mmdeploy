@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .backbones import *  # noqa: F401,F403
-from .classifiers import *  # noqa: F401,F403
-from .heads import *  # noqa: F401,F403
-from .necks import *  # noqa: F401,F403
-from .utils import *  # noqa: F401,F403
+from . import backbones  # noqa: F401,F403
+from . import classifiers  # noqa: F401,F403
+from . import heads  # noqa: F401,F403
+from . import necks  # noqa: F401,F403
+from . import utils  # noqa: F401,F403

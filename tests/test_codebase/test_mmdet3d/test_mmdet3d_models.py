@@ -8,6 +8,7 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
+import_codebase(Codebase.MMDET3D)
 try:
     import_codebase(Codebase.MMDET3D)
 except ImportError:
