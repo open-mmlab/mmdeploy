@@ -38,6 +38,7 @@ add_example(restorer c image_restorer)
 add_example(text_detector c ocr)
 add_example(pose_detector c pose_detection)
 add_example(rotated_detector c rotated_object_detection)
+add_example(video_recognizer c video_recognition)
 # TODO: figure out a better way
 #add_example("" c det_cls)
 #add_example("" c det_pose)

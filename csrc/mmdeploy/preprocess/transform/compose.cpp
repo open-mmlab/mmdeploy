@@ -44,10 +44,24 @@ Result<Value> Compose::Process(const Value& input) {
   Value::Array intermediates;
   for (auto& transform : transforms_) {
     OUTCOME_TRY(auto t, transform->Process(output));
-    if (auto it = t.find("__data__"); it != t.end()) {
-      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-      it->array().clear();
+    // refactor
+    if (t.is_array()) {
+      for (auto& inner : t) {
+        if (auto it = inner.find("__data__"); it != inner.end()) {
+          std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+          it->array().clear();
+        }
+      }
+    } else {
+      if (auto it = t.find("__data__"); it != t.end()) {
+        std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+        it->array().clear();
+      }
     }
+    // if (auto it = t.find("__data__"); it != t.end()) {
+    //   std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+    //   it->array().clear();
+    // }
     output = std::move(t);
   }
   OUTCOME_TRY(stream_.Wait());
