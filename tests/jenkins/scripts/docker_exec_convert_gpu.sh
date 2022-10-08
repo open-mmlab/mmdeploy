@@ -1,5 +1,5 @@
 #!/bin/bash
-
+start=$(date +%s)
 ## keep container alive
 nohup sleep infinity >sleep.log 2>&1 &
 
@@ -30,6 +30,7 @@ function getFullName() {
     if [ "$codebase_" = "mmseg" ]; then codebase_fullname="mmsegmentation"; fi
 }
 
+
 ## parameters
 export codebase=$1
 export exec_performance=$2
@@ -53,8 +54,11 @@ fi
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 
-for TORCH_VERSION in 1.10.0 1.11.0; do
+for TORCH_VERSION in 1.11.0; do
     conda activate torch${TORCH_VERSION}
+    if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
+        pip install root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl
+    fi
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
     # need to build for each env
@@ -82,7 +86,9 @@ for TORCH_VERSION in 1.10.0 1.11.0; do
     pip install -r requirements/build.txt
     pip install -v .
 
-    ## build ${codebase}
+    ## build ${codebaseu}
+    if v1.0 then\
+        get requirements
     if [ ${codebase} == mmdet3d ]; then
         mim install ${codebase}
         mim install mmcv-full==1.5.2
@@ -116,3 +122,6 @@ for TORCH_VERSION in 1.10.0 1.11.0; do
 done
 
 echo "end_time-$(date +%Y%m%d%H%M)"
+end=$(date +%s)
+take=$(( end - start ))
+echo Time taken to execute commands is ${take} seconds.
