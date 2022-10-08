@@ -45,10 +45,14 @@ class MMDetection3d(MMCodebase):
         return MMDET3D_TASK.build(model_cfg, deploy_cfg, device)
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmdet3d.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmdet3d.utils.set_env import register_all_modules
 
-        import mmdeploy.codebase.mmdet3d.models  # noqa: F401
+        cls.register_deploy_modules()
         register_all_modules(True)
 
     @staticmethod

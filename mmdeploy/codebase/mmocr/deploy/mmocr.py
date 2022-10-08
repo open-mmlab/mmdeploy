@@ -14,15 +14,18 @@ class MMOCR(MMCodebase):
     task_registry = MMOCR_TASK
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmocr.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmdet.utils.setup_env import \
             register_all_modules as register_all_modules_mmdet
         from mmocr.utils.setup_env import \
             register_all_modules as register_all_modules_mmocr
 
-        import mmdeploy.codebase.mmdet.models
-        import mmdeploy.codebase.mmdet.ops
-        import mmdeploy.codebase.mmdet.structures  # noqa: F401
-        import mmdeploy.codebase.mmocr.models  # noqa: F401
+        from mmdeploy.codebase.mmdet.deploy.object_detection import MMDetection
+        cls.register_deploy_modules()
+        MMDetection.register_deploy_modules()
         register_all_modules_mmocr(False)
         register_all_modules_mmdet(True)

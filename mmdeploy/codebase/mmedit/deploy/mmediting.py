@@ -14,8 +14,12 @@ class MMEditing(MMCodebase):
     task_registry = MMEDIT_TASK
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmedit.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmedit.utils.setup_env import register_all_modules
 
-        import mmdeploy.codebase.mmedit.models  # noqa: F401
+        cls.register_deploy_modules()
         register_all_modules(True)

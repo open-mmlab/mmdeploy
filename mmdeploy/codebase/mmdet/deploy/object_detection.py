@@ -23,12 +23,16 @@ class MMDetection(MMCodebase):
     task_registry = MMDET_TASK
 
     @classmethod
-    def register_all_modules(cls):
-        from mmdet.utils.setup_env import register_all_modules
-
+    def register_deploy_modules(cls):
         import mmdeploy.codebase.mmdet.models  # noqa: F401
         import mmdeploy.codebase.mmdet.ops
         import mmdeploy.codebase.mmdet.structures  # noqa: F401
+
+    @classmethod
+    def register_all_modules(cls):
+        from mmdet.utils.setup_env import register_all_modules
+
+        cls.register_deploy_modules()
         register_all_modules(True)
 
 

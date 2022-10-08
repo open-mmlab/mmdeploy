@@ -118,10 +118,14 @@ class MMPose(MMCodebase):
     task_registry = MMPOSE_TASK
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmpose.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmpose.utils.setup_env import register_all_modules
 
-        import mmdeploy.codebase.mmpose.models  # noqa: F401
+        cls.register_deploy_modules()
         register_all_modules(True)
 
 
