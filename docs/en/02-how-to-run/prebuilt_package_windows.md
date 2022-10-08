@@ -165,7 +165,6 @@ torch2onnx(img, work_dir, save_file, deploy_cfg, model_cfg,
 # 2. extract pipeline info for sdk use (dump-info)
 export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 ```
-```
 
 The structure of the converted model directory:
 
@@ -222,7 +221,6 @@ onnx2tensorrt(work_dir, save_file, model_id, deploy_cfg, onnx_model, device)
 
 # 3. extract pipeline info for sdk use (dump-info)
 export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
-```
 ```
 
 The structure of the converted model directory:
