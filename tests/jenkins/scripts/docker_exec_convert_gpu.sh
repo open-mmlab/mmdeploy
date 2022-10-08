@@ -87,8 +87,6 @@ for TORCH_VERSION in 1.11.0; do
     pip install -v .
 
     ## build ${codebaseu}
-    if v1.0 then\
-        get requirements
     if [ ${codebase} == mmdet3d ]; then
         mim install ${codebase}
         mim install mmcv-full==1.5.2

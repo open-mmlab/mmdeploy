@@ -1,4 +1,4 @@
-Import-Module .\win_utils.psm1
+Import-Module .\utils.psm1
 
 #read configuration file
 $config_path = '../conf/win_default.config'
@@ -15,8 +15,6 @@ $mmdeploy_branch=$conf.mmdeploy_branch
 Write-Host "mmdeploy_branch=$mmdeploy_branch"
 $repo_url=$conf.repo_url
 Write-Host "repo_url=$repo_url"
-$TENSORRT_VERSION=$conf.tensorrt_version
-Write-Host "TENSORRT_VERSION=$TENSORRT_VERSION"
 
 SwitchCudaVersion $cuda_version
 
@@ -26,7 +24,7 @@ if ( $exec_performance -eq "y" ) {
     $exec_performance=$null
 }
 
-$codebase_fullname = @{
+$codebase_fullname_opt = @{
     "mmdet" = "mmdetection";
     "mmcls" = "mmclassification";
     "mmdet3d" = "mmdetection3d";
@@ -79,9 +77,10 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
 # git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
-cd MMdeploy
+
 # git submodule update --init --recursive
-$env:MMDEPLOY_DIR="$pwd"
+$env:MMDEPLOY_DIR="$pwd/MMdeploy"
+cd $env:MMDEPLOY_DIR
 rm -r build
 mkdir build
 cd build
@@ -102,53 +101,56 @@ cd ..
 #add Release Path
 $env:path+=";C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy\build\bin\Release"
 
-# $date_snap=Get-Date -UFormat "%Y%m%d"
-# $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
-# $log_dir=(Join-PATH (Join-PATH ".\data2\regression_log\convert_log" $data_snap) $time_snap)
-# mkdir ${log_dir}
-
 pip install openmim
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt
 pip install -v -e .
-foreach ($codebase in $codebase_list -split ' ')
-{
-    Write-Host "mim install $codebase"
-    $codebase_path = (Join-Path $env:WORKSPACE $codebase_fullname.([string]$codebase))
-    Write-Host "codebase_path = $codebase_path"
-    mim uninstall mmcv
-    if ($codebase -eq "mmdet3d")
-    {
-        mim install $codebase
-        mim install mmcv-full==1.5.2
-        pip install -v $codebase_path
-    }
-    elseif ($codebase -eq "mmedit")
-    {
-        mim install ${codebase}
-        mim install mmcv-full==1.6.0
-        pip install -v $codebase_path
-    }
-    elseif ($codebase -eq "mmedit")
-    {
-        mim install ${codebase}
-        mim install mmcv-full==1.6.0
-        pip install -v $codebase_path
-    }
-    else
-    {
-        mim install ${codebase}
-        if ( -not $?)
-        {
-            mim install mmcv-full
-            pip install -v $codebase_path
-        }
-    }
-    python ./tools/regression_test.py `
-        --codebase $codebase `
-        --device cuda:0 `
-        --backends tensorrt onnxruntime `
-        $exec_performance
+
+
+$date_snap=Get-Date -UFormat "%Y%m%d"
+$time_snap=Get-Date -UFormat "%Y%m%d%H%M"
+$log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
+mkdir $log_dir
+
+$SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
+$Pool = [runspacefactory]::CreateRunspacePool(1, $max_job_nums, $SessionState, $Host)
+$Pool.Open()
+
+$script_block = {
+    param(
+        [string] $codebase,
+        [string] $exec_performance,
+        [hashtable] $codebase_fullname_opt,
+        [string] $log_dir
+    )
+    invoke-expression -command "C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy\tests\jekins\scripts\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname_opt *> $log_dir\$codebase.log"
 }
-write-Host "$codebase convert finish!"
+
+$threads = @()
+
+$handles = foreach ($codebase in $codebase_list -split ' ')
+{
+    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname_opt).AddArgument($log_dir)
+	  $powershell.RunspacePool = $Pool
+	  $powershell.BeginInvoke()
+    $threads += $powershell
+}
+
+do { 
+  $i = 0
+  $done = $true
+  foreach ($handle in $handles) {
+    if ($handle -ne $null) {
+  	  if ($handle.IsCompleted) {
+        $threads[$i].EndInvoke($handle)
+        $threads[$i].Dispose()
+        $handles[$i] = $null
+      } else {
+        $done = $false
+      }
+    }
+    $i++ 
+  }
+  if (-not $done) { Start-Sleep -Milliseconds 1000 }
+} until ($done)
