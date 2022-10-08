@@ -43,6 +43,7 @@ class TimeCounter:
                 log_interval=log_interval,
                 warmup=warmup,
                 with_sync=with_sync,
+                batch_size=1,
                 enable=False)
 
             def fun(*args, **kwargs):
