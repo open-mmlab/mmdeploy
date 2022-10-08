@@ -4,7 +4,7 @@ import logging
 
 from mmcv import Config
 
-from mmdeploy.utils import Task, get_root_logger, load_config, get_task_type
+from mmdeploy.utils import Task, get_root_logger, get_task_type, load_config
 
 
 def get_table(onnx_path: str,

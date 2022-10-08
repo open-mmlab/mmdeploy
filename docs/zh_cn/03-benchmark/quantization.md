@@ -37,6 +37,6 @@
 
 ### 超分辨率任务
 
-|                                                                      model                                                                       | dataset  | fp32 PSNR/SSIM | int8 PSNR/SSIM |
-| :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
-| [EDSR](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) | Set5 |  35.7733/0.9365  |  35.4266/0.9334  |
+|                                                       model                                                       | dataset | fp32 PSNR/SSIM | int8 PSNR/SSIM |
+| :---------------------------------------------------------------------------------------------------------------: | :-----: | :------------: | :------------: |
+| [EDSR](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) |  Set5   | 35.7733/0.9365 | 35.4266/0.9334 |
