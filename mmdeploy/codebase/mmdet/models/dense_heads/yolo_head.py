@@ -124,8 +124,6 @@ def yolov3_head__predict_by_feat(ctx,
             mask, batch_mlvl_conf_scores.new_zeros(1))
         batch_mlvl_scores = batch_mlvl_scores.where(
             mask.unsqueeze(-1), batch_mlvl_scores.new_zeros(1))
-        batch_mlvl_bboxes = batch_mlvl_bboxes.where(
-            mask.unsqueeze(-1), batch_mlvl_bboxes.new_zeros(1))
 
     if score_threshold > 0:
         mask = batch_mlvl_scores > score_threshold
@@ -139,22 +137,18 @@ def yolov3_head__predict_by_feat(ctx,
             batch_mlvl_conf_scores, 1, pre_topk, 0.)
         batch_mlvl_scores = pad_with_value_if_necessary(
             batch_mlvl_scores, 1, pre_topk, 0.)
-        _, topk_inds = batch_mlvl_scores.reshape(batch_size, -1). \
-            topk(pre_topk, dim=1)
-        topk_inds = torch.stack(
-            [topk_inds // self.num_classes, topk_inds % self.num_classes])
+        _, topk_inds = conf_pred.topk(pre_topk)
         batch_inds = torch.arange(
             batch_size, device=device).unsqueeze(-1).long()
         # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
-        transformed_inds = (
-            batch_mlvl_bboxes.shape[1] * batch_inds + topk_inds)
-        batch_mlvl_bboxes = batch_mlvl_bboxes. \
-            reshape(-1, 4)[transformed_inds, :].reshape(batch_size, -1, 4)
-        batch_mlvl_scores = batch_mlvl_scores.reshape(
+        transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds.long())
+        bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
+            batch_size, -1, 4)
+        cls_pred = cls_pred.reshape(
             -1, self.num_classes)[transformed_inds, :].reshape(
                 batch_size, -1, self.num_classes)
-        batch_mlvl_conf_scores = batch_mlvl_conf_scores. \
-            reshape(-1, 1)[transformed_inds].reshape(batch_size, -1)
+        conf_pred = conf_pred.reshape(-1, 1)[transformed_inds].reshape(
+            batch_size, -1)
 
     batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores

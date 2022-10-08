@@ -37,7 +37,7 @@ If you haven't installed TensorRT in the default path, Please add `-DTENSORRT_DI
 
 ```bash
  cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} ..
- make -j$(nproc)
+ make -j$(nproc) && make install
 ```
 
 ## Convert model

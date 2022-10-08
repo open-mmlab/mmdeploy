@@ -13,8 +13,6 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
 
-import_codebase(Codebase.MMOCR)
-
 model_cfg_path = 'tests/test_codebase/test_mmocr/data/crnn.py'
 model_cfg = load_config(model_cfg_path)[0]
 deploy_cfg = mmengine.Config(
@@ -31,9 +29,20 @@ deploy_cfg = mmengine.Config(
             output_names=['output'])))
 
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3).astype(np.uint8)
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    try:
+        import_codebase(Codebase.MMOCR)
+    except ImportError:
+        pytest.skip(
+            f'{Codebase.MMOCR} is not installed.', allow_module_level=True)
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 def test_build_pytorch_model():
@@ -67,17 +76,9 @@ def test_create_input():
     assert isinstance(inputs, tuple) and len(inputs) == 2
 
 
-def test_run_inference(backend_model):
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    input_dict.update(dict(inputs=input_dict['inputs'][0]))
-    results = task_processor.run_inference(backend_model, input_dict)
-    assert results is not None
-
-
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    input_dict.update(dict(inputs=input_dict['inputs'][0]))
-    results = task_processor.run_inference(backend_model, input_dict)
+    results = backend_model.test_step(input_dict)[0]
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
         task_processor.visualize(img, results, filename, 'tmp')

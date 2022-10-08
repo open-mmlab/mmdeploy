@@ -1,0 +1,56 @@
+name: build_riscv64_gcc
+
+on:
+  push:
+    paths:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+  pull_request:
+    paths-ignore:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_riscv64_gcc:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: riscv64-gnu-toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install g++-riscv64-linux-gnu
+      - name: install opencv
+        run: |
+          mkdir $GITHUB_WORKSPACE/opencv-install
+          wget https://github.com/irexyc/mmdeploy-ci-resource/raw/opencv/opencv_4.6.0_linux_riscv64.tar.gz
+          tar xf opencv_4.6.0_linux_riscv64.tar.gz -C $GITHUB_WORKSPACE/opencv-install
+      - name: install ncnn
+        run: |
+          mkdir $GITHUB_WORKSPACE/ncnn-install
+          wget https://github.com/irexyc/mmdeploy-ci-resource/raw/ncnn/ncnn_20220729_linux_riscv64.tar.gz
+          tar xf ncnn_20220729_linux_riscv64.tar.gz -C $GITHUB_WORKSPACE/ncnn-install
+      - name: build
+        run: |
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-gnu.cmake \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_SHARED_LIBS=ON \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_TARGET_DEVICES="cpu" \
+            -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
+            -Dncnn_DIR=$GITHUB_WORKSPACE/ncnn-install/lib/cmake/ncnn/ \
+            -DMMDEPLOY_CODEBASES=all \
+            -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4
+          make -j$(nproc)
+          make install

@@ -100,6 +100,94 @@ def single_roi_extractor__forward__tensorrt(ctx,
                                     finest_scale, featmap_strides, aligned)
 
 
+class AscendRoiExtractor(Function):
+    """Create AscendRoiExtractor op.
+
+    This class is used to create a AscendRoiExtractor in ONNX for the Ascend
+    backend.
+    """
+
+    @staticmethod
+    def symbolic(g, *args):
+        """Symbolic function for creating onnx op."""
+        aligned = args[-1]
+        featmap_strides = [1 / stride for stride in args[-2]]
+        finest_scale = args[-3]
+        roi_scale_factor = args[-4]
+        sampling_ratio = args[-5]
+        pool_mode = args[-6]
+        output_size = args[-7]
+        inputs = args[:len(featmap_strides)]
+        rois = args[len(featmap_strides)]
+
+        return g.op(
+            'mmdeploy::RoiExtractor',
+            *inputs,
+            rois,
+            pooled_height_i=output_size[1],
+            pooled_width_i=output_size[0],
+            pool_mode_s=pool_mode,
+            sample_num_i=sampling_ratio,
+            roi_scale_factor_f=roi_scale_factor,
+            finest_scale_i=finest_scale,
+            spatial_scale_f=featmap_strides,
+            aligned_i=aligned,
+            outputs=1)
+
+    @staticmethod
+    def forward(ctx, *args):
+        """Run forward."""
+        # aligned = args[-1]
+        featmap_strides = args[-2]
+        # finest_scale = args[-3]
+        # roi_scale_factor = args[-4]
+        # sampling_ratio = args[-5]
+        output_size = args[-7]
+        inputs = args[:len(featmap_strides)]
+        rois = args[len(featmap_strides)]
+
+        num_proposals = rois.shape[0]
+        channel = inputs[0].shape[1]
+
+        return rois.new_zeros(
+            (num_proposals, channel, output_size[1], output_size[0]))
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.roi_heads.roi_extractors.'
+    'single_level_roi_extractor.SingleRoIExtractor.forward',
+    backend='ascend')
+def single_roi_extractor__forward__ascend(ctx,
+                                          self,
+                                          feats,
+                                          rois,
+                                          roi_scale_factor=None):
+    """Rewrite `forward` of `SingleRoIExtractor` for Ascend backend.
+
+    This function uses RoiExtractor op for Ascend deployment.
+    """
+    featmap_strides = self.featmap_strides
+    finest_scale = self.finest_scale
+
+    for roi_layer in self.roi_layers:
+        assert isinstance(
+            roi_layer,
+            RoIAlign), f'{type(roi_layer)} is not supported in Ascend.'
+
+    roi_layer = self.roi_layers[0]
+    out_size = roi_layer.output_size
+    sampling_ratio = roi_layer.sampling_ratio
+    pool_mode = roi_layer.pool_mode
+    aligned = roi_layer.aligned
+    if roi_scale_factor is None:
+        roi_scale_factor = 1.0
+
+    featmap_strides = [float(s) for s in featmap_strides]
+    return AscendRoiExtractor.apply(*feats, rois, out_size, pool_mode,
+                                    sampling_ratio, roi_scale_factor,
+                                    finest_scale, featmap_strides, aligned)
+
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward')
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
@@ -127,7 +215,7 @@ def single_roi_extractor__forward(ctx,
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
     if num_levels == 1:
         assert len(rois) > 0, 'The number of rois should be positive'
-        if backend == Backend.TORCHSCRIPT:
+        if backend == Backend.TORCHSCRIPT or backend == Backend.COREML:
             self.roi_layers[0].use_torchvision = True
         return self.roi_layers[0](feats[0], rois)
 
@@ -153,7 +241,7 @@ def single_roi_extractor__forward(ctx,
         inds = mask.nonzero(as_tuple=False).squeeze(1)
         rois_t = rois[inds]
         # use the roi align in torhcvision
-        if backend == Backend.TORCHSCRIPT:
+        if backend == Backend.TORCHSCRIPT or backend == Backend.COREML:
             self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
@@ -228,3 +316,39 @@ def single_roi_extractor__forward__openvino(ctx,
     args = (output_size, featmap_strides, sample_num, rois, *feats)
     result = SingleRoIExtractorOpenVINO.apply(*args)
     return result
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend=Backend.COREML.value)
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
+def single_roi_extractor__forward__coreml(ctx,
+                                          self,
+                                          feats,
+                                          rois,
+                                          roi_scale_factor=None):
+    """Rewrite `forward` of SingleRoIExtractor for coreml."""
+    out_size = self.roi_layers[0].output_size
+    num_levels = len(feats)
+    roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
+    if num_levels == 1:
+        assert len(rois) > 0, 'The number of rois should be positive'
+        self.roi_layers[0].use_torchvision = True
+        return self.roi_layers[0](feats[0], rois)
+
+    target_lvls = self.map_roi_levels(rois, num_levels)
+
+    if roi_scale_factor is not None:
+        rois = self.roi_rescale(rois, roi_scale_factor)
+
+    for i in range(num_levels):
+        mask = target_lvls == i
+        # inds = mask.nonzero(as_tuple=False).squeeze(1)
+        rois_t = rois * mask.unsqueeze(-1)
+        # use the roi align in torhcvision
+        self.roi_layers[i].use_torchvision = True
+        roi_feats_t = self.roi_layers[i](feats[i], rois_t)
+        roi_feats = roi_feats + roi_feats_t * (rois_t[:, -1] > 0).reshape(
+            -1, 1, 1, 1)
+    # slice to recover original size
+    return roi_feats

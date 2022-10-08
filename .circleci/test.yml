@@ -62,44 +62,13 @@ commands:
           name: Install PyTorch
           command: |
             python -m pip install torch==<< parameters.torch >>+<< parameters.platform >> torchvision==<< parameters.torchvision >>+<< parameters.platform >> -f https://download.pytorch.org/whl/torch_stable.html
-  install_mmengine:
+  install_mmcv:
     steps:
       - run:
-          name: Install mmengine
+          name: Install mmcv
           command: |
-            python -m pip install openmim
-            python -m mim install mmengine
-  install_mmcv_cpu:
-    parameters:
-      version:
-        type: string
-        default: 1.5.0
-      torch:
-        type: string
-        default: 1.8.0
-    steps:
-      - run:
-          name: Install mmcv-full
-          command: |
-            python -m pip install opencv-python==4.5.4.60
-            python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/cpu/torch<< parameters.torch >>/index.html
-  install_mmcv_cuda:
-    parameters:
-      version:
-        type: string
-        default: 1.5.0
-      cuda:
-        type: string
-        default: cu111
-      torch:
-        type: string
-        default: 1.8.0
-    steps:
-      - run:
-          name: Install mmcv-full
-          command: |
-            python -m pip install opencv-python==4.5.4.60
-            python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/<< parameters.cuda >>/torch<< parameters.torch >>/index.html
+            python -m pip install opencv-python==4.5.4.60 openmim
+            python -m mim install mmengine "mmcv>=2.0.0rc1"
   install_mmdeploy:
     description: "Install MMDeploy"
     steps:
@@ -114,7 +83,9 @@ commands:
           name: Install requirements
           command: |
             cd mmdeploy
-            python -m pip install -r requirements/codebases.txt
+            git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit
+            python -m pip install ../mmedit
+            python -m mim install -r requirements/codebases.txt
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
             python -m pip install -U numpy
@@ -175,7 +146,7 @@ jobs:
           name: Install requirements
           command: |
             docker exec mmdeploy pip install onnxruntime==1.8.1
-            docker exec mmdeploy pip install -r mmdeploy/requirements/codebases.txt
+            docker exec mmdeploy mim install -r mmdeploy/requirements/codebases.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements/tests.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements/runtime.txt
             docker exec mmdeploy pip install -U numpy
@@ -201,8 +172,7 @@ jobs:
       - checkout_full
       - upgrade_pip
       - install_pytorch
-      - install_mmengine
-      - install_mmcv_cpu
+      - install_mmcv
       - run:
           name: Install ONNX Runtime
           command: mmdeploy/.circleci/scripts/windows/install_onnxruntime.ps1 cpu << parameters.version >>
@@ -262,8 +232,7 @@ jobs:
           command: bash mmdeploy/.circleci/scripts/linux/install_python.sh
       - upgrade_pip
       - install_pytorch
-      - install_mmengine
-      - install_mmcv_cpu
+      - install_mmcv
       - run:
           name: Install ONNX Runtime
           command: bash mmdeploy/.circleci/scripts/linux/install_onnxruntime.sh cpu << parameters.version >>
@@ -289,7 +258,7 @@ jobs:
       - run:
           name: Inference model by SDK
           command: |
-            mmdeploy/build/install/example/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
+            mmdeploy/build/install/example/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmdeploy/tests/data/tiger.jpeg
 
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows

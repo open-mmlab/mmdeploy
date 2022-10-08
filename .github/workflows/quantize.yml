@@ -26,7 +26,6 @@ jobs:
       matrix:
         python-version: [3.7]
         torch: [1.8.0+cu111]
-        mmcv: [1.4.2]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
@@ -49,29 +48,25 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+
           python -m pip install -r requirements.txt
           python -m pip install -U numpy
 
       - name: Install mmcls
         run: |
-          cd ~
-          git clone https://github.com/open-mmlab/mmclassification.git
-          cd mmclassification
-          git checkout v0.23.0
-          python3 -m pip install -e .
-          cd -
+          python -m pip install openmim
+          python -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmclassification.git ~/mmclassification
+          cd ~/mmclassification && python -m pip install . && cd -
       - name: Install ppq
         run: |
-          cd ~
           python -m pip install protobuf==3.20.0
-          git clone https://github.com/openppl-public/ppq
-          cd ppq
-          git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
-          python3 -m pip install -r requirements.txt
-          python3 setup.py install
+          git clone https://github.com/openppl-public/ppq ~/ppq
+          cd ~/ppq && git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
+          python -m pip install -r requirements.txt
+          python setup.py install
           cd -
       - name: Run tests
         run: |
           echo $(pwd)
-          python3 .github/scripts/quantize_to_ncnn.py
+          python .github/scripts/quantize_to_ncnn.py

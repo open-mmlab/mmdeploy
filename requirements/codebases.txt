@@ -1,7 +1,6 @@
-mmcls>=0.21.0,<=0.22.1
-mmdet>=2.19.0,<=2.20.0
-mmedit
-mmocr>=0.3.0,<=0.4.1
-mmpose>=0.24.0,<=0.25.1
-mmrazor>=0.3.0
-mmsegmentation
+mmcls>=1.0.0rc0
+mmdet>=3.0.0rc0
+mmedit==1.0.0rc1
+mmocr>=1.0.0rc0
+mmpose>=1.0.0b0
+mmsegmentation>=1.0.0rc0

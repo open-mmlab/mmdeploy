@@ -6,8 +6,23 @@ from mmdet.models.detectors.base import ForwardResults
 from mmdet.structures import DetDataSample
 from mmdet.structures.det_data_sample import OptSampleList
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
+
+
+@mark(
+    'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
+def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
+    """Rewrite and adding mark for `forward`.
+
+    Encapsulate this function for rewriting `forward` of BaseDetector.
+    1. Add mark for BaseDetector.
+    2. Support both dynamic and static export to onnx.
+    """
+    x = self.extract_feat(batch_inputs)
+
+    output = self.bbox_head.predict(x, data_samples, rescale=False)
+    return output
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -57,7 +72,5 @@ def single_stage_detector__forward(ctx,
         data_sample.set_field(
             name='img_shape', value=img_shape, field_type='metainfo')
 
-    x = self.extract_feat(batch_inputs)
-
-    output = self.bbox_head.predict(x, data_samples, rescale=False)
-    return output
+    return __forward_impl(
+        ctx, self, batch_inputs, data_samples=data_samples, **kwargs)

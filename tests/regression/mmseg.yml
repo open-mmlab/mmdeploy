@@ -22,13 +22,17 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-1024x2048.py
 
   pipeline_ort_static_fp32_512x512: &pipeline_ort_static_fp32_512x512
+    convert_image: *convert_image
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_static-512x512.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
+    backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_dynamic.py
 
 tensorrt:
@@ -114,7 +118,7 @@ pplnn:
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
-    backend_test: False
+    backend_test: True
     deploy_config: configs/mmseg/segmentation_torchscript.py
 
 
@@ -197,6 +201,7 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
+      - *pipeline_ts_fp32
 
   - name: APCNet
     metafile: configs/apcnet/apcnet.yml
@@ -206,6 +211,7 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
+      - *pipeline_ts_fp32
 
   - name: BiSeNetV1
     metafile: configs/bisenetv1/bisenetv1.yml
@@ -216,6 +222,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: BiSeNetV2
     metafile: configs/bisenetv2/bisenetv2.yml
@@ -226,6 +233,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: CGNet
     metafile: configs/cgnet/cgnet.yml
@@ -236,6 +244,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: EMANet
     metafile: configs/emanet/emanet.yml
@@ -245,6 +254,7 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: EncNet
     metafile: configs/encnet/encnet.yml
@@ -254,6 +264,7 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: ERFNet
     metafile: configs/erfnet/erfnet.yml
@@ -264,6 +275,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: FastFCN
     metafile: configs/fastfcn/fastfcn.yml
@@ -274,6 +286,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: GCNet
     metafile: configs/gcnet/gcnet.yml
@@ -282,6 +295,7 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
+      - *pipeline_ts_fp32
 
   - name: ICNet
     metafile: configs/icnet/icnet.yml
@@ -291,15 +305,16 @@ models:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp16
       - *pipeline_openvino_static_fp32
+      - *pipeline_ts_fp32
 
   - name: ISANet
     metafile: configs/isanet/isanet.yml
     model_configs:
       - configs/isanet/isanet_r50-d8_4xb2-40k_cityscapes-512x1024.py
     pipelines:
-      - *pipeline_ort_static_fp32
-      - *pipeline_trt_static_fp16
-      - *pipeline_openvino_static_fp32
+      - *pipeline_ort_static_fp32_512x512
+      - *pipeline_trt_static_fp16_512x512
+      - *pipeline_openvino_static_fp32_512x512
 
   - name: OCRNet
     metafile: configs/ocrnet/ocrnet.yml
@@ -310,15 +325,16 @@ models:
       - *pipeline_trt_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: PointRend
     metafile: configs/point_rend/point_rend.yml
     model_configs:
       - configs/point_rend/pointrend_r50_4xb2-80k_cityscapes-512x1024.py
     pipelines:
-      - *pipeline_ort_dynamic_fp32
-      - *pipeline_trt_dynamic_fp16
-      - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ort_static_fp32_512x512
+      - *pipeline_trt_static_fp16
+      - *pipeline_ts_fp32
 
   - name: Semantic FPN
     metafile: configs/sem_fpn/sem_fpn.yml
@@ -329,6 +345,7 @@ models:
       - *pipeline_trt_dynamic_fp32
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: STDC
     metafile: configs/stdc/stdc.yml
@@ -340,6 +357,7 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32
+      - *pipeline_ts_fp32
 
   - name: UPerNet
     metafile: configs/upernet/upernet.yml

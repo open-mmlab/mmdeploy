@@ -17,13 +17,18 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmdet/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
 model_cfg.test_dataloader.dataset.data_root = \
     'tests/test_codebase/test_mmdet/data'
 model_cfg.test_dataloader.dataset.ann_file = 'coco_sample.json'
+model_cfg.test_evaluator.ann_file = \
+    'tests/test_codebase/test_mmdet/data/coco_sample.json'
 deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
@@ -48,9 +53,15 @@ deploy_cfg = Config(
             input_names=['input'],
             output_names=['dets', 'labels'])))
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (32, 32)
 img = np.random.rand(*img_shape, 3)
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 def test_build_test_runner():
@@ -77,7 +88,7 @@ def test_build_test_runner():
     # Run test
     with TemporaryDirectory() as dir:
         runner = task_processor.build_test_runner(model, dir)
-        runner.test()
+        assert runner is not None
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])

@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
+from functools import partial
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import torch
-from packaging.version import parse as version_parse
 
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
@@ -15,6 +15,7 @@ def trace(func: torch.nn.Module,
           inputs: Union[torch.Tensor, Tuple],
           output_path_prefix: Optional[str] = None,
           backend: Union[Backend, str] = 'default',
+          input_metas: Optional[Dict] = None,
           context_info: Dict = dict(),
           check_trace: bool = True,
           check_tolerance: float = 1e-05) -> torch.jit.TracedModule:
@@ -43,6 +44,7 @@ def trace(func: torch.nn.Module,
             save the model.
         backend (Backend|str): Which backend will the graph be used. Different
             backend would generate different graph.
+        input_metas (Dict): The constant inputs of the model.
         context_info (Dict): The information that would be used in the context
             of exporting.
         check_trace (bool): Check if the same inputs run through traced code
@@ -91,6 +93,15 @@ def trace(func: torch.nn.Module,
         func = patch_model(func, cfg=deploy_cfg, backend=backend, ir=ir)
 
     with RewriterContext(**context_info), torch.no_grad():
+
+        # patch input_metas
+        if input_metas is not None:
+            assert isinstance(
+                input_metas, dict
+            ), f'Expect input_metas type is dict, get {type(input_metas)}.'
+            model_forward = func.forward
+            func.forward = partial(func.forward, **input_metas)
+
         # for exporting models with weight that depends on inputs
         func(*inputs) if isinstance(inputs, Sequence) \
             else func(inputs)
@@ -100,19 +111,8 @@ def trace(func: torch.nn.Module,
             check_trace=check_trace,
             check_tolerance=check_tolerance)
 
-    logger.info('perform torchscript optimizer.')
-    try:
-        # custom optimizer
-        from mmdeploy.backend.torchscript import ts_optimizer
-        logger = get_root_logger()
-        ts_optimizer.optimize_for_backend(
-            ts_model._c, ir=IR.TORCHSCRIPT.value, backend=backend)
-    except Exception:
-        # use pytorch builtin optimizer
-        ts_model = torch.jit.freeze(ts_model)
-        torch_version = version_parse(torch.__version__)
-        if torch_version.minor >= 9:
-            ts_model = torch.jit.optimize_for_inference(ts_model)
+        if input_metas is not None:
+            func.forward = model_forward
 
     # save model
     if output_path_prefix is not None:

@@ -14,9 +14,20 @@ onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 @pytest.fixture(autouse=False, scope='function')
 def prepare_symbolics():
     context = RewriterContext(
-        Config({'backend_config': {
-            'type': 'tensorrt'
-        }}), 'tensorrt', opset=11)
+        Config(
+            dict(
+                onnx_config=dict(
+                    type='onnx',
+                    export_params=True,
+                    keep_initializers_as_inputs=False,
+                    opset_version=11,
+                    save_file='end2end.onnx',
+                    input_names=['input'],
+                    output_names=['output'],
+                    input_shape=None),
+                backend_config=dict(type='tensorrt'))),
+        'tensorrt',
+        opset=11)
     context.enter()
     yield
 
@@ -57,18 +68,6 @@ def get_model_onnx_nodes(model, x, onnx_file=onnx_file):
 @pytest.mark.usefixtures('prepare_symbolics')
 class TestAdaptivePool:
 
-    def test_adaptive_pool_1d_global(self):
-        x = torch.rand(2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool1d, [1]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'GlobalAveragePool'
-
-    def test_adaptive_pool_1d(self):
-        x = torch.rand(2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool1d, [2]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
-
     def test_adaptive_pool_2d_global(self):
         x = torch.rand(2, 2, 2)
         model = OpModel(torch.nn.functional.adaptive_avg_pool2d, [1, 1]).eval()
@@ -79,21 +78,7 @@ class TestAdaptivePool:
         x = torch.rand(2, 2, 2)
         model = OpModel(torch.nn.functional.adaptive_avg_pool2d, [2, 2]).eval()
         nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
-
-    def test_adaptive_pool_3d_global(self):
-        x = torch.rand(2, 2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool3d,
-                        [1, 1, 1]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'GlobalAveragePool'
-
-    def test_adaptive_pool_3d(self):
-        x = torch.rand(2, 2, 2, 2)
-        model = OpModel(torch.nn.functional.adaptive_avg_pool3d,
-                        [2, 2, 2]).eval()
-        nodes = get_model_onnx_nodes(model, x)
-        assert nodes[0].op_type == 'AveragePool'
+        assert nodes[-1].op_type == 'AveragePool'
 
 
 @pytest.mark.usefixtures('prepare_symbolics_ncnn')
@@ -193,9 +178,14 @@ def test_hardsigmoid():
 
 
 @pytest.mark.usefixtures('prepare_symbolics')
-def test_prepare_onnx_paddings__tensorrt():
-    x = torch.rand(1, 4, 8, 8)
-    model = torch.onnx.symbolic_opset11._prepare_onnx_paddings()
-    nodes = get_model_onnx_nodes(model, x, (0, 1, 0, 1))
-    assert nodes[-1].op_type == 'Cast'
-    assert nodes[-2].op_type == 'Concat'
+def test_layer_norm():
+    x = torch.rand(2, 1, 4)
+    model = torch.nn.LayerNorm(4).eval()
+    torch.onnx.export(model, x, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    graph = onnx_model.graph
+    output = graph.output[0]
+    dim = output.type.tensor_type.shape.dim
+    assert dim[0].dim_value == 2
+    assert dim[1].dim_value == 1
+    assert dim[2].dim_value == 4

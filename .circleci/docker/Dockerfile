@@ -26,20 +26,16 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch -c conda-forge
 ENV PATH /opt/conda/bin:$PATH
 
-### install mmengine
+### install mim, mmengine, mmcv
 RUN /opt/conda/bin/pip install openmim &&\
-    mim install mmengine
-
-### install mmcv-full
-RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
+    mim install mmengine &&\
+    mim install 'mmcv>=2.0.0rc1'
 
 WORKDIR /workspace
 
 ### build ppl.cv
-RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
-    cd ppl.cv &&\
-    git checkout tags/v${PPLCV_VERSION} -b v${PPLCV_VERSION} &&\
-    ./build.sh cuda
+RUN git clone --depth --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git &&\
+    cd ppl.cv && ./build.sh cuda
 
 # RUN ln -sf /opt/conda /home/circleci/project/conda
 ENV TENSORRT_DIR=/workspace/tensorrt

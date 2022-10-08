@@ -40,7 +40,7 @@ Note:
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=torchscript -DTorch_DIR=${Torch_DIR} ..
-make -j$(nproc)
+make -j$(nproc) && make install
 ```
 
 ## How to convert a model

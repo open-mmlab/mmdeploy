@@ -16,7 +16,7 @@ from mmdeploy.utils.config_utils import get_codebase_external_module
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.test import get_random_name
 
-correct_model_path = 'tests/data/srgan.py'
+correct_model_path = 'tests/test_codebase/test_mmedit/data/model.py'
 correct_model_cfg = Config.fromfile(correct_model_path)
 correct_deploy_path = 'tests/data/super-resolution.py'
 correct_deploy_cfg = Config.fromfile(correct_deploy_path)
@@ -394,10 +394,12 @@ class TestParseDeviceID:
     def test_cpu(self):
         device = 'cpu'
         assert util.parse_device_id(device) == -1
+        assert util.parse_device_type(device) == 'cpu'
 
     def test_cuda(self):
         device = 'cuda'
         assert util.parse_device_id(device) == 0
+        assert util.parse_device_type(device) == 'cuda'
 
     def test_cuda10(self):
         device = 'cuda:10'
@@ -431,7 +433,7 @@ def test_AdvancedEnum():
     not importlib.util.find_spec('mmedit'), reason='requires mmedit')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
-        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '')
+        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')
         deploy_json = os.path.join(dir, 'deploy.json')
         pipeline_json = os.path.join(dir, 'pipeline.json')
         detail_json = os.path.join(dir, 'detail.json')
