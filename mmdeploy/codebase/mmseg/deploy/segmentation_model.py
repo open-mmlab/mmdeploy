@@ -65,16 +65,17 @@ class End2EndModel(BaseBackendModel):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'predict'):
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs):
         """Run forward inference.
 
         Args:
-            img (Sequence[torch.Tensor]): A list contains input image(s)
+            inputs (torch.Tensor): Input image tensor
                 in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+            data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-            *args: Other arguments.
+            mode (str): forward mode, only support 'predict'.
             **kwargs: Other key-pair arguments.
 
         Returns:
@@ -90,7 +91,8 @@ class End2EndModel(BaseBackendModel):
                                       inputs})[self.output_names[0]]
         return self.pack_result(batch_outputs, data_samples)
 
-    def pack_result(self, batch_outputs, data_samples):
+    def pack_result(self, batch_outputs: torch.Tensor,
+                    data_samples: List[BaseDataElement]):
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
             # resize seg_pred to original image shape
