@@ -6,13 +6,12 @@ if [ $# != 2 ]; then
 fi
 
 if [ "$1" == 'mmcls' ]; then
-    python3 -m pip install mmcls
-    git clone --recursive https://github.com/open-mmlab/mmclassification.git
-    wget https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+    python3 -m mim install $(cat mmdeploy/requirements/codebases.txt | grep mmcls)
+    python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest .
     python3 mmdeploy/tools/deploy.py \
             mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py \
-            mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
-            resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
-            mmclassification/demo/demo.JPEG \
+            ./resnet18_8xb32_in1k.py \
+            ./resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
+            mmdeploy/tests/data/tiger.jpeg \
             --work-dir "$2" --dump-info
 fi

@@ -10,7 +10,7 @@ else ()
 endif ()
 
 
-if (NOT ANDROID AND NOT IOS)
+if (NOT ANDROID AND NOT IOS AND NOT CMAKE_CROSSCOMPILING)
     add_subdirectory(ops)
     add_subdirectory(onnx2ncnn)
     add_subdirectory(pyncnn_ext)

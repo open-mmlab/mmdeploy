@@ -34,7 +34,6 @@ def process_model_config(model_cfg: mmengine.Config,
     cfg = deepcopy(model_cfg)
 
     if isinstance(imgs[0], np.ndarray):
-        cfg = cfg.copy()
         # set loading pipeline type
         cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
 
@@ -172,6 +171,7 @@ class Segmentation(BaseTask):
 
         if not isinstance(imgs, (tuple, list)):
             imgs = [imgs]
+        imgs = [mmcv.imread(_) for _ in imgs]
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.test_pipeline)
         batch_data = defaultdict(list)
@@ -287,6 +287,8 @@ class Segmentation(BaseTask):
             dict: Nonthing for super resolution.
         """
         params = self.model_cfg.model.decode_head
+        if isinstance(params, list):
+            params = params[-1]
         postprocess = dict(params=params, type='ResizeMask')
         return postprocess
 

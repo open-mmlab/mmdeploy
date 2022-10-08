@@ -6,6 +6,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/transform/tracer.h"
 
 namespace mmdeploy {
 
@@ -38,6 +39,12 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
         output["img_norm_cfg"]["std"].push_back(1.0);
       }
       output["img_norm_cfg"]["to_rgb"] = false;
+    }
+
+    // trace static info & runtime args
+    if (output.contains("__tracer__")) {
+      output["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(arg_.img_to_float,
+                                                                  in_tensor.data_type());
     }
 
     // transpose

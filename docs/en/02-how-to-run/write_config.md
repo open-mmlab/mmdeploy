@@ -7,7 +7,7 @@ This tutorial describes how to write a config for model conversion and deploymen
 - [How to write config](#how-to-write-config)
   - [1. How to write onnx config](#1-how-to-write-onnx-config)
     - [Description of onnx config arguments](#description-of-onnx-config-arguments)
-      - [Example](#example)
+    - [Example](#example)
     - [If you need to use dynamic axes](#if-you-need-to-use-dynamic-axes)
       - [Example](#example-1)
   - [2. How to write codebase config](#2-how-to-write-codebase-config)
@@ -19,8 +19,6 @@ This tutorial describes how to write a config for model conversion and deploymen
   - [5. The name rules of our deployment config](#5-the-name-rules-of-our-deployment-config)
     - [Example](#example-4)
   - [6. How to write model config](#6-how-to-write-model-config)
-  - [7. Reminder](#7-reminder)
-  - [8. FAQs](#8-faqs)
 
 <!-- TOC -->
 
@@ -179,4 +177,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. How to write model config
 
-According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/tutorials/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs_zh-CN/tutorials/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs_zh-CN/tutorials/config.md), [MMOCR](https://github.com/open-mmlab/mmocr/tree/main/configs), [MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs_zh-CN/config.md).
+According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/tutorials/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/tutorials/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/en/tutorials/config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md), [MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/en/config.md).

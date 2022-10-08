@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from . import detr_head
 from .base_dense_head import (base_dense_head__predict_by_feat,
                               base_dense_head__predict_by_feat__ncnn)
 from .fovea_head import fovea_head__predict_by_feat
@@ -16,5 +17,5 @@ __all__ = [
     'yolox_head__predict_by_feat', 'base_dense_head__predict_by_feat',
     'fovea_head__predict_by_feat', 'base_dense_head__predict_by_feat__ncnn',
     'yolox_head__predict_by_feat__ncnn', 'gfl_head__predict_by_feat',
-    'reppoints_head__predict_by_feat'
+    'reppoints_head__predict_by_feat', 'detr_head'
 ]

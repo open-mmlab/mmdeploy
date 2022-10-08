@@ -36,38 +36,41 @@ def process_model_config(
     cfg = copy.deepcopy(model_cfg)
     test_pipeline = cfg.test_dataloader.dataset.pipeline
     data_preprocessor = cfg.model.data_preprocessor
-    sdk_pipeline = []
-    channel_order = 'rgb'
-    if input_shape is None:
-        input_shape = np.array(cfg.codec.input_size)
+    codec = cfg.codec
+    if isinstance(codec, list):
+        codec = codec[0]
+    input_size = codec['input_size'] if input_shape is None else input_shape
+    test_pipeline[0] = dict(type='LoadImageFromFile')
+    for i in reversed(range(len(test_pipeline))):
+        trans = test_pipeline[i]
+        if trans['type'] == 'PackPoseInputs':
+            test_pipeline.pop(i)
+        elif trans['type'] == 'GetBBoxCenterScale':
+            trans['type'] = 'TopDownGetBboxCenterScale'
+            trans['padding'] = 1.25  # default argument
+            trans['image_size'] = input_size
+        elif trans['type'] == 'TopdownAffine':
+            trans['type'] = 'TopDownAffine'
+            trans['image_size'] = input_size
+            trans.pop('input_size')
 
-    idx = 0
-    while idx < len(test_pipeline):
-        trans = test_pipeline[idx]
-        if trans.type == 'ToTensor':
-            assert idx + 1 < len(test_pipeline) and \
-                test_pipeline[idx + 1].type == 'NormalizeTensor'
-            trans = test_pipeline[idx + 1]
-            trans.type = 'Normalize'
-            trans['to_rgb'] = (channel_order == 'rgb')
-            trans['mean'] = [x * 255 for x in trans['mean']]
-            trans['std'] = [x * 255 for x in trans['std']]
-            sdk_pipeline.append(trans)
-            sdk_pipeline.append({'type': 'ImageToTensor', 'keys': ['img']})
-            idx = idx + 2
-            continue
+    test_pipeline.append(
+        dict(
+            type='Normalize',
+            mean=data_preprocessor.mean,
+            std=data_preprocessor.std,
+            to_rgb=data_preprocessor.bgr_to_rgb))
+    test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
+    test_pipeline.append(
+        dict(
+            type='Collect',
+            keys=['img'],
+            meta_keys=[
+                'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
+                'scale_factor', 'bbox_score', 'center', 'scale'
+            ]))
 
-        if trans.type == 'LoadImage':
-            if not data_preprocessor.bgr_to_rgb:
-                channel_order = 'bgr'
-        if trans.type == 'TopDownAffine':
-            trans['image_size'] = input_shape
-        if trans.type == 'TopDownGetBboxCenterScale':
-            trans['image_size'] = input_shape
-
-        sdk_pipeline.append(trans)
-        idx = idx + 1
-    cfg.test_dataloader.dataset.pipeline = sdk_pipeline
+    cfg.test_dataloader.dataset.pipeline = test_pipeline
     return cfg
 
 
@@ -176,7 +179,7 @@ class PoseDetection(BaseTask):
         return model.eval().to(self.device)
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
+                     imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Sequence[int] = None,
                      data_preprocessor: Optional[BaseDataPreprocessor] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
@@ -306,18 +309,25 @@ class PoseDetection(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
-        # TODO: make it work with sdk
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.test_dataloader.dataset.pipeline
-        preprocess[0].type = 'LoadImageFromFile'
         return preprocess
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
-        postprocess = {'type': 'UNKNOWN'}
-        if self.model_cfg.model.type == 'TopDown':
-            postprocess[
-                'type'] = self.model_cfg.model.keypoint_head.type + 'Decode'
-            postprocess.update(self.model_cfg.model.test_cfg)
+        component = 'UNKNOWN'
+        params = copy.deepcopy(self.model_cfg.model.test_cfg)
+        if self.model_cfg.model.type == 'TopdownPoseEstimator':
+            head_type = self.model_cfg.model.head.type
+            if head_type == 'HeatmapHead':
+                params['post_process'] = 'default'
+                component = 'TopdownHeatmapSimpleHeadDecode'
+            elif head_type == 'MSPNHead':
+                params['post_process'] = 'megvii'
+                params['modulate_kernel'] = self.model_cfg.kernel_sizes[-1]
+                component = 'TopdownHeatmapMSMUHeadDecode'
+            else:
+                raise RuntimeError(f'Unsupported head type: {head_type}')
+        postprocess = dict(params=params, type=component)
         return postprocess

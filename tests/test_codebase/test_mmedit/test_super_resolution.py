@@ -16,7 +16,11 @@ from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper, WrapFunction
 
-import_codebase(Codebase.MMEDIT)
+try:
+    import_codebase(Codebase.MMEDIT)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
 
 model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
 model_cfg = load_config(model_cfg)[0]
@@ -36,7 +40,13 @@ input_img = np.random.rand(32, 32, 3)
 img_shape = [32, 32]
 input = {'img': input_img}
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.fixture

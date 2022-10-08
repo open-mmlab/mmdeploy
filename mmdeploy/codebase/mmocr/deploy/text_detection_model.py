@@ -113,7 +113,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             List[torch.Tensor]: A list of predictions of input images.
         """
-        outputs = self.wrapper({self.input_name: batch_inputs.cuda()})
+        outputs = self.wrapper({self.input_name: batch_inputs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
 

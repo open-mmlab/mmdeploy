@@ -3,13 +3,12 @@ from itertools import zip_longest
 from typing import List, Optional, Sequence, Union
 
 import mmengine
-import numpy as np
 import torch
 import torch.nn as nn
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
-from mmengine.structures import BaseDataElement
+from mmengine.structures import BaseDataElement, InstanceData
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -81,7 +80,7 @@ class End2EndModel(BaseBackendModel):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[BaseDataElement]],
+                data_samples: List[BaseDataElement],
                 mode: str = 'predict',
                 **kwargs):
         """Run forward inference.
@@ -89,7 +88,7 @@ class End2EndModel(BaseBackendModel):
         Args:
             inputs (torch.Tensor): Input image(s) in [N x C x H x W]
                 format.
-            data_samples (Sequence[Sequence[dict]]): A list of meta info for
+            data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
@@ -119,11 +118,25 @@ class End2EndModel(BaseBackendModel):
                 flip_indices=flip_indices,
                 shift_heatmap=test_cfg.get('shift_heatmap', False))
             batch_heatmaps = (batch_heatmaps + batch_heatmaps_flip) * 0.5
-        results = self.pack_result(batch_heatmaps, data_samples)
+        preds = self.head.decode(batch_heatmaps)
+        results = self.pack_result(preds, data_samples)
         return results
 
-    def pack_result(self, heatmaps, data_samples):
-        preds = self.head.decode(heatmaps)
+    def pack_result(self,
+                    preds: Sequence[InstanceData],
+                    data_samples: List[BaseDataElement],
+                    convert_coordinate: bool = True):
+        """Pack pred results to mmpose format
+        Args:
+            preds (Sequence[InstanceData]): Prediction of keypoints.
+            data_samples (List[BaseDataElement]): A list of meta info for
+                image(s).
+            convert_coordinate (bool): Whether to convert keypoints
+                coordinates to original image space. Default is True.
+        Returns:
+            data_samples (List[BaseDataElement])：
+                updated data_samples with predictions.
+        """
         if isinstance(preds, tuple):
             batch_pred_instances, batch_pred_fields = preds
         else:
@@ -137,16 +150,16 @@ class End2EndModel(BaseBackendModel):
                 batch_pred_instances, batch_pred_fields, data_samples):
 
             gt_instances = data_sample.gt_instances
-
             # convert keypoint coordinates from input space to image space
-            bbox_centers = gt_instances.bbox_centers
-            bbox_scales = gt_instances.bbox_scales
-            input_size = data_sample.metainfo['input_size']
+            if convert_coordinate:
+                input_size = data_sample.metainfo['input_size']
+                bbox_centers = gt_instances.bbox_centers
+                bbox_scales = gt_instances.bbox_scales
+                keypoints = pred_instances.keypoints
+                keypoints = keypoints / input_size * bbox_scales
+                keypoints += bbox_centers - 0.5 * bbox_scales
+                pred_instances.keypoints = keypoints
 
-            pred_instances.keypoints = pred_instances.keypoints / input_size \
-                * bbox_scales + bbox_centers - 0.5 * bbox_scales
-
-            # add bbox information into pred_instances
             pred_instances.bboxes = gt_instances.bboxes
             pred_instances.bbox_scores = gt_instances.bbox_scores
 
@@ -160,78 +173,47 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmcls format."""
+    """SDK inference class, converts SDK output to mmpose format."""
 
     def __init__(self, *args, **kwargs):
         kwargs['data_preprocessor'] = None
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
         self.ext_info = self.deploy_cfg.ext_info
 
-    def _xywh2cs(self, x, y, w, h, padding=1.25):
-        """This encodes bbox(x,y,w,h) into (center, scale)
-        Args:
-            x, y, w, h (float): left, top, width and height
-            padding (float): bounding box padding factor
-        Returns:
-            center (np.ndarray[float32](2,)): center of the bbox (x, y).
-            scale (np.ndarray[float32](2,)): scale of the bbox w & h.
-        """
-        anno_size = self.ext_info.image_size
-        aspect_ratio = anno_size[0] / anno_size[1]
-        center = np.array([x + w * 0.5, y + h * 0.5], dtype=np.float32)
-
-        if w > aspect_ratio * h:
-            h = w * 1.0 / aspect_ratio
-        elif w < aspect_ratio * h:
-            w = h * aspect_ratio
-
-        # pixel std is 200.0
-        scale = np.array([w / 200.0, h / 200.0], dtype=np.float32)
-        # padding to include proper amount of context
-        scale = scale * padding
-
-        return center, scale
-
-    def _xywh2xyxy(self, x, y, w, h):
-        """convert xywh to x1 y1 x2 y2."""
-        return x, y, x + w - 1, y + h - 1
-
-    def forward(self, inputs: List[torch.Tensor], *args, **kwargs) -> list:
+    def forward(self,
+                inputs: List[torch.Tensor],
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs) -> list:
         """Run forward inference.
 
         Args:
             inputs (List[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
-            *args: Other arguments.
+                in [H x W x C] format.
+            data_samples (List[BaseDataElement]):
+                Data samples of image metas.
+            mode (str): test mode, only support 'predict'
             **kwargs: Other key-pair arguments.
 
         Returns:
             list: A list contains predictions.
         """
-        image_paths = []
-        boxes = np.zeros(shape=(inputs.shape[0], 6))
-        bbox_ids = []
-        sdk_boxes = []
-        for i, img_meta in enumerate(kwargs['img_metas']):
-            center, scale = self._xywh2cs(*img_meta['bbox'])
-            boxes[i, :2] = center
-            boxes[i, 2:4] = scale
-            boxes[i, 4] = np.prod(scale * 200.0)
-            boxes[i, 5] = img_meta[
-                'bbox_score'] if 'bbox_score' in img_meta else 1.0
-            sdk_boxes.append(self._xywh2xyxy(*img_meta['bbox']))
-            image_paths.append(img_meta['image_file'])
-            bbox_ids.append(img_meta['bbox_id'])
+        pred_results = []
+        for input_img, sample in zip(inputs, data_samples):
+            bboxes = sample.gt_instances.bboxes
 
-        pred = self.wrapper.handle(
-            [inputs[0].contiguous().detach().cpu().numpy()], sdk_boxes)
+            # inputs are c,h,w, sdk requested h,w,c
+            input_img = input_img.permute(1, 2, 0)
+            input_img = input_img.contiguous().detach().cpu().numpy()
+            keypoints = self.wrapper.handle(input_img, bboxes.tolist())
+            pred = InstanceData(
+                keypoints=keypoints[..., :2],
+                keypoint_scores=keypoints[..., 2])
+            pred_results.append(pred)
 
-        result = dict(
-            preds=pred,
-            boxes=boxes,
-            image_paths=image_paths,
-            bbox_ids=bbox_ids)
-        return result
+        results = self.pack_result(
+            pred_results, data_samples, convert_coordinate=False)
+        return results
 
 
 def build_pose_detection_model(

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # dataset settings
 dataset_type = 'CityscapesDataset'
-data_root = '.'
+data_root = 'tests/test_codebase/test_mmseg/data'
 crop_size = (128, 128)
 
 test_pipeline = [
@@ -20,6 +20,8 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        lazy_init=True,
+        serialize_data=False,
         data_prefix=dict(img_path='', seg_map_path=''),
         pipeline=test_pipeline))
 test_dataloader = val_dataloader

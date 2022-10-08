@@ -5,7 +5,6 @@ import mmengine
 import numpy as np
 import pytest
 import torch
-from mmocr.models.textdet.necks import FPNC
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext, patch_model
@@ -13,7 +12,12 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMOCR)
+try:
+    import_codebase(Codebase.MMOCR)
+except ImportError:
+    pytest.skip(f'{Codebase.MMOCR} is not installed.', allow_module_level=True)
+
+from mmocr.models.textdet.necks import FPNC
 
 dictionary = dict(
     type='Dictionary',
@@ -144,8 +148,7 @@ def test_bidirectionallstm(backend: Backend):
     if is_backend_output:
         model_output = model_outputs.cpu().numpy()
         rewrite_output = rewrite_outputs[0].cpu().numpy()
-        assert np.allclose(
-            model_output, rewrite_output, rtol=1e-03, atol=1e-04)
+        assert np.allclose(model_output, rewrite_output, rtol=1e-3, atol=1e-4)
     else:
         assert rewrite_outputs is not None
 

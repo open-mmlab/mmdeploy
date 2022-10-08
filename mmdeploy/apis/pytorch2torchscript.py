@@ -45,6 +45,10 @@ def torch2torchscript(img: Any,
         img,
         input_shape,
         data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
+
+    data_samples = data['data_samples']
+    input_metas = {'data_samples': data_samples, 'mode': 'predict'}
+
     if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
 
@@ -59,5 +63,6 @@ def torch2torchscript(img: Any,
             model_inputs,
             output_path_prefix=output_prefix,
             backend=backend,
+            input_metas=input_metas,
             context_info=context_info,
             check_trace=False)

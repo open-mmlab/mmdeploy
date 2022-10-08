@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Tuple, Union
 
 import mmengine
 import torch
@@ -179,3 +179,109 @@ def __pad_with_value_if_necessary__tensorrt(ctx,
         Tensor: Padded tensor.
     """
     return pad_with_value(x, pad_dim, pad_size=pad_size, pad_value=pad_value)
+
+
+def __gather_topk(*inputs: Sequence[torch.Tensor],
+                  inds: torch.Tensor,
+                  batch_size: int,
+                  is_batched: bool = True) -> Tuple[torch.Tensor]:
+    """The default implementation of gather_topk."""
+    if is_batched:
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        outputs = [
+            x[batch_inds, inds, ...] if x is not None else None for x in inputs
+        ]
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [
+            x[prior_inds, inds, ...] if x is not None else None for x in inputs
+        ]
+
+    return outputs
+
+
+class TRTGatherTopk(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, x: torch.Tensor, inds: torch.Tensor):
+        """Implement of gather topk."""
+        batch_size = x.size(0)
+        batch_inds = torch.arange(batch_size, device=inds.device).unsqueeze(-1)
+        return x[batch_inds, inds, ...]
+
+    @staticmethod
+    def symbolic(g, x, inds):
+        """symbolic of gather topk."""
+        out = g.op('mmdeploy::GatherTopk', x, inds, outputs=1)
+
+        return out
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
+    backend=Backend.TENSORRT.value)
+def __gather_topk__trt(ctx,
+                       *inputs: Sequence[torch.Tensor],
+                       inds: torch.Tensor,
+                       batch_size: int,
+                       is_batched: bool = True) -> Tuple[torch.Tensor]:
+    """TensorRT gather_topk."""
+    _ = ctx
+    if is_batched:
+        index_shape = inds.shape
+        index_dim = inds.dim()
+        outputs = [None for _ in inputs]
+        for i, x in enumerate(inputs):
+            if x is None:
+                continue
+            out = TRTGatherTopk.apply(x, inds).to(x.dtype)
+            out_shape = [*index_shape, *x.shape[index_dim:]]
+            out = out.reshape(out_shape)
+            outputs[i] = out
+    else:
+        prior_inds = inds.new_zeros((1, 1))
+        outputs = [
+            x[prior_inds, inds, ...] if x is not None else None for x in inputs
+        ]
+
+    return outputs
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
+    backend=Backend.COREML.value)
+def __gather_topk__nonbatch(ctx,
+                            *inputs: Sequence[torch.Tensor],
+                            inds: torch.Tensor,
+                            batch_size: int,
+                            is_batched: bool = True) -> Tuple[torch.Tensor]:
+    """Single batch gather_topk."""
+    assert batch_size == 1
+    inds = inds.squeeze(0)
+    outputs = [x[:, inds, ...] if x is not None else None for x in inputs]
+
+    return outputs
+
+
+def gather_topk(*inputs: Sequence[torch.Tensor],
+                inds: torch.Tensor,
+                batch_size: int,
+                is_batched: bool = True) -> Tuple[torch.Tensor]:
+    """Gather topk of each tensor.
+
+    Args:
+        inputs (Sequence[torch.Tensor]): Tensors to be gathered.
+        inds (torch.Tensor): Topk index.
+        batch_size (int): batch_size.
+        is_batched (bool): Inputs is batched or not.
+
+    Returns:
+        Tuple[torch.Tensor]: Gathered tensors.
+    """
+    import mmdeploy
+    outputs = mmdeploy.codebase.mmdet.deploy.utils.__gather_topk(
+        *inputs, inds=inds, batch_size=batch_size, is_batched=is_batched)
+
+    if len(outputs) == 1:
+        outputs = outputs[0]
+    return outputs

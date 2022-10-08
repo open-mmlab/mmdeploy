@@ -123,7 +123,7 @@ def main():
 
     # load the model of the backend
     model = task_processor.build_backend_model(args.model)
-
+    destroy_model = model.destroy
     is_device_cpu = (args.device == 'cpu')
 
     runner = task_processor.build_test_runner(
@@ -147,6 +147,8 @@ def main():
             runner.test()
     else:
         runner.test()
+    # only effective when the backend requires explicit clean-up (e.g. Ascend)
+    destroy_model()
 
 
 if __name__ == '__main__':

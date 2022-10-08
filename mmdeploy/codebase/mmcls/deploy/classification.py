@@ -164,17 +164,18 @@ class Classification(BaseTask):
         """Create input for classifier.
 
         Args:
-            imgs (Any): Input image(s), accepted data type are `str`,
-                `np.ndarray`, `torch.Tensor`.
+            imgs (Union[str, np.ndarray, Sequence]): Input image(s),
+                accepted data type are `str`, `np.ndarray`, Sequence.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Default: None.
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+        from mmengine.dataset import Compose, pseudo_collate
+
         assert 'test_pipeline' in self.model_cfg, \
             f'test_pipeline not found in {self.model_cfg}.'
         model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        from mmengine.dataset import Compose
         pipeline = deepcopy(model_cfg.test_pipeline)
         move_pipeline = []
         while pipeline[-1]['type'] != 'PackClsInputs':
@@ -188,7 +189,6 @@ class Classification(BaseTask):
         else:
             data = {'img': imgs}
         data = pipeline(data)
-        from mmengine.dataset import pseudo_collate
         data = pseudo_collate([data])
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)

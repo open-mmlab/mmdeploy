@@ -321,6 +321,11 @@ int PlatformRegistry::Register(Creator creator) {
   return 0;
 }
 
+int PlatformRegistry::AddAlias(const char* name, const char* target) {
+  aliases_.emplace_back(name, target);
+  return 0;
+}
+
 int PlatformRegistry::GetNextId() {
   for (int i = 1;; ++i) {
     if (IsAvailable(i)) {
@@ -339,6 +344,12 @@ bool PlatformRegistry::IsAvailable(int id) {
 }
 
 int PlatformRegistry::GetPlatform(const char* name, Platform* platform) {
+  for (const auto& alias : aliases_) {
+    if (name == alias.first) {
+      name = alias.second.c_str();
+      break;
+    }
+  }
   for (const auto& entry : entries_) {
     if (entry.name == name) {
       *platform = entry.platform;
@@ -357,7 +368,14 @@ int PlatformRegistry::GetPlatform(int id, Platform* platform) {
   }
   return -1;
 }
+
 int PlatformRegistry::GetPlatformId(const char* name) {
+  for (const auto& alias : aliases_) {
+    if (name == alias.first) {
+      name = alias.second.c_str();
+      break;
+    }
+  }
   for (const auto& entry : entries_) {
     if (entry.name == name) {
       return entry.id;

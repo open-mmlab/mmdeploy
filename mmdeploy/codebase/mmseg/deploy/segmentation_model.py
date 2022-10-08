@@ -65,16 +65,17 @@ class End2EndModel(BaseBackendModel):
 
     def forward(self,
                 inputs: torch.Tensor,
-                data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'predict'):
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs):
         """Run forward inference.
 
         Args:
-            img (Sequence[torch.Tensor]): A list contains input image(s)
+            inputs (torch.Tensor): Input image tensor
                 in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
+            data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-            *args: Other arguments.
+            mode (str): forward mode, only support 'predict'.
             **kwargs: Other key-pair arguments.
 
         Returns:
@@ -90,7 +91,8 @@ class End2EndModel(BaseBackendModel):
                                       inputs})[self.output_names[0]]
         return self.pack_result(batch_outputs, data_samples)
 
-    def pack_result(self, batch_outputs, data_samples):
+    def pack_result(self, batch_outputs: torch.Tensor,
+                    data_samples: List[BaseDataElement]):
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
             # resize seg_pred to original image shape
@@ -107,6 +109,36 @@ class End2EndModel(BaseBackendModel):
             predictions.append(data_sample)
 
         return predictions
+
+
+@__BACKEND_MODEL.register_module('rknn')
+class RKNNModel(End2EndModel):
+    """SDK inference class, converts RKNN output to mmseg format."""
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
+        """Run forward inference.
+
+        Args:
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (List[:obj:`DetDataSample`]): The Data
+                Samples. It usually includes information such as
+                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
+        batch_outputs = self.wrapper({self.input_name: inputs})[0]
+        batch_outputs = batch_outputs.argmax(dim=1, keepdim=True)
+        return self.pack_result(batch_outputs, data_samples)
 
 
 @__BACKEND_MODEL.register_module('sdk')

@@ -28,7 +28,7 @@ jobs:
           python-version: 3.7
       - name: Install unittest dependencies
         run: |
-          pip install cmake onnx
+          python -m pip install cmake onnx
       - name: update
         run: sudo apt update
       - name: Install OpenJDK
@@ -69,4 +69,4 @@ jobs:
           export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
           java --version
-          python3 .github/scripts/test_java_demo.py
+          python .github/scripts/test_java_demo.py
