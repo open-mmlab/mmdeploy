@@ -15,12 +15,12 @@
 const auto config_json = R"(
 {
   "type": "Pipeline",
-  "input": ["img", "use_detector", "state"],
+  "input": ["data", "use_det", "state"],
   "output": "targets",
   "tasks": [
     {
       "type": "Cond",
-      "input": ["use_detector", "img"],
+      "input": ["use_det", "data"],
       "output": "dets",
       "body": {
         "name": "detection",
@@ -31,28 +31,15 @@ const auto config_json = R"(
     {
       "type": "Task",
       "module": "ProcessBboxes",
-      "input": ["dets", "state"],
+      "input": ["dets", "data", "state"],
       "output": "rois"
     },
     {
-      "type": "Pipeline",
-      "input": ["*rois", "+img"],
-      "tasks": [
-        {
-          "type": "Task",
-          "module": "AddRoI",
-          "input": ["img", "rois"],
-          "output": "img_with_rois"
-        },
-        {
-          "name": "pose",
-          "type": "Inference",
-          "input": "img_with_rois",
-          "output": "keypoints",
-          "params": { "model": "pose" }
-        }
-      ],
-      "output": "*keypoints"
+      "input": "*rois",
+      "output": "*keypoints",
+      "name": "pose",
+      "type": "Inference",
+      "params": { "model": "pose" }
     },
     {
       "type": "Task",
@@ -122,7 +109,7 @@ struct TrackInfo {
 
 MMDEPLOY_REGISTER_TYPE_ID(TrackInfo, 0xcfe87980aa895d3a);  // randomly generated type id
 
-Value GetObjectsByTracking(Value& state, int img_h, int img_w) {
+Value::Array GetObjectsByTracking(Value& state, int img_h, int img_w) {
   Value::Array objs;
   auto& track_info = state["track_info"].get_ref<TrackInfo&>();
   for (auto& track : track_info.tracks) {
@@ -135,11 +122,10 @@ Value GetObjectsByTracking(Value& state, int img_h, int img_w) {
   return objs;
 }
 
-Value ProcessBboxes(const Value& detections, Value state) {
+Value ProcessBboxes(const Value& detections, const Value& data, Value state) {
   assert(state.is_pointer());
-  Value bboxes;
+  Value::Array bboxes;
   if (detections.is_array()) {  // has detections
-    // MMDEPLOY_WARN("has det");
     auto& dets = detections.array();
     for (const auto& det : dets) {
       if (det["label_id"].get<int>() == 0 && det["score"].get<float>() >= .3f) {
@@ -149,24 +135,22 @@ Value ProcessBboxes(const Value& detections, Value state) {
     MMDEPLOY_INFO("bboxes by detection: {}", bboxes.size());
     state["bboxes"] = bboxes;
   } else {  // no detections, use tracked results
-    // MMDEPLOY_WARN("has no det");
     auto img_h = state["img_shape"][0].get<int>();
     auto img_w = state["img_shape"][1].get<int>();
     bboxes = GetObjectsByTracking(state, img_h, img_w);
     MMDEPLOY_INFO("GetObjectsByTracking: {}", bboxes.size());
   }
+  // attach bboxes to image data
+  for (auto& bbox : bboxes) {
+    auto img = data["ori_img"].get<framework::Mat>();
+    auto box = from_value<std::array<float, 4>>(bbox["bbox"]);
+    cv::Rect rect(cv::Rect2f(cv::Point2f(box[0], box[1]), cv::Point2f(box[2], box[3])));
+    bbox = Value::Object{
+        {"ori_img", img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
+  };
   return bboxes;
 }
 REGISTER_SIMPLE_MODULE(ProcessBboxes, ProcessBboxes);
-
-Value AddRoI(const Value& img, const Value& bboxes) {
-  auto _img = img["ori_img"].get<framework::Mat>();
-  auto _box = from_value<std::vector<float>>(bboxes["bbox"]);
-  cv::Rect rect(cv::Rect2f(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
-  return Value::Object{
-      {"ori_img", _img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
-}
-REGISTER_SIMPLE_MODULE(AddRoI, AddRoI);
 
 // xyxy format
 float ComputeIoU(const std::array<float, 4>& a, const std::array<float, 4>& b) {
