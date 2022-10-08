@@ -122,7 +122,7 @@ struct TrackInfo {
 
 MMDEPLOY_REGISTER_TYPE_ID(TrackInfo, 0xcfe87980aa895d3a);  // randomly generated type id
 
-Value get_objects_by_tracking(Value& state, int img_h, int img_w) {
+Value GetObjectsByTracking(Value& state, int img_h, int img_w) {
   Value::Array objs;
   auto& track_info = state["track_info"].get_ref<TrackInfo&>();
   for (auto& track : track_info.tracks) {
@@ -135,7 +135,7 @@ Value get_objects_by_tracking(Value& state, int img_h, int img_w) {
   return objs;
 }
 
-Value process_bboxes(const Value& detections, Value state) {
+Value ProcessBboxes(const Value& detections, Value state) {
   assert(state.is_pointer());
   Value bboxes;
   if (detections.is_array()) {  // has detections
@@ -146,28 +146,30 @@ Value process_bboxes(const Value& detections, Value state) {
         bboxes.push_back(det);
       }
     }
+    MMDEPLOY_INFO("bboxes by detection: {}", bboxes.size());
     state["bboxes"] = bboxes;
   } else {  // no detections, use tracked results
     // MMDEPLOY_WARN("has no det");
     auto img_h = state["img_shape"][0].get<int>();
     auto img_w = state["img_shape"][1].get<int>();
-    bboxes = get_objects_by_tracking(state, img_h, img_w);
+    bboxes = GetObjectsByTracking(state, img_h, img_w);
+    MMDEPLOY_INFO("GetObjectsByTracking: {}", bboxes.size());
   }
   return bboxes;
 }
-REGISTER_SIMPLE_MODULE(ProcessBboxes, process_bboxes);
+REGISTER_SIMPLE_MODULE(ProcessBboxes, ProcessBboxes);
 
-Value add_roi(const Value& img, const Value& bboxes) {
+Value AddRoI(const Value& img, const Value& bboxes) {
   auto _img = img["ori_img"].get<framework::Mat>();
   auto _box = from_value<std::vector<float>>(bboxes["bbox"]);
   cv::Rect rect(cv::Rect2f(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
   return Value::Object{
       {"ori_img", _img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
 }
-REGISTER_SIMPLE_MODULE(AddRoI, add_roi);
+REGISTER_SIMPLE_MODULE(AddRoI, AddRoI);
 
 // xyxy format
-float compute_iou(const std::array<float, 4>& a, const std::array<float, 4>& b) {
+float ComputeIoU(const std::array<float, 4>& a, const std::array<float, 4>& b) {
   auto x1 = std::max(a[0], b[0]);
   auto y1 = std::max(a[1], b[1]);
   auto x2 = std::min(a[2], b[2]);
@@ -186,8 +188,8 @@ float compute_iou(const std::array<float, 4>& a, const std::array<float, 4>& b) 
   return inter_area / union_area;
 }
 
-void update_track(Track& track, std::vector<cv::Point2f>& keypoints, std::vector<float>& score,
-                  const std::array<float, 4>& bbox, int n_history) {
+void UpdateTrack(Track& track, std::vector<cv::Point2f>& keypoints, std::vector<float>& score,
+                 const std::array<float, 4>& bbox, int n_history) {
   if (track.scores.size() == n_history) {
     std::rotate(track.keypoints.begin(), track.keypoints.begin() + 1, track.keypoints.end());
     std::rotate(track.scores.begin(), track.scores.begin() + 1, track.scores.end());
@@ -202,14 +204,14 @@ void update_track(Track& track, std::vector<cv::Point2f>& keypoints, std::vector
   }
 }
 
-std::vector<std::tuple<int, int, float>> greedy_assignment(const std::vector<float>& scores,
-                                                           int n_rows, int n_cols, float thr) {
+std::vector<std::tuple<int, int, float>> GreedyAssignment(const std::vector<float>& scores,
+                                                          int n_rows, int n_cols, float thr) {
   std::vector<int> used_rows(n_rows);
   std::vector<int> used_cols(n_cols);
   std::vector<std::tuple<int, int, float>> assignment;
   assignment.reserve(std::max(n_rows, n_cols));
   while (true) {
-    auto max_score = std::numeric_limits<float>::min();
+    auto max_score = 0.f;
     int max_row = -1;
     int max_col = -1;
     for (int i = 0; i < n_rows; ++i) {
@@ -235,9 +237,9 @@ std::vector<std::tuple<int, int, float>> greedy_assignment(const std::vector<flo
   return assignment;
 }
 
-void track_step(std::vector<std::vector<cv::Point2f>>& keypoints,
-                std::vector<std::vector<float>>& scores, TrackInfo& track_info, int img_h,
-                int img_w, float iou_thr, int min_keypoints, int n_history) {
+void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
+               std::vector<std::vector<float>>& scores, TrackInfo& track_info, int img_h, int img_w,
+               float iou_thr, int min_keypoints, int n_history) {
   auto& tracks = track_info.tracks;
 
   std::vector<Track> new_tracks;
@@ -262,16 +264,16 @@ void track_step(std::vector<std::vector<cv::Point2f>>& keypoints,
   std::vector<float> similarities(n_rows * n_cols);
   for (size_t i = 0; i < n_rows; ++i) {
     for (size_t j = 0; j < n_cols; ++j) {
-      similarities[i * n_cols + j] = compute_iou(bboxes[i], tracks[j].bboxes.back());
+      similarities[i * n_cols + j] = ComputeIoU(bboxes[i], tracks[j].bboxes.back());
     }
   }
 
-  const auto assignment = greedy_assignment(similarities, n_rows, n_cols, iou_thr);
+  const auto assignment = GreedyAssignment(similarities, n_rows, n_cols, iou_thr);
 
   std::vector<int> used(n_rows);
   for (auto [i, j, _] : assignment) {
     auto k = indices[i];
-    update_track(tracks[j], keypoints[k], scores[k], bboxes[i], n_history);
+    UpdateTrack(tracks[j], keypoints[k], scores[k], bboxes[i], n_history);
     new_tracks.push_back(std::move(tracks[j]));
     used[i] = true;
   }
@@ -283,7 +285,7 @@ void track_step(std::vector<std::vector<cv::Point2f>>& keypoints,
       if (count >= min_keypoints) {
         auto& track = new_tracks.emplace_back();
         track.track_id = track_info.next_id++;
-        update_track(track, keypoints[k], scores[k], bboxes[i], n_history);
+        UpdateTrack(track, keypoints[k], scores[k], bboxes[i], n_history);
       }
     }
   }
@@ -291,7 +293,7 @@ void track_step(std::vector<std::vector<cv::Point2f>>& keypoints,
   tracks = std::move(new_tracks);
 }
 
-Value track_pose(const Value& result, Value state) {
+Value TrackPose(const Value& result, Value state) {
   assert(state.is_pointer());
   assert(result.is_array());
   std::vector<std::vector<cv::Point2f>> keypoints;
@@ -310,7 +312,7 @@ Value track_pose(const Value& result, Value state) {
   auto iou_thr = state["iou_thr"].get<float>();
   auto min_keypoints = state["min_keypoints"].get<int>();
   auto n_history = state["n_history"].get<int>();
-  track_step(keypoints, scores, track_info, img_h, img_w, iou_thr, min_keypoints, n_history);
+  TrackStep(keypoints, scores, track_info, img_h, img_w, iou_thr, min_keypoints, n_history);
 
   Value::Array targets;
   for (const auto& track : track_info.tracks) {
@@ -326,20 +328,20 @@ Value track_pose(const Value& result, Value state) {
   }
   return targets;
 }
-REGISTER_SIMPLE_MODULE(TrackPose, track_pose);
+REGISTER_SIMPLE_MODULE(TrackPose, TrackPose);
 
 class PoseTracker {
-  std::optional<Pipeline> pipeline_;
-
  public:
   using State = Value;
 
-  PoseTracker(const Model& det_model, const Model& pose_model, Context context) {
-    context.Add("detection", det_model);
-    context.Add("pose", pose_model);
-    auto config = from_json<Value>(config_json);
-    pipeline_.emplace(config, context);
-  }
+ public:
+  PoseTracker(const Model& det_model, const Model& pose_model, Context context)
+      : pipeline_([&] {
+          context.Add("detection", det_model);
+          context.Add("pose", pose_model);
+          auto config = from_json<Value>(config_json);
+          return Pipeline{config, context};
+        }()) {}
 
   State CreateState() {  // NOLINT
     return make_pointer({{"frame_id", 0},
@@ -357,7 +359,7 @@ class PoseTracker {
     // TODO: get_ref<int&> is not working
     auto frame_id = state["frame_id"].get<int>();
     if (use_detector < 0) {
-      use_detector = frame_id % 15 == 0;
+      use_detector = frame_id % 7 == 0;
       if (use_detector) {
         MMDEPLOY_WARN("use detector");
       }
@@ -366,15 +368,18 @@ class PoseTracker {
     state["img_shape"] = {mat.height(), mat.width()};
     Value::Object data{{"ori_img", mat}};
     Value input{{data}, {use_detector}, {state}};
-    return pipeline_->Apply(input)[0][0];
+    return pipeline_.Apply(input)[0][0];
   }
+
+ private:
+  Pipeline pipeline_;
 };
 
 }  // namespace mmdeploy
 
 using namespace mmdeploy;
 
-void visualize(cv::Mat frame, const Value& result) {
+void Visualize(cv::Mat& frame, const Value& result) {
   static std::vector<std::pair<int, int>> skeleton{
       {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},
       {7, 9},   {8, 10},  {1, 2},   {0, 1},   {0, 2},   {1, 3},  {2, 4},  {3, 5}, {4, 6}};
@@ -413,8 +418,10 @@ int main(int argc, char* argv[]) {
   cv::Mat frame;
   while (true) {
     video >> frame;
-    if (!frame.data) break;
+    if (!frame.data) {
+      break;
+    }
     auto result = tracker.Track(frame, state);
-    visualize(frame, result);
+    Visualize(frame, result);
   }
 }
