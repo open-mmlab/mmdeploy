@@ -1,7 +1,7 @@
 Import-Module .\utils.psm1
 
 #read configuration file
-$config_path = '..\conf\win_default.config'
+$config_path = '../conf/win_default.config'
 $conf = ReadConfig $config_path
 $cuda_version=$conf.cuda_version
 Write-Host "cuda_version=$cuda_version"
@@ -15,8 +15,6 @@ $mmdeploy_branch=$conf.mmdeploy_branch
 Write-Host "mmdeploy_branch=$mmdeploy_branch"
 $repo_url=$conf.repo_url
 Write-Host "repo_url=$repo_url"
-$TENSORRT_VERSION=$conf.tensorrt_version
-Write-Host "TENSORRT_VERSION=$TENSORRT_VERSION"
 
 SwitchCudaVersion $cuda_version
 
@@ -78,15 +76,11 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 #cudnn
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
-$date_snap=Get-Date -UFormat "%Y%m%d"
-$time_snap=Get-Date -UFormat "%Y%m%d%H%M"
-$log_dir=(Join-PATH (Join-PATH ".\regression_log\convert_log" $data_snap) $time_snap)
-mkdir $log_dir
-
 # git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
-cd MMdeploy
+
 # git submodule update --init --recursive
-$env:MMDEPLOY_DIR="$pwd"
+$env:MMDEPLOY_DIR="$pwd/MMdeploy"
+cd $env:MMDEPLOY_DIR
 rm -r build
 mkdir build
 cd build
@@ -114,6 +108,11 @@ pip install -r requirements/build.txt
 pip install -v -e .
 
 
+$date_snap=Get-Date -UFormat "%Y%m%d"
+$time_snap=Get-Date -UFormat "%Y%m%d%H%M"
+$log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
+mkdir $log_dir
+
 $SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
 $Pool = [runspacefactory]::CreateRunspacePool(1, $max_job_nums, $SessionState, $Host)
 $Pool.Open()
@@ -122,16 +121,17 @@ $script_block = {
     param(
         [string] $codebase,
         [string] $exec_performance,
-        [hashtable] $codebase_fullname_opt
+        [hashtable] $codebase_fullname_opt,
+        [string] $log_dir
     )
-    invoke-expression -command ".\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname_opt *> $logdir\$codebase.log"
+    invoke-expression -command "C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy\tests\jekins\scripts\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname_opt *> $log_dir\$codebase.log"
 }
 
 $threads = @()
 
 $handles = foreach ($codebase in $codebase_list -split ' ')
 {
-    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname_opt)
+    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname_opt).AddArgument($log_dir)
 	  $powershell.RunspacePool = $Pool
 	  $powershell.BeginInvoke()
     $threads += $powershell
