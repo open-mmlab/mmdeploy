@@ -1074,7 +1074,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
-    <td align="center">-</td>
+    <td align="center">35.7592</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -1086,7 +1086,7 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
   <tr>
     <td align="center">SSIM</td>
-    <td align="center">-</td>
+    <td align="center">0.9372</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
