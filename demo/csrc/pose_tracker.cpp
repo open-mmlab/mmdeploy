@@ -44,6 +44,7 @@ const auto config_json = R"(
     {
       "type": "Task",
       "module": "TrackPose",
+      "scheduler": "pool",
       "input": ["keypoints", "state"],
       "output": "targets"
     }
@@ -343,7 +344,7 @@ class PoseTracker {
     // TODO: get_ref<int&> is not working
     auto frame_id = state["frame_id"].get<int>();
     if (use_detector < 0) {
-      use_detector = frame_id % 7 == 0;
+      use_detector = frame_id % 10 == 0;
       if (use_detector) {
         MMDEPLOY_WARN("use detector");
       }
@@ -396,16 +397,31 @@ int main(int argc, char* argv[]) {
   const auto video_path = argv[4];
   Device device(device_name);
   Context context(device);
+  auto pool = Scheduler::ThreadPool(4);
+  auto infer = Scheduler::Thread();
+  context.Add("pool", pool);
+  context.Add("infer", infer);
   PoseTracker tracker(Model(det_model_path), Model(pose_model_path), context);
   auto state = tracker.CreateState();
-  cv::VideoCapture video(video_path);
+
   cv::Mat frame;
+  std::chrono::duration<double, std::milli> dt{};
+
+  int frame_id{};
+
+  cv::VideoCapture video(video_path);
   while (true) {
     video >> frame;
     if (!frame.data) {
       break;
     }
+    auto t0 = std::chrono::high_resolution_clock::now();
     auto result = tracker.Track(frame, state);
-    Visualize(frame, result);
+    auto t1 = std::chrono::high_resolution_clock::now();
+    dt += t1 - t0;
+    ++frame_id;
+    // Visualize(frame, result);
   }
+
+  MMDEPLOY_INFO("frames: {}, time {} ms", frame_id, dt.count());
 }
