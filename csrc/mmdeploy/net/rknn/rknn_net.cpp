@@ -10,7 +10,7 @@
 #include "mmdeploy/core/utils/filesystem.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 RKNNNet::~RKNNNet() {}
 
@@ -208,4 +208,4 @@ class RKNNNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, RKNNNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

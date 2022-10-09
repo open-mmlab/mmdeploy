@@ -7,7 +7,7 @@
 #include "mmdeploy/core/net.h"
 #include "rknn_api.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class RKNNNet : public Net {
  public:
@@ -41,6 +41,6 @@ class RKNNNet : public Net {
   static constexpr const auto kHost = Device(0);
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_RKNN_RKNN_NET_H_
