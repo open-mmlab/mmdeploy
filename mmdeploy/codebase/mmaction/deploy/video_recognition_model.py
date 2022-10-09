@@ -5,8 +5,6 @@ import mmcv
 import numpy as np
 import torch
 from mmcv.utils import Registry
-# from mmaction.datasets import DATASETS
-# from mmaction.ops import resize
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -122,6 +120,40 @@ class End2EndModel(BaseBackendModel):
             np.ndarray: Drawn image, only if not `show` or `out_file`.
         """
         pass
+
+
+@__BACKEND_MODEL.register_module('sdk')
+class SDKEnd2EndModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmaction format."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        pipeline = kwargs['deploy_cfg']['backend_config']['pipeline']
+        for trans in pipeline:
+            if trans['type'] == 'SampleFrames':
+                self.clip_len = trans['clip_len']
+                self.num_clips = trans['num_clips']
+
+    def forward(self, imgs: List[torch.Tensor], *args, **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            img (List[torch.Tensor]): A list contains input image(s).
+            *args: Other arguments.
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        imgs = imgs[0]
+        mats = []
+        for mat in imgs:
+            mats.append(mat.contiguous().detach().cpu().numpy())
+        mats = [mat[:, :, ::-1] for mat in mats]
+        pred = self.wrapper.handle(mats, (self.clip_len, self.num_clips))
+        pred = np.array(pred, dtype=np.float32)
+        pred = pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
+        return pred
 
 
 def build_video_recognition_model(model_files: Sequence[str],
