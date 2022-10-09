@@ -6,7 +6,7 @@
 
 ```bash
 $ cd /path/to/mmdeploy
-$ python3 tools/scripts/build_ubuntu_x64_ncnn.py $(nproc)
+$ python3 tools/scripts/build_ubuntu_x64_ncnn.py
 ..
 ```
 
@@ -37,9 +37,10 @@ $ python3 tools/check_env.py
 
 这是已验证的安装脚本。如果想让 mmdeploy 同时支持多种 backend，每个脚本执行一次即可：
 
-|             script              | OS version  |
-| :-----------------------------: | :---------: |
-|    build_ubuntu_x64_ncnn.py     | 18.04/20.04 |
-|     build_ubuntu_x64_ort.py     | 18.04/20.04 |
-|    build_ubuntu_x64_pplnn.py    | 18.04/20.04 |
-| build_ubuntu_x64_torchscript.py | 18.04/20.04 |
+|             script              |     OS version      |
+| :-----------------------------: | :-----------------: |
+|    build_ubuntu_x64_ncnn.py     |     18.04/20.04     |
+|     build_ubuntu_x64_ort.py     |     18.04/20.04     |
+|    build_ubuntu_x64_pplnn.py    |     18.04/20.04     |
+| build_ubuntu_x64_torchscript.py |     18.04/20.04     |
+|  build_jetson_orin_python38.sh  | JetPack5.0 L4T 34.1 |
