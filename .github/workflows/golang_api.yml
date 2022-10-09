@@ -61,6 +61,7 @@ jobs:
           export LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LIBRARY_PATH
           export CPATH=$MMDEPLOY_DIR/include:$CPATH
           go mod download github.com/fogleman/gg
+          go get github.com/fogleman/gg@v1.3.0
           go build examples/ImageClassification.go
           ./ImageClassification cpu ../mmdeploy-converted-models/resnet images/input_images/DemoImageClassification.png
           go build examples/ObjectDetection.go
