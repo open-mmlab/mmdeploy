@@ -52,7 +52,7 @@ jobs:
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
       - name: Test golang demo
         run: |
-          pushd mmdeploy
+          pushd golang-mmdeploy
           export MMDEPLOY_DIR=/home/runner/work/mmdeploy/mmdeploy/build/install
           export LD_LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LD_LIBRARY_PATH
           export ONNXRUNTIME_DIR=/home/runner/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1
