@@ -26,7 +26,7 @@ install_tools() {
 
 build_ocv() {
   if [ ! -e "opencv" ];then
-    git clone https://github.com/opencv/opencv --depth=1 --branch=4.x --recursive
+    git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
   fi
   if [ ! -e "opencv/platforms/linux/cross_build_aarch64" ];then
     mkdir opencv/platforms/linux/cross_build_aarch64
