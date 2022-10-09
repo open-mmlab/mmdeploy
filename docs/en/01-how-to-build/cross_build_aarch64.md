@@ -93,7 +93,7 @@ $ ls -lah install/bin/*
 
 ## 3. Execute on Device
 
-Make sure that `--dump-info` is used during convert model, so that the `resnet18` directory has the files required by the SDK such as `pipeline.json`.
+Make sure that `--dump-info` is used during model conversion, so that the `resnet18` directory contains the files required by the SDK such as `pipeline.json`.
 
 Copy the model folder(resnet18), executable(image_classification) file, test image(tests/data/tiger.jpeg) and prebuilt OpenCV(/tmp/ocv-aarch64) to the device.
 
