@@ -11,8 +11,6 @@
     - [示例](#示例)
   - [如何评测模型](#如何评测模型)
   - [各后端已支持导出的模型列表](#各后端已支持导出的模型列表)
-  - [注意事项](#注意事项)
-  - [问答](#问答)
 
 <!-- TOC -->
 
@@ -27,7 +25,7 @@
 
 ### 准备工作
 
-1. 安装您的目标后端。 您可以参考 [ONNXRuntime-install](https://mmdeploy.readthedocs.io/en/latest/05-supported-backends/onnxruntime.html) ，[TensorRT-install](https://mmdeploy.readthedocs.io/en/latest/05-supported-backends/tensorrt.html) ，[ncnn-install](https://mmdeploy.readthedocs.io/en/latest/05-supported-backends/ncnn.html) ，[PPLNN-install](https://mmdeploy.readthedocs.io/en/latest/05-supported-backends/pplnn.html), [OpenVINO-install](https://mmdeploy.readthedocs.io/en/latest/05-supported-backends/openvino.html)。
+1. 安装您的目标后端。 您可以参考 [ONNXRuntime-install](../05-supported-backends/onnxruntime.m) ，[TensorRT-install](../05-supported-backends/tensorrt.md) ，[ncnn-install](../05-supported-backends/ncnn.md) ，[PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md)。
 2. 安装您的目标代码库。 您可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/install.md)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://mmocr.readthedocs.io/zh_CN/latest/install.html)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/install.md)。
 
 ### 使用方法

@@ -4,21 +4,14 @@ globals:
   images:
     img_densetext_det: &img_densetext_det ../mmocr/demo/demo_densetext_det.jpg
     img_demo_text_det: &img_demo_text_det ../mmocr/demo/demo_text_det.jpg
-    img_demo_text_ocr: &img_demo_text_ocr ../mmocr/demo/demo_text_ocr.jpg
     img_demo_text_recog: &img_demo_text_recog ../mmocr/demo/demo_text_recog.jpg
   metric_info: &metric_info
     hmean-iou: # named after metafile.Results.Metrics
-      eval_name: hmean-iou # test.py --metrics args
-      metric_key: 0_hmean-iou:hmean # eval key name
+      metric_key: icdar/hmean # eval key name
       tolerance: 0.15 # metric ±n%
-      task_name: Text Detection # metafile.Results.Task
-      dataset: ICDAR2015 # metafile.Results.Dataset
     word_acc:
-      eval_name: acc
-      metric_key: 0_word_acc_ignore_case
+      metric_key: IIIT5K/recog/word_acc_ignore_case_symbol
       tolerance: 0.05 # metric ±n%
-      task_name: Text Recognition
-      dataset: IIIT5K
   convert_image_det: &convert_image_det
     input_img: *img_densetext_det
     test_img: *img_demo_text_det
