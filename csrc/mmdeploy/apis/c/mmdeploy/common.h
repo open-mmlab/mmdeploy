@@ -77,13 +77,94 @@ typedef struct mmdeploy_point_t {
 
 typedef struct mmdeploy_value* mmdeploy_value_t;
 
+typedef struct mmdeploy_context* mmdeploy_context_t;
+
+typedef struct mmdeploy_device* mmdeploy_device_t;
+
+typedef enum mmdeploy_context_type_t {
+  MMDEPLOY_TYPE_DEVICE = 0,
+  MMDEPLOY_TYPE_STREAM = 1,
+  MMDEPLOY_TYPE_MODEL = 2,
+  MMDEPLOY_TYPE_SCHEDULER = 3,
+  MMDEPLOY_TYPE_MAT = 4,
+} mmdeploy_context_type_t;
+
 #if __cplusplus
 extern "C" {
 #endif
 
+/**
+ * Copy value
+ * @param value
+ * @return
+ */
 MMDEPLOY_API mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value);
 
-MMDEPLOY_API int mmdeploy_value_destroy(mmdeploy_value_t value);
+/**
+ * Destroy value
+ * @param value
+ */
+MMDEPLOY_API void mmdeploy_value_destroy(mmdeploy_value_t value);
+
+/**
+ * Create device handle
+ * @param device_name
+ * @param device_id
+ * @param device
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_device_create(const char* device_name, int device_id,
+                                        mmdeploy_device_t* device);
+
+/**
+ * Destroy device handle
+ * @param device
+ */
+MMDEPLOY_API void mmdeploy_device_destroy(mmdeploy_device_t device);
+
+/**
+ * Create context
+ * @param context
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_context_create(mmdeploy_context_t* context);
+
+/**
+ * Create context
+ * @param device_name
+ * @param device_id
+ * @param context
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_context_create_by_device(const char* device_name, int device_id,
+                                                   mmdeploy_context_t* context);
+
+/**
+ * Destroy context
+ * @param context
+ */
+MMDEPLOY_API void mmdeploy_context_destroy(mmdeploy_context_t context);
+
+/**
+ * Add context object
+ * @param context
+ * @param type
+ * @param name
+ * @param object
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t type,
+                                      const char* name, const void* object);
+
+/**
+ * Create input value from array of mats
+ * @param mats
+ * @param mat_count
+ * @param value
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
+                                              mmdeploy_value_t* value);
 
 #if __cplusplus
 }

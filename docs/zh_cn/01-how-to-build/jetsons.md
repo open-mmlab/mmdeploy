@@ -158,16 +158,18 @@ conda activate mmdeploy
 - 安装 ONNX
 
   ```shell
-  pip install onnx
+  # 以下方式二选一
+  python3 -m pip install onnx
+  conda install -c conda-forge onnx
   ```
 
-- 安装 h5py
+- 安装 h5py 和 pycuda
 
-  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据。
+  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据；需要 pycuda 拷贝显存
 
   ```shell
   sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
-  pip install versioned-hdf5
+  pip install versioned-hdf5 pycuda
   ```
 
 ### 安装 SDK 的依赖项

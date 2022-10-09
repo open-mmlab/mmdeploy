@@ -7,20 +7,20 @@
 
 #include "common.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 using Rect = std::array<float, 4>;
 
 class PyPoseDetector {
  public:
-  PyPoseDetector(const char *model_path, const char *device_name, int device_id) {
+  PyPoseDetector(const char* model_path, const char* device_name, int device_id) {
     auto status =
         mmdeploy_pose_detector_create_by_path(model_path, device_name, device_id, &detector_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create pose_detector");
     }
   }
-  py::list Apply(const std::vector<PyImage> &imgs, const std::vector<std::vector<Rect>> &bboxes) {
+  py::list Apply(const std::vector<PyImage>& imgs, const std::vector<std::vector<Rect>>& bboxes) {
     if (imgs.size() == 0 && bboxes.size() == 0) {
       return py::list{};
     }
@@ -34,7 +34,7 @@ class PyPoseDetector {
     std::vector<mmdeploy_rect_t> boxes;
     std::vector<int> bbox_count;
     mats.reserve(imgs.size());
-    for (const auto &img : imgs) {
+    for (const auto& img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
@@ -56,7 +56,7 @@ class PyPoseDetector {
       }
     }
 
-    mmdeploy_pose_detection_t *detection{};
+    mmdeploy_pose_detection_t* detection{};
     auto status = mmdeploy_pose_detector_apply_bbox(detector_, mats.data(), (int)mats.size(),
                                                     boxes.data(), bbox_count.data(), &detection);
     if (status != MMDEPLOY_SUCCESS) {
@@ -94,19 +94,19 @@ class PyPoseDetector {
   mmdeploy_pose_detector_t detector_{};
 };
 
-static void register_python_pose_detector(py::module &m) {
+static PythonBindingRegisterer register_pose_detector{[](py::module& m) {
   py::class_<PyPoseDetector>(m, "PoseDetector")
-      .def(py::init([](const char *model_path, const char *device_name, int device_id) {
+      .def(py::init([](const char* model_path, const char* device_name, int device_id) {
              return std::make_unique<PyPoseDetector>(model_path, device_name, device_id);
            }),
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
-           [](PyPoseDetector *self, const PyImage &img) -> py::array {
+           [](PyPoseDetector* self, const PyImage& img) -> py::array {
              return self->Apply({img}, {})[0];
            })
       .def(
           "__call__",
-          [](PyPoseDetector *self, const PyImage &img, const Rect &box) -> py::array {
+          [](PyPoseDetector* self, const PyImage& img, const Rect& box) -> py::array {
             std::vector<std::vector<Rect>> bboxes;
             bboxes.push_back({box});
             return self->Apply({img}, bboxes)[0];
@@ -114,8 +114,8 @@ static void register_python_pose_detector(py::module &m) {
           py::arg("img"), py::arg("box"))
       .def(
           "__call__",
-          [](PyPoseDetector *self, const PyImage &img,
-             const std::vector<Rect> &bboxes) -> py::array {
+          [](PyPoseDetector* self, const PyImage& img,
+             const std::vector<Rect>& bboxes) -> py::array {
             std::vector<std::vector<Rect>> _bboxes;
             _bboxes.push_back(bboxes);
             return self->Apply({img}, _bboxes)[0];
@@ -123,15 +123,6 @@ static void register_python_pose_detector(py::module &m) {
           py::arg("img"), py::arg("bboxes"))
       .def("batch", &PyPoseDetector::Apply, py::arg("imgs"),
            py::arg("bboxes") = std::vector<std::vector<Rect>>());
-}
+}};
 
-class PythonPoseDetectorRegisterer {
- public:
-  PythonPoseDetectorRegisterer() {
-    gPythonBindings().emplace("pose_detector", register_python_pose_detector);
-  }
-};
-
-static PythonPoseDetectorRegisterer python_pose_detector_registerer;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

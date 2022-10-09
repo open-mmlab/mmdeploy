@@ -15,18 +15,16 @@
 namespace mmdeploy {
 namespace mmdet {
 
-struct DetectorOutput {
-  struct Detection {
-    int index;
-    int label_id;
-    float score;
-    std::array<float, 4> bbox;  // left, top, right, bottom
-    Mat mask;
-    MMDEPLOY_ARCHIVE_MEMBERS(index, label_id, score, bbox, mask);
-  };
-  std::vector<Detection> detections;
-  MMDEPLOY_ARCHIVE_MEMBERS(detections);
+struct Detection {
+  int index;
+  int label_id;
+  float score;
+  std::array<float, 4> bbox;  // left, top, right, bottom
+  Mat mask;
+  MMDEPLOY_ARCHIVE_MEMBERS(index, label_id, score, bbox, mask);
 };
+
+using Detections = std::vector<Detection>;
 
 DECLARE_CODEBASE(MMDetection, mmdet);
 }  // namespace mmdet

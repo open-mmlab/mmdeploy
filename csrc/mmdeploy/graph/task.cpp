@@ -39,48 +39,60 @@ Sender<Value> Task::Process(Sender<Value> input) {
   });
 }
 
-Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
+TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {}
+
+namespace {
+
+inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
+  auto type = config["module"].get<std::string>();
+  auto creator = Registry<Module>::Get().GetCreator(type);
+  if (!creator) {
+    MMDEPLOY_ERROR("failed to find module creator: {}", type);
+    return Status(eEntryNotFound);
+  }
+  auto inst = creator->Create(config);
+  if (!Check(inst)) {
+    MMDEPLOY_ERROR("failed to create module: {}", type);
+    return Status(eFail);
+  }
+  return std::move(inst);
+}
+
+}  // namespace
+
+Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
-    OUTCOME_TRY(NodeParser::Parse(config, *task));
-    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
-    bool sched_set = false;
-    if (config["context"].contains("executor")) {
-      auto& exec_info = config["context"]["executor"];
-      for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
-        if (it.key() == task->name()) {
-          task->sched_ = it->get<TypeErasedScheduler<Value>>();
-          sched_set = true;
-          MMDEPLOY_INFO("scheduler configured for task {}", task->name());
-          break;
-        }
+    OUTCOME_TRY(task->module_, CreateModule(config_));
+
+    if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
+      if (auto sched = Maybe{config_} / "context" / "scheduler" / *name /
+                       identity<TypeErasedScheduler<Value>>{}) {
+        task->sched_ = std::move(*sched);
       }
     }
-    if (!sched_set) {
+
+    if (!task->sched_) {
       task->sched_ =
           TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
     }
-    task->is_batched_ = config.value("is_batched", false);
-    task->is_thread_safe_ = config.value("is_thread_safe", false);
+
+    task->is_batched_ = config_.value("is_batched", false);
+    task->is_thread_safe_ = config_.value("is_thread_safe", false);
     return std::move(task);
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("error parsing config: {}", config);
+    MMDEPLOY_ERROR("error parsing config: {}", config_);
     return nullptr;
   }
 }
 
-class TaskCreator : public Creator<Node> {
+class TaskCreator : public Creator<Builder> {
  public:
   const char* GetName() const override { return "Task"; }
-  std::unique_ptr<Node> Create(const Value& value) override {
-    try {
-      return TaskParser::Parse(value).value();
-    } catch (...) {
-    }
-    return nullptr;
+  unique_ptr<Builder> Create(const Value& config) override {
+    return std::make_unique<TaskBuilder>(config);
   }
 };
-
-REGISTER_MODULE(Node, TaskCreator);
+REGISTER_MODULE(Builder, TaskCreator);
 
 }  // namespace mmdeploy::graph

@@ -12,6 +12,8 @@
 namespace mmdeploy {
 namespace cpu {
 
+using namespace framework;
+
 MMDEPLOY_API cv::Mat Mat2CVMat(const Mat& mat);
 MMDEPLOY_API cv::Mat Tensor2CVMat(const Tensor& tensor);
 

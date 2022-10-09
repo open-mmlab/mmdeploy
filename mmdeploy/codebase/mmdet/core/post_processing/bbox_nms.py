@@ -261,6 +261,13 @@ def multiclass_nms_static(ctx,
                                          pre_top_k, keep_top_k, iou_threshold,
                                          score_threshold, -1)
 
+    # retain shape info
+    batch_size = boxes.size(0)
+
+    dets_shape = dets.shape
+    label_shape = labels.shape
+    dets = dets.reshape([batch_size, *dets_shape[1:]])
+    labels = labels.reshape([batch_size, *label_shape[1:]])
     return dets, labels
 
 

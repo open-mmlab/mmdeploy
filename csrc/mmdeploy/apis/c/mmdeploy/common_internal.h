@@ -23,6 +23,8 @@ inline Value Take(mmdeploy_value_t v) {
   return value;
 }
 
+inline Value* Cast(mmdeploy_context_t c) { return reinterpret_cast<Value*>(c); }
+
 mmdeploy_value_t Take(Value v) {
   return Cast(new Value(std::move(v)));  // NOLINT
 }
@@ -53,7 +55,7 @@ template <typename T, typename SFINAE = void>
 class wrapped {};
 
 template <typename T>
-class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
+class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
  public:
   wrapped() noexcept : v_(nullptr) {}
   explicit wrapped(T v) noexcept : v_(v) {}
@@ -91,8 +93,5 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
 };
 
 }  // namespace
-
-MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
-                                              mmdeploy_value_t* value);
 
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_

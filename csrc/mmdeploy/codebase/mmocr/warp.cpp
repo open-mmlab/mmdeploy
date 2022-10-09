@@ -13,23 +13,18 @@
 
 namespace mmdeploy {
 
-// warp rotated rect
-class WarpBoxes {
+// Warp rotated rect
+class WarpBbox {
  public:
   Result<Value> operator()(const Value& img, const Value& det) {
-    Value patches = ValueType::kArray;
-    if (det.is_object() && det.contains("boxes")) {
-      auto boxes = from_value<std::vector<std::vector<cv::Point>>>(det["boxes"]);
-      auto ori_img = mmdeploy::cpu::Mat2CVMat(img["ori_img"].get<mmdeploy::Mat>()).clone();
-      for (int i = 0; i < boxes.size(); ++i) {
-        auto patch = warp(ori_img, boxes[i]);
-        patches.push_back(make_pointer({{"ori_img", cpu::CVMat2Mat(patch, PixelFormat::kBGR)}}));
-        //      cv::imwrite(std::to_string(i) + ".png", patch);
-      }
+    auto ori_img = img["ori_img"].get<framework::Mat>();
+    if (det.is_object() && det.contains("bbox")) {
+      auto bbox = from_value<std::vector<cv::Point>>(det["bbox"]);
+      auto patch = warp(mmdeploy::cpu::Mat2CVMat(ori_img), bbox);
+      return Value{{"ori_img", cpu::CVMat2Mat(patch, PixelFormat::kBGR)}};
     } else {  // whole image as a bbox
-      patches.push_back({{"ori_img", img["ori_img"].get<mmdeploy::Mat>()}});
+      return Value{{"ori_img", ori_img}};
     }
-    return patches;
   }
 
   // assuming rect
@@ -69,13 +64,12 @@ class WarpBoxes {
   }
 };
 
-class WarpBoxesCreator : public Creator<Module> {
+class WarpBboxCreator : public Creator<Module> {
  public:
-  const char* GetName() const override { return "WarpBoxes"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(WarpBoxes{}); }
+  const char* GetName() const override { return "WarpBbox"; }
+  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(WarpBbox{}); }
 };
 
-REGISTER_MODULE(Module, WarpBoxesCreator);
+REGISTER_MODULE(Module, WarpBboxCreator);
 
 }  // namespace mmdeploy

@@ -21,71 +21,50 @@ using namespace mmdeploy;
 
 namespace {
 
-const Value& config_template() {
+Value config_template(const Model& model) {
   // clang-format off
-  static Value v {
+  return {
+    {"type", "Pipeline"},
+    {"input", {"imgs", "bboxes"}},
     {
-      "pipeline", {
+      "tasks", {
         {
-          "tasks", {
-            {
-              {"name", "warp"},
-              {"type", "Task"},
-              {"module", "WarpBoxes"},
-              {"input", {"img", "dets"}},
-              {"output", {"patches"}}
-            },
-            {
-              {"name", "flatten"},
-              {"type", "Flatten"},
-              {"input", {"patches"}},
-              {"output", {"patch_flat", "patch_index"}},
-            },
-            {
-              {"name", "recog"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"},{"batch_size", 1}}},
-              {"input", {"patch_flat"}},
-              {"output", {"texts"}}
-            },
-            {
-              {"name", "unflatten"},
-              {"type", "Unflatten"},
-              {"input", {"texts", "patch_index"}},
-              {"output", {"text_unflat"}},
-            }
-          }
+          {"type", "Task"},
+          {"module", "WarpBbox"},
+          {"input", {"imgs", "bboxes"}},
+          {"output", "patches"},
         },
-        {"input", {"img", "dets"}},
-        {"output", {"text_unflat"}}
+        {
+          {"type", "Inference"},
+          {"input", "patches"},
+          {"output", "texts"},
+          {"params", {{"model", std::move(model)}}},
+        }
       }
-    }
+    },
+    {"output", "texts"},
   };
   // clang-format on
-  return v;
-}
-
-int mmdeploy_text_recognizer_create_impl(mmdeploy_model_t model, const char* device_name,
-                                         int device_id, mmdeploy_exec_info_t exec_info,
-                                         mmdeploy_text_recognizer_t* recognizer) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][2]["params"]["model"] = *Cast(model);
-
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
-                                  (mmdeploy_pipeline_t*)recognizer);
 }
 
 }  // namespace
 
 int mmdeploy_text_recognizer_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                     mmdeploy_text_recognizer_t* recognizer) {
-  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, nullptr, recognizer);
+  mmdeploy_context_t context{};
+  auto ec = mmdeploy_context_create_by_device(device_name, device_id, &context);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_text_recognizer_create_v2(model, context, recognizer);
+  mmdeploy_context_destroy(context);
+  return ec;
 }
 
-int mmdeploy_text_recognizer_create_v2(mmdeploy_model_t model, const char* device_name,
-                                       int device_id, mmdeploy_exec_info_t exec_info,
+int mmdeploy_text_recognizer_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                        mmdeploy_text_recognizer_t* recognizer) {
-  return mmdeploy_text_recognizer_create_impl(model, device_name, device_id, exec_info, recognizer);
+  auto config = config_template(*Cast(model));
+  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)recognizer);
 }
 
 int mmdeploy_text_recognizer_create_by_path(const char* model_path, const char* device_name,
@@ -94,8 +73,7 @@ int mmdeploy_text_recognizer_create_by_path(const char* model_path, const char* 
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec =
-      mmdeploy_text_recognizer_create_impl(model, device_name, device_id, nullptr, recognizer);
+  auto ec = mmdeploy_text_recognizer_create(model, device_name, device_id, recognizer);
   mmdeploy_model_destroy(model);
   return ec;
 }
@@ -115,47 +93,31 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
   try {
     Value::Array input_images;
     Value::Array input_bboxes;
-    auto _bboxes = bboxes;
-    auto result_count = 0;
 
-    // mapping from image index to result index, -1 represents invalid image with no bboxes
-    // supplied.
-    std::vector<int> result_index(image_count, -1);
+    auto add_bbox = [&](Mat img, const mmdeploy_text_detection_t* det) {
+      if (det) {
+        const auto& b = det->bbox;
+        Value::Array bbox{b[0].x, b[0].y, b[1].x, b[1].y, b[2].x, b[2].y, b[3].x, b[3].y};
+        input_bboxes.push_back({{"bbox", std::move(bbox)}});
+      } else {
+        input_bboxes.push_back(nullptr);
+      }
+      input_images.push_back({{"ori_img", img}});
+    };
 
     for (int i = 0; i < image_count; ++i) {
+      Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
+               DataType(images[i].type), images[i].data,  Device{"cpu"}};
       if (bboxes && bbox_count) {
-        if (bbox_count[i] == 0) {
-          // skip images with no bounding boxes (push nothing)
-          continue;
-        }
-        Value boxes(Value::kArray);
         for (int j = 0; j < bbox_count[i]; ++j) {
-          Value box;
-          for (const auto& p : _bboxes[j].bbox) {
-            box.push_back(p.x);
-            box.push_back(p.y);
-          }
-          boxes.push_back(std::move(box));
+          add_bbox(_mat, bboxes++);
         }
-        _bboxes += bbox_count[i];
-        result_count += bbox_count[i];
-        input_bboxes.push_back({{"boxes", boxes}});
-      } else {
-        // bboxes or bbox_count not supplied, use whole image
-        result_count += 1;
-        input_bboxes.push_back(Value::kNull);
+      } else {  // inference with whole image
+        add_bbox(_mat, nullptr);
       }
-
-      result_index[i] = static_cast<int>(input_images.size());
-      mmdeploy::Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
-                         DataType(images[i].type), images[i].data,  Device{"cpu"}};
-      input_images.push_back({{"ori_img", _mat}});
     }
 
-    std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
-
-    Value input{std::move(input_images), std::move(input_bboxes)};
-    *output = Take(std::move(input));
+    *output = Take(Value{std::move(input_images), std::move(input_bboxes)});
     return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
@@ -201,37 +163,31 @@ MMDEPLOY_API int mmdeploy_text_recognizer_get_result(mmdeploy_value_t output,
     return MMDEPLOY_E_INVALID_ARG;
   }
   try {
-    std::vector<std::vector<mmocr::TextRecognizerOutput>> recognizer_outputs;
-    from_value(Cast(output)->front(), recognizer_outputs);
+    std::vector<mmocr::TextRecognition> recognitions;
+    from_value(Cast(output)->front(), recognitions);
 
-    size_t image_count = recognizer_outputs.size();
-    size_t result_count = 0;
-    for (const auto& img_outputs : recognizer_outputs) {
-      result_count += img_outputs.size();
-    }
+    size_t count = recognitions.size();
 
     auto deleter = [&](mmdeploy_text_recognition_t* p) {
-      mmdeploy_text_recognizer_release_result(p, static_cast<int>(result_count));
+      mmdeploy_text_recognizer_release_result(p, static_cast<int>(count));
     };
 
     std::unique_ptr<mmdeploy_text_recognition_t[], decltype(deleter)> _results(
-        new mmdeploy_text_recognition_t[result_count]{}, deleter);
+        new mmdeploy_text_recognition_t[count]{}, deleter);
 
     size_t result_idx = 0;
-    for (const auto& img_result : recognizer_outputs) {
-      for (const auto& box_result : img_result) {
-        auto& res = _results[result_idx++];
+    for (const auto& bbox_result : recognitions) {
+      auto& res = _results[result_idx++];
 
-        auto& score = box_result.score;
-        res.length = static_cast<int>(score.size());
+      auto& score = bbox_result.score;
+      res.length = static_cast<int>(score.size());
 
-        res.score = new float[score.size()];
-        std::copy_n(score.data(), score.size(), res.score);
+      res.score = new float[score.size()];
+      std::copy_n(score.data(), score.size(), res.score);
 
-        auto text = box_result.text;
-        res.text = new char[text.length() + 1];
-        std::copy_n(text.data(), text.length() + 1, res.text);
-      }
+      auto text = bbox_result.text;
+      res.text = new char[text.length() + 1];
+      std::copy_n(text.data(), text.length() + 1, res.text);
     }
 
     *results = _results.release();

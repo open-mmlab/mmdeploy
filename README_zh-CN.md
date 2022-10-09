@@ -42,20 +42,31 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持超多 OpenMMLab 算法库
 
-- [mmcls](docs/en/04-supported-codebases/mmcls.md)
-- [mmdet](docs/en/04-supported-codebases/mmdet.md)
-- [mmseg](docs/en/04-supported-codebases/mmseg.md)
-- [mmedit](docs/en/04-supported-codebases/mmedit.md)
-- [mmocr](docs/en/04-supported-codebases/mmocr.md)
-- [mmpose](docs/en/04-supported-codebases/mmpose.md)
-- [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)
-- [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
+- [mmcls](docs/zh_cn/04-supported-codebases/mmcls.md)
+- [mmdet](docs/zh_cn/04-supported-codebases/mmdet.md)
+- [mmseg](docs/zh_cn/04-supported-codebases/mmseg.md)
+- [mmedit](docs/zh_cn/04-supported-codebases/mmedit.md)
+- [mmocr](docs/zh_cn/04-supported-codebases/mmocr.md)
+- [mmpose](docs/zh_cn/04-supported-codebases/mmpose.md)
+- [mmdet3d](docs/zh_cn/04-supported-codebases/mmdet3d.md)
+- [mmrotate](docs/zh_cn/04-supported-codebases/mmrotate.md)
 
 ### 支持多种推理后端
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | snpe | Ascend | Core ML | RKNN | more                                           |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---- | ------ | ------- | ---- | ---------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | ✔️   | ✔️     | ✔️      | ✔️   | [benchmark](docs/en/03-benchmark/benchmark.md) |
+支持的设备平台和推理引擎如下表所示。benchmark请参考[这里](docs/zh_cn/03-benchmark/benchmark.md)
+
+| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
+| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
 ### SDK 可高度定制化
 
@@ -73,7 +84,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [Build for macOS](docs/zh_cn/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
-  - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for Jetson](docs/zh_cn/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
