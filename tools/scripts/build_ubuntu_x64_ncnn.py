@@ -36,7 +36,7 @@ def install_protobuf(dep_dir) -> int:
     os.system('make clean')
     os.system('./configure --prefix={}'.format(install_dir))
     os.system('make -j {} && make install'.format(g_jobs))
-    protoc = os.path.join(dep_dir, 'pbinstall', 'bin', 'protoc')
+    protoc = os.path.join(install_dir, 'bin', 'protoc')
 
     print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
 
