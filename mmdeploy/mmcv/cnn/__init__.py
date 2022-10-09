@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .transformer import (MultiHeadAttentionop,
-                          multiheadattention__forward__ncnn)
+from .transformer import MultiHeadAttentionop
 
-__all__ = ['multiheadattention__forward__ncnn', 'MultiHeadAttentionop']
+__all__ = ['MultiHeadAttentionop']

@@ -4,10 +4,11 @@ import os
 import random
 from typing import Dict, List
 
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
@@ -49,7 +50,7 @@ def convert_to_list(rewrite_output: Dict, output_names: List[str]) -> List:
 
 def get_anchor_head_model():
     """AnchorHead Config."""
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -80,7 +81,7 @@ def _replace_r50_with_r18(model):
     ['tests/test_codebase/test_mmrotate/data/single_stage_model.json'])
 def test_forward_of_base_detector(model_cfg_path, backend):
     check_backend(backend)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(
@@ -95,7 +96,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     keep_top_k=100,
                 ))))
 
-    model_cfg = mmcv.Config(dict(model=mmcv.load(model_cfg_path)))
+    model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
 
     from mmrotate.models import build_detector
@@ -117,7 +118,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
 
 
 def get_deploy_cfg(backend_type: Backend, ir_type: str):
-    return mmcv.Config(
+    return Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -221,7 +222,7 @@ def test_rotated_single_roi_extractor(backend_type: Backend):
 
     single_roi_extractor = get_single_roi_extractor()
     output_names = ['roi_feat']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
@@ -264,7 +265,7 @@ def test_rotated_single_roi_extractor(backend_type: Backend):
 
 def get_oriented_rpn_head_model():
     """Oriented RPN Head Config."""
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -295,7 +296,7 @@ def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
     }]
 
     output_names = ['dets', 'labels']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
@@ -336,7 +337,7 @@ def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
 
 def get_rotated_rpn_head_model():
     """Oriented RPN Head Config."""
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -376,7 +377,7 @@ def test_get_bboxes_of_rotated_rpn_head(backend_type: Backend):
     }]
 
     output_names = ['dets', 'labels']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
@@ -420,7 +421,7 @@ def test_rotate_standard_roi_head__simple_test(backend_type: Backend):
     check_backend(backend_type)
     from mmrotate.models.roi_heads import OrientedStandardRoIHead
     output_names = ['dets', 'labels']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
@@ -433,7 +434,7 @@ def test_rotate_standard_roi_head__simple_test(backend_type: Backend):
                     pre_top_k=2000,
                     keep_top_k=2000))))
     angle_version = 'le90'
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -488,7 +489,7 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
     check_backend(backend_type)
     from mmrotate.models.roi_heads import GVRatioRoIHead
     output_names = ['dets', 'labels']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
@@ -502,7 +503,7 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
                     keep_top_k=2000,
                     max_output_boxes_per_class=1000))))
     angle_version = 'le90'
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -615,7 +616,7 @@ def get_roi_trans_roi_head_model():
                 type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
             loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
     ]
-    test_cfg = mmcv.Config(
+    test_cfg = Config(
         dict(
             nms_pre=2000,
             min_bbox_size=0,
@@ -659,7 +660,7 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
     }
 
     output_names = ['det_bboxes', 'det_labels']
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),

@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
-import mmcv
 import pytest
 import torch
+from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -38,7 +38,7 @@ class TestVoxelDetectionModel:
             'dir_scores': torch.rand(1, 12, 32, 32)
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmcv.Config({
+        deploy_cfg = Config({
             'onnx_config': {
                 'input_names': ['voxels', 'num_points', 'coors'],
                 'output_names': ['scores', 'bbox_preds', 'dir_scores'],
@@ -79,7 +79,7 @@ def test_build_voxel_detection_model():
     from mmdeploy.utils import load_config
     model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
     model_cfg = load_config(model_cfg_path)[0]
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=Backend.ONNXRUNTIME.value),
             onnx_config=dict(

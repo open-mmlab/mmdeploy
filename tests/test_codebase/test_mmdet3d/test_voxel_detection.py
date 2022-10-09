@@ -2,9 +2,9 @@
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import mmcv
 import pytest
 import torch
+from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
@@ -23,7 +23,7 @@ except ImportError:
 model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(type='mmdet3d', task='VoxelDetection'),

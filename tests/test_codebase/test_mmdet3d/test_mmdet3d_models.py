@@ -1,13 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
+import_codebase(Codebase.MMDET3D)
 try:
     import_codebase(Codebase.MMDET3D)
 except ImportError:
@@ -46,7 +47,7 @@ def test_pillar_encoder(backend_type: Backend):
     model = get_pillar_encoder()
     model.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -84,7 +85,7 @@ def test_pointpillars_scatter(backend_type: Backend):
     model = get_pointpillars_scatter()
     model.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -135,7 +136,7 @@ def test_centerpoint(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_centerpoint()
     model.cpu().eval()
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -175,7 +176,7 @@ def test_pointpillars_nus(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_pointpillars_nus()
     model.cpu().eval()
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
