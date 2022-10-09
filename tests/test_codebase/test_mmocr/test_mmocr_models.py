@@ -29,8 +29,7 @@ class FPNCNeckModel(FPNC):
 
     def forward(self, inputs):
         neck_inputs = [
-            torch.ones(1, channel, inputs.shape[-2], inputs.shape[-1])
-            for channel in self.in_channels
+            inputs.repeat([1, channel, 1, 1]) for channel in self.in_channels
         ]
         output = self.neck.forward(neck_inputs)
         return output

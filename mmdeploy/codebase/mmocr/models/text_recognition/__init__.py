@@ -5,3 +5,4 @@ from . import encode_decode_recognizer  # noqa: F401,F403
 from . import lstm_layer  # noqa: F401,F403
 from . import sar  # noqa: F401,F403
 from . import sar_decoder  # noqa: F401,F403
+from . import sar_encoder  # noqa: F401,F403
