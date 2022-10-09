@@ -67,10 +67,6 @@ ncnn:
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmpose/pose-detection_ncnn_static-256x256.py
-  pipeline_ncnn_static_int8_256x256: &pipeline_ncnn_static_int8_256x256
-    convert_image: *convert_image
-    backend_test: False
-    deploy_config: configs/mmpose/pose-detection_ncnn-int8_static-256x256.py
 
 pplnn:
   pipeline_pplnn_static_fp32: &pipeline_pplnn_static_fp32
@@ -122,4 +118,3 @@ models:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp32_256x256
       - *pipeline_ncnn_static_fp32_256x256
-      - *pipeline_ncnn_static_int8_256x256
