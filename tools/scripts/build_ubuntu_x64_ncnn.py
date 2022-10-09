@@ -41,10 +41,10 @@ def install_protobuf(dep_dir) -> int:
     print('protoc \t:{}'.format(cmd_result('{} --version'.format(protoc))))
 
     os.system(""" echo 'export PATH={}:$PATH' >> ~/mmdeploy.env """.format(
-        os.path.join(dep_dir, 'pbinstall', 'bin')))
+        os.path.join(install_dir, 'bin')))
     os.system(
         """ echo 'export LD_LIBRARY_PATH={}:$LD_LIBRARY_PATH' >> ~/mmdeploy.env """  # noqa: E501
-        .format(os.path.join(dep_dir, 'pbinstall', 'lib')))
+        .format(os.path.join(install_dir, 'lib')))
 
     return 0
 
