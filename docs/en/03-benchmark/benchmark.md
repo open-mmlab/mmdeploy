@@ -1697,7 +1697,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.717</td>
     <td align="center">0.717</td>
     <td align="center">0.717</td>
-    <td align="center">-</td>
+    <td align="center">0.717</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -1706,7 +1706,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.774</td>
     <td align="center">0.774</td>
     <td align="center">0.774</td>
-    <td align="center">-</td>
+    <td align="center">0.774</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
