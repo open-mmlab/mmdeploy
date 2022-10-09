@@ -50,7 +50,7 @@ class MMDetection3d(MMCodebase):
 
     @classmethod
     def register_all_modules(cls):
-        from mmdet3d.utils.set_env import register_all_modules
+        from mmdet3d.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
         register_all_modules(True)
