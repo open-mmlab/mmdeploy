@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test_rust_api:
+  test_golang_api:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout repository
@@ -46,13 +46,13 @@ jobs:
           cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
           make install
           popd
-      - name: Clone golang-mmdeploy
+      - name: Clone mmdeploy-golang
         run: git clone https://github.com/ueanperfect/mmdeploy-golang.git
       - name: Install converted models
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
       - name: Test golang demo
         run: |
-          pushd golang-mmdeploy
+          pushd mmdeploy-golang
           export MMDEPLOY_DIR=/home/runner/work/mmdeploy/mmdeploy/build/install
           export LD_LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LD_LIBRARY_PATH
           export ONNXRUNTIME_DIR=/home/runner/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1
@@ -60,7 +60,7 @@ jobs:
           export LD_LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LD_LIBRARY_PATH
           export LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LIBRARY_PATH
           export CPATH=$MMDEPLOY_DIR/include:$CPATH
-          #go mod download github.com/fogleman/gg
+          go mod download github.com/fogleman/gg
           go build examples/ImageClassification.go
           ./ImageClassification cpu ../mmdeploy-converted-models/resnet images/input_images/DemoImageClassification.png
           go build examples/ObjectDetection.go
@@ -75,11 +75,3 @@ jobs:
           ./Ocr cpu ../mmdeploy-converted-models/dbnet ../mmdeploy-converted-models/crnn images/input_images/DemoOcr.jpg
           go build examples/Restorer.go
           ./Restorer cpu ../mmdeploy-converted-models/edsr images/input_images/DemoRestorer.png
-#          cargo build
-#          cargo run --example classifier cpu ../mmdeploy-converted-models/resnet ./images/demos/mmcls_demo.jpg
-#          cargo run --example detector cpu ../mmdeploy-converted-models/faster-rcnn-ort ./images/demos/mmdet_demo.jpg
-#          cargo run --example segmentor cpu ../mmdeploy-converted-models/deeplabv3 ./images/demos/mmseg_demo.png
-#          cargo run --example pose_detector cpu ../mmdeploy-converted-models/hrnet ./images/demos/mmpose_demo.jpg
-#          cargo run --example rotated_detector cpu ../mmdeploy-converted-models/retinanet ./images/demos/mmrotate_demo.jpg
-#          cargo run --example ocr cpu ../mmdeploy-converted-models/dbnet ../mmdeploy-converted-models/crnn ./images/demos/mmocr_demo.jpg
-#          cargo run --example restorer cpu ../mmdeploy-converted-models/edsr ./images/demos/mmediting_demo.png
