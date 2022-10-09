@@ -27,12 +27,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - name: Install latest nightly Rust
-        uses: actions-rs/toolchain@v1
-        with:
-            toolchain: nightly
-            override: true
-            components: rustfmt, clippy
       - name: update
         run: sudo apt update
       - name: Install dependencies
