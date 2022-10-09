@@ -14,7 +14,7 @@
 
 2. 通过 [官方文档](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc)，安装 RKNN python 安装包. 在我们的测试中, 使用的 rknn-toolkit 版本是 1.2.0，commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`.
 
-3. 跟着 [instructions](../01-how-to-build/build_from_source.md)，源码安装 MMDeploy. 需要注意的是， MMDeploy 和 RKNN 依赖的安装包间有冲突的内容. 这里提供建议在 python 3.6 环境中使用的安装包版本:
+3. 先安装onnx==1.8.0,跟着 [instructions](../01-how-to-build/build_from_source.md)，源码安装 MMDeploy。 需要注意的是， MMDeploy 和 RKNN 依赖的安装包间有冲突的内容. 这里提供建议在 python 3.6 环境中使用的安装包版本:
 
    ```
    protobuf==3.19.4
@@ -23,6 +23,12 @@
    torch==1.8.0
    torchvision==0.9.0
    ```
+
+4. 使用 conda 安装 torch and torchvision，比如:
+
+```
+conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
+```
 
 如要使用 [MMClassification](https://mmclassification.readthedocs.io/en/latest/getting_started.html)， 需要用户自己安装使用。
 

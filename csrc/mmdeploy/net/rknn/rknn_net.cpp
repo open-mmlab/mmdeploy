@@ -15,35 +15,13 @@ namespace mmdeploy::framework {
 RKNNNet::~RKNNNet() {}
 
 void RKNNNet::dump_tensor_attr(rknn_tensor_attr* attr) {
-  printf(
-      "  index=%d, name=%s, n_dims=%d, dims=[%d, %d, %d, %d], n_elems=%d, size=%d, fmt=%s, "
-      "type=%s, qnt_type=%s, "
-      "zp=%d, scale=%f\n",
+  MMDEPLOY_INFO(
+      "  index={}, name={}, n_dims={}, dims=[{}, {}, {}, {}], n_elems={}, size={}, fmt={}, "
+      "type={}, qnt_type={}, "
+      "zp={}, scale=%f\n",
       attr->index, attr->name, attr->n_dims, attr->dims[0], attr->dims[1], attr->dims[2],
       attr->dims[3], attr->n_elems, attr->size, get_format_string(attr->fmt),
       get_type_string(attr->type), get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
-}
-
-unsigned char* RKNNNet::load_model(const char* filename, int* model_size) {
-  FILE* fp = fopen(filename, "rb");
-  if (fp == nullptr) {
-    printf("fopen %s fail!\n", filename);
-    return NULL;
-  }
-  fseek(fp, 0, SEEK_END);
-  int model_len = ftell(fp);
-  unsigned char* model = (unsigned char*)malloc(model_len);
-  fseek(fp, 0, SEEK_SET);
-  if (model_len != fread(model, 1, model_len, fp)) {
-    printf("fread %s fail!\n", filename);
-    free(model);
-    return NULL;
-  }
-  *model_size = model_len;
-  if (fp) {
-    fclose(fp);
-  }
-  return model;
 }
 
 Result<void> RKNNNet::Init(const Value& args) {
@@ -62,8 +40,8 @@ Result<void> RKNNNet::Init(const Value& args) {
   OUTCOME_TRY(content, model.ReadFile(config.net));
   char* model_ptr = const_cast<char*>(content.data());
   int ret = rknn_init(&ctx_, model_ptr, content.size(), 0, NULL);
-  if (ret < 0) {
-    MMDEPLOY_ERROR("Load .rknn failed: {}", config.net);
+  if (ret != RKNN_SUCC) {
+    MMDEPLOY_ERROR("Load .rknn failed! ret= {}", ret);
     return Status(eInvalidArgument);
   }
 
@@ -71,36 +49,36 @@ Result<void> RKNNNet::Init(const Value& args) {
   rknn_input_output_num io_num;
   ret = rknn_query(ctx_, RKNN_QUERY_IN_OUT_NUM, &io_num, sizeof(io_num));
   if (ret != RKNN_SUCC) {
+    MMDEPLOY_INFO("model input num: {}, output num: {}\n", io_num.n_input, io_num.n_output);
     MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
     return Status(eFail);
   }
-  printf("model input num: %d, output num: %d\n", io_num.n_input, io_num.n_output);
 
-  printf("input tensors:\n");
   rknn_tensor_attr input_attrs[io_num.n_input];
   memset(input_attrs, 0, sizeof(input_attrs));
   for (int i = 0; i < io_num.n_input; i++) {
     input_attrs[i].index = i;
     ret = rknn_query(ctx_, RKNN_QUERY_INPUT_ATTR, &(input_attrs[i]), sizeof(rknn_tensor_attr));
     if (ret != RKNN_SUCC) {
+      MMDEPLOY_INFO("input tensors:\n");
+      dump_tensor_attr(&(input_attrs[i]));
       MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
       return Status(eFail);
     }
-    dump_tensor_attr(&(input_attrs[i]));
   }
   input_attrs_ = std::vector<rknn_tensor_attr>(input_attrs, input_attrs + io_num.n_input);
 
-  printf("output tensors:\n");
   rknn_tensor_attr output_attrs[io_num.n_output];
   memset(output_attrs, 0, sizeof(output_attrs));
   for (int i = 0; i < io_num.n_output; i++) {
     output_attrs[i].index = i;
     ret = rknn_query(ctx_, RKNN_QUERY_OUTPUT_ATTR, &(output_attrs[i]), sizeof(rknn_tensor_attr));
     if (ret != RKNN_SUCC) {
+      MMDEPLOY_INFO("output tensors:\n");
+      dump_tensor_attr(&(output_attrs[i]));
       MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
       return Status(eFail);
     }
-    dump_tensor_attr(&(output_attrs[i]));
   }
   output_attrs_ = std::vector<rknn_tensor_attr>(output_attrs, output_attrs + io_num.n_output);
 

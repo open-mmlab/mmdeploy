@@ -29,7 +29,6 @@ class RKNNNet : public Net {
 
  private:
   void dump_tensor_attr(rknn_tensor_attr* attr);
-  unsigned char* load_model(const char* filename, int* model_size);
 
   Device device_;
   Stream stream_;
