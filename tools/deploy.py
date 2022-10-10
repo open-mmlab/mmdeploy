@@ -410,6 +410,32 @@ def main():
             suffix = get_model_suffix(convert_to)
             coreml_files.append(output_file_prefix + suffix)
         backend_files = coreml_files
+    elif backend == Backend.TVM:
+        import copy
+
+        from mmdeploy.apis.tvm import from_onnx, get_library_ext
+        PIPELINE_MANAGER.set_log_level(log_level, [from_onnx])
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        if args.device.startswith('cuda'):
+            target = 'cuda'
+        else:
+            target = 'llvm'
+
+        lib_ext = get_library_ext()
+
+        tvm_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            model_input = copy.deepcopy(model_inputs[model_id])
+            if 'target' not in model_input['tuner']:
+                model_input['tuner']['target'] = target
+            lib_path = osp.splitext(onnx_path)[0] + lib_ext
+            model_input['output_file'] = lib_path
+            model_input['onnx_model'] = onnx_path
+            from_onnx(**model_input)
+            tvm_files.append(lib_path)
+
+        backend_files = tvm_files
 
     if args.test_img is None:
         args.test_img = args.img

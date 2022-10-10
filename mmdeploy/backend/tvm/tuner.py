@@ -190,7 +190,7 @@ class AutoScheduleTuner(TVMTunerBase):
         self,
         target: Union[str, Target],
         log_file: str,
-        n_trial: int,
+        num_measure_trials: int,
         early_stopping: Optional[int] = None,
         builder: Union[Dict, Any] = dict(type='LocalBuilder', timeout=15),
         runner: Union[Dict, Any] = dict(
@@ -198,7 +198,7 @@ class AutoScheduleTuner(TVMTunerBase):
     ) -> None:
         super().__init__(target)
         self._log_file = log_file
-        self._n_trial = n_trial
+        self._num_measure_trials = num_measure_trials
         self._early_stopping = early_stopping
 
         if isinstance(builder, Dict):
@@ -208,7 +208,7 @@ class AutoScheduleTuner(TVMTunerBase):
             runner = build_auto_scheduler_runner(runner)
 
         tune_option = auto_scheduler.TuningOptions(
-            num_measure_trials=n_trial,
+            num_measure_trials=num_measure_trials,
             runner=runner,
             builder=builder,
             measure_callbacks=[auto_scheduler.RecordToFile(log_file)],
