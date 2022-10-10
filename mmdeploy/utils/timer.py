@@ -2,6 +2,7 @@
 import time
 import warnings
 from contextlib import contextmanager
+from logging import Logger
 from typing import Optional
 
 import numpy as np
@@ -43,6 +44,7 @@ class TimeCounter:
                 log_interval=log_interval,
                 warmup=warmup,
                 with_sync=with_sync,
+                batch_size=1,
                 enable=False)
 
             def fun(*args, **kwargs):
@@ -51,6 +53,7 @@ class TimeCounter:
                 log_interval = cls.names[name]['log_interval']
                 warmup = cls.names[name]['warmup']
                 with_sync = cls.names[name]['with_sync']
+                batch_size = cls.names[name]['batch_size']
                 enable = cls.names[name]['enable']
 
                 count += 1
@@ -66,7 +69,7 @@ class TimeCounter:
                 if enable:
                     if with_sync and torch.cuda.is_available():
                         torch.cuda.synchronize()
-                    elapsed = time.perf_counter() - start_time
+                    elapsed = (time.perf_counter() - start_time) / batch_size
 
                 if enable and count > warmup:
                     execute_time.append(elapsed)
@@ -93,7 +96,9 @@ class TimeCounter:
                  log_interval: int = 1,
                  with_sync: bool = False,
                  file: Optional[str] = None,
-                 logger=None):
+                 logger: Optional[Logger] = None,
+                 batch_size: int = 1,
+                 **kwargs):
         """Activate the time counter.
 
         Args:
@@ -105,6 +110,8 @@ class TimeCounter:
                 default False.
             file (str | None): The file to save output messages. The default
                 is `None`.
+            logger (Logger): The logger for the timer. Default to None.
+            batch_size (int): The batch size. Default to 1.
         """
         assert warmup >= 1
         if logger is None:
@@ -118,12 +125,14 @@ class TimeCounter:
             cls.names[func_name]['warmup'] = warmup
             cls.names[func_name]['log_interval'] = log_interval
             cls.names[func_name]['with_sync'] = with_sync
+            cls.names[func_name]['batch_size'] = batch_size
             cls.names[func_name]['enable'] = True
         else:
             for name in cls.names:
                 cls.names[name]['warmup'] = warmup
                 cls.names[name]['log_interval'] = log_interval
                 cls.names[name]['with_sync'] = with_sync
+                cls.names[name]['batch_size'] = batch_size
                 cls.names[name]['enable'] = True
         yield
         if func_name is not None:

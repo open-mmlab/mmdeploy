@@ -143,7 +143,8 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file):
+                file=args.log2file,
+                batch_size=test_dataloader['batch_size']):
             runner.test()
     else:
         runner.test()
