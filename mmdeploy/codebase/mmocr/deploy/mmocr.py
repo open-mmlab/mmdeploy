@@ -27,5 +27,5 @@ class MMOCR(MMCodebase):
         from mmdeploy.codebase.mmdet.deploy.object_detection import MMDetection
         cls.register_deploy_modules()
         MMDetection.register_deploy_modules()
-        register_all_modules_mmocr(False)
-        register_all_modules_mmdet(True)
+        register_all_modules_mmocr(True)
+        register_all_modules_mmdet(False)
