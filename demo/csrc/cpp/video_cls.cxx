@@ -1,15 +1,13 @@
-#include <fstream>
-#include <map>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/videoio.hpp>
-#include <set>
-#include <string>
-#include <vector>
 
-#include "mmdeploy/video_recognizer.h"
+#include <map>
+#include <string>
+
+#include "mmdeploy/video_recognizer.hpp"
+#include "opencv2/imgcodecs/imgcodecs.hpp"
+#include "opencv2/videoio.hpp"
 
 void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
-                  std::vector<mmdeploy_mat_t>& clips, int clip_len, int frame_interval = 1,
+                  std::vector<mmdeploy::Mat>& clips, int clip_len, int frame_interval = 1,
                   int num_clips = 1) {
   cv::VideoCapture cap = cv::VideoCapture(video_path);
   if (!cap.isOpened()) {
@@ -33,8 +31,6 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
       frame_inds.push_back(ind);
     }
   }
-  // frame_inds = {5,   16,  28,  39,  50,  61,  72,  83,  95,  106, 117, 128, 139,
-  //               151, 162, 173, 184, 195, 207, 218, 229, 240, 251, 263, 274};
 
   std::vector<int> unique_inds(frame_inds.begin(), frame_inds.end());
   std::sort(unique_inds.begin(), unique_inds.end());
@@ -57,15 +53,13 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
   clips.resize(frame_inds.size());
   for (int i = 0; i < frame_inds.size(); i++) {
     auto& img = buffer[frame_inds[i]];
-    mmdeploy_mat_t mat{
-        img.data, img.rows, img.cols, 3, MMDEPLOY_PIXEL_FORMAT_BGR, MMDEPLOY_DATA_TYPE_UINT8};
-    clips[i] = mat;
+    clips[i] = img;
   }
 }
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
-    fprintf(stderr, "usage:\n  video_recognition device_name dump_model_directory video_path\n");
+    fprintf(stderr, "usage:\n  video_cls device_name model_path video_path\n");
     return 1;
   }
   auto device_name = argv[1];
@@ -77,35 +71,18 @@ int main(int argc, char* argv[]) {
   int num_clips = 25;
 
   std::map<int, cv::Mat> buffer;
-  std::vector<mmdeploy_mat_t> clips;
-  std::vector<mmdeploy_video_sample_info_t> clip_info;
+  std::vector<mmdeploy::Mat> clips;
+  mmdeploy::VideoSampleInfo clip_info = {clip_len, num_clips};
   SampleFrames(video_path, buffer, clips, clip_len, frame_interval, num_clips);
-  clip_info.push_back({clip_len, num_clips});
 
-  mmdeploy_video_recognizer_t recognizer{};
-  int status{};
-  status = mmdeploy_video_recognizer_create_by_path(model_path, device_name, 0, &recognizer);
-  if (status != MMDEPLOY_SUCCESS) {
-    fprintf(stderr, "failed to create recognizer, code: %d\n", (int)status);
-    return 1;
+  mmdeploy::Model model(model_path);
+  mmdeploy::VideoRecognizer recognizer(model, mmdeploy::Device{device_name, 0});
+
+  auto res = recognizer.Apply(clips, clip_info);
+
+  for (const auto& cls : res) {
+    fprintf(stderr, "label: %d, score: %.4f\n", cls.label_id, cls.score);
   }
-
-  mmdeploy_video_recognition_t* res{};
-  int* res_count{};
-  status = mmdeploy_video_recognizer_apply(recognizer, clips.data(), clip_info.data(), 1, &res,
-                                           &res_count);
-  if (status != MMDEPLOY_SUCCESS) {
-    fprintf(stderr, "failed to apply classifier, code: %d\n", (int)status);
-    return 1;
-  }
-
-  for (int i = 0; i < res_count[0]; ++i) {
-    fprintf(stderr, "label: %d, score: %.4f\n", res[i].label_id, res[i].score);
-  }
-
-  mmdeploy_video_recognizer_release_result(res, res_count, 1);
-
-  mmdeploy_video_recognizer_destroy(recognizer);
 
   return 0;
 }
