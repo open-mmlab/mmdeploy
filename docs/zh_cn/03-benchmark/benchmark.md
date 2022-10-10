@@ -1675,7 +1675,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.717</td>
     <td align="center">0.717</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.717</td>
   </tr>
   <tr>
     <td align="center">AR</td>
@@ -1684,7 +1684,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.774</td>
     <td align="center">0.774</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.774</td>
   </tr>
 </tbody>
 </table>
