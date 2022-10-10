@@ -77,7 +77,7 @@ backend_config = dict(
    git clone git@github.com:rockchip-linux/rknpu2.git
    ```
 
-2. 在 linux 系统, 下载 gcc 交叉编译器. `rknpu2` 的官方提供的下载链接无法使用了. 用户可以使用另一个 [链接](https://gitlab.com/firefly-linux/prebuilts/gcc/linux-x86/aarch64/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/-/tree/firefly/aarch64-rockchip-linux-gnu). 下载并解压完编译器, 打开终端, 设置 `RKNN_TOOL_CHAIN` 和 `RKNPU2_DIR` 为 `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DIR=/path/to/rknpu2`。
+2. 在 linux 系统, 下载 gcc 交叉编译器. `rknpu2` 的官方提供的下载链接无法使用了. 用户可以使用另一个 [链接](https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu). 下载并解压完编译器, 打开终端, 设置 `RKNN_TOOL_CHAIN` 和 `RKNPU2_DIR` 为 `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DIR=/path/to/rknpu2`。
 
 3. 上述准备工作完成后, 运行如下指令安装:
 
