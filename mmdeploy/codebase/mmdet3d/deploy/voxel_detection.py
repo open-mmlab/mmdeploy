@@ -95,6 +95,8 @@ class VoxelDetection(BaseTask):
             score_thr (float): The score threshold to display the bbox.
                 Defaults to 0.3.
         """
+        if output_file.endswith('.jpg'):
+            output_file = output_file.split('.')[0]
         from mmdet3d.apis import show_result_meshlab
         data = VoxelDetection.read_pcd_file(image, self.model_cfg, self.device)
         show_result_meshlab(

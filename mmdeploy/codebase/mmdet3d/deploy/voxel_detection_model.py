@@ -83,7 +83,7 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        result_list = []
+        results = []
         for i in range(len(img_metas)):
             voxels, num_points, coors = VoxelDetectionModel.voxelize(
                 self.model_cfg, points[i])
@@ -93,12 +93,15 @@ class VoxelDetectionModel(BaseBackendModel):
                 'coors': coors
             }
             outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(self.model_cfg,
-                                                      self.deploy_cfg, outputs,
-                                                      img_metas[i],
-                                                      self.device)[0]
-            result_list.append(result)
-        return result_list
+            outputs = self.wrapper.output_to_list(outputs)
+            outputs = [x.squeeze(0) for x in outputs]
+            bbox_dim = outputs[0].shape[-1]
+            outputs[0] = img_metas[0][0]['box_type_3d'](outputs[0], bbox_dim)
+            from mmdet3d.core import bbox3d2result
+
+            result = bbox3d2result(*outputs)
+            results.append(result)
+        return results
 
     def show_result(self,
                     data: Dict,

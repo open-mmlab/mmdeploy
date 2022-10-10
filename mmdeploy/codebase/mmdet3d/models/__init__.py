@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from .anchor3d_head import *  # noqa: F401,F403
 from .base import *  # noqa: F401,F403
 from .centerpoint import *  # noqa: F401,F403
 from .mvx_two_stage import *  # noqa: F401,F403

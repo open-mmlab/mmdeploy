@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmdet3d.core import circle_nms
 
+from mmdeploy.codebase.mmdet3d.core.post_processing import box3d_multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -48,37 +48,22 @@ def centerpoint__simple_test_pts(ctx, self, x, img_metas, rescale=False):
         List: Result of model.
     """
     outs = self.pts_bbox_head(x)
-    bbox_preds, scores, dir_scores = [], [], []
-    for task_res in outs:
-        bbox_preds.append(task_res[0]['reg'])
-        bbox_preds.append(task_res[0]['height'])
-        bbox_preds.append(task_res[0]['dim'])
-        if 'vel' in task_res[0].keys():
-            bbox_preds.append(task_res[0]['vel'])
-        scores.append(task_res[0]['heatmap'])
-        dir_scores.append(task_res[0]['rot'])
-    bbox_preds = torch.cat(bbox_preds, dim=1)
-    scores = torch.cat(scores, dim=1)
-    dir_scores = torch.cat(dir_scores, dim=1)
-    return scores, bbox_preds, dir_scores
+    bbox_list = self.pts_bbox_head.get_bboxes(outs, img_metas, rescale=rescale)
+    return bbox_list
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.dense_heads.centerpoint_head.CenterHead.get_bboxes')
 def centerpoint__get_bbox(ctx,
                           self,
-                          cls_scores,
-                          bbox_preds,
-                          dir_scores,
+                          preds_dicts,
                           img_metas,
                           img=None,
                           rescale=False):
     """Rewrite this func to format func inputs.
 
     Args
-        cls_scores (list[torch.Tensor]): Classification predicts results.
-        bbox_preds (list[torch.Tensor]): Bbox predicts results.
-        dir_scores (list[torch.Tensor]): Dir predicts results.
+        pred_dicts (list[dict]): Each task predicts results.
         img_metas (list[dict]): Point cloud and image's meta info.
         img (torch.Tensor): Input image.
         rescale (Bool): Whether need rescale.
@@ -87,44 +72,24 @@ def centerpoint__get_bbox(ctx,
         list[dict]: Decoded bbox, scores and labels after nms.
     """
     rets = []
-    scores_range = [0]
-    bbox_range = [0]
-    dir_range = [0]
-    for i, task_head in enumerate(self.task_heads):
-        scores_range.append(scores_range[i] + self.num_classes[i])
-        bbox_range.append(bbox_range[i] + 8)
-        dir_range.append(dir_range[i] + 2)
-    for task_id in range(len(self.num_classes)):
-        num_class_with_bg = self.num_classes[task_id]
+    for task_id, preds_dict in enumerate(preds_dicts):
+        batch_heatmap = preds_dict[0]['heatmap'].sigmoid()
 
-        batch_heatmap = cls_scores[
-            0][:, scores_range[task_id]:scores_range[task_id + 1],
-               ...].sigmoid()
-
-        batch_reg = bbox_preds[0][:,
-                                  bbox_range[task_id]:bbox_range[task_id] + 2,
-                                  ...]
-        batch_hei = bbox_preds[0][:, bbox_range[task_id] +
-                                  2:bbox_range[task_id] + 3, ...]
+        batch_reg = preds_dict[0]['reg']
+        batch_hei = preds_dict[0]['height']
 
         if self.norm_bbox:
-            batch_dim = torch.exp(bbox_preds[0][:, bbox_range[task_id] +
-                                                3:bbox_range[task_id] + 6,
-                                                ...])
+            batch_dim = torch.exp(preds_dict[0]['dim'])
         else:
-            batch_dim = bbox_preds[0][:, bbox_range[task_id] +
-                                      3:bbox_range[task_id] + 6, ...]
+            batch_dim = preds_dict[0]['dim']
 
-        batch_vel = bbox_preds[0][:, bbox_range[task_id] +
-                                  6:bbox_range[task_id + 1], ...]
+        batch_rots = preds_dict[0]['rot'][:, 0].unsqueeze(1)
+        batch_rotc = preds_dict[0]['rot'][:, 1].unsqueeze(1)
 
-        batch_rots = dir_scores[0][:,
-                                   dir_range[task_id]:dir_range[task_id + 1],
-                                   ...][:, 0].unsqueeze(1)
-        batch_rotc = dir_scores[0][:,
-                                   dir_range[task_id]:dir_range[task_id + 1],
-                                   ...][:, 1].unsqueeze(1)
-
+        if 'vel' in preds_dict[0]:
+            batch_vel = preds_dict[0]['vel']
+        else:
+            batch_vel = None
         temp = self.bbox_coder.decode(
             batch_heatmap,
             batch_rots,
@@ -134,57 +99,32 @@ def centerpoint__get_bbox(ctx,
             batch_vel,
             reg=batch_reg,
             task_id=task_id)
-        if 'pts' in self.test_cfg.keys():
-            self.test_cfg = self.test_cfg.pts
         assert self.test_cfg['nms_type'] in ['circle', 'rotate']
-        batch_reg_preds = [box['bboxes'] for box in temp]
-        batch_cls_preds = [box['scores'] for box in temp]
-        batch_cls_labels = [box['labels'] for box in temp]
+        batch_bboxes = temp[0]['bboxes'].unsqueeze(0)
+        batch_scores = temp[0]['scores'].unsqueeze(0).unsqueeze(-1)
+        batch_cls_labels = temp[0]['labels'].unsqueeze(0).long()
+        batch_bboxes_for_nms = batch_bboxes[..., [0, 1, 3, 4, 6]].clone()
         if self.test_cfg['nms_type'] == 'circle':
-
-            boxes3d = temp[0]['bboxes']
-            scores = temp[0]['scores']
-            labels = temp[0]['labels']
-            centers = boxes3d[:, [0, 1]]
-            boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
-            keep = torch.tensor(
-                circle_nms(
-                    boxes.detach().cpu().numpy(),
-                    self.test_cfg['min_radius'][task_id],
-                    post_max_size=self.test_cfg['post_max_size']),
-                dtype=torch.long,
-                device=boxes.device)
-
-            boxes3d = boxes3d[keep]
-            scores = scores[keep]
-            labels = labels[keep]
-            ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
-            ret_task = [ret]
-            rets.append(ret_task)
+            raise NotImplementedError(
+                'Not implement circle nms for deployment now!')
         else:
             rets.append(
-                self.get_task_detections(num_class_with_bg, batch_cls_preds,
-                                         batch_reg_preds, batch_cls_labels,
-                                         img_metas))
+                box3d_multiclass_nms(batch_bboxes, batch_bboxes_for_nms,
+                                     batch_scores,
+                                     self.test_cfg['score_threshold'],
+                                     self.test_cfg['nms_thr'],
+                                     self.test_cfg['post_max_size'], None,
+                                     batch_cls_labels))
 
     # Merge branches results
-    num_samples = len(rets[0])
+    bboxes = torch.cat([ret[0] for ret in rets], dim=1)
+    bboxes[..., 2] = bboxes[..., 2] - bboxes[..., 5] * 0.5
+    scores = torch.cat([ret[1] for ret in rets], dim=1)
 
-    ret_list = []
-    for i in range(num_samples):
-        for k in rets[0][i].keys():
-            if k == 'bboxes':
-                bboxes = torch.cat([ret[i][k] for ret in rets])
-                bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 5] * 0.5
-                bboxes = img_metas[i]['box_type_3d'](bboxes,
-                                                     self.bbox_coder.code_size)
-            elif k == 'scores':
-                scores = torch.cat([ret[i][k] for ret in rets])
-            elif k == 'labels':
-                flag = 0
-                for j, num_class in enumerate(self.num_classes):
-                    rets[j][i][k] += flag
-                    flag += num_class
-                labels = torch.cat([ret[i][k].int() for ret in rets])
-        ret_list.append([bboxes, scores, labels])
-    return ret_list
+    labels = [ret[3] for ret in rets]
+    flag = 0
+    for i, num_class in enumerate(self.num_classes):
+        labels[i] += flag
+        flag += num_class
+    labels = torch.cat(labels, dim=1)
+    return bboxes, scores, labels
