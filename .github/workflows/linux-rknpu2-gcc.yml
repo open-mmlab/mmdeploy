@@ -30,15 +30,16 @@ jobs:
           mkdir $GITHUB_WORKSPACE/rknpu2-gnu-toolchain
           cd $GITHUB_WORKSPACE/rknpu2-gnu-toolchain
           git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu.git
-          export RKNN_TOOL_CHAIN=$(pwd)/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/usr
-          export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
       - name: rknpu2
         run: |
           mkdir $GITHUB_WORKSPACE/rknpu2
+          cd $GITHUB_WORKSPACE/rknpu2
           git clone https://github.com/rockchip-linux/rknpu2.git
-          export RKNPU2_DIR=$(pwd)/rknpu2
       - name: build
         run: |
+          export RKNN_TOOL_CHAIN=$GITHUB_WORKSPACE/rknpu2-gnu-toolchain/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/usr
+          export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
+          export RKNPU2_DIR=$GITHUB_WORKSPACE/rknpu2/rknpu2
           mkdir build && cd build
           cmake .. \
             -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchains/rknpu2-linux-gnu.cmake \
