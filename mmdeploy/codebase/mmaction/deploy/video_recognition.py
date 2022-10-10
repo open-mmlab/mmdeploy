@@ -9,7 +9,7 @@ from torch.utils.data import Dataset
 import os.path as osp
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger
+from mmdeploy.utils import Task, get_root_logger, get_input_shape
 from .mmaction import MMACTION_TASK
 
 
@@ -254,15 +254,50 @@ class VideoRecognition(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
-        return {}
+        input_shape = get_input_shape(self.deploy_cfg)
+        cfg = process_model_config(self.model_cfg, [''], input_shape)
+        pipeline = cfg.data.test.pipeline
+
+        lift = dict(type='Lift', transforms=[])
+        lift['transforms'].append(dict(type='LoadImageFromFile'))
+        transforms2index = {}
+        for i, trans in enumerate(pipeline):
+            transforms2index[trans['type']] = i
+        lift_key = ['Resize', 'Normalize',
+                    'TenCrop', 'ThreeCrop', 'CenterCrop']
+        for key in lift_key:
+            if key in transforms2index:
+                index = transforms2index[key]
+                if key == 'Normalize':
+                    pipeline[index]['to_bgr'] = True
+                if key == 'Resize' and 'scale' in pipeline[index]:
+                    value = pipeline[index].pop('scale')
+                    pipeline[index]['size'] = value
+                lift['transforms'].append(pipeline[index])
+
+        other = []
+        must_key = ['FormatShape', 'Collect']
+        for key in must_key:
+            assert key in transforms2index
+            index = transforms2index[key]
+            if key == 'Collect':
+                pipeline[index]['keys'] = ['img']
+            other.append(pipeline[index])
+
+        reorder = [lift, *other]
+        return reorder
 
     def get_postprocess(self) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
-            dict: Nonthing for super resolution.
+            dict: Composed of the postprocess information.
         """
-        return {}
+        assert 'cls_head' in self.model_cfg.model
+        assert 'num_classes' in self.model_cfg.model.cls_head
+        num_classes = self.model_cfg.model.cls_head.num_classes
+        postprocess = dict(topk=1, num_classes=num_classes)
+        return postprocess
 
     def get_model_name(self) -> str:
         """Get the model name.
@@ -270,4 +305,9 @@ class VideoRecognition(BaseTask):
         Return:
             str: the name of the model.
         """
-        return ''
+        assert 'backbone' in self.model_cfg.model, 'backbone not in model ' \
+            'config'
+        assert 'type' in self.model_cfg.model.backbone, 'backbone contains ' \
+            'no type'
+        name = self.model_cfg.model.backbone.type.lower()
+        return name
