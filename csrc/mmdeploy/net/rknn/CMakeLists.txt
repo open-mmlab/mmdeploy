@@ -4,10 +4,6 @@ project(mmdeploy_rknn_net)
 
 add_library(rknn SHARED IMPORTED)
 
-if( CMAKE_TOOLCHAIN_FILE )
-  include(${CMAKE_TOOLCHAIN_FILE})
-endif()
-
 if(DEFINED ENV{RKNPU2_DIR})
     file(TO_CMAKE_PATH $ENV{RKNPU2_DIR} RKNPU2_DIR)
 else()
