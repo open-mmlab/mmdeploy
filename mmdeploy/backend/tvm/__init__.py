@@ -15,9 +15,9 @@ def is_available() -> bool:
 
 if is_available():
     from .onnx2tvm import from_onnx
-    from .tuner import build_tvm_auto_tuner
+    from .tuner import build_tvm_tuner
 
-    __all__ = ['from_onnx', 'build_tvm_auto_tuner']
+    __all__ = ['from_onnx', 'build_tvm_tuner']
 
     try:
         # import wrapper if pytorch is available

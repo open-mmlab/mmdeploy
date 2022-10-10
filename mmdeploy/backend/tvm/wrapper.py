@@ -50,7 +50,6 @@ class TVMWrapper(BaseWrapper):
         """
         module = self._module
         device = self._device
-        assert len(inputs) == module.get_num_inputs()
 
         mod_inputs = dict()
         for name, tensor in inputs.items():

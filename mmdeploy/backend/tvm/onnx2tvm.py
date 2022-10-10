@@ -6,7 +6,7 @@ from tvm.relay.frontend import from_onnx as relay_from_onnx
 from tvm.target import Target
 
 from mmdeploy.utils import get_root_logger
-from .tuner import TVMTunerBase, build_tvm_auto_tuner
+from .tuner import TVMTunerBase, build_tvm_tuner
 
 
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
@@ -30,10 +30,11 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     mod, params = relay_from_onnx(onnx_model, shape, dtype=dtype, opset=11)
 
     if tuner is None:
+        # use default tuner
         tuner = dict(type='DefaultTuner', target=Target('llvm'))
 
     if not issubclass(type(tuner), TVMTunerBase):
-        tuner = build_tvm_auto_tuner(tuner)
+        tuner = build_tvm_tuner(tuner)
 
     logger.info(f'Tuning with {type(tuner).__name__} .')
     tuner.tune(mod, params)
