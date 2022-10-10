@@ -56,13 +56,13 @@ Result<Value> ThreeCropImpl::Process(const Value& input) {
   }
   vector<Tensor> cropped;
   cropped.reserve(3);
-  for (const auto& [offy, offx] : offsets) {
+  for (const auto& [offx, offy] : offsets) {
     int y1 = offy;
     int y2 = offy + crop_h - 1;
     int x1 = offx;
     int x2 = offx + crop_w - 1;
     OUTCOME_TRY(auto dst_tensor, CropImage(tensor, y1, x1, y2, x2));
-    cropped.push_back(dst_tensor);
+    cropped.push_back(std::move(dst_tensor));
   }
 
   output["imgs"] = Value{};
