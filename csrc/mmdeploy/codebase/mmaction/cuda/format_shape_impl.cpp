@@ -96,12 +96,10 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
     }
     dst.Reshape(shape);
 
-    float one = 1.0;
-    float zero = 0.0;
     SetCudnnTensorDescriptor(src_dims, permutation);
     CUDNN_CHECK(cudnnSetStream(handle_, (cudaStream_t)stream_.GetNative()));
-    CUDNN_CHECK(cudnnTransformTensor(handle_, &one, src_desc_, src.data<float>(), &zero, dst_desc_,
-                                     dst.data<float>()));
+    CUDNN_CHECK(cudnnTransformTensor(handle_, &one_, src_desc_, src.data<float>(), &zero_,
+                                     dst_desc_, dst.data<float>()));
 
     return dst;
   }
@@ -133,6 +131,8 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
                                            dst_strides.data()));
   }
 
+  constexpr static float one_{1.0};
+  constexpr static float zero_{0.0};
   cudnnHandle_t handle_;
   cudnnTensorDescriptor_t src_desc_;
   cudnnTensorDescriptor_t dst_desc_;
