@@ -12,5 +12,5 @@ backend_config = dict(pipeline=[
         test_mode=True),
     dict(type='OpenCVDecode'),
     dict(type='Collect', keys=['imgs'], meta_keys=[]),
-    dict(type='ToTensor', keys=['imgs'])
+    dict(type='ListToNumpy', keys=['imgs'])
 ])

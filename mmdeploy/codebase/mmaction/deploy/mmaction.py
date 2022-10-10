@@ -8,6 +8,35 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, get_task_type
+from typing import List
+import numpy as np
+
+from mmaction.datasets import PIPELINES
+
+
+@PIPELINES.register_module()
+class ListToNumpy:
+    """Convert list of numpy array to numpy
+
+    Args:
+        keys (Sequence[str]): Required keys to be converted.
+    """
+
+    def __init__(self, keys):
+        self.keys = keys
+
+    def __call__(self, results):
+        """Performs the ListToNumpy formatting.
+
+        Args:
+            results (dict): The resulting dict to be modified and passed
+                to the next transform in pipeline.
+        """
+        for key in self.keys:
+            if isinstance(results[key], List):
+                if all(isinstance(img, np.ndarray) for img in results[key]):
+                    results[key] = np.array(results[key])
+        return results
 
 
 def __build_mmaction_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,

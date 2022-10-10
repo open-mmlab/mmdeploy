@@ -58,7 +58,7 @@ Result<Value> FormatShapeImpl::Process(const Value& input) {
 class FormatShape : public Transform {
  public:
   explicit FormatShape(const Value& args, int version = 0) : Transform(args) {
-    auto impl_creator = Registry<FormatShapeImpl>::Get().GetCreator("cpu", version);
+    auto impl_creator = Registry<FormatShapeImpl>::Get().GetCreator(specified_platform_, version);
     if (nullptr == impl_creator) {
       MMDEPLOY_ERROR("'FormatShape' is not supported on '{}' platform", specified_platform_);
       throw std::domain_error("'FormatShape' is not supported on specified platform");

@@ -30,36 +30,37 @@ class IndexHelper {
     for (int i = ndims_ - 2; i >= 0; i--) {
       dst_stride_[i] = dst_stride_[i + 1] * dst_dims[i + 1];
     }
+
+    dst_index_.resize(ndims_);
+    src_index_.resize(ndims_);
   }
 
   int GetSrcOffset(int offset) {
-    // dst offset -> dst index -> src index -> src offset
-
     // dst index
     int remaining = offset;
-    std::vector<int> dst_index(ndims_);
-    std::vector<int> src_index(ndims_);
     for (int i = 0; i < ndims_; i++) {
       int idx = remaining / dst_stride_[i];
-      dst_index[i] = idx;
+      dst_index_[i] = idx;
       remaining -= idx * dst_stride_[i];
     }
 
     // src index
     for (int i = 0; i < ndims_; i++) {
-      src_index[permutation_[i]] = dst_index[i];
+      src_index_[permutation_[i]] = dst_index_[i];
     }
 
     // src offset
     int src_offset = 0;
     for (int i = 0; i < ndims_; i++) {
-      src_offset += src_index[i] * src_stride_[i];
+      src_offset += src_index_[i] * src_stride_[i];
     }
 
     return src_offset;
   }
 
  private:
+  vector<int> dst_index_;
+  vector<int> src_index_;
   vector<int> permutation_;
   vector<int> src_stride_;
   vector<int> dst_stride_;
