@@ -27,9 +27,8 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
         extra_dependent_library.get(codebase_type, [])
     for lib in dependent_library + custom_module_list:
         if not importlib.util.find_spec(lib):
-            raise ImportError(
-                f'{lib} has not been installed. '
-                f'Import {lib} failed.')
+            raise ImportError(f'{lib} has not been installed. '
+                              f'Import {lib} failed.')
     if len(custom_module_list) > 0:
         for custom_module in custom_module_list:
             importlib.import_module(f'{custom_module}')
