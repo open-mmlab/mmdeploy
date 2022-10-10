@@ -167,15 +167,17 @@ class VideoRecognition(BaseTask):
                     Defaults to `0.5`.
         """
         logger = get_root_logger()
-        try:
-            import decord
-            from moviepy.editor import ImageSequenceClip
-        except Exception:
-            logger.warn('Please install moviepy and decord to '
-                        'enable visualize for mmaction')
-        # save_dir, save_name = osp.split(output_file)
-        # video = decord.VideoReader(image)
-        # frames = [x.asnumpy()[..., ::-1] for x in video]
+        if not isinstance(image, str):
+            logger.warning('Input should be a video path')
+            return
+        import cv2
+        cap = cv2.VideoCapture(image)
+        _, img = cap.read()
+        top1 = np.argsort(result)[-1]
+        text = f'top1-label: {top1}'
+        cv2.putText(img, text, (0, 40),
+                    cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 0, 0), 1, 1)
+        cv2.imwrite(output_file, img)
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
