@@ -12,7 +12,11 @@
    git clone git@github.com:rockchip-linux/rknn-toolkit2.git
    ```
 
-2. 通过 [官方文档](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc)，安装 RKNN python 安装包. 在我们的测试中, 使用的 rknn-toolkit 版本是 1.2.0，commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`.
+2. 通过 [官方文档](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc)，安装 RKNN python 安装包. 在我们的测试中, 使用的 rknn-toolkit 版本是 1.2.0，commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`。安装 rknn-toolkit2 时，最好在安装命令后添加`--no-deps`，以避免依赖包的冲突。比如:
+
+   ```
+   pip install packages/rknn_toolkit2-1.2.0_f7bb160f-cp36-cp36m-linux_x86_64.whl --no-deps
+   ```
 
 3. 先安装onnx==1.8.0,跟着 [instructions](../01-how-to-build/build_from_source.md)，源码安装 MMDeploy。 需要注意的是， MMDeploy 和 RKNN 依赖的安装包间有冲突的内容. 这里提供建议在 python 3.6 环境中使用的安装包版本:
 
