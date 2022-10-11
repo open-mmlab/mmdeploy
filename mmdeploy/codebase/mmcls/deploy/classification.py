@@ -45,6 +45,8 @@ def process_model_config(model_cfg: Config,
         Config: the model config after processing.
     """
     cfg = model_cfg.deepcopy()
+    if not isinstance(imgs, (list, tuple)):
+        imgs = [imgs]
     if isinstance(imgs[0], str):
         if cfg.test_pipeline[0]['type'] != 'LoadImageFromFile':
             cfg.test_pipeline.insert(0, dict(type='LoadImageFromFile'))
