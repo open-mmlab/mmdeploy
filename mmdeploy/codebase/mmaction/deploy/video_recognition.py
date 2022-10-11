@@ -6,10 +6,11 @@ import numpy as np
 import torch
 from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
-import os.path as osp
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger, get_input_shape
+from mmdeploy.utils import (Task, get_root_logger,
+                            get_input_shape, get_backend_config)
+from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 from .mmaction import MMACTION_TASK
 
 
@@ -72,6 +73,56 @@ class VideoRecognition(BaseTask):
             device=self.device,
             **kwargs)
         return model.eval()
+
+    def build_dataset(self,
+                      dataset_cfg: Union[str, mmcv.Config],
+                      dataset_type: str = 'val',
+                      is_sort_dataset: bool = False,
+                      **kwargs) -> Dataset:
+        """Build dataset for different codebase.
+
+        Args:
+            dataset_cfg (str | mmcv.Config): Dataset config file or Config
+                object.
+            dataset_type (str): Specifying dataset type, e.g.: 'train', 'test',
+                'val', defaults to 'val'.
+            is_sort_dataset (bool): When 'True', the dataset will be sorted
+                by image shape in ascending order if 'dataset_cfg'
+                contains information about height and width.
+                Default is `False`.
+
+        Returns:
+            Dataset: The built dataset.
+        """
+
+        backend_cfg = get_backend_config(self.deploy_cfg)
+        if 'pipeline' in backend_cfg:
+            ori = dataset_cfg.data[dataset_type].pipeline
+            be = backend_cfg.pipeline
+            index_ori = -1
+            index_be = -1
+            for i, trans in enumerate(ori):
+                if trans['type'] == 'SampleFrames':
+                    index_ori = i
+                    break
+            for i, trans in enumerate(be):
+                if trans['type'] == 'SampleFrames':
+                    index_be = i
+                    break
+            if index_ori != -1 and index_be != -1:
+                be[index_be] = ori[index_ori]
+
+            dataset_cfg.data[dataset_type].pipeline = be
+        dataset = self.codebase_class.build_dataset(dataset_cfg, dataset_type,
+                                                    **kwargs)
+        logger = get_root_logger()
+        if is_sort_dataset:
+            if is_can_sort_dataset(dataset):
+                sort_dataset(dataset)
+            else:
+                logger.info('Sorting the dataset by \'height\' and \'width\' '
+                            'is not possible.')
+        return dataset
 
     def init_pytorch_model(self,
                            model_checkpoint: Optional[str] = None,
