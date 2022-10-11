@@ -92,8 +92,7 @@ class End2EndModel(BaseBackendModel):
         """
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
-        outputs = [out.detach().cpu().numpy().flatten()
-                   for out in outputs]
+        outputs = [out.detach().cpu().numpy().flatten() for out in outputs]
         return outputs
 
     def show_result(self,
@@ -158,8 +157,8 @@ class SDKEnd2EndModel(End2EndModel):
 
 def build_video_recognition_model(model_files: Sequence[str],
                                   model_cfg: Union[str, mmcv.Config],
-                                  deploy_cfg: Union[str, mmcv.Config], device: str,
-                                  **kwargs):
+                                  deploy_cfg: Union[str, mmcv.Config],
+                                  device: str, **kwargs):
     """Build video recognition model for different backends.
 
     Args:

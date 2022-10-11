@@ -6,11 +6,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmaction.models.recognizers.Recognizer2D.forward_test')
-def recognizer2d__forward_test(ctx,
-                               self,
-                               imgs: Tensor):
-    """Rewrite `forward_test` of Recognizer2D for default backend.
-    """
+def recognizer2d__forward_test(ctx, self, imgs: Tensor):
+    """Rewrite `forward_test` of Recognizer2D for default backend."""
 
     if self.test_cfg.get('fcn_test', False):
         # If specified, spatially fully-convolutional testing is performed

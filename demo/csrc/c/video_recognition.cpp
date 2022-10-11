@@ -33,8 +33,6 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
       frame_inds.push_back(ind);
     }
   }
-  // frame_inds = {5,   16,  28,  39,  50,  61,  72,  83,  95,  106, 117, 128, 139,
-  //               151, 162, 173, 184, 195, 207, 218, 229, 240, 251, 263, 274};
 
   std::vector<int> unique_inds(frame_inds.begin(), frame_inds.end());
   std::sort(unique_inds.begin(), unique_inds.end());

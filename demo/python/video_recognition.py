@@ -16,7 +16,9 @@ def parse_args():
     parser.add_argument(
         '--clip_len', help='Frames of each sampled output clip', default=1)
     parser.add_argument(
-        '--frame_interval', help='Temporal interval of adjacent sampled frames.', default=1)
+        '--frame_interval',
+        help='Temporal interval of adjacent sampled frames.',
+        default=1)
     parser.add_argument(
         '--num_clips', help='Number of clips to be sampled', default=25)
     args = parser.parse_args()
@@ -65,8 +67,8 @@ def main():
     recognizer = VideoRecognizer(
         model_path=args.model_path, device_name=args.device_name, device_id=0)
 
-    clips, info = SampleFrames(
-        cap, args.clip_len, args.frame_interval, args.num_clips)
+    clips, info = SampleFrames(cap, args.clip_len, args.frame_interval,
+                               args.num_clips)
 
     result = recognizer(clips, info)
     for label_id, score in result:

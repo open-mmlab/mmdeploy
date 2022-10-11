@@ -1,22 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 import mmcv
+import numpy as np
 import torch
+from mmaction.datasets import PIPELINES
 from mmcv.utils import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, get_task_type
-from typing import List
-import numpy as np
-
-from mmaction.datasets import PIPELINES
 
 
 @PIPELINES.register_module()
 class ListToNumpy:
-    """Convert list of numpy array to numpy
+    """Convert list of numpy array to numpy.
 
     Args:
         keys (Sequence[str]): Required keys to be converted.
@@ -132,7 +130,8 @@ class MMACTION(MMCodebase):
         Returns:
             DataLoader: A PyTorch dataloader.
         """
-        from mmaction.datasets import build_dataloader as build_dataloader_mmaction
+        from mmaction.datasets import \
+            build_dataloader as build_dataloader_mmaction
         return build_dataloader_mmaction(
             dataset,
             samples_per_gpu,

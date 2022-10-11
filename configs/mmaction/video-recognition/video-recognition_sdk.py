@@ -2,7 +2,8 @@ _base_ = ['./video-recognition_static.py', '../../_base_/backends/sdk.py']
 
 codebase_config = dict(model_type='sdk')
 
-# It will read SampleFrames from model_cfg to info in pipeline of backend_config
+# It will read SampleFrames from model_cfg to info
+# in pipeline of backend_config
 
 backend_config = dict(pipeline=[
     dict(type='OpenCVInit', num_threads=1),

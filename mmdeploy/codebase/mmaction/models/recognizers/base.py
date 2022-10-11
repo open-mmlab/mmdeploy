@@ -12,8 +12,7 @@ def base_recognizer__forward(ctx,
                              label=None,
                              return_loss=False,
                              **kwargs):
-    """Rewrite `forward` of Recognizer2D for default backend.
-    """
+    """Rewrite `forward` of Recognizer2D for default backend."""
 
     assert kwargs.get('gradcam', False) is False
     assert return_loss is False

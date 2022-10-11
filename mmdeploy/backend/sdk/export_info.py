@@ -261,8 +261,9 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
     if transforms[0]['type'] != 'Lift':
-        assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
-            ' of pipeline should be LoadImageFromFile'
+        assert transforms[0]['type'] == 'LoadImageFromFile', \
+            'The first item type of pipeline should be ' \
+            'LoadImageFromFile'
 
     return dict(
         type=type,
@@ -363,7 +364,9 @@ def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
-    if task in [Task.CLASSIFICATION, Task.SUPER_RESOLUTION, Task.VIDEO_RECOGNITION]:
+    if task in [
+            Task.CLASSIFICATION, Task.SUPER_RESOLUTION, Task.VIDEO_RECOGNITION
+    ]:
         postprocess['input'] = infer_info['output']
     else:
         postprocess['input'] = preprocess['output'] + infer_info['output']
