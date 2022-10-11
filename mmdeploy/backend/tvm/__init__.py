@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
 import importlib
+import sys
 
 
 def is_available() -> bool:
@@ -11,6 +11,14 @@ def is_available() -> bool:
     """
 
     return importlib.util.find_spec('tvm') is not None
+
+
+def get_library_ext() -> str:
+    platform = sys.platform.lower()
+    if platform == 'win32' or platform == 'cygwin':
+        return '.dll'
+    elif platform == 'linux' or platform == 'darwin' or platform == 'freebsd':
+        return '.so'
 
 
 if is_available():

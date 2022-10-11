@@ -144,6 +144,10 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         convert_to = deploy_cfg.backend_config.convert_to
         suffix = get_model_suffix(convert_to)
         net = replace_suffix(ir_name, suffix)
+    elif backend == Backend.TVM:
+        from mmdeploy.backend.tvm import get_library_ext
+        ext = get_library_ext()
+        net = replace_suffix(ir_name, ext)
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 
