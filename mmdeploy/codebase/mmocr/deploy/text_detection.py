@@ -36,9 +36,10 @@ def process_model_config(model_cfg: mmengine.Config,
             pipeline[i].meta_keys = tuple(j for j in pipeline[i].meta_keys
                                           if j != 'instances')
         # for static exporting
-        if input_shape is not None and transform.type == 'Resize':
-            pipeline[i].keep_ratio = False
-            pipeline[i].scale = tuple(input_shape)
+        if input_shape is not None:
+            if transform.type in ('Resize', 'ShortScaleAspectJitter'):
+                pipeline[i] = mmengine.ConfigDict(
+                    dict(type='Resize', scale=input_shape, keep_ratio=False))
 
     pipeline = [
         transform for transform in pipeline
