@@ -20,6 +20,7 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
  public:
   explicit FormatShapeImpl(const Value& args) : ::mmdeploy::FormatShapeImpl(args) {
     CUDNN_CHECK(cudnnCreate(&handle_));
+    CUDNN_CHECK(cudnnSetStream(handle_, (cudaStream_t)stream_.GetNative()));
     CUDNN_CHECK(cudnnCreateTensorDescriptor(&src_desc_));
     CUDNN_CHECK(cudnnCreateTensorDescriptor(&dst_desc_));
   }
@@ -97,7 +98,6 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
     dst.Reshape(shape);
 
     SetCudnnTensorDescriptor(src_dims, permutation);
-    CUDNN_CHECK(cudnnSetStream(handle_, (cudaStream_t)stream_.GetNative()));
     CUDNN_CHECK(cudnnTransformTensor(handle_, &one_, src_desc_, src.data<float>(), &zero_,
                                      dst_desc_, dst.data<float>()));
 
