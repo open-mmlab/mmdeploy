@@ -51,7 +51,7 @@ tensorrt:
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmcls/ll -fp16_static-224x224.py
+    deploy_config: configs/mmcls/classification_tensorrt-fp16_static-224x224.py
 
   pipeline_trt_static_fp16_384x384: &pipeline_trt_static_fp16_384x384
     convert_image: *convert_image
