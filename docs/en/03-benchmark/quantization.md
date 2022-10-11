@@ -31,6 +31,6 @@ Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute I
 
 |                                                                      model                                                                       | dataset  | fp32 AP | int8 AP |
 | :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
-| [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.726  |  0.713  |
+| [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.717  |  0.713  |
 
 Note: MMPose models are tested with `flip_test` explicitly set to `False` in model configs.

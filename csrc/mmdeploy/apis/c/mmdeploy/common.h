@@ -54,6 +54,8 @@ typedef enum mmdeploy_status_t {
 
 // clang-format on
 
+typedef struct mmdeploy_device* mmdeploy_device_t;
+
 typedef struct mmdeploy_mat_t {
   uint8_t* data;
   int height;
@@ -61,6 +63,7 @@ typedef struct mmdeploy_mat_t {
   int channel;
   mmdeploy_pixel_format_t format;
   mmdeploy_data_type_t type;
+  mmdeploy_device_t device;
 } mmdeploy_mat_t;
 
 typedef struct mmdeploy_rect_t {
@@ -78,8 +81,6 @@ typedef struct mmdeploy_point_t {
 typedef struct mmdeploy_value* mmdeploy_value_t;
 
 typedef struct mmdeploy_context* mmdeploy_context_t;
-
-typedef struct mmdeploy_device* mmdeploy_device_t;
 
 typedef enum mmdeploy_context_type_t {
   MMDEPLOY_TYPE_DEVICE = 0,

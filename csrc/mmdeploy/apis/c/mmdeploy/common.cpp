@@ -49,9 +49,7 @@ int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
   try {
     auto input = std::make_unique<Value>(Value{Value::kArray});
     for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
-      input->front().push_back({{"ori_img", _mat}});
+      input->front().push_back({{"ori_img", Cast(mats[i])}});
     }
     *value = Cast(input.release());
   } catch (const std::exception& e) {

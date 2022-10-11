@@ -81,8 +81,8 @@ class Mat {
   Mat() : desc_{} {}
 
   Mat(int height, int width, int channels, mmdeploy_pixel_format_t format,
-      mmdeploy_data_type_t type, uint8_t* data)
-      : desc_{data, height, width, channels, format, type} {}
+      mmdeploy_data_type_t type, uint8_t* data, mmdeploy_device_t device = nullptr)
+      : desc_{data, height, width, channels, format, type, device} {}
 
   const mmdeploy_mat_t& desc() const noexcept { return desc_; }
 

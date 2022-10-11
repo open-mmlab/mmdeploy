@@ -36,6 +36,11 @@ tensorrt:
     backend_test: *default_backend_test
     sdk_config: *sdk_static
     deploy_config: configs/mmpose/pose-detection_tensorrt_static-256x192.py
+  pipeline_trt_static_fp32_256x256: &pipeline_trt_static_fp32_256x256
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    sdk_config: *sdk_static
+    deploy_config: configs/mmpose/pose-detection_tensorrt_static-256x256.py
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
@@ -52,12 +57,20 @@ openvino:
     convert_image: *convert_image
     backend_test: *default_backend_test
     deploy_config: configs/mmpose/pose-detection_openvino_static-256x192.py
+  pipeline_openvino_static_fp32_256x256: &pipeline_openvino_static_fp32_256x256
+    convert_image: *convert_image
+    backend_test: *default_backend_test
+    deploy_config: configs/mmpose/pose-detection_openvino_static-256x256.py
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmpose/pose-detection_ncnn_static-256x192.py
+  pipeline_ncnn_static_fp32_256x256: &pipeline_ncnn_static_fp32_256x256
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmpose/pose-detection_ncnn_static-256x256.py
 
 pplnn:
   pipeline_pplnn_static_fp32: &pipeline_pplnn_static_fp32
@@ -100,3 +113,13 @@ models:
       - *pipeline_trt_static_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_static_fp32
+
+  - name: Hourglass
+    metafile: configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass_coco.yml
+    model_configs:
+      - configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp32_256x256
+      - *pipeline_ncnn_static_fp32_256x256
+      - *pipeline_openvino_static_fp32_256x256

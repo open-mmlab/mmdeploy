@@ -121,8 +121,7 @@ int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_coun
     };
 
     for (int i = 0; i < mat_count; ++i) {
-      mmdeploy::Mat _mat{mats[i].height,         mats[i].width, PixelFormat(mats[i].format),
-                         DataType(mats[i].type), mats[i].data,  Device{"cpu"}};
+      auto _mat = Cast(mats[i]);
       if (bboxes && bbox_count) {
         for (int j = 0; j < bbox_count[i]; ++j) {
           add_bbox(_mat, bboxes++);
