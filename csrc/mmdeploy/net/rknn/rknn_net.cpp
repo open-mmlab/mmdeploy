@@ -139,31 +139,33 @@ Result<void> RKNNNet::Reshape(Span<TensorShape> input_shapes) {
 Result<void> RKNNNet::Forward() {
   OUTCOME_TRY(stream_.Wait());
 
-  rknn_input inputs[input_tensors_.size()];
-  memset(inputs, 0, input_tensors_.size() * sizeof(rknn_input));
+  std::vector<rknn_input> inputs;
   for (int i = 0; i < input_tensors_.size(); i++) {
-    inputs[i].index = i;
-    inputs[i].pass_through = 0;
-    inputs[i].type = input_attrs_[i].type;
-    inputs[i].fmt = input_attrs_[i].fmt;
-    inputs[i].buf = input_tensors_[i].data<float>();
-    inputs[i].size = input_attrs_[i].size;
+    rknn_input input;
+    input.index = i;
+    input.pass_through = 0;
+    input.type = input_attrs_[i].type;
+    input.fmt = input_attrs_[i].fmt;
+    input.buf = input_tensors_[i].data<float>();
+    input.size = input_attrs_[i].size;
+    inputs.push_back(input);
   }
 
   // Set input
-  int ret = rknn_inputs_set(ctx_, input_tensors_.size(), inputs);
+  int ret = rknn_inputs_set(ctx_, input_tensors_.size(), inputs.data());
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_input_set fail! ret= {}", ret);
     return Status(eFail);
   }
 
   // Get output
-  rknn_output outputs[output_tensors_.size()];
-  memset(outputs, 0, output_tensors_.size() * sizeof(rknn_output));
+  std::vector<rknn_output> outputs;
   for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
-    outputs[i].want_float = 1;
-    outputs[i].index = i;
-    outputs[i].is_prealloc = 0;
+    rknn_output output;
+    output.want_float = 1;
+    output.index = i;
+    output.is_prealloc = 0;
+    outputs.push_back(output);
   }
 
   ret = rknn_run(ctx_, NULL);
@@ -172,7 +174,7 @@ Result<void> RKNNNet::Forward() {
     return Status(eFail);
   }
 
-  ret = rknn_outputs_get(ctx_, output_tensors_.size(), outputs, NULL);
+  ret = rknn_outputs_get(ctx_, output_tensors_.size(), outputs.data(), NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_outputs_get fail! ret= {}", ret);
     return Status(eFail);
