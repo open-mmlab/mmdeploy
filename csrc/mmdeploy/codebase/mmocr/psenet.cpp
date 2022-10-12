@@ -72,7 +72,7 @@ class PSEHead : public MMOCR {
     auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
     auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
 
-    TextDetectorOutput output;
+    TextDetections output;
     for (int text_index = 1; text_index < region_num; ++text_index) {
       auto& text_point = text_points[text_index];
       auto text_confidence = text_scores[text_index];
@@ -94,12 +94,12 @@ class PSEHead : public MMOCR {
           p.y /= scale_h * downsample_ratio_;
         }
       }
-      auto& bbox = output.boxes.emplace_back();
+      auto& det = output.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = vertices[i].x;
-        bbox[i * 2 + 1] = vertices[i].y;
+        det.bbox[i * 2] = vertices[i].x;
+        det.bbox[i * 2 + 1] = vertices[i].y;
       }
-      output.scores.push_back(text_confidence);
+      det.score = text_confidence;
     }
     return to_value(output);
   }

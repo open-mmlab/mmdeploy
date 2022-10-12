@@ -103,10 +103,10 @@ MMDEPLOY_API void mmdeploy_text_recognizer_destroy(mmdeploy_text_recognizer_t re
 
 /**
  * @brief Same as \ref mmdeploy_text_recognizer_create, but allows to control execution context of
- * tasks via exec_info
+ * tasks via context
  */
-MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mmdeploy_model_t model, const char* device_name,
-                                                    int device_id, mmdeploy_exec_info_t exec_info,
+MMDEPLOY_API int mmdeploy_text_recognizer_create_v2(mmdeploy_model_t model,
+                                                    mmdeploy_context_t context,
                                                     mmdeploy_text_recognizer_t* recognizer);
 
 /**

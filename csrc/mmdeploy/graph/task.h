@@ -8,7 +8,7 @@
 namespace mmdeploy::graph {
 
 class Task : public Node {
-  friend class TaskParser;
+  friend class TaskBuilder;
 
  public:
   Sender<Value> Process(Sender<Value> input) override;
@@ -21,9 +21,12 @@ class Task : public Node {
   dynamic_batch_t::context_t batch_context_;
 };
 
-class TaskParser {
+class TaskBuilder : public Builder {
  public:
-  static Result<unique_ptr<Task>> Parse(const Value& config);
+  explicit TaskBuilder(Value config);
+
+ protected:
+  Result<unique_ptr<Node>> BuildImpl() override;
 };
 
 }  // namespace mmdeploy::graph

@@ -11,9 +11,12 @@
 #include <vector>
 
 #include "mmdeploy/core/macro.h"
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/status_code.h"
 
 namespace mmdeploy {
+
+namespace framework {
 
 class Platform;
 class Device;
@@ -341,5 +344,12 @@ class MMDEPLOY_API PlatformRegistry {
 };
 
 MMDEPLOY_API PlatformRegistry& gPlatformRegistry();
+
+}  // namespace framework
+
+MMDEPLOY_REGISTER_TYPE_ID(framework::Device, 1);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Buffer, 2);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Stream, 3);
+MMDEPLOY_REGISTER_TYPE_ID(framework::Event, 4);
 
 }  // namespace mmdeploy

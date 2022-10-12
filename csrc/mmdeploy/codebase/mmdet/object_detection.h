@@ -16,11 +16,11 @@ class ResizeBBox : public MMDetection {
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
 
  protected:
-  Result<DetectorOutput> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
-                                           const Tensor& labels);
+  Result<Detections> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
+                                       const Tensor& labels);
 
   template <typename T>
-  Result<DetectorOutput> GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
+  Result<Detections> GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
 
   std::array<float, 4> MapToOriginImage(float left, float top, float right, float bottom,
                                         const float* scale_factor, float x_offset, float y_offset,

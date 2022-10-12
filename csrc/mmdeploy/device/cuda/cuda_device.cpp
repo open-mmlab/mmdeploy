@@ -6,7 +6,7 @@
 
 #include "mmdeploy/device/device_allocator.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 inline void* OffsetPtr(void* ptr, size_t offset) {
   return static_cast<void*>(static_cast<uint8_t*>(ptr) + offset);
@@ -206,7 +206,7 @@ Result<void> CudaPlatformImpl::CopyImpl(Device device, const void* src, void* ds
   CudaDeviceGuard guard(device);
 
   if (st) {
-    auto cuda_stream = ::mmdeploy::GetNative<cudaStream_t>(st);
+    auto cuda_stream = ::mmdeploy::framework::GetNative<cudaStream_t>(st);
     // TODO: how about default stream cudaStream_t(0)?
     if (!cuda_stream) {
       return Status(eInvalidArgument);
@@ -293,7 +293,7 @@ Result<void> CudaStreamImpl::Init(std::shared_ptr<void> native, uint64_t flags) 
 Result<void> CudaStreamImpl::DependsOn(Event& event) {
   if (event.GetDevice() == device_) {
     CudaDeviceGuard guard(device_);
-    auto native_event = ::mmdeploy::GetNative<cudaEvent_t>(event);
+    auto native_event = ::mmdeploy::framework::GetNative<cudaEvent_t>(event);
     cudaStreamWaitEvent(stream_, native_event, 0);
     return success();
   }
@@ -319,7 +319,7 @@ Result<void> CudaStreamImpl::Wait() {
 }
 
 Result<void> CudaStreamImpl::Submit(Kernel& kernel) {
-  auto task = ::mmdeploy::GetNative<CudaTask*>(kernel);
+  auto task = ::mmdeploy::framework::GetNative<CudaTask*>(kernel);
   if (task) {
     CudaDeviceGuard guard(device_);
     (*task)(stream_);
@@ -381,7 +381,7 @@ Result<void> CudaEventImpl::Record(Stream& stream) {
     return Status(eInvalidArgument);
   }
   CudaDeviceGuard guard(device_);
-  auto native_stream = ::mmdeploy::GetNative<cudaStream_t>(stream);
+  auto native_stream = ::mmdeploy::framework::GetNative<cudaStream_t>(stream);
   cudaEventRecord(event_, native_stream);
   return success();
 }
@@ -472,4 +472,4 @@ CudaPlatformImpl& gCudaPlatform() {
   return Access::get<CudaPlatformImpl>(platform);
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

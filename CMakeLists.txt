@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.8.0)
+project(MMDeploy VERSION 0.9.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -104,14 +104,6 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_TEST)
         add_subdirectory(tests/test_csrc)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_PYTHON_API)
-        add_subdirectory(csrc/mmdeploy/apis/python)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_JAVA_API)
-        add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
     if (MMDEPLOY_BUILD_EXAMPLES)

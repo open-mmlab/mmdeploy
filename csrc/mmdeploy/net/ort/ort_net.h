@@ -7,7 +7,7 @@
 #include "onnxruntime_c_api.h"
 #include "onnxruntime_cxx_api.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class OrtNet : public Net {
  public:
@@ -29,6 +29,6 @@ class OrtNet : public Net {
   Stream stream_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_ORT_ORT_NET_H_
