@@ -1,8 +1,15 @@
+$env:DEPS_DIR="D:\huangzijie\deps"
+$env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
+$env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
+$env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
+$env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
+$env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
+$env:MMDEPLOY_DIR="..\..\.."
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
 #read configuration file
-$config_path = "$scriptDir\..\conf\win_default.config"
+$config_path = "$env:MMDEPLOY_DIR\tests\jenkins\conf\win_default.config"
 $conf = ReadConfig $config_path
 if ($LASTEXITCODE -ne 0) {
     Write-Host "can't load config from $config_path."
@@ -44,13 +51,7 @@ $codebase_fullname_opt = @{
     "mmseg" = "mmsegmentation"
 }
 
-$env:WORKSPACE="C:\Users\HZJ\Desktop\mmdeploy_windows"
-$env:OPENCV_DIR=(Join-PATH $env:WORKSPACE opencv\4.6.0\build\x64\vc15)
-$env:TENSORRT_DIR=(Join-PATH $env:WORKSPACE TensorRT-8.2.3.0)
-$env:ONNXRUNTIME_DIR=(Join-PATH $env:WORKSPACE onnxruntime-win-x64-1.8.1)
-$env:CUDNN_DIR=(Join-PATH $env:WORKSPACE cudnn-11.3-v8.2.1.32)
-$env:PPLCV_DIR=(Join-PATH $env:WORKSPACE ppl.cv)
-$env:MMDEPLOY_DIR="$pwd"
+
 #git clone codebase
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
@@ -58,8 +59,10 @@ $env:MMDEPLOY_DIR="$pwd"
 conda activate mmdeploy-3.7-$cuda_version
 
 #opencv
-$env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path  
+$env:path = (Join-PATH $env:DEPS_DIR opencv/4.6.0/build)+";"+$env:path 
+$env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
+
 #pplcv
 # cd $env:WORKSPACE
 # git clone https://github.com/openppl-public/ppl.cv.git
@@ -98,7 +101,7 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
   -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
   -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
   -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
-  -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake/ppl" `
+  -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
   -DTENSORRT_DIR="$env:TENSORRT_DIR" `
   -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
   -DCUDNN_DIR="$env:CUDNN_DIR"
@@ -131,7 +134,7 @@ $script_block = {
         [hashtable] $codebase_fullname_opt,
         [string] $log_dir
     )
-    invoke-expression -command "C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy\tests\jekins\scripts\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname_opt *> $log_dir\$codebase.log"
+    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname_opt *> $log_dir\$codebase.log"
 }
 
 $threads = @()
