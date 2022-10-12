@@ -4,7 +4,7 @@ $env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
 $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
 $env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
 $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
-$env:MMDEPLOY_DIR="..\..\.."
+$env:MMDEPLOY_DIR="$pwd"
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
