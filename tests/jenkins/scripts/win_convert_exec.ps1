@@ -3,7 +3,7 @@ param(
     $exec_performance,
     $codebase_fullname_opt
 )
-cd C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy
+
 Write-Host "exec_path:  $pwd"
 Write-Host "mim install $codebase"
 $codebase_path = (Join-Path $env:WORKSPACE $codebase_fullname_opt.([string]$codebase))
@@ -36,7 +36,7 @@ else
         pip install -v $codebase_path
     }
 }
-python ./tools/regression_test.py `
+python $env:MMDEPLOY_DIR/tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
     --backends tensorrt onnxruntime `
