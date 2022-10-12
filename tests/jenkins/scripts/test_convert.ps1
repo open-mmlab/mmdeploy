@@ -59,7 +59,7 @@ $codebase_fullname_opt = @{
 conda activate mmdeploy-3.7-$cuda_version
 
 #opencv
-$env:path = (Join-PATH $env:DEPS_DIR opencv/4.6.0/build)+";"+$env:path 
+$env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path 
 $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
 

@@ -24,7 +24,7 @@ pipeline {
             steps {
                 bat """
                     @ECHO ON
-                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1
+                    pwsh.exe -f -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1
                 """
             }
         }
