@@ -2,4 +2,3 @@ cython
 numpy
 packaging
 setuptools
-pyyaml
