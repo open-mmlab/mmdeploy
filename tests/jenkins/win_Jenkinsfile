@@ -23,7 +23,7 @@ pipeline {
             agent { label 'deploy_win2' }
             steps {
                 cd .\tests\jenkins\scripts\
-                pwsh ".\test_convert.ps1"
+                pwsh "pwsh test_convert.ps1"
             }
         }
     }
