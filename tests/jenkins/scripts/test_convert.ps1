@@ -90,9 +90,9 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
 # git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
-# git submodule update --init --recursive
+git submodule update --init --recursive
 
-cd $env:MMDEPLOY_DIR
+
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
