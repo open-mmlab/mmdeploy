@@ -230,4 +230,3 @@ models:
       - *pipeline_trt_static_fp32
       - *pipeline_trt_static_fp16
       - *pipeline_trt_static_int8
-
