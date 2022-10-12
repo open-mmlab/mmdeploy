@@ -77,7 +77,7 @@ backend_config = dict(
    git clone git@github.com:rockchip-linux/rknpu2.git
    ```
 
-2. 在 linux 系统, 下载 gcc 交叉编译器. `rknpu2` 的官方提供的下载链接无法使用了. 用户可以使用另一个 [链接](https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu). 下载并解压完编译器, 打开终端, 设置 `RKNN_TOOL_CHAIN` 和 `RKNPU2_DIR` 为 `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DIR=/path/to/rknpu2`。
+2. 在 linux 系统, 下载 gcc 交叉编译器. `rknpu2` 的官方提供的下载链接无法使用了. 用户可以使用另一个 [链接](https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu). 下载并解压完编译器, 打开终端, 设置 `RKNN_TOOL_CHAIN` 和 `RKNPU2_DEVICE_DIR` 为 `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DEVICE_DIR=/path/to/rknpu2/runtime/RK3588`。
 
 3. 上述准备工作完成后, 运行如下指令安装:
 
@@ -89,7 +89,7 @@ cmake \
     -DCMAKE_TOOLCHAIN_FILE=/path/to/mmdeploy/cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DOpenCV_DIR=${RKNPU2_DIR}/examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV \
+    -DOpenCV_DIR=${RKNPU2_DEVICE_DIR}/../../examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DMMDEPLOY_TARGET_DEVICES="cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \

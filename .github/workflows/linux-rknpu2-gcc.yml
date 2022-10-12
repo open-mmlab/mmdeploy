@@ -39,7 +39,7 @@ jobs:
         run: |
           export RKNN_TOOL_CHAIN=$GITHUB_WORKSPACE/rknpu2-gnu-toolchain/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/usr
           export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
-          export RKNPU2_DIR=$GITHUB_WORKSPACE/rknpu2/rknpu2
+          export RKNPU2_DEVICE_DIR=$GITHUB_WORKSPACE/rknpu2/rknpu2/runtime/RK3588
           mkdir build && cd build
           cmake .. \
             -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchains/rknpu2-linux-gnu.cmake \
@@ -49,6 +49,6 @@ jobs:
             -DMMDEPLOY_TARGET_DEVICES="cpu" \
             -DMMDEPLOY_TARGET_BACKENDS="rknn" \
             -DMMDEPLOY_CODEBASES=all \
-            -DOpenCV_DIR=$RKNPU2_DIR/examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
+            -DOpenCV_DIR=$RKNPU2_DEVICE_DIR/../../examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
           make -j$(nproc)
           make install
