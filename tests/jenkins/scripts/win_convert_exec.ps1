@@ -21,7 +21,7 @@ elseif ($codebase -eq "mmedit")
     mim install mmcv-full==1.6.0
     pip install -v $codebase_path
 }
-elseif ($codebase -eq "mmedit")
+elseif ($codebase -eq "mmrotate")
 {
     # mim install $codebase
     mim install mmcv-full==1.6.0

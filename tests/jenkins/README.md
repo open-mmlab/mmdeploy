@@ -4,28 +4,57 @@
 tree
 
 .
-├── docker
-│   ├── mmdeploy-ci-ubuntu-18.04
-│   │   └── Dockerfile
-│   ├── mmdeploy-ci-ubuntu-18.04-cu102
-│   │   └── Dockerfile
-│   ├── mmdeploy-ci-ubuntu-20.04-cu111
-│   │   └── Dockerfile
-│   ├── mmdeploy-ci-ubuntu-20.04-cu113
-│   │   └── Dockerfile
 ├── Jenkinsfile
 ├── README.md
-└── scripts
-    ├── docker_exec_build.sh
-    ├── docker_exec_convert_gpu.sh
-    ├── docker_exec_convert.sh
-    ├── docker_exec_prebuild.sh
-    ├── docker_exec_ut.sh
-    ├── test_build.sh
-    ├── test_convert.sh
-    ├── test_prebuild.sh
-    └── test_ut.sh
+├── conf
+│   ├── default.config
+│   ├── jenkins.config
+│   ├── tmp.config
+│   └── win_default.config
+├── docker
+│   ├── mmdeploy-ci-ubuntu-18.04
+│   │   └── Dockerfile
+│   ├── mmdeploy-ci-ubuntu-18.04-cu102
+│   │   └── Dockerfile
+│   ├── mmdeploy-ci-ubuntu-20.04-cu111
+│   │   └── Dockerfile
+│   └── mmdeploy-ci-ubuntu-20.04-cu113
+│       └── Dockerfile
+├── scripts
+│   ├── docker_exec_build.sh
+│   ├── docker_exec_convert.sh
+│   ├── docker_exec_convert_gpu.sh
+│   ├── docker_exec_prebuild.sh
+│   ├── docker_exec_ut.sh
+│   ├── test_build.sh
+│   ├── test_convert.ps1
+│   ├── test_convert.sh
+│   ├── test_prebuild.sh
+│   ├── test_ut.sh
+│   ├── utils.psm1
+│   ├── win_convert_exec.ps1
+│   └── win_default.config
+└── todolist.md
 ```
+## conf
+存放脚本运行时的配置文件，default.config和win_default.config是linux和windows系统的默认配置文件
+`win_default.config`配置如下：
+- CUDA版本（cu111, cu113可选）
+- 支持的codebase
+- 是否进行精度测试
+- 最大线程数
+- mmdeploy的分支
+- mmdeploy仓库的地址
+
+`default.config`配置如下：
+- docker镜像
+- 支持的codebase
+- 是否进行精度测试
+- 最大线程数
+- mmdeploy的分支
+- mmdeploy仓库的地址
+- tensorrt版本
+
 ## docker
 存放Dockerfile文件位置，命名方式为：
 ```shell
@@ -37,8 +66,9 @@ Dockerfile中会安装：
 - 所需python包
 - 多个conda环境，并分别安装不同torch版本
 
-## jenkins
+## scripts
 存放执行任务所需shell脚本，命名方式为：
+### linux
 ```shell
 test_${Job_Type}.sh ## 执行任务的入口脚本
 docker_exec_${Job_Type}.sh ## 在容器中实际运行的脚本
@@ -46,7 +76,13 @@ docker_exec_${Job_Type}.sh ## 在容器中实际运行的脚本
 - test_${Job_Type}.sh:  
   - parameters
     - docker_image: str: 指定执行任务的docker image
-    - codebase_list: str: 部分脚本需要，执行执行的codebase(简写)，多个codebase用空格连接，并用" "包起，作为字符串参数传入
+    - codebase_list: str: 部分脚本需要，执行执行的codebase(简写)
+    - exec_performance: str: 部分脚本需要，执行性能测试
+    - max_job_nums：int: 部分脚本需要，多线程执行脚本
+    - mmdeploy_branch str: 选择mmdeploy分支
+    - repo_url: str: mmdeploy地址
+    - tensorrt_version: str: 部分脚本需要，选择tensorrt版本
+  - 读取配置文件
   - log存放路径
   - 创建运行时container(一个或多个)
   - 在容器中git clone mmdeploy
@@ -55,6 +91,38 @@ docker_exec_${Job_Type}.sh ## 在容器中实际运行的脚本
   - parameters
     - codebase_list: str: 部分脚本需要，执行执行的codebase(简写)，多个codebase用空格连接，并用" "包起，作为字符串参数传入
   - 实际执行的任务步骤
+
+### windows
+```shell
+test_convert.ps1 ## 执行任务的入口
+win_convert_exec.ps1 ## 回归测试的实际运行的脚本
+utils.psm1 ## 工具类
+```
+
+- test_convert.ps1:
+  - parameters
+    - cuda_version: str: 选择cuda版本（cu111, cu113可选）
+    - codebase_list: str: 部分脚本需要，执行执行的codebase(简写)
+    - exec_performance: str: 部分脚本需要，执行性能测试
+    - max_job_nums：int: 部分脚本需要，多线程执行脚本
+    - mmdeploy_branch str: 选择mmdeploy分支
+    - repo_url: str: mmdeploy地址
+  - 读取配置文件
+  - 切换cuda版本
+  - git clone codebase
+  - git clone mmdeploy
+  - 设置环境变量
+  - 编译mmdeploy sdk
+  - log存放路径
+  - 多线程执行win_convert_exec.ps1
+- win_convert_exec.ps1
+  - parameters
+    - codebase: str: codebase简写
+    - exec_performance: str: 执行性能测试
+    - codebase_fullname_opt:  hashtable: codebase简写和全名的映射集合
+  - 根据codebase安装配套mmcv
+  - 执行回归测试
+
 ## Jenkinsfile
 Jenkins执行任务时所需的pipeline配置文件
 
@@ -95,7 +163,7 @@ shell返回container='xxx'，任务开始运行
 等待任务运行完成，查看日志
 
 # 如何查看日志
-## 日志存放路径
+## linux日志存放路径
 所有运行日志均存放在执行机的/data2/regression_log中
 ```shell
 cd /data2/regression_log
@@ -155,6 +223,10 @@ tree -L 1 -d
 ${exec_host_ip}:8989
 ```
 
+## windows查看日志
+所有运行日志均存放在执行机的与mmdeploy同级目录regression_log中
+目录结构参考linux日志目录结构
+
 # 各个docker镜像包含内容
 ## mmdeploy-ci-ubuntu-18.04-cu102
 - miniconda
@@ -204,7 +276,7 @@ ${exec_host_ip}:8989
   - torch1.11.0
   - torch1.12.0
 
-## windows
+## windows环境
 - OpenCV 4.6.0 
 - pplcv
 - ONNXRuntime>=1.8.1
