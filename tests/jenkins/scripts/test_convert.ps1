@@ -1,8 +1,13 @@
-Import-Module .\utils.psm1
+$scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
+Import-Module $scriptDir\utils.psm1
 
 #read configuration file
-$config_path = '../conf/win_default.config'
+$config_path = "$scriptDir\..\conf\win_default.config"
 $conf = ReadConfig $config_path
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "can't load config from $config_path."
+    throw
+}
 $cuda_version=$conf.cuda_version
 Write-Host "cuda_version=$cuda_version"
 $codebase_list=$conf.codebase_list
@@ -17,6 +22,10 @@ $repo_url=$conf.repo_url
 Write-Host "repo_url=$repo_url"
 
 SwitchCudaVersion $cuda_version
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "can't switch cuda version to $cuda_version."
+    throw
+}
 
 if ( $exec_performance -eq "y" ) {
     $exec_performance='--performance'
@@ -40,7 +49,8 @@ $env:OPENCV_DIR=(Join-PATH $env:WORKSPACE opencv\4.6.0\build\x64\vc15)
 $env:TENSORRT_DIR=(Join-PATH $env:WORKSPACE TensorRT-8.2.3.0)
 $env:ONNXRUNTIME_DIR=(Join-PATH $env:WORKSPACE onnxruntime-win-x64-1.8.1)
 $env:CUDNN_DIR=(Join-PATH $env:WORKSPACE cudnn-11.3-v8.2.1.32)
-
+$env:PPLCV_DIR=(Join-PATH $env:WORKSPACE ppl.cv)
+$env:MMDEPLOY_DIR="$pwd"
 #git clone codebase
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
@@ -49,20 +59,20 @@ conda activate mmdeploy-3.7-$cuda_version
 
 #opencv
 $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path  
-
+$env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
 #pplcv
-cd $env:WORKSPACE
+# cd $env:WORKSPACE
 # git clone https://github.com/openppl-public/ppl.cv.git
-cd ppl.cv
+# cd ppl.cv
 # git checkout tags/v0.7.0 -b v0.7.0
-$env:PPLCV_DIR = "$pwd"
+# $env:PPLCV_DIR = "$pwd"
 # mkdir pplcv-build
 # cd pplcv-build
 # cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DPPLCV_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 # cmake --build . --config Release -- /m
 # cmake --install . --config Release
 # cd ../..
-cd ..
+# cd ..
 
 #ONNXRuntime
 # pip install onnxruntime==1.8.1
@@ -76,12 +86,10 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 #cudnn
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
-git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
-git submodule update --init --recursive
+# git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
+# git submodule update --init --recursive
 
-$env:MMDEPLOY_DIR="$pwd/mmdeploy"
 cd $env:MMDEPLOY_DIR
-rm -r build
 mkdir build
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
@@ -90,7 +98,7 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
   -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
   -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
   -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
-  -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
+  -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake/ppl" `
   -DTENSORRT_DIR="$env:TENSORRT_DIR" `
   -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
   -DCUDNN_DIR="$env:CUDNN_DIR"
@@ -99,14 +107,13 @@ cmake --install . --config Release
 cd ..
 
 #add Release Path
-$env:path+=";C:\Users\HZJ\Desktop\mmdeploy_windows\MMDeploy\build\bin\Release"
+$env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
 
 pip install openmim
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt
 pip install -v -e .
-
 
 $date_snap=Get-Date -UFormat "%Y%m%d"
 $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
