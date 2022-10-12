@@ -1,0 +1,32 @@
+pipeline {
+    agent { label 'deploy_win2' }
+    parameters {
+        string(
+            name: 'CONFIG', 
+            defaultValue: 'win_default.config', 
+            description: 'select config'
+        )
+        string(
+            name: 'CODEBASES', 
+            defaultValue: 'mmdet mmcls mmedit mmocr mmpose mmrotate mmseg', 
+            description: 'select codebase'
+        )
+        string(
+            name: 'EXEC_PERFORMANCE',
+            defaultValue: 'y',
+            description: 'exec performance or not,use y/n'
+        )
+    }
+
+    stages {
+        stage('Regression') {
+                stage('Convert') {
+                    agent { label 'deploy_windows' }
+                    steps {
+                        pwsh "pwsh tests/jenkins/scripts/test_convert.ps1"
+                    }
+                }
+        }
+
+    }
+}

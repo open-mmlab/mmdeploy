@@ -76,10 +76,10 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 #cudnn
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
-# git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
+git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
+git submodule update --init --recursive
 
-# git submodule update --init --recursive
-$env:MMDEPLOY_DIR="$pwd/MMdeploy"
+$env:MMDEPLOY_DIR="$pwd/mmdeploy"
 cd $env:MMDEPLOY_DIR
 rm -r build
 mkdir build
