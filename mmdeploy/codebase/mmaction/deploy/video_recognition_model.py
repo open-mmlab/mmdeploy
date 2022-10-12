@@ -118,7 +118,7 @@ def build_video_recognition_model(model_files: Sequence[str],
                                   model_cfg: Union[str, mmengine.Config],
                                   deploy_cfg: Union[str, mmengine.Config],
                                   device: str, **kwargs):
-    """Build text recognition model for different backends.
+    """Build video recognition model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).
