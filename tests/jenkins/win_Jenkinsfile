@@ -22,8 +22,8 @@ pipeline {
         stage('Convert') {
             agent { label 'deploy_win2' }
             steps {
-                cd tests/jenkins/scripts
-                pwsh "./test_convert.ps1"
+                cd .\tests\jenkins\scripts\
+                pwsh ".\test_convert.ps1"
             }
         }
     }
