@@ -103,10 +103,9 @@ class End2EndModel(BaseBackendModel):
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
         codec = self.model_cfg.codec
         if isinstance(codec, (list, tuple)):
-            codec = codec[0]
+            codec = codec[-1]
         if codec.type == 'SimCCLabel':
             preds = batch_outputs[0].cpu().numpy()
-            print(preds)
             preds = [
                 InstanceData(
                     keypoints=preds[..., :2], keypoint_scores=preds[..., 2])
@@ -153,7 +152,7 @@ class End2EndModel(BaseBackendModel):
                 keypoints = keypoints / input_size * bbox_scales
                 keypoints += bbox_centers - 0.5 * bbox_scales
                 pred_instances.keypoints = keypoints
-            print(pred_instances.keypoints)
+
             pred_instances.bboxes = gt_instances.bboxes
             pred_instances.bbox_scores = gt_instances.bbox_scores
 
