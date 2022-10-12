@@ -19,14 +19,11 @@ pipeline {
     }
 
     stages {
-        stage('Regression') {
-                stage('Convert') {
-                    agent { label 'deploy_windows' }
-                    steps {
-                        pwsh "pwsh tests/jenkins/scripts/test_convert.ps1"
-                    }
-                }
+        stage('Convert') {
+            agent { label 'deploy_win2' }
+            steps {
+                pwsh "pwsh tests/jenkins/scripts/test_convert.ps1"
+            }
         }
-
     }
 }
