@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import pytest
 import torch
 from mmengine import Config
 
@@ -10,7 +11,11 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 224
 
-import_codebase(Codebase.MMACTION)
+try:
+    import_codebase(Codebase.MMACTION)
+except ImportError:
+    pytest.skip(
+        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
