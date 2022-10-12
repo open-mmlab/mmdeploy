@@ -101,24 +101,18 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        batch_heatmaps = batch_outputs[0]
-        # flip test
-        test_cfg = self.model_cfg.model.test_cfg
-        if test_cfg.get('flip_test', False):
-            from mmpose.models.utils.tta import flip_heatmaps
-            batch_inputs_flip = inputs.flip(-1).contiguous()
-            batch_outputs_flip = self.wrapper(
-                {self.input_name: batch_inputs_flip})
-            batch_heatmaps_flip = self.wrapper.output_to_list(
-                batch_outputs_flip)[0]
-            flip_indices = data_samples[0].metainfo['flip_indices']
-            batch_heatmaps_flip = flip_heatmaps(
-                batch_heatmaps_flip,
-                flip_mode=test_cfg.get('flip_mode', 'heatmap'),
-                flip_indices=flip_indices,
-                shift_heatmap=test_cfg.get('shift_heatmap', False))
-            batch_heatmaps = (batch_heatmaps + batch_heatmaps_flip) * 0.5
-        preds = self.head.decode(batch_heatmaps)
+        codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[0]
+        if codec.type == 'SimCCLabel':
+            preds = batch_outputs[0].cpu().numpy()
+            print(preds)
+            preds = [
+                InstanceData(
+                    keypoints=preds[..., :2], keypoint_scores=preds[..., 2])
+            ]
+        else:
+            preds = self.head.decode(batch_outputs[0])
         results = self.pack_result(preds, data_samples)
         return results
 
@@ -159,7 +153,7 @@ class End2EndModel(BaseBackendModel):
                 keypoints = keypoints / input_size * bbox_scales
                 keypoints += bbox_centers - 0.5 * bbox_scales
                 pred_instances.keypoints = keypoints
-
+            print(pred_instances.keypoints)
             pred_instances.bboxes = gt_instances.bboxes
             pred_instances.bbox_scores = gt_instances.bbox_scores
 
