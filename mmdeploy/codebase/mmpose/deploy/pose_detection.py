@@ -247,7 +247,6 @@ class PoseDetection(BaseTask):
                     'bbox': bbox[None],  # shape (1, 4)
                 }
                 data.update(meta_data)
-                print(f'debugging line 246: what is pipeline: {test_pipeline}')
                 data = test_pipeline(data)
                 data['inputs'] = data['inputs'].to(self.device)
                 batch_data['inputs'].append(data['inputs'])
