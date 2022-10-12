@@ -22,8 +22,10 @@ pipeline {
         stage('Convert') {
             agent { label 'deploy_win2' }
             steps {
-                pwsh "cd ./tests/jenkins/scripts"
-                pwsh "pwsh ./test_convert.ps1"
+                bat """
+                    @ECHO ON
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1
+                """
             }
         }
     }
