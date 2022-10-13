@@ -68,7 +68,7 @@ commands:
           name: Install mmcv
           command: |
             python -m pip install opencv-python==4.5.4.60 openmim
-            python -m mim install mmengine "mmcv>=2.0.0rc1"
+            python -m mim install "mmcv>=2.0.0rc1"
   install_mmdeploy:
     description: "Install MMDeploy"
     steps:
