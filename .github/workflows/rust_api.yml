@@ -53,7 +53,7 @@ jobs:
           export MMDEPLOY_DIR=$(pwd)/sdk
           export LD_LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LD_LIBRARY_PATH
           popd
-      - name: Download rust-mmdeploy
+      - name: Install rust-mmdeploy
         run: git clone https://github.com/liu-mengyang/rust-mmdeploy
       - name: Install converted models
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
