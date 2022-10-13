@@ -79,7 +79,7 @@ def get_model_name_customs(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
 def get_models(deploy_cfg: Union[str, mmcv.Config],
                model_cfg: Union[str, mmcv.Config], work_dir: str,
                device: str) -> List:
-    """Get the output model informantion for deploy.json.
+    """Get the output model information for deploy.json.
 
     Args:
         deploy_cfg (mmcv.Config): Deploy config dict.
@@ -89,7 +89,7 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
 
     Return:
         list[dict]: The list contains dicts composed of the model name, net,
-            weghts, backend, precision batchsize and dynamic_shape.
+            weights, backend, precision batch_size and dynamic_shape.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
@@ -145,9 +145,20 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         suffix = get_model_suffix(convert_to)
         net = replace_suffix(ir_name, suffix)
     elif backend == Backend.TVM:
+        import os.path as osp
+
         from mmdeploy.backend.tvm import get_library_ext
         ext = get_library_ext()
         net = replace_suffix(ir_name, ext)
+        # get input and output name
+        ir_cfg = get_ir_config(deploy_cfg)
+        input_names = ir_cfg['input_names']
+        output_names = ir_cfg['output_names']
+        weights = replace_suffix(ir_name, '.txt')
+        weights_path = osp.join(work_dir, weights)
+        with open(weights_path, 'w') as f:
+            f.write(','.join(input_names) + '\n')
+            f.write(','.join(output_names) + '\n')
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 

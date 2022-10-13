@@ -31,7 +31,7 @@ if (NOT (TVM_INCLUDE_DIR AND DMLC_CORE_INCLUDE_DIR AND DLPACK_INCLUDE_DIR AND TV
         "${TVM_DIR}, please check if the path is correct.")
 endif()
 
-add_library(tvm_runtime STATIC IMPORTED)
+add_library(tvm_runtime SHARED IMPORTED)
 set_property(TARGET tvm_runtime APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
 if (MSVC)
     set_target_properties(tvm_runtime PROPERTIES

@@ -9,6 +9,71 @@
 
 namespace mmdeploy::framework {
 
+static DLDevice GetDLDevice(const Device& device) {
+  DLDevice dev;
+  if (device.is_device()) {
+    dev = {kDLCUDA, device.device_id()};
+  } else {
+    dev = {kDLCPU, 0};
+  }
+  return dev;
+}
+
+static Result<DLDataType> FromDataType(DataType data_type) {
+  switch (data_type) {
+    case DataType::kFLOAT:
+      return DLDataType{kDLFloat, 32, 1};
+    case DataType::kINT32:
+      return DLDataType{kDLInt, 32, 1};
+    case DataType::kINT64:
+      return DLDataType{kDLInt, 64, 1};
+    case DataType::kINT8:
+      return DLDataType{kDLInt, 8, 1};
+    default:
+      MMDEPLOY_ERROR("Unsupported mmdeploy::DataType");
+      return Status(eNotSupported);
+  }
+}
+
+static Result<DataType> ToDataType(DLDataType scalar_type) {
+  if (scalar_type.lanes != 1) {
+    MMDEPLOY_ERROR("Unsupported scalar_type.lanes==1.");
+    return Status(eNotSupported);
+  }
+
+  if (scalar_type.code == kDLFloat && scalar_type.bits == 32) {
+    return DataType::kFLOAT;
+  } else if (scalar_type.code == kDLInt) {
+    switch (scalar_type.bits) {
+      case 32:
+        return DataType::kINT32;
+      case 64:
+        return DataType::kINT64;
+      case 8:
+        return DataType::kINT8;
+      default:
+        break;
+    }
+  }
+
+  MMDEPLOY_ERROR("Unsupported code: {}, bits: {}, lanes: {}.", std::to_string(scalar_type.code),
+                 std::to_string(scalar_type.bits), std::to_string(scalar_type.lanes));
+  return Status(eNotSupported);
+}
+
+static std::vector<std::string> split_str(const std::string& s, char delim) {
+  using namespace std;
+  vector<string> result;
+  stringstream ss(s);
+  string item;
+
+  while (getline(ss, item, delim)) {
+    result.push_back(item);
+  }
+
+  return result;
+}
+
 Result<void> TVMNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
@@ -21,6 +86,8 @@ Result<void> TVMNet::Init(const Value& args) {
   auto tmp_dir = fs::temp_directory_path();
   std::string tmp_lib = (tmp_dir / fs::path(config.net)).string();
   OUTCOME_TRY(auto raw_lib, model.ReadFile(config.net));
+  std::string tmp_label = (tmp_dir / fs::path(config.weights)).string();
+  OUTCOME_TRY(auto raw_label, model.ReadFile(config.weights));
 
   try {
     std::ofstream lib_out(tmp_lib, std::ios::binary);
@@ -34,17 +101,28 @@ Result<void> TVMNet::Init(const Value& args) {
   try {
     mod_factory_ = tvm::runtime::Module::LoadFromFile(tmp_lib);
 
-    DLDevice dev;
-    if (device_.is_device()) {
-      dev = {kDLCUDA, device_.device_id()};
-    } else {
-      dev = {kDLCPU, 0};
-    }
+    DLDevice dev = GetDLDevice(device_);
 
     tvm::runtime::Module gmod = mod_factory_.GetFunction("default")(dev);
     func_set_input_ = gmod.GetFunction("set_input");
     func_get_output_ = gmod.GetFunction("get_output");
     func_run_ = gmod.GetFunction("run");
+
+    auto io_names = split_str(raw_label, '\n');
+    auto input_names = split_str(io_names[0], ',');
+    auto output_names = split_str(io_names[1], ',');
+
+    auto ToDesc = [&](const std::string& name) {
+      return TensorDesc{device_, DataType::kFLOAT, {}, name};
+    };
+
+    for (auto name : input_names) {
+      input_tensors_.emplace_back(ToDesc(name));
+    }
+
+    for (auto name : output_names) {
+      output_tensors_.emplace_back(ToDesc(name));
+    }
 
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("unhandled exception when creating TVM Net: {}", e.what());
@@ -69,7 +147,29 @@ Result<void> TVMNet::Reshape(Span<TensorShape> input_shapes) {
   return success();
 }
 
-Result<void> TVMNet::Forward() { return success(); }
+Result<void> TVMNet::Forward() {
+  DLDevice dev = GetDLDevice(device_);
+  for (auto v : input_tensors_) {
+    OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
+    auto ndarray = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
+    ndarray.CopyFromBytes(v.data(), v.byte_size());
+
+    func_set_input_(v.name(), ndarray);
+  }
+
+  func_run_();
+
+  for (int i = 0; i < output_tensors_.size(); ++i) {
+    tvm::runtime::NDArray ndarray = func_get_output_(i);
+    OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+    Tensor& v = output_tensors_[i];
+    TensorDesc desc{device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+    v = Tensor(desc);
+    ndarray.CopyToBytes(v.data(), v.byte_size());
+  }
+
+  return success();
+}
 
 class TVMNetCreator : public Creator<Net> {
  public:
