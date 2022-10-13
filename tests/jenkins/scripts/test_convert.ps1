@@ -133,7 +133,8 @@ $script_block = {
         [string] $codebase,
         [string] $exec_performance,
         [hashtable] $codebase_fullname_opt,
-        [string] $log_dir
+        [string] $log_dir,
+        [string] $scriptDir
     )
     invoke-expression -command "pwsh $scriptDir\win_convert_exec.ps1 -codebase $codebase -exec_performance $exec_performance -codebase_fullname_opt $codebase_fullname_opt *> $log_dir\$codebase.log"
 }
@@ -142,7 +143,7 @@ $threads = @()
 
 $handles = foreach ($codebase in $codebase_list -split ' ')
 {
-    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname_opt).AddArgument($log_dir)
+    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname_opt).AddArgument($log_dir).AddArgument($scriptDir)
 	  $powershell.RunspacePool = $Pool
 	  $powershell.BeginInvoke()
     $threads += $powershell
