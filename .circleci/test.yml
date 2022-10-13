@@ -87,6 +87,7 @@ commands:
             python -m pip install ../mmedit
             python -m mim install -r requirements/codebases.txt
             sed -i "s/mmengine_maximum_version = '0.2.0'/mmengine_maximum_version = '0.3.0'/" /opt/circleci/.pyenv/versions/3.8.5/lib/python3.8/site-packages/mmdet/__init__.py
+            sed -i "s/mmengine_maximum_version = '0.2.0'/mmengine_maximum_version = '0.3.0'/" /opt/circleci/.pyenv/versions/3.8.5/lib/python3.8/site-packages/mmocr/__init__.py
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
             python -m pip install -U numpy
