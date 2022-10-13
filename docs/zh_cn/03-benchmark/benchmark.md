@@ -1054,8 +1054,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">30.2211</td>
     <td align="center">30.1383</td>
     <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">30.2194</td>
+    <td align="center">29.9340</td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1066,8 +1066,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8497</td>
     <td align="center">0.8469</td>
     <td align="center"> - </td>
-    <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">0.8498</td>
+    <td align="center">0.8409</td>
   </tr>
     <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py">EDSRx2</a></td>

@@ -37,6 +37,7 @@ Note: MMPose models are tested with `flip_test` explicitly set to `False` in mod
 
 ### Super Resolution
 
-|                                                       model                                                       | dataset | fp32 PSNR/SSIM | int8 PSNR/SSIM |
-| :---------------------------------------------------------------------------------------------------------------: | :-----: | :------------: | :------------: |
-| [EDSR](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) |  Set5   | 35.7733/0.9365 | 35.4266/0.9334 |
+|                                                        model                                                        | dataset | fp32 PSNR/SSIM | int8 PSNR/SSIM |
+| :-----------------------------------------------------------------------------------------------------------------: | :-----: | :------------: | :------------: |
+| [EDSRx2](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) |  Set5   | 35.7733/0.9365 | 35.4266/0.9334 |
+| [EDSRx4](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py) |  Set5   | 30.2194/0.8498 | 29.9340/0.8409 |
