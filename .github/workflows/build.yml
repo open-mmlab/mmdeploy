@@ -49,6 +49,7 @@ jobs:
           python -m mim install "mmcv>=2.0.0rc1"
           git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
           python -m mim install -r requirements/codebases.txt
+          sed -i "s/mmengine_maximum_version = '0.2.0'/mmengine_maximum_version = '0.3.0'/" /__t/Python/3.7.14/x64/lib/python3.7/site-packages/mmdet/__init__.py
           python -m pip install -U numpy
           python -m pip list
       - name: Build and install
