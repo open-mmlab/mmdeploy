@@ -14,29 +14,14 @@ if ($codebase -eq "mmdet3d")
 {
     # mim install $codebase
     mim install mmcv-full==1.5.2
-    pip install -v $codebase_path
-}
-elseif ($codebase -eq "mmedit")
-{
-    # mim install $codebase
-    mim install mmcv-full==1.6.0
-    pip install -v $codebase_path
-}
-elseif ($codebase -eq "mmrotate")
-{
-    # mim install $codebase
-    mim install mmcv-full==1.6.0
-    pip install -v $codebase_path
+
 }
 else
 {
     # mim install $codebase
-    if ( -not $?)
-    {
-        mim install mmcv-full
-        pip install -v $codebase_path
-    }
+    mim install mmcv-full==1.6.0
 }
+pip install -v $codebase_path
 python $env:MMDEPLOY_DIR/tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
