@@ -1,7 +1,6 @@
-mmcls==1.0.0rc1
-mmdet>=3.0.0rc0
-mmedit>=1.0.0rc1
-mmengine==0.1.0
-mmocr>=1.0.0rc0
+git+https://github.com/open-mmlab/mmdetection.git@dev-3.x
+git+https://github.com/open-mmlab/mmediting.git@1.x
+git+https://github.com/open-mmlab/mmocr.git@dev-1.x
+mmcls>=1.0.0rc2
 mmpose>=1.0.0b0
 mmsegmentation>=1.0.0rc0

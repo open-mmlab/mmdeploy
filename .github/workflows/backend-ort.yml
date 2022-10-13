@@ -40,7 +40,6 @@ jobs:
       - name: test mmcls full pipeline
         run: |
           python -m pip install openmim
-          python -m mim install $(cat requirements/codebases.txt | grep mmengine)
           python -m mim install $(cat requirements/codebases.txt | grep mmcls)
           export MMDEPLOY_DIR=$(pwd)
           export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
