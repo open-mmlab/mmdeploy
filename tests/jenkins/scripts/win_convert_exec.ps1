@@ -1,12 +1,12 @@
 param(
     $codebase,
     $exec_performance,
-    $codebase_fullname_opt
+    $codebase_path
 )
 
 Write-Host "exec_path:  $pwd"
 Write-Host "mim install $codebase"
-$codebase_path = (Join-Path $env:WORKSPACE $codebase_fullname_opt.([string]$codebase))
+$codebase_path = (Join-Path $env:WORKSPACE $codebase_path)
 Write-Host "codebase_path = $codebase_path"
 mim uninstall mmcv
 if ($codebase -eq "mmdet3d")
