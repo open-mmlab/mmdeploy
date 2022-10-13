@@ -26,8 +26,9 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch -c conda-forge
 ENV PATH /opt/conda/bin:$PATH
 
-### install mim
-RUN /opt/conda/bin/pip install openmim
+### install mim, mmcv
+RUN /opt/conda/bin/pip install openmim &&\
+    mim install 'mmcv>=2.0.0rc1'
 
 WORKDIR /workspace
 

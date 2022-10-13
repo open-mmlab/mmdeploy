@@ -33,4 +33,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install mmdeploy
         run: |
+          python -m pip install mmcv-lite
           python tools/scripts/build_ubuntu_x64_torchscript.py
