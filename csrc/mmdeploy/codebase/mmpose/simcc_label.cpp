@@ -14,14 +14,13 @@
 
 namespace mmdeploy::mmpose {
 
-
 class SimCCLabelDecode : public MMPose {
  public:
   explicit SimCCLabelDecode(const Value& config) : MMPose(config) {
     if (config.contains("params")) {
       auto& params = config["params"];
       flip_test_ = params.value("flip_test", flip_test_);
-      if(params.contains("input_size")){
+      if (params.contains("input_size")) {
         from_value(params["input_size"], input_size_);
       }
     }
@@ -51,14 +50,17 @@ class SimCCLabelDecode : public MMPose {
     float* data = keypoints.data<float>();
     float scale_value = 200;
     for (int i = 0; i < keypoints.shape(1); i++) {
-        float x = *(data + 0) * scale[0] * scale_value / input_size_[0] + center[0] - scale[0] * scale_value * 0.5;
-        float y = *(data + 1) * scale[1] * scale_value / input_size_[1] + center[1] - scale[1] * scale_value * 0.5;
-        float s = *(data + 2);
-        output.key_points.push_back({{x, y}, s});
-        data += 3;
-     }
+      float x = *(data + 0) * scale[0] * scale_value / input_size_[0] + center[0] -
+                scale[0] * scale_value * 0.5;
+      float y = *(data + 1) * scale[1] * scale_value / input_size_[1] + center[1] -
+                scale[1] * scale_value * 0.5;
+      float s = *(data + 2);
+      output.key_points.push_back({{x, y}, s});
+      data += 3;
+    }
     return to_value(output);
   }
+
  private:
   bool flip_test_{false};
   bool shift_heatmap_{false};
