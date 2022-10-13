@@ -8,65 +8,6 @@ using namespace std;
 namespace mmdeploy {
 namespace cpu {
 
-class IndexHelper {
- public:
-  IndexHelper(const std::vector<int>& src_dims, const std::vector<int>& permutation) {
-    assert(permutation.size() == src_dims.size());
-
-    ndims_ = src_dims.size();
-    permutation_ = permutation;
-    src_stride_.resize(ndims_);
-    src_stride_[ndims_ - 1] = 1;
-    for (int i = ndims_ - 2; i >= 0; i--) {
-      src_stride_[i] = src_stride_[i + 1] * src_dims[i + 1];
-    }
-
-    std::vector<int> dst_dims(ndims_);
-    for (int i = 0; i < permutation.size(); i++) {
-      dst_dims[i] = src_dims[permutation[i]];
-    }
-    dst_stride_.resize(ndims_);
-    dst_stride_[ndims_ - 1] = 1;
-    for (int i = ndims_ - 2; i >= 0; i--) {
-      dst_stride_[i] = dst_stride_[i + 1] * dst_dims[i + 1];
-    }
-
-    dst_index_.resize(ndims_);
-    src_index_.resize(ndims_);
-  }
-
-  int GetSrcOffset(int offset) {
-    // dst index
-    int remaining = offset;
-    for (int i = 0; i < ndims_; i++) {
-      int idx = remaining / dst_stride_[i];
-      dst_index_[i] = idx;
-      remaining -= idx * dst_stride_[i];
-    }
-
-    // src index
-    for (int i = 0; i < ndims_; i++) {
-      src_index_[permutation_[i]] = dst_index_[i];
-    }
-
-    // src offset
-    int src_offset = 0;
-    for (int i = 0; i < ndims_; i++) {
-      src_offset += src_index_[i] * src_stride_[i];
-    }
-
-    return src_offset;
-  }
-
- private:
-  vector<int> dst_index_;
-  vector<int> src_index_;
-  vector<int> permutation_;
-  vector<int> src_stride_;
-  vector<int> dst_stride_;
-  int ndims_;
-};
-
 class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
  public:
   explicit FormatShapeImpl(const Value& args) : ::mmdeploy::FormatShapeImpl(args) {}
@@ -144,14 +85,38 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
       shape[i] = src.shape(permutation[i]);
     }
     dst.Reshape(shape);
-
-    IndexHelper helper(src_dims, permutation);
+    int ndim = shape.size();
+    std::vector<int> dst_strides(ndim);
+    std::vector<int> src_strides(ndim);
+    dst_strides[ndim - 1] = src_strides[ndim - 1] = 1;
+    for (int i = ndim - 2; i >= 0; i--) {
+      dst_strides[i] = dst_strides[i + 1] * shape[i + 1];
+      src_strides[i] = src_strides[i + 1] * src_dims[i + 1];
+    }
+    std::vector<int> tmp(ndim);
+    for (int i = 0; i < ndim; i++) {
+      tmp[i] = src_strides[permutation[i]];
+    }
+    src_strides.swap(tmp);
+    std::vector<int> coord(ndim, 0);
     auto dst_data = dst.data<float>();
     auto src_data = src.data<float>();
-    for (int i = 0; i < dst.size(); i++) {
-      int src_offset = helper.GetSrcOffset(i);
-      dst_data[i] = src_data[src_offset];
-    }
+
+    int i;
+    do {
+      dst_data[0] = src_data[0];
+      for (i = ndim - 1; i >= 0; i--) {
+        if (++coord[i] == shape[i]) {
+          coord[i] = 0;
+          dst_data -= (shape[i] - 1) * dst_strides[i];
+          src_data -= (shape[i] - 1) * src_strides[i];
+        } else {
+          dst_data += dst_strides[i];
+          src_data += src_strides[i];
+          break;
+        }
+      }
+    } while (i >= 0);
     return dst;
   }
 
