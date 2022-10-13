@@ -1,6 +1,7 @@
-mmcls>=1.0.0rc0
+mmcls==1.0.0rc1
 mmdet>=3.0.0rc0
-mmedit==1.0.0rc1
+mmedit>=1.0.0rc1
+mmengine==0.1.0
 mmocr>=1.0.0rc0
 mmpose>=1.0.0b0
 mmsegmentation>=1.0.0rc0

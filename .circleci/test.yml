@@ -68,7 +68,7 @@ commands:
           name: Install mmcv
           command: |
             python -m pip install opencv-python==4.5.4.60 openmim
-            python -m mim install mmengine "mmcv>=2.0.0rc1"
+            python -m mim install "mmcv>=2.0.0rc1"
   install_mmdeploy:
     description: "Install MMDeploy"
     steps:
@@ -83,11 +83,9 @@ commands:
           name: Install requirements
           command: |
             cd mmdeploy
+            python -m mim install -r requirements/codebases.txt
             git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit
             python -m pip install ../mmedit
-            python -m mim install -r requirements/codebases.txt
-            sed -i "s/mmengine_maximum_version = '0.2.0'/mmengine_maximum_version = '0.3.0'/" /opt/circleci/.pyenv/versions/3.8.5/lib/python3.8/site-packages/mmdet/__init__.py
-            sed -i "s/mmengine_maximum_version = '0.2.0'/mmengine_maximum_version = '0.3.0'/" /opt/circleci/.pyenv/versions/3.8.5/lib/python3.8/site-packages/mmocr/__init__.py
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
             python -m pip install -U numpy
