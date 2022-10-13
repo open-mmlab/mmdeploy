@@ -15,7 +15,7 @@
 // git clone --depth 1 --branch ${branch} --recursive https://github.com/open-mmlab/${codebase_fullname}.git
 // for key, value in ${codebase} expect branch do
 //      pip install ${value}
-// done
+//
 
 // example
 // git clone --depth 1 --branch ${branch} --recursive https://github.com/open-mmlab/mmdetection.git

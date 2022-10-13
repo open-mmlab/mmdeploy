@@ -38,10 +38,14 @@ export TENSORRT_VERSION=$3
 
 getFullName $codebase
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
+export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf
 
 echo "start_time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
-git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git /root/workspace/${codebase_fullname}
+
+# branch=$(cat ${REQ_DIR}/requirementV1.0.json | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep branch | awk -F ':' '{print $2}')
+# git clone --branch ${branch} --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
+git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## init tensorrt
 if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
@@ -86,7 +90,10 @@ for TORCH_VERSION in 1.11.0; do
     pip install -r requirements/build.txt
     pip install -v .
 
-    ## build ${codebaseu}
+    ## install requirements from conf
+# mim install $(cat requirementV1.0.json | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
+
+    ## build ${codebase}
     if [ ${codebase} == mmdet3d ]; then
         mim install ${codebase}
         mim install mmcv-full==1.5.2
