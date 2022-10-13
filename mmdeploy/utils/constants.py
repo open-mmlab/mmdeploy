@@ -62,6 +62,7 @@ class Backend(AdvancedEnum):
     RKNN = 'rknn'
     ASCEND = 'ascend'
     COREML = 'coreml'
+    IPU = 'ipu'
     DEFAULT = 'default'
 
 

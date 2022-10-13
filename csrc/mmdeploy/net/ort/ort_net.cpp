@@ -79,8 +79,8 @@ Result<void> OrtNet::Init(const Value& args) {
     auto shape = to_shape(type_info);
     MMDEPLOY_DEBUG("input {}, shape = {}", i, shape);
     filter_shape(shape);
-    OUTCOME_TRY(auto data_type,
-                ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
+           OUTCOME_TRY(auto data_type,
+                       ConvertElementType(type_info.GetTensorTypeAndShapeInfo().GetElementType()));
     input_tensors_.emplace_back(TensorDesc{device_, data_type, shape, input_name});
     allocator.Free(input_name);
   }

@@ -126,6 +126,9 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
         elif backend == Backend.COREML:
             from mmdeploy.backend.coreml import CoreMLWrapper
             return CoreMLWrapper(model_file=backend_files[0])
+        elif backend == Backend.IPU:
+            from mmdeploy.backend.ipu import IPUWrapper
+            return IPUWrapper(onnx_file=backend_files[0])
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
