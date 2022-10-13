@@ -136,8 +136,8 @@ $script_block = {
         [string] $log_dir,
         [string] $scriptDir
     )
-    Write-Host "pwsh $scriptDir\win_convert_exec.ps1  $codebase  $exec_performance $codebase_path *> $log_dir\$codebase.log"
-    invoke-expression -command "pwsh $scriptDir\win_convert_exec.ps1  $codebase  $exec_performance $codebase_path *> $log_dir\$codebase.log"
+    Write-Host "pwsh $scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_path *> $log_dir\$codebase.log"
+    invoke-expression -command "pwsh $scriptDir\win_convert_exec.ps1 '$codebase' '$exec_performance' '$codebase_path' *> $log_dir\$codebase.log"
 }
 
 $threads = @()
