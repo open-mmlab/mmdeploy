@@ -28,7 +28,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 ### install mim, mmengine, mmcv
 RUN /opt/conda/bin/pip install openmim &&\
-    mim install 'mmengine' &&\
+    mim install mmengine &&\
     mim install 'mmcv>=2.0.0rc1'
 
 WORKDIR /workspace
