@@ -3,7 +3,6 @@
         "branch": "3.x",
         "version": "mmdet>=3.0.0rc1",
         "mmcv": "mmcv>=2.0.0rc1",
-        "mmdet": "mmdet"
     },
     "mmcls": {
         "branch": "3.x",
