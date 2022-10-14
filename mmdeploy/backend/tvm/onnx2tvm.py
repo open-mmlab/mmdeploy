@@ -11,6 +11,8 @@ from .tuner import TVMTunerBase, build_tvm_tuner
 
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               output_file: str,
+              use_vm: bool = False,
+              bytecode_file: str = '',
               shape: Optional[Dict] = None,
               dtype: Union[str, Dict] = 'float32',
               tuner: Optional[Union[TVMTunerBase, Dict]] = None):
@@ -34,6 +36,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         tuner = dict(type='DefaultTuner', target=Target('llvm'))
 
     if not issubclass(type(tuner), TVMTunerBase):
+        tuner['use_vm'] = use_vm
         tuner = build_tvm_tuner(tuner)
 
     logger.info(f'Tuning with {type(tuner).__name__} .')
@@ -41,5 +44,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     lib = tuner.build(mod, params)
 
     logger.info(f'Export library to {output_file} .')
+    if tuner.use_vm:
+        bytecode, lib = lib.save()
+        with open(bytecode_file, mode='wb') as f:
+            f.write(bytecode)
     lib.export_library(output_file)
     return lib

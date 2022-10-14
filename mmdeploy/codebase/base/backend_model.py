@@ -129,7 +129,10 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
         elif backend == Backend.TVM:
             from mmdeploy.backend.tvm import TVMWrapper
             return TVMWrapper(
-                backend_files[0], output_names=output_names, device=device)
+                backend_files[0],
+                bytecode=backend_files[1],
+                output_names=output_names,
+                device=device)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

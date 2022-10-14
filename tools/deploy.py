@@ -427,13 +427,18 @@ def main():
         tvm_files = []
         for model_id, onnx_path in enumerate(ir_files):
             model_input = copy.deepcopy(model_inputs[model_id])
+            use_vm = model_input.get('use_vm', False)
             if 'target' not in model_input['tuner']:
                 model_input['tuner']['target'] = target
             lib_path = osp.splitext(onnx_path)[0] + lib_ext
+            code_path = osp.splitext(
+                onnx_path)[0] + '.code' if use_vm else None
             model_input['output_file'] = lib_path
             model_input['onnx_model'] = onnx_path
+            model_input['bytecode_file'] = code_path
             from_onnx(**model_input)
-            tvm_files.append(lib_path)
+
+            tvm_files += [lib_path, code_path]
 
         backend_files = tvm_files
 

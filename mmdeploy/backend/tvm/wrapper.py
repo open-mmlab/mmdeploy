@@ -1,10 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import re
-from typing import Dict, Sequence
+from typing import Dict, Optional, Sequence, Union
 
 import torch
 import tvm
 import tvm.contrib.graph_executor as runtime
+from tvm.runtime.vm import Executable, VirtualMachine
 
 from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
@@ -17,8 +18,11 @@ class TVMWrapper(BaseWrapper):
     def __init__(self,
                  lib: str,
                  output_names: Sequence[str],
+                 bytecode: Optional[Union[bytearray, str]] = None,
                  device: str = 'cpu'):
         super().__init__(output_names)
+        self.use_vm = False
+
         if isinstance(lib, str):
             lib = tvm.runtime.load_module(lib)
 
@@ -29,10 +33,21 @@ class TVMWrapper(BaseWrapper):
             match_result.group(2)[1:])
         device = tvm.device(device_type, device_id)
 
-        module = runtime.GraphModule(lib['default'](device))
-        num_output = module.get_num_outputs()
-        assert isinstance(output_names, Sequence)
-        assert len(output_names) == num_output
+        if bytecode is not None:
+            self.use_vm = True
+            if isinstance(bytecode, str):
+                with open(bytecode, 'rb') as f:
+                    bytecode = f.read()
+
+        if self.use_vm:
+            exec = Executable.load_exec(bytecode, lib)
+
+            module = VirtualMachine(exec, device)
+        else:
+            module = runtime.GraphModule(lib['default'](device))
+            num_output = module.get_num_outputs()
+            assert isinstance(output_names, Sequence)
+            assert len(output_names) == num_output
 
         self._lib = lib
         self._device = device
@@ -58,16 +73,28 @@ class TVMWrapper(BaseWrapper):
             else:
                 mod_inputs[name] = tvm.nd.array(tensor.cpu().numpy(), device)
 
-        module.set_input(**mod_inputs)
+        if self.use_vm:
+            module.set_input('main', **mod_inputs)
+            self.__tvm_execute()
+            vm_ret = module.get_outputs()
+            ret = dict()
+            for idx, name in enumerate(self._output_names):
+                ndarray = vm_ret[idx]
+                tensor = torch.from_dlpack(ndarray.to_dlpack())
+                ret[name] = tensor
+            return ret
 
-        self.__tvm_execute()
+        else:
+            module.set_input(**mod_inputs)
 
-        ret = dict()
-        for idx, name in enumerate(self._output_names):
-            ndarray = module.get_output(idx)
-            tensor = torch.from_dlpack(ndarray.to_dlpack())
-            ret[name] = tensor
-        return ret
+            self.__tvm_execute()
+
+            ret = dict()
+            for idx, name in enumerate(self._output_names):
+                ndarray = module.get_output(idx)
+                tensor = torch.from_dlpack(ndarray.to_dlpack())
+                ret[name] = tensor
+            return ret
 
     @TimeCounter.count_time(Backend.TVM.value)
     def __tvm_execute(self):

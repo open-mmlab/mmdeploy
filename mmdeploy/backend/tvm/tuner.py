@@ -60,10 +60,19 @@ AUTO_SCHEDULER_RUNNER.register_module()(auto_scheduler.RPCRunner)
 
 class TVMTunerBase:
 
-    def __init__(self, target: Union[str, Target]) -> None:
+    def __init__(self,
+                 target: Union[str, Target],
+                 opt_level: int = 3,
+                 use_vm: bool = False) -> None:
         if isinstance(target, str):
             target = Target(target)
         self._target = target
+        self._opt_level = opt_level
+        self._use_vm = use_vm
+
+    @property
+    def use_vm(self) -> bool:
+        return self._use_vm
 
     @abstractmethod
     def tune(self, mod: IRModule, params: Dict):
@@ -79,18 +88,24 @@ class TVMTunerBase:
         Returns:
             lib: The runtime factory for the graph executor
         """
-        with tvm.transform.PassContext(opt_level=3):
-            lib = relay.build_module.build(
-                mod, target=self._target, params=params)
+        with tvm.transform.PassContext(opt_level=self._opt_level):
+            if self._use_vm:
+                ret = relay.vm.compile(mod, target=self._target, params=params)
+            else:
+                ret = relay.build_module.build(
+                    mod, target=self._target, params=params)
 
-        return lib
+        return ret
 
 
 @TVM_TUNER.register_module
 class DefaultTuner(TVMTunerBase):
 
-    def __init__(self, target: Union[str, Target]) -> None:
-        super().__init__(target)
+    def __init__(self,
+                 target: Union[str, Target],
+                 opt_level: int = 3,
+                 use_vm: bool = False) -> None:
+        super().__init__(target, opt_level, use_vm)
 
     def tune(self, mod: IRModule, params: Dict):
         """Tune model, This tuner does not need to tune."""
@@ -105,6 +120,8 @@ class AutoTVMTuner(TVMTunerBase):
                  log_file: str,
                  n_trial: int,
                  tuner: Dict,
+                 opt_level: int = 3,
+                 use_vm: bool = False,
                  early_stopping: Optional[int] = None,
                  builder: Union[Dict,
                                 Any] = dict(type='LocalBuilder', timeout=10),
@@ -115,7 +132,7 @@ class AutoTVMTuner(TVMTunerBase):
                      timeout=4,
                      min_repeat_ms=150),
                  use_transfer_learning=True) -> None:
-        super().__init__(target)
+        super().__init__(target, opt_level, use_vm)
         self._log_file = log_file
         self._n_trial = n_trial
         self._tuner = tuner
@@ -176,11 +193,15 @@ class AutoTVMTuner(TVMTunerBase):
 
     def build(self, mod: IRModule, params: Dict):
         with autotvm.apply_history_best(self._log_file):
-            with tvm.transform.PassContext(opt_level=3):
-                lib = relay.build_module.build(
-                    mod, target=self._target, params=params)
+            with tvm.transform.PassContext(opt_level=self._opt_level):
+                if self._use_vm:
+                    ret = relay.vm.compile(
+                        mod, target=self._target, params=params)
+                else:
+                    ret = relay.build_module.build(
+                        mod, target=self._target, params=params)
 
-        return lib
+        return ret
 
 
 @TVM_TUNER.register_module
@@ -191,12 +212,14 @@ class AutoScheduleTuner(TVMTunerBase):
         target: Union[str, Target],
         log_file: str,
         num_measure_trials: int,
+        opt_level: int = 3,
+        use_vm: bool = False,
         early_stopping: Optional[int] = None,
         builder: Union[Dict, Any] = dict(type='LocalBuilder', timeout=15),
         runner: Union[Dict, Any] = dict(
             type='LocalRunner', repeat=10, enable_cpu_cache_flush=True)
     ) -> None:
-        super().__init__(target)
+        super().__init__(target, opt_level, use_vm)
         self._log_file = log_file
         self._num_measure_trials = num_measure_trials
         self._early_stopping = early_stopping
@@ -234,9 +257,13 @@ class AutoScheduleTuner(TVMTunerBase):
     def build(self, mod: IRModule, params: Dict):
         with auto_scheduler.ApplyHistoryBest(self._log_file):
             with tvm.transform.PassContext(
-                    opt_level=3,
+                    opt_level=self._opt_level,
                     config={'relay.backend.use_auto_scheduler': True}):
-                lib = relay.build_module.build(
-                    mod, target=self._target, params=params)
+                if self._use_vm:
+                    ret = relay.vm.compile(
+                        mod, target=self._target, params=params)
+                else:
+                    ret = relay.build_module.build(
+                        mod, target=self._target, params=params)
 
-        return lib
+        return ret
