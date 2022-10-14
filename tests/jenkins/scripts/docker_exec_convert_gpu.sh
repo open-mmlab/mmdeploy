@@ -41,12 +41,12 @@ getFullName $codebase
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
 
+cp -R /root/workspace/jenkins/ mmdeploy/tests/
 echo "start_time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 
 branch=$(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep branch | awk -F ':' '{print $2}')
 git clone --branch ${branch} --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
-#git clone --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## init tensorrt
 if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
@@ -92,28 +92,8 @@ for TORCH_VERSION in 1.11.0; do
     pip install -v .
 
     ## install requirements from conf
-    mim install $(cat ${REQ_DIR}/requirementV1.0.json | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
+    mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
 
-    # ## build ${codebase}
-    # if [ ${codebase} == mmdet3d ]; then
-    #     mim install ${codebase}
-    #     mim install mmcv-full==1.5.2
-    #     pip install -v /root/workspace/${codebase_fullname}
-    # elif [ ${codebase} == mmedit ]; then
-    #     mim install ${codebase}
-    #     mim install mmcv-full==1.6.0
-    #     pip install -v /root/workspace/${codebase_fullname}
-    # elif [ ${codebase} == mmrotate ]; then
-    #     mim install ${codebase}
-    #     mim install mmcv-full==1.6.0
-    #     pip install -v /root/workspace/${codebase_fullname}
-    # else
-    #     mim install ${codebase}
-    #     if [ $? -ne 0 ]; then
-    #         mim install mmcv-full
-    #         pip install -v /root/workspace/${codebase_fullname}
-    #     fi
-    # fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log

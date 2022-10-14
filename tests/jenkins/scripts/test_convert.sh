@@ -35,16 +35,16 @@ for codebase in ${codebase_list[@]}; do
         container_id=$(
             docker run -itd \
                 --gpus all \
-                -v /data2/checkpoints/${codebase}:/root/workspace/mmdeploy_checkpoints \
+                -v /data2/checkpoints/:/root/workspace/mmdeploy_checkpoints \
                 -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
                 -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
-                -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
+                -v ~/mmdeploy/tests/jenkins:/root/workspace/jenkins\
                 --name ${container_name} \
                 ${docker_image} /bin/bash
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-        /root/workspace/mmdeploy_script/docker_exec_convert_gpu.sh ${codebase} "${exec_performance}" ${TENSORRT_VERSION} ${REQUIREMENT}" >${log_dir}/${codebase}.log 2>&1 &
+        /root/workspace/jenkins/script/docker_exec_convert_gpu.sh ${codebase} "${exec_performance}" ${TENSORRT_VERSION} ${REQUIREMENT}" >${log_dir}/${codebase}.log 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"
