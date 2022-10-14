@@ -61,9 +61,8 @@ def interpolate__rknn(ctx,
     if scale_factor is None:
         scale_factor = [(s_out / s_in)
                         for s_out, s_in in zip(size, input_size[2:])]
-
-    if isinstance(scale_factor[0], torch.Tensor):
-        scale_factor = [i.item() for i in scale_factor]
+        if isinstance(scale_factor[0], torch.Tensor):
+            scale_factor = [i.item() for i in scale_factor]
 
     return ctx.origin_func(
         input,

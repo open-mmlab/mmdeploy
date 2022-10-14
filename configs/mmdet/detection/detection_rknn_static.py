@@ -17,13 +17,13 @@ partition_config = dict(
             end=['yolo_head:input'])  # [mark_name:input/output, ...]
     ])
 
-# retinanet
-partition_config = dict(
-    type='rknn',  # the partition policy name
-    apply_marks=True,
-    partition_cfg=[
-        dict(
-            save_file='model.onnx',
-            start='detector_forward:input',
-            end=['BaseDenseHead:output'])
-    ])
+# # retinanet
+# partition_config = dict(
+#     type='rknn',  # the partition policy name
+#     apply_marks=True,
+#     partition_cfg=[
+#         dict(
+#             save_file='model.onnx',
+#             start='detector_forward:input',
+#             end=['BaseDenseHead:output'])
+#     ])
