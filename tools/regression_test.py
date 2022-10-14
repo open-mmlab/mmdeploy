@@ -4,6 +4,7 @@ import logging
 import subprocess
 from collections import OrderedDict
 from pathlib import Path
+from typing import List
 
 import mmcv
 import openpyxl
@@ -519,6 +520,53 @@ def get_info_from_log_file(info_type: str, log_path: Path,
     return info_value
 
 
+def run_cmd(cmd_lines: List[str], log_path: Path):
+    """
+    Args:
+        cmd_lines: (list[str]): A command in multiple line style.
+        log_path (Path): Path to log file.
+
+    Returns:
+        int: error code.
+    """
+    import platform
+    system = platform.system().lower()
+
+    if system == 'windows':
+        sep = r'`'
+    else:  # 'Linux', 'Darwin'
+        sep = '\\'
+    cmd_for_run = ' '.join(cmd_lines)
+    cmd_for_log = f' {sep}\n'.join(cmd_lines) + '\n'
+    parent_path = log_path.parent
+    if not parent_path.exists():
+        parent_path.mkdir(parents=True, exist_ok=True)
+    logger = get_root_logger()
+    logger.info(100 * '-')
+    logger.info(f'Start running cmd\n{cmd_for_log}')
+    logger.info(f'Logging log to \n{log_path}')
+
+    with open(log_path, 'w', encoding='utf-8') as file_handler:
+        # write cmd
+        file_handler.write(f'Command:\n{cmd_for_log}\n')
+        file_handler.flush()
+        process_res = subprocess.Popen(
+            cmd_for_run,
+            cwd=str(Path(__file__).absolute().parent.parent),
+            shell=True,
+            stdout=file_handler,
+            stderr=file_handler)
+        process_res.wait()
+        return_code = process_res.returncode
+
+    if return_code != 0:
+        logger.error(f'Got shell return code={return_code}')
+        with open(log_path, 'r') as f:
+            content = f.read()
+            logger.error(f'Log error message\n{content}')
+    return return_code
+
+
 def compare_metric(metric_value: float, metric_name: str, pytorch_metric: dict,
                    metric_info: dict):
     """Compare metric value with the pytorch metric value and the tolerance.
@@ -654,26 +702,18 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
         report_txt_path (Path): report txt save path.
         model_name (str): Name of model in test yaml.
     """
-    cmd_str = 'python3 tools/test.py ' \
-              f'{deploy_cfg_path} ' \
-              f'{str(model_cfg_path.absolute())} ' \
-              f'--model {convert_checkpoint_path} ' \
-              f'--log2file "{log_path}" ' \
-              f'--speed-test ' \
-              f'--device {device_type} '
+    cmd_lines = [
+        'python3 tools/test.py', f'{deploy_cfg_path}',
+        f'{str(model_cfg_path.absolute())}',
+        f'--model {convert_checkpoint_path}', f'--device {device_type}'
+    ]
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     if codebase_name != 'mmedit':
         # mmedit dont --metric
-        cmd_str += f'--metrics {eval_name} '
-
-    logger.info(f'Process cmd = {cmd_str}')
-
+        cmd_lines += [f'--metrics {eval_name}']
     # Test backend
-    shell_res = subprocess.run(
-        cmd_str, cwd=str(Path(__file__).absolute().parent.parent),
-        shell=True).returncode
-    logger.info(f'Got shell_res = {shell_res}')
+    return_code = run_cmd(cmd_lines, log_path)
 
     metric_key = ''
     metric_name = ''
@@ -689,7 +729,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     logger.info(f'Got metric_key = {metric_key}')
 
     fps, metric_list, test_pass = \
-        get_fps_metric(shell_res, pytorch_metric, metric_key, metric_name,
+        get_fps_metric(return_code, pytorch_metric, metric_key, metric_name,
                        log_path, metrics_eval_list, metric_info, logger)
 
     # update useless metric
@@ -875,54 +915,29 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     backend_output_path.mkdir(parents=True, exist_ok=True)
 
     # convert cmd string
-    cmd_str = 'python3 ./tools/deploy.py ' \
-              f'{str(deploy_cfg_path.absolute().resolve())} ' \
-              f'{str(model_cfg_path.absolute().resolve())} ' \
-              f'"{str(checkpoint_path.absolute().resolve())}" ' \
-              f'"{input_img_path}" ' \
-              f'--work-dir "{backend_output_path}" ' \
-              f'--device {device_type} ' \
-              '--log-level INFO'
+    cmd_lines = [
+        'python3 ./tools/deploy.py',
+        f'{str(deploy_cfg_path.absolute().resolve())}',
+        f'{str(model_cfg_path.absolute().resolve())}',
+        f'"{str(checkpoint_path.absolute().resolve())}"',
+        f'"{input_img_path}"', f'--work-dir "{backend_output_path}"',
+        f'--device {device_type} ', '--log-level INFO'
+    ]
 
     if sdk_config is not None:
-        cmd_str += ' --dump-info'
+        cmd_lines += ['--dump-info']
 
     if test_img_path is not None:
-        cmd_str += f' --test-img {test_img_path}'
+        cmd_lines += [f'--test-img {test_img_path}']
 
     if precision_type == 'int8':
         calib_dataset_cfg = pipeline_info.get('calib_dataset_cfg', None)
         if calib_dataset_cfg is not None:
-            cmd_str += f' --calib-dataset-cfg {calib_dataset_cfg}'
+            cmd_lines += [f'--calib-dataset-cfg {calib_dataset_cfg}']
 
-    logger.info(f'Process cmd = {cmd_str}')
-
-    convert_result = False
-    convert_log_path = backend_output_path.joinpath('convert_log.log')
-    logger.info(f'Logging conversion log to {convert_log_path} ...')
-    file_handler = open(convert_log_path, 'w', encoding='utf-8')
-    try:
-        # Convert the model to specific backend
-        process_res = subprocess.Popen(
-            cmd_str,
-            cwd=str(Path(__file__).absolute().parent.parent),
-            shell=True,
-            stdout=file_handler,
-            stderr=file_handler)
-        process_res.wait()
-        logger.info(f'Got shell_res = {process_res.returncode}')
-
-        # check if converted successes or not.
-        if process_res.returncode == 0:
-            convert_result = True
-        else:
-            convert_result = False
-
-    except Exception as e:
-        print(f'process convert error: {e}')
-    finally:
-        file_handler.close()
-
+    convert_log_path = backend_output_path.joinpath('convert.log')
+    return_code = run_cmd(cmd_lines, convert_log_path)
+    convert_result = return_code == 0
     logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
