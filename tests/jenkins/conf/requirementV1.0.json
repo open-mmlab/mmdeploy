@@ -1,0 +1,13 @@
+{
+    "mmdet": {
+        "branch": "3.x",
+        "version": "mmdet>=3.0.0rc1",
+        "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmcls": {
+        "branch": "3.x",
+        "key": "value"
+    }
+}
+
+
