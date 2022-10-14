@@ -22,12 +22,12 @@ def get_output_model_file(onnx_path: str,
     """Returns the path to the .param, .bin file with export result.
 
     Args:
-        onnx_path (str): The path to the onnx model.
-        work_dir (str|None): The path to the directory for saving the results.
-            Defaults to `None`, which means use the directory of onnx_path.
+        onnx_path (str): The path of the onnx model.
+        work_dir (str|None): The path of the directory for saving the results.
+            Defaults to `None`, which means using the directory of onnx_path.
 
     Returns:
-        List[str]: The path to the files where the export result will be
+        List[str]: The path of the files where the export result will be
             located.
     """
     if work_dir is None:
@@ -44,7 +44,7 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     """Convert ONNX to ncnn.
 
     The inputs of ncnn include a model file and a weight file. We need to use
-    a executable program to convert the `.onnx` file to a `.param` file and
+    an executable program to convert the `.onnx` file to a `.param` file and
     a `.bin` file. The output files will save to work_dir.
 
     Example:

@@ -47,7 +47,6 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
-          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
           python -m mim install -r requirements/codebases.txt
           python -m pip install -U numpy
           python -m pip list
@@ -125,7 +124,6 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
-          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy
           python -m pip list
@@ -174,7 +172,6 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
-          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmediting.git ../mmedit && python -m pip install ../mmedit
           python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy
           python -m pip list

@@ -105,8 +105,14 @@ class MMSegmentation(MMCodebase):
     task_registry = MMSEG_TASK
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmseg.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmseg.utils.set_env import register_all_modules
+
+        cls.register_deploy_modules()
         register_all_modules(True)
 
 

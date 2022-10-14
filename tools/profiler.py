@@ -112,12 +112,12 @@ def main():
     is_pytorch = model_ext in ['.pth', '.pt']
     if is_pytorch:
         # load pytorch model
-        model = task_processor.init_pytorch_model(args.model[0])
+        model = task_processor.build_pytorch_model(args.model[0])
         model = TorchWrapper(model)
         backend = Backend.PYTORCH.value
     else:
         # load the model of the backend
-        model = task_processor.init_backend_model(args.model)
+        model = task_processor.build_backend_model(args.model)
         backend = get_backend(deploy_cfg).value
 
     model = model.eval().to(args.device)
@@ -140,11 +140,17 @@ def main():
         ]
     image_files = image_files[:total_nrof_image]
     with TimeCounter.activate(
-            warmup=args.warmup, log_interval=20, with_sync=with_sync):
+            warmup=args.warmup,
+            log_interval=20,
+            with_sync=with_sync,
+            batch_size=args.batch_size):
         for i in range(0, total_nrof_image, args.batch_size):
             batch_files = image_files[i:(i + args.batch_size)]
-            data, _ = task_processor.create_input(batch_files, input_shape)
-            task_processor.run_inference(model, data)
+            data, _ = task_processor.create_input(
+                batch_files,
+                input_shape,
+                data_preprocessor=getattr(model, 'data_preprocessor', None))
+            model.test_step(data)
 
     print('----- Settings:')
     settings = PrettyTable()

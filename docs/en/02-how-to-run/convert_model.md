@@ -35,20 +35,20 @@ python ./tools/deploy.py \
 - `deploy_cfg` : The deployment configuration of mmdeploy for the model, including the type of inference framework, whether quantize, whether the input shape is dynamic, etc. There may be a reference relationship between configuration files, `mmdeploy/mmcls/classification_ncnn_static.py` is an example.
 - `model_cfg` : Model configuration for algorithm library, e.g. `mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`, regardless of the path to mmdeploy.
 - `checkpoint` : torch model path. It can start with http/https, see the implementation of `mmcv.FileClient` for details.
-- `img` : The path to the image or point cloud file used for testing during model conversion.
-- `--test-img` : The path of image file that used to test model. If not specified, it will be set to `None`.
-- `--work-dir` : The path of work directory that used to save logs and models.
-- `--calib-dataset-cfg` : Only valid in int8 mode. Config used for calibration. If not specified, it will be set to `None` and  use "val" dataset in model config for calibration.
-- `--device` : The device used for model conversion. If not specified, it will be set to `cpu`, for trt use `cuda:0` format.
+- `img` : The path to the image or point cloud file used for testing during the model conversion.
+- `--test-img` : The path of the image file that is used to test the model. If not specified, it will be set to `None`.
+- `--work-dir` : The path of the work directory that is used to save logs and models.
+- `--calib-dataset-cfg` : Only valid in int8 mode. The config used for calibration. If not specified, it will be set to `None` and use the "val" dataset in the model config for calibration.
+- `--device` : The device used for model conversion. If not specified, it will be set to `cpu`. For trt, use `cuda:0` format.
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 - `--show` : Whether to show detection outputs.
 - `--dump-info` : Whether to output information for SDK.
 
 ### How to find the corresponding deployment config of a PyTorch model
 
-1. Find model's codebase folder in `configs/`. Example, convert a yolov3 model you need to find `configs/mmdet` folder.
-2. Find model's task folder in `configs/codebase_folder/`. Just like yolov3 model, you need to find `configs/mmdet/detection` folder.
-3. Find deployment config file in `configs/codebase_folder/task_folder/`. Just like deploy yolov3 model you can use `configs/mmdet/detection/detection_onnxruntime_dynamic.py`.
+1. Find the model's codebase folder in `configs/`.  For converting a yolov3 model, you need to check `configs/mmdet` folder.
+2. Find the model's task folder in `configs/codebase_folder/`. For a yolov3 model, you need to check `configs/mmdet/detection` folder.
+3. Find the deployment config file in `configs/codebase_folder/task_folder/`. For deploying a yolov3 model to the onnx backend, you could use `configs/mmdet/detection/detection_onnxruntime_dynamic.py`.
 
 ### Example
 
