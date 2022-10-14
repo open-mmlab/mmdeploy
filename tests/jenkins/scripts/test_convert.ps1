@@ -1,4 +1,4 @@
-$env:DEPS_DIR="D:\huangzijie\deps"
+$env:DEPS_DIR="D:\huangzijie\workspace\deps"
 $env:WORKSPACE="D:\huangzijie\workspace"
 $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
 $env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
@@ -16,8 +16,8 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "can't load config from $config_path."
     throw
 }
-$cuda_version=$conf.cuda_version
-Write-Host "cuda_version=$cuda_version"
+$env:CUDA_VERSION=$conf.cuda_version
+Write-Host "cuda_version=$env:CUDA_VERSION"
 $codebase_list=$conf.codebase_list
 Write-Host "codebase_list=$codebase_list"
 $exec_performance=$conf.exec_performance
@@ -29,9 +29,9 @@ Write-Host "mmdeploy_branch=$mmdeploy_branch"
 $repo_url=$conf.repo_url
 Write-Host "repo_url=$repo_url"
 
-SwitchCudaVersion $cuda_version
+SwitchCudaVersion $env:CUDA_VERSION
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "can't switch cuda version to $cuda_version."
+    Write-Host "can't switch cuda version to $env:CUDA_VERSION."
     throw
 }
 
@@ -57,7 +57,7 @@ $codebase_fullname_opt = @{
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
 #init conda env
-conda activate mmdeploy-3.7-$cuda_version
+conda activate mmdeploy-3.7-$env:CUDA_VERSION
 
 #opencv
 $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path 
