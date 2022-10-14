@@ -2,10 +2,15 @@
 
 #include "common.h"
 
-namespace mmdeploy {
+#include "mmdeploy/common.hpp"
+#include "mmdeploy/core/model.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "pybind11/numpy.h"
 
-std::map<std::string, void (*)(py::module&)>& gPythonBindings() {
-  static std::map<std::string, void (*)(py::module&)> v;
+namespace mmdeploy::python {
+
+std::vector<void (*)(py::module&)>& gPythonBindings() {
+  static std::vector<void (*)(py::module&)> v;
   return v;
 }
 
@@ -32,9 +37,7 @@ mmdeploy_mat_t GetMat(const PyImage& img) {
   return mat;
 }
 
-#if 0
-
-py::object ConvertToPyObject(const Value& value) {
+py::object ToPyObject(const Value& value) {
   switch (value.type()) {
     case ValueType::kNull:
       return py::none();
@@ -51,14 +54,14 @@ py::object ConvertToPyObject(const Value& value) {
     case ValueType::kArray: {
       py::list list;
       for (const auto& x : value) {
-        list.append(ConvertToPyObject(x));
+        list.append(ToPyObject(x));
       }
       return list;
     }
     case ValueType::kObject: {
       py::dict dict;
       for (auto it = value.begin(); it != value.end(); ++it) {
-        dict[it.key().c_str()] = ConvertToPyObject(*it);
+        dict[it.key().c_str()] = ToPyObject(*it);
       }
       return dict;
     }
@@ -69,7 +72,9 @@ py::object ConvertToPyObject(const Value& value) {
   }
 }
 
-Value ConvertToValue(const py::object& obj) {
+std::optional<Value> _to_value_internal(const void* object, mmdeploy_context_type_t type);
+
+Value FromPyObject(const py::object& obj) {
   if (py::isinstance<py::none>(obj)) {
     return nullptr;
   } else if (py::isinstance<py::bool_>(obj)) {
@@ -80,34 +85,88 @@ Value ConvertToValue(const py::object& obj) {
     return obj.cast<double>();
   } else if (py::isinstance<py::str>(obj)) {
     return obj.cast<std::string>();
-  } else if (py::isinstance<py::list>(obj)) {
+  } else if (py::isinstance<py::list>(obj) || py::isinstance<py::tuple>(obj)) {
     py::list src(obj);
     Value::Array dst;
     dst.reserve(src.size());
     for (const auto& item : src) {
-      dst.push_back(ConvertToValue(py::reinterpret_borrow<py::object>(item)));
+      dst.push_back(FromPyObject(py::reinterpret_borrow<py::object>(item)));
     }
     return dst;
   } else if (py::isinstance<py::dict>(obj)) {
     py::dict src(obj);
     Value::Object dst;
     for (const auto& item : src) {
-      dst.insert({item.first.cast<std::string>(),
-                  ConvertToValue(py::reinterpret_borrow<py::object>(item.second))});
+      dst.emplace(item.first.cast<std::string>(),
+                  FromPyObject(py::reinterpret_borrow<py::object>(item.second)));
     }
     return dst;
+  } else if (py::isinstance<py::array>(obj)) {
+    const auto& array = obj.cast<py::array>();
+    return *_to_value_internal(&array, MMDEPLOY_TYPE_MAT);
+  } else if (py::isinstance<Model>(obj)) {
+    const auto& model =
+        *reinterpret_cast<framework::Model*>(static_cast<mmdeploy_model_t>(obj.cast<Model>()));
+    return model;
   } else {
-    MMDEPLOY_ERROR("unsupported Python object type: {}", obj.get_type().cast<std::string>());
+    std::stringstream ss;
+    ss << obj.get_type();
+    MMDEPLOY_ERROR("unsupported Python object type: {}", ss.str());
     return nullptr;
   }
+  return nullptr;
 }
 
-#endif
+std::pair<std::string, int> parse_device(const std::string& device) {
+  auto pos = device.find(':');
+  if (pos == std::string::npos) {
+    return {device, 0};  // logic for index -1 is not ready on some devices
+  }
+  auto name = device.substr(0, pos);
+  auto index = std::stoi(device.substr(pos + 1));
+  return {name, index};
+}
 
-}  // namespace mmdeploy
+static PythonBindingRegisterer register_model{[](py::module& m) {
+  py::class_<Model>(m, "Model")
+      .def(py::init([](const py::str& path) {
+        MMDEPLOY_DEBUG("py::init([](const py::str& path)");
+        return Model(path.cast<std::string>().c_str());
+      }))
+      .def(py::init([](const py::bytes& buffer) {
+        MMDEPLOY_DEBUG("py::init([](const py::bytes& buffer)");
+        py::buffer_info info(py::buffer(buffer).request());
+        return Model(info.ptr, info.size);
+      }));
+}};
+
+static PythonBindingRegisterer register_device{[](py::module& m) {
+  py::class_<Device>(m, "Device")
+      .def(py::init([](const std::string& device) {
+        auto [name, index] = parse_device(device);
+        return Device(name, index);
+      }))
+      .def(py::init([](const std::string& name, int index) { return Device(name, index); }));
+}};
+
+static PythonBindingRegisterer register_context{[](py::module& m) {
+  py::class_<Context>(m, "Context")
+      .def(py::init([](const Device& device) { return Context(device); }))
+      .def("add", [](Context* self, const std::string& name, const Scheduler& sched) {
+        self->Add(name, sched);
+      });
+}};
+
+static PythonBindingRegisterer register_scheduler{[](py::module& m) {
+  py::class_<Scheduler>(m, "Scheduler")
+      .def_static("thread_pool", [](int n_workers) { return Scheduler::ThreadPool(n_workers); })
+      .def_static("thread", [] { return Scheduler::Thread(); });
+}};
+
+}  // namespace mmdeploy::python
 
 PYBIND11_MODULE(mmdeploy_python, m) {
-  for (const auto& [_, f] : mmdeploy::gPythonBindings()) {
+  for (const auto& f : mmdeploy::python::gPythonBindings()) {
     f(m);
   }
 }

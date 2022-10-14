@@ -2,7 +2,7 @@
 
 #include "mmdeploy/core/device_impl.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class AclPlatformRegisterer {
  public:
@@ -11,4 +11,4 @@ class AclPlatformRegisterer {
 
 AclPlatformRegisterer g_acl_platform_registerer;
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

@@ -2,7 +2,7 @@
 
 #include "mat.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 Mat::Mat(int h, int w, PixelFormat format, DataType type, Device device, Allocator allocator)
     : format_(format), type_(type), width_(w), height_(h) {
@@ -69,4 +69,4 @@ Device Mat::device() const { return buf_.GetDevice(); }
 Buffer& Mat::buffer() { return buf_; }
 const Buffer& Mat::buffer() const { return buf_; }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

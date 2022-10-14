@@ -33,7 +33,7 @@ std::ostream& operator<<(std::ostream& os, const aclmdlHW& hw) {
   return os;
 }
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace {
 
@@ -656,4 +656,4 @@ class AclNetCreator : public Creator<Net> {
 
 REGISTER_MODULE(Net, AclNetCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
