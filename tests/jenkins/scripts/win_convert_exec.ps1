@@ -12,6 +12,7 @@ $codebase_path = (Join-Path $env:WORKSPACE $codebase_fullname)
 Write-Host "codebase_path = $codebase_path"
 $log_dir = (Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION")
 Write-Host "log_dir = $log_dir"
+rm -r $codebase_path
 InitMim $codebase $codebase_fullname
 pip uninstall mmcv-full -y
 mim uninstall $codebase -y
@@ -29,5 +30,5 @@ python $env:MMDEPLOY_DIR/tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
     --backends tensorrt onnxruntime `
-    --work_dir $log_dir
+    --work-dir $log_dir
     $exec_performance

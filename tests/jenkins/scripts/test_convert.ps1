@@ -57,7 +57,7 @@ $codebase_fullname_opt = @{
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
 #init conda env
-conda activate mmdeploy-3.7-$cuda_version
+conda activate mmdeploy-3.7-$env:CUDA_VERSION
 
 #opencv
 $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path 
