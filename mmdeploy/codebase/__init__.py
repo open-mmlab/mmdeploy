@@ -4,6 +4,11 @@ from typing import List
 from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
+extra_dependent_library = {
+    Codebase.MMOCR: ['mmdet'],
+    Codebase.MMROTATE: ['mmdet']
+}
+
 
 def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     """Import a codebase package in `mmdeploy.codebase`
@@ -17,11 +22,16 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
         codebase (Codebase): The codebase to import.
     """
     import importlib
+    codebase_name = codebase_type.value
+    dependent_library = [codebase_name] + \
+        extra_dependent_library.get(codebase_type, [])
+    for lib in dependent_library + custom_module_list:
+        if not importlib.util.find_spec(lib):
+            raise ImportError(f'{lib} has not been installed. '
+                              f'Import {lib} failed.')
     if len(custom_module_list) > 0:
         for custom_module in custom_module_list:
             importlib.import_module(f'{custom_module}')
-    else:
-        importlib.import_module(f'mmdeploy.codebase.{codebase_type.value}')
     codebase = get_codebase_class(codebase_type)
     codebase.register_all_modules()
 

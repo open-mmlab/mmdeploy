@@ -24,8 +24,14 @@ class MMClassification(MMCodebase):
     task_registry = MMCLS_TASK
 
     @classmethod
+    def register_deploy_modules(cls):
+        import mmdeploy.codebase.mmcls.models  # noqa: F401
+
+    @classmethod
     def register_all_modules(cls):
         from mmcls.utils.setup_env import register_all_modules
+
+        cls.register_deploy_modules()
         register_all_modules(True)
 
 
