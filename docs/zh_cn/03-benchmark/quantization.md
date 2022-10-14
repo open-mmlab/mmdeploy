@@ -32,11 +32,11 @@
 |                                                                      model                                                                       | dataset  | fp32 AP | int8 AP |
 | :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
 | [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.717  |  0.713  |
-|                  [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_mbv3_coco_256x192.py)                   |    COCO2017    |  0.687  |  0.683  |
-|                     [S-ViPNAS-Res50](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_res50_coco_256x192.py)                     |    COCO2017    |  0.701  |  0.696  |
-|      [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_mbv3_coco_wholebody_256x192.py)      | COCO Wholebody |  0.459  |  0.445  |
-|        [S-ViPNAS-Res50](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_res50_coco_wholebody_256x192.py)         | COCO Wholebody |  0.484  |  0.476  |
+| [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_mbv3_coco_256x192.py) | COCO2017 |  0.687  |  0.683  |
+| [S-ViPNAS-Res50](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_res50_coco_256x192.py) | COCO2017 |  0.701  |  0.696  |
+| [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_mbv3_coco_wholebody_256x192.py) | COCO Wholebody |  0.459  |  0.445  |
+| [S-ViPNAS-Res50](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_res50_coco_wholebody_256x192.py) | COCO Wholebody |  0.484  |  0.476  |
 | [S-ViPNAS-MobileNetV3_dark](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_mbv3_coco_wholebody_256x192_dark.py) | COCO Wholebody |  0.499  |  0.481  |
-|   [S-ViPNAS-Res50_dark](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_res50_coco_wholebody_256x192_dark.py)    | COCO Wholebody |  0.520  |  0.511  |
+| [S-ViPNAS-Res50_dark](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_res50_coco_wholebody_256x192_dark.py) | COCO Wholebody |  0.520  |  0.511  |
 
 备注：测试转换后的模型精度时，对于 mmpose 模型，在模型配置文件中 `flip_test` 需设置为 `False`。
