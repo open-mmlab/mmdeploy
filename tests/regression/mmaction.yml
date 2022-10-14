@@ -7,13 +7,13 @@ globals:
   metric_info: &metric_info
     Top 1 Accuracy:
       metric_key: acc/top1
-      tolerance: 1 # metric ±n%
-      task_name: Action Recognition
+      tolerance: 1
+      multi_value: 100
       dataset: Kinetics-400
     Top 5 Accuracy:
       metric_key: acc/top5
-      tolerance: 1 # metric ±n%
-      task_name: Action Recognition
+      tolerance: 1
+      multi_value: 100
       dataset: Kinetics-400
   convert_image: &convert_image
     input_img: *video
@@ -25,13 +25,17 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py
+    deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py
     backend_test: *default_backend_test
 
 tensorrt:
-  pipeline_trt_static_fp32: &pipeline_trt_static_fp32
+  pipeline_trt_2d_static_fp32: &pipeline_trt_2d_static_fp32
     convert_image: *convert_image
     deploy_config: configs/mmaction/video-recognition/video-recognition_2d_tensorrt_static-224x224.py
+    backend_test: *default_backend_test
+  pipeline_trt_3d_static_fp32: &pipeline_trt_3d_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_3d_tensorrt_static-256x256.py
     backend_test: *default_backend_test
 
 models:
@@ -41,12 +45,12 @@ models:
       - configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py
     pipelines:
       - *pipeline_ort_static_fp32
-      - *pipeline_trt_static_fp32
+      - *pipeline_trt_2d_static_fp32
 
-  # - name: SlowFast
-  #   metafile: configs/recognition/slowfast/metafile.yml
-  #   model_configs:
-  #     - configs/recognition/slowfast/slowfast_r50_4x16x1_256e_8xb8_kinetics400_rgb.py
-  #   pipelines:
-  #     - *pipeline_ort_static_fp32
-  #     - *pipeline_trt_static_fp32
+  - name: SlowFast
+    metafile: configs/recognition/slowfast/metafile.yml
+    model_configs:
+      - configs/recognition/slowfast/slowfast_r50_8xb8-4x16x1-256e_kinetics400-rgb.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_3d_static_fp32
