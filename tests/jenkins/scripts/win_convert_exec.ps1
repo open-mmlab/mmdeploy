@@ -8,6 +8,7 @@ Import-Module $scriptDir\utils.psm1
 Write-Host "exec_path: $pwd"
 Write-Host "mim install $codebase"
 Write-Host "codebase_fullname = $codebase_fullname"
+Write-Host "exec_performance = $exec_performance"
 $codebase_path = (Join-Path $env:WORKSPACE $codebase_fullname)
 Write-Host "codebase_path = $codebase_path"
 $log_dir = (Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION")
@@ -29,7 +30,7 @@ python ./tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
     --backends tensorrt onnxruntime `
-    --work-dir $log_dir
+    --work-dir $log_dir `
     $exec_performance
 if ($LASTEXITCODE -ne 0) {
     throw "regression_test faild"
