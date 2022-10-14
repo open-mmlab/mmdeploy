@@ -45,6 +45,7 @@ Result<void> IPUNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
+  auto popef_path = context["popef_path"];
 
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
@@ -53,7 +54,7 @@ Result<void> IPUNet::Init(const Value& args) {
   //   OUTCOME_TRY(auto onnx, model.ReadFile(config.net))
 
   config.device_wait_config = model_runtime::DeviceWaitConfig{600s /*timeout*/, 1s /*sleep_time*/};
-  model_runner(config.net, config);
+  model_runner(popef_path, config);
 
   input_desc = model_runner.getExecuteInputs();
 
