@@ -14,7 +14,7 @@ $log_dir = (Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\
 Write-Host "log_dir = $log_dir"
 InitMim $codebase $codebase_fullname
 pip uninstall mmcv-full -y
-mim uninstall $codebase -y
+pip uninstall $codebase -y
 if ($codebase -eq "mmdet3d")
 {
     mim install mmcv-full==1.5.2
@@ -25,9 +25,12 @@ else
 }
 mim install $codebase
 pip install -v $codebase_path
-python $env:MMDEPLOY_DIR/tools/regression_test.py `
+python ./tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
     --backends tensorrt onnxruntime `
     --work-dir $log_dir
     $exec_performance
+if ($LASTEXITCODE -ne 0) {
+    throw "regression_test faild"
+}

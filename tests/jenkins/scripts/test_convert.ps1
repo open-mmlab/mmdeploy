@@ -13,8 +13,7 @@ Import-Module $scriptDir\utils.psm1
 $config_path = "$env:MMDEPLOY_DIR\tests\jenkins\conf\win_default.config"
 $conf = ReadConfig $config_path
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "can't load config from $config_path."
-    throw
+    throw "can't load config from $config_path."
 }
 $env:CUDA_VERSION=$conf.cuda_version
 Write-Host "cuda_version=$env:CUDA_VERSION"
@@ -31,8 +30,7 @@ Write-Host "repo_url=$repo_url"
 
 SwitchCudaVersion $env:CUDA_VERSION
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "can't switch cuda version to $env:CUDA_VERSION."
-    throw
+    throw "can't switch cuda version to $env:CUDA_VERSION."
 }
 
 if ( $exec_performance -eq "y" ) {
