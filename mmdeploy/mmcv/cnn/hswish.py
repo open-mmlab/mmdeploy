@@ -15,7 +15,9 @@ class hswish(torch.autograd.Function):
 
     @staticmethod
     def symbolic(g, x):
-        return g.op('mmdeploy::HardSwish', x, alpha_f=0.1667, beta_f=0.5)
+        alpha = 1.0 / 6
+        beta = 3.0 / 6
+        return g.op('mmdeploy::HardSwish', x, alpha_f=alpha, beta_f=beta)
 
 
 @FUNCTION_REWRITER.register_rewriter(
