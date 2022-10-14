@@ -72,7 +72,7 @@ JetPack SDK 4+ 自带 python 3.6。我们强烈建议使用默认的 python 版�
 wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 # torchvision
-sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-dev -y
 sudo rm -r torchvision
 git clone https://github.com/pytorch/vision torchvision
 cd torchvision

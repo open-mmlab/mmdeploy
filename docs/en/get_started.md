@@ -200,7 +200,7 @@ And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model i
 For more details about model conversion, you can read [how_to_convert_model](02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](02-how-to-run/write_config.md) tutorial.
 
 ```{tip}
-If MMDeploy-ONNXRuntime prebuild package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
+If MMDeploy-ONNXRuntime prebuilt package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
 just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
 ```
 

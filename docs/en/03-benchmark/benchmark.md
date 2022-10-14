@@ -1689,6 +1689,27 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">0.825</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py">Hourglass</a></td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">-</td>
+    <td align="center">0.717</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">-</td>
+    <td align="center">0.774</td>
+  </tr>
 </tbody>
 </table>
 </div>

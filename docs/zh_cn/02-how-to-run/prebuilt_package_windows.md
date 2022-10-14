@@ -171,7 +171,7 @@ torch2onnx(img, work_dir, save_file, deploy_cfg, model_cfg,
   model_checkpoint, device)
 
 # 2. extract pipeline info for sdk use (dump-info)
-export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint)
+export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 ```
 
 转换后的模型目录结构应该为：
@@ -228,7 +228,7 @@ device = 'cuda'
 onnx2tensorrt(work_dir, save_file, model_id, deploy_cfg, onnx_model, device)
 
 # 3. extract pipeline info for sdk use (dump-info)
-export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint)
+export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 ```
 
 转换后的模型目录结构应该为：
