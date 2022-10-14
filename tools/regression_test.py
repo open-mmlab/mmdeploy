@@ -433,6 +433,10 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
         output_result[metric_name] = '-'
         if metric_key in backend_results:
             backend_value = backend_results[metric_key] * multi_value
+            if (metric_info[metric_name].get('task_name',
+                                             '') == 'Action Recognition'):
+                if backend_value < 1 and metric_value > 1:
+                    backend_value *= 100
             output_result[metric_name] = backend_value
             if backend_value < metric_value - tolerance:
                 compare_flag = False

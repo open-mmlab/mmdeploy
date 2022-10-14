@@ -12,3 +12,8 @@ class MMACTION(MMCodebase):
     """MMAction codebase class."""
 
     task_registry = MMACTION_TASK
+
+    @classmethod
+    def register_all_modules(cls):
+        from mmaction.utils.setup_env import register_all_modules
+        register_all_modules(True)

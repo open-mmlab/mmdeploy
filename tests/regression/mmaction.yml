@@ -5,15 +5,13 @@ globals:
     video: &video ../mmaction2/demo/demo.mp4
 
   metric_info: &metric_info
-    Top 1 Accuracy: # named after metafile.Results.Metrics
-      eval_name: accuracy # test.py --metrics args
-      metric_key: accuracy_top-1 # eval Dict key name
+    Top 1 Accuracy:
+      metric_key: acc/top1
       tolerance: 1 # metric ±n%
-      task_name: Action Recognition # metafile.Results.Task
-      dataset: Kinetics-400 # metafile.Results.Dataset
+      task_name: Action Recognition
+      dataset: Kinetics-400
     Top 5 Accuracy:
-      eval_name: accuracy
-      metric_key: accuracy_top-5
+      metric_key: acc/top5
       tolerance: 1 # metric ±n%
       task_name: Action Recognition
       dataset: Kinetics-400
@@ -40,7 +38,7 @@ models:
   - name: TSN
     metafile: configs/recognition/tsn/metafile.yml
     model_configs:
-      - configs/recognition/tsn/tsn_r50_1x1x3_100e_8xb32_kinetics400_rgb.py
+      - configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_static_fp32
