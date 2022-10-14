@@ -18,20 +18,14 @@ function ReadConfig() {
 }
 function InitMim() {
     param (
-        [string] $codebase_list,
-        [string] $workspace,
-        [Hashtable] $codebase_fullname
-
+        [string] $codebase,
+        [string] $codebase_fullname
     )
-    $arr = $codebase_list -split ' '
-    foreach  ($codebase in $arr){
-        $fullname = $codebase_fullname.([string]$codebase)
-        $url = "https://github.com/open-mmlab/"+$fullname+".git"
-        $place = (Join-Path $workspace $fullname)
-        Write-Host "---------------------- start cloning $fullname ----------------------"
-        git clone --depth 1 $url $place
-        Write-Host "---------------------- end cloning $fullname ----------------------"
-    }
+    $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
+    $place = (Join-Path $env:WORKSPACE $codebase_fullname)
+    Write-Host "---------------------- start cloning $fullname ----------------------"
+    git clone --depth 1 $url $place
+    Write-Host "---------------------- end cloning $fullname ----------------------"
 }
 
 $NV_EXT = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v{0}\extras\visual_studio_integration\MSBuildExtensions\"
