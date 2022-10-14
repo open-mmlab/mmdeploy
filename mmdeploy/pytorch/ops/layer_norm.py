@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Modified from:
 # https://github.com/pytorch/pytorch/blob/9ade03959392e5a90b74261012de1d806cab2253/torch/onnx/symbolic_opset9.py
-
+import torch
 from torch.onnx.symbolic_helper import parse_args
 
 from mmdeploy.core import SYMBOLIC_REWRITER
