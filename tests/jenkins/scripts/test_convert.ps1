@@ -1,5 +1,5 @@
 $env:DEPS_DIR="D:\huangzijie\deps"
-$env:WORKSPACE="D:\huangzijie"
+$env:WORKSPACE="D:\huangzijie\workspace"
 $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
 $env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
 $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
@@ -132,20 +132,20 @@ $script_block = {
     param(
         [string] $codebase,
         [string] $exec_performance,
-        [string] $codebase_path,
+        [string] $codebase_fullname,
         [string] $log_dir,
         [string] $scriptDir
     )
-    Write-Host "pwsh $scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_path *> $log_dir\$codebase.log"
-    invoke-expression -command "pwsh $scriptDir\win_convert_exec.ps1 '$codebase' '$exec_performance' '$codebase_path' *> $log_dir\$codebase.log"
+    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.log"
+    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.log"
 }
 
 $threads = @()
 
 $handles = foreach ($codebase in $codebase_list -split ' ')
 {
-    $codebase_path = $codebase_fullname_opt.([string]$codebase)
-    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_path).AddArgument($log_dir).AddArgument($scriptDir)
+    $codebase_fullname = $codebase_fullname_opt.([string]$codebase)
+    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname).AddArgument($log_dir).AddArgument($scriptDir)
 	  $powershell.RunspacePool = $Pool
 	  $powershell.BeginInvoke()
     $threads += $powershell
