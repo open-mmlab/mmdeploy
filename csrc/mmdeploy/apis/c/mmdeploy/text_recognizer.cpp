@@ -106,8 +106,7 @@ int mmdeploy_text_recognizer_create_input(const mmdeploy_mat_t* images, int imag
     };
 
     for (int i = 0; i < image_count; ++i) {
-      Mat _mat{images[i].height,         images[i].width, PixelFormat(images[i].format),
-               DataType(images[i].type), images[i].data,  Device{"cpu"}};
+      auto _mat = Cast(images[i]);
       if (bboxes && bbox_count) {
         for (int j = 0; j < bbox_count[i]; ++j) {
           add_bbox(_mat, bboxes++);
