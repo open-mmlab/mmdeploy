@@ -29,9 +29,9 @@ Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute I
 
 ### Pose detection
 
-|                                                                      model                                                                       | dataset  | fp32 AP | int8 AP |
-| :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
-| [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.717  |  0.713  |
+|                                                                                             model                                                                                              |    dataset     | fp32 AP | int8 AP |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------: | :-----: | :-----: |
+|                        [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py)                        |    COCO2017    |  0.717  |  0.713  |
 |                  [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_mbv3_coco_256x192.py)                   |    COCO2017    |  0.687  |  0.683  |
 |                     [S-ViPNAS-Res50](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/vipnas_res50_coco_256x192.py)                     |    COCO2017    |  0.701  |  0.696  |
 |      [S-ViPNAS-MobileNetV3](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_mbv3_coco_wholebody_256x192.py)      | COCO Wholebody |  0.459  |  0.445  |
