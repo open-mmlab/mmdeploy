@@ -88,6 +88,23 @@ jobs:
           ls -lah coverage.info
           cp coverage.info ../
 
+  cross_build_aarch64:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: update
+        run: sudo apt update
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: gcc-multilib
+        run: |
+          sh -x tools/scripts/ubuntu_cross_build_aarch64.sh
+
   build_cuda102:
     runs-on: ubuntu-18.04
     container:
