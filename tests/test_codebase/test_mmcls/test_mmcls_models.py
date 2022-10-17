@@ -9,7 +9,10 @@ from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
-import_codebase(Codebase.MMCLS)
+try:
+    import_codebase(Codebase.MMCLS)
+except ImportError:
+    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 input = torch.rand(1)
 

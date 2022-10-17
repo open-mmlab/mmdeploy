@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
+import re
 import time
 
 
@@ -168,11 +169,27 @@ def ensure_base_env(work_dir, dep_dir):
     # opencv
     ocv = cmd_result('which opencv_version')
     if ocv is None or len(ocv) < 1:
-        print('ocv not found, try install git ..', end='')
-        os.system(
-            '{} add-apt-repository ppa:ignaciovizzo/opencv3-nonfree -y'.format(
-                sudo))
+        print('ocv not found, try install ocv ..', end='')
         os.system('{} apt update'.format(sudo))
+
+        pattern = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+')
+        upstream = cmd_result('{} apt list libopencv-dev -a'.format(sudo))
+
+        add_ppa = True
+        if upstream is not None and len(upstream) > 0:
+            versions = pattern.findall(upstream)
+            if versions is not None and len(versions) > 0:
+                version = versions[0]
+                major = int(version.split('.')[0])
+                if major >= 3:
+                    #  Directly install upstream OCV, do not need add ppa
+                    add_ppa = False
+
+        if add_ppa:
+            os.system(
+                '{} add-apt-repository ppa:ignaciovizzo/opencv3-nonfree -y'.
+                format(sudo))
+
         os.system(
             '{} DEBIAN_FRONTEND="noninteractive"  apt install libopencv-dev -y'
             .format(sudo))

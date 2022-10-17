@@ -17,9 +17,6 @@ struct get_return_type<TypeErasedScheduler<Value>> {
 
 }  // namespace detail
 
-template <>
-struct is_cast_by_erasure<TypeErasedScheduler<Value>> : std::true_type {};
-
 MMDEPLOY_REGISTER_TYPE_ID(TypeErasedScheduler<Value>, 8);
 
 MMDEPLOY_DECLARE_REGISTRY(TypeErasedScheduler<Value>);

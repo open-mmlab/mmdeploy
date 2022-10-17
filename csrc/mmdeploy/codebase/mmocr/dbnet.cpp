@@ -68,7 +68,7 @@ class DBHead : public MMOCR {
       scale_h /= downsample_ratio_ * _data["img_metas"]["scale_factor"][1].get<float>();
     }
 
-    TextDetectorOutput output;
+    TextDetections output;
     for (int idx = 0; idx < contours.size(); ++idx) {
       if (scores[idx] < min_text_score_) {
         continue;
@@ -83,13 +83,13 @@ class DBHead : public MMOCR {
       }
       std::array<cv::Point2f, 4> box_points;
       rect.points(box_points.data());
-      auto& bbox = output.boxes.emplace_back();
+      auto& det = output.emplace_back();
       for (int i = 0; i < 4; ++i) {
         // ! performance metrics drops without rounding here
-        bbox[i * 2] = cvRound(box_points[i].x * scale_w);
-        bbox[i * 2 + 1] = cvRound(box_points[i].y * scale_h);
+        det.bbox[i * 2] = cvRound(box_points[i].x * scale_w);
+        det.bbox[i * 2 + 1] = cvRound(box_points[i].y * scale_h);
       }
-      output.scores.push_back(scores[idx]);
+      det.score = scores[idx];
     }
 
     return to_value(output);

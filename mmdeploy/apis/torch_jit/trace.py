@@ -3,7 +3,6 @@ from copy import deepcopy
 from typing import Any, Dict, Optional, Sequence, Tuple, Union
 
 import torch
-from packaging.version import parse as version_parse
 
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
@@ -99,20 +98,6 @@ def trace(func: torch.nn.Module,
             inputs,
             check_trace=check_trace,
             check_tolerance=check_tolerance)
-
-    logger.info('perform torchscript optimizer.')
-    try:
-        # custom optimizer
-        from mmdeploy.backend.torchscript import ts_optimizer
-        logger = get_root_logger()
-        ts_optimizer.optimize_for_backend(
-            ts_model._c, ir=IR.TORCHSCRIPT.value, backend=backend)
-    except Exception:
-        # use pytorch builtin optimizer
-        ts_model = torch.jit.freeze(ts_model)
-        torch_version = version_parse(torch.__version__)
-        if torch_version.minor >= 9:
-            ts_model = torch.jit.optimize_for_inference(ts_model)
 
     # save model
     if output_path_prefix is not None:

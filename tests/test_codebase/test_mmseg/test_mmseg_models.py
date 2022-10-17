@@ -5,15 +5,19 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv import ConfigDict
-from mmseg.models import BACKBONES, HEADS
-from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMSEG)
+try:
+    import_codebase(Codebase.MMSEG)
+except ImportError:
+    pytest.skip(f'{Codebase.MMSEG} is not installed.', allow_module_level=True)
+
+from mmseg.models import BACKBONES, HEADS
+from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 
 @BACKBONES.register_module()

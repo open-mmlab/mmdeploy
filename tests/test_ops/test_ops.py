@@ -1096,3 +1096,67 @@ def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
             3: 'w'
         }),
         save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+def test_dot_product_attention(backend, save_dir=None):
+    backend.check_env()
+
+    B = 2
+    Nt = 4
+    Ns = 4
+    E = 2
+    query = torch.rand(B, Nt, E).cuda()
+    key = torch.rand(B, Ns, E).cuda()
+    value = torch.rand(B, Ns, E).cuda()
+
+    model = torch.nn.MultiheadAttention(E, 2).cuda()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            model, [query, key, value],
+            'dot_product_attention',
+            input_names=['query', 'key', 'value'],
+            output_names=['out', 'attn'],
+            save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+def test_gather_topk(backend, save_dir=None):
+    backend.check_env()
+    from mmdeploy.codebase.mmdet.deploy.utils import gather_topk
+
+    x = torch.rand(2, 10, 4).cuda()
+
+    class TestModel(torch.nn.Module):
+
+        def __init__(self) -> None:
+            super().__init__()
+
+        def forward(self, x):
+            batch_size = x.size(0)
+            max_x, _ = x.max(-1)
+            _, inds = max_x.topk(4)
+
+            new_x = gather_topk(x, inds=inds, batch_size=batch_size)
+            return new_x
+
+    model = TestModel().cuda()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            model, [x],
+            'gather_topk',
+            input_names=['x'],
+            output_names=['out'],
+            save_dir=save_dir)

@@ -8,10 +8,13 @@
 #include <string>
 #include <vector>
 
+#include "mmdeploy/core/mpl/type_traits.h"
 #include "serialization.h"
 #include "types.h"
 
 namespace mmdeploy {
+
+namespace framework {
 
 struct model_meta_info_t {
   std::string name;
@@ -94,7 +97,14 @@ class MMDEPLOY_API Model {
    */
   explicit operator bool() const { return impl_ != nullptr; }
 
+  /**
+   * @brief get model_path that init with DirectoryModel
+   * @return file path of an sdk model
+   */
+  const std::string& GetModelPath() const;
+
  private:
+  std::string model_path_;
   std::shared_ptr<ModelImpl> impl_;
   deploy_meta_info_t meta_;
 };
@@ -147,6 +157,10 @@ class MMDEPLOY_API ModelRegistry {
  private:
   std::vector<Entry> entries_;
 };
+
+}  // namespace framework
+
+MMDEPLOY_REGISTER_TYPE_ID(framework::Model, 5);
 
 }  // namespace mmdeploy
 

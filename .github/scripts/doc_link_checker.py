@@ -38,6 +38,15 @@ def analyze_doc(home, path):
             if '[' in line and ']' in line and '(' in line and ')' in line:
                 all = pattern.findall(line)
                 for item in all:
+                    # skip  ![]()
+                    if item.find('[') == item.find(']') - 1:
+                        continue
+
+                    # process the case [text()]()
+                    offset = item.find('](')
+                    if offset == -1:
+                        continue
+                    item = item[offset:]
                     start = item.find('(')
                     end = item.find(')')
                     ref = item[start + 1:end]

@@ -108,7 +108,8 @@ def yolov3_head__get_bboxes(ctx,
             batch_inds = torch.arange(
                 batch_size, device=device).unsqueeze(-1).long()
             # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
-            transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds)
+            transformed_inds = (
+                bbox_pred.shape[1] * batch_inds + topk_inds.long())
             bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
                 batch_size, -1, 4)
             cls_pred = cls_pred.reshape(

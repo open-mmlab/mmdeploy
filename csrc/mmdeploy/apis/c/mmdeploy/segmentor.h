@@ -81,8 +81,7 @@ MMDEPLOY_API void mmdeploy_segmentor_destroy(mmdeploy_segmentor_t segmentor);
 /******************************************************************************
  * Experimental asynchronous APIs */
 
-MMDEPLOY_API int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, const char* device_name,
-                                              int device_id, mmdeploy_exec_info_t exec_info,
+MMDEPLOY_API int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                               mmdeploy_segmentor_t* segmentor);
 
 MMDEPLOY_API int mmdeploy_segmentor_create_input(const mmdeploy_mat_t* mats, int mat_count,

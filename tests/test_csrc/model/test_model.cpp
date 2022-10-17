@@ -9,6 +9,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("model constructor", "[model]") {
   SECTION("default constructor") {

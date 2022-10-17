@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.7.0)
+project(MMDeploy VERSION 0.9.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -34,6 +34,7 @@ option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
 option(MMDEPLOY_SPDLOG_EXTERNAL "use external spdlog" OFF)
 option(MMDEPLOY_ZIP_MODEL "support SDK model in zip format" OFF)
 option(MMDEPLOY_COVERAGE "build SDK for coverage" OFF)
+option(MMDEPLOY_ELENA_FUSION "use elena to fuse preprocess" OFF)
 
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to support")
@@ -77,6 +78,10 @@ if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 endif ()
 
+if(APPLE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc")
+endif()
+
 add_library(MMDeployStaticModules INTERFACE)
 add_library(MMDeployDynamicModules INTERFACE)
 add_library(MMDeployLibs INTERFACE)
@@ -99,14 +104,6 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_TEST)
         add_subdirectory(tests/test_csrc)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_PYTHON_API)
-        add_subdirectory(csrc/mmdeploy/apis/python)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_JAVA_API)
-        add_subdirectory(csrc/mmdeploy/apis/java)
     endif ()
 
     if (MMDEPLOY_BUILD_EXAMPLES)

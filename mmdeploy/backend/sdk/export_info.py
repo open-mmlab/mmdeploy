@@ -10,6 +10,7 @@ from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+from .tracer import add_transform_tag, get_transform_static
 
 
 def get_mmdpeloy_version() -> str:
@@ -130,10 +131,19 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         weights = replace_suffix(ir_name, '.bin')
         if 'precision' in deploy_cfg['backend_config']:
             precision = deploy_cfg['backend_config']['precision']
+    elif backend == Backend.ASCEND:
+        net = replace_suffix(ir_name, '.om')
     elif backend == Backend.SNPE:
         net = replace_suffix(ir_name, '.dlc')
+    elif backend == Backend.RKNN:
+        net = replace_suffix(ir_name, '.rknn')
     elif backend in [Backend.ONNXRUNTIME, Backend.TORCHSCRIPT]:
         pass
+    elif backend == Backend.COREML:
+        from mmdeploy.backend.coreml import get_model_suffix
+        convert_to = deploy_cfg.backend_config.convert_to
+        suffix = get_model_suffix(convert_to)
+        net = replace_suffix(ir_name, suffix)
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 
@@ -171,16 +181,25 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     input = ['prep_output']
     output = ['infer_output']
     ir_config = get_ir_config(deploy_cfg)
-    input_names = ir_config.get('input_names', None)
-    input_name = input_names[0] if input_names else 'input'
-    input_map = dict(img=input_name)
+
+    backend = get_backend(deploy_cfg=deploy_cfg)
+    if backend == Backend.TORCHSCRIPT:
+        output_names = ir_config.get('output_names', None)
+        input_map = dict(img='#0')
+        output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
+    else:
+        input_names = ir_config.get('input_names', None)
+        input_name = input_names[0] if input_names else 'input'
+        input_map = dict(img=input_name)
+        output_map = {}
     return_dict = dict(
         name=name,
         type=type,
         module=module,
         input=input,
         output=output,
-        input_map=input_map)
+        input_map=input_map,
+        output_map=output_map)
     if 'use_vulkan' in deploy_cfg['backend_config']:
         return_dict['use_vulkan'] = deploy_cfg['backend_config']['use_vulkan']
     return return_dict
@@ -384,6 +403,9 @@ def export2SDK(deploy_cfg: Union[str, mmcv.Config],
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir, device)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir, device)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
+    transform_static, tag = get_transform_static(
+        pipeline_info['pipeline']['tasks'][0]['transforms'])
+    pipeline_info = add_transform_tag(pipeline_info, tag)
     mmcv.dump(
         deploy_info,
         '{}/deploy.json'.format(work_dir),

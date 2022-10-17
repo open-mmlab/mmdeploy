@@ -6,26 +6,32 @@
 #include <stdexcept>
 
 #include "mmdeploy/common.h"
+#include "mmdeploy/core/value.h"
 #include "pybind11/numpy.h"
 #include "pybind11/pybind11.h"
 #include "pybind11/stl.h"
 
 namespace py = pybind11;
 
+namespace mmdeploy::python {
+
 using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
 
-namespace mmdeploy {
+std::vector<void (*)(py::module&)>& gPythonBindings();
 
-std::map<std::string, void (*)(py::module &)> &gPythonBindings();
+mmdeploy_mat_t GetMat(const PyImage& img);
 
-mmdeploy_mat_t GetMat(const PyImage &img);
+py::object ToPyObject(const Value& value);
 
-class Value;
+Value FromPyObject(const py::object& obj);
 
-py::object ConvertToPyObject(const Value &value);
+class PythonBindingRegisterer {
+ public:
+  explicit PythonBindingRegisterer(void (*register_fn)(py::module& m)) {
+    gPythonBindings().push_back(register_fn);
+  }
+};
 
-Value ConvertToValue(const py::object &obj);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python
 
 #endif  // MMDEPLOY_CSRC_APIS_PYTHON_COMMON_H_
