@@ -1,7 +1,13 @@
 #!/bin/bash
 
 ## parameters
-config="/home/zhengshaofeng/mmdeploy/tests/jenkins/conf/${1:-default.config}"
+config=${1:-"$HOME/mmdeploy/tests/jenkins/conf/default.config"}
+if [ -f "$config" ]; then
+    echo "Using config: $config"
+else
+    echo "$config does not exist."
+    exit 1
+fi
 
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))

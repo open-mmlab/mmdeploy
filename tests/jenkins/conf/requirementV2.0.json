@@ -5,9 +5,28 @@
         "mmcv": "mmcv>=2.0.0rc1"
     },
     "mmcls": {
-        "branch": "3.x",
-        "key": "value"
+        "branch": "1.x",
+        "version": "mmcls>=1.0.0rc0",
+        "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmocr": {
+        "branch": "1.x",
+        "version": "mmocr>=1.0.0rc0",
+        "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmpose": {
+        "branch": "1.x",
+        "version": "mmpose>=1.0.0b0",
+        "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmseg": {
+        "branch": "1.x",
+        "version": "mmsegmentation>=1.0.0rc0",
+        "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmedit": {
+        "branch": "1.x",
+        "version": "mmedit>=1.0.0rc1",
+        "mmcv": "mmcv>=2.0.0rc1"
     }
 }
-
-

@@ -1,13 +1,42 @@
 {
     "mmdet": {
-        "branch": "3.x",
-        "version": "mmdet>=3.0.0rc1",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "master",
+        "version": "mmdet",
+        "mmcv": "mmcv-full"
     },
     "mmcls": {
-        "branch": "3.x",
-        "key": "value"
+        "branch": "master",
+        "version": "mmcls",
+        "mmcv": "mmcv-full"
+    },
+    "mmocr": {
+        "branch": "main",
+        "version": "mmocr",
+        "mmcv": "mmcv-full"
+    },
+    "mmpose": {
+        "branch": "master",
+        "version": "mmpose",
+        "mmcv": "mmcv-full"
+    },
+    "mmseg": {
+        "branch": "master",
+        "version": "mmsegmentation",
+        "mmcv": "mmcv-full"
+    },
+    "mmedit": {
+        "branch": "master",
+        "version": "mmedit",
+        "mmcv": "mmcv-full==1.6.0"
+    },
+    "mmdet3d": {
+        "branch": "master",
+        "version": "mmdet3d",
+        "mmcv": "mmcv-full==1.5.2"
+    },
+    "mmrotate": {
+        "branch": "master",
+        "version": "mmedit",
+        "mmcv": "mmcv-full==1.6.0"
     }
 }
-
-
