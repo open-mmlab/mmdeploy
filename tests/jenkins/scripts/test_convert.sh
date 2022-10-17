@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## parameters
-config=${1:-"$HOME/mmdeploy/tests/jenkins/conf/default.config"}
+config="${HOME}/mmdeploy/tests/jenkins/conf/${1:-default.config}"
 if [ -f "$config" ]; then
     echo "Using config: $config"
 else
