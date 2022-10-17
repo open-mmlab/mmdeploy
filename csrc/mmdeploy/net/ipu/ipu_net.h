@@ -27,12 +27,12 @@ class IPUNet : public Net {
   Result<void> Forward() override;
   Result<void> ForwardAsync(Event* event) override { return Status(eNotSupported); };
 
-  void copy_output(const model_runtime::TensorMemory* from, Tensor& to, popef::DataType& dtype);
-  void copy_input(const Tensor& from, model_runtime::TensorMemory* to, popef::DataType& dtype);
+  void copy_output(const model_runtime::TensorMemory& from, Tensor& to);
+  void copy_input(const Tensor& from, model_runtime::TensorMemory& to);
 
  private:
-  model_runtime::ModelRunnerConfig config;
-  model_runtime::ModelRunner model_runner;
+  model_runtime::ModelRunnerConfig mconfig;
+  std::unique_ptr<model_runtime::ModelRunner> model_runner;
   model_runtime::InputMemory input_memory;
   model_runtime::OutputMemory output_memory;
   std::vector<model_runtime::DataDesc> input_desc;

@@ -11,7 +11,7 @@
 
 namespace mmdeploy {
 
-void copy_output(const model_runtime::TensorMemory& from, Tensor& to, popef::DataType& dtype) {
+void copy_output(const model_runtime::TensorMemory& from, Tensor& to) {
   if (from.data_size_bytes != to.size()) {
     MMDEPLOY_ERROR("output tensor size not match");
     return;
@@ -20,14 +20,14 @@ void copy_output(const model_runtime::TensorMemory& from, Tensor& to, popef::Dat
 
   float* from_ptr = static_cast<float*>(from.data.get());
 
-  const float* pto = to.data<float>();
+  float* pto = to.data<float>();
   for (int i = 0; i < size; i++) {
     // to->data[i] = typeid(*to).name()(pfrom[i]);  // hidden type conversion here
     pto[i] = *(from_ptr + i);
   }
 }
 
-void copy_input(const Tensor& from, model_runtime::TensorMemory& to, popef::DataType& dtype) {
+void copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
   if (from.size() != to.data_size_bytes) {
     MMDEPLOY_ERROR("input tensor size not match");
     return;
@@ -43,13 +43,14 @@ void copy_input(const Tensor& from, model_runtime::TensorMemory& to, popef::Data
   }
 }
 
+// IPUNet::IPUNet() {}
 IPUNet::~IPUNet() {}
 
 Result<void> IPUNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-  auto popef_path = context["popef_path"];
+  std::string popef_path = args["popef_path"].get<std::string>();
 
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
@@ -57,12 +58,13 @@ Result<void> IPUNet::Init(const Value& args) {
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
   //   OUTCOME_TRY(auto onnx, model.ReadFile(config.net))
 
-  config.device_wait_config = model_runtime::DeviceWaitConfig{600s /*timeout*/, 1s /*sleep_time*/};
-  model_runner(popef_path, config);
+  mconfig.device_wait_config =
+      model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
+  model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
 
-  input_desc = model_runner.getExecuteInputs();
+  input_desc = model_runner->getExecuteInputs();
 
-  output_desc = model_runner.getExecuteOutputs();
+  output_desc = model_runner->getExecuteOutputs();
 
   input_memory = examples::allocateHostInputData(input_desc);
 
@@ -87,6 +89,7 @@ Result<void> IPUNet::Init(const Value& args) {
         desc.name,
     });
   }
+  return success();
 }
 
 Result<void> IPUNet::Deinit() { return success(); }
@@ -110,15 +113,14 @@ Result<void> IPUNet::Forward() {
     int count = 0;
     for (auto& tensor : input_tensors_) {
       const auto& name = tensor.desc().name;
-      TensorMemory input_ = input_memory[name];
-      copy_input(tensor, input_, input_desc[count].data_type);
+      copy_input(tensor, input_memory[name]);
       count += 1;
     }
   }
 
   {
-    output_memory = model_runner.execute(examples::toInputMemoryView(input_memory));
-    output_desc = model_runner.getExecuteOutputs();
+    output_memory = model_runner->execute(examples::toInputMemoryView(input_memory));
+    output_desc = model_runner->getExecuteOutputs();
     // if (!success) {
     //   MMDEPLOY_ERROR("IPU Inference error: {}",
     //   std::string(zdl::DlSystem::getLastErrorString())); return Status(eFail);
@@ -126,11 +128,11 @@ Result<void> IPUNet::Forward() {
   }
 
   {
-    for (int i = 0; i < output_tensors.size(); i++) {
+    for (int i = 0; i < output_tensors_.size(); i++) {
       auto to_tensor = output_tensors_[i];
       auto name = to_tensor.desc().name;
-      auto memory = output_memory[name];
-      copy_output(memory, to_tensor, output_desc[i].data_type);
+
+      copy_output(output_memory[name], to_tensor);
     }
 
     //   for (const OutputValueType &name_with_memory : output_memory) {
