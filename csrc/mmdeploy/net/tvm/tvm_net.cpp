@@ -2,6 +2,10 @@
 
 #include "tvm_net.h"
 
+#include <tvm/runtime/container/adt.h>
+#include <tvm/runtime/vm/executable.h>
+#include <tvm/runtime/vm/vm.h>
+
 #include <fstream>
 
 #include "mmdeploy/core/model.h"
@@ -99,18 +103,48 @@ Result<void> TVMNet::Init(const Value& args) {
   }
 
   try {
-    mod_factory_ = tvm::runtime::Module::LoadFromFile(tmp_lib);
-
-    DLDevice dev = GetDLDevice(device_);
-
-    tvm::runtime::Module gmod = mod_factory_.GetFunction("default")(dev);
-    func_set_input_ = gmod.GetFunction("set_input");
-    func_get_output_ = gmod.GetFunction("get_output");
-    func_run_ = gmod.GetFunction("run");
-
     auto io_names = split_str(raw_label, '\n');
     auto input_names = split_str(io_names[0], ',');
     auto output_names = split_str(io_names[1], ',');
+    DLDevice dev = GetDLDevice(device_);
+
+    mod_factory_ = tvm::runtime::Module::LoadFromFile(tmp_lib);
+
+    use_vm_ = false;
+    if (io_names.size() > 2) {
+      use_vm_ = true;
+      OUTCOME_TRY(auto bytecode, model.ReadFile(io_names[2]));
+      auto exec = tvm::runtime::vm::Executable::Load(bytecode, mod_factory_);
+      const auto runtime_create = *tvm::runtime::Registry::Get("runtime._VirtualMachine");
+      tvm::runtime::Module vm_ = runtime_create(exec);
+
+      // init vm
+      auto func_init = vm_.GetFunction("init", false);
+      auto alloc_type = static_cast<int>(tvm::runtime::vm::AllocatorType::kPooled);
+      if (dev.device_type != kDLCPU) {
+        func_init(static_cast<int>(kDLCPU), 0, alloc_type, int(dev.device_type), int(dev.device_id),
+                  alloc_type);
+      } else {
+        func_init(int(dev.device_type), int(dev.device_id), alloc_type);
+      }
+
+      // get input ids
+      auto func_input_index_ = vm_.GetFunction("get_input_index", false);
+      for (auto name : input_names) {
+        input_ids_[name] = func_input_index_(name, "main");
+      }
+
+      // get function
+      func_set_input_ = vm_.GetFunction("set_input");
+      func_run_ = vm_.GetFunction("invoke");
+    } else {
+      tvm::runtime::Module gmod = mod_factory_.GetFunction("default")(dev);
+
+      // get function
+      func_set_input_ = gmod.GetFunction("set_input");
+      func_get_output_ = gmod.GetFunction("get_output");
+      func_run_ = gmod.GetFunction("run");
+    }
 
     auto ToDesc = [&](const std::string& name) {
       return TensorDesc{device_, DataType::kFLOAT, {}, name};
@@ -149,23 +183,80 @@ Result<void> TVMNet::Reshape(Span<TensorShape> input_shapes) {
 
 Result<void> TVMNet::Forward() {
   DLDevice dev = GetDLDevice(device_);
-  for (auto v : input_tensors_) {
-    OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
-    auto ndarray = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
-    ndarray.CopyFromBytes(v.data(), v.byte_size());
 
-    func_set_input_(v.name(), ndarray);
-  }
+  if (use_vm_) {
+    // vm
 
-  func_run_();
+    // set input
+    int num_inputs = input_tensors_.size();
+    std::vector<tvm::runtime::NDArray> args_arr(num_inputs);
+    std::vector<TVMValue> tvm_values(num_inputs + 1);
+    std::vector<int> tvm_type_codes(num_inputs + 1);
+    tvm::runtime::TVMArgsSetter setter(tvm_values.data(), tvm_type_codes.data());
+    setter(0, "main");
+    for (int k = 0; k < num_inputs; ++k) {
+      auto v = input_tensors_[k];
+      OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
+      args_arr[k] = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
+      args_arr[k].CopyFromBytes(v.data(), v.byte_size());
+      int input_id = input_ids_[v.name()];
+      setter(input_id + 1, args_arr[k]);
+    }
+    func_set_input_.CallPacked(
+        tvm::runtime::TVMArgs(tvm_values.data(), tvm_type_codes.data(), num_inputs + 1), nullptr);
 
-  for (int i = 0; i < output_tensors_.size(); ++i) {
-    tvm::runtime::NDArray ndarray = func_get_output_(i);
-    OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
-    Tensor& v = output_tensors_[i];
-    TensorDesc desc{device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
-    v = Tensor(desc);
-    ndarray.CopyToBytes(v.data(), v.byte_size());
+    // run
+    tvm::runtime::TVMRetValue ret = func_run_("main");
+
+    // get output
+    if (ret.type_code() == kTVMNDArrayHandle) {
+      tvm::runtime::NDArray ndarray = ret.AsObjectRef<tvm::runtime::NDArray>();
+      OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+      Tensor& v = output_tensors_[0];
+      TensorDesc desc{
+          device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+      v = Tensor(desc);
+      ndarray.CopyToBytes(v.data(), v.byte_size());
+    } else if (ret.type_code() == kTVMObjectHandle) {
+      const auto& adt = ret.AsObjectRef<tvm::runtime::ADT>();
+      for (int i = 0; i < output_tensors_.size(); ++i) {
+        tvm::runtime::NDArray ndarray = tvm::runtime::Downcast<tvm::runtime::NDArray>(adt[i]);
+        OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+        Tensor& v = output_tensors_[i];
+        TensorDesc desc{
+            device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+        v = Tensor(desc);
+        ndarray.CopyToBytes(v.data(), v.byte_size());
+      }
+    } else {
+      MMDEPLOY_ERROR("error return type code {}", ret.type_code());
+      return Status(eFail);
+    }
+  } else {
+    // graph executor
+
+    // set input
+    for (auto v : input_tensors_) {
+      OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
+      auto ndarray = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
+      ndarray.CopyFromBytes(v.data(), v.byte_size());
+
+      func_set_input_(v.name(), ndarray);
+    }
+
+    // run
+    func_run_();
+
+    // get output
+    for (int i = 0; i < output_tensors_.size(); ++i) {
+      tvm::runtime::NDArray ndarray = func_get_output_(i);
+      OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+      Tensor& v = output_tensors_[i];
+      TensorDesc desc{
+          device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+      v = Tensor(desc);
+      ndarray.CopyToBytes(v.data(), v.byte_size());
+    }
   }
 
   return success();

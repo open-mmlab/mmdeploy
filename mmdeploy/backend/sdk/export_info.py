@@ -9,6 +9,7 @@ from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
+from mmdeploy.utils.config_utils import get_backend_config
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 from .tracer import add_transform_tag, get_transform_static
 
@@ -152,13 +153,18 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         net = replace_suffix(ir_name, ext)
         # get input and output name
         ir_cfg = get_ir_config(deploy_cfg)
+        backend_cfg = get_backend_config(deploy_cfg)
         input_names = ir_cfg['input_names']
         output_names = ir_cfg['output_names']
         weights = replace_suffix(ir_name, '.txt')
         weights_path = osp.join(work_dir, weights)
+        use_vm = backend_cfg.model_inputs[0].get('use_vm', False)
+        bytecode_path = replace_suffix(ir_name, '.code')
         with open(weights_path, 'w') as f:
             f.write(','.join(input_names) + '\n')
             f.write(','.join(output_names) + '\n')
+            if use_vm:
+                f.write(bytecode_path + '\n')
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 

@@ -26,7 +26,9 @@ class TVMNet : public Net {
   tvm::runtime::PackedFunc func_set_input_;
   tvm::runtime::PackedFunc func_get_output_;
   tvm::runtime::PackedFunc func_run_;
+  bool use_vm_;
 
+  std::map<std::string, int> input_ids_;
   std::vector<Tensor> input_tensors_;
   std::vector<Tensor> output_tensors_;
   Device device_;
