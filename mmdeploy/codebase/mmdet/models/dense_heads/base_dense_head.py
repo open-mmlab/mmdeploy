@@ -431,7 +431,6 @@ def base_dense_head__get_bboxes__rknn(ctx,
 
     @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
     def __mark_dense_head(cls_scores, bbox_preds):
-        cls_scores = [c.sigmoid() for c in cls_scores]
         return cls_scores, bbox_preds
 
     cls_scores, bbox_preds = __mark_dense_head(cls_scores, bbox_preds)
