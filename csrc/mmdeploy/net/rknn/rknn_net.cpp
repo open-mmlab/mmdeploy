@@ -46,7 +46,7 @@ Result<DataType> GetMMDeployDataType(rknn_tensor_type data_type) {
   }
 }
 
-RKNNNet::~RKNNNet() {}
+RKNNNet::~RKNNNet() { rknn_destroy(ctx_); }
 
 void RKNNNet::dump_tensor_attr(rknn_tensor_attr* attr) {
   MMDEPLOY_INFO(
