@@ -62,7 +62,7 @@ ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 for TORCH_VERSION in 1.11.0; do
     conda activate torch${TORCH_VERSION}
     if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
-        pip install root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl
+        pip install /root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl
     fi
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
