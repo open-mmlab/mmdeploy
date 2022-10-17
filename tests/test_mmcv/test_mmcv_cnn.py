@@ -122,7 +122,3 @@ def test_hswish_ncnn():
     else:
         assert torch.allclose(
             model_outputs, rewrite_outputs[0], rtol=1e-03, atol=1e-05)
-
-
-if __name__ == '__main__':
-    test_hsigmoid_ncnn()
