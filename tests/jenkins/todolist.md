@@ -1,7 +1,0 @@
-- 装不同tensorrt和cudnn版本到镜像中
-- exec脚本支持参数配置1.x和2.x  https://github.com/RunningLeon/mmdeploy/blob/test_mm2.0/tests/jenkins/scripts/docker_exec_convert_gpu_v2.sh
-- 通过配置文件来代替传参启动脚本
-- 脚本需要适配不同镜像
-- 11.3环境中安装11.1版本的torch1.8.0，看能否兼容
-- README添加每个镜像的版本说明list
-- ut和convert合并到一个脚本

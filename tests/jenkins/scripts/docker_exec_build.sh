@@ -76,7 +76,7 @@ if [ $? -ne 0 ]; then
 fi
 
 ## 校验不同torch版本下安装
-for TORCH_VERSION in 1.9.0 1.10.0 1.11.0 1.12.0; do
+for TORCH_VERSION in 1.10.0 1.11.0 1.12.0; do
     conda activate torch${TORCH_VERSION}
     pip install -v .
     if [ $? -ne 0 ]; then

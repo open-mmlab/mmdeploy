@@ -1,7 +1,13 @@
 #!/bin/bash
 
 ## parameters
-config="tests/jenkins/conf/${1:-default.config}"
+config="${HOME}/mmdeploy/tests/jenkins/conf/${1:-default.config}"
+if [ -f "$config" ]; then
+    echo "Using config: $config"
+else
+    echo "$config does not exist."
+    exit 1
+fi
 
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')

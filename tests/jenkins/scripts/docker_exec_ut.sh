@@ -20,7 +20,9 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 ## parameters
 export codebase=$1
+export REQUIREMENT=$2
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
+export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
 
 for TORCH_VERSION in 1.10.0 1.11.0; do
     conda activate torch${TORCH_VERSION}
@@ -61,22 +63,10 @@ for TORCH_VERSION in 1.10.0 1.11.0; do
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v .
-    ## build ${codebase}
-    if [ ${codebase} == mmdet3d ]; then
-        mim install ${codebase}
-        mim install mmcv-full==1.5.2
-    elif [ ${codebase} == mmedit ]; then
-        mim install ${codebase}
-        mim install mmcv-full==1.6.0
-    elif [ ${codebase} == mmrotate ]; then
-        mim install ${codebase}
-        mim install mmcv-full==1.6.0
-    else
-        mim install ${codebase}
-        if [ $? -ne 0 ]; then
-            mim install mmcv-full
-        fi
-    fi
+
+    ## install requirements from conf
+    mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
+
     ## start python tests
     coverage run --branch --source mmdeploy -m pytest -rsE tests
     coverage xml
