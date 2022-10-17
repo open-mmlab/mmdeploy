@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 
 contact_links:
-  - name: FAQ
+  - name: 💥 FAQ
     url: https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md
     about: Check if your issue already has solutions
   - name: 💬 Forum
