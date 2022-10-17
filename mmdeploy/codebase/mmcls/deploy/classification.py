@@ -51,7 +51,9 @@ def process_model_config(model_cfg: Config,
         Config: the model config after processing.
     """
     cfg = model_cfg.deepcopy()
-    if isinstance(imgs, str):
+    if not isinstance(imgs, (list, tuple)):
+        imgs = [imgs]
+    if isinstance(imgs[0], str):
         if cfg.test_pipeline[0]['type'] != 'LoadImageFromFile':
             cfg.test_pipeline.insert(0, dict(type='LoadImageFromFile'))
     else:
@@ -176,7 +178,8 @@ class Classification(BaseTask):
             tuple: (data, img), meta information for the input image and input.
         """
         from mmengine.dataset import Compose, pseudo_collate
-
+        if not isinstance(imgs, (list, tuple)):
+            imgs = [imgs]
         assert 'test_pipeline' in self.model_cfg, \
             f'test_pipeline not found in {self.model_cfg}.'
         model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
@@ -188,12 +191,18 @@ class Classification(BaseTask):
         pipeline = pipeline[:-1] + move_pipeline + pipeline[-1:]
         pipeline = Compose(pipeline)
 
-        if isinstance(imgs, str):
-            data = {'img_path': imgs}
-        else:
-            data = {'img': imgs}
-        data = pipeline(data)
-        data = pseudo_collate([data])
+        data = []
+        for img in imgs:
+            # prepare data
+            if isinstance(img, str):
+                data_ = dict(img_path=img)
+            else:
+                data_ = dict(img=img)
+            # build the data pipeline
+            data_ = pipeline(data_)
+            data.append(data_)
+
+        data = pseudo_collate(data)
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
             return data, data['inputs']

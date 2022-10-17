@@ -203,12 +203,23 @@ class PoseDetection(BaseTask):
         from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
         if isinstance(imgs, str):
-            imgs = mmcv.imread(imgs)
-        height, width = imgs.shape[:2]
-        # create dummy person results
-        person_results = [{'bbox': np.array([0, 0, width, height])}]
-        bboxes = np.array([box['bbox'] for box in person_results])
-
+            imgs = [mmcv.imread(imgs)]
+        elif isinstance(imgs, (list, tuple)):
+            img_data = []
+            for img in imgs:
+                if isinstance(img, str):
+                    img_data.append(mmcv.imread(img))
+                else:
+                    img_data.append(img)
+            imgs = img_data
+        person_results = []
+        bboxes = []
+        for img in imgs:
+            height, width = img.shape[:2]
+            # create dummy person results
+            person_results.append([{'bbox': np.array([0, 0, width, height])}])
+            bboxes.append(
+                np.array([box['bbox'] for box in person_results[-1]]))
         # build the data pipeline
         test_pipeline = [
             TRANSFORMS.build(c) for c in cfg.test_dataloader.dataset.pipeline
@@ -230,20 +241,22 @@ class PoseDetection(BaseTask):
 
         batch_data = defaultdict(list)
         meta_data = _get_dataset_metainfo(self.model_cfg)
-        for bbox in bboxes:
-            # prepare data
-            bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
-                                   ])  # shape (1,)
-            data = {
-                'img': imgs,
-                'bbox_score': bbox_score,
-                'bbox': bbox[None],  # shape (1, 4)
-            }
-            data.update(meta_data)
-            data = test_pipeline(data)
-            data['inputs'] = data['inputs'].to(self.device)
-            batch_data['inputs'].append(data['inputs'])
-            batch_data['data_samples'].append(data['data_samples'])
+        assert len(imgs) == len(bboxes) == len(person_results)
+        for i in range(len(imgs)):
+            for bbox in bboxes[i]:
+                # prepare data
+                bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
+                                       ])  # shape (1,)
+                data = {
+                    'img': imgs[i],
+                    'bbox_score': bbox_score,
+                    'bbox': bbox[None],  # shape (1, 4)
+                }
+                data.update(meta_data)
+                data = test_pipeline(data)
+                data['inputs'] = data['inputs'].to(self.device)
+                batch_data['inputs'].append(data['inputs'])
+                batch_data['data_samples'].append(data['data_samples'])
 
         if data_preprocessor is not None:
             batch_data = data_preprocessor(batch_data, False)
