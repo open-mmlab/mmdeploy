@@ -11,31 +11,35 @@
 
 namespace mmdeploy {
 
-void copy_output(const model_runtime::TensorMemory& from, Tensor& to) {
-  if (from.size() != to->data_size_bytes) {
+void copy_output(const model_runtime::TensorMemory& from, Tensor& to, popef::DataType& dtype) {
+  if (from.data_size_bytes != to.size()) {
     MMDEPLOY_ERROR("output tensor size not match");
     return;
   }
-  int size = from.size();
+  int size = from.data_size_bytes;
 
-  const float* pfrom = from.data<float>();
+  float* from_ptr = static_cast<float*>(from.data.get());
+
+  const float* pto = to.data<float>();
   for (int i = 0; i < size; i++) {
     // to->data[i] = typeid(*to).name()(pfrom[i]);  // hidden type conversion here
-    to.data[i] = pfrom[i];
+    pto[i] = *(from_ptr + i);
   }
 }
 
-void copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
-  if (from.size() != to->data_size_bytes) {
+void copy_input(const Tensor& from, model_runtime::TensorMemory& to, popef::DataType& dtype) {
+  if (from.size() != to.data_size_bytes) {
     MMDEPLOY_ERROR("input tensor size not match");
     return;
   }
   int size = from.size();
 
+  float* to_ptr = static_cast<float*>(to.data.get());
+
   const float* pfrom = from.data<float>();
   for (int i = 0; i < size; i++) {
     // to->data[i] = typeid(*to).name()(pfrom[i]);  // hidden type conversion here
-    to.data[i] = pfrom[i];
+    *(to_ptr + i) = pfrom[i];
   }
 }
 
@@ -103,10 +107,12 @@ Result<void> IPUNet::Forward() {
 
   {
     // copy input to itensor buffer
+    int count = 0;
     for (auto& tensor : input_tensors_) {
       const auto& name = tensor.desc().name;
       TensorMemory input_ = input_memory[name];
-      copy_input(tensor, input_);
+      copy_input(tensor, input_, input_desc[count].data_type);
+      count += 1;
     }
   }
 
@@ -124,7 +130,7 @@ Result<void> IPUNet::Forward() {
       auto to_tensor = output_tensors_[i];
       auto name = to_tensor.desc().name;
       auto memory = output_memory[name];
-      copy_output(memory, to_tensor);
+      copy_output(memory, to_tensor, output_desc[i].data_type);
     }
 
     //   for (const OutputValueType &name_with_memory : output_memory) {

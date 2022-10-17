@@ -8,9 +8,11 @@
 #include <memory>
 #include <model_runtime/ModelRunner.hpp>
 #include <model_runtime/Tensor.hpp>
+#include <popef/Types.hpp>
 #include <string>
 
 #include "mmdeploy/core/net.h"
+#include "utils.hpp"
 
 namespace mmdeploy {
 
@@ -25,8 +27,8 @@ class IPUNet : public Net {
   Result<void> Forward() override;
   Result<void> ForwardAsync(Event* event) override { return Status(eNotSupported); };
 
-  void copy_output(const model_runtime::TensorMemory* from, Tensor& to);
-  void copy_input(const Tensor& from, model_runtime::TensorMemory* to);
+  void copy_output(const model_runtime::TensorMemory* from, Tensor& to, popef::DataType& dtype);
+  void copy_input(const Tensor& from, model_runtime::TensorMemory* to, popef::DataType& dtype);
 
  private:
   model_runtime::ModelRunnerConfig config;
