@@ -38,12 +38,12 @@ globals:
 onnxruntime:
   pipeline_ort_dynamic_kitti_fp32: &pipeline_ort_dynamic_kitti_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
 
   pipeline_ort_dynamic_nus_fp32: &pipeline_ort_dynamic_nus_fp32
     convert_image: *convert_image_nus
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
 
 tensorrt:

@@ -380,10 +380,12 @@ class TestParseDeviceID:
     def test_cpu(self):
         device = 'cpu'
         assert util.parse_device_id(device) == -1
+        assert util.parse_device_type(device) == 'cpu'
 
     def test_cuda(self):
         device = 'cuda'
         assert util.parse_device_id(device) == 0
+        assert util.parse_device_type(device) == 'cuda'
 
     def test_cuda10(self):
         device = 'cuda:10'

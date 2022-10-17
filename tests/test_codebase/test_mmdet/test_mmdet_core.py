@@ -13,7 +13,10 @@ from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_onnx_model,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.TENSORRT)
@@ -340,3 +343,49 @@ def test__anchorgenerator__single_level_grid_priors():
             find_trt_grid_priors = True
 
     assert find_trt_grid_priors
+
+
+@backend_checker(Backend.ASCEND)
+def test_multiclass_nms__ascend():
+    from mmdeploy.codebase.mmdet.core import multiclass_nms
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(
+                input_names=['boxes', 'scores'],
+                output_names=['dets', 'labels'],
+                input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[
+                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
+                ]),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    boxes = torch.rand(1, 5, 4)
+    scores = torch.rand(1, 5, 8)
+    max_output_boxes_per_class = 20
+    keep_top_k = 10
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)

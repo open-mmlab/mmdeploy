@@ -2,7 +2,7 @@
 
 <!-- TOC -->
 
-- [TensorRT Ops](#tensorrt-ops)
+- [TRT 自定义算子](#trt-自定义算子)
   - [TRTBatchedNMS](#trtbatchednms)
     - [Description](#description)
     - [Parameters](#parameters)
@@ -57,6 +57,18 @@
     - [Inputs](#inputs-8)
     - [Outputs](#outputs-8)
     - [Type Constraints](#type-constraints-8)
+  - [ScaledDotProductAttentionTRT](#scaleddotproductattentiontrt)
+    - [Description](#description-9)
+    - [Parameters](#parameters-9)
+    - [Inputs](#inputs-9)
+    - [Outputs](#outputs-9)
+    - [Type Constraints](#type-constraints-9)
+  - [GatherTopk](#gathertopk)
+    - [Description](#description-10)
+    - [Parameters](#parameters-10)
+    - [Inputs](#inputs-10)
+    - [Outputs](#outputs-10)
+    - [Type Constraints](#type-constraints-10)
 
 <!-- TOC -->
 
@@ -405,3 +417,75 @@ Generate the anchors for object detection task.
 
 - T:tensor(float32, Linear)
 - TAny: Any
+
+### ScaledDotProductAttentionTRT
+
+#### Description
+
+Dot product attention used to support multihead attention, read [Attention Is All You Need](https://arxiv.org/abs/1706.03762?context=cs) for more detail.
+
+#### Parameters
+
+None
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>query; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>key; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>value; 3-D tensor with shape [batch_size, sequence_length, embedding_size].</dd>
+<dt><tt>inputs[3]</tt>: T</dt>
+<dd>mask; 2-D/3-D tensor with shape [sequence_length, sequence_length] or [batch_size, sequence_length, sequence_length]. optional.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>3-D tensor of shape [batch_size, sequence_length, embedding_size]. `softmax(q@k.T)@v`</dd>
+<dt><tt>outputs[1]</tt>: T</dt>
+<dd>3-D tensor of shape [batch_size, sequence_length, sequence_length]. `softmax(q@k.T)`</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
+
+### GatherTopk
+
+#### Description
+
+TensorRT 8.2~8.4 would give unexpected result for multi-index gather.
+
+```python
+data[batch_index, bbox_index, ...]
+```
+
+Read [this](https://github.com/NVIDIA/TensorRT/issues/2299) for more details.
+
+#### Parameters
+
+None
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Tensor to be gathered, with shape (A0, ..., An, G0, C0, ...).</dd>
+
+<dt><tt>inputs[1]</tt>: tensor(int32, Linear)</dt>
+<dd>Tensor of index. with shape (A0, ..., An, G1)</dd>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Tensor of output. With shape (A0, ..., An, G1, C0, ...)</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear), tensor(int32, Linear)

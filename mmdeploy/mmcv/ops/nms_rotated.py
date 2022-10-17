@@ -35,6 +35,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
                 _scores = scores[batch_id, cls_id, ...].contiguous()
                 valid_mask = _scores > score_threshold
                 _boxes, _scores = _boxes[valid_mask], _scores[valid_mask]
+                if _boxes.shape[0] == 0:
+                    continue
                 valid_inds = torch.nonzero(
                     valid_mask, as_tuple=False).squeeze(dim=1)
                 _, order = _scores.sort(0, descending=True)

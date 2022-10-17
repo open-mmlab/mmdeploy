@@ -14,6 +14,12 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
   Value context;
   context = args["context"];
   context["stream"].get_to(stream_);
+  bool fuse_transform = args.value("fuse_transform", false);
+  if (fuse_transform) {
+    std::string sha256 = args.value("sha256", std::string(""));
+    context["fuse_transform"] = true;
+    context["sha256"] = sha256;
+  }
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});

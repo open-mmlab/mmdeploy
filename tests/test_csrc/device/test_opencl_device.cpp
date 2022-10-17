@@ -8,6 +8,7 @@
 #include "mmdeploy/core/device.h"
 
 using namespace mmdeploy;
+using namespace runtime;
 using namespace std::string_literals;
 
 TEST_CASE("test opencl", "[opencl][!shouldfail]") {

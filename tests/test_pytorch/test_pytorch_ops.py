@@ -165,3 +165,17 @@ def test_hardsigmoid():
     model = torch.nn.Hardsigmoid().eval()
     nodes = get_model_onnx_nodes(model, x)
     assert nodes[0].op_type == 'HardSigmoid'
+
+
+@pytest.mark.usefixtures('prepare_symbolics')
+def test_layer_norm():
+    x = torch.rand(2, 1, 4)
+    model = torch.nn.LayerNorm(4).eval()
+    torch.onnx.export(model, x, onnx_file, opset_version=11)
+    onnx_model = onnx.load(onnx_file)
+    graph = onnx_model.graph
+    output = graph.output[0]
+    dim = output.type.tensor_type.shape.dim
+    assert dim[0].dim_value == 2
+    assert dim[1].dim_value == 1
+    assert dim[2].dim_value == 4

@@ -96,6 +96,7 @@ struct Context : context_base_t {
 
     friend std::ostream& operator<<(std::ostream& os, const Batch& batch) {
       os << fmt::format("(index={}, size={})", batch.index_, batch.size_);
+      return os;
     }
   };
 

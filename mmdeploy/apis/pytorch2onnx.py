@@ -6,8 +6,8 @@ import mmcv
 import torch
 
 from mmdeploy.apis.core.pipeline_manager import no_mp
-from mmdeploy.utils import (get_backend, get_dynamic_axes, get_input_shape,
-                            get_onnx_config, load_config)
+from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
+                            get_input_shape, get_onnx_config, load_config)
 from .core import PIPELINE_MANAGER
 from .onnx import export
 
@@ -88,6 +88,10 @@ def torch2onnx(img: Any,
     keep_initializers_as_inputs = onnx_cfg.get('keep_initializers_as_inputs',
                                                True)
     optimize = onnx_cfg.get('optimize', False)
+    if backend == Backend.NCNN.value:
+        """NCNN backend needs a precise blob counts, while using onnx optimizer
+        will merge duplicate initilizers without reference count."""
+        optimize = False
     with no_mp():
         export(
             torch_model,

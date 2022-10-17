@@ -10,11 +10,15 @@ import torch
 import mmdeploy.backend.ncnn as ncnn_apis
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
-from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
+
+from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 
 
 def assert_det_results(results, module_name: str = 'model'):
@@ -505,3 +509,86 @@ class TestNCNNEnd2EndModel:
         imgs = torch.rand(1, 3, 64, 64)
         results = self.ncnn_end2end_model.forward_test(imgs)
         assert_det_results(results, 'NCNNEnd2EndModel')
+
+
+@backend_checker(Backend.RKNN)
+class TestRKNNModel:
+
+    @classmethod
+    def setup_class(cls):
+        # force add backend wrapper regardless of plugins
+        import mmdeploy.backend.rknn as rknn_apis
+        from mmdeploy.backend.rknn import RKNNWrapper
+        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
+
+        # simplify backend inference
+        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
+        cls.outputs = [
+            torch.rand(1, 255, 5, 5),
+            torch.rand(1, 255, 10, 10),
+            torch.rand(1, 255, 20, 20)
+        ]
+        cls.wrapper.set(outputs=cls.outputs)
+        deploy_cfg = mmcv.Config({
+            'onnx_config': {
+                'output_names': ['output']
+            },
+            'backend_config': {
+                'common_config': {}
+            }
+        })
+        model_cfg = mmcv.Config(
+            dict(
+                model=dict(
+                    bbox_head=dict(
+                        type='YOLOV3Head',
+                        num_classes=80,
+                        in_channels=[512, 256, 128],
+                        out_channels=[1024, 512, 256],
+                        anchor_generator=dict(
+                            type='YOLOAnchorGenerator',
+                            base_sizes=[[(116, 90), (156, 198), (
+                                373, 326)], [(30, 61), (62, 45), (
+                                    59, 119)], [(10, 13), (16, 30), (33, 23)]],
+                            strides=[32, 16, 8]),
+                        bbox_coder=dict(type='YOLOBBoxCoder'),
+                        featmap_strides=[32, 16, 8],
+                        loss_cls=dict(
+                            type='CrossEntropyLoss',
+                            use_sigmoid=True,
+                            loss_weight=1.0,
+                            reduction='sum'),
+                        loss_conf=dict(
+                            type='CrossEntropyLoss',
+                            use_sigmoid=True,
+                            loss_weight=1.0,
+                            reduction='sum'),
+                        loss_xy=dict(
+                            type='CrossEntropyLoss',
+                            use_sigmoid=True,
+                            loss_weight=2.0,
+                            reduction='sum'),
+                        loss_wh=dict(
+                            type='MSELoss', loss_weight=2.0, reduction='sum')),
+                    test_cfg=dict(
+                        nms_pre=1000,
+                        min_bbox_size=0,
+                        score_thr=0.05,
+                        conf_thr=0.005,
+                        nms=dict(type='nms', iou_threshold=0.45),
+                        max_per_img=100))))
+
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            RKNNModel
+        cls.rknn_model = RKNNModel(Backend.RKNN, ['', ''], 'cpu',
+                                   ['' for i in range(80)], model_cfg,
+                                   deploy_cfg)
+
+    @classmethod
+    def teardown_class(cls):
+        cls.wrapper.recover()
+
+    def test_forward_test(self):
+        imgs = torch.rand(1, 3, 64, 64)
+        results = self.rknn_model.forward_test(imgs)
+        assert_det_results(results, 'RKNNWrapper')

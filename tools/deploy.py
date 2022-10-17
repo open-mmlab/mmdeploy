@@ -98,7 +98,7 @@ def torch2ir(ir_type: IR):
 
 def main():
     args = parse_args()
-    set_start_method('spawn')
+    set_start_method('spawn', force=True)
     logger = get_root_logger()
     log_level = logging.getLevelName(args.log_level)
     logger.setLevel(log_level)
@@ -204,7 +204,7 @@ def main():
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
         PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2tensorrt])
+        PIPELINE_MANAGER.set_log_level(log_level, [onnx2tensorrt])
 
         backend_files = []
         for model_id, model_param, onnx_path in zip(
@@ -331,7 +331,7 @@ def main():
         from mmdeploy.apis.pplnn import from_onnx
 
         pplnn_pipeline_funcs = [from_onnx]
-        PIPELINE_MANAGER.set_log_level(logging.INFO, pplnn_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
 
         pplnn_files = []
         for onnx_path in ir_files:
@@ -351,49 +351,96 @@ def main():
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
+    elif backend == Backend.RKNN:
+        from mmdeploy.apis.rknn import is_available as rknn_is_available
+        assert rknn_is_available(
+        ), 'RKNN is not available, please install RKNN first.'
+
+        from mmdeploy.apis.rknn import onnx2rknn
+        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2rknn])
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2rknn])
+
+        backend_files = []
+        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
+            pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            output_path = osp.join(args.work_dir, pre_fix_name + '.rknn')
+            import tempfile
+            dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+            with open(dataset_file, 'w') as f:
+                f.writelines([osp.abspath(args.img)])
+            onnx2rknn(
+                onnx_path,
+                output_path,
+                deploy_cfg_path,
+                dataset_file=dataset_file)
+
+            backend_files.append(output_path)
+    elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import from_onnx
+
+        ascend_pipeline_funcs = [from_onnx]
+        PIPELINE_MANAGER.set_log_level(log_level, ascend_pipeline_funcs)
+
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        om_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            om_path = osp.splitext(onnx_path)[0] + '.om'
+            from_onnx(onnx_path, args.work_dir, model_inputs[model_id])
+            om_files.append(om_path)
+        backend_files = om_files
+
+        if args.dump_info:
+            from mmdeploy.backend.ascend import update_sdk_pipeline
+            update_sdk_pipeline(args.work_dir)
+
+    elif backend == Backend.COREML:
+        from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
+        coreml_pipeline_funcs = [from_torchscript]
+        PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
+        model_inputs = get_model_inputs(deploy_cfg)
+        coreml_files = []
+        for model_id, torchscript_path in enumerate(ir_files):
+            torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
+            output_file_prefix = osp.join(args.work_dir, torchscript_name)
+            convert_to = deploy_cfg.backend_config.convert_to
+            from_torchscript(torchscript_path, output_file_prefix,
+                             ir_config.input_names, ir_config.output_names,
+                             model_inputs[model_id].input_shapes, convert_to)
+            suffix = get_model_suffix(convert_to)
+            coreml_files.append(output_file_prefix + suffix)
+        backend_files = coreml_files
+
     if args.test_img is None:
         args.test_img = args.img
 
-    headless = False
-    # check headless or not for all platforms.
-    import tkinter
-    try:
-        tkinter.Tk()
-    except Exception:
-        headless = True
+    extra = dict(
+        backend=backend,
+        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+        show_result=args.show)
+    if backend == Backend.SNPE:
+        extra['uri'] = args.uri
 
-    # for headless installation.
-    if not headless:
-        extra = dict(
-            backend=backend,
-            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-            show_result=args.show)
-        if backend == Backend.SNPE:
-            extra['uri'] = args.uri
+    # get backend inference result, try render
+    create_process(
+        f'visualize {backend.value} model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
+        kwargs=extra,
+        ret_value=ret_value)
 
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=extra,
-            ret_value=ret_value)
-
-        # visualize pytorch model
-        create_process(
-            'visualize pytorch model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=Backend.PYTORCH,
-                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
-    else:
-        logger.warning(
-            '\"visualize_model\" has been skipped may be because it\'s \
-            running on a headless device.')
+    # get pytorch model inference result, try visualize if possible
+    create_process(
+        'visualize pytorch model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img, args.device),
+        kwargs=dict(
+            backend=Backend.PYTORCH,
+            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+            show_result=args.show),
+        ret_value=ret_value)
     logger.info('All process success.')
 
 

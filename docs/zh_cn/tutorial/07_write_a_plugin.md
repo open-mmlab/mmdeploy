@@ -24,14 +24,20 @@
 仍然以前面[教程二](./02_challenges.md)中的超分辨模型SRCNN为例。在教程二中，我们用 ONNXRuntime 作为后端，通过 PyTorch 的 symbolic 函数导出了一个支持动态 scale 的 ONNX 模型，这个模型可以直接用 ONNXRuntime 运行，这是因为 `NewInterpolate` 类导出的节点 `Resize` 就是ONNXRuntime支持的节点。下面我们尝试直接将教程二导出的 `srcnn3.onnx` 转换到TensorRT。
 
 ```python
-from mmdeploy.backend.tensorrt import create_trt_engine
+from mmdeploy.backend.tensorrt.utils import from_onnx
 
-engine = create_trt_engine(
-        'srcnn3.onnx',
-        input_shapes=dict(input = dict(
+from_onnx(
+    'srcnn3.onnx',
+    'srcnn3',
+    input_shapes=dict(
+        input=dict(
             min_shape=[1, 3, 256, 256],
             opt_shape=[1, 3, 256, 256],
-            max_shape=[1, 3, 256, 256])))
+            max_shape=[1, 3, 256, 256]),
+        factor=dict(
+            min_shape=[4],
+            opt_shape=[4],
+            max_shape=[4])))
 ```
 
 没有安装过MMDeploy的小伙伴可以先参考 [build](../01-how-to-build) 进行安装，安装完成后执行上述脚本，会有如下报错：
@@ -469,25 +475,33 @@ print(get_plugin_names())
 可以发现 'DynamicTRTResize' 在插件列表中。然后我们对这个插件进行功能测试，看推理结果是否和PyTroch结果一致，并且可以动态控制输出尺寸。
 
 ```python
-from mmdeploy.backend.tensorrt import create_trt_engine, save_trt_engine
+from mmdeploy.backend.tensorrt.utils import from_onnx
 
-engine = create_trt_engine(
-        'srcnn3.onnx',
-        input_shapes=dict(input = dict(
+engine = from_onnx(
+    'srcnn3.onnx',
+    'srcnn3',
+    input_shapes=dict(
+        input=dict(
             min_shape=[1, 3, 256, 256],
             opt_shape=[1, 3, 256, 256],
             max_shape=[1, 3, 256, 256]),
-            factor = dict(min_shape = [1, 1, 256, 256], opt_shape = [1, 1, 512, 512], max_shape = [1, 1, 1024, 1024])))
-
-save_trt_engine(engine, 'srcnn3.engine')
+        factor=dict(
+            min_shape=[1, 1, 256, 256],
+            opt_shape=[1, 1, 512, 512],
+            max_shape=[1, 1, 1024, 1024])))
 
 from mmdeploy.backend.tensorrt import TRTWrapper
+
 trt_model = TRTWrapper('srcnn3.engine', ['output'])
 
 factor = torch.rand([1, 1, 768, 768], dtype=torch.float)
-trt_output = trt_model.forward(dict(input = x.cuda(), factor = factor.cuda()))
+trt_output = trt_model.forward(dict(input=x.cuda(), factor=factor.cuda()))
 torch_output = model.forward(x, factor)
-assert np.allclose(trt_output['output'].cpu().numpy(), torch_output.cpu().detach(), rtol = 1e-3, atol = 1e-5)
+assert np.allclose(
+    trt_output['output'].cpu().numpy(),
+    torch_output.cpu().detach(),
+    rtol=1e-3,
+    atol=1e-5)
 ```
 
 对比 TensorRT 的输出结果和 PyTorch 的输出结果是否一致，程序如果不报错即可说明推理正确。此外，测试时我们使用和导出时不一样的尺寸，结果也和 PyTorch 一致，说明可以支持动态的尺寸。

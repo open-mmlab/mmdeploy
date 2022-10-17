@@ -119,6 +119,7 @@ def main():
     is_device_cpu = (args.device == 'cpu')
     device_id = None if is_device_cpu else parse_device_id(args.device)
 
+    destroy_model = model.destroy
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
     # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
@@ -133,7 +134,8 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file):
+                file=args.log2file,
+                batch_size=model_cfg.data.samples_per_gpu):
             outputs = task_processor.single_gpu_test(model, data_loader,
                                                      args.show, args.show_dir)
     else:
@@ -142,6 +144,8 @@ def main():
     task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
                                     args.out, args.metric_options,
                                     args.format_only, args.log2file)
+    # only effective when the backend requires explicit clean-up (e.g. Ascend)
+    destroy_model()
 
 
 if __name__ == '__main__':

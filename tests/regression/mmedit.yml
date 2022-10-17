@@ -3,7 +3,7 @@ globals:
   checkpoint_force_download: False
   images:
     img_face: &img_face ../mmediting/tests/data/face/000001.png
-    img_bg: &img_bg ../mmediting/tests/data/bg/GT26r.jpg
+    img_bg: &img_bg ../mmediting/tests/data/gt/baboon.png
   metric_info: &metric_info
     PSNR: # named after metafile.Results.Metrics
       eval_name: PSNR # test.py --metrics args
@@ -27,8 +27,6 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
     deploy_config: configs/mmedit/super-resolution/super-resolution_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
