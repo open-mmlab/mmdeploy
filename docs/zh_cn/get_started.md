@@ -113,11 +113,11 @@ mim install mmcv-full
 
 ```shell
 # 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.8.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.9.0/mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.9.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.9.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -134,11 +134,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.8.0/mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.8.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.8.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.9.0/mmdeploy-0.9.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-0.9.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.9.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.9.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.9.0-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 TensorRT
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
@@ -226,7 +226,7 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-0.8.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-0.9.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo

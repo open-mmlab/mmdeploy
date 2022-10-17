@@ -2,11 +2,17 @@
 
 通过用户调研，我们得知多数使用者在了解 mmdeploy 前，已经熟知 python 和 torch 用法。因此我们提供脚本简化 mmdeploy 安装。
 
-假设您已经准备好 Python3.6 pip 以上环境（无论 conda 或 pyenv），运行这个脚本来安装 mmdeploy + ncnn backend，`nproc` 可以不指定。
+假设您已经准备好
+
+- python3 -m pip（必须，conda 或 pyenv 皆可）
+- nvcc（取决于推理后端）
+- torch（非必须，可延后安装）
+
+运行这个脚本来安装 mmdeploy + ncnn backend，`nproc` 可以不指定。
 
 ```bash
 $ cd /path/to/mmdeploy
-$ python3 tools/scripts/build_ubuntu_x64_ncnn.py $(nproc)
+$ python3 tools/scripts/build_ubuntu_x64_ncnn.py
 ..
 ```
 
@@ -37,9 +43,10 @@ $ python3 tools/check_env.py
 
 这是已验证的安装脚本。如果想让 mmdeploy 同时支持多种 backend，每个脚本执行一次即可：
 
-|             script              | OS version  |
-| :-----------------------------: | :---------: |
-|    build_ubuntu_x64_ncnn.py     | 18.04/20.04 |
-|     build_ubuntu_x64_ort.py     | 18.04/20.04 |
-|    build_ubuntu_x64_pplnn.py    | 18.04/20.04 |
-| build_ubuntu_x64_torchscript.py | 18.04/20.04 |
+|             script              |     OS version      |
+| :-----------------------------: | :-----------------: |
+|    build_ubuntu_x64_ncnn.py     |     18.04/20.04     |
+|     build_ubuntu_x64_ort.py     |     18.04/20.04     |
+|    build_ubuntu_x64_pplnn.py    |     18.04/20.04     |
+| build_ubuntu_x64_torchscript.py |     18.04/20.04     |
+|  build_jetson_orin_python38.sh  | JetPack5.0 L4T 34.1 |
