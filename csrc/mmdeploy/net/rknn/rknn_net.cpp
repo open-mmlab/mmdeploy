@@ -100,7 +100,7 @@ Result<void> RKNNNet::Init(const Value& args) {
     }
     input_attrs_.push_back(input_attr);
     OUTCOME_TRY(auto data_type, GetMMDeployDataType(input_attr.type));
-    input_tensors_.emplace_back(TensorDesc{device_, data_type, {}, "#" + std::to_string(i)});
+    input_tensors_.emplace_back(TensorDesc{device_, data_type, {}, input_attr.name});
   }
 
   for (int i = 0; i < io_num.n_output; i++) {
@@ -115,7 +115,7 @@ Result<void> RKNNNet::Init(const Value& args) {
     }
     output_attrs_.push_back(output_attr);
     OUTCOME_TRY(auto data_type, GetMMDeployDataType(output_attr.type));
-    output_tensors_.emplace_back(TensorDesc{device_, data_type, {}, "#" + std::to_string(i)});
+    output_tensors_.emplace_back(TensorDesc{device_, data_type, {}, output_attr.name});
   }
 
   return success();

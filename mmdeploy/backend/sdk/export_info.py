@@ -183,7 +183,7 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     ir_config = get_ir_config(deploy_cfg)
 
     backend = get_backend(deploy_cfg=deploy_cfg)
-    if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
+    if backend == Backend.TORCHSCRIPT:
         output_names = ir_config.get('output_names', None)
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
