@@ -14,6 +14,23 @@ from ..base import BACKEND_WRAPPER, BaseWrapper
 
 @BACKEND_WRAPPER.register_module(Backend.TVM.value)
 class TVMWrapper(BaseWrapper):
+    """TVM runtime wrapper.
+
+    Args:
+        lib (str): The path to the generated lib
+        output_names (Sequence[str]): The output names.
+        bytecode (Union[bytearray, str]): The bytecode for virtual machine.
+        device (str): Device used to do the the inference
+
+
+    Examples:
+        >>> from mmdeploy.backend.tvm import TVMWrapper
+        >>> lib_file = 'resnet.so'
+        >>> model = TVMWrapper(lib_file, ['output'])
+        >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
+        >>> outputs = model(inputs)
+        >>> print(outputs)
+    """
 
     def __init__(self,
                  lib: str,

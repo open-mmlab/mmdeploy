@@ -16,6 +16,35 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               shape: Optional[Dict] = None,
               dtype: Union[str, Dict] = 'float32',
               tuner: Optional[Union[TVMTunerBase, Dict]] = None):
+    """Convert ONNX model to tvm lib.
+
+    Args:
+        onnx_model (Union[str, onnx.ModelProto]): ONNX model or model path
+        output_file (str): output library path
+        use_vm (bool, optional): Enable tvm virtual machine runtime.
+            Defaults to False.
+        bytecode_file (str, optional): output bytecode path for virtual
+            machine. Defaults to ''.
+        shape (Optional[Dict], optional): The input shape directory. Defaults
+            to None.
+        dtype (Union[str, Dict], optional): The input data type dictionary.
+            Defaults to 'float32'.
+        tuner (Optional[Union[TVMTunerBase, Dict]], optional): The tuner
+            config. Defaults to None.
+
+    Return:
+        lib: The converted tvm lib
+        bytecode: The bytecode of virtual machine runtime.
+            None if use_vm==False.
+
+    Examples:
+        >>> from mmdeploy.backend.tvm import from_onnx
+        >>> onnx_path = 'model.onnx'
+        >>> output_file = 'model.so'
+        >>> shape = {'input':[1,3,224,224]}
+        >>> dtype = {'input':'float32'}
+        >>> from_onnx(onnx_path, output_file, shape=shape, dtype=dtype)
+    """
     logger = get_root_logger()
 
     if shape is not None and isinstance(dtype, Dict):
@@ -44,9 +73,10 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     lib = tuner.build(mod, params)
 
     logger.info(f'Export library to {output_file} .')
+    bytecode = None
     if tuner.use_vm:
         bytecode, lib = lib.save()
         with open(bytecode_file, mode='wb') as f:
             f.write(bytecode)
     lib.export_library(output_file)
-    return lib
+    return lib, bytecode

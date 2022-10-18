@@ -18,27 +18,75 @@ AUTO_SCHEDULER_BUILDER = Registry('auto_scheduler_builder')
 AUTO_SCHEDULER_RUNNER = Registry('auto_scheduler_runner')
 
 
-def build_tvm_tuner(cfg):
+def build_tvm_tuner(cfg: Dict):
+    """Build the tvm tuner.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The tvm tuner instance
+    """
     return TVM_TUNER.build(cfg)
 
 
-def build_autotvm_tuner(cfg):
+def build_autotvm_tuner(cfg: Dict):
+    """Build the autotvm tuner.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The autotvm tuner instance
+    """
     return AUTOTVM_TUNER.build(cfg)
 
 
-def build_autotvm_builder(cfg):
+def build_autotvm_builder(cfg: Dict):
+    """Build the autotvm builder.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The autotvm builder instance
+    """
     return AUTOTVM_BUILDER.build(cfg)
 
 
-def build_autotvm_runner(cfg):
+def build_autotvm_runner(cfg: Dict):
+    """Build the autotvm runner.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The autotvm runner instance
+    """
     return AUTOTVM_RUNNER.build(cfg)
 
 
-def build_auto_scheduler_builder(cfg):
+def build_auto_scheduler_builder(cfg: Dict):
+    """Build the ansor builder.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The ansor builder instance
+    """
     return AUTO_SCHEDULER_BUILDER.build(cfg)
 
 
-def build_auto_scheduler_runner(cfg):
+def build_auto_scheduler_runner(cfg: Dict):
+    """Build the ansor tuner.
+
+    Args:
+        cfg (Dict): The build config
+
+    Returns:
+        Any: The ansor tuner instance
+    """
     return AUTO_SCHEDULER_RUNNER.build(cfg)
 
 
@@ -59,6 +107,13 @@ AUTO_SCHEDULER_RUNNER.register_module()(auto_scheduler.RPCRunner)
 
 
 class TVMTunerBase:
+    """The base class of TVM tuner.
+
+    Args:
+        target (Union[str, Target]): The target platform to be tuned.
+        opt_level (int): The optimization level.
+        use_vm (bool): Enable tvm virtual machine runtime.
+    """
 
     def __init__(self,
                  target: Union[str, Target],
@@ -72,10 +127,21 @@ class TVMTunerBase:
 
     @property
     def use_vm(self) -> bool:
+        """Get use_vm.
+
+        Returns:
+            bool: use_vm
+        """
         return self._use_vm
 
     @abstractmethod
     def tune(self, mod: IRModule, params: Dict):
+        """Tune the graph.
+
+        Args:
+            mod (IRModule): The graph module.
+            params (Dict): The graph parameters.
+        """
         raise NotImplementedError('tune method not implemented.')
 
     def build(self, mod: IRModule, params: Dict):
@@ -100,6 +166,13 @@ class TVMTunerBase:
 
 @TVM_TUNER.register_module
 class DefaultTuner(TVMTunerBase):
+    """The Default tuner, do nothing when tuning.
+
+    Args:
+        target (Union[str, Target]): The target platform to be tuned.
+        opt_level (int): The optimization level.
+        use_vm (bool): Enable tvm virtual machine runtime.
+    """
 
     def __init__(self,
                  target: Union[str, Target],
@@ -108,7 +181,7 @@ class DefaultTuner(TVMTunerBase):
         super().__init__(target, opt_level, use_vm)
 
     def tune(self, mod: IRModule, params: Dict):
-        """Tune model, This tuner does not need to tune."""
+        """Tune model, Default tuner does nothing."""
         pass
 
 
@@ -131,7 +204,24 @@ class AutoTVMTuner(TVMTunerBase):
                      repeat=3,
                      timeout=4,
                      min_repeat_ms=150),
-                 use_transfer_learning=True) -> None:
+                 use_transfer_learning: bool = True) -> None:
+        """The AutoTVM tuner.
+
+        Args:
+            target (Union[str, Target]): The target platform to tune.
+            log_file (str): the log file path.
+            n_trial (int): Maximum number of configs to try.
+            tuner (Dict): The autotvm tuner config.
+            opt_level (int, optional): The optimization level. Defaults to 3.
+            use_vm (bool, optional): Enable tvm virtual machine.
+                Defaults to False.
+            early_stopping (Optional[int], optional): Early stop the tuning
+                when not finding better configs in this number of trials.
+            builder (Union[Dict, Any], optional): The builder config.
+            runner (Union[Dict, Any], optional): The runner config.
+            use_transfer_learning (bool, optional): Whether to use transfer
+                learning. Defaults to True.
+        """
         super().__init__(target, opt_level, use_vm)
         self._log_file = log_file
         self._n_trial = n_trial
@@ -149,6 +239,12 @@ class AutoTVMTuner(TVMTunerBase):
             builder=builder, runner=runner)
 
     def tune(self, mod: IRModule, params: Dict):
+        """Tune the graph.
+
+        Args:
+            mod (IRModule): The graph module.
+            params (Dict): The graph parameters.
+        """
         logger = get_root_logger()
         target = self._target
         logger.info('Create autotvm task.')
@@ -192,6 +288,15 @@ class AutoTVMTuner(TVMTunerBase):
             os.remove(tmp_log_file)
 
     def build(self, mod: IRModule, params: Dict):
+        """Build tuning library.
+
+        Args:
+            mod (IRModule): IRModule to build
+            params (Dict): Parameter of the mod
+
+        Returns:
+            lib: The runtime factory for the graph executor
+        """
         with autotvm.apply_history_best(self._log_file):
             with tvm.transform.PassContext(opt_level=self._opt_level):
                 if self._use_vm:
@@ -219,6 +324,20 @@ class AutoScheduleTuner(TVMTunerBase):
         runner: Union[Dict, Any] = dict(
             type='LocalRunner', repeat=10, enable_cpu_cache_flush=True)
     ) -> None:
+        """The Ansor tuner.
+
+        Args:
+            target (Union[str, Target]): The target platform to tune.
+            log_file (str): the log file path.
+            num_measure_trials (int): Maximum number of configs to try.
+            opt_level (int, optional): The optimization level. Defaults to 3.
+            use_vm (bool, optional): Enable tvm virtual machine.
+                Defaults to False.
+            early_stopping (Optional[int], optional): Early stop the tuning
+                when not finding better configs in this number of trials.
+            builder (Union[Dict, Any], optional): The builder config.
+            runner (Union[Dict, Any], optional): The runner config.
+        """
         super().__init__(target, opt_level, use_vm)
         self._log_file = log_file
         self._num_measure_trials = num_measure_trials
@@ -239,6 +358,12 @@ class AutoScheduleTuner(TVMTunerBase):
         self._tune_option = tune_option
 
     def tune(self, mod: IRModule, params: Dict):
+        """Tune the graph.
+
+        Args:
+            mod (IRModule): The graph module.
+            params (Dict): The graph parameters.
+        """
         logger = get_root_logger()
         target = self._target
 
@@ -255,6 +380,15 @@ class AutoScheduleTuner(TVMTunerBase):
         tuner.tune(self._tune_option)
 
     def build(self, mod: IRModule, params: Dict):
+        """Build tuning library.
+
+        Args:
+            mod (IRModule): IRModule to build
+            params (Dict): Parameter of the mod
+
+        Returns:
+            lib: The runtime factory for the graph executor
+        """
         with auto_scheduler.ApplyHistoryBest(self._log_file):
             with tvm.transform.PassContext(
                     opt_level=self._opt_level,

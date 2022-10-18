@@ -14,6 +14,11 @@ def is_available() -> bool:
 
 
 def get_library_ext() -> str:
+    """Get the extension of the library.
+
+    Returns:
+        str: The extension name
+    """
     platform = sys.platform.lower()
     if platform == 'win32' or platform == 'cygwin':
         return '.dll'
