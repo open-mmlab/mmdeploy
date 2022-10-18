@@ -3,7 +3,6 @@ import os.path as osp
 from typing import Any, Optional, Union
 
 import mmengine
-import torch
 
 from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
@@ -58,14 +57,17 @@ def torch2onnx(img: Any,
     # create model an inputs
     from mmdeploy.apis import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-
+    
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
     data, model_inputs = task_processor.create_input(img, input_shape)
-    if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
+    
+    import pdb
+    pdb.set_trace()
+    if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
     patch_metas = {'data_samples': data_samples}
-    input_metas = {'data_samples': data_samples, 'mode': task_processor.mode()}
+    input_metas = {'data_samples': data_samples, 'mode': 'tensor'}
 
     # export to onnx
     context_info = dict()
