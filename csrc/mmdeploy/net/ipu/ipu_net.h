@@ -14,12 +14,15 @@
 #include "mmdeploy/core/net.h"
 #include "utils.hpp"
 
+int ipu_test();
+
 namespace mmdeploy {
 
 class IPUNet : public Net {
  public:
   ~IPUNet() override;
   Result<void> Init(const Value& args) override;
+  // Result<void> Init(const std::string& popef_path) override;
   Result<void> Deinit() override;
   Result<Span<Tensor>> GetInputTensors() override;
   Result<Span<Tensor>> GetOutputTensors() override;
