@@ -861,6 +861,7 @@ GPU: ncnn, TensorRT, PPLNN
     <th align="center">ONNX Runtime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
+    <th align="center" colspan="3">NCNN</th>
   </tr>
 </thead>
 <tbody>
@@ -876,6 +877,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td align="center">int8</td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
@@ -889,6 +892,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">28.4286</td>
     <td align="center">28.1995</td>
     <td align="center">28.4311</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -899,6 +904,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8096</td>
     <td align="center">0.7934</td>
     <td align="center">0.8096</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py">ESRGAN</a></td>
@@ -912,6 +919,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">28.2624</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -922,6 +931,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.7765</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN-PSNR</a></td>
@@ -935,6 +946,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.0426</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -945,6 +958,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8557</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py">SRGAN</a></td>
@@ -958,6 +973,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.9388</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -968,6 +985,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.7839</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py">SRResNet</a></td>
@@ -981,6 +1000,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">30.2294</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -991,6 +1012,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8488</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py">Real-ESRNet</a></td>
@@ -1004,6 +1027,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.7049</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1014,9 +1039,11 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8123</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSRx4</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1027,6 +1054,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">30.2211</td>
     <td align="center">30.1383</td>
     <td align="center">-</td>
+    <td align="center">30.2194</td>
+    <td align="center">29.9340</td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1037,6 +1066,35 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8497</td>
     <td align="center">0.8469</td>
     <td align="center"> - </td>
+    <td align="center">0.8498</td>
+    <td align="center">0.8409</td>
+  </tr>
+    <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py">EDSRx2</a></td>
+    <td align="center" rowspan="2">Super Resolution</td>
+    <td align="center" rowspan="2">Set5</td>
+    <td align="center">PSNR</td>
+    <td align="center">35.7592</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">35.7733</td>
+    <td align="center">35.4266</td>
+  </tr>
+  <tr>
+    <td align="center">SSIM</td>
+    <td align="center">0.9372</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center"> - </td>
+    <td align="center">0.9365</td>
+    <td align="center">0.9334</td>
   </tr>
 </tbody>
 </table>

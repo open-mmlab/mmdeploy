@@ -1,6 +1,7 @@
-name: Bug report
-description: Create a report to help us improve
-
+name: 🐞 Bug report
+description: Create a report to help us reproduce and fix the bug
+title: "[Bug] "
+labels: ['Bug']
 
 body:
 - type: checkboxes
@@ -52,5 +53,3 @@ body:
      If you have already identified the reason, you can provide the information here. If you are willing to create a PR to fix it, please also leave a comment here and that would be much appreciated!
 
      Thanks for your bug report. We appreciate it a lot.
-
-labels: ['Bug']

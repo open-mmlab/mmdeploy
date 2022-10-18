@@ -47,19 +47,16 @@ jobs:
         run: sudo apt-get install libopencv-dev
       - name: Install mmdeploy with onnxruntime backend
         run: |
-          mkdir -p build && pushd build
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
-          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
-          make install
-          popd
-      - name: Clone rust-mmdeploy
+          wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.9.0/mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+          tar -zxvf mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+      - name: Download rust-mmdeploy
         run: git clone https://github.com/liu-mengyang/rust-mmdeploy
-      - name: Install converted models
+      - name: Download converted models
         run: git clone https://github.com/liu-mengyang/mmdeploy-converted-models --depth=1
       - name: Test rustdemo
         run: |
           pushd rust-mmdeploy
-          export MMDEPLOY_DIR=/home/runner/work/mmdeploy/mmdeploy/build/install
+          export MMDEPLOY_DIR=/home/runner/work/mmdeploy/mmdeploy/mmdeploy-0.9.0-linux-x86_64-onnxruntime1.8.1/sdk
           export LD_LIBRARY_PATH=$MMDEPLOY_DIR/lib:$LD_LIBRARY_PATH
           export ONNXRUNTIME_DIR=/home/runner/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH

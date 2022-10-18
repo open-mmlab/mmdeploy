@@ -40,3 +40,10 @@ Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute I
 |   [S-ViPNAS-Res50_dark](https://github.com/open-mmlab/mmpose/blob/master/configs/wholebody/2d_kpt_sview_rgb_img/topdown_heatmap/coco-wholebody/vipnas_res50_coco_wholebody_256x192_dark.py)    | COCO Wholebody |  0.520  |  0.511  |
 
 Note: MMPose models are tested with `flip_test` explicitly set to `False` in model configs.
+
+### Super Resolution
+
+|                                                        model                                                        | dataset | fp32 PSNR/SSIM | int8 PSNR/SSIM |
+| :-----------------------------------------------------------------------------------------------------------------: | :-----: | :------------: | :------------: |
+| [EDSRx2](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) |  Set5   | 35.7733/0.9365 | 35.4266/0.9334 |
+| [EDSRx4](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py) |  Set5   | 30.2194/0.8498 | 29.9340/0.8409 |
