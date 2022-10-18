@@ -252,6 +252,9 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
+
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        del transforms[-2]
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
         ' of pipeline should be LoadImageFromFile'
 
