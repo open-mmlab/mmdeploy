@@ -18,6 +18,11 @@ def centernet_head__predict_by_feat__default(
         rescale: bool = True,
         with_nms: bool = False):
     """Rewrite `centernethead` of `CenterNetHead` for default backend."""
+
+    # The dynamic shape deploy of CenterNet get wrong result on TensorRT-8.4.x
+    # because of TensorRT bugs, https://github.com/NVIDIA/TensorRT/issues/2299,
+    # FYI.
+
     assert len(center_heatmap_preds) == len(wh_preds) == len(offset_preds) == 1
     batch_center_heatmap_preds = center_heatmap_preds[0]
     batch_wh_preds = wh_preds[0]
