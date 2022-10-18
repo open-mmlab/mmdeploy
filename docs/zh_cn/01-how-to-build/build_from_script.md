@@ -2,7 +2,13 @@
 
 通过用户调研，我们得知多数使用者在了解 mmdeploy 前，已经熟知 python 和 torch 用法。因此我们提供脚本简化 mmdeploy 安装。
 
-假设您已经准备好 Python3.6 pip 以上环境（无论 conda 或 pyenv），运行这个脚本来安装 mmdeploy + ncnn backend，`nproc` 可以不指定。
+假设您已经准备好
+
+- python3 -m pip（必须，conda 或 pyenv 皆可）
+- nvcc（取决于推理后端）
+- torch（非必须，可延后安装）
+
+运行这个脚本来安装 mmdeploy + ncnn backend，`nproc` 可以不指定。
 
 ```bash
 $ cd /path/to/mmdeploy

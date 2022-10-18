@@ -15,6 +15,8 @@ except ImportError:
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
 model_cfg = load_config(
     'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
+monodet_model_cfg = load_config(
+    'tests/test_codebase/test_mmdet3d/data/monodet_model_cfg.py')[0]
 
 
 def get_pillar_encoder():
@@ -194,4 +196,51 @@ def test_pointpillars_nus(backend_type: Backend):
             backend=deploy_cfg.backend_config.type,
             opset=deploy_cfg.onnx_config.opset_version):
         outputs = model.forward(*data)
+    assert outputs is not None
+
+
+def get_fcos3d():
+    from mmdet3d.models.detectors import FCOSMono3D
+    monodet_model_cfg.model.pop('type')
+    model = FCOSMono3D(**monodet_model_cfg.model)
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_fcos3d(backend_type: Backend):
+    from mmdeploy.codebase.mmdet3d.deploy.monocular_detection import \
+        MonocularDetection
+    from mmdeploy.core import RewriterContext
+    check_backend(backend_type, True)
+    model = get_fcos3d()
+    model.cpu().eval()
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                opset_version=11,
+                input_names=['img', 'cam2img', 'cam2img_inverse'],
+                output_names=[
+                    'bboxes', 'scores', 'labels', 'dir_scores', 'attrs'
+                ],
+            ),
+            codebase_config=dict(
+                type=Codebase.MMDET3D.value,
+                task=Task.MONOCULAR_DETECTION.value,
+                ann_file='tests/test_codebase/test_mmdet3d/data/nuscenes'
+                '/n015-2018-07-24-11-22-45+0800__CAM_BACK__'
+                '1532402927637525_mono3d.coco.json')))
+    monoculardetection = MonocularDetection(monodet_model_cfg, deploy_cfg,
+                                            'cpu')
+    data, inputs = monoculardetection.create_input(
+        'tests/test_codebase/test_mmdet3d/data/nuscenes/n015-2018-07-24-'
+        '11-22-45+0800__CAM_BACK__1532402927637525.jpg')
+
+    with RewriterContext(
+            cfg=deploy_cfg,
+            backend=deploy_cfg.backend_config.type,
+            opset=deploy_cfg.onnx_config.opset_version):
+        outputs = model.forward(*inputs, img_metas=data['img_metas'])
     assert outputs is not None

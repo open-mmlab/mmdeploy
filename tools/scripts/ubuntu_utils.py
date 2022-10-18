@@ -4,21 +4,33 @@ import re
 import time
 
 
+def pytorch_version():
+    version = None
+    try:
+        import torch
+        raw = torch.__version__
+        pattern = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+')
+        version = pattern.findall(raw)[0]
+    except Exception:
+        pass
+    return version
+
+
 def cmd_result(txt: str):
     cmd = os.popen(txt)
     return cmd.read().rstrip().lstrip()
 
 
 def get_job(argv) -> int:
-    # get nprocs, if user not specified, use max(2, nproc-1)
+    # get nprocs, if user not specified, use max(1, nproc-2)
     job = 2
     if len(argv) <= 1:
         print('your can use `python3 {} N` to set make -j [N]'.format(argv[0]))
         nproc = cmd_result('nproc')
         if nproc is not None and len(nproc) > 0:
-            job = max(int(nproc) - 1, 2)
+            job = max(int(nproc) - 2, 1)
         else:
-            job = 2
+            job = 1
     else:
         job = int(argv[1])
     return job
@@ -55,7 +67,7 @@ def ensure_base_env(work_dir, dep_dir):
     check python, root, pytorch version, auto install these binary:
 
     * make
-    * g++-7
+    * g++
     * git
     * wget
     * unzip
@@ -63,7 +75,6 @@ def ensure_base_env(work_dir, dep_dir):
     * mmcv (not compulsory)
     """
 
-    envs = []
     print('-' * 10 + 'ensure base env' + '-' * 10)
     print(description)
 
@@ -83,18 +94,18 @@ def ensure_base_env(work_dir, dep_dir):
     cmake = cmd_result('which cmake')
     if cmake is None or len(cmake) < 1:
         print('cmake not found, try install cmake ..', end='')
-        os.system('python3 -m pip install cmake>=3.14.0')
+        os.system('python3 -m pip install cmake')
 
         cmake = cmd_result('which cmake')
         if cmake is None or len(cmake) < 1:
             env = 'export PATH=${PATH}:~/.local/bin'
             os.system(env)
-            envs.append(env)
+            os.system(""" echo '{}' >> ~/mmdeploy.env """.format(env))
 
             cmake = cmd_result('which cmake')
             if cmake is None or len(cmake) < 1:
                 print('Check cmake failed.')
-                return -1, envs
+                return -1
         print('success')
 
     # check  make
@@ -109,14 +120,14 @@ def ensure_base_env(work_dir, dep_dir):
         make = cmd_result('which make')
         if make is None or len(make) < 1:
             print('Check make failed.')
-            return -1, envs
+            return -1
         print('success')
 
     # check g++ version
-    gplus = cmd_result('which g++-7')
+    gplus = cmd_result('which g++')
     if gplus is None or len(gplus) < 1:
         # install g++
-        print('g++-7 not found, try install g++-7 ..', end='')
+        print('g++ not found, try install g++ ..', end='')
         os.system(
             '{} DEBIAN_FRONTEND="noninteractive" apt install software-properties-common -y'  # noqa: E501
             .format(sudo))  # noqa: E501
@@ -125,18 +136,12 @@ def ensure_base_env(work_dir, dep_dir):
             os.system(
                 '{} add-apt-repository ppa:ubuntu-toolchain-r/test -y'.format(
                     sudo))
-        os.system('{} apt install gcc-7 g++-7 -y'.format(sudo))
+        os.system('{} apt install gcc g++ -y'.format(sudo))
 
-        gplus = cmd_result('which g++-7')
+        gplus = cmd_result('which g++')
         if gplus is None or len(gplus) < 1:
-            print('Check g++-7 failed.')
-            return -1, envs
-        os.system(
-            '{} update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 200'  # noqa: E501
-            .format(sudo))
-        os.system(
-            '{} update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 200'  # noqa: E501
-            .format(sudo))
+            print('Check g++ failed.')
+            return -1
         print('success')
 
     # wget
@@ -197,7 +202,7 @@ def ensure_base_env(work_dir, dep_dir):
         ocv = cmd_result('which opencv_version')
         if ocv is None or len(ocv) < 1:
             print('Check ocv failed.')
-            return -1, envs
+            return -1
         print('success')
 
     # print all
@@ -217,11 +222,11 @@ def ensure_base_env(work_dir, dep_dir):
         cmd_result(" make --version  | head -n 1 | awk '{print $3}' ")))
 
     print('wget bin\t:{}'.format(wget))
-    print('g++-7 bin\t:{}'.format(gplus))
+    print('g++ bin\t:{}'.format(gplus))
 
     print('mmcv version\t:{}'.format(mmcv_version))
     if mmcv_version is None:
-        print('\t please install an mm serials algorithm later.')
+        print('\t please install mmcv later.')
         time.sleep(2)
 
     print('torch version\t:{}'.format(torch_version))
@@ -241,4 +246,4 @@ def ensure_base_env(work_dir, dep_dir):
     print('dep dir \t:{}'.format(dep_dir))
 
     print('\n')
-    return 0, envs
+    return 0

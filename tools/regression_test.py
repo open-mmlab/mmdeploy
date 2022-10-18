@@ -585,11 +585,7 @@ def compare_metric(metric_value: float, metric_name: str, pytorch_metric: dict,
 
     metric_pytorch = pytorch_metric.get(str(metric_name))
     tolerance_value = metric_info.get(metric_name, {}).get('tolerance', 0.00)
-    if (metric_value - tolerance_value) <= metric_pytorch <= \
-            (metric_value + tolerance_value):
-        test_pass = True
-    else:
-        test_pass = False
+    test_pass = metric_value >= (metric_pytorch - tolerance_value)
     return test_pass
 
 
