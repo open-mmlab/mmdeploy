@@ -105,11 +105,8 @@ class End2EndModel(BaseBackendModel):
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
         if codec.type == 'SimCCLabel':
-            preds = batch_outputs[0].cpu().numpy()
-            preds = [
-                InstanceData(
-                    keypoints=preds[..., :2], keypoint_scores=preds[..., 2])
-            ]
+            batch_pred_x, batch_pred_y = batch_outputs
+            preds = self.head.decode((batch_pred_x, batch_pred_y))
         else:
             preds = self.head.decode(batch_outputs[0])
         results = self.pack_result(preds, data_samples)
