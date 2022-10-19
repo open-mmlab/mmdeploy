@@ -2,11 +2,17 @@
 
 Through user investigation, we know that most users are already familiar with python and torch before using mmdeploy. Therefore we provide scripts to simplify mmdeploy installation.
 
-Assuming you have a python ready (whether `conda` or `pyenv`), run this script to install mmdeploy + ncnn backend, `nproc` is not compulsory.
+Assuming you already have
+
+- python3 -m pip (`conda` or `pyenv`)
+- nvcc (depends on inference backend)
+- torch (not compulsory)
+
+run this script to install mmdeploy + ncnn backend, `nproc` is not compulsory.
 
 ```bash
 $ cd /path/to/mmdeploy
-$ python3 tools/scripts/build_ubuntu_x64_ncnn.py $(nproc)
+$ python3 tools/scripts/build_ubuntu_x64_ncnn.py
 ..
 ```
 
@@ -37,9 +43,10 @@ $ python3 tools/check_env.py
 
 Here is the verified installation script. If you want mmdeploy to support multiple backends at the same time, you can execute each script once:
 
-|             script              | OS version  |
-| :-----------------------------: | :---------: |
-|    build_ubuntu_x64_ncnn.py     | 18.04/20.04 |
-|     build_ubuntu_x64_ort.py     | 18.04/20.04 |
-|    build_ubuntu_x64_pplnn.py    | 18.04/20.04 |
-| build_ubuntu_x64_torchscript.py | 18.04/20.04 |
+|             script              |     OS version      |
+| :-----------------------------: | :-----------------: |
+|    build_ubuntu_x64_ncnn.py     |     18.04/20.04     |
+|     build_ubuntu_x64_ort.py     |     18.04/20.04     |
+|    build_ubuntu_x64_pplnn.py    |     18.04/20.04     |
+| build_ubuntu_x64_torchscript.py |     18.04/20.04     |
+|  build_jetson_orin_python38.sh  | JetPack5.0 L4T 34.1 |

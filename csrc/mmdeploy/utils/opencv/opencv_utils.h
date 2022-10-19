@@ -12,13 +12,11 @@
 namespace mmdeploy {
 namespace cpu {
 
-using namespace framework;
+MMDEPLOY_API cv::Mat Mat2CVMat(const framework::Mat& mat);
+MMDEPLOY_API cv::Mat Tensor2CVMat(const framework::Tensor& tensor);
 
-MMDEPLOY_API cv::Mat Mat2CVMat(const Mat& mat);
-MMDEPLOY_API cv::Mat Tensor2CVMat(const Tensor& tensor);
-
-MMDEPLOY_API Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
-MMDEPLOY_API Tensor CVMat2Tensor(const cv::Mat& mat);
+MMDEPLOY_API framework::Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
+MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
 
 /**
  * @brief resize an image to specified size

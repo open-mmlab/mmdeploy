@@ -71,9 +71,12 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
-if (NOT (MSVC OR ANDROID OR APPLE))
-    target_link_libraries(${PROJECT_NAME} PUBLIC stdc++fs)
+
+include(${CMAKE_SOURCE_DIR}/cmake/filesystem.cmake)
+if (STD_FS_LIB)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${STD_FS_LIB})
 endif ()
+
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)

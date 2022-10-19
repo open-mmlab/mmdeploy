@@ -87,6 +87,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
+  - [Cross Build for aarch64](docs/en/01-how-to-build/cross_build_ncnn_aarch64.md)
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
   - [How to write config](docs/en/02-how-to-run/write_config.md)
