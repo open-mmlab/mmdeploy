@@ -266,7 +266,8 @@ class AutoTVMTuner(TVMTunerBase):
             tuner_obj = build_autotvm_tuner(tuner_cfg)
 
             if self._use_transfer_learning:
-                if os.path.isfile(tmp_log_file):
+                if os.path.isfile(tmp_log_file) and os.path.exists(
+                        tmp_log_file):
                     tuner_obj.load_history(
                         autotvm.record.load_from_file(tmp_log_file))
 

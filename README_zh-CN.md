@@ -55,18 +55,18 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 支持的设备平台和推理引擎如下表所示。benchmark请参考[这里](docs/zh_cn/03-benchmark/benchmark.md)
 
-| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
-| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
-| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
-| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
-| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
-| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
-| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
-| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
-| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
-| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
-| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
-| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
+| Device / Platform | Linux                                                                    | Windows                                 | macOS    | Android          |
+| ----------------- | ------------------------------------------------------------------------ | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch<br>✔️TVM | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn<br>✔️TVM                                                          | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn<br>✔️TVM                                                          | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch<br>✔️TVM           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                               | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                                   | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                                   | -                                       | -        | -                |
+| Apple M1          | -                                                                        | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                                        | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                                        | -                                       | -        | ✔️SNPE           |
 
 ### SDK 可高度定制化
 

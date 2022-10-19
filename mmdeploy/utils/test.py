@@ -51,6 +51,8 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.rknn import is_available
     elif backend == Backend.ASCEND:
         from mmdeploy.apis.ascend import is_available
+    elif backend == Backend.TVM:
+        from mmdeploy.apis.tvm import is_available
     else:
         warnings.warn('The backend checker is not available')
         return
