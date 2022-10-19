@@ -51,4 +51,4 @@
 备注：
 
 - Fast-SCNN 的int8模型需要使用ncnnoptimize优化。
-- NCNN将会从train中抽取512张图片作为校准集。                                      |            |           |           |
+- NCNN将会从train中抽取512张图片作为校准集。
