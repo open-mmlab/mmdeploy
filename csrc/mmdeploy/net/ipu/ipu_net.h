@@ -14,8 +14,6 @@
 #include "mmdeploy/core/net.h"
 #include "utils.hpp"
 
-int ipu_test();
-
 namespace mmdeploy {
 
 class IPUNet : public Net {

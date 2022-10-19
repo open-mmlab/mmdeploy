@@ -1,6 +1,7 @@
 // Copyright (c) 2022 Graphcore Ltd. All rights reserved.
 
-#pragma once
+#ifndef MMDEPLOY_SRC_NET_IPU_NET_UTILS_H_
+#define MMDEPLOY_SRC_NET_IPU_NET_UTILS_H_
 
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/fmt/ostr.h>
@@ -144,3 +145,4 @@ inline void printInputMemory(const model_runtime::InputMemory &input_memory) {
 }
 
 }  // namespace examples
+#endif

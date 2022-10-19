@@ -106,4 +106,5 @@ mmdeploy_load_dynamic(mmdeploy_tests_ipu MMDeployDynamicModules)
 target_link_libraries(mmdeploy_tests_ipu PRIVATE
     MMDeployLibs
     mmdeploy_transform
-    mmdeploy_opencv_utils)
+    mmdeploy_opencv_utils 
+    )

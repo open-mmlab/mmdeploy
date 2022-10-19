@@ -29,6 +29,7 @@ bool Registry<void>::AddCreator(Creator<void>& creator) {
 Creator<void>* Registry<void>::GetCreator(const std::string& type, int version) {
   auto iter = entries_.find(type);
   if (iter == entries_.end()) {
+    MMDEPLOY_INFO("getting creator: type {} not found", type);
     return nullptr;
   }
   if (0 == version) {
@@ -40,6 +41,7 @@ Creator<void>* Registry<void>::GetCreator(const std::string& type, int version) 
       return iter->second;
     }
   }
+  MMDEPLOY_INFO("getting creator: version {} not found of type {}", version, type);
   return nullptr;
 }
 
