@@ -48,4 +48,7 @@ Note: MMPose models are tested with `flip_test` explicitly set to `False` in mod
 | :----------------------------------------------------------------------------------------------------------------------------: | :--------: | :-------: | :-------: |
 | [Fast-SCNN](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py) | cityscapes |   70.96   |   70.24   |
 
-Note:Int8 models of the Fast-SCNN requires ncnnoptimize.                                    |            |           |           |
+Note:
+
+- Int8 models of the Fast-SCNN requires ncnnoptimize.
+- NCNN will extract 512 images from the train as a calibration dataset

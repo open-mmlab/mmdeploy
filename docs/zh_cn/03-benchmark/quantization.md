@@ -48,4 +48,7 @@
 | :----------------------------------------------------------------------------------------------------------------------------: | :--------: | :-------: | :-------: |
 | [Fast-SCNN](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py) | cityscapes |   70.96   |   70.24   |
 
-备注：Fast-SCNN 的int8模型需要使用ncnnoptimize优化。                                      |            |           |           |
+备注：
+
+- Fast-SCNN 的int8模型需要使用ncnnoptimize优化。
+- NCNN将会从train中抽取512张图片作为校准集。                                      |            |           |           |

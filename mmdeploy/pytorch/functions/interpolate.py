@@ -27,8 +27,11 @@ def interpolate__ncnn(ctx,
 
     input_size = input.shape
     if scale_factor is None:
-        scale_factor = [(s_out / s_in + 0.00001)
-                        for s_out, s_in in zip(size, input_size[2:])]
+        scale_factor = [
+            s_out / s_in if int(s_out / s_in) == s_out / s_in else
+            (s_out / s_in + 0.00001)
+            for s_out, s_in in zip(size, input_size[2:])
+        ]
 
     return ctx.origin_func(
         input,
