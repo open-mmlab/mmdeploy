@@ -27,6 +27,7 @@ class Task(AdvancedEnum):
     VOXEL_DETECTION = 'VoxelDetection'
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
+    VIDEO_RECOGNITION = 'VideoRecognition'
 
 
 class Codebase(AdvancedEnum):
@@ -39,6 +40,7 @@ class Codebase(AdvancedEnum):
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
+    MMACTION = 'mmaction'
 
 
 class IR(AdvancedEnum):
