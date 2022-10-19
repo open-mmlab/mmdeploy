@@ -93,7 +93,8 @@ def mvxtwostagedetector__extract_feat(ctx, self,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector._forward')
-def mvxtwostagedetector__forward(ctx, self, batch_inputs_dict: dict, **kwargs):
+def mvxtwostagedetector__forward(ctx, self, batch_inputs_dict: dict,
+                                 data_samples, **kwargs):
     """Rewrite this func to remove voxelize op.
 
     Args:
