@@ -12,7 +12,8 @@
 
 namespace mmdeploy::framework {
 
-Result<rknn_tensor_type> GetRKNNDataType(DataType data_type) {
+
+static Result<rknn_tensor_type> GetRKNNDataType(DataType data_type) {
   switch (data_type) {
     case DataType::kFLOAT:
       return RKNN_TENSOR_FLOAT32;
@@ -20,28 +21,39 @@ Result<rknn_tensor_type> GetRKNNDataType(DataType data_type) {
       return RKNN_TENSOR_FLOAT16;
     case DataType::kINT8:
       return RKNN_TENSOR_INT8;
+#ifdef RK_MODELS
     case DataType::kINT32:
       return RKNN_TENSOR_INT32;
     case DataType::kINT64:
       return RKNN_TENSOR_INT64;
+#endif
     default:
       return Status(eNotSupported);
   }
 }
 
-Result<DataType> GetMMDeployDataType(rknn_tensor_type data_type) {
+static Result<DataType> GetMMDeployDataType(rknn_tensor_type data_type) {
+  static std::map<rknn_tensor_type, std::string> str_type{{RKNN_TENSOR_FLOAT32, "float32"},
+                                                          {RKNN_TENSOR_INT8, "int8"},
+                                                          {RKNN_TENSOR_UINT8, "uint8"},
+                                                          {RKNN_TENSOR_INT16, "int16"},
+                                                          {RKNN_TENSOR_TYPE_MAX, "max"}};
   switch (data_type) {
     case RKNN_TENSOR_FLOAT32:
       return DataType::kFLOAT;
     case RKNN_TENSOR_FLOAT16:
       return DataType::kHALF;
-    case RKNN_TENSOR_INT8:
+    case RKNN_TENSOR_INT8: // fall through
+    case RKNN_TENSOR_UINT8:
       return DataType::kINT8;
+#ifdef RK_MODELS
     case RKNN_TENSOR_INT32:
       return DataType::kINT32;
     case RKNN_TENSOR_INT64:
       return DataType::kINT64;
+#endif
     default:
+      MMDEPLOY_ERROR("unsupported rknn_tensor_type: {}", str_type[data_type]);
       return Status(eNotSupported);
   }
 }
@@ -49,6 +61,7 @@ Result<DataType> GetMMDeployDataType(rknn_tensor_type data_type) {
 RKNNNet::~RKNNNet() { rknn_destroy(ctx_); }
 
 void RKNNNet::dump_tensor_attr(rknn_tensor_attr* attr) {
+#ifdef RK_MODELS
   MMDEPLOY_INFO(
       "  index={}, name={}, n_dims={}, dims=[{}, {}, {}, {}], n_elems={}, size={}, fmt={}, "
       "type={}, qnt_type={}, "
@@ -56,6 +69,7 @@ void RKNNNet::dump_tensor_attr(rknn_tensor_attr* attr) {
       attr->index, attr->name, attr->n_dims, attr->dims[0], attr->dims[1], attr->dims[2],
       attr->dims[3], attr->n_elems, attr->size, get_format_string(attr->fmt),
       get_type_string(attr->type), get_qnt_type_string(attr->qnt_type), attr->zp, attr->scale);
+#endif
 }
 
 Result<void> RKNNNet::Init(const Value& args) {
@@ -73,7 +87,12 @@ Result<void> RKNNNet::Init(const Value& args) {
   std::string content;
   OUTCOME_TRY(content, model.ReadFile(config.net));
   char* model_ptr = const_cast<char*>(content.data());
+#ifdef RK_MODELS
   int ret = rknn_init(&ctx_, model_ptr, content.size(), 0, NULL);
+#endif
+#ifdef RV_MODELS
+  int ret = rknn_init(&ctx_, model_ptr, content.size(), 0);
+#endif
   if (ret != RKNN_SUCC) {
     MMDEPLOY_ERROR("Load .rknn failed! ret= {}", ret);
     return Status(eInvalidArgument);
@@ -89,33 +108,38 @@ Result<void> RKNNNet::Init(const Value& args) {
   }
 
   for (int i = 0; i < io_num.n_input; i++) {
-    rknn_tensor_attr input_attr;
-    input_attr.index = i;
-    ret = rknn_query(ctx_, RKNN_QUERY_INPUT_ATTR, &(input_attr), sizeof(rknn_tensor_attr));
+    rknn_tensor_attr attr;
+    attr.index = i;
+    ret = rknn_query(ctx_, RKNN_QUERY_INPUT_ATTR, &(attr), sizeof(rknn_tensor_attr));
     if (ret != RKNN_SUCC) {
       MMDEPLOY_INFO("input tensors:\n");
-      dump_tensor_attr(&(input_attr));
+      dump_tensor_attr(&(attr));
       MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
       return Status(eFail);
     }
-    input_attrs_.push_back(input_attr);
-    OUTCOME_TRY(auto data_type, GetMMDeployDataType(input_attr.type));
-    input_tensors_.emplace_back(TensorDesc{device_, data_type, {}, input_attr.name});
+    input_attrs_.push_back(attr);
+    OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
+    input_tensors_.emplace_back(TensorDesc{device_, data_type,
+                                           {attr.dims, attr.dims + attr.n_dims},
+                                           "#" + std::to_string(i)});
   }
 
   for (int i = 0; i < io_num.n_output; i++) {
-    rknn_tensor_attr output_attr;
-    output_attr.index = i;
-    ret = rknn_query(ctx_, RKNN_QUERY_OUTPUT_ATTR, &(output_attr), sizeof(rknn_tensor_attr));
+    rknn_tensor_attr attr;
+    attr.index = i;
+    ret = rknn_query(ctx_, RKNN_QUERY_OUTPUT_ATTR, &(attr), sizeof(rknn_tensor_attr));
     if (ret != RKNN_SUCC) {
       MMDEPLOY_INFO("output tensors:\n");
-      dump_tensor_attr(&(output_attr));
+      dump_tensor_attr(&(attr));
       MMDEPLOY_ERROR("rknn_query fail! ret= {}", ret);
       return Status(eFail);
     }
-    output_attrs_.push_back(output_attr);
-    OUTCOME_TRY(auto data_type, GetMMDeployDataType(output_attr.type));
-    output_tensors_.emplace_back(TensorDesc{device_, data_type, {}, output_attr.name});
+    output_attrs_.push_back(attr);
+    OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
+    // MMDeploy always make the output data type as float
+    output_tensors_.emplace_back(TensorDesc{device_, DataType::kFLOAT,
+                                            {attr.dims, attr.dims + attr.n_dims},
+                                            "#" + std::to_string(i)});
   }
 
   return success();
@@ -146,7 +170,7 @@ Result<void> RKNNNet::Forward() {
     input.pass_through = 0;
     input.type = input_attrs_[i].type;
     input.fmt = input_attrs_[i].fmt;
-    input.buf = input_tensors_[i].data<float>();
+    input.buf = input_tensors_[i].data();
     input.size = input_attrs_[i].size;
     inputs.push_back(input);
   }
@@ -158,35 +182,38 @@ Result<void> RKNNNet::Forward() {
     return Status(eFail);
   }
 
-  // Get output
-  std::vector<rknn_output> outputs;
-  for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
-    rknn_output output;
-    output.want_float = 1;
-    output.index = i;
-    output.is_prealloc = 0;
-    outputs.push_back(output);
-  }
-
+  // Forward
   ret = rknn_run(ctx_, NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_run fail! ret={}", ret);
     return Status(eFail);
   }
 
-  ret = rknn_outputs_get(ctx_, output_tensors_.size(), outputs.data(), NULL);
+  // Get output
+  std::vector<rknn_output> outputs(output_tensors_.size());
+  for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
+    outputs[i].want_float = 1;
+    outputs[i].is_prealloc = 1; // use pre-allocated buffer in `output_tensors_`
+    outputs[i].index = 1;
+    outputs[i].buf = output_tensors_[i].data();
+    outputs[i].size = output_tensors_[i].byte_size();
+  }
+  ret = rknn_outputs_get(ctx_, outputs.size(), outputs.data(), NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_outputs_get fail! ret= {}", ret);
     return Status(eFail);
   }
-  for (int i = 0; i < output_tensors_.size(); i++) {
-    TensorShape tensor_shape;
-    for (int j = 0; j < output_attrs_[i].n_dims; ++j) {
-      tensor_shape.push_back(output_attrs_[i].dims[j]);
-    }
-    output_tensors_[i].Reshape(tensor_shape);
-    memcpy(output_tensors_[i].data<float>(), (float*)outputs[i].buf, output_attrs_[i].size);
-  }
+
+//  // debug output
+//  auto _ptr = output_tensors_[0].data<float>();
+//  for (int i = 0; i < 1; ++i) {
+//    for (int j = 1; j < 91; ++j) {
+//      float score = _ptr[i * 91 + j];
+//      printf("%.3f, ", score);
+//    }
+//    printf("\n");
+//  }
+
   OUTCOME_TRY(stream_.Wait());
   return success();
 }
