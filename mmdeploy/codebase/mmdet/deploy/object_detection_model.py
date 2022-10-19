@@ -682,19 +682,21 @@ class RKNNModel(End2EndModel):
         head_cfg = self.model_cfg._cfg_dict.model.bbox_head
         head = build_head(head_cfg)
         if head_cfg.type == 'YOLOXHead':
+            divisor = round(len(outputs) / 3)
             ret = head.get_bboxes(
-                outputs[:3],
-                outputs[3:6],
-                outputs[6:9], [dict(scale_factor=None)],
+                outputs[:divisor],
+                outputs[divisor:2 * divisor],
+                outputs[2 * divisor:], [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         elif head_cfg.type == 'YOLOV3Head':
             ret = head.get_bboxes(
                 outputs, [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        elif head_cfg.type == 'RetinaHead':
+        elif head_cfg.type in ('RetinaHead', 'SSDHead'):
+            divisor = round(len(outputs) / 2)
             ret = head.get_bboxes(
-                outputs[:5],
-                outputs[5:],
+                outputs[:divisor],
+                outputs[divisor:],
                 img_metas=img_metas[0],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         else:

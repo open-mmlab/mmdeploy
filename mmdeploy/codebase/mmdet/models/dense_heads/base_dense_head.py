@@ -60,6 +60,14 @@ def base_dense_head__get_bbox(ctx,
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+
+    # mark nodes for partition
+    @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
+    def __mark_dense_head(cls_scores, bbox_preds):
+        return cls_scores, bbox_preds
+
+    cls_scores, bbox_preds = __mark_dense_head(cls_scores, bbox_preds)
+
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
@@ -373,70 +381,6 @@ def base_dense_head__get_bboxes__ncnn(ctx,
         vars.cpu().detach().numpy())
 
     return output__ncnn
-
-
-class DummyNMSOp(torch.autograd.Function):
-    """Create dummpy output of box_nms in mmdet style."""
-
-    def __init__(self):
-        super(DummyNMSOp, self).__init__()
-
-    @staticmethod
-    def symbolic(g, *args):
-        return g.op('mmdeploy::DummyNMSOp', *args, outputs=2)
-
-    @staticmethod
-    def forward(g, *args):
-        device = args[0].device
-        dets = torch.tensor([0, 0, 128, 128, 0.9],
-                            device=device).reshape(1, 1, 5)
-        labels = torch.tensor([1], dtype=torch.long,
-                              device=device).reshape(1, 1)
-        return dets, labels
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
-    '.get_bboxes',
-    backend=Backend.RKNN.value)
-def base_dense_head__get_bboxes__rknn(ctx,
-                                      self,
-                                      cls_scores,
-                                      bbox_preds,
-                                      score_factors=None,
-                                      img_metas=None,
-                                      cfg=None,
-                                      **kwargs):
-    """Rewrite `get_bboxes` of AnchorHead for RKNN backend.
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        cls_scores (list[Tensor]): Classification scores for all
-            scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * num_classes, H, W).
-        bbox_preds (list[Tensor]): Box energies / deltas for all
-            scale levels, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 4, H, W).
-        score_factors (list[Tensor], Optional): Score factor for
-            all scale level, each is a 4D-tensor, has shape
-            (batch_size, num_priors * 1, H, W). Default None.
-        img_metas (list[dict], Optional): Image meta info. Default None.
-        cfg (mmcv.Config, Optional): Test / postprocessing configuration,
-            if None, test_cfg would be used.  Default None.
-
-    Returns:
-        tuple[Tensor, Tensor]: dets of shape [N, num_det, 5]
-            and class labels of shape [N, num_det].
-    """
-
-    @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
-    def __mark_dense_head(cls_scores, bbox_preds):
-        return cls_scores, bbox_preds
-
-    cls_scores, bbox_preds = __mark_dense_head(cls_scores, bbox_preds)
-
-    dets, labels = DummyNMSOp.apply(*(cls_scores + bbox_preds))
-    return dets, labels
 
 
 def _tblr_pred_to_delta_xywh_pred(bbox_pred: torch.Tensor,

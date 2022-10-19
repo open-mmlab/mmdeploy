@@ -6,7 +6,7 @@ codebase_config = dict(model_type='rknn')
 
 backend_config = dict(input_size_list=[[3, 320, 320]])
 
-# yolo
+# yolov3, yolox
 partition_config = dict(
     type='rknn',  # the partition policy name
     apply_marks=True,  # should always be set to True
@@ -17,7 +17,7 @@ partition_config = dict(
             end=['yolo_head:input'])  # [mark_name:input/output, ...]
     ])
 
-# # retinanet
+# # retinanet, ssd
 # partition_config = dict(
 #     type='rknn',  # the partition policy name
 #     apply_marks=True,
