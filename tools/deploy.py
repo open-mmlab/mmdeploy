@@ -135,7 +135,7 @@ def main():
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
     ir_type = IR.get(ir_config['type'])
-    ir_type(
+    torch2ir(ir_type)(
         args.img,
         args.work_dir,
         ir_save_file,
@@ -422,16 +422,6 @@ def main():
         extra['uri'] = args.uri
 
     # get backend inference result, try render
-    visualize_model(
-        model_cfg_path,
-        deploy_cfg_path,
-        backend_files,
-        args.test_img,
-        args.device,
-        backend=backend,
-        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-        show_result=args.show)
-
     create_process(
         f'visualize {backend.value} model',
         target=visualize_model,
