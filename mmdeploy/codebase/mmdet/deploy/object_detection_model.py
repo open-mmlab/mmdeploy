@@ -693,6 +693,10 @@ class RKNNModel(End2EndModel):
                 outputs, [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         elif head_cfg.type in ('RetinaHead', 'SSDHead'):
+            partition_cfgs = get_partition_config(self.deploy_cfg)
+            if partition_cfgs is None:  # bbox decoding done in rknn model
+                from ..core.post_processing import _multiclass_nms
+                return _multiclass_nms(outputs[0], outputs[1])
             divisor = round(len(outputs) / 2)
             ret = head.get_bboxes(
                 outputs[:divisor],
