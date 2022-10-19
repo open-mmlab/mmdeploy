@@ -103,11 +103,11 @@ def main():
     log_level = logging.getLevelName(args.log_level)
     logger.setLevel(log_level)
 
-    # pipeline_funcs = [
-    #     torch2onnx, torch2torchscript, extract_model, create_calib_input_data
-    # ]
-    # PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
-    # PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
+    pipeline_funcs = [
+        torch2onnx, torch2torchscript, extract_model, create_calib_input_data
+    ]
+    PIPELINE_MANAGER.enable_multiprocess(True, pipeline_funcs)
+    PIPELINE_MANAGER.set_log_level(log_level, pipeline_funcs)
 
     deploy_cfg_path = args.deploy_cfg
     model_cfg_path = args.model_cfg
@@ -135,7 +135,7 @@ def main():
     ir_config = get_ir_config(deploy_cfg)
     ir_save_file = ir_config['save_file']
     ir_type = IR.get(ir_config['type'])
-    torch2onnx(
+    ir_type(
         args.img,
         args.work_dir,
         ir_save_file,
@@ -422,31 +422,35 @@ def main():
         extra['uri'] = args.uri
 
     # get backend inference result, try render
-    visualize_model(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
-              args.device, backend=backend, output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'), show_result=args.show)
-    
-    # create_process(
-    #     f'visualize {backend.value} model',
-    #     target=visualize_model,
-    #     args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img, args.device),
-    #     kwargs=extra,
-    #     ret_value=ret_value)
+    visualize_model(
+        model_cfg_path,
+        deploy_cfg_path,
+        backend_files,
+        args.test_img,
+        args.device,
+        backend=backend,
+        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+        show_result=args.show)
+
+    create_process(
+        f'visualize {backend.value} model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
+        kwargs=extra,
+        ret_value=ret_value)
 
     # get pytorch model inference result, try visualize if possible
-    visualize_model(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-              args.test_img, args.device, backend=Backend.PYTORCH,
+    create_process(
+        'visualize pytorch model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img, args.device),
+        kwargs=dict(
+            backend=Backend.PYTORCH,
             output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-            show_result=args.show)
-    # create_process(
-    #     'visualize pytorch model',
-    #     target=visualize_model,
-    #     args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-    #           args.test_img, args.device),
-    #     kwargs=dict(
-    #         backend=Backend.PYTORCH,
-    #         output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-    #         show_result=args.show),
-    #     ret_value=ret_value)
+            show_result=args.show),
+        ret_value=ret_value)
     logger.info('All process success.')
 
 

@@ -76,7 +76,6 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         # check headless
         import tkinter
         tkinter.Tk()
-        
         data_samples = None
         if 'data_samples' in model_inputs:
             data_samples = model_inputs['data_samples']

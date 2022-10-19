@@ -1,5 +1,6 @@
 mmcls>=1.0.0rc0
 mmdet>=3.0.0rc0
+mmdet3d==1.1.0rc1
 mmedit==1.0.0rc1
 mmocr>=1.0.0rc0
 mmpose>=1.0.0b0
