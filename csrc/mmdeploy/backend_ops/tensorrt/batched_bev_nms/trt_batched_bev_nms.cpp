@@ -1,5 +1,4 @@
 // Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
-
 #include "trt_batched_bev_nms.hpp"
 
 #include <cstring>

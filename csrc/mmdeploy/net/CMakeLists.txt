@@ -38,5 +38,9 @@ if ("coreml" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(coreml)
 endif ()
 
+if ("rknn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(rknn)
+endif ()
+
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)
 add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})

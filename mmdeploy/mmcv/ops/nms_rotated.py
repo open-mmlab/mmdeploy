@@ -170,6 +170,7 @@ class TRTBatchedBEVNMSop(torch.autograd.Function):
                 background_label_id: int = -1,
                 return_index: bool = True):
         """Forward of batched nms.
+
         Args:
             ctx (Context): The context with meta information.
             boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
@@ -185,6 +186,7 @@ class TRTBatchedBEVNMSop(torch.autograd.Function):
             score_threshold (float): score threshold of nms.
             background_label_id (int): The label ID for the background class.
                 If there is no background class, set it to -1.
+
         Returns:
             dets (Tensor): Bboxes and scores of the bev nms results.
             labels (Tensor): Class id of the bev nms results.

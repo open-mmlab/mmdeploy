@@ -42,3 +42,4 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 - [NVIDIA Jetson](jetsons.md)
 - [Qcom SNPE](snpe.md)
 - [RISC-V](riscv.md)
+- [Rockchip](rockchip.md)

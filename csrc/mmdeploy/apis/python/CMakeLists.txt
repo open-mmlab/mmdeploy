@@ -6,7 +6,6 @@ project(mmdeploy_python)
 set(MMDEPLOY_PYTHON_SRCS
         common.cpp
         internal.cpp
-#        executor.cpp
         pipeline.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -26,6 +25,10 @@ endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
+# https://github.com/pybind/pybind11/issues/1604
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsized-deallocation)
+endif ()
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)

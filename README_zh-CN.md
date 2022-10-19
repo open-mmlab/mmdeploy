@@ -86,6 +86,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/zh_cn/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
+  - [Cross Build for aarch64](docs/zh_cn/01-how-to-build/cross_build_ncnn_aarch64.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   - [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
