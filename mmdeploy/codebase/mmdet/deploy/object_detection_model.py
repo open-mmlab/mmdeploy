@@ -189,7 +189,7 @@ class End2EndModel(BaseBackendModel):
             scores = dets[:, 4]
 
             # perform rescale
-            if rescale:
+            if rescale and 'scale_factor' in img_metas[i]:
                 scale_factor = img_metas[i]['scale_factor']
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     if len(scale_factor) == 2:
