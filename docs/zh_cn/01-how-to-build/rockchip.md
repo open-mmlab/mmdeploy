@@ -145,3 +145,35 @@ label: 65, score: 0.95
   ```
 
   此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[103.53, 116.28, 123.675]]`, `std_values=[[57.375, 57.12, 58.395]]`。
+
+- MMDet 模型.
+
+  YOLOV3 & YOLOX: 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # yolov3, yolox
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,  # should always be set to True
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',  # name to save the partitioned onnx
+              start=['detector_forward:input'],  # [mark_name:input, ...]
+              end=['yolo_head:input'])  # [mark_name:output, ...]
+      ])
+  ```
+
+  RetinaNet & SSD with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # retinanet, ssd
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',
+              start='detector_forward:input',
+              end=['BaseDenseHead:output'])
+      ])
+  ```

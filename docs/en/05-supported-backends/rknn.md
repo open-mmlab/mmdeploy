@@ -6,4 +6,4 @@ The following features cannot be automatically enabled by mmdeploy and you need 
 
 - target_platform other than `3588`
 - quantization settings
-- optimization level other than 3
+- optimization level other than 1

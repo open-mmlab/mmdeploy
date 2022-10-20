@@ -6,4 +6,4 @@
 
 - target_platform ！= `3588`
 - quantization settings
-- optimization level ！= 3
+- optimization level ！= 1

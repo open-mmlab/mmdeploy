@@ -231,7 +231,6 @@ def base_dense_head__get_bbox__rknn(ctx,
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
-
     # mark nodes for partition
     @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
     def __mark_dense_head(cls_scores, bbox_preds):

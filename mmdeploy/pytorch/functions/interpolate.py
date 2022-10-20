@@ -56,7 +56,6 @@ def interpolate__rknn(ctx,
     rknn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
-
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [(s_out / s_in)

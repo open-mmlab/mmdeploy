@@ -145,3 +145,35 @@ label: 65, score: 0.95
   ```
 
   Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[[103.53, 116.28, 123.675]]` and `std_values=[[57.375, 57.12, 58.395]]`.
+
+- MMDet models.
+
+  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # yolov3, yolox
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,  # should always be set to True
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',  # name to save the partitioned onnx
+              start=['detector_forward:input'],  # [mark_name:input, ...]
+              end=['yolo_head:input'])  # [mark_name:output, ...]
+      ])
+  ```
+
+  RetinaNet & SSD with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # retinanet, ssd
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',
+              start='detector_forward:input',
+              end=['BaseDenseHead:output'])
+      ])
+  ```
