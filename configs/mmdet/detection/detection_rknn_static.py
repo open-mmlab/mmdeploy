@@ -17,7 +17,7 @@ backend_config = dict(input_size_list=[[3, 320, 320]])
 #             end=['yolo_head:input'])  # [mark_name:output, ...]
 #     ])
 
-# # retinanet, ssd
+# # retinanet, ssd, fsaf
 # partition_config = dict(
 #     type='rknn',  # the partition policy name
 #     apply_marks=True,

@@ -692,7 +692,7 @@ class RKNNModel(End2EndModel):
             ret = head.get_bboxes(
                 outputs, [dict(scale_factor=None)],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        elif head_cfg.type in ('RetinaHead', 'SSDHead'):
+        elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
             partition_cfgs = get_partition_config(self.deploy_cfg)
             if partition_cfgs is None:  # bbox decoding done in rknn model
                 from ..core.post_processing import _multiclass_nms

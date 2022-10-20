@@ -163,7 +163,7 @@ label: 65, score: 0.95
       ])
   ```
 
-  RetinaNet & SSD with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+  RetinaNet & SSD & FSAF with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)。使用 rknn-toolkit 的用户则不用。
 
   ```python
   # retinanet, ssd
