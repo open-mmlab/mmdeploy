@@ -211,6 +211,9 @@ def remove_identity(model: onnx.ModelProto):
 def remove_imports(model: onnx.ModelProto):
     """Remove useless imports from an ONNX model.
 
+    The domain like `mmdeploy` might influence model conversion for
+    some backends.
+
     Args:
         model (onnx.ModelProto): Input onnx model.
     """
