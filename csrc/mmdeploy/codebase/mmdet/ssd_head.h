@@ -5,13 +5,6 @@
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 #include "mmdeploy/core/tensor.h"
 
-#define NUM_RESULTS         1917
-#define NUM_CLASS 91
-#define Y_SCALE  10.0f
-#define X_SCALE  10.0f
-#define H_SCALE  5.0f
-#define W_SCALE  5.0f
-
 namespace mmdeploy::mmdet {
 
 class SSDHead : public MMDetection {
@@ -22,9 +15,28 @@ class SSDHead : public MMDetection {
   std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
 
  private:
-  static constexpr int NUM_SIZE = 4;
-  std::vector<std::vector<float>> priors_;
-};
-} // namespace mmdeploy::mmdet
+  // @brief Filter results using score threshold and topk candidates.
+  // scores (Tensor): The scores, shape (num_bboxes, K).
+  // probs: The scores after being filtered
+  // label_ids: The class labels
+  // anchor_idxs: The anchor indexes
+  static void FilterScoresAndTopk(Tensor& scores, float score_thr, int topk,
+                                  std::vector<float> probs, std::vector<int>& label_ids,
+                                  std::vector<int>& anchor_idxs);
+  static float IOU(float xmin0, float ymin0, float xmax0, float ymax0, float xmin1, float ymin1,
+                   float xmax1, float ymax1);
 
-#endif // MMDEPLOY_CODEBASE_MMDET_SSD_HEAD_H_
+  static void Sort(std::vector<float>& probs, std::vector<int>& prob_idxs,
+                   std::vector<int>& label_ids, std::vector<int>& keep_idxs);
+
+  static void NMS(Tensor& dets, float iou_threshold, std::vector<float>& probs,
+                  std::vector<int>& label_ids, std::vector<int>& keep_idxs);
+
+ private:
+  float score_thr_{0.4f};
+  int nms_pre_{1000};
+  float iou_threshold_{0.45f};
+};
+}  // namespace mmdeploy::mmdet
+
+#endif  // MMDEPLOY_CODEBASE_MMDET_SSD_HEAD_H_

@@ -158,7 +158,8 @@ Result<void> RKNNNet::Init(const Value& args) {
     input_attrs_.push_back(attr);
     OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
     input_tensors_.emplace_back(TensorDesc{
-        device_, data_type, {attr.dims, attr.dims + attr.n_dims}, "#" + std::to_string(i)});
+        device_, data_type, {attr.dims[2], attr.dims[1], attr.dims[0]},
+        "#" + std::to_string(i)});
   }
   DebugRKNNTensorAttr("input", input_attrs_);
 
@@ -174,7 +175,8 @@ Result<void> RKNNNet::Init(const Value& args) {
     OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
     // MMDeploy always make the output data type as float
     output_tensors_.emplace_back(TensorDesc{
-        device_, DataType::kFLOAT, {attr.dims, attr.dims + attr.n_dims}, "#" + std::to_string(i)});
+        device_, DataType::kFLOAT, {attr.dims[2], attr.dims[1], attr.dims[0]},
+        "#" + std::to_string(i)});
   }
   DebugRKNNTensorAttr("output", output_attrs_);
 
