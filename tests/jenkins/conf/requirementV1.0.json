@@ -35,8 +35,8 @@
         "mmcv": "mmcv-full==1.5.2"
     },
     "mmrotate": {
-        "branch": "master",
-        "version": "mmedit",
+        "branch": "main",
+        "version": "mmrotate",
         "mmcv": "mmcv-full==1.6.0"
     }
 }
