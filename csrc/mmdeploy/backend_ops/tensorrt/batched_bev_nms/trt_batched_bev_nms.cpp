@@ -1,4 +1,6 @@
 // Copyright (c) 2021, NVIDIA CORPORATION. All rights reserved.
+// modify from
+// https://github.com/NVIDIA/TensorRT/tree/master/plugin/batchedNMSPlugin
 #include "trt_batched_bev_nms.hpp"
 
 #include <cstring>
