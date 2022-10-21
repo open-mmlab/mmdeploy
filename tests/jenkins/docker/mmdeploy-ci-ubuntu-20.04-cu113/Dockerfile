@@ -156,6 +156,10 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
 RUN /opt/conda/bin/pip install openmim
 
 RUN /opt/conda/bin/conda init bash && \
+    /opt/conda/bin/conda create --clone base -n torch1.8.0 -y && \
+    /opt/conda/envs/torch1.8.0/bin/pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html && \
+    /opt/conda/bin/conda create --clone base -n torch1.9.0 -y && \
+    /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.11.0 -y && \
