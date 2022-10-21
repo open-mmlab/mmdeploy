@@ -191,8 +191,6 @@ class VoxelDetection(BaseTask):
         _, data_input = self.create_input(pcd=image)
 
         if Backend(window_name) != Backend.PYTORCH:
-            import pdb
-            pdb.set_trace()
             predictions = VoxelDetectionModel.postprocess(
                 model_cfg=self.model_cfg,
                 deploy_cfg=self.deploy_cfg,

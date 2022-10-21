@@ -59,7 +59,10 @@ def torch2onnx(img: Any,
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     torch_model = task_processor.build_pytorch_model(model_checkpoint)
-    data, model_inputs = task_processor.create_input(img, input_shape)
+    data, model_inputs = task_processor.create_input(
+        img,
+        input_shape,
+        data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
 
     if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]

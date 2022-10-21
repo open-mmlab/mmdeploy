@@ -303,7 +303,6 @@ class BaseTask(metaclass=ABCMeta):
             show=show_result,
             out_file=output_file)
 
-    @abstractmethod
     def mode(self) -> str:
         """Get pytorch inference mode, it depends on codebase implementation.
 
