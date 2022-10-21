@@ -102,7 +102,7 @@ SSDHead::SSDHead(const Value& cfg) : MMDetection(cfg) {
 }
 
 Result<Value> SSDHead::operator()(const Value& prep_res, const Value& infer_res) {
-  MMDEPLOY_INFO("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     OUTCOME_TRY(auto result, GetBBoxes(prep_res, infer_res));
     return to_value(result);
@@ -130,8 +130,8 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
 
   Detections objs;
   std::vector<float> scale_factor;
-  if (prep_res.contains("scale_factor")) {
-    from_value(prep_res["scale_factor"], scale_factor);
+  if (prep_res["img_metas"].contains("scale_factor")) {
+    from_value(prep_res["img_metas"]["scale_factor"], scale_factor);
   } else {
     scale_factor = {1.f, 1.f, 1.f, 1.f};
   }
@@ -143,14 +143,14 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
       continue;
     }
     int j = anchor_idxs[i];
-    int x1 = (int)(det_ptr[j * 4 + 0]);
-    int y1 = (int)(det_ptr[j * 4 + 1]);
-    int x2 = (int)(det_ptr[j * 4 + 2]);
-    int y2 = (int)(det_ptr[j * 4 + 3]);
+    auto x1 = det_ptr[j * 4 + 0];
+    auto y1 = det_ptr[j * 4 + 1];
+    auto x2 = det_ptr[j * 4 + 2];
+    auto y2 = det_ptr[j * 4 + 3];
     int label_id = label_ids[i];
     float score = probs[i];
 
-    MMDEPLOY_INFO("{}-th box: ({}, {}, {}, {}), {}, {}", i, x1, y1, x2, y2, label_id, score);
+    MMDEPLOY_DEBUG("{}-th box: ({}, {}, {}, {}), {}, {}", i, x1, y1, x2, y2, label_id, score);
 
     auto rect = MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0, ori_width, ori_height);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {

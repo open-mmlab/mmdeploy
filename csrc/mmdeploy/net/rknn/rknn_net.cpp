@@ -233,25 +233,20 @@ Result<void> RKNNNet::Forward() {
   }
 
   // Set input
-  MMDEPLOY_WARN("before rknn_inputs_set");
   int ret = rknn_inputs_set(ctx_, input_tensors_.size(), inputs.data());
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_input_set fail! ret= {}", ret);
     return Status(eFail);
   }
-  MMDEPLOY_WARN("after rknn_inputs_set");
 
   // Forward
-  MMDEPLOY_WARN("before rknn_run");
   ret = rknn_run(ctx_, NULL);
   if (ret < 0) {
     MMDEPLOY_ERROR("rknn_run fail! ret={}", ret);
     return Status(eFail);
   }
-  MMDEPLOY_WARN("after rknn_run");
 
   // Get output
-  MMDEPLOY_WARN("before rknn_outputs_get");
   std::vector<rknn_output> outputs(output_tensors_.size());
   for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
     outputs[i].want_float = 1;
@@ -265,7 +260,6 @@ Result<void> RKNNNet::Forward() {
     MMDEPLOY_ERROR("rknn_outputs_get fail! ret= {}", ret);
     return Status(eFail);
   }
-  MMDEPLOY_WARN("after rknn_outputs_get");
 
   OUTCOME_TRY(stream_.Wait());
   return success();
