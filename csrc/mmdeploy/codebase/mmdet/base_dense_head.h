@@ -7,9 +7,9 @@
 
 namespace mmdeploy::mmdet {
 
-class SSDHead : public MMDetection {
+class BaseDenseHead : public MMDetection {
  public:
-  explicit SSDHead(const Value& cfg);
+  explicit BaseDenseHead(const Value& cfg);
 
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   Result<Detections> GetBBoxes(const Value& prep_res, const Value& infer_res) const;

@@ -1,4 +1,4 @@
-#include "ssd_head.h"
+#include "base_dense_head.h"
 
 #include <numeric>
 
@@ -8,7 +8,7 @@
 
 namespace mmdeploy::mmdet {
 
-SSDHead::SSDHead(const Value& cfg) : MMDetection(cfg) {
+BaseDenseHead::BaseDenseHead(const Value& cfg) : MMDetection(cfg) {
   auto init = [&]() -> Result<void> {
     auto model = cfg["context"]["model"].get<Model>();
     //    OUTCOME_TRY(auto str_priors, model.ReadFile("box_priors.txt"));
@@ -27,7 +27,7 @@ SSDHead::SSDHead(const Value& cfg) : MMDetection(cfg) {
   init().value();
 }
 
-Result<Value> SSDHead::operator()(const Value& prep_res, const Value& infer_res) {
+Result<Value> BaseDenseHead::operator()(const Value& prep_res, const Value& infer_res) {
   MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     OUTCOME_TRY(auto result, GetBBoxes(prep_res, infer_res));
@@ -37,7 +37,9 @@ Result<Value> SSDHead::operator()(const Value& prep_res, const Value& infer_res)
   }
 }
 
-Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_res) const {
+Result<Detections> BaseDenseHead::GetBBoxes(const Value& prep_res, const Value& infer_res) const {
+  Detections objs;
+  return objs;
   auto dets = infer_res["dets"].get<Tensor>();
   auto scores = infer_res["labels"].get<Tensor>();
 
@@ -54,7 +56,7 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
 
   NMS(dets, iou_threshold_, anchor_idxs);
 
-  Detections objs;
+
   std::vector<float> scale_factor;
   if (prep_res["img_metas"].contains("scale_factor")) {
     from_value(prep_res["img_metas"]["scale_factor"], scale_factor);
@@ -95,6 +97,6 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
   return objs;
 }
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, SSDHead);
+REGISTER_CODEBASE_COMPONENT(MMDetection, BaseDenseHead);
 
 }  // namespace mmdeploy::mmdet
