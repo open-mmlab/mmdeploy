@@ -28,6 +28,7 @@ function getFullName() {
     if [ "$codebase_" = "mmpose" ]; then codebase_fullname="mmpose"; fi
     if [ "$codebase_" = "mmrotate" ]; then codebase_fullname="mmrotate"; fi
     if [ "$codebase_" = "mmseg" ]; then codebase_fullname="mmsegmentation"; fi
+    if [ "$codebase_" = "mmaction" ]; then codebase_fullname="mmaction2"; fi
 }
 
 
@@ -35,7 +36,7 @@ function getFullName() {
 export codebase=$1
 export performance=$2
 export TENSORRT_VERSION=$3
-export REQUIREMENT=$4 
+export REQUIREMENT=$4
 
 if [[ "${performance}" == "y" ]]; then
     export exec_performance="-p"
@@ -59,13 +60,13 @@ if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
     TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
     cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/
-    cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/ 
+    cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/
 fi
 
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 
-for TORCH_VERSION in 1.11.0; do
+for TORCH_VERSION in 1.10.0 1.11.0 1.12.0; do
     conda activate torch${TORCH_VERSION}
     if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
         pip install /root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl

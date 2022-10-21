@@ -28,5 +28,10 @@
         "branch": "1.x",
         "version": "mmedit>=1.0.0rc1",
         "mmcv": "mmcv>=2.0.0rc1"
+    },
+    "mmaction2": {
+        "branch": "1.x",
+        "version": "mmaction2>=1.0.0rc1",
+        "mmcv": "mmcv>=2.0.0rc1"
     }
 }
