@@ -151,10 +151,10 @@ docker build ./tests/jenkins/docker/mmdeploy-ci-${OS}-${OS_Version}-${CUDA_Versi
 在执行机上build镜像
 
 ## step2
-连接至执行机，进行mmdeploy目录，执行test_${Job_Type}.sh脚本并传入参数，以执行mmdet mmcls在mmdeploy-ci-ubuntu-20.04-cu113的convert任务为例
+连接至执行机，进行mmdeploy目录，执行test_${Job_Type}.sh脚本并传入配置文件参数，未指定配置文件时默认使用default.config
 ```shell
 cd the/path/mmdeploy
-./tests/jenkins/scripts/test_convert mmdeploy-ci-ubuntu-20.04-cu113 'mmdet mmcls'
+./tests/jenkins/scripts/test_convert tmp.config
 ```
 ## step3
 shell返回container='xxx'，任务开始运行

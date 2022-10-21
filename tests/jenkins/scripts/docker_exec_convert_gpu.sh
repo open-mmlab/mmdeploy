@@ -33,13 +33,16 @@ function getFullName() {
 
 ## parameters
 export codebase=$1
-export exec_performance=$2
+export performance=$2
 export TENSORRT_VERSION=$3
 export REQUIREMENT=$4 
 
-if [[ "$exec_performance" != "-p" ]]; then
+if [[ "${performance}" == "y" ]]; then
+    export exec_performance="-p"
+else 
     export exec_performance=""
 fi
+
 getFullName $codebase
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
