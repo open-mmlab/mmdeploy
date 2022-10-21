@@ -2,6 +2,7 @@
 
 #include "transform.h"
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 
@@ -34,6 +35,8 @@ std::vector<std::string> TransformImpl::GetImageFields(const Value &input) {
 
 Transform::Transform(const Value &args) {
   Device device{"cpu"};
+  pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+  node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
   if (args.contains("context")) {
     device = args["context"].value("device", device);
     bool fuse_transform = args["context"].value("fuse_transform", false);

@@ -9,6 +9,7 @@
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/net.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/utils/scope_counter.h"
@@ -196,9 +197,13 @@ NetModule::~NetModule() = default;
 
 NetModule::NetModule(NetModule&&) noexcept = default;
 
-NetModule::NetModule(const Value& args) : impl_(std::make_unique<Impl>(args)) {}
+NetModule::NetModule(const Value& args) : impl_(std::make_unique<Impl>(args)) {
+  pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+  node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
+}
 
 Result<Value> NetModule::operator()(const Value& input) {
+  auto profiler = TimeProfiler(pipeline_id_, node_id_, "Net");
   auto filter = [](const Value& sample) {
     Impl::Input tensors;
     for (auto it = sample.begin(); it != sample.end(); ++it) {

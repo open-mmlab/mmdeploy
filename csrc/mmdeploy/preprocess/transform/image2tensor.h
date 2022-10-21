@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_IMAGE2TENSOR_H
 #define MMDEPLOY_IMAGE2TENSOR_H
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
@@ -39,7 +40,10 @@ class MMDEPLOY_API ImageToTensor : public Transform {
   explicit ImageToTensor(const Value& args, int version = 0);
   ~ImageToTensor() override = default;
 
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
+  Result<Value> Process(const Value& input) override {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "ImageToTensor");
+    return impl_->Process(input);
+  }
 
  private:
   std::unique_ptr<ImageToTensorImpl> impl_;

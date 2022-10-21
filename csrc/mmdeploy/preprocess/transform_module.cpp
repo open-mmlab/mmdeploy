@@ -4,6 +4,7 @@
 
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/module.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 #include "mmdeploy/preprocess/transform/transform.h"
@@ -29,10 +30,13 @@ TransformModule::TransformModule(const Value& args) {
     cfg["context"]["device"] = device;
     cfg["context"]["stream"] = Stream::GetDefault(device);
   }
+  pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+  node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
   transform_ = creator->Create(cfg);
 }
 
 Result<Value> TransformModule::operator()(const Value& input) {
+  auto profiler = TimeProfiler(pipeline_id_, node_id_, "Transform");
   auto output = transform_->Process(input);
   if (!output) {
     MMDEPLOY_ERROR("error: {}", output.error().message().c_str());

@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
@@ -36,7 +37,10 @@ class MMDEPLOY_API Resize : public Transform {
   explicit Resize(const Value& args, int version = 0);
   ~Resize() override = default;
 
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
+  Result<Value> Process(const Value& input) override {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "Resize");
+    return impl_->Process(input);
+  }
 
  private:
   std::unique_ptr<ResizeImpl> impl_;

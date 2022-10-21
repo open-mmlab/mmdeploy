@@ -5,6 +5,7 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/model.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
@@ -34,6 +35,8 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
 
   auto pipeline_config = from_json<Value>(json);
   pipeline_config["context"] = context;
+  int build_id = BuilderContext::GetPipelineId(config_);
+  pipeline_config[PIPELINE_UID_KEY] = build_id;
 
   MMDEPLOY_INFO("{}", pipeline_config);
 

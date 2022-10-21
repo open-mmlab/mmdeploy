@@ -4,12 +4,14 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 
 Compose::Compose(const Value& args, int version) : Transform(args) {
   assert(args.contains("context"));
+  int pipeline_id = args[PIPELINE_UID_KEY].get<int>();
 
   Value context;
   context = args["context"];
@@ -22,6 +24,7 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
   }
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
+    cfg[PIPELINE_UID_KEY] = pipeline_id;
     auto type = cfg.value("type", std::string{});
     MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
     auto creator = Registry<Transform>::Get().GetCreator(type, version);
@@ -40,6 +43,7 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
 }
 
 Result<Value> Compose::Process(const Value& input) {
+  auto profiler = TimeProfiler(pipeline_id_, node_id_, "Compose");
   Value output = input;
   Value::Array intermediates;
   for (auto& transform : transforms_) {

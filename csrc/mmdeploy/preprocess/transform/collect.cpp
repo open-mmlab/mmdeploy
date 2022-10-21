@@ -4,6 +4,7 @@
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/profiler.h"
 
 namespace mmdeploy {
 
@@ -65,7 +66,10 @@ Collect::Collect(const Value &args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-Result<Value> Collect::Process(const Value &input) { return impl_->Process(input); }
+Result<Value> Collect::Process(const Value &input) {
+  auto profiler = TimeProfiler(pipeline_id_, node_id_, "Collect");
+  return impl_->Process(input);
+}
 
 class CollectCreator : public Creator<Transform> {
  public:

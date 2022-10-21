@@ -20,6 +20,8 @@ class NetModule {
  private:
   struct Impl;
   std::unique_ptr<Impl> impl_;
+  int pipeline_id_;
+  int node_id_;
 };
 
 }  // namespace mmdeploy::framework

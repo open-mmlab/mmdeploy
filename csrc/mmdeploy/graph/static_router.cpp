@@ -3,6 +3,7 @@
 #include "mmdeploy/graph/static_router.h"
 
 #include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/execution/schedulers/inlined_scheduler.h"
 #include "mmdeploy/graph/common.h"
 
@@ -112,6 +113,7 @@ Sender<Value> StaticRouter::Process(Sender<Value> args) {
 Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config) {
   try {
     auto pipeline = std::make_unique<StaticRouter>();
+    auto build_id = framework::BuilderContext::GetPipelineId(config);
 
     const auto& task_configs = config["tasks"];
     auto size = task_configs.size();
@@ -140,6 +142,7 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
       if (config.contains("context")) {
         update(task_config["context"].object(), config["context"].object(), 2);
       }
+      task_config[PIPELINE_UID_KEY] = build_id;
 
       OUTCOME_TRY(auto builder, Builder::CreateFromConfig(task_config));
       if (builder) {

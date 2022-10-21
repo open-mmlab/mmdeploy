@@ -3,6 +3,7 @@
 #include "mmdeploy/graph/task.h"
 
 #include "mmdeploy/core/operator.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
@@ -63,6 +64,8 @@ inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
 Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
+    int build_id = framework::BuilderContext::GetPipelineId(config_);
+    config_[PIPELINE_UID_KEY] = build_id;
     OUTCOME_TRY(task->module_, CreateModule(config_));
 
     if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {

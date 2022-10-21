@@ -5,6 +5,7 @@
 
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/experimental/module_adapter.h"
@@ -19,12 +20,16 @@ class Context {
     MMDEPLOY_DEBUG("config: {}", config);
     device_ = config["context"]["device"].get<Device>();
     stream_ = config["context"]["stream"].get<Stream>();
+    pipeline_id_ = config[PIPELINE_UID_KEY].get<int>();
+    node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
   }
 
   Device& device() { return device_; }
   Stream& stream() { return stream_; }
 
  protected:
+  int pipeline_id_;
+  int node_id_;
   Device device_;
   Stream stream_;
 };

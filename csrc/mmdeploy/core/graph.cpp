@@ -3,6 +3,7 @@
 #include "mmdeploy/core/graph.h"
 
 #include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/graph/common.h"
 #include "mmdeploy/graph/flattened.h"
@@ -96,11 +97,13 @@ Result<unique_ptr<Builder>> Builder::CreateFromConfig(const Value& config) {
   // MMDEPLOY_WARN("config: {}", config);
   auto type = config.value<string>("type", "");
   auto cfg = config;
+  auto build_id = config[PIPELINE_UID_KEY].get<int>();
   // backward compatibility
   if (type.empty()) {
     if (config.contains("pipeline")) {
       type = "Pipeline";
       cfg = config["pipeline"];
+      cfg[PIPELINE_UID_KEY] = build_id;
       if (config.contains("context")) {
         cfg["context"] = config["context"];
       }

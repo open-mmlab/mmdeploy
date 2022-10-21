@@ -62,6 +62,8 @@ class MMDEPLOY_API Transform : public Module {
   }
 
  protected:
+  int pipeline_id_;
+  int node_id_;
   std::string specified_platform_;
   std::string runtime_platform_;
   std::vector<std::string> candidate_platforms_;

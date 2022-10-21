@@ -6,6 +6,7 @@
 #include "common.h"
 #include "handle.h"
 #include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/value.h"
 #include "model.h"
 #include "pipeline.h"
@@ -90,7 +91,7 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
   T release() noexcept { return std::exchange(v_, nullptr); }
 
   auto operator*() { return Cast(v_); }
-  auto operator-> () { return Cast(v_); }
+  auto operator->() { return Cast(v_); }
 
   T* ptr() noexcept { return &v_; }
 
@@ -99,6 +100,8 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
  private:
   T v_;
 };
+
+inline int mmdeploy_pipeline_uid(const Value& cfg) { return BuilderContext::GetPipelineId(cfg); }
 
 }  // namespace
 

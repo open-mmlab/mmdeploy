@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_NORMALIZE_H
 #define MMDEPLOY_NORMALIZE_H
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
@@ -33,7 +34,10 @@ class MMDEPLOY_API Normalize : public Transform {
   explicit Normalize(const Value& args, int version = 0);
   ~Normalize() override = default;
 
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
+  Result<Value> Process(const Value& input) override {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "Normalize");
+    return impl_->Process(input);
+  }
 
  private:
   std::unique_ptr<NormalizeImpl> impl_;

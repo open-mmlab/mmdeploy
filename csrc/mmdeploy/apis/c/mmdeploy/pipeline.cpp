@@ -16,6 +16,8 @@ int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t cont
       }
       update(_config["context"].object(), Cast(context)->object(), 2);
     }
+    auto uid = mmdeploy_pipeline_uid(_config);
+    _config[PIPELINE_UID_KEY] = uid;
     auto _handle = std::make_unique<AsyncHandle>(std::move(_config));
     *pipeline = Cast(_handle.release());
     return MMDEPLOY_SUCCESS;

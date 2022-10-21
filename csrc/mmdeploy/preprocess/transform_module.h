@@ -18,6 +18,8 @@ class TransformModule {
   Result<Value> operator()(const Value& input);
 
  private:
+  int pipeline_id_;
+  int node_id_;
   std::unique_ptr<Transform> transform_;
 };
 

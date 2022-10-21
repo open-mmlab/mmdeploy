@@ -37,6 +37,7 @@ set(SRCS
         tensor.cpp
         registry.cpp
         graph.cpp
+        profiler.cpp
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp
