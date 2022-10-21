@@ -40,7 +40,7 @@ export REQUIREMENT=$4
 
 if [[ "${performance}" == "y" ]]; then
     export exec_performance="-p"
-else 
+else
     export exec_performance=""
 fi
 

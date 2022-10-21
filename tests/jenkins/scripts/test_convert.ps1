@@ -58,7 +58,7 @@ $codebase_fullname_opt = @{
 conda activate mmdeploy-3.7-$env:CUDA_VERSION
 
 #opencv
-$env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path 
+$env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
 
@@ -150,7 +150,7 @@ $handles = foreach ($codebase in $codebase_list -split ' ')
     $threads += $powershell
 }
 
-do { 
+do {
   $i = 0
   $done = $true
   foreach ($handle in $handles) {
@@ -163,7 +163,7 @@ do {
         $done = $false
       }
     }
-    $i++ 
+    $i++
   }
   if (-not $done) { Start-Sleep -Milliseconds 1000 }
 } until ($done)

@@ -37,7 +37,7 @@ function SwitchCudaVersion() {
     )
     if ($cuda_version -eq "cu111") {
         $cuda = "11.1"
-        Write-Host "swtich cuda version to cu111"
+        Write-Host "switch cuda version to cu111"
         $env:CUDA_PATH="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1"
         $env:CUDA_PATH_V11_3=$null
         $env:CUDA_PATH_V11_1="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1"
@@ -48,7 +48,7 @@ function SwitchCudaVersion() {
         Copy-Item -Path $new -Destination $MS_EXT
     } elseif ($cuda_version -eq "cu113") {
         $cuda = "11.3"
-        Write-Host "swtich cuda version to cu113"
+        Write-Host "switch cuda version to cu113"
         $env:CUDA_PATH="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3"
         $env:CUDA_PATH_V11_1=$null
         $env:CUDA_PATH_V11_3="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3"

@@ -58,7 +58,7 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1
     cd cmake-3.24.1 && \
     ./bootstrap && \
     make && \
-    make install 
+    make install
 
 ### install miniconda
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
@@ -69,7 +69,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda clean -ya
 
 ### change the pip source
-RUN /opt/conda/bin/pip config set global.index-url https://mirrors.aliyun.com/pypi/simple 
+RUN /opt/conda/bin/pip config set global.index-url https://mirrors.aliyun.com/pypi/simple
 
 ENV PATH=/opt/conda/bin:$PATH
 
@@ -125,13 +125,13 @@ RUN git clone --depth 1 --branch ${NCNN_VERSION} --recursive https://github.com/
     cd $NCNN_DIR/python &&\
     /opt/conda/bin/pip install -e .
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
-ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH 
+ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 
 ### install ppl.cv
 RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git  &&\
     cd ppl.cv &&\
     ./build.sh cuda
-    
+
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install tensorrt
@@ -153,4 +153,3 @@ RUN /opt/conda/bin/conda init bash && \
     /opt/conda/envs/torch1.9.0/bin/pip install torch==1.9.0+cu${CUDA_INT} torchvision==0.10.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
     /opt/conda/bin/conda create --clone base -n torch1.10.0 -y && \
     /opt/conda/envs/torch1.10.0/bin/pip install torch==1.10.0+cu${CUDA_INT} torchvision==0.11.0+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
-  

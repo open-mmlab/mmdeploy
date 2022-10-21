@@ -2,23 +2,23 @@ pipeline {
     agent { label 'deploy_linux' }
     parameters {
         string(
-            name: 'CONFIG', 
-            defaultValue: 'default.config', 
+            name: 'CONFIG',
+            defaultValue: 'default.config',
             description: 'select config'
         )
         string(
-            name: 'CODEBASES', 
-            defaultValue: 'mmdet mmcls mmdet3d mmedit mmocr mmpose mmrotate mmseg', 
+            name: 'CODEBASES',
+            defaultValue: 'mmdet mmcls mmdet3d mmedit mmocr mmpose mmrotate mmseg',
             description: 'select codebase'
         )
         choice(
-            name: 'DOCKER_IMAGE', 
+            name: 'DOCKER_IMAGE',
             choices: [
-                'mmdeploy-ci-ubuntu-18.04', 
+                'mmdeploy-ci-ubuntu-18.04',
                 'mmdeploy-ci-ubuntu-18.04-cu102',
                 'mmdeploy-ci-ubuntu-20.04-cu111',
                 'mmdeploy-ci-ubuntu-20.04-cu113'
-            ], 
+            ],
             description: 'Pick env'
         )
         string(
@@ -67,7 +67,7 @@ pipeline {
                         sh "tests/jenkins/scripts/test_convert.sh '${params.CONFIG}'"
                     }
                 }
-                
+
                 stage('Prebuild') {
                     agent { label 'deploy_linux' }
                     when {

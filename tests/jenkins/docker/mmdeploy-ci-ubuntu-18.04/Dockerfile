@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.8
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.2
 ARG NCNN_VERSION=20220721
-ARG OPENCV_VERSION==4.5.5.62 
+ARG OPENCV_VERSION==4.5.5.62
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 
@@ -83,7 +83,7 @@ RUN git clone --recursive https://github.com/Tencent/ncnn.git &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DCMAKE_INSTALL_PREFIX=$NCNN_DIR/install .. &&\
     make -j $(nproc) && make install &&\
     cd $NCNN_DIR/python &&\
-    /opt/conda/bin/pip install -e . 
+    /opt/conda/bin/pip install -e .
 
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
 ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
@@ -92,7 +92,7 @@ ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 RUN git clone --recursive https://github.com/openppl-public/ppl.nn.git &&\
     cd ppl.nn &&\
     git checkout tags/v${PPLNN_VERSION} -b ${PPLNN_VERSION} &&\
-    bash build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_ENABLE_PYTHON_API=ON -DCMAKE_INSTALL_PREFIX=$(pwd)/install 
+    bash build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_ENABLE_PYTHON_API=ON -DCMAKE_INSTALL_PREFIX=$(pwd)/install
 
 ENV pplnn_DIR=/root/workspace/ppl.nn/install/lib/cmake/ppl
 ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
@@ -105,7 +105,7 @@ RUN /opt/conda/bin/conda init bash && \
     do \
         /opt/conda/bin/conda create --name torch${TORCH_VERSION_LIST[$i]} --clone base -y; \
         /opt/conda/bin/conda run -n torch${TORCH_VERSION_LIST[$i]} /opt/conda/envs/torch${TORCH_VERSION_LIST[$i]}/bin/pip install torch==${TORCH_VERSION_LIST[$i]}+cpu torchvision==${TORCHVISION_VERSION_LIST[$i]}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html; \
-    done 
+    done
     # PYTHON_VERSION=(3.6 3.7 3.8 3.9) && \
     # for i in `seq 0 3`; \
     # do \

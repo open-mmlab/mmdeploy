@@ -33,5 +33,5 @@ python ./tools/regression_test.py `
     --work-dir $log_dir `
     $exec_performance
 if ($LASTEXITCODE -ne 0) {
-    throw "regression_test faild"
+    throw "regression_test failed"
 }
