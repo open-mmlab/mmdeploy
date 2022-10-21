@@ -12,6 +12,21 @@
 
 namespace mmdeploy {
 
+mmdeploy::DataType IPUNet::ipu_type_convert(const popef::DataType& ipu_type) {
+  mmdeploy::DataType mtype;
+  if (ipu_type == popef::DataType::F32) {
+    mtype = mmdeploy::DataType::kFLOAT;
+  } else if (ipu_type == popef::DataType::F16) {
+    mtype = mmdeploy::DataType::kHALF;
+  } else if (ipu_type == popef::DataType::F8) {
+    mtype = mmdeploy::DataType::kINT8;
+  } else {
+    throw std::invalid_argument(
+        "invalid data type for IPU backend, current legit is : fp32, fp16, fp8");
+  }
+  return mtype;
+}
+
 void IPUNet::copy_output(const model_runtime::TensorMemory& from, Tensor& to) {
   if (from.data_size_bytes != to.byte_size()) {
     MMDEPLOY_ERROR("output tensor size not match from size {} to size {}", from.data_size_bytes,
@@ -78,10 +93,13 @@ Result<void> IPUNet::Init(const Value& args) {
 
   for (int i = 0; i < input_desc.size(); i++) {
     auto desc = input_desc[i];
+    MMDEPLOY_INFO("input desc dtype {} ", desc.data_type);
+
+    mmdeploy::DataType dtype = ipu_type_convert(desc.data_type);
 
     input_tensors_.emplace_back(TensorDesc{
         Device("cpu"),
-        DataType::kFLOAT,
+        dtype,
         desc.shape,
         desc.name,
     });
@@ -89,10 +107,12 @@ Result<void> IPUNet::Init(const Value& args) {
 
   for (int i = 0; i < output_desc.size(); i++) {
     auto desc = output_desc[i];
+    MMDEPLOY_INFO("output desc dtype {} ", desc.data_type);
+    mmdeploy::DataType dtype = ipu_type_convert(desc.data_type);
 
     output_tensors_.emplace_back(TensorDesc{
         Device("cpu"),
-        DataType::kFLOAT,
+        dtype,
         desc.shape,
         desc.name,
     });

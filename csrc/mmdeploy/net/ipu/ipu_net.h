@@ -31,6 +31,8 @@ class IPUNet : public Net {
   void copy_output(const model_runtime::TensorMemory& from, Tensor& to);
   void copy_input(const Tensor& from, model_runtime::TensorMemory& to);
 
+  mmdeploy::DataType ipu_type_convert(const popef::DataType& ipu_type);
+
  private:
   model_runtime::ModelRunnerConfig mconfig;
   std::unique_ptr<model_runtime::ModelRunner> model_runner;

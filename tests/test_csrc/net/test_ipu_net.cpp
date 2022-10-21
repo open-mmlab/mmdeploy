@@ -32,19 +32,19 @@ TEST_CASE("test ipu net", "[net]") {
   // {"name", model.meta().models[0].name},
   Value net_config{
       {"popef_path",
-       "/localdata/cn-customer-engineering/qiangg/cache_poptorch/5299458688024344947.popef"}};
+       "/localdata/cn-customer-engineering/qiangg/mmdeploy_repo/mmdeploy/build/resnet50.popef"}};
   auto net = creator->Create(net_config);
   // auto net = mmdeploy::IPUNet();
   // auto init_result = net.Init(net_config);
   // REQUIRE(init_result);
   // MMDEPLOY_INFO("created net ipu test");
   REQUIRE(net);
-  // auto result = net->Forward();
-  // if (result) {
-  //   MMDEPLOY_INFO("ipu test result success");
-  // } else {
-  //   MMDEPLOY_INFO("ipu test result failed");
-  // }
+  auto result = net->Forward();
+  if (result) {
+    MMDEPLOY_INFO("ipu test result success");
+  } else {
+    MMDEPLOY_INFO("ipu test result failed");
+  }
 
-  // REQUIRE(result);
+  REQUIRE(result);
 }
