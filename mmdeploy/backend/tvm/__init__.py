@@ -28,9 +28,10 @@ def get_library_ext() -> str:
 
 if is_available():
     from .onnx2tvm import from_onnx
+    from .quantize import HDF5Dataset
     from .tuner import build_tvm_tuner
 
-    __all__ = ['from_onnx', 'build_tvm_tuner']
+    __all__ = ['from_onnx', 'build_tvm_tuner', 'HDF5Dataset']
 
     try:
         # import wrapper if pytorch is available

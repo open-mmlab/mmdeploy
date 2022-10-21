@@ -1,8 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
 import onnx
 from tvm.relay.frontend import from_onnx as relay_from_onnx
+from tvm.relay.quantize import QConfig
+from tvm.relay.quantize import qconfig as create_qconfig
+from tvm.relay.quantize import quantize
 from tvm.target import Target
 
 from mmdeploy.utils import get_root_logger
@@ -15,7 +18,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               bytecode_file: str = '',
               shape: Optional[Dict] = None,
               dtype: Union[str, Dict] = 'float32',
-              tuner: Optional[Union[TVMTunerBase, Dict]] = None):
+              tuner: Optional[Union[TVMTunerBase, Dict]] = None,
+              qconfig: Optional[Union[QConfig, Dict]] = None,
+              dataset: Optional[Callable] = None):
     """Convert ONNX model to tvm lib.
 
     Args:
@@ -59,6 +64,16 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     logger.info('Convert onnx to IRModule.')
     mod, params = relay_from_onnx(onnx_model, shape, dtype=dtype, opset=11)
+
+    # quantization
+    if qconfig is not None:
+        logger.info('Quantization')
+
+        if isinstance(qconfig, Dict):
+            qconfig = create_qconfig(**qconfig)
+
+        with qconfig:
+            mod = quantize(mod, params, dataset)
 
     if tuner is None:
         # use default tuner

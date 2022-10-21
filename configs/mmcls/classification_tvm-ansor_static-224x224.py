@@ -8,5 +8,5 @@ backend_config = dict(model_inputs=[
         tuner=dict(
             type='AutoScheduleTuner',
             log_file='tvm_tune_log.log',
-            num_measure_trials=20000))
+            num_measure_trials=2000))
 ])

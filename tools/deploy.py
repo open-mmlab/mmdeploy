@@ -436,6 +436,20 @@ def main():
             model_input['output_file'] = lib_path
             model_input['onnx_model'] = onnx_path
             model_input['bytecode_file'] = code_path
+
+            # create calibration dataset
+            if 'qconfig' in model_input:
+                calib_path = osp.join(args.work_dir, calib_filename)
+                from mmdeploy.backend.tvm import HDF5Dataset
+                partition_type = 'end2end' if partition_cfgs is None \
+                    else onnx_name
+                dataset = HDF5Dataset(
+                    calib_path,
+                    model_input['shape'],
+                    model_type=partition_type,
+                    device=target)
+                model_input['dataset'] = dataset()
+
             from_onnx(**model_input)
 
             tvm_files += [lib_path, code_path]
