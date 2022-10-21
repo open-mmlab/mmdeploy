@@ -11,6 +11,8 @@ tree
 │   ├── jenkins.config
 │   ├── tmp.config
 │   └── win_default.config
+│   ├── requirementV1.0.json
+│   └── requirementV2.0.json
 ├── docker
 │   ├── mmdeploy-ci-ubuntu-18.04
 │   │   └── Dockerfile
@@ -54,6 +56,7 @@ tree
 - mmdeploy的分支
 - mmdeploy仓库的地址
 - tensorrt版本
+- 指定算法库的分支和依赖
 
 ## docker
 存放Dockerfile文件位置，命名方式为：
