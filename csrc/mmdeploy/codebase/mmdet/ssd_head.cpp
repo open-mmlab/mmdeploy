@@ -1,21 +1,12 @@
 #include "ssd_head.h"
 
 #include <numeric>
-#include <sstream>
 
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "utils.h"
 
 namespace mmdeploy::mmdet {
-
-template <typename T>
-void debug_vector(std::vector<T>& data) {
-  for (auto d : data) {
-    std::cout << d << ", ";
-  }
-  std::cout << std::endl;
-}
 
 void SSDHead::FilterScoresAndTopk(Tensor& scores, float score_thr, int topk,
                                   std::vector<float>& probs, std::vector<int>& label_ids,
@@ -33,11 +24,6 @@ void SSDHead::FilterScoresAndTopk(Tensor& scores, float score_thr, int topk,
     probs.push_back(*iter);
     label_ids.push_back(iter - score_ptr);
     anchor_idxs.push_back(i);
-  }
-  // Debug result
-  for (int i = 0; i < probs.size(); ++i) {
-    std::cout << "box " << anchor_idxs[i] << ", label: " << label_ids[i] << ", score: " << probs[i]
-              << std::endl;
   }
 }
 
@@ -78,12 +64,11 @@ void SSDHead::NMS(Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs
   }
 }
 
-void SSDHead::Sort(std::vector<float>& probs,
-                   std::vector<int>& label_ids, std::vector<int>& anchor_idxs) {
+void SSDHead::Sort(std::vector<float>& probs, std::vector<int>& label_ids,
+                   std::vector<int>& anchor_idxs) {
   std::vector<int> prob_idxs(probs.size());
   std::iota(prob_idxs.begin(), prob_idxs.end(), 0);
-  std::sort(prob_idxs.begin(), prob_idxs.end(),
-            [&](int i, int j) { return probs[i] > probs[j]; });
+  std::sort(prob_idxs.begin(), prob_idxs.end(), [&](int i, int j) { return probs[i] > probs[j]; });
   std::vector<float> _probs;
   std::vector<int> _label_ids;
   std::vector<int> _keep_idxs;
@@ -95,13 +80,6 @@ void SSDHead::Sort(std::vector<float>& probs,
   probs = std::move(_probs);
   label_ids = std::move(_label_ids);
   anchor_idxs = std::move(_keep_idxs);
-
-  // Debug result
-  std::cout << "after sort: size " << prob_idxs.size() << std::endl;
-  for (int i = 0; i < probs.size(); ++i) {
-    std::cout << "box " << anchor_idxs[i] << ", label: " << label_ids[i] << ", score: " << probs[i]
-              << std::endl;
-  }
 }
 
 SSDHead::SSDHead(const Value& cfg) : MMDetection(cfg) {
@@ -144,17 +122,11 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
   std::vector<int> label_ids;
   std::vector<int> anchor_idxs;
 
-  MMDEPLOY_INFO("before FilterScoresAndTopk ...");
   FilterScoresAndTopk(scores, score_thr_, nms_pre_, probs, label_ids, anchor_idxs);
-  MMDEPLOY_INFO("after FilterScoresAndTopk ...");
 
-  MMDEPLOY_INFO("before sort ...");
   Sort(probs, label_ids, anchor_idxs);
-  MMDEPLOY_INFO("after sort ...");
 
-  MMDEPLOY_INFO("before nms ...");
   NMS(dets, iou_threshold_, anchor_idxs);
-  MMDEPLOY_INFO("after nms ...");
 
   Detections objs;
   std::vector<float> scale_factor;
@@ -180,8 +152,7 @@ Result<Detections> SSDHead::GetBBoxes(const Value& prep_res, const Value& infer_
 
     MMDEPLOY_INFO("{}-th box: ({}, {}, {}, {}), {}, {}", i, x1, y1, x2, y2, label_id, score);
 
-    auto rect = MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0,
-                                 ori_width, ori_height);
+    auto rect = MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0, ori_width, ori_height);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
       MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
                      rect[3] - rect[1]);

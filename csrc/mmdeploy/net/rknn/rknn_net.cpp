@@ -230,21 +230,6 @@ Result<void> RKNNNet::Forward() {
     input.buf = input_tensors_[i].data();
     input.size = input_attrs_[i].size;
     inputs.push_back(input);
-
-    // ++ debug input data
-    MMDEPLOY_INFO("tensor[{}].shape: {}", i, input_tensors_[i].shape());
-    auto c = input_tensors_[i].shape(3);
-    auto h = input_tensors_[i].shape(1);
-    auto w = input_tensors_[i].shape(2);
-    // print data in the first channel
-    auto data_ptr = input_tensors_[i].data<uint8_t>();
-    for (int i = 0; i < 100; ++i) {
-      for (int j = 0; j < 1; ++j) {
-        printf("(%d,%d,%d) ", data_ptr[i * w], data_ptr[i * w + 1], data_ptr[i * w + 2]);
-      }
-      printf("\n");
-    }
-    // -- debug input data
   }
 
   // Set input
@@ -282,9 +267,7 @@ Result<void> RKNNNet::Forward() {
   }
   MMDEPLOY_WARN("after rknn_outputs_get");
 
-  MMDEPLOY_WARN("before stream_.Wait()");
   OUTCOME_TRY(stream_.Wait());
-  MMDEPLOY_WARN("after stream_.Wait()");
   return success();
 }
 
