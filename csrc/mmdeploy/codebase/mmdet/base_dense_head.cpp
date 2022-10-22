@@ -38,8 +38,6 @@ Result<Value> BaseDenseHead::operator()(const Value& prep_res, const Value& infe
 }
 
 Result<Detections> BaseDenseHead::GetBBoxes(const Value& prep_res, const Value& infer_res) const {
-  Detections objs;
-  return objs;
   auto dets = infer_res["dets"].get<Tensor>();
   auto scores = infer_res["labels"].get<Tensor>();
 
@@ -56,7 +54,7 @@ Result<Detections> BaseDenseHead::GetBBoxes(const Value& prep_res, const Value& 
 
   NMS(dets, iou_threshold_, anchor_idxs);
 
-
+  Detections objs;
   std::vector<float> scale_factor;
   if (prep_res["img_metas"].contains("scale_factor")) {
     from_value(prep_res["img_metas"]["scale_factor"], scale_factor);
