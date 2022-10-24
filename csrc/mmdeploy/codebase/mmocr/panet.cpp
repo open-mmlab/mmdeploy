@@ -47,6 +47,7 @@ class PANHead : public MMOCR {
   }
 
   Result<Value> operator()(const Value& _data, const Value& _pred) noexcept {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "PANHead");
     OUTCOME_TRY(auto pred, MakeAvailableOnDevice(_pred["output"].get<Tensor>(), device_, stream_));
     OUTCOME_TRY(stream_.Wait());
 

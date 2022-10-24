@@ -4,6 +4,7 @@
 
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/module.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
@@ -16,6 +17,11 @@ namespace mmdeploy {
 // Warp rotated rect
 class WarpBbox {
  public:
+  explicit WarpBbox(const Value& args) {
+    pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+    node_id_ = framework::BuilderContext::GetNextNodeId(pipeline_id_);
+  }
+
   Result<Value> operator()(const Value& img, const Value& det) {
     auto ori_img = img["ori_img"].get<framework::Mat>();
     if (det.is_object() && det.contains("bbox")) {
@@ -62,12 +68,18 @@ class WarpBbox {
     rotate(begin(ps), begin(ps) + tl_idx, end(ps));
     return ps;
   }
+
+ private:
+  int pipeline_id_;
+  int node_id_;
 };
 
 class WarpBboxCreator : public Creator<Module> {
  public:
   const char* GetName() const override { return "WarpBbox"; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(WarpBbox{}); }
+  std::unique_ptr<Module> Create(const Value& value) override {
+    return CreateTask(WarpBbox(value));
+  }
 };
 
 REGISTER_MODULE(Module, WarpBboxCreator);

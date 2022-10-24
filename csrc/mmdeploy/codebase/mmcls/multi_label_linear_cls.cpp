@@ -18,6 +18,7 @@ class MultiLabelLinearClsHead : public MMClassification {
   explicit MultiLabelLinearClsHead(const Value& cfg) : MMClassification(cfg) {}
   Result<Value> operator()(const Value& infer_res) {
     MMDEPLOY_DEBUG("infer_res: {}", infer_res);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "MultiLabelLinearClsHead");
     auto output = infer_res["output"].get<Tensor>();
 
     if (!(output.shape().size() >= 2 && output.data_type() == DataType::kFLOAT)) {

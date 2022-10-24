@@ -45,6 +45,7 @@ class DBHead : public MMOCR {
   }
 
   Result<Value> operator()(const Value& _data, const Value& _prob) const {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "DBHead");
     auto conf = _prob["output"].get<Tensor>();
     if (!(conf.shape().size() == 4 && conf.data_type() == DataType::kFLOAT)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}, dtype: {}", conf.shape(),

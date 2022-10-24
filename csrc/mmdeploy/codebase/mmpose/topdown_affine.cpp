@@ -27,6 +27,8 @@ cv::Point2f operator*(cv::Point2f a, cv::Point2f b) {
 class TopDownAffineImpl : public Module {
  public:
   explicit TopDownAffineImpl(const Value& args) noexcept {
+    pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+    node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
     use_udp_ = args.value("use_udp", use_udp_);
     backend_ = args.contains("backend") && args["backend"].is_string()
                    ? args["backend"].get<string>()
@@ -163,6 +165,8 @@ class TopDownAffineImpl : public Module {
   }
 
  protected:
+  int pipeline_id_;
+  int node_id_;
   bool use_udp_{false};
   vector<int> image_size_;
   std::string backend_;

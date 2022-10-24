@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_DEFAULT_FORMAT_BUNDLE_H
 #define MMDEPLOY_DEFAULT_FORMAT_BUNDLE_H
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
@@ -36,7 +37,10 @@ class MMDEPLOY_API DefaultFormatBundle : public Transform {
   explicit DefaultFormatBundle(const Value& args, int version = 0);
   ~DefaultFormatBundle() override = default;
 
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
+  Result<Value> Process(const Value& input) override {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "DefaultFormatBundle");
+    return impl_->Process(input);
+  }
 
  private:
   std::unique_ptr<DefaultFormatBundleImpl> impl_;

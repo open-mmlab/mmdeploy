@@ -27,6 +27,7 @@ class ResizeMask : public MMSegmentation {
 
   Result<Value> operator()(const Value &preprocess_result, const Value &inference_result) {
     MMDEPLOY_DEBUG("preprocess: {}\ninference: {}", preprocess_result, inference_result);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "ResizeMask");
 
     auto mask = inference_result["output"].get<Tensor>();
     MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),

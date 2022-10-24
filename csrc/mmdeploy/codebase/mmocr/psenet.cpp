@@ -44,6 +44,7 @@ class PSEHead : public MMOCR {
   }
 
   Result<Value> operator()(const Value& _data, const Value& _pred) noexcept {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "PSEHead");
     auto _preds = _pred["output"].get<Tensor>();
     if (_preds.shape().size() != 4 || _preds.shape(0) != 1 ||
         _preds.data_type() != DataType::kFLOAT) {

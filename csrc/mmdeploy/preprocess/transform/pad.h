@@ -5,6 +5,7 @@
 
 #include <array>
 
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/tensor.h"
 #include "transform.h"
 
@@ -41,7 +42,10 @@ class MMDEPLOY_API Pad : public Transform {
   explicit Pad(const Value& args, int version = 0);
   ~Pad() override = default;
 
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
+  Result<Value> Process(const Value& input) override {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "Pad");
+    return impl_->Process(input);
+  }
 
  protected:
   std::unique_ptr<PadImpl> impl_;

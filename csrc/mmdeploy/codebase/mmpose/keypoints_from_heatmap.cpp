@@ -51,6 +51,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
   Result<Value> operator()(const Value& _data, const Value& _prob) {
     MMDEPLOY_DEBUG("preprocess_result: {}", _data);
     MMDEPLOY_DEBUG("inference_result: {}", _prob);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "TopdownHeatmapBaseHeadDecode");
 
     Device cpu_device{"cpu"};
     OUTCOME_TRY(auto heatmap,

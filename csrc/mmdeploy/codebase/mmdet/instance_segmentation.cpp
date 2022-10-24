@@ -20,6 +20,7 @@ class ResizeInstanceMask : public ResizeBBox {
   // TODO: remove duplication
   Result<Value> operator()(const Value& prep_res, const Value& infer_res) {
     MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "ResizeInstanceMask");
     try {
       auto dets = infer_res["dets"].get<Tensor>();
       auto labels = infer_res["labels"].get<Tensor>();

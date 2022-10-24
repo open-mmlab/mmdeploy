@@ -66,6 +66,7 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
   MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  auto profiler = TimeProfiler(pipeline_id_, node_id_, "ResizeBBox");
   try {
     Tensor dets, labels;
     vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);

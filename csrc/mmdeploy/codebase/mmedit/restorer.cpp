@@ -13,6 +13,7 @@ class TensorToImg : public MMEdit {
   explicit TensorToImg(const Value& cfg) : MMEdit(cfg) {}
 
   Result<Value> operator()(const Value& input) {
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "TensorToImg");
     auto upscale = input["output"].get<Tensor>();
     OUTCOME_TRY(auto upscale_cpu, MakeAvailableOnDevice(upscale, kHOST, stream()));
     OUTCOME_TRY(stream().Wait());

@@ -27,6 +27,7 @@ class ResizeRBBox : public MMRotate {
   Result<Value> operator()(const Value& prep_res, const Value& infer_res) {
     MMDEPLOY_DEBUG("prep_res: {}", prep_res);
     MMDEPLOY_DEBUG("infer_res: {}", infer_res);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "ResizeRBBox");
 
     Device cpu_device{"cpu"};
     OUTCOME_TRY(auto dets,

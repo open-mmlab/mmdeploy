@@ -20,6 +20,8 @@ namespace mmdeploy {
 class ResizeOCRImpl : public Module {
  public:
   explicit ResizeOCRImpl(const Value& args) noexcept {
+    pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+    node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
     height_ = args.value("height", height_);
     min_width_ = args.contains("min_width") && args["min_width"].is_number_integer()
                      ? args["min_width"].get<int>()
@@ -40,6 +42,7 @@ class ResizeOCRImpl : public Module {
 
   Result<Value> Process(const Value& input) override {
     MMDEPLOY_DEBUG("input: {}", input);
+    auto profiler = TimeProfiler(pipeline_id_, node_id_, "ResizeOCR");
     auto dst_height = height_;
     auto dst_min_width = min_width_;
     auto dst_max_width = max_width_;
@@ -120,6 +123,8 @@ class ResizeOCRImpl : public Module {
   }
 
  protected:
+  int pipeline_id_;
+  int node_id_;
   int height_{-1};
   int min_width_{-1};
   int max_width_{-1};

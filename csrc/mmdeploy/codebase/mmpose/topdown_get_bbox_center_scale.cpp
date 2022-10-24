@@ -20,6 +20,8 @@ namespace mmdeploy {
 class TopDownGetBboxCenterScaleImpl : public TransformImpl {
  public:
   TopDownGetBboxCenterScaleImpl(const Value& args) : TransformImpl(args) {
+    pipeline_id_ = args[PIPELINE_UID_KEY].get<int>();
+    node_id_ = BuilderContext::GetNextNodeId(pipeline_id_);
     padding_ = args.value("padding", 1.25);
     assert(args.contains("image_size"));
     from_value(args["image_size"], image_size_);
@@ -63,6 +65,8 @@ class TopDownGetBboxCenterScaleImpl : public TransformImpl {
   }
 
  protected:
+  int pipeline_id_;
+  int node_id_;
   float padding_{1.25f};
   float pixel_std_{200.f};
   vector<int> image_size_;
