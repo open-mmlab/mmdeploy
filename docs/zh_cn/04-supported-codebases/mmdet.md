@@ -211,3 +211,4 @@ cv2.imwrite('output_detection.png', img)
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |
+|                  [SOLO](https://github.com/open-mmlab/mmdetection/tree/master/configs/solo)      | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |
