@@ -30,6 +30,7 @@ BaseDenseHead::BaseDenseHead(const Value& cfg) : MMDetection(cfg) {
 Result<Value> BaseDenseHead::operator()(const Value& prep_res, const Value& infer_res) {
   MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
+    OUTCOME_TRY(stream_.Wait());
     OUTCOME_TRY(auto result, GetBBoxes(prep_res, infer_res));
     return to_value(result);
   } catch (...) {
