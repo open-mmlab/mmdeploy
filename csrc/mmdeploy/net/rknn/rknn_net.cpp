@@ -149,19 +149,16 @@ Result<void> RKNNNet::Init(const Value& args) {
   MMDEPLOY_DEBUG("model input num: {}, output num: {}", io_num.n_input, io_num.n_output);
 
   auto get_tensor_shape = [](rknn_tensor_attr& attr) -> Result<TensorShape> {
-    //    OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
     TensorShape shape;
     for (int i = 0; i < attr.n_dims; ++i) {
       shape.push_back(attr.dims[i]);
     }
-    MMDEPLOY_INFO("shape {}", shape);
 #ifdef RK_MODELS
     //    return TensorDesc{device, data_type, shape, "#" + std::to_string(id)};
     return shape;
 #endif
 #ifdef RV_MODELS
     std::reverse(shape.begin(), shape.end());
-    MMDEPLOY_INFO("after reshape {}", shape);
     return shape;
 #endif
   };
@@ -173,6 +170,10 @@ Result<void> RKNNNet::Init(const Value& args) {
     if (ret != RKNN_SUCC) {
       MMDEPLOY_ERROR("rknn query 'RKNN_QUERY_INPUT_ATTR' fail! ret: {}", ret);
       return Status(eFail);
+    }
+    if (attr.type != RKNN_TENSOR_UINT8) {
+      MMDEPLOY_ERROR("MMDeploy SDK only supports RKNN-INT8 model");
+      return Status(eInvalidArgument);
     }
     input_attrs_.push_back(attr);
     // Only support uint8 input data
@@ -191,8 +192,7 @@ Result<void> RKNNNet::Init(const Value& args) {
       return Status(eFail);
     }
     output_attrs_.push_back(attr);
-    OUTCOME_TRY(auto data_type, GetMMDeployDataType(attr.type));
-    // MMDeploy always make the output data type as float
+    // MMDeploy SDK always make the output data type as float
     output_tensors_.emplace_back(TensorDesc{
         device_, DataType::kFLOAT, get_tensor_shape(attr).value(), "#" + std::to_string(i)});
   }
