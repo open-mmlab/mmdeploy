@@ -73,8 +73,8 @@ def mask_matrix_nms__default(ctx,
     # inter.
     inter_matrix = torch.mm(flatten_masks, flatten_masks.transpose(1, 0))
     expanded_mask_area = mask_area.expand(num_masks, num_masks)
-    # TensorRT does not support NonZero, so mask_area with value 0 is in this matrix
-    # which should be processed to avoid divided by 0.
+    # TensorRT does not support NonZero, so mask_area with value 0 is
+    # in this matrix which should be processed to avoid divided by 0.
     total_area = expanded_mask_area + expanded_mask_area.transpose(
         1, 0) - inter_matrix
     total_mask = total_area > 0

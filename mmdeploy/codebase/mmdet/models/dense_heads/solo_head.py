@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Dict
+from typing import Dict, List
 
 import torch
+from mmdet.models.layers import mask_matrix_nms
 from torch import Tensor
 from torch.nn import functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
-
-from mmdet.models.layers import mask_matrix_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(

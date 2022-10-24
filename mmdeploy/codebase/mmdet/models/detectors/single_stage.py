@@ -93,7 +93,8 @@ def single_stage_detector__forward(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.single_stage_instance_seg.SingleStageInstanceSegmentor.forward'
+    'mmdet.models.detectors.single_stage_instance_seg'
+    '.SingleStageInstanceSegmentor.forward'
 )
 def single_stage_instance_segmentor__forward(
         ctx,
