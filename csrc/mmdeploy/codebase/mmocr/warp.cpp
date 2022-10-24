@@ -23,6 +23,7 @@ class WarpBbox {
   }
 
   Result<Value> operator()(const Value& img, const Value& det) {
+    auto profiler = framework::TimeProfiler(pipeline_id_, node_id_, "WarpBbox");
     auto ori_img = img["ori_img"].get<framework::Mat>();
     if (det.is_object() && det.contains("bbox")) {
       auto bbox = from_value<std::vector<cv::Point>>(det["bbox"]);
