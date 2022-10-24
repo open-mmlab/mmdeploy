@@ -2,6 +2,9 @@
 
 #include "ipu_net.h"
 
+#include <sys/time.h>
+#include <unistd.h>
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -139,18 +142,25 @@ Result<void> IPUNet::Forward() {
 
   {
     // copy input to itensor buffer
-    int count = 0;
+
     for (auto& tensor : input_tensors_) {
       const auto& name = tensor.desc().name;
       copy_input(tensor, input_memory[name]);
-      count += 1;
     }
   }
 
   {
-    output_memory = model_runner->execute(examples::toInputMemoryView(input_memory));
-    output_desc = model_runner->getExecuteOutputs();
-    MMDEPLOY_INFO("ipu inference done");
+    struct timeval start, end;
+    gettimeofday(&start, 0);
+    model_runner->execute(examples::toInputMemoryView(input_memory),
+                          examples::toOutputMemoryView(output_memory));
+    gettimeofday(&end, 0);
+    long sec = end.tv_sec - start.tv_sec;
+    long micro = end.tv_usec - start.tv_usec;
+    double elapsed = sec + micro * 1e-6;
+    // output_desc = model_runner->getExecuteOutputs();
+    // sleep(30);
+    MMDEPLOY_INFO("ipu inference done, time elapsed {} sec", elapsed);
     // if (!success) {
     //   MMDEPLOY_ERROR("IPU Inference error: {}",
     //   std::string(zdl::DlSystem::getLastErrorString())); return Status(eFail);

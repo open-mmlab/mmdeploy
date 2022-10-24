@@ -4,6 +4,8 @@
 #include "catch.hpp"
 // clang-format on
 
+#include <unistd.h>
+
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/net.h"
@@ -45,6 +47,6 @@ TEST_CASE("test ipu net", "[net]") {
   } else {
     MMDEPLOY_INFO("ipu test result failed");
   }
-
+  // sleep(30);
   REQUIRE(result);
 }

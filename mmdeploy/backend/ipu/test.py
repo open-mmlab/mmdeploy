@@ -2,8 +2,9 @@
 import model_runtime
 import numpy as np
 import popef
+import time
 
-popef_file = '/localdata/cn-customer-engineering/qiangg/cache_poptorch/5299458688024344947.popef'
+popef_file = '/localdata/cn-customer-engineering/qiangg/mmdeploy_repo/mmdeploy/build/resnet50.popef'
 
 
 config = model_runtime.ModelRunnerConfig()
@@ -34,7 +35,9 @@ for input_desc, input_tensor in zip(input_descriptions, input_tensors):
           "dtype:", input_tensor.dtype)
     input_view[input_desc.name] = input_tensor
 
+start = time.time()
 result = runner.execute(input_view)
+print('time elapsed ', time.time()-start)
 output_descriptions = runner.getExecuteOutputs()
 print('output description ', output_descriptions)
 
