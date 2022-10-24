@@ -42,8 +42,7 @@ def process_model_config(model_cfg: mmcv.Config,
         transforms = cfg.data.test.pipeline[1]['transforms']
         for trans in transforms:
             trans_type = trans['type']
-            if trans_type == 'Resize' and len(
-                    input_shape) != 1 and input_shape[0] != input_shape[1]:
+            if trans_type == 'Resize' and len(input_shape) != 1:
                 trans['keep_ratio'] = False
             elif trans_type == 'Pad':
                 if 'size_divisor' in trans:
