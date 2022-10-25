@@ -13,7 +13,8 @@ from mmdet.models import BaseDetector
 
 from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_partition_config, load_config)
 

@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
-from mmdeploy.codebase.mmdet.core.ops import (ncnn_detection_output_forward,
-                                              ncnn_prior_box_forward)
+from mmdeploy.codebase.mmdet.core.ops.detection_output import \
+    ncnn_detection_output_forward
+from mmdeploy.codebase.mmdet.core.ops.prior_box import ncnn_prior_box_forward
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 
