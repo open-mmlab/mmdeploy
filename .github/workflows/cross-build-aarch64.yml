@@ -1,0 +1,36 @@
+name: cross-build-aarch64
+
+on:
+  push:
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - ".gitmodules"
+      - ".github/workflows/cross-build-aarch64.yml"
+      - "CMakeLists.txt"
+      - "tools/scripts/ubuntu_cross_build_aarch64.sh"
+
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  cross_build_aarch64:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: update
+        run: sudo apt update
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Cross build aarch64
+        run: |
+          sh -ex tools/scripts/ubuntu_cross_build_aarch64.sh

@@ -1,0 +1,218 @@
+name: test_converter
+
+on:
+  push:
+    paths: &paths
+      - "csrc/mmdeploy/backend_ops"
+      - "mmdeploy"
+      - "requirements"
+      - "tests"
+      - "!tests/test_csrc"
+      - "setup.py"
+      - "requirements.txt"
+      - ".github/workflows/test_converter.yml"
+      - ".github/scripts"
+      - "tools"
+
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test_cpu:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+        torch: [1.13.0]
+        include:
+          - torch: 1.13.0
+            torchvision: 0.14.0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-multilib g++-multilib libprotobuf-dev protobuf-compiler
+          sudo apt install -y wget unzip git
+      - name: Install PyTorch
+        run: |
+          python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: |
+          python -m pip install mmcv-full==1.4.2 -f https://download.openmmlab.com/mmcv/dist/cpu/${{matrix.torch_version}}/index.html
+      - name: Install mmdeploy python dependencies
+        run: |
+          python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          export include_flag=$(python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])')
+          CFLAGS=${include_flag} python -m pip install -r requirements/codebases.txt
+          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip list
+      - name: Build mmdeploy with script
+        run: |
+          python tools/scripts/build_ubuntu_x64_ncnn.py
+          python tools/scripts/build_ubuntu_x64_ort.py
+      - name: Install mmdeploy
+        run: rm -rf .eggs && python -m pip install -e .
+      - name: Run unittests and generate coverage report
+        run: |
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=${MMDEPLOY_DIR}/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=${MMDEPLOY_DIR}/../mmdeploy-dep/pbinstall/lib:${ONNXRUNTIME_DIR}/lib:${MMDEPLOY_DIR}/build/install/lib:$LD_LIBRARY_PATH
+          python tools/check_env.py
+          coverage run --branch --source mmdeploy -m pytest -rsE tests
+          coverage xml
+          coverage report -m
+
+  test_cuda:
+    runs-on: ubuntu-20.04
+    container:
+      image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.8]
+        torch: [1.9.0+cu111]
+        mmcv: [1.4.2]
+        include:
+          - torch: 1.9.0+cu111
+            torch_version: torch1.9
+            torchvision: 0.10.0+cu111
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies
+        run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+          apt update && apt install -y software-properties-common
+          add-apt-repository ppa:git-core/ppa -y && apt-get update
+          apt install -y ffmpeg libsm6 libxext6 libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          apt install -y libprotobuf-dev protobuf-compiler gcc-multilib g++-multilib ninja-build
+          apt install -y libpython${{matrix.python-version}} python${{matrix.python-version}}-dev
+          apt install -y wget git unzip
+          apt clean
+          rm -rf /var/lib/apt/lists/*
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install PyTorch
+        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+      - name: Install mmdeploy dependencies
+        run: |
+          python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          export include_flag=$(python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])')
+          CFLAGS=${include_flag} python -m pip install -r requirements/codebases.txt
+          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install pycuda
+          python -m pip list
+      - name: Build mmdeploy
+        run: |
+          python tools/scripts/build_ubuntu_x64_ncnn.py
+          python tools/scripts/build_ubuntu_x64_ort.py
+      - name: Install mmdeploy
+        run: rm -rf .eggs && python -m pip install -e .
+      - name: Run unittests and generate coverage report
+        run: |
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=${MMDEPLOY_DIR}/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=${MMDEPLOY_DIR}/../mmdeploy-dep/pbinstall/lib:${ONNXRUNTIME_DIR}/lib:${MMDEPLOY_DIR}/build/install/lib:$LD_LIBRARY_PATH
+          python tools/check_env.py
+          coverage run --branch --source mmdeploy -m pytest -rsE tests
+          coverage xml
+          coverage report -m
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  test_tools:
+    runs-on: ubuntu-20.04
+    container:
+      image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.8]
+        torch: [1.9.0+cu111]
+        mmcv: [1.4.2]
+        include:
+          - torch: 1.9.0+cu111
+            torch_version: torch1.9
+            torchvision: 0.10.0+cu111
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies
+        run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+          apt update && apt install -y software-properties-common
+          add-apt-repository ppa:git-core/ppa -y && apt-get update
+          apt install -y ffmpeg libsm6 libxext6 libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          apt install -y libprotobuf-dev protobuf-compiler gcc-multilib g++-multilib ninja-build
+          apt install -y libpython${{matrix.python-version}} python${{matrix.python-version}}-dev
+          apt install -y wget git unzip
+          apt clean
+          rm -rf /var/lib/apt/lists/*
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install PyTorch
+        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Install MMCV
+        run: python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+      - name: Install mmdeploy dependencies
+        run: |
+          export include_flag=$(python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])')
+          CFLAGS=${include_flag} python -m pip install -r requirements/build.txt -r requirements/runtime.txt
+          CFLAGS=${include_flag} python -m pip install pycuda openmim
+          python -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          python -m pip list
+      - name: Build mmdeploy with cpu backends
+        run: |
+          python tools/scripts/build_ubuntu_x64_ncnn.py
+          python tools/scripts/build_ubuntu_x64_ort.py
+      - name: Install mmdeploy
+        run: rm -rf .eggs && python -m pip install -e .
+      - name: test mmcls full pipeline
+        run: |
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=${MMDEPLOY_DIR}/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=${MMDEPLOY_DIR}/../mmdeploy-dep/pbinstall/lib:${ONNXRUNTIME_DIR}/lib:${MMDEPLOY_DIR}/build/install/lib:$LD_LIBRARY_PATH
+          python tools/check_env.py
+          sh -ex .github/scripts/test_mmcls_full_pipeline.sh
+
+      - name: Install ppq
+        run: |
+          git clone https://github.com/openppl-public/ppq
+          cd ppq
+          git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
+          python -m pip install -r requirements.txt
+          python setup.py install
+          cd -
+      - name: test ppq ncnn quant
+        run: |
+          export MMDEPLOY_DIR=$(pwd)
+          export ONNXRUNTIME_DIR=${MMDEPLOY_DIR}/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=${MMDEPLOY_DIR}/../mmdeploy-dep/pbinstall/lib:${ONNXRUNTIME_DIR}/lib:${MMDEPLOY_DIR}/build/install/lib:$LD_LIBRARY_PATH
+          python -c 'import mmdeploy.apis.ncnn as ncnn_api; assert ncnn_api.is_available() and ncnn_api.is_custom_ops_available()'
+          sh -ex .github/scripts/test_ppq_quant.sh

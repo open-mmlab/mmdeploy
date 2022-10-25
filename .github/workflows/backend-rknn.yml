@@ -2,16 +2,16 @@ name: backend-rknn
 
 on:
   push:
-    paths:
-      - "csrc/**"
-      - "demo/csrc/**"
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - ".gitmodules"
+      - ".github/workflows/backend-rknn.yml"
       - "CMakeLists.txt"
+      - "tools/scripts/ubuntu_cross_build_rknn.sh"
 
   pull_request:
-    paths-ignore:
-      - "csrc/**"
-      - "demo/csrc/**"
-      - "CMakeLists.txt"
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,21 +24,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: update
         run: sudo apt update
-      - name: cross compile
+      - name: Cross build mmdeploy with rknpu2
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_rknn.sh rk3588
+          sh -ex tools/scripts/ubuntu_cross_build_rknn.sh rk3588
+
   build_rknpu:
     runs-on: ubuntu-18.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: update
         run: sudo apt update
-      - name: cross compile
+      - name: Cross build mmdeploy with rknpu
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_rknn.sh rv1126
+          sh -ex tools/scripts/ubuntu_cross_build_rknn.sh rv1126

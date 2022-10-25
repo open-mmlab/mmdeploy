@@ -2,13 +2,16 @@ name: java_api
 
 on:
   push:
-    paths-ignore:
-      - "tools/**"
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - "demo/java"
+      - ".github/workflows/java_api.yml"
+      - ".github/scripts/test_java_demo.py"
+      - "CMakeLists.txt"
 
   pull_request:
-    paths-ignore:
-      - "tools/**"
-      - "docs/**"
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -21,7 +24,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Set up Python 3.7
         uses: actions/setup-python@v2
         with:

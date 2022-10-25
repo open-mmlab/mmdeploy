@@ -2,16 +2,15 @@ name: backend-coreml
 
 on:
   push:
-    paths:
-      - "csrc/**"
-      - "demo/csrc/**"
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - ".gitmodules"
+      - ".github/workflows/backend-coreml.yml"
       - "CMakeLists.txt"
 
   pull_request:
-    paths:
-      - "csrc/**"
-      - "demo/csrc/**"
-      - "CMakeLists.txt"
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -22,13 +21,13 @@ permissions:
   contents: read
 
 jobs:
-  build_macos_arm64:
+  build_coreml:
     runs-on: macos-12
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: install opencv
         run: |
           wget https://github.com/irexyc/mmdeploy-ci-resource/releases/download/opencv/opencv-osx-arm64-4.6.0.tar.gz

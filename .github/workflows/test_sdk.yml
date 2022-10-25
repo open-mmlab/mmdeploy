@@ -1,0 +1,112 @@
+name: test_sdk
+
+on:
+  push:
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - "demo"
+      - "tests/test_csrc"
+      - ".gitmodules"
+      - ".github/workflows/test_sdk.yml"
+      - "CMakeLists.txt"
+
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_cpu:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y gcc-multilib g++-multilib
+          sudo apt install -y wget git unzip lcov cmake
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt update && sudo apt install -y libopencv-dev
+          pkg-config --libs opencv
+          sudo apt clean
+      - name: Build and run SDK unit test without backend
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7 \
+            -DMMDEPLOY_CODEBASES=all \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF \
+            -DMMDEPLOY_TARGET_DEVICES=cpu \
+            -DMMDEPLOY_COVERAGE=ON \
+            -DMMDEPLOY_BUILD_TEST=ON
+          make -j2 && make install
+          mkdir -p mmdeploy_test_resources/transform
+          cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
+          ./bin/mmdeploy_tests
+          lcov --capture --directory . --output-file coverage.info
+          ls -lah coverage.info
+          cp coverage.info ../
+          cd -
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.info
+          flags: unittests
+          env_vars: OS,CPLUS
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  build_cuda:
+    runs-on: ubuntu-20.04
+    container:
+      image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-devel
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install system dependencies
+        run: |
+          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+          apt update && apt install -y software-properties-common
+          add-apt-repository ppa:git-core/ppa -y && apt-get update
+          apt install -y ffmpeg libsm6 libxext6 libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          apt install -y gcc-multilib g++-multilib ninja-build
+          apt install -y wget git unzip tar lcov cmake
+          apt clean
+          rm -rf /var/lib/apt/lists/*
+      - name: Install cmake
+        run: |
+          wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
+          tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
+          sudo ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build and run SDK unit test without backend
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7 \
+            -DMMDEPLOY_CODEBASES=all \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF \
+            -DMMDEPLOY_TARGET_DEVICES="cpu;cuda" \
+            -DMMDEPLOY_COVERAGE=ON \
+            -DMMDEPLOY_BUILD_TEST=ON
+          make -j2 && make install
+          mkdir -p mmdeploy_test_resources/transform
+          cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
+          ./bin/mmdeploy_tests
+          lcov --capture --directory . --output-file coverage.info
+          ls -lah coverage.info
+          cd -

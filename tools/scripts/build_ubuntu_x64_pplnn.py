@@ -63,8 +63,8 @@ def install_pplnn(dep_dir, build_cuda):
         os.system(
             './build.sh -DPPLNN_USE_X86_64=ON  -DPPLNN_ENABLE_PYTHON_API=ON'  # noqa: E501
         )
-
-    os.system('cd python/package && ./build.sh')
+    os.system('cp VERSION_STRING VERSION')
+    os.system('cd python/package && bash build.sh')
     os.system(
         'cd /tmp/pyppl-package/dist && python3 -m pip install pyppl*.whl --force-reinstall --user'  # noqa: E501
     )

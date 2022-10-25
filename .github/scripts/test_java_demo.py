@@ -66,18 +66,22 @@ def main():
         ]
         for config in configs:
             model_url = config
-            os.system('wget {} && tar xvf {}'.format(model_url,
-                                                     model_url.split('/')[-1]))
+            ret = os.system('wget {} && tar xvf {}'.format(
+                model_url,
+                model_url.split('/')[-1]))
+            assert ret == 0
             model_dir = model_url.split('/')[-1].split('.')[0]
             java_demo_cmd.append(model_dir)
         java_demo_cmd.append('/home/runner/work/mmdeploy/mmdeploy/demo' +
                              '/resources/human-pose.jpg')
         java_demo_cmd_str = ' '.join(java_demo_cmd)
-        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
-                  'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
-                  ' --version && export LD_LIBRARY_PATH=/home/runner/work/' +
-                  'mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' +
-                  java_demo_cmd_str)
+        ret = os.system(
+            'export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
+            'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
+            ' --version && export LD_LIBRARY_PATH=/home/runner/work/' +
+            'mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' +
+            java_demo_cmd_str)
+        assert ret == 0
 
 
 if __name__ == '__main__':

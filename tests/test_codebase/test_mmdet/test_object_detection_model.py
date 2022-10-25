@@ -32,7 +32,7 @@ def assert_det_results(results, module_name: str = 'model'):
 
 def assert_forward_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, (list, tuple))
     assert len(results) == 1
     if isinstance(results[0], tuple):  # mask
         assert len(results[0][0]) == 80

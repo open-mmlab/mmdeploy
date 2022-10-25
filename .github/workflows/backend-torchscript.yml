@@ -1,23 +1,24 @@
-name: backend-ort
+name: backend-torchscript
 
 on:
   push:
-    paths-ignore:
-      - "demo/**"
-      - "tools/**"
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - ".gitmodules"
+      - ".github/workflows/backend-torchscript.yml"
+      - "CMakeLists.txt"
+      - "tools/scripts/build_ubuntu_x64_torchscript.py"
 
   pull_request:
-    paths-ignore:
-      - "demo/**"
-      - "tools/**"
-      - "docs/**"
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  script_install:
+  build_torchscript:
     runs-on: ubuntu-18.04
     strategy:
       matrix:
@@ -26,11 +27,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install mmdeploy
+      - name: Build mmdeploy with torchscript
         run: |
           python3 tools/scripts/build_ubuntu_x64_torchscript.py
+          ls -lah build/lib/libmmdeploy_torchscript_ops.so

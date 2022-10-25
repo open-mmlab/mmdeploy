@@ -74,7 +74,7 @@ commands:
       - run:
           name: Install mmcv-full
           command: |
-            python -m pip install opencv-python==4.5.4.60
+            python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
             python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/cpu/torch<< parameters.torch >>/index.html
   install_mmcv_cuda:
     parameters:
@@ -91,7 +91,7 @@ commands:
       - run:
           name: Install mmcv-full
           command: |
-            python -m pip install opencv-python==4.5.4.60
+            python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
             python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/<< parameters.cuda >>/torch<< parameters.torch >>/index.html
   install_mmdeploy:
     description: "Install MMDeploy"
@@ -108,10 +108,11 @@ commands:
           command: |
             cd mmdeploy
             python -m pip install -r requirements/codebases.txt
+            python -m pip install -r requirements/backends.txt
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
-            python -m pip install -U numpy
             cd ..
+
   perform_model_converter_ut:
     steps:
       - run:
@@ -167,11 +168,10 @@ jobs:
       - run:
           name: Install requirements
           command: |
-            docker exec mmdeploy pip install onnxruntime==1.8.1
             docker exec mmdeploy pip install -r mmdeploy/requirements/codebases.txt
+            docker exec mmdeploy pip install -r requirements/backends.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements/tests.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements/runtime.txt
-            docker exec mmdeploy pip install -U numpy
       - run:
           name: Perform Model Converter unittests
           command: |

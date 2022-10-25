@@ -1,2 +1,2 @@
-grpcio
 onnxruntime==1.8.1
+openvino-dev[onnx]

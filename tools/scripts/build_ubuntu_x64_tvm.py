@@ -9,7 +9,7 @@ from ubuntu_utils import cmd_result, ensure_base_env, get_job
 
 def install_llvm(dep_dir):
     print('-' * 10 + 'install llvm' + '-' * 10)
-
+    os.system('sudo apt install lsb-core')
     os.chdir(dep_dir)
     os.system(
         'wget --no-check-certificate -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -'  # noqa: E501

@@ -2,16 +2,15 @@ name: build_riscv64_gcc
 
 on:
   push:
-    paths:
-      - "csrc/**"
-      - "demo/csrc/**"
+    paths: &paths
+      - "cmake"
+      - "csrc"
+      - ".gitmodules"
+      - ".github/workflows/linux-riscv64-gcc.yml"
       - "CMakeLists.txt"
 
   pull_request:
-    paths-ignore:
-      - "csrc/**"
-      - "demo/csrc/**"
-      - "CMakeLists.txt"
+    paths: *paths
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -24,7 +23,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - name: riscv64-gnu-toolchain
         run: |
           sudo apt-get update

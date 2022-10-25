@@ -6,11 +6,14 @@ python3 tools/check_env.py
 
 deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
 device=cpu
-model_cfg=../mmclassification/configs/resnet/resnet18_8xb32_in1k.py
-checkpoint=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+
 sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
-input_img=../mmclassification/demo/demo.JPEG
+input_img=tests/data/tiger.jpeg
 work_dir=work_dir
+mkdir -p $work_dir
+python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
+model_cfg=$work_dir/resnet18_8xb32_in1k.py
+checkpoint=$work_dir/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 echo "------------------------------------------------------------------------------------------------------------"
 echo "deploy_cfg=$deploy_cfg"
@@ -18,8 +21,6 @@ echo "model_cfg=$model_cfg"
 echo "checkpoint=$checkpoint"
 echo "device=$device"
 echo "------------------------------------------------------------------------------------------------------------"
-
-mkdir -p $work_dir
 
 python3 tools/deploy.py \
   $deploy_cfg \
@@ -50,6 +51,7 @@ python3 tools/test.py \
   --warmup 20 \
   --batch-size 32
 
+echo "====================="
 echo "Running test with sdk"
 
 # change topk for test
