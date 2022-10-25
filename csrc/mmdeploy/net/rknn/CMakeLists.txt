@@ -11,8 +11,8 @@ if (DEFINED ENV{RKNPU2_DEVICE_DIR})
 endif ()
 if (DEFINED RKNPU2_DEVICE_DIR)
     set_target_properties(rknn PROPERTIES
-            IMPORTED_LOCATION "${RKNPU2_DIR}/Linux/librknn_api/aarch64/librknn_api.so"
-            INTERFACE_INCLUDE_DIRECTORIES "${RKNPU2_DIR}/Linux/librknn_api/include"
+            IMPORTED_LOCATION "${RKNPU2_DEVICE_DIR}/Linux/librknn_api/aarch64/librknn_api.so"
+            INTERFACE_INCLUDE_DIRECTORIES "${RKNPU2_DEVICE_DIR}/Linux/librknn_api/include"
             )
     target_compile_definitions(${PROJECT_NAME} PRIVATE RK_MODELS)
     target_link_libraries(${PROJECT_NAME} PRIVATE rknn)
