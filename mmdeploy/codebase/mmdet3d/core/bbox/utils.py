@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
 
-
-@FUNCTION_REWRITER.register_rewriter(
-    'mmdet3d.core.bbox.structures.utils.points_img2cam')
 def points_img2cam(points, cam2img_inverse):
     """Project points in image coordinates to camera coordinates.
 
