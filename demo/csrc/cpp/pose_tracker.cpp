@@ -387,7 +387,7 @@ void Visualize(cv::Mat& frame, const Value& result) {
     }
   }
   cv::imshow("", frame);
-  cv::waitKey(0);
+  cv::waitKey(10);
 }
 
 int main(int argc, char* argv[]) {
@@ -420,7 +420,7 @@ int main(int argc, char* argv[]) {
     auto t1 = std::chrono::high_resolution_clock::now();
     dt += t1 - t0;
     ++frame_id;
-    // Visualize(frame, result);
+    Visualize(frame, result);
   }
 
   MMDEPLOY_INFO("frames: {}, time {} ms", frame_id, dt.count());
