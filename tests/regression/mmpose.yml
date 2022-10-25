@@ -125,9 +125,9 @@ models:
 #      - *pipeline_ncnn_static_fp32_256x256
 #      - *pipeline_openvino_static_fp32_256x256
 
-# TODO: no simcc_coco.yml in latest mmpose, enable this later
+# TODO: no mobilenetv2_coco.yml in latest mmpose, enable this later
 #  - name: SimCC
-#    metafile: configs/body_2d_keypoint/simcc/coco/simcc_coco.yml
+#    metafile: configs/body_2d_keypoint/simcc/coco/mobilenetv2_coco.yml
 #    model_configs:
 #      - configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py
 #    pipelines:
