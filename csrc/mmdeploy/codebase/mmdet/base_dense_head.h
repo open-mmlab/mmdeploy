@@ -18,7 +18,7 @@ class BaseDenseHead : public MMDetection {
   float score_thr_{0.4f};
   int nms_pre_{1000};
   float iou_threshold_{0.45f};
-  int min_bbox_size_ {0};
+  int min_bbox_size_{0};
 };
 }  // namespace mmdeploy::mmdet
 

@@ -27,6 +27,6 @@ void Sort(std::vector<float>& probs, std::vector<int>& label_ids, std::vector<in
 
 void NMS(mmdeploy::framework::Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs);
 
-}
+}  // namespace mmdeploy::mmdet
 
 #endif  // MMDEPLOY_CODEBASE_MMDET_UTILS_H_
