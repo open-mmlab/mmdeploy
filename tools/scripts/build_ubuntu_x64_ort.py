@@ -20,7 +20,7 @@ def install_ort(dep_dir):
     # git clone
     if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
         os.system(
-            'wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
+            'wget -q --show-progress https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz'  # noqa: E501
         )
         os.system('tar xvf  onnxruntime-linux-x64-1.8.1.tgz')
 
@@ -41,9 +41,9 @@ def install_mmdeploy(work_dir, ort_dir):
     if not os.path.exists('build'):
         os.system('mkdir build')
 
+    os.system('rm -rf build/CMakeCache.txt')
+
     cmd = 'cd build && cmake ..'
-    cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
-    cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
@@ -54,7 +54,12 @@ def install_mmdeploy(work_dir, ort_dir):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -e .')
-    os.system('python3 tools/check_env.py')
+    try:
+        import mmcv
+        print(mmcv.__version__)
+        os.system('python3 tools/check_env.py')
+    except Exception:
+        print('Please install torch & mmcv later.. ⊙▽⊙')
     return 0
 
 
@@ -80,7 +85,7 @@ def main():
             return -1
         os.mkdir(dep_dir)
 
-    success, envs = ensure_base_env(work_dir, dep_dir)
+    success = ensure_base_env(work_dir, dep_dir)
     if success != 0:
         return -1
 
@@ -89,12 +94,9 @@ def main():
     if install_mmdeploy(work_dir, ort_dir) != 0:
         return -1
 
-    if len(envs) > 0:
-        print(
-            'We recommend that you set the following environment variables:\n')
-        for env in envs:
-            print(env)
-            print('\n')
+    if os.path.exists('~/mmdeploy.env'):
+        print('Please source ~/mmdeploy.env to setup your env !')
+        os.system('cat ~/mmdeploy.env')
 
 
 if __name__ == '__main__':

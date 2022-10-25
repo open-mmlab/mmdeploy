@@ -206,3 +206,24 @@ def remove_identity(model: onnx.ModelProto):
         pass
 
     remove_nodes(model, is_identity)
+
+
+def remove_imports(model: onnx.ModelProto):
+    """Remove useless imports from an ONNX model.
+
+    The domain like `mmdeploy` might influence model conversion for
+    some backends.
+
+    Args:
+        model (onnx.ModelProto): Input onnx model.
+    """
+    logger = get_root_logger()
+    dst_domain = ['']
+    for node in model.graph.node:
+        if hasattr(node, 'module') and (node.module not in dst_domain):
+            dst_domain.append(node.module)
+    src_domains = [oi.domain for oi in model.opset_import]
+    for i, src_domain in enumerate(src_domains):
+        if src_domain not in dst_domain:
+            logger.info(f'remove opset_import {src_domain}')
+            model.opset_import.pop(i)
