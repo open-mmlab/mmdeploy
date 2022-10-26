@@ -12,18 +12,13 @@ namespace mmdeploy::mmdet {
 BaseDenseHead::BaseDenseHead(const Value& cfg) : MMDetection(cfg) {
   auto init = [&]() -> Result<void> {
     auto model = cfg["context"]["model"].get<Model>();
-    //    OUTCOME_TRY(auto str_priors, model.ReadFile("box_priors.txt"));
-    //    std::istringstream ss(str_priors);
-
-    //    priors_.reserve(NUM_SIZE);
-    //    for (int i = 0; i < NUM_SIZE; ++i) {
-    //      std::vector<float> prior(NUM_RESULTS);
-    //      for (int j = 0; j < NUM_RESULTS; ++j) {
-    //        ss >> prior[j];
-    //      }
-    //      priors_.push_back(prior);
-    //    }
-    return success();
+    if (cfg.contains("params")) {
+      nms_pre_ = cfg["params"].get("nms_pre", -1);
+      score_thr_ = cfg["params"].get("score_thr", 0.02f);
+      min_bbox_size_ = cfg["params"].get("min_bbox_size", 0);
+      iou_threshold_ =
+          cfg["params"].contains("nms") ? cfg["params"]["nms"].get("iou_threshold", 0.45f);
+    }
   };
   init().value();
 }
