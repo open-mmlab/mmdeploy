@@ -24,7 +24,7 @@ export REQUIREMENT=$2
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
 
-for TORCH_VERSION in 1.10.0 1.11.0; do
+for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
     conda activate torch${TORCH_VERSION}
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
