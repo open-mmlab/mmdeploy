@@ -22,7 +22,8 @@ def interpolate__ncnn(ctx,
     """Rewrite `interpolate` for ncnn backend.
 
     ncnn require `size` should be constant in ONNX Node. We use `scale_factor`
-    instead of `size` to avoid dynamic size.
+    instead of `size` to avoid dynamic size. To avoid rounding errors, add a
+    small number when `scale_factor` is not an integer
     """
 
     input_size = input.shape
