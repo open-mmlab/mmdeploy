@@ -298,9 +298,10 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     component = task_map[task]['component']
     if get_backend(deploy_cfg) == Backend.RKNN:
         if 'YOLO' in task_processor.model_cfg.model.type:
-            component = task_processor.model_cfg.model.bbox_head.type
-            params['anchor_generator'] = \
-                task_processor.model_cfg.model.bbox_head.anchor_generator
+            bbox_head = task_processor.model_cfg.model.bbox_head
+            component = bbox_head.type
+            params['anchor_generator'] = bbox_head.get('anchor_generator',
+                                                       None)
         else:  # default using base_dense_head
             component = 'BaseDenseHead'
 
