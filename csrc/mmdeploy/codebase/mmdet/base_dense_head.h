@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
-#ifndef MMDEPLOY_CODEBASE_MMDET_SSD_HEAD_H_
-#define MMDEPLOY_CODEBASE_MMDET_SSD_HEAD_H_
+#ifndef MMDEPLOY_CODEBASE_MMDET_BASE_DENSE_HEAD_H_
+#define MMDEPLOY_CODEBASE_MMDET_BASE_DENSE_HEAD_H_
 
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 #include "mmdeploy/core/tensor.h"
@@ -22,4 +22,4 @@ class BaseDenseHead : public MMDetection {
 };
 }  // namespace mmdeploy::mmdet
 
-#endif  // MMDEPLOY_CODEBASE_MMDET_SSD_HEAD_H_
+#endif  // MMDEPLOY_CODEBASE_MMDET_BASE_DENSE_HEAD_H_

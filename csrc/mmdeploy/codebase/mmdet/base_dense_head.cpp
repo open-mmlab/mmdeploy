@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 #include "base_dense_head.h"
 
 #include <numeric>

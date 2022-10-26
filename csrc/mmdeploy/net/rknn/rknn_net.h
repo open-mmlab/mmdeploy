@@ -28,7 +28,7 @@ class RKNNNet : public Net {
   Result<void> ForwardAsync(Event* event) override;
 
  private:
-  void DebugRKNNTensorAttr(const char* tag, const std::vector<rknn_tensor_attr>& attr);
+  void PrintRKNNTensorAttr(const char* tag, const std::vector<rknn_tensor_attr>& attrs);
 
   Device device_;
   Stream stream_;

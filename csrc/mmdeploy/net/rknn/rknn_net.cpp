@@ -101,7 +101,7 @@ static Result<DataType> GetMMDeployDataType(rknn_tensor_type type) {
 
 RKNNNet::~RKNNNet() { rknn_destroy(ctx_); }
 
-void RKNNNet::DebugRKNNTensorAttr(const char* tag, const std::vector<rknn_tensor_attr>& attrs) {
+void RKNNNet::PrintRKNNTensorAttr(const char* tag, const std::vector<rknn_tensor_attr>& attrs) {
   MMDEPLOY_INFO("{} tensors: ", tag);
   for (auto& attr : attrs) {
     MMDEPLOY_INFO(
@@ -154,7 +154,6 @@ Result<void> RKNNNet::Init(const Value& args) {
       shape.push_back(attr.dims[i]);
     }
 #ifdef RK_MODELS
-    //    return TensorDesc{device, data_type, shape, "#" + std::to_string(id)};
     return shape;
 #endif
 #ifdef RV_MODELS
@@ -181,7 +180,7 @@ Result<void> RKNNNet::Init(const Value& args) {
     input_tensors_.emplace_back(
         TensorDesc{device_, data_type, get_tensor_shape(attr).value(), "#" + std::to_string(i)});
   }
-  DebugRKNNTensorAttr("input", input_attrs_);
+  PrintRKNNTensorAttr("input", input_attrs_);
 
   for (int i = 0; i < io_num.n_output; i++) {
     rknn_tensor_attr attr;
@@ -196,7 +195,7 @@ Result<void> RKNNNet::Init(const Value& args) {
     output_tensors_.emplace_back(TensorDesc{
         device_, DataType::kFLOAT, get_tensor_shape(attr).value(), "#" + std::to_string(i)});
   }
-  DebugRKNNTensorAttr("output", output_attrs_);
+  PrintRKNNTensorAttr("output", output_attrs_);
 
   return success();
 }
