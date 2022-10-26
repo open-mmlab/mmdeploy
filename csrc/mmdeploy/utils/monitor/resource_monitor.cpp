@@ -6,6 +6,7 @@
 #include <nvml.h>
 #endif
 
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <memory>
@@ -14,7 +15,11 @@
 #include <thread>
 
 #if defined(_MSC_VER)
-
+// clang-format off
+#define NOMINMAX
+#include <windows.h>
+#include <psapi.h>
+// clang-format on
 #endif
 
 #define TO_ULONG std::stoul
@@ -200,13 +205,139 @@ struct LinuxResourceMonitorImpl : public ResourceMonitor::Impl {
 
 #if defined(_MSC_VER)
 
+struct WindowsResourceMonitorImpl : public ResourceMonitor::Impl {
+  int pid_;
+  std::string device_name_;
+  int device_id_;
+
+  int n_processor_;
+  int64_t last_process_cpu_time_{0};
+  int64_t last_total_cpu_time_;
+
+#ifdef USE_CUDA
+  nvmlDevice_t device_;
+#endif
+
+  explicit WindowsResourceMonitorImpl(int pid, const std::string device_name, int device_id)
+      : pid_(pid), device_name_(device_name), device_id_(device_id) {
+    GetProcessorNum();
+    last_total_cpu_time_ = GetTotalCpuTime();
+
+#ifdef USE_CUDA
+    nvmlInit_v2();
+    nvmlDeviceGetHandleByIndex_v2(0, &device_);
+#endif
+  }
+  int GetResourceInfo(ResourceInfo &info) {
+    GetCpuUsage(info);
+    GetMemoryUsage(info);
+    GetDeviceUsage(info);
+
+    if (info.cpu_usage < 0 || info.device_mem < 0 || info.device_usage < 0 || info.vm_hwm < 0 ||
+        info.vm_rss < 0) {
+      return -1;
+    }
+    return 0;
+  };
+
+  void GetGpuUsage(ResourceInfo &info) {
+    info.device_mem = info.device_usage = -1;
+#ifdef USE_CUDA
+    nvmlMemory_t memory;
+    auto status = nvmlDeviceGetMemoryInfo(device_, &memory);
+    if (status == NVML_SUCCESS) {
+      info.device_mem = memory.used;
+    }
+
+    nvmlUtilization_t utilization[1];
+    status = nvmlDeviceGetUtilizationRates(device_, utilization);
+    if (status == NVML_SUCCESS) {
+      info.device_usage = utilization[0].gpu;
+    }
+#endif
+  }
+
+  void GetDeviceUsage(ResourceInfo &info) {
+    if (device_name_ == "cuda") {
+      GetGpuUsage(info);
+    }
+  };
+
+  void GetCpuUsage(ResourceInfo &info) {
+    auto process_cpu_time = GetProcessCpuTime();
+    auto total_cpu_time = GetTotalCpuTime();
+    if (process_cpu_time < 0 || total_cpu_time < 0) {
+      info.cpu_usage = -1;
+      return;
+    }
+    float usage = 100.f * (process_cpu_time - last_process_cpu_time_) /
+                  (total_cpu_time - last_total_cpu_time_ + 1e-7) * n_processor_;
+    last_process_cpu_time_ = process_cpu_time;
+    last_total_cpu_time_ = total_cpu_time;
+    info.cpu_usage = usage;
+  };
+
+  void GetMemoryUsage(ResourceInfo &info) {
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid_);
+    info.vm_hwm = info.vm_rss = -1;
+    if (hProcess == NULL) {
+      return;
+    }
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    if (GetProcessMemoryInfo(hProcess, (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc))) {
+      info.vm_hwm = pmc.PeakWorkingSetSize;
+      info.vm_rss = pmc.WorkingSetSize;
+      // std::cout << info.vm_hwm << " " << info.vm_rss << " " << pmc.PrivateUsage << "\n";
+    }
+    CloseHandle(hProcess);
+  };
+
+  void GetProcessorNum() {
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    n_processor_ = sysinfo.dwNumberOfProcessors;
+  };
+
+  int64_t GetProcessCpuTime() {
+    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid_);
+    if (hProcess == NULL) {
+      return -1;
+    }
+
+    FILETIME createTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    uint64_t process_cpu_time{0};
+    if (GetProcessTimes(hProcess, &createTime, &exitTime, &kernelTime, &userTime)) {
+      process_cpu_time = ((uint64_t)kernelTime.dwHighDateTime << 32) + kernelTime.dwLowDateTime;
+      process_cpu_time += ((uint64_t)userTime.dwHighDateTime << 32) + userTime.dwLowDateTime;
+    }
+    CloseHandle(hProcess);
+    return process_cpu_time;
+  };
+
+  int64_t GetTotalCpuTime() {
+    FILETIME idleTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    int64_t total_cpu_time{-1};
+    if (GetSystemTimes(&idleTime, &kernelTime, &userTime)) {
+      total_cpu_time = (kernelTime.dwHighDateTime << 32 | kernelTime.dwLowDateTime) +
+                       (userTime.dwHighDateTime << 32 | userTime.dwLowDateTime);
+    }
+    return total_cpu_time;
+  };
+};
+
 #endif
 
 ResourceMonitor::ResourceMonitor(int pid, const std::string &device_name, int device_id,
                                  int interval)
     : interval_(interval) {
 #if defined(_MSC_VER)
-
+  monitor_ = std::make_shared<WindowsResourceMonitorImpl>(
+      WindowsResourceMonitorImpl(pid, device_name, device_id));
 #elif defined(__linux__)
   monitor_ = std::make_shared<LinuxResourceMonitorImpl>(
       LinuxResourceMonitorImpl(pid, device_name, device_id));

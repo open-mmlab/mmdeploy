@@ -6,10 +6,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-#include "mmdeploy/core/macro.h"
-#include "mmdeploy/core/value.h"
-
 namespace mmdeploy {
 
 namespace monitor {
@@ -31,7 +27,7 @@ struct ResourceSummary {
   float device_usage_90;
 };
 
-class MMDEPLOY_API ResourceMonitor {
+class ResourceMonitor {
  private:
   int interval_;  // ms
   std::thread thread_;
@@ -42,6 +38,7 @@ class MMDEPLOY_API ResourceMonitor {
   std::shared_ptr<Impl> monitor_;
 
   friend class LinuxResourceMonitorImpl;
+  friend class WindowsResourceMonitorImpl;
 
  public:
   explicit ResourceMonitor(int pid, const std::string &device_name, int device_id,

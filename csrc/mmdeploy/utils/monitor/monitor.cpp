@@ -61,6 +61,23 @@ int main(int argc, char **argv) {
 #endif
 
 #if _MSC_VER
+  STARTUPINFO si;
+  PROCESS_INFORMATION pi;
+  ZeroMemory(&si, sizeof(si));
+  si.cb = sizeof(si);
+  ZeroMemory(&pi, sizeof(pi));
+  if (!CreateProcess(NULL, argv[1], NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    printf("CreateProcess failed (%d).\n", GetLastError());
+    exit(-1);
+  }
+  monitor = std::make_unique<mmdeploy::monitor::ResourceMonitor>(pi.dwProcessId, device, device_id,
+                                                                 interval);
+  monitor->Start();
+  WaitForSingleObject(pi.hProcess, INFINITE);
+  monitor->Stop();
+
+  CloseHandle(pi.hProcess);
+  CloseHandle(pi.hThread);
 
 #endif
 

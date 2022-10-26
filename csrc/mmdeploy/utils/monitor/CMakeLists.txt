@@ -9,5 +9,10 @@ target_include_directories(monitor PRIVATE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(monitor mmdeploy::core)
 if ("cuda" IN_LIST MMDEPLOY_TARGET_DEVICES)
     target_compile_definitions(monitor PRIVATE USE_CUDA)
-    target_link_libraries(monitor ${CUDA_LIBRARIES} nvidia-ml) # nvml
+    if (MSVC)
+        set(nvml_lib nvml)
+    else ()
+        set(nvml_lib nvidia-ml)
+    endif ()
+    target_link_libraries(monitor ${CUDA_LIBRARIES} ${nvml_lib}) # nvml
 endif ()
