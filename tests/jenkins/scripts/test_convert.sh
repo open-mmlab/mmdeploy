@@ -15,8 +15,10 @@ exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//'
 max_job_nums=$(grep max_job_nums ${config} | sed 's/max_job_nums=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
+repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 TENSORRT_VERSION=$(grep tensorrt_version ${config} | sed 's/tensorrt_version=//')
 REQUIREMENT=$(grep requirement ${config} | sed 's/requirement=//')
+
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
@@ -37,7 +39,7 @@ done
 for codebase in ${codebase_list[@]}; do
     read -u1000
     {
-        container_name=convert-${codebase}-${time_snap}
+        container_name=openmmlab${repo_version}-convert-${codebase}-${time_snap}
         container_id=$(
             docker run -itd \
                 --gpus all \

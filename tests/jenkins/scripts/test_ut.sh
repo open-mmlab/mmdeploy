@@ -14,6 +14,7 @@ codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
 exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
+repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 REQUIREMENT=$(grep requirement ${config} | sed 's/requirement=//')
 
 ## make log_dir
@@ -25,7 +26,7 @@ mkdir -p -m 777 ${log_dir}
 ## docker run cmd for unittest
 for codebase in ${codebase_list[@]}; do
 
-    container_name=ut-${codebase}-${time_snap}
+    container_name=openmmlab${repo_version}-ut-${codebase}-${time_snap}
     container_id=$(
         docker run -itd \
             --gpus all \
