@@ -119,7 +119,13 @@ def reppoints_head__get_bboxes(ctx,
             scores = scores.sigmoid()
         else:
             scores = scores.softmax(-1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+
+        # TODO: figure out why we can't reshape after permute directly
+        # TensorRT8.4 would fuse the permute+reshape,
+        # which leads to incorrect results.
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1)
+        bbox_pred = bbox_pred.reshape(batch_size, -1)
+        bbox_pred = (bbox_pred + 0).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
         if pre_topk > 0:
