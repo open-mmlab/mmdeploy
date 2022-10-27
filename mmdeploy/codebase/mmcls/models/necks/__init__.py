@@ -1,5 +1,2 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
-from .gap import gap__forward
-
-__all__ = ['gap__forward']
+from . import gap  # noqa: F401,F403

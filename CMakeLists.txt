@@ -128,6 +128,7 @@ if (MMDEPLOY_BUILD_SDK)
         mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
     endif ()
     mmdeploy_add_deps(snpe BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS snpe)
+    mmdeploy_add_deps(rknn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS rknn)
 
     include(CMakePackageConfigHelpers)
     # generate the config file that is includes the exports

@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch.nn.functional as F
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmrotate.core.post_processing import \
     multiclass_nms_rotated
 from mmdeploy.core import FUNCTION_REWRITER

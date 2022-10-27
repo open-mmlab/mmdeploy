@@ -10,4 +10,8 @@ def adaptive_avg_pool2d__ncnn(ctx, g, x, output_size):
 
     Align symbolic of adaptive_avg_pool2d in ncnn.
     """
-    return g.op('mmdeploy::AdaptiveAvgPool2d', x, output_size)
+    size = getattr(output_size.node(), 't')('value').tolist()
+    if size != [1, 1]:
+        return g.op('mmdeploy::AdaptiveAvgPool2d', x, output_size)
+    else:
+        return g.op('GlobalAveragePool', x)
