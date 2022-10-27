@@ -17,46 +17,30 @@ using namespace mmdeploy;
 
 namespace {
 
-Value& config_template() {
+Value config_template(const Model& model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"img"}},
-        {"output", {"mask"}},
-        {
-          "tasks", {
-            {
-              {"name", "segmentation"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"img"}},
-              {"output", {"mask"}}
-            }
-          }
-        }
-      }
-    }
+  return {
+    {"name", "segmentor"},
+    {"type", "Inference"},
+    {"params", {{"model", model}}},
+    {"input", {"img"}},
+    {"output", {"mask"}}
   };
   // clang-format on
-  return v;
-}
-
-int mmdeploy_segmentor_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
-                                   mmdeploy_exec_info_t exec_info,
-                                   mmdeploy_segmentor_t* segmentor) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
-                                  (mmdeploy_pipeline_t*)segmentor);
 }
 
 }  // namespace
 
 int mmdeploy_segmentor_create(mmdeploy_model_t model, const char* device_name, int device_id,
                               mmdeploy_segmentor_t* segmentor) {
-  return mmdeploy_segmentor_create_impl(model, device_name, device_id, nullptr, segmentor);
+  mmdeploy_context_t context{};
+  auto ec = mmdeploy_context_create_by_device(device_name, device_id, &context);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_segmentor_create_v2(model, context, segmentor);
+  mmdeploy_context_destroy(context);
+  return ec;
 }
 
 int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
@@ -65,7 +49,7 @@ int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_segmentor_create_impl(model, device_name, device_id, nullptr, segmentor);
+  auto ec = mmdeploy_segmentor_create(model, device_name, device_id, segmentor);
   mmdeploy_model_destroy(model);
   return ec;
 }
@@ -101,9 +85,10 @@ void mmdeploy_segmentor_destroy(mmdeploy_segmentor_t segmentor) {
   mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)segmentor);
 }
 
-int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, const char* device_name, int device_id,
-                                 mmdeploy_exec_info_t exec_info, mmdeploy_segmentor_t* segmentor) {
-  return mmdeploy_segmentor_create_impl(model, device_name, device_id, exec_info, segmentor);
+int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
+                                 mmdeploy_segmentor_t* segmentor) {
+  auto config = config_template(*Cast(model));
+  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)segmentor);
 }
 
 int mmdeploy_segmentor_create_input(const mmdeploy_mat_t* mats, int mat_count,

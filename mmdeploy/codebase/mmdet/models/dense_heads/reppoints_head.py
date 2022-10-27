@@ -3,9 +3,10 @@ from typing import Sequence
 
 import torch
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     multiclass_nms,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 

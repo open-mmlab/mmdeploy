@@ -22,13 +22,16 @@ def interpolate__ncnn(ctx,
     """Rewrite `interpolate` for ncnn backend.
 
     ncnn require `size` should be constant in ONNX Node. We use `scale_factor`
-    instead of `size` to avoid dynamic size.
+    instead of `size` to avoid dynamic size. To avoid rounding errors, add a
+    small number when `scale_factor` is not an integer
     """
 
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [
-            s_out / s_in for s_out, s_in in zip(size, input_size[2:])
+            s_out / s_in if int(s_out / s_in) == s_out / s_in else
+            (s_out / s_in + 0.00001)
+            for s_out, s_in in zip(size, input_size[2:])
         ]
 
     return ctx.origin_func(

@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 

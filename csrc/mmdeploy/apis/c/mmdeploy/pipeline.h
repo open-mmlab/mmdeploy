@@ -16,17 +16,14 @@ extern "C" {
 typedef struct mmdeploy_pipeline* mmdeploy_pipeline_t;
 
 /**
- * @brief Create pipeline
- * @param[in] config config of the pipeline
- * @param[in] device_name name of device, such as "cpu", "cuda", etc.
- * @param[in] device_id id of device.
- * @param[in] exec_info execution options
- * @param[out] pipeline handle of the pipeline
- * @return status of the operation
+ * Create pipeline
+ * @param config
+ * @param context
+ * @param pipeline
+ * @return
  */
-MMDEPLOY_API int mmdeploy_pipeline_create(mmdeploy_value_t config, const char* device_name,
-                                          int device_id, mmdeploy_exec_info_t exec_info,
-                                          mmdeploy_pipeline_t* pipeline);
+MMDEPLOY_API int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
+                                             mmdeploy_pipeline_t* pipeline);
 
 /**
  * @brief Apply pipeline

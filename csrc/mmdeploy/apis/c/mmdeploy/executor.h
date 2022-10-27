@@ -26,14 +26,6 @@ typedef struct mmdeploy_scheduler* mmdeploy_scheduler_t;
 
 typedef mmdeploy_sender_t (*mmdeploy_let_value_fn_t)(mmdeploy_value_t, void*);
 
-typedef struct mmdeploy_exec_info* mmdeploy_exec_info_t;
-
-struct mmdeploy_exec_info {
-  mmdeploy_exec_info_t next;
-  const char* task_name;
-  mmdeploy_scheduler_t scheduler;
-};
-
 ///////////////////////////////////////////////////////////////////////////////
 // Scheduler
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .detectors import *  # noqa: F401,F403
-from .heads import *  # noqa: F401,F403
+from . import detectors  # noqa: F401,F403
+from . import heads  # noqa: F401,F403

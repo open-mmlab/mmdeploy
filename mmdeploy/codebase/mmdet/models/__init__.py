@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .backbones import *  # noqa: F401, F403
-from .dense_heads import *  # noqa: F401,F403
-from .detectors import *  # noqa: F401,F403
-from .necks import *  # noqa: F401,F403
-from .roi_heads import *  # noqa: F401,F403
-from .transformer import *  # noqa: F401,F403
+from . import backbones  # noqa: F401, F403
+from . import dense_heads  # noqa: F401,F403
+from . import detectors  # noqa: F401,F403
+from . import necks  # noqa: F401,F403
+from . import roi_heads  # noqa: F401,F403
+from . import transformer  # noqa: F401,F403

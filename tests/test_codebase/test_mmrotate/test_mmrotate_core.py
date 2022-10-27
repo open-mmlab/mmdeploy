@@ -19,7 +19,8 @@ except ImportError:
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_multiclass_nms_rotated():
-    from mmdeploy.codebase.mmrotate.core import multiclass_nms_rotated
+    from mmdeploy.codebase.mmrotate.core.post_processing import \
+        multiclass_nms_rotated
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
@@ -70,7 +71,8 @@ def test_multiclass_nms_rotated():
 def test_multiclass_nms_rotated_with_keep_top_k(pre_top_k):
     backend_type = 'onnxruntime'
 
-    from mmdeploy.codebase.mmrotate.core import multiclass_nms_rotated
+    from mmdeploy.codebase.mmrotate.core.post_processing import \
+        multiclass_nms_rotated
     keep_top_k = 15
     deploy_cfg = mmcv.Config(
         dict(
@@ -226,7 +228,8 @@ def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_fake_multiclass_nms_rotated():
-    from mmdeploy.codebase.mmrotate.core import fake_multiclass_nms_rotated
+    from mmdeploy.codebase.mmrotate.core.post_processing import \
+        fake_multiclass_nms_rotated
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),

@@ -7,7 +7,7 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/logger.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 template <typename T>
 T SetError(ErrorCode* ec, ErrorCode code, T ret) {
@@ -398,4 +398,4 @@ PlatformRegistry& gPlatformRegistry() {
   return instance;
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

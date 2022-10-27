@@ -100,8 +100,8 @@ Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_r
     return Status(eFail);
   }
 }
-Result<DetectorOutput> ResizeBBox::DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
-                                                     const Tensor& labels) {
+Result<Detections> ResizeBBox::DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
+                                                 const Tensor& labels) {
   auto data_type = labels.data_type();
   switch (data_type) {
     case DataType::kFLOAT:
@@ -115,9 +115,9 @@ Result<DetectorOutput> ResizeBBox::DispatchGetBBoxes(const Value& prep_res, cons
   }
 }
 template <typename T>
-Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& dets,
-                                             const Tensor& labels) {
-  DetectorOutput objs;
+Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& dets,
+                                         const Tensor& labels) {
+  Detections objs;
   auto* dets_ptr = dets.data<float>();
   auto* labels_ptr = labels.data<T>();
   vector<float> scale_factor;
@@ -157,12 +157,12 @@ Result<DetectorOutput> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor
     }
     MMDEPLOY_DEBUG("remap left {}, top {}, right {}, bottom {}", rect[0], rect[1], rect[2],
                    rect[3]);
-    DetectorOutput::Detection det{};
+    Detection det{};
     det.index = i;
     det.label_id = static_cast<int>(*labels_ptr);
     det.score = score;
     det.bbox = rect;
-    objs.detections.push_back(std::move(det));
+    objs.push_back(std::move(det));
   }
   return objs;
 }

@@ -4,25 +4,25 @@
 
 #include "common.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 class PyDetector {
  public:
-  PyDetector(const char *model_path, const char *device_name, int device_id) {
+  PyDetector(const char* model_path, const char* device_name, int device_id) {
     auto status = mmdeploy_detector_create_by_path(model_path, device_name, device_id, &detector_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create detector");
     }
   }
-  py::list Apply(const std::vector<PyImage> &imgs) {
+  py::list Apply(const std::vector<PyImage>& imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
-    for (const auto &img : imgs) {
+    for (const auto& img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mmdeploy_detection_t *detection{};
-    int *result_count{};
+    mmdeploy_detection_t* detection{};
+    int* result_count{};
     auto status = mmdeploy_detector_apply(detector_, mats.data(), (int)mats.size(), &detection,
                                           &result_count);
     if (status != MMDEPLOY_SUCCESS) {
@@ -65,24 +65,17 @@ class PyDetector {
   mmdeploy_detector_t detector_{};
 };
 
-static void register_python_detector(py::module &m) {
+static PythonBindingRegisterer register_detector{[](py::module& m) {
   py::class_<PyDetector>(m, "Detector")
-      .def(py::init([](const char *model_path, const char *device_name, int device_id) {
+      .def(py::init([](const char* model_path, const char* device_name, int device_id) {
              return std::make_unique<PyDetector>(model_path, device_name, device_id);
            }),
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
-           [](PyDetector *self, const PyImage &img) -> py::tuple {
+           [](PyDetector* self, const PyImage& img) -> py::tuple {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PyDetector::Apply);
-}
+}};
 
-class PythonDetectorRegisterer {
- public:
-  PythonDetectorRegisterer() { gPythonBindings().emplace("detector", register_python_detector); }
-};
-
-static PythonDetectorRegisterer python_detector_registerer;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

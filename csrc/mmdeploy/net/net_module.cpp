@@ -17,7 +17,7 @@
 using std::string;
 using std::vector;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 struct NetModule::Impl {
   using Input = std::map<std::string, Tensor>;
@@ -238,4 +238,4 @@ class NetModuleCreator : public Creator<Module> {
 
 REGISTER_MODULE(Module, NetModuleCreator);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

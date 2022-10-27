@@ -216,19 +216,13 @@ jobs:
              -DMMDEPLOY_BUILD_SDK=ON `
              -DMMDEPLOY_BUILD_TEST=ON `
              -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+             -DMMDEPLOY_BUILD_EXAMPLES=ON `
              -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
              -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
              -DMMDEPLOY_TARGET_BACKENDS="ort" `
              -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
             cmake --build . --config Release -- /m
             cmake --install . --config Release
-            cd install/example
-            mkdir build -ErrorAction SilentlyContinue
-            cd build
-            cmake ../cpp -G "Visual Studio 16 2019" -A x64 -T v142 `
-             -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy" `
-             -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"
-            cmake --build . --config Release -- /m
       - install_mmdeploy
       - install_model_converter_req
       - perform_model_converter_ut

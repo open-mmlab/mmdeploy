@@ -496,3 +496,18 @@ def test_scaled_dot_product_attention():
         run_with_backend=True)
     assert torch.allclose(pytorch_output[0],
                           rewrite_output[0].to(pytorch_output[0].device))
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('num', [5, 7])
+def test_mod__tensorrt(num):
+    input = torch.rand(1, 3, 6, 6).cuda()
+    model = WrapFunction(lambda input: input % num)
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'], shape=[1, 3, 6, 6]),
+        run_with_backend=True)
+    assert torch.allclose(
+        pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)

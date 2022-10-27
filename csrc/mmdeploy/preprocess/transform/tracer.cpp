@@ -25,14 +25,14 @@ void Tracer::PrepareImage(const std::string &color_type, bool to_float32, Tensor
 void Tracer::Resize(const std::string &mode, const std::vector<int> &size, DataType dtype) {
   trans_.push_back(ResizeParam{dtype, size, mode});
   state_.shape[1] = size[0];
-  state_.shape[2] = size[2];
+  state_.shape[2] = size[1];
 }
 
 void Tracer::Pad(float pad_val, const std::vector<int> &tlbr, const std::vector<int> &size,
                  DataType dtype) {
   trans_.push_back(PadParam{dtype, pad_val, tlbr, size});
   state_.shape[1] = size[0];
-  state_.shape[2] = size[2];
+  state_.shape[2] = size[1];
 }
 
 void Tracer::Normalize(const std::vector<float> &mean, const std::vector<float> &std, bool to_rgb,
@@ -55,7 +55,7 @@ void Tracer::CenterCrop(const std::vector<int> &tlbr, const std::vector<int> &si
                         DataType dtype) {
   trans_.push_back(CropParam{state_.dtype, tlbr, size});
   state_.shape[1] = size[0];
-  state_.shape[2] = size[2];
+  state_.shape[2] = size[1];
 }
 
 void Tracer::DefaultFormatBundle(bool to_float, DataType dtype) {

@@ -414,46 +414,33 @@ def main():
     if args.test_img is None:
         args.test_img = args.img
 
-    headless = False
-    # check headless or not for all platforms.
-    try:
-        import tkinter
-        tkinter.Tk()
-    except Exception:
-        headless = True
+    extra = dict(
+        backend=backend,
+        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+        show_result=args.show)
+    if backend == Backend.SNPE:
+        extra['uri'] = args.uri
 
-    # for headless installation.
-    if not headless:
-        extra = dict(
-            backend=backend,
-            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-            show_result=args.show)
-        if backend == Backend.SNPE:
-            extra['uri'] = args.uri
+    # get backend inference result, try render
+    create_process(
+        f'visualize {backend.value} model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
+        kwargs=extra,
+        ret_value=ret_value)
 
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=extra,
-            ret_value=ret_value)
-
-        # visualize pytorch model
-        create_process(
-            'visualize pytorch model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=Backend.PYTORCH,
-                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
-    else:
-        logger.warning(
-            '\"visualize_model\" has been skipped may be because it\'s \
-            running on a headless device.')
+    # get pytorch model inference result, try visualize if possible
+    create_process(
+        'visualize pytorch model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img, args.device),
+        kwargs=dict(
+            backend=Backend.PYTORCH,
+            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+            show_result=args.show),
+        ret_value=ret_value)
     logger.info('All process success.')
 
 
