@@ -32,30 +32,6 @@ def compute_padding(input_size, kernel_size, stride, dilation):
     return padded
 
 
-class AdaptivePadOp(torch.autograd.Function):
-    """AdaptivePadOp."""
-
-    @staticmethod
-    def forward(ctx, x, kernel, stride, dilation):
-        padded = compute_padding(x.shape[2:], kernel, stride, dilation)
-        if padded is not None:
-            x = F.pad(x, padded)
-        return x
-
-    @staticmethod
-    def symbolic(g, x, kernel, stride, dilation):
-        padded = compute_padding(x.type().sizes()[2:], kernel, stride,
-                                 dilation)
-        if padded is None:
-            return g.op('Identity', x)
-        padded = g.op(
-            'Constant', value_t=torch.tensor(padded, dtype=torch.int64))
-        constant_value = g.op(
-            'Constant', value_t=torch.tensor(0, dtype=torch.float32))
-        return g.op(
-            'Pad', x, padded, constant_value, mode_s='constant', outputs=1)
-
-
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcv.cnn.bricks.conv2d_adaptive_padding. \
         Conv2dAdaptivePadding.forward',
@@ -77,8 +53,39 @@ def conv2d_adaptive_padding__forward__tensorrt(ctx, self, x):
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     if not is_dynamic_flag:
-        x = AdaptivePadOp.apply(x, self.weight.shape[2:], self.stride,
-                                self.dilation)
+
+        class AdaptivePadOp(torch.autograd.Function):
+            """Dummy adaptive pad op."""
+
+            @staticmethod
+            def forward(ctx, x):
+                padded = AdaptivePadOp.padded
+                if padded is not None:
+                    x = F.pad(x, padded)
+                return x
+
+            @staticmethod
+            def symbolic(g, x):
+                padded = AdaptivePadOp.padded
+                if padded is None:
+                    return g.op('Identity', x)
+                padded = g.op(
+                    'Constant',
+                    value_t=torch.tensor(padded, dtype=torch.int64))
+                constant_value = g.op(
+                    'Constant', value_t=torch.tensor(0, dtype=torch.int64))
+                return g.op(
+                    'Pad',
+                    x,
+                    padded,
+                    constant_value,
+                    mode_s='constant',
+                    outputs=1)
+
+        padded = compute_padding(x.shape[2:], self.weight.shape[2:],
+                                 self.stride, self.dilation)
+        AdaptivePadOp.padded = padded
+        x = AdaptivePadOp.apply(x)
         return F.conv2d(x, self.weight, self.bias, self.stride, self.padding,
                         self.dilation, self.groups)
     else:

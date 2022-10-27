@@ -227,6 +227,5 @@ models:
     model_configs:
       - configs/efficientnet/efficientnet-b0_8xb32_in1k.py
     pipelines:
-      - *pipeline_trt_static_fp32
       - *pipeline_trt_static_fp16
-      - *pipeline_trt_static_int8
+      - *pipeline_ort_static_fp32
