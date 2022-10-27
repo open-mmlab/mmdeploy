@@ -6,26 +6,6 @@ pipeline {
             defaultValue: 'default.config',
             description: 'select config'
         )
-        string(
-            name: 'CODEBASES',
-            defaultValue: 'mmdet mmcls mmdet3d mmedit mmocr mmpose mmrotate mmseg',
-            description: 'select codebase'
-        )
-        choice(
-            name: 'DOCKER_IMAGE',
-            choices: [
-                'mmdeploy-ci-ubuntu-18.04',
-                'mmdeploy-ci-ubuntu-18.04-cu102',
-                'mmdeploy-ci-ubuntu-20.04-cu111',
-                'mmdeploy-ci-ubuntu-20.04-cu113'
-            ],
-            description: 'Pick env'
-        )
-        string(
-            name: 'EXEC_PERFORMANCE',
-            defaultValue: 'y',
-            description: 'exec performance or not,use y/n'
-        )
         booleanParam(
             name: 'EXEC_BUILD',
             defaultValue: true,
