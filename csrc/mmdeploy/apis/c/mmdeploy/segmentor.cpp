@@ -108,8 +108,8 @@ int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mmdeploy_segmentation
     size_t image_count = value.size();
 
     ResultType r(image_count);
-
     auto [results_data, buffers] = r.pointers();
+
     auto results_ptr = results_data;
 
     for (auto i = 0; i < image_count; ++i, ++results_ptr) {

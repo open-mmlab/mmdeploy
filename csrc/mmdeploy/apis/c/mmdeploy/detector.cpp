@@ -120,7 +120,6 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
     }
 
     ResultType r = CreateResultType(total);
-
     auto [result_data, result_count_vec, masks, buffers] = r.pointers();
 
     auto result_ptr = result_data;

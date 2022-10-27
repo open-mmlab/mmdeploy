@@ -108,10 +108,9 @@ int mmdeploy_restorer_get_result(mmdeploy_value_t output, mmdeploy_mat_t** resul
     const Value& value = Cast(output)->front();
 
     auto restorer_output = from_value<std::vector<mmedit::RestorerOutput>>(value);
-
     auto count = restorer_output.size();
-    ResultType r(count);
 
+    ResultType r(count);
     auto [_results, buffers] = r.pointers();
 
     for (int i = 0; i < count; ++i) {
