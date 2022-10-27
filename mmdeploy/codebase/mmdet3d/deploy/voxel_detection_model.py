@@ -188,17 +188,16 @@ class VoxelDetectionModel(BaseBackendModel):
         """postprocess outputs to datasamples.
 
         Args:
-            model_cfg (Union[str, Config]): _description_
-            deploy_cfg (Union[str, Config]): _description_
-            outs (Dict): _description_
-            metas (Dict): _description_
+            model_cfg (Union[str, Config]): The model config from trainning repo
+            deploy_cfg (Union[str, Config]): The deploy config to specify backend and input shape # noqa: E501
+            outs (Dict): output bbox, cls and score
+            metas (Dict): DataSample3D for bbox3d render
 
         Raises:
-            NotImplementedError: _description_
-            NotImplementedError: _description_
+            NotImplementedError: Only support mmdet3d model with `bbox_head`
 
         Returns:
-            _type_: _description_
+            DataSample3D: datatype for render
         """
         if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:  # noqa: E501
             raise RuntimeError('output tensor not found')
