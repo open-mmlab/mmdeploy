@@ -333,18 +333,25 @@ class PoseDetection(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
+        codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[-1]
         component = 'UNKNOWN'
         params = copy.deepcopy(self.model_cfg.model.test_cfg)
+        params.update(codec)
         if self.model_cfg.model.type == 'TopdownPoseEstimator':
-            head_type = self.model_cfg.model.head.type
-            if head_type == 'HeatmapHead':
+            component = 'TopdownHeatmapSimpleHeadDecode'
+            if codec.type == 'MSRAHeatmap':
                 params['post_process'] = 'default'
-                component = 'TopdownHeatmapSimpleHeadDecode'
-            elif head_type == 'MSPNHead':
+            elif codec.type == 'UDPHeatmap':
+                params['post_process'] = 'default'
+                params['use_udp'] = True
+            elif codec.type == 'MegviiHeatmap':
                 params['post_process'] = 'megvii'
                 params['modulate_kernel'] = self.model_cfg.kernel_sizes[-1]
-                component = 'TopdownHeatmapMSMUHeadDecode'
+            elif codec.type == 'SimCCLabel':
+                component = 'SimCCLabelDecode'
             else:
-                raise RuntimeError(f'Unsupported head type: {head_type}')
+                raise RuntimeError(f'Unsupported codecs type: {codec.type}')
         postprocess = dict(params=params, type=component)
         return postprocess

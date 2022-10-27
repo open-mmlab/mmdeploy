@@ -124,3 +124,18 @@ models:
 #      - *pipeline_trt_static_fp32_256x256
 #      - *pipeline_ncnn_static_fp32_256x256
 #      - *pipeline_openvino_static_fp32_256x256
+
+# TODO: no mobilenetv2_coco.yml in latest mmpose, enable this later
+#  - name: SimCC
+#    metafile: configs/body_2d_keypoint/simcc/coco/mobilenetv2_coco.yml
+#    model_configs:
+#      - configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py
+#    pipelines:
+#      - convert_image: *convert_image
+#        deploy_config: configs/mmpose/pose-detection_simcc_onnxruntime_dynamic.py
+#      - convert_image: *convert_image
+#        deploy_config: configs/mmpose/pose-detection_simcc_tensorrt_dynamic-256x192.py
+#        backend_test: *default_backend_test
+#        sdk_config: configs/mmpose/pose-detection_simcc_sdk_static-256x192.py
+#      - convert_image: *convert_image
+#        deploy_config: configs/mmpose/pose-detection_simcc_ncnn_static-256x192.py

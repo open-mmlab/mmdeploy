@@ -1,14 +1,15 @@
 # MMPose 模型部署
 
-- [安装](#安装)
-  - [安装 mmcls](#安装-mmpose)
-  - [安装 mmdeploy](#安装-mmdeploy)
-- [模型转换](#模型转换)
-- [模型规范](#模型规范)
-- [模型推理](#模型推理)
-  - [后端模型推理](#后端模型推理)
-  - [SDK 模型推理](#sdk-模型推理)
-- [模型支持列表](#模型支持列表)
+- [MMPose 模型部署](#mmpose-模型部署)
+  - [安装](#安装)
+    - [安装 mmpose](#安装-mmpose)
+    - [安装 mmdeploy](#安装-mmdeploy)
+  - [模型转换](#模型转换)
+  - [模型规范](#模型规范)
+  - [模型推理](#模型推理)
+    - [后端模型推理](#后端模型推理)
+    - [SDK 模型推理](#sdk-模型推理)
+  - [模型支持列表](#模型支持列表)
 
 ______________________________________________________________________
 
@@ -155,8 +156,10 @@ task_processor.visualize(
 
 ## 模型支持列表
 
-| Model                                                                                                 | Task          | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------------------------- | :------------ | :----------: | :------: | :--: | :---: | :------: |
-| [HRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#hrnet-cvpr-2019)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [MSPN](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#mspn-arxiv-2019)          | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [LiteHRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#litehrnet-cvpr-2021) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| Model                                                                                                  | Task          | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------------------------- | :------------ | :----------: | :------: | :--: | :---: | :------: |
+| [HRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#hrnet-cvpr-2019)          | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [MSPN](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#mspn-arxiv-2019)           | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [LiteHRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#litehrnet-cvpr-2021)  | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [Hourglass](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [SimCC](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    N     |
