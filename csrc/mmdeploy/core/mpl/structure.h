@@ -125,13 +125,25 @@ class Storage {
   array<void*, S> pointers_{};
 };
 
+template <typename T, typename... Ts>
+struct _count {
+  static constexpr size_t value = (std::is_same_v<T, Ts> + ...);
+};
+
+template <typename T, typename Is, typename... Ts>
+struct _find {};
+
+template <typename T, size_t... Is, typename... Ts>
+struct _find<T, std::index_sequence<Is...>, Ts...> {
+  static constexpr size_t value = ((std::is_same_v<T, Ts> * Is) + ...);
+};
+
 template <typename T, typename Ts, typename Is, typename = void>
 struct get_type_index {};
 
-template <typename T, typename... Ts, size_t... Is>
-struct get_type_index<T, tuple<Ts...>, index_sequence<Is...>,
-                      std::enable_if_t<(std::is_same_v<T, Ts> + ...) == 1>>
-    : integral_constant<size_t, ((std::is_same_v<T, Ts> * Is) + ...)> {};
+template <typename T, typename... Ts, typename Is>
+struct get_type_index<T, tuple<Ts...>, Is, std::enable_if_t<_count<T, Ts...>::value == 1>>
+    : integral_constant<size_t, _find<T, Is, Ts...>::value> {};
 
 template <typename T>
 using _size_t = size_t;
