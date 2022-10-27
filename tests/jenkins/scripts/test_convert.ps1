@@ -88,7 +88,7 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 #cudnn
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
-# git clone -b master https://github.com/open-mmlab/mmdeploy.git mmdeploy
+git pull https://github.com/open-mmlab/mmdeploy.git
 git submodule update --init --recursive
 New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
 net use \\10.1.52.36\public\benchmark /user:zhengshaofeng
