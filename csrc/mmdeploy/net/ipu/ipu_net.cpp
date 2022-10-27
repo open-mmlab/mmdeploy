@@ -151,16 +151,18 @@ Result<void> IPUNet::Forward() {
 
   {
     struct timeval start, end;
-    gettimeofday(&start, 0);
-    model_runner->execute(examples::toInputMemoryView(input_memory),
-                          examples::toOutputMemoryView(output_memory));
-    gettimeofday(&end, 0);
-    long sec = end.tv_sec - start.tv_sec;
-    long micro = end.tv_usec - start.tv_usec;
-    double elapsed = sec + micro * 1e-6;
-    // output_desc = model_runner->getExecuteOutputs();
-    // sleep(30);
-    MMDEPLOY_INFO("ipu inference done, time elapsed {} sec", elapsed);
+    for (int i = 0; i < 50; i++) {
+      gettimeofday(&start, 0);
+      model_runner->execute(examples::toInputMemoryView(input_memory),
+                            examples::toOutputMemoryView(output_memory));
+      gettimeofday(&end, 0);
+      long sec = end.tv_sec - start.tv_sec;
+      long micro = end.tv_usec - start.tv_usec;
+      double elapsed = sec + micro * 1e-6;
+      // output_desc = model_runner->getExecuteOutputs();
+      // sleep(30);
+      MMDEPLOY_INFO("ipu inference done, time elapsed {} sec", elapsed);
+    }
     // if (!success) {
     //   MMDEPLOY_ERROR("IPU Inference error: {}",
     //   std::string(zdl::DlSystem::getLastErrorString())); return Status(eFail);
