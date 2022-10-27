@@ -1,7 +1,13 @@
 #!/bin/bash
 
 ## parameters
-config="tests/jenkins/conf/${1:-default.config}"
+config="${HOME}/mmdeploy/tests/jenkins/conf/${1:-default.config}"
+if [ -f "$config" ]; then
+    echo "Using config: $config"
+else
+    echo "$config does not exist."
+    exit 1
+fi
 
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
@@ -11,6 +17,7 @@ date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
 mkdir -p -m 777 ${log_dir}
+chmod -R 777 ${log_dir}/../
 prebuilt_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
 mkdir -p -m 777 ${prebuilt_dir}
 container_name=convert-${codebase}-${time_snap}
