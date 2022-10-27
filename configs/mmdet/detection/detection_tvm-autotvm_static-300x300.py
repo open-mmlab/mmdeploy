@@ -9,7 +9,7 @@ backend_config = dict(model_inputs=[
         tuner=dict(
             type='AutoTVMTuner',
             log_file='tvm_tune_log.log',
-            n_trial=10000,
+            n_trial=1000,
             tuner=dict(type='XGBTuner'),
         ))
 ])

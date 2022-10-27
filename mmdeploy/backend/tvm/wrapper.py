@@ -110,7 +110,7 @@ class TVMWrapper(BaseWrapper):
             for idx, name in enumerate(self._output_names):
                 ndarray = module.get_output(idx)
                 tensor = torch.from_dlpack(ndarray.to_dlpack())
-                ret[name] = tensor
+                ret[name] = tensor.clone()
             return ret
 
     @TimeCounter.count_time(Backend.TVM.value)

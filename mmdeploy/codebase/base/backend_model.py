@@ -128,9 +128,10 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
             return CoreMLWrapper(model_file=backend_files[0])
         elif backend == Backend.TVM:
             from mmdeploy.backend.tvm import TVMWrapper
+            bytecode = None if len(backend_files) <= 1 else backend_files[1]
             return TVMWrapper(
                 backend_files[0],
-                bytecode=backend_files[1],
+                bytecode=bytecode,
                 output_names=output_names,
                 device=device)
         else:
