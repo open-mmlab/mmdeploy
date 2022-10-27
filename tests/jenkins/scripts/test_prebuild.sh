@@ -12,6 +12,7 @@ fi
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
+repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 ## make log_dir
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
@@ -22,7 +23,7 @@ prebuilt_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time
 mkdir -p -m 777 ${prebuilt_dir}
 container_name=convert-${codebase}-${time_snap}
 
-container_name=prebuild-$(date +%Y%m%d%H%M)
+container_name=openmmlab${repo_version}-prebuild-$(date +%Y%m%d%H%M)
 container_id=$(
     docker run \
         --gpus all \
