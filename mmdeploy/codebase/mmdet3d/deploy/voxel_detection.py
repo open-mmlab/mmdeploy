@@ -15,7 +15,8 @@ from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Backend, Codebase, Task, get_root_logger
+from mmdeploy.utils import (Backend, Codebase, Task, get_backend,
+                            get_root_logger)
 from .voxel_detection_model import VoxelDetectionModel
 
 MMDET3D_TASK = Registry('mmdet3d_tasks')
@@ -190,7 +191,7 @@ class VoxelDetection(BaseTask):
         # show the results
         _, data_input = self.create_input(pcd=image)
 
-        if Backend(window_name) != Backend.PYTORCH:
+        if get_backend(self.deploy_cfg) != Backend.PYTORCH:
             predictions = VoxelDetectionModel.postprocess(
                 model_cfg=self.model_cfg,
                 deploy_cfg=self.deploy_cfg,
