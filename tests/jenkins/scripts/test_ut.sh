@@ -22,7 +22,7 @@ date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/ut_log/${date_snap}/${time_snap}
 mkdir -p -m 777 ${log_dir}
-chmod -R 777 ${log_dir}/../
+chmod 777 ${log_dir}/../
 
 ## docker run cmd for unittest
 for codebase in ${codebase_list[@]}; do
