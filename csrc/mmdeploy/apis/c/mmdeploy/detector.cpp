@@ -38,8 +38,6 @@ using ResultType = mmdeploy::Structure<mmdeploy_detection_t,                    
                                        std::deque<mmdeploy_instance_mask_t>,       //
                                        std::vector<mmdeploy::framework::Buffer>>;  //
 
-ResultType CreateResultType(size_t num_dets) { return ResultType({num_dets, 1, 1, 1}); }
-
 }  // namespace
 
 int mmdeploy_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
@@ -119,7 +117,7 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
       total += detector_outputs[i].size();
     }
 
-    ResultType r = CreateResultType(total);
+    ResultType r({total, 1, 1, 1});
     auto [result_data, result_count_vec, masks, buffers] = r.pointers();
 
     auto result_ptr = result_data;
@@ -160,7 +158,7 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
 void mmdeploy_detector_release_result(mmdeploy_detection_t* results, const int* result_count,
                                       int count) {
   auto num_dets = std::accumulate(result_count, result_count + count, 0);
-  auto deleter = CreateResultType(num_dets);
+  ResultType deleter({static_cast<size_t>(num_dets), 1, 1, 1}, results);
 }
 
 void mmdeploy_detector_destroy(mmdeploy_detector_t detector) {
