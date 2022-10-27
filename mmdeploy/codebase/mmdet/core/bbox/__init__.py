@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .delta_xywh_bbox_coder import *  # noqa: F401,F403
-from .distance_point_bbox_coder import *  # noqa: F401,F403
-from .tblr_bbox_coder import *  # noqa: F401,F403
-from .transforms import *  # noqa: F401,F403
+from . import delta_xywh_bbox_coder  # noqa: F401,F403
+from . import distance_point_bbox_coder  # noqa: F401,F403
+from . import tblr_bbox_coder  # noqa: F401,F403
+from . import transforms  # noqa: F401,F403

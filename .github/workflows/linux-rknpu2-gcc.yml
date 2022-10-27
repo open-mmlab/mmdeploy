@@ -1,0 +1,54 @@
+name: build_rknpu2_gcc
+
+on:
+  push:
+    paths:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+  pull_request:
+    paths-ignore:
+      - "csrc/**"
+      - "demo/csrc/**"
+      - "CMakeLists.txt"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_rknpu2_gcc:
+    runs-on: ubuntu-18.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: rknpu2-gnu-toolchain
+        run: |
+          mkdir $GITHUB_WORKSPACE/rknpu2-gnu-toolchain
+          cd $GITHUB_WORKSPACE/rknpu2-gnu-toolchain
+          git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu.git
+      - name: rknpu2
+        run: |
+          mkdir $GITHUB_WORKSPACE/rknpu2
+          cd $GITHUB_WORKSPACE/rknpu2
+          git clone https://github.com/rockchip-linux/rknpu2.git
+      - name: build
+        run: |
+          export RKNN_TOOL_CHAIN=$GITHUB_WORKSPACE/rknpu2-gnu-toolchain/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu/usr
+          export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
+          export RKNPU2_DEVICE_DIR=$GITHUB_WORKSPACE/rknpu2/rknpu2/runtime/RK3588
+          mkdir build && cd build
+          cmake .. \
+            -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchains/rknpu2-linux-gnu.cmake \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_SHARED_LIBS=ON \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_TARGET_DEVICES="cpu" \
+            -DMMDEPLOY_TARGET_BACKENDS="rknn" \
+            -DMMDEPLOY_CODEBASES=all \
+            -DOpenCV_DIR=$RKNPU2_DEVICE_DIR/../../examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
+          make -j$(nproc)
+          make install
