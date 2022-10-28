@@ -17,7 +17,7 @@ std::array<float, 4> MapToOriginImage(float left, float top, float right, float 
 // probs: The scores after being filtered
 // label_ids: The class labels
 // anchor_idxs: The anchor indexes
-void FilterScoresAndTopk(mmdeploy::framework::Tensor& scores, float score_thr, int topk,
+void FilterScoresAndTopk(const mmdeploy::framework::Tensor& scores, float score_thr, int topk,
                          std::vector<float>& probs, std::vector<int>& label_ids,
                          std::vector<int>& anchor_idxs);
 float IOU(float xmin0, float ymin0, float xmax0, float ymax0, float xmin1, float ymin1, float xmax1,
@@ -25,7 +25,7 @@ float IOU(float xmin0, float ymin0, float xmax0, float ymax0, float xmin1, float
 
 void Sort(std::vector<float>& probs, std::vector<int>& label_ids, std::vector<int>& anchor_idxs);
 
-void NMS(mmdeploy::framework::Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs);
+void NMS(const mmdeploy::framework::Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs);
 
 }  // namespace mmdeploy::mmdet
 

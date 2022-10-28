@@ -17,7 +17,7 @@ std::array<float, 4> MapToOriginImage(float left, float top, float right, float 
   return {left, top, right, bottom};
 }
 
-void FilterScoresAndTopk(Tensor& scores, float score_thr, int topk, std::vector<float>& probs,
+void FilterScoresAndTopk(const Tensor& scores, float score_thr, int topk, std::vector<float>& probs,
                          std::vector<int>& label_ids, std::vector<int>& anchor_idxs) {
   auto kDets = scores.shape(1);
   auto kClasses = scores.shape(2);
@@ -45,7 +45,7 @@ float IOU(float xmin0, float ymin0, float xmax0, float ymax0, float xmin1, float
   return iou <= 0.f ? 0.f : iou;
 }
 
-void NMS(Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs) {
+void NMS(const Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs) {
   auto det_ptr = dets.data<float>();
   for (auto i = 0; i < keep_idxs.size(); ++i) {
     auto n = keep_idxs[i];

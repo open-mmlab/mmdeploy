@@ -12,7 +12,8 @@ class BaseDenseHead : public MMDetection {
   explicit BaseDenseHead(const Value& cfg);
 
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
-  Result<Detections> GetBBoxes(const Value& prep_res, const Value& infer_res) const;
+  Result<Detections> GetBBoxes(const Value& prep_res, const Tensor& dets,
+                               const Tensor& scores) const;
 
  private:
   float score_thr_{0.4f};
