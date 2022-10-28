@@ -1,6 +1,6 @@
-# Test on TVM
+# TVM 测试
 
-## Supported Models
+## 支持模型列表
 
 | Model             | Codebase         |                                          Model config                                           |
 | :---------------- | :--------------- | :---------------------------------------------------------------------------------------------: |
@@ -23,7 +23,7 @@
 | DeepLabV3+        | MMSegmentation   |    [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus)     |
 | UNet              | MMSegmentation   |         [config](https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet)         |
 
-The table above list the models that we have tested. Models not listed on the table might still be able to converted. Please have a try.
+表中仅列出已测试模型，未列出的模型可能同样支持，可以自行尝试转换。
 
 ## Test
 
@@ -42,7 +42,7 @@ The table above list the models that we have tested. Models not listed on the ta
 | :-------------------------------------------------------------------------------------: | :----: | :-----: | :--: |
 | [SSD](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd/ssd300_coco.py) | box AP |  25.5   | 25.5 |
 
-\*: We only test model on ssd since dynamic shape is not supported for now.
+\*: 由于暂时不支持动态转换，因此仅提供 SSD 的精度测试结果。
 
 |                                                           mmseg                                                            | metric | PyTorch |  TVM  |
 | :------------------------------------------------------------------------------------------------------------------------: | :----: | :-----: | :---: |
