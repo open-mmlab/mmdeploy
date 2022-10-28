@@ -30,8 +30,8 @@
         "mmcv": "mmcv-full==1.6.0"
     },
     "mmdet3d": {
-        "branch": "master",
-        "version": "mmdet3d",
+        "branch": "v1.0.0rc4",
+        "version": "mmdet3d==1.0.0rc4",
         "mmcv": "mmcv-full==1.5.2"
     },
     "mmrotate": {
