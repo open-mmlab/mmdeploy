@@ -181,10 +181,10 @@ class BaseTask(metaclass=ABCMeta):
                     ' field of config. Please set '\
                     '`visualization=dict(type="VisualizationHook")`'
 
-                cfg.default_hooks.visualization.enable = True
+                cfg.default_hooks.visualization.draw = True
                 cfg.default_hooks.visualization.show = show
                 cfg.default_hooks.visualization.wait_time = wait_time
-                cfg.default_hooks.visualization.out_dir = show_dir
+                cfg.default_hooks.visualization.test_out_dir = show_dir
                 cfg.default_hooks.visualization.interval = interval
 
             return cfg
