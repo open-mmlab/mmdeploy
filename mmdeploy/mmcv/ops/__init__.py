@@ -6,9 +6,10 @@ from . import roi_align  # noqa: F401,F403
 from . import roi_align_rotated  # noqa: F401,F403
 from . import transformer  # noqa: F401,F403
 from .nms import ONNXNMSop, TRTBatchedNMSop
-from .nms_rotated import ONNXNMSRotatedOp, TRTBatchedRotatedNMSop
+from .nms_rotated import (ONNXNMSRotatedOp, TRTBatchedBEVNMSop,
+                          TRTBatchedRotatedNMSop)
 
 __all__ = [
     'ONNXNMSop', 'TRTBatchedNMSop', 'ONNXNMSRotatedOp',
-    'TRTBatchedRotatedNMSop'
+    'TRTBatchedRotatedNMSop', 'TRTBatchedBEVNMSop'
 ]
