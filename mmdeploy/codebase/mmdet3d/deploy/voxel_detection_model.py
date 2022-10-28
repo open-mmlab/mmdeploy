@@ -29,7 +29,6 @@ class VoxelDetectionModel(BaseBackendModel):
         deploy_cfg (str|Config): Deployment config file or loaded
             Config object.
     """
-
     def __init__(self,
                  backend: Backend,
                  backend_files: Sequence[str],

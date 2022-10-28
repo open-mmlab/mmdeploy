@@ -13,6 +13,7 @@ from mmengine.dataset import Compose, pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
+from mmdeploy.utils import load_config
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import (Backend, Codebase, Task, get_backend,
@@ -226,9 +227,7 @@ class VoxelDetection(BaseTask):
             list: The predictions of model inference.
         """
         result = model(
-            return_loss=False,
-            points=model_inputs['points'],
-            img_metas=model_inputs['img_metas'])
+            inputs=model_inputs['inputs'])
         return [result]
 
     @staticmethod
@@ -243,7 +242,7 @@ class VoxelDetection(BaseTask):
         if out:
             logger = get_root_logger()
             logger.info(f'\nwriting results to {out}')
-            mmcv.dump(outputs, out)
+            mmengine.dump(outputs, out)
         kwargs = {} if metric_options is None else metric_options
         if format_only:
             dataset.format_results(outputs, **kwargs)
@@ -328,7 +327,7 @@ class VoxelDetection(BaseTask):
         results = []
         dataset = data_loader.dataset
 
-        prog_bar = mmcv.ProgressBar(len(dataset))
+        prog_bar = mmengine.ProgressBar(len(dataset))
         for i, data in enumerate(data_loader):
             with torch.no_grad():
                 result = model(data['points'][0].data,
