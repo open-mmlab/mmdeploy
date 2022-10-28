@@ -1,7 +1,7 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 _base_ = [
-    'pointpillars_hv_secfpn_kitti.py',
-    'kitti-3d-3class.py',
-    'cyclic-40e.py', 'default_runtime.py'
+    'pointpillars_hv_secfpn_kitti.py', 'kitti-3d-3class.py', 'cyclic-40e.py',
+    'default_runtime.py'
 ]
 
 point_cloud_range = [0, -39.68, -3, 69.12, 39.68, 1]

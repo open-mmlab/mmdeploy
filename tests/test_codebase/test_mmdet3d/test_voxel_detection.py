@@ -1,8 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import NamedTemporaryFile
 
-import mmcv
 import mmengine
 import pytest
 import torch
@@ -97,27 +95,6 @@ def test_run_inference(backend_model):
     torch_results = task_processor.run_inference(torch_model, input_dict)
     assert torch_results is not None
     task_processor.device = 'cpu'
-
-
-# @pytest.mark.skipif(
-#     reason='Only support GPU test', condition=not torch.cuda.is_available())
-# def test_visualize():
-#     task_processor.device = 'cuda:0'
-#     input_dict, _ = task_processor.create_input(pcd_path)
-#     backend_model = task_processor.build_backend_model(None)
-#     results = task_processor.run_inference(backend_model, input_dict)
-#     with TemporaryDirectory() as dir:
-#         filename = dir + 'tmp.bin'
-#         task_processor.visualize(image=pcd_path, model=torch_model, result=results[0], output_file=filename,window_name='pytorch', show_result=False)
-#         assert os.path.exists(filename)
-
-
-# def test_build_dataset_and_dataloader():
-#     dataset = task_processor.build_dataset(
-#         dataset_cfg=model_cfg, dataset_type='test')
-#     assert isinstance(dataset, Dataset), 'Failed to build dataset'
-#     dataloader = task_processor.build_dataloader(dataset, 1, 1)
-#     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
 
 
 @pytest.mark.skipif(

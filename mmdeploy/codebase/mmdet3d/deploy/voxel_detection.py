@@ -2,7 +2,6 @@
 from copy import deepcopy
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
-import mmcv
 import mmengine
 import numpy as np
 import torch
@@ -13,7 +12,6 @@ from mmengine.dataset import Compose, pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
-from mmdeploy.utils import load_config
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import (Backend, Codebase, Task, get_backend,
@@ -226,8 +224,7 @@ class VoxelDetection(BaseTask):
         Returns:
             list: The predictions of model inference.
         """
-        result = model(
-            inputs=model_inputs['inputs'])
+        result = model(inputs=model_inputs['inputs'])
         return [result]
 
     @staticmethod

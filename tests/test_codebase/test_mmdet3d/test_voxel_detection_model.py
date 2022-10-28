@@ -1,7 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-
-import mmcv
 import mmengine
 import pytest
 import torch
@@ -16,7 +13,8 @@ try:
 except ImportError:
     pytest.skip(
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
-from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetectionModel
+from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import \
+    VoxelDetectionModel
 
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
 model_cfg = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
@@ -53,8 +51,6 @@ class TestVoxelDetectionModel:
         from mmdeploy.utils import load_config
         model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
         model_cfg = load_config(model_cfg_path)[0]
-        from mmdeploy.codebase.mmdet3d.deploy.voxel_detection_model import \
-            VoxelDetectionModel
         cls.end2end_model = VoxelDetectionModel(
             Backend.ONNXRUNTIME, [''],
             device='cuda',
@@ -65,13 +61,16 @@ class TestVoxelDetectionModel:
         reason='Only support GPU test',
         condition=not torch.cuda.is_available())
     def test_forward_and_show_result(self):
-        inputs = {"voxels": {
-            "voxels": torch.rand((3945, 32, 4)),
-            "num_points": torch.ones((3945), dtype=torch.int32),
-            "coors": torch.ones((3945, 4), dtype=torch.int32)}
-                }
-        results = self.end2end_model.forward(inputs = inputs)
+        inputs = {
+            'voxels': {
+                'voxels': torch.rand((3945, 32, 4)),
+                'num_points': torch.ones((3945), dtype=torch.int32),
+                'coors': torch.ones((3945, 4), dtype=torch.int32)
+            }
+        }
+        results = self.end2end_model.forward(inputs=inputs)
         assert results is not None
+
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_voxel_detection_model():
