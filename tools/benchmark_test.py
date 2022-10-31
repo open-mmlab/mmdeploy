@@ -43,7 +43,7 @@ for model in benchmark_test_info['models']:
             profile_cmd = (f'python tools/profiler.py {deploy_cfg} ' +
                            f'{model_cfg} {img_folder} --model tools/' +
                            f'{backend_model} --device {device} --shape ' +
-                           f'{shape}')
+                           f'{shape} >> report.txt')
             with open('report.txt', 'a') as f:
                 sys.stdout = f
                 print(profile_cmd)
