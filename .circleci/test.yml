@@ -274,7 +274,7 @@ jobs:
       - run:
           name: Inference model by SDK
           command: |
-            mmdeploy/build/install/example/build/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
+            ./mmdeploy/build/bin/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
 
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
