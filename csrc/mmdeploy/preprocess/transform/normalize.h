@@ -23,6 +23,7 @@ class MMDEPLOY_API NormalizeImpl : public TransformImpl {
     std::vector<float> mean;
     std::vector<float> std;
     bool to_rgb;
+    bool to_float;
   };
   using ArgType = struct normalize_arg_t;
   ArgType arg_;

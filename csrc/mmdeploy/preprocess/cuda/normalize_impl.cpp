@@ -5,8 +5,10 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/normalize.h"
+#include "ppl/cv/cuda/cvtcolor.h"
 
 using namespace std;
+using namespace ppl::cv::cuda;
 
 namespace mmdeploy::cuda {
 
@@ -29,42 +31,51 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
     int w = (int)src_desc.shape[2];
     int c = (int)src_desc.shape[3];
     int stride = w * c;
-
-    TensorDesc dst_desc{device_, DataType::kFLOAT, src_desc.shape, src_desc.name};
-    Tensor dst_tensor{dst_desc};
-    auto output = dst_tensor.data<float>();
     auto stream = ::mmdeploy::GetNative<cudaStream_t>(stream_);
 
-    if (DataType::kINT8 == src_desc.data_type) {
-      auto input = src_tensor.data<uint8_t>();
-      if (3 == c) {
-        Normalize<uint8_t, 3>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
-                              arg_.to_rgb, stream);
-      } else if (1 == c) {
-        Normalize<uint8_t, 1>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
-                              arg_.to_rgb, stream);
-      } else {
-        MMDEPLOY_ERROR("unsupported channels {}", c);
-        return Status(eNotSupported);
+    if (!arg_.to_float) {
+      if (!arg_.to_rgb) {
+        return tensor;
       }
-    } else if (DataType::kFLOAT == src_desc.data_type) {
-      auto input = src_tensor.data<float>();
-      if (3 == c) {
-        Normalize<float, 3>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
-                            arg_.to_rgb, stream);
-      } else if (1 == c) {
-        Normalize<float, 1>(input, h, w, stride, output, arg_.mean.data(), arg_.std.data(),
-                            arg_.to_rgb, stream);
-      } else {
-        MMDEPLOY_ERROR("unsupported channels {}", c);
-        return Status(eNotSupported);
-      }
+      TensorDesc dst_desc{device_, DataType::kINT8, src_desc.shape, src_desc.name};
+      Tensor dst_tensor{dst_desc};
+      RGB2BGR<uint8_t>(stream, h, w, stride, tensor.data<uint8_t>(), stride,
+                       dst_tensor.data<uint8_t>());
+      return dst_tensor;
     } else {
-      MMDEPLOY_ERROR("unsupported data type {}", src_desc.data_type);
-      assert(0);
+      TensorDesc dst_desc{device_, DataType::kFLOAT, src_desc.shape, src_desc.name};
+      Tensor dst_tensor{dst_desc};
+      auto output = dst_tensor.data<float>();
+
+      if (DataType::kINT8 == src_desc.data_type) {
+        Dispatch<uint8_t>(src_tensor.data<uint8_t>(), h, w, c, stride, output, arg_.mean.data(),
+                          arg_.std.data(), arg_.to_rgb, stream).value();
+      } else if (DataType::kFLOAT == src_desc.data_type) {
+        Dispatch<float>(src_tensor.data<float>(), h, w, c, stride, output, arg_.mean.data(),
+                        arg_.std.data(), arg_.to_rgb, stream).value();
+      } else {
+        MMDEPLOY_ERROR("unsupported data type {}", src_desc.data_type);
+        return Status(eNotSupported);
+      }
+      return dst_tensor;
+    }
+  }
+
+  template <typename T>
+  Result<void> Dispatch(const T* input, int height, int width, int channel, int stride,
+                        float* output, const float* mean, const float* std, bool to_rgb,
+                        cudaStream_t stream) {
+    if (3 == channel) {
+      Normalize<T, 3>(input, height, width, stride, output, arg_.mean.data(), arg_.std.data(),
+                      arg_.to_rgb, stream);
+    } else if (1 == channel) {
+      Normalize<T, 1>(input, height, width, stride, output, arg_.mean.data(), arg_.std.data(),
+                      arg_.to_rgb, stream);
+    } else {
+      MMDEPLOY_ERROR("unsupported channels {}", channel);
       return Status(eNotSupported);
     }
-    return dst_tensor;
+    return success();
   }
 };
 

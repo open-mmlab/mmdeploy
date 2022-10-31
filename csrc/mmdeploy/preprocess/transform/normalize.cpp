@@ -25,6 +25,7 @@ NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
     arg_.std.push_back(v.get<float>());
   }
   arg_.to_rgb = args.value("to_rgb", true);
+  arg_.to_float = args.value("to_float", true);
 }
 
 /**
