@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 import torch
 
+from mmdeploy.apis import build_task_processor
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
@@ -129,12 +130,13 @@ def get_centerpoint_head():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_centerpoint(backend_type: Backend):
+def test_pointpillars(backend_type: Backend):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
     from mmdeploy.core import RewriterContext
     check_backend(backend_type, True)
-    model = get_centerpoint()
-    model.cpu().eval()
+
+    model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
     deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -145,19 +147,21 @@ def test_centerpoint(backend_type: Backend):
                 output_names=['outputs']),
             codebase_config=dict(
                 type=Codebase.MMDET3D.value, task=Task.VOXEL_DETECTION.value)))
+
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+    model = task_processor.build_pytorch_model(None)
+    model.eval()
+
     voxeldetection = VoxelDetection(model_cfg, deploy_cfg, 'cpu')
-    inputs, data = voxeldetection.create_input(
-        'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin')
+    _, data = voxeldetection.create_input(
+        pcd='tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin')
 
     with RewriterContext(
             cfg=deploy_cfg,
             backend=deploy_cfg.backend_config.type,
             opset=deploy_cfg.onnx_config.opset_version):
-        outputs = model.forward(*data)
-        head = get_centerpoint_head()
-        rewrite_outputs = head.get_bboxes(*[[i] for i in outputs],
-                                          inputs['img_metas'][0])
-    assert rewrite_outputs is not None
+        outputs = model.forward(data)
+        assert len(outputs) == 3
 
 
 def get_pointpillars_nus():
@@ -169,12 +173,15 @@ def get_pointpillars_nus():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_pointpillars_nus(backend_type: Backend):
+def test_centerpoint(backend_type: Backend):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
     from mmdeploy.core import RewriterContext
     check_backend(backend_type, True)
-    model = get_pointpillars_nus()
-    model.cpu().eval()
+
+    centerpoint_model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py'  # noqa: E501
+    )[0]
+
     deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -185,13 +192,20 @@ def test_pointpillars_nus(backend_type: Backend):
                 output_names=['outputs']),
             codebase_config=dict(
                 type=Codebase.MMDET3D.value, task=Task.VOXEL_DETECTION.value)))
-    voxeldetection = VoxelDetection(model_cfg, deploy_cfg, 'cpu')
-    inputs, data = voxeldetection.create_input(
-        'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin')
+
+    task_processor = build_task_processor(centerpoint_model_cfg, deploy_cfg,
+                                          'cpu')
+    model = task_processor.build_pytorch_model(None)
+    model.eval()
+
+    voxeldetection = VoxelDetection(centerpoint_model_cfg, deploy_cfg, 'cpu')
+    _, data = voxeldetection.create_input(
+        'tests/test_codebase/test_mmdet3d/data/nuscenes/n008-2018-09-18-12-07-26-0400__LIDAR_TOP__1537287083900561.pcd.bin'  # noqa: E501
+    )
 
     with RewriterContext(
             cfg=deploy_cfg,
             backend=deploy_cfg.backend_config.type,
             opset=deploy_cfg.onnx_config.opset_version):
-        outputs = model.forward(*data)
+        outputs = model.forward(data)
     assert outputs is not None
