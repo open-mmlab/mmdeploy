@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from texttable import Texttable
-import numpy as np
 import argparse
+
+import numpy as np
+from texttable import Texttable
 
 
 def parse_args():
@@ -65,8 +66,8 @@ def main():
             n_active[id] -= 1
 
     table = Texttable(max_width=0)
-    table.header(['name', 'occupy', 'usage',
-                 'n_call', 't_mean', 't_50%', 't_90%'])
+    table.header(
+        ['name', 'occupy', 'usage', 'n_call', 't_mean', 't_50%', 't_90%'])
 
     for id in sorted(list(used_id)):
         occupy = t_occupy[id] / (now - t_min)
@@ -75,8 +76,8 @@ def main():
         t_mean = np.mean(times) / 1000
         t_50 = times[int(len(times) * 0.5)] / 1000
         t_90 = times[int(len(times) * 0.9)] / 1000
-        table.add_row([id2name[id], occupy, usage,
-                      n_call[id], t_mean, t_50, t_90])
+        table.add_row(
+            [id2name[id], occupy, usage, n_call[id], t_mean, t_50, t_90])
     print(table.draw())
 
 
