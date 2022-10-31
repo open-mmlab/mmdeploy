@@ -25,6 +25,7 @@ class Task(AdvancedEnum):
     OBJECT_DETECTION = 'ObjectDetection'
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
+    MONOCULAR_DETECTION = 'MonocularDetection'
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
 

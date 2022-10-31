@@ -21,7 +21,7 @@ except ImportError:
 
 @backend_checker(Backend.TENSORRT)
 def test_multiclass_nms_static():
-    from mmdeploy.codebase.mmdet.core import multiclass_nms
+    from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
@@ -56,7 +56,7 @@ def test_multiclass_nms_static():
     boxes = torch.rand(1, 5, 4).cuda()
     scores = torch.rand(1, 5, 8).cuda()
     max_output_boxes_per_class = 20
-    keep_top_k = 10
+    keep_top_k = 5
     wrapped_func = WrapFunction(
         multiclass_nms,
         max_output_boxes_per_class=max_output_boxes_per_class,
@@ -230,7 +230,7 @@ def test__distancepointbboxcoder__decode(backend_type: Backend):
 def test_multiclass_nms_with_keep_top_k(pre_top_k):
     backend_type = 'onnxruntime'
 
-    from mmdeploy.codebase.mmdet.core import multiclass_nms
+    from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
     max_output_boxes_per_class = 20
     keep_top_k = 15
     deploy_cfg = mmcv.Config(
@@ -347,7 +347,7 @@ def test__anchorgenerator__single_level_grid_priors():
 
 @backend_checker(Backend.ASCEND)
 def test_multiclass_nms__ascend():
-    from mmdeploy.codebase.mmdet.core import multiclass_nms
+    from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(

@@ -87,6 +87,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
+  - [Cross Build for aarch64](docs/en/01-how-to-build/cross_build_ncnn_aarch64.md)
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
   - [How to write config](docs/en/02-how-to-run/write_config.md)
@@ -148,6 +149,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO series toolbox and benchmark
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.

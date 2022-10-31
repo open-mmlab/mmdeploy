@@ -82,7 +82,7 @@ wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -
 pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 
 # torchvision
-sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-base libopenmpi-dev -y
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-base libopenmpi-dev  libopenblas-dev -y
 git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
 cd torchvision
 export BUILD_VERSION=0.11.1
