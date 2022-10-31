@@ -6,7 +6,7 @@
 #include <numeric>
 #include <sstream>
 
-#include "dlpack.h"
+#include "mmdeploy/core/device.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/types.h"
@@ -45,8 +45,13 @@ inline static std::string shape_string(const TensorShape& shape) {
 
 inline static void init_stride(const TensorShape& shape, TensorStride& stride, bool force = false) {
   if (force || stride.size() == 0) {
+    TensorShape reverse_shape(shape.size());
+    TensorStride reverse_stride(shape.size());
+    std::reverse_copy(std::begin(shape), std::end(shape), std::begin(reverse_shape));
+    std::exclusive_scan(reverse_shape.begin(), reverse_shape.end(), reverse_stride.begin(), 1,
+                        std::multiplies<>{});
     stride.resize(shape.size());
-    std::exclusive_scan(shape.begin(), shape.end(), stride.begin(), 1, std::multiplies<>{});
+    std::reverse_copy(std::begin(reverse_stride), std::end(reverse_stride), std::begin(stride));
   }
 }
 
@@ -309,14 +314,12 @@ Result<DLManagedTensor*> Tensor::ToDLPack() const {
   tensor.shape = (long*)(&(desc_.shape[0]));
   tensor.strides = (long*)(&(desc_.stride[0]));
 
-  // dlpack require 256 align on cuda
-  if (tensor.device.device_type == kDLCUDA) {
-    uint64_t data_val = reinterpret_cast<uint64_t>(tensor.data);
-    uint64_t offset = data_val & 0xff;
-    data_val = data_val & (~0xff);
-    tensor.data = reinterpret_cast<void*>(data_val);
-    tensor.byte_offset = offset;
-  }
+  // dlpack require 256 align
+  uint64_t data_val = reinterpret_cast<uint64_t>(tensor.data);
+  uint64_t offset = data_val & 0xff;
+  data_val = data_val & (~0xff);
+  tensor.data = reinterpret_cast<void*>(data_val);
+  tensor.byte_offset = offset;
 
   return managed_tensor;
 }
@@ -325,17 +328,23 @@ Result<Tensor> Tensor::FromDLPack(DLManagedTensor* managed_tensor) {
   auto& dl_tensor = managed_tensor->dl_tensor;
 
   TensorShape shape(dl_tensor.shape, dl_tensor.shape + dl_tensor.ndim);
-  TensorStride stride(dl_tensor.strides, dl_tensor.strides + dl_tensor.ndim);
+  TensorStride stride;
+  if (dl_tensor.strides != nullptr) {
+    stride = TensorStride(dl_tensor.strides, dl_tensor.strides + dl_tensor.ndim);
+  }
   OUTCOME_TRY(auto device, FromDLDevice(dl_tensor.device));
   OUTCOME_TRY(auto dtype, FromDLDataType(dl_tensor.dtype));
 
   TensorDesc desc = {device, dtype, shape, "", stride};
-  Tensor ret(desc);
+  auto buffer_size = get_size(shape) * element_size(dtype);
+  auto raw_data =
+      reinterpret_cast<void*>(reinterpret_cast<char*>(dl_tensor.data) + dl_tensor.byte_offset);
 
+  Tensor ret(desc, Buffer(device, buffer_size, raw_data));
   if (!ret.is_contiguous()) {
     MMDEPLOY_ERROR("Only contiguous DLTensor is supported now.");
     return Status(eNotSupported);
   }
-  return Status(eNotSupported);
+  return ret;
 }
 }  // namespace mmdeploy::framework
