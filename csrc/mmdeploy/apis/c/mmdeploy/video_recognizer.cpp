@@ -119,8 +119,12 @@ int mmdeploy_video_recognizer_create_input(const mmdeploy_mat_t* images,
       int num_clips = video_info[i].num_clips;
       int n_mat = clip_len * num_clips;
       for (int j = 0; j < n_mat; j++) {
-        mmdeploy::Mat _mat{images[j].height,         images[j].width, PixelFormat(images[j].format),
-                           DataType(images[j].type), images[j].data,  Device{"cpu"}};
+        mmdeploy::Mat _mat{images[j].height,
+                           images[j].width,
+                           PixelFormat(images[j].format),
+                           DataType(images[j].type),
+                           images[j].data,
+                           images[j].device ? *(const Device*)(images[j].device) : Device{0}};
         sample->push_back({{"ori_img", _mat}, {"clip_len", clip_len}, {"num_clips", num_clips}});
       }
       input->front().push_back(std::move(*sample.release()));
