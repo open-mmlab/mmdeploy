@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -46,7 +46,7 @@ def test_pillar_encoder(backend_type: Backend):
     model = get_pillar_encoder()
     model.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -84,7 +84,7 @@ def test_pointpillars_scatter(backend_type: Backend):
     model = get_pointpillars_scatter()
     model.cpu().eval()
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -135,7 +135,7 @@ def test_centerpoint(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_centerpoint()
     model.cpu().eval()
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(
@@ -175,7 +175,7 @@ def test_pointpillars_nus(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_pointpillars_nus()
     model.cpu().eval()
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(

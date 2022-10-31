@@ -2,7 +2,7 @@
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -23,7 +23,7 @@ except ImportError:
 
 model_cfg_path = 'tests/test_codebase/test_mmrotate/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = mmengine.Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(
