@@ -83,11 +83,14 @@ int main() {
 
   mmdeploy_device_t device{};
   mmdeploy_device_create("cpu", 0, &device);
+  mmdeploy_profiler_t profiler{};
+  mmdeploy_profiler_create("profile.bin", &profiler);
 
   mmdeploy_context_t ctx{};
   mmdeploy_context_create(&ctx);
 
   mmdeploy_context_add(ctx, MMDEPLOY_TYPE_DEVICE, nullptr, device);
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_PROFILER, nullptr, profiler);
 
   auto thread_pool = mmdeploy_executor_create_thread_pool(4);
   auto infer_thread = mmdeploy_executor_create_thread();
@@ -123,6 +126,7 @@ int main() {
   mmdeploy_scheduler_destroy(thread_pool);
 
   mmdeploy_device_destroy(device);
+  mmdeploy_profiler_destroy(profiler);
 
   return 0;
 }

@@ -6,6 +6,7 @@
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/graph/common.h"
+#include "mmdeploy/graph/profiler.h"
 
 namespace mmdeploy::graph {
 
@@ -33,6 +34,12 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
   context["model"] = std::move(model);
 
   auto pipeline_config = from_json<Value>(json);
+  if (context.contains("scope")) {
+    auto net_cfg = pipeline_config["pipeline"]["tasks"][1];
+    std::string net_name = net_cfg["name"].get<std::string>();
+    auto scope = context["scope"].get_ref<ScopeSptr&>()->CreateScope(net_name);
+    context["scope"] = scope;
+  }
   pipeline_config["context"] = context;
 
   MMDEPLOY_INFO("{}", pipeline_config);

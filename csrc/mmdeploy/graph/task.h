@@ -4,6 +4,7 @@
 #define MMDEPLOY_CSRC_GRAPH_TASK_H_
 
 #include "mmdeploy/core/graph.h"
+#include "mmdeploy/graph/profiler.h"
 
 namespace mmdeploy::graph {
 
@@ -19,6 +20,7 @@ class Task : public Node {
   bool is_batched_{false};
   bool is_thread_safe_{false};
   dynamic_batch_t::context_t batch_context_;
+  ScopeSptr scope_;
 };
 
 class TaskBuilder : public Builder {

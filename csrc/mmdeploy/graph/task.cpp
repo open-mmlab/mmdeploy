@@ -12,6 +12,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
     assert(v.is_array());
     // handle empty input
     if (v.front().empty()) {
+      profiler::ScopedCounter counter(scope_.get());
       return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
     }
     if (v.front().is_array() && !is_batched_) {
@@ -24,6 +25,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
             return Value{std::move(input), std::move(output)};
           })
           | Bulk(batch_size, [&](size_t index, Value& in_out) {
+            profiler::ScopedCounter counter(scope_.get());
             const auto& input = in_out[0];
             auto& output = in_out[1];
             output[index] = module_->Process(input[index]).value();
@@ -33,8 +35,10 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_,
-                          [&](const Value& u) { return module_->Process(u).value(); });
+      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_, [&](const Value& u) {
+        profiler::ScopedCounter counter(scope_.get());
+        return module_->Process(u).value();
+      });
     }
   });
 }
@@ -63,6 +67,23 @@ inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
 Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
+    if (auto scope = Maybe{config_} / "context" / "scope" / identity<ScopeSptr>{}) {
+      auto module_name = config_.value<std::string>("module", "");
+      auto name = config_.value<std::string>("name", "");
+      auto component_name = config_.value<std::string>("component", "");
+      ScopeSptr next;
+      if (name == "Preprocess") {
+        next = scope->get()->CreateScope("Transform");
+      } else if (name == "postprocess") {
+        next = task->scope_ = scope->get()->CreateScope(component_name);
+      } else if (module_name == "Net") {
+        next = task->scope_ = scope->get()->CreateScope("infer");
+      } else {
+        next = task->scope_ = scope->get()->CreateScope(module_name);
+      }
+      config_["context"]["scope"] = next;
+    }
+
     OUTCOME_TRY(task->module_, CreateModule(config_));
 
     if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
