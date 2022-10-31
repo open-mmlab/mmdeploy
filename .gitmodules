@@ -1,9 +1,12 @@
 [submodule "third_party/cub"]
-	path = third_party/cub
-	url = https://github.com/NVIDIA/cub.git
+path = third_party/cub
+url = https://github.com/NVIDIA/cub.git
 [submodule "third_party/pybind11"]
-	path = third_party/pybind11
-	url = https://github.com/pybind/pybind11.git
+path = third_party/pybind11
+url = https://github.com/pybind/pybind11.git
 [submodule "third_party/spdlog"]
-	path = third_party/spdlog
-	url = https://github.com/gabime/spdlog.git
+path = third_party/spdlog
+url = https://github.com/gabime/spdlog.git
+[submodule "third_party/dlpack"]
+path = third_party/dlpack
+url = https://github.com/dmlc/dlpack.git

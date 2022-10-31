@@ -49,6 +49,7 @@ target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/dlpack>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )
@@ -63,6 +64,7 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
     target_include_directories(${PROJECT_NAME} PUBLIC
             $<INSTALL_INTERFACE:include>
             $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
+            $<INSTALL_INTERFACE:include/mmdeploy/third_party/dlpack>
             $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>)
     if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
         target_include_directories(spdlog INTERFACE
@@ -85,6 +87,8 @@ if (MMDEPLOY_BUILD_SDK_CXX_API)
             FILES_MATCHING PATTERN "*.h")
     install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
             DESTINATION include/mmdeploy/third_party/outcome)
+            install(FILES ${CMAKE_SOURCE_DIR}/third_party/dlpack/dlpack.h
+                    DESTINATION include/mmdeploy/third_party/dlpack)
 
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/experimental
             DESTINATION include/mmdeploy
