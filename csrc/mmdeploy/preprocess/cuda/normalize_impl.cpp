@@ -49,10 +49,12 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
 
       if (DataType::kINT8 == src_desc.data_type) {
         Dispatch<uint8_t>(src_tensor.data<uint8_t>(), h, w, c, stride, output, arg_.mean.data(),
-                          arg_.std.data(), arg_.to_rgb, stream).value();
+                          arg_.std.data(), arg_.to_rgb, stream)
+            .value();
       } else if (DataType::kFLOAT == src_desc.data_type) {
         Dispatch<float>(src_tensor.data<float>(), h, w, c, stride, output, arg_.mean.data(),
-                        arg_.std.data(), arg_.to_rgb, stream).value();
+                        arg_.std.data(), arg_.to_rgb, stream)
+            .value();
       } else {
         MMDEPLOY_ERROR("unsupported data type {}", src_desc.data_type);
         return Status(eNotSupported);
