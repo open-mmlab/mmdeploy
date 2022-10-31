@@ -114,28 +114,26 @@ models:
       - *pipeline_ts_fp32
       - *pipeline_pplnn_static_fp32
 
-# TODO: no hourglass_coco.yml in latest mmpose, enable this later
-#  - name: Hourglass
-#    metafile: configs/body_2d_keypoint/topdown_heatmap/coco/hourglass_coco.yml
-#    model_configs:
-#      - configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py
-#    pipelines:
-#      - *pipeline_ort_static_fp32
-#      - *pipeline_trt_static_fp32_256x256
-#      - *pipeline_ncnn_static_fp32_256x256
-#      - *pipeline_openvino_static_fp32_256x256
+  - name: Hourglass
+    metafile: configs/body_2d_keypoint/topdown_heatmap/coco/hourglass_coco.yml
+    model_configs:
+      - configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_static_fp32_256x256
+      - *pipeline_ncnn_static_fp32_256x256
+      - *pipeline_openvino_static_fp32_256x256
 
-# TODO: no mobilenetv2_coco.yml in latest mmpose, enable this later
-#  - name: SimCC
-#    metafile: configs/body_2d_keypoint/simcc/coco/mobilenetv2_coco.yml
-#    model_configs:
-#      - configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py
-#    pipelines:
-#      - convert_image: *convert_image
-#        deploy_config: configs/mmpose/pose-detection_simcc_onnxruntime_dynamic.py
-#      - convert_image: *convert_image
-#        deploy_config: configs/mmpose/pose-detection_simcc_tensorrt_dynamic-256x192.py
-#        backend_test: *default_backend_test
-#        sdk_config: configs/mmpose/pose-detection_simcc_sdk_static-256x192.py
-#      - convert_image: *convert_image
-#        deploy_config: configs/mmpose/pose-detection_simcc_ncnn_static-256x192.py
+  - name: SimCC
+    metafile: configs/body_2d_keypoint/simcc/coco/mobilenetv2_coco.yml
+    model_configs:
+      - configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py
+    pipelines:
+      - convert_image: *convert_image
+        deploy_config: configs/mmpose/pose-detection_simcc_onnxruntime_dynamic.py
+      - convert_image: *convert_image
+        deploy_config: configs/mmpose/pose-detection_simcc_tensorrt_dynamic-256x192.py
+        backend_test: *default_backend_test
+        sdk_config: configs/mmpose/pose-detection_simcc_sdk_static-256x192.py
+      - convert_image: *convert_image
+        deploy_config: configs/mmpose/pose-detection_simcc_ncnn_static-256x192.py

@@ -10,7 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def mspn_head__forward(ctx, self, feats):
     """Rewrite `forward` of MSPNHead and CPMHead for default backend.
 
-    1. skip heatmaps decoding and return heatmaps directly.
+    1. return last stage heatmaps directly.
 
     Args:
         feats (tuple[Tensor]): Input features.
