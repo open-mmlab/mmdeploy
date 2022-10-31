@@ -4,6 +4,6 @@
 
 以下特性需要手动在 MMDeploy 自行配置，如[这里](https://github.com/open-mmlab/mmdeploy/blob/master/configs/_base_/backends/rknn.py).
 
-- target_platform ！= `3588`
+- target_platform ！= default
 - quantization settings
 - optimization level ！= 1

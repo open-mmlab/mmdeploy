@@ -187,3 +187,5 @@ label: 65, score: 0.95
               end=['BaseDenseHead:output'])
       ])
   ```
+
+- SDK only supports int8 rknn model, which require you set `do_quantization=True` when converting models.
