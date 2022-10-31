@@ -323,6 +323,8 @@ class VideoRecognition(BaseTask):
                     pipeline[index]['to_bgr'] = True
                 if key == 'Resize' and 'scale' in pipeline[index]:
                     value = pipeline[index].pop('scale')
+                    if len(value) == 2 and value[0] == -1:
+                        value = value[::-1]
                     pipeline[index]['size'] = value
                 lift['transforms'].append(pipeline[index])
 

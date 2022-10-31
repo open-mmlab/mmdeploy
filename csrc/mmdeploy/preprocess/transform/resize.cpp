@@ -23,11 +23,8 @@ ResizeImpl::ResizeImpl(const Value& args) : TransformImpl(args) {
         MMDEPLOY_ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
         throw std::length_error("'size' expects an array of size 2");
       }
-      auto width = args["size"][0].get<int>();
-      auto height = args["size"][1].get<int>();
-      if (height < 0) {
-        std::swap(width, height);
-      }
+      auto height = args["size"][0].get<int>();
+      auto width = args["size"][1].get<int>();
       arg_.img_scale = {height, width};
     } else {
       MMDEPLOY_ERROR("'size' is expected to be an integer or and array of size 2");

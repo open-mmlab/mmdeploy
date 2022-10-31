@@ -258,8 +258,7 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         for transform in transforms:
             if transform['type'] == 'Normalize':
                 transform['to_float'] = False
-    assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
-        ' of pipeline should be LoadImageFromFile'
+
     if transforms[0]['type'] != 'Lift':
         assert transforms[0]['type'] == 'LoadImageFromFile', \
             'The first item type of pipeline should be ' \
