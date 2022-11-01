@@ -40,7 +40,7 @@ def test_conv2d_adaptive_padding_tensorrt():
     model = Conv2dAdaptivePadding(in_channels, out_channels, kernel_sz)
     dummy_input = torch.rand(1, 3, 256, 256)
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(input_shape=None),
             backend_config=dict(type=Backend.TENSORRT.value),
