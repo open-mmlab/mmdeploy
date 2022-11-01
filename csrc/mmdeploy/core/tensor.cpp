@@ -300,31 +300,45 @@ inline static Result<DLDataType> ToDLDataType(const DataType& dtype) {
   }
 }
 
-Result<DLManagedTensor*> Tensor::ToDLPack() const {
+static void TensorDeleter(struct DLManagedTensor* self) {
+  auto tensor = static_cast<Tensor*>(self->manager_ctx);
+  delete tensor;
+}
+
+Result<DLManagedTensor*> Tensor::ToDLPack(Stream stream) {
   auto managed_tensor = new DLManagedTensor();
-  managed_tensor->manager_ctx = NULL;
-  managed_tensor->deleter = NULL;
-  auto& tensor = managed_tensor->dl_tensor;
 
-  tensor.data = buffer_.GetNative();
-  tensor.device = ToDLDevice(desc_.device);
-  OUTCOME_TRY(tensor.dtype, ToDLDataType(desc_.data_type));
-  tensor.ndim = desc_.shape.size();
-  tensor.byte_offset = 0;
-  tensor.shape = (long*)(&(desc_.shape[0]));
-  tensor.strides = (long*)(&(desc_.stride[0]));
+  // set deleter
+  managed_tensor->deleter = TensorDeleter;
 
-  // dlpack require 256 align
-  uint64_t data_val = reinterpret_cast<uint64_t>(tensor.data);
-  uint64_t offset = data_val & 0xff;
-  data_val = data_val & (~0xff);
-  tensor.data = reinterpret_cast<void*>(data_val);
-  tensor.byte_offset = offset;
+  // create manager_ctx
+  uint64_t data_val = reinterpret_cast<uint64_t>(data());
+  Tensor* new_tensor = nullptr;
+  if ((data_val & 0xff) != 0) {
+    // DLPack require aligned memory.
+    new_tensor = new Tensor(desc_, Buffer(desc_.device, byte_size(), allocator_, 256));
+    OUTCOME_TRY(CopyTo(*new_tensor, stream));
+  } else {
+    new_tensor = new Tensor(desc_, Buffer(buffer(), 0, byte_size()));
+  }
+  managed_tensor->manager_ctx = static_cast<void*>(new_tensor);
+
+  // setup dl_tensor
+  auto& dl_tensor = managed_tensor->dl_tensor;
+  auto& desc = new_tensor->desc();
+  dl_tensor.data = new_tensor->data();
+  dl_tensor.device = ToDLDevice(desc.device);
+  OUTCOME_TRY(dl_tensor.dtype, ToDLDataType(desc.data_type));
+  dl_tensor.ndim = desc.shape.size();
+  dl_tensor.byte_offset = 0;
+  dl_tensor.shape = (long*)(&(desc.shape[0]));
+  dl_tensor.strides = (long*)(&(desc.stride[0]));
 
   return managed_tensor;
 }
 
-Result<Tensor> Tensor::FromDLPack(DLManagedTensor* managed_tensor) {
+Result<Tensor> Tensor::FromDLPack(DLManagedTensor* managed_tensor, const std::string& name,
+                                  Stream stream) {
   auto& dl_tensor = managed_tensor->dl_tensor;
 
   TensorShape shape(dl_tensor.shape, dl_tensor.shape + dl_tensor.ndim);
@@ -335,12 +349,13 @@ Result<Tensor> Tensor::FromDLPack(DLManagedTensor* managed_tensor) {
   OUTCOME_TRY(auto device, FromDLDevice(dl_tensor.device));
   OUTCOME_TRY(auto dtype, FromDLDataType(dl_tensor.dtype));
 
-  TensorDesc desc = {device, dtype, shape, "", stride};
+  TensorDesc desc = {device, dtype, shape, name, stride};
   auto buffer_size = get_size(shape) * element_size(dtype);
-  auto raw_data =
-      reinterpret_cast<void*>(reinterpret_cast<char*>(dl_tensor.data) + dl_tensor.byte_offset);
+  auto raw_data = static_cast<void*>(static_cast<char*>(dl_tensor.data) + dl_tensor.byte_offset);
 
-  Tensor ret(desc, Buffer(device, buffer_size, raw_data));
+  Tensor ret(desc);
+  OUTCOME_TRY(ret.CopyFrom(raw_data, stream));
+  managed_tensor->deleter(managed_tensor);
   if (!ret.is_contiguous()) {
     MMDEPLOY_ERROR("Only contiguous DLTensor is supported now.");
     return Status(eNotSupported);

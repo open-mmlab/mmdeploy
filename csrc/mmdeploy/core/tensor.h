@@ -67,8 +67,9 @@ class MMDEPLOY_API Tensor {
   Result<void> CopyFrom(void* host_ptr, Stream stream = {});
   Result<void> CopyTo(void* host_ptr, Stream stream = {}) const;
 
-  Result<DLManagedTensor*> ToDLPack() const;
-  static Result<Tensor> FromDLPack(DLManagedTensor* managed_tensor);
+  Result<DLManagedTensor*> ToDLPack(Stream stream = {});
+  static Result<Tensor> FromDLPack(DLManagedTensor* managed_tensor, const std::string& name = "",
+                                   Stream stream = {});
 
   Allocator allocator() { return allocator_; }
 
