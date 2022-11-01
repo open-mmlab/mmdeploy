@@ -13,8 +13,11 @@ docker build docker/CPU/ -t mmdeploy:master-cpu
 
 对于 GPU 用户，我们可以通过以下方式使用最新的 MMDeploy 构建 docker 镜像：
 
+> 需提前在`https://ngc.nvidia.com/setup/api-key`注册账号，点击`Generate API Key`，运行下方`docker login nvcr.io`命令时，`Username`填入`$oauthtoken`，`Password`填入API Key
+
 ```
 cd mmdeploy
+docker login nvcr.io
 docker build docker/GPU/ -t mmdeploy:master-gpu
 ```
 
