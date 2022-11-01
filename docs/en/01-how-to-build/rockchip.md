@@ -1,7 +1,7 @@
 # Build for RKNN
 
-This tutorial is based on Linux systems like Ubuntu-18.04 and Rockchip NPU like `rk3588`. For different NPU devices, you may have to use different rknn packages.
-Here is a table describing the relationship:
+This tutorial is based on Ubuntu-18.04 and Rockchip NPU `rk3588`. For different NPU devices, you may have to use different rknn packages.
+Below is a table describing the relationship:
 
 | Device               | Python Package                                                   | c/c++ SDK                                          |
 | -------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
@@ -188,4 +188,4 @@ label: 65, score: 0.95
       ])
   ```
 
-- SDK only supports int8 rknn model, which require you set `do_quantization=True` when converting models.
+- SDK only supports int8 rknn model, which require `do_quantization=True` when converting models.
