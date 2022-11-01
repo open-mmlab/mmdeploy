@@ -9,14 +9,10 @@ globals:
       eval_name: PSNR # test.py --metrics args
       metric_key: Eval-PSNR # eval log key name
       tolerance: 4 # metric ±n%
-      task_name: Restorers # metafile.Results.Task
-      dataset: Set5 # metafile.Results.Dataset
     SSIM:
       eval_name: SSIM
       metric_key: Eval-SSIM
       tolerance: 0.02 # metric ±n
-      task_name: Restorers
-      dataset: Set5
   convert_image: &convert_image
     input_img: *img_face
     test_img: *img_bg

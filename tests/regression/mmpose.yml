@@ -4,20 +4,15 @@ globals:
   images:
     img_human_pose: &img_human_pose ../mmpose/tests/data/coco/000000000785.jpg
     img_human_pose_256x192: &img_human_pose_256x192 ./demo/resources/human-pose.jpg
-    img_blank: &img_blank
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
       eval_name: mAP # test.py --metrics args
       metric_key: AP # eval key name
       tolerance: 0.10 # metric ±n
-      task_name: Body 2D Keypoint # metafile.Results.Task
-      dataset: COCO # metafile.Results.Dataset
     AR:
       eval_name: mAP
       metric_key: AR
       tolerance: 0.08 # metric ±n
-      task_name: Body 2D Keypoint
-      dataset: COCO
   convert_image: &convert_image
     input_img: *img_human_pose
     test_img: *img_human_pose_256x192

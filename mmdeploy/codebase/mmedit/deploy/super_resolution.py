@@ -254,6 +254,7 @@ class SuperResolution(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          log_file: Optional[str] = None,
+                         json_file: Optional[str] = None,
                          **kwargs) -> None:
         """Evaluation function implemented in mmedit.
 
@@ -284,6 +285,8 @@ class SuperResolution(BaseTask):
         stats = dataset.evaluate(outputs)
         for stat in stats:
             logger.info('Eval-{}: {}'.format(stat, stats[stat]))
+        if json_file is not None:
+            mmcv.dump(stats, json_file, indent=4)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

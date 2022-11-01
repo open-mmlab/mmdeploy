@@ -9,8 +9,6 @@ globals:
       eval_name: mAP # test.py --metrics args
       metric_key: AP # eval key name
       tolerance: 0.10 # metric ±n%
-      task_name: Oriented Object Detection # metafile.Results.Task
-      dataset: DOTAv1.0 # metafile.Results.Dataset
   convert_image_det: &convert_image_det
     input_img: *img_demo
     test_img: *img_dota_demo
