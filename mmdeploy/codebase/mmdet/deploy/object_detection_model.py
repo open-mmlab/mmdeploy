@@ -192,9 +192,10 @@ class End2EndModel(BaseBackendModel):
                 if 'scale_factor' in img_metas[i]:
                     scale_factor = img_metas[i]['scale_factor']
                 else:
-                    # Some models like CenterNet use rescale with out scale_factor
-                    # We multiply the feat_size inside the model, and divide the
-                    # image shape outside the model to adapt dynamic shape.
+                    # Some models like CenterNet use rescale with out
+                    # scale_factor
+                    # We multiply the feat_size inside the model, and divide
+                    # the image shape outside the model to adapt dynamic shape
                     scale_factor = np.array([
                         1.0 / img_metas[i]['batch_input_shape'][1],
                         1.0 / img_metas[i]['batch_input_shape'][0]
