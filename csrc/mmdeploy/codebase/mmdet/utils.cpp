@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <math.h>
 
 using mmdeploy::framework::Tensor;
 
@@ -88,6 +89,65 @@ void Sort(std::vector<float>& probs, std::vector<int>& label_ids, std::vector<in
   probs = std::move(_probs);
   label_ids = std::move(_label_ids);
   anchor_idxs = std::move(_keep_idxs);
+}
+
+static float sigmoid(float x) { return 1.0 / (1.0 + expf(-x)); }
+
+static float unsigmoid(float y) { return -1.0 * logf((1.0 / y) - 1.0); }
+
+int YOLOV3FeatDecode(const Tensor& feat_map, std::vector<std::vector<unsigned int>> anchor, int grid_h, int grid_w,
+                   int height, int width, int stride, std::vector<float> &boxes,
+                   std::vector<float> &objProbs, std::vector<int> &classId,
+                   float threshold) {
+  auto input = const_cast<float*> (feat_map.data<float>());
+  int prop_box_size = feat_map.shape(1) / anchor.size();
+  int kClasses = prop_box_size -5;
+  int validCount = 0;
+  int grid_len = grid_h * grid_w;
+  float thres = unsigmoid(threshold);
+  for (int a = 0; a < anchor.size(); a++) {
+    for (int i = 0; i < grid_h; i++) {
+      for (int j = 0; j < grid_w; j++) {
+        float box_confidence =
+            input[(prop_box_size * a + 4) * grid_len + i * grid_w + j];
+        if (box_confidence >= thres) {
+          int offset = (prop_box_size * a) * grid_len + i * grid_w + j;
+          float *in_ptr = input + offset;
+
+          float box_x = sigmoid(*in_ptr);
+          float box_y =
+              sigmoid(in_ptr[grid_len]);
+          float box_w = in_ptr[2 * grid_len];
+          float box_h = in_ptr[3 * grid_len];
+          box_x = (box_x + j) * (float)stride;
+          box_y = (box_y + i) * (float)stride;
+          box_w = expf(box_w) * (float)anchor[a][0];
+          box_h = expf(box_h) * (float)anchor[a][1];
+
+          box_x -= (box_w / 2.0);
+          box_y -= (box_h / 2.0);
+          boxes.push_back(box_x);
+          boxes.push_back(box_y);
+          boxes.push_back(box_x + box_w);
+          boxes.push_back(box_y + box_h);
+
+          float maxClassProbs = in_ptr[5 * grid_len];
+          int maxClassId = 0;
+          for (int k = 1; k < kClasses; ++k) {
+            float prob = in_ptr[(5 + k) * grid_len];
+            if (prob > maxClassProbs) {
+              maxClassId = k;
+              maxClassProbs = prob;
+            }
+          }
+          objProbs.push_back(sigmoid(maxClassProbs) *sigmoid(box_confidence));
+          classId.push_back(maxClassId);
+          validCount++;
+        }
+      }
+    }
+  }
+  return validCount;
 }
 
 }  // namespace mmdeploy::mmdet
