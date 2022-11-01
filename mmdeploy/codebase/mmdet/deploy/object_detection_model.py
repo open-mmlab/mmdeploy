@@ -187,10 +187,18 @@ class End2EndModel(BaseBackendModel):
 
             bboxes = dets[:, :4]
             scores = dets[:, 4]
-
             # perform rescale
-            if rescale and 'scale_factor' in img_metas[i]:
-                scale_factor = img_metas[i]['scale_factor']
+            if rescale:
+                if 'scale_factor' in img_metas[i]:
+                    scale_factor = img_metas[i]['scale_factor']
+                else:
+                    # Some models like CenterNet use rescale with out scale_factor
+                    # We multiply the feat_size inside the model, and divide the
+                    # image shape outside the model to adapt dynamic shape.
+                    scale_factor = np.array([
+                        1.0 / img_metas[i]['batch_input_shape'][1],
+                        1.0 / img_metas[i]['batch_input_shape'][0]
+                    ])
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     if len(scale_factor) == 2:
                         scale_factor = np.array(scale_factor)
@@ -200,12 +208,18 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
                 bboxes /= scale_factor
 
-            if 'pad_param' in img_metas[i]:
+            if 'pad_param' in img_metas[i] or 'border' in img_metas[i]:
+                # Most of models in mmdetection 3.x use `pad_param`, but some
+                # models like CenterNet uses `border`.
                 # offset pixel of the top-left corners between original image
                 # and padded/enlarged image, 'pad_param' is used when exporting
                 # CornerNet and CentripetalNet to onnx
-                x_off = img_metas[i]['pad_param'][2]
-                y_off = img_metas[i]['pad_param'][0]
+                if 'pad_param' in img_metas[i]:
+                    x_off = img_metas[i]['pad_param'][2]
+                    y_off = img_metas[i]['pad_param'][0]
+                else:
+                    x_off = img_metas[i]['border'][2]
+                    y_off = img_metas[i]['border'][0]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)

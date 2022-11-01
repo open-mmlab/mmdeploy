@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List
+from typing import List, Tuple
 
 from torch import Tensor
+import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdet.models.utils import (get_local_maximum, get_topk_from_heatmap,
+                                transpose_and_gather_feat)
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -37,14 +40,52 @@ def centernet_head__predict_by_feat__default(
         kernel=self.test_cfg.local_maximum_kernel)
     det_bboxes = batch_det_bboxes.reshape([batch_size, -1, 5])
     det_labels = batch_labels.reshape(batch_size, -1)
+    '''
     batch_border = det_bboxes.new_tensor(
         batch_img_metas[0]['border'])[..., [2, 0, 2, 0]]
     det_bboxes[..., :4] -= batch_border
+    print(f'debugging scale: {batch_img_metas[0]}')
     if rescale and 'scale_factor' in batch_img_metas[0]:
         det_bboxes[..., :4] /= det_bboxes.new_tensor(
             batch_img_metas[0]['scale_factor']).repeat((1, 2))
-
+    '''
     if with_nms:
         det_bboxes, det_labels = self._bboxes_nms(det_bboxes, det_labels,
                                                   self.test_cfg)
     return det_bboxes, det_labels
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.dense_heads.centernet_head.CenterNetHead._decode_heatmap')
+def centernet_head__decode_heatmap__default(
+        ctx,
+        self,
+        center_heatmap_pred: Tensor,
+        wh_pred: Tensor,
+        offset_pred: Tensor,
+        img_shape: tuple,
+        k: int = 100,
+        kernel: int = 3) -> Tuple[Tensor, Tensor]:
+    """Rewrite `_decode_heatmap` of `CenterNetHead` for default backend."""
+
+    # Rewrite this function to move the img_shape calculation outside the
+    # model for dynamic shape deployment.
+    height, width = center_heatmap_pred.shape[2:]
+    center_heatmap_pred = get_local_maximum(center_heatmap_pred, kernel=kernel)
+
+    *batch_dets, topk_ys, topk_xs = get_topk_from_heatmap(
+        center_heatmap_pred, k=k)
+    batch_scores, batch_index, batch_topk_labels = batch_dets
+
+    wh = transpose_and_gather_feat(wh_pred, batch_index)
+    offset = transpose_and_gather_feat(offset_pred, batch_index)
+    topk_xs = topk_xs + offset[..., 0]
+    topk_ys = topk_ys + offset[..., 1]
+    tl_x = (topk_xs - wh[..., 0] / 2) / width
+    tl_y = (topk_ys - wh[..., 1] / 2) / height
+    br_x = (topk_xs + wh[..., 0] / 2) / width
+    br_y = (topk_ys + wh[..., 1] / 2) / height
+
+    batch_bboxes = torch.stack([tl_x, tl_y, br_x, br_y], dim=2)
+    batch_bboxes = torch.cat((batch_bboxes, batch_scores[..., None]), dim=-1)
+    return batch_bboxes, batch_topk_labels
