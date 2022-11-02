@@ -119,6 +119,30 @@ def test_interpolate_static():
     assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
+@backend_checker(Backend.RKNN)
+def test_interpolate__rknn():
+    input = torch.rand([1, 2, 2, 2])
+    model_output = F.interpolate(input, scale_factor=[2, 2])
+
+    def interpolate_caller(*arg, **kwargs):
+        return F.interpolate(*arg, **kwargs)
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='rknn', model_inputs=None),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+    wrapped_func = WrapFunction(interpolate_caller, size=[4, 4])
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
+
+
 @backend_checker(Backend.NCNN)
 def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
