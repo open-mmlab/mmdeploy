@@ -183,44 +183,75 @@ Result<void> TVMNet::Reshape(Span<TensorShape> input_shapes) {
 
 Result<void> TVMNet::Forward() {
   DLDevice dev = GetDLDevice(device_);
+  try {
+    OUTCOME_TRY(stream_.Wait());
 
-  if (use_vm_) {
-    // vm
+    if (use_vm_) {
+      // vm
 
-    // set input
-    int num_inputs = input_tensors_.size();
-    std::vector<tvm::runtime::NDArray> args_arr(num_inputs);
-    std::vector<TVMValue> tvm_values(num_inputs + 1);
-    std::vector<int> tvm_type_codes(num_inputs + 1);
-    tvm::runtime::TVMArgsSetter setter(tvm_values.data(), tvm_type_codes.data());
-    setter(0, "main");
-    for (int k = 0; k < num_inputs; ++k) {
-      auto v = input_tensors_[k];
-      OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
-      args_arr[k] = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
-      args_arr[k].CopyFromBytes(v.data(), v.byte_size());
-      int input_id = input_ids_[v.name()];
-      setter(input_id + 1, args_arr[k]);
-    }
-    func_set_input_.CallPacked(
-        tvm::runtime::TVMArgs(tvm_values.data(), tvm_type_codes.data(), num_inputs + 1), nullptr);
+      // set input
+      int num_inputs = input_tensors_.size();
+      std::vector<tvm::runtime::NDArray> args_arr(num_inputs);
+      std::vector<TVMValue> tvm_values(num_inputs + 1);
+      std::vector<int> tvm_type_codes(num_inputs + 1);
+      tvm::runtime::TVMArgsSetter setter(tvm_values.data(), tvm_type_codes.data());
+      setter(0, "main");
+      for (int k = 0; k < num_inputs; ++k) {
+        auto v = input_tensors_[k];
+        OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
+        args_arr[k] = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
+        args_arr[k].CopyFromBytes(v.data(), v.byte_size());
+        int input_id = input_ids_[v.name()];
+        setter(input_id + 1, args_arr[k]);
+      }
+      func_set_input_.CallPacked(
+          tvm::runtime::TVMArgs(tvm_values.data(), tvm_type_codes.data(), num_inputs + 1), nullptr);
 
-    // run
-    tvm::runtime::TVMRetValue ret = func_run_("main");
+      // run
+      tvm::runtime::TVMRetValue ret = func_run_("main");
 
-    // get output
-    if (ret.type_code() == kTVMNDArrayHandle) {
-      tvm::runtime::NDArray ndarray = ret.AsObjectRef<tvm::runtime::NDArray>();
-      OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
-      Tensor& v = output_tensors_[0];
-      TensorDesc desc{
-          device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
-      v = Tensor(desc);
-      ndarray.CopyToBytes(v.data(), v.byte_size());
-    } else if (ret.type_code() == kTVMObjectHandle) {
-      const auto& adt = ret.AsObjectRef<tvm::runtime::ADT>();
+      // get output
+      if (ret.type_code() == kTVMNDArrayHandle) {
+        tvm::runtime::NDArray ndarray = ret.AsObjectRef<tvm::runtime::NDArray>();
+        OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+        Tensor& v = output_tensors_[0];
+        TensorDesc desc{
+            device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+        v = Tensor(desc);
+        ndarray.CopyToBytes(v.data(), v.byte_size());
+      } else if (ret.type_code() == kTVMObjectHandle) {
+        const auto& adt = ret.AsObjectRef<tvm::runtime::ADT>();
+        for (int i = 0; i < output_tensors_.size(); ++i) {
+          tvm::runtime::NDArray ndarray = tvm::runtime::Downcast<tvm::runtime::NDArray>(adt[i]);
+          OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
+          Tensor& v = output_tensors_[i];
+          TensorDesc desc{
+              device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
+          v = Tensor(desc);
+          ndarray.CopyToBytes(v.data(), v.byte_size());
+        }
+      } else {
+        MMDEPLOY_ERROR("error return type code {}", ret.type_code());
+        return Status(eFail);
+      }
+    } else {
+      // graph executor
+
+      // set input
+      for (auto v : input_tensors_) {
+        OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
+        auto ndarray = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
+        ndarray.CopyFromBytes(v.data(), v.byte_size());
+
+        func_set_input_(v.name(), ndarray);
+      }
+
+      // run
+      func_run_();
+
+      // get output
       for (int i = 0; i < output_tensors_.size(); ++i) {
-        tvm::runtime::NDArray ndarray = tvm::runtime::Downcast<tvm::runtime::NDArray>(adt[i]);
+        tvm::runtime::NDArray ndarray = func_get_output_(i);
         OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
         Tensor& v = output_tensors_[i];
         TensorDesc desc{
@@ -228,37 +259,13 @@ Result<void> TVMNet::Forward() {
         v = Tensor(desc);
         ndarray.CopyToBytes(v.data(), v.byte_size());
       }
-    } else {
-      MMDEPLOY_ERROR("error return type code {}", ret.type_code());
-      return Status(eFail);
-    }
-  } else {
-    // graph executor
-
-    // set input
-    for (auto v : input_tensors_) {
-      OUTCOME_TRY(auto data_type, FromDataType(v.data_type()));
-      auto ndarray = tvm::runtime::NDArray::Empty(v.shape(), data_type, dev);
-      ndarray.CopyFromBytes(v.data(), v.byte_size());
-
-      func_set_input_(v.name(), ndarray);
     }
 
-    // run
-    func_run_();
-
-    // get output
-    for (int i = 0; i < output_tensors_.size(); ++i) {
-      tvm::runtime::NDArray ndarray = func_get_output_(i);
-      OUTCOME_TRY(auto data_type, ToDataType(ndarray.DataType()));
-      Tensor& v = output_tensors_[i];
-      TensorDesc desc{
-          device_, data_type, {ndarray.Shape().begin(), ndarray.Shape().end()}, v.name()};
-      v = Tensor(desc);
-      ndarray.CopyToBytes(v.data(), v.byte_size());
-    }
+    OUTCOME_TRY(stream_.Wait());
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR(e.what());
+    return Status(eFail);
   }
-
   return success();
 }
 
