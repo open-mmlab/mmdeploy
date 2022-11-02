@@ -111,17 +111,6 @@ def main():
     # prepare the dataset loader
     dataset_type = 'test'
     dataset = task_processor.build_dataset(model_cfg, dataset_type)
-    # TODO: remove debug line
-    n = 10
-    if hasattr(dataset, 'num_images'):
-        dataset.num_images = n
-    if hasattr(dataset, 'img_ids'):
-        dataset.img_ids = dataset.img_ids[:n]
-    if hasattr(dataset, 'data_infos'):
-        dataset.data_infos = dataset.data_infos[:n]
-    if hasattr(dataset, 'db'):
-        dataset.db = dataset.db[:n]
-
     # override samples_per_gpu that used for training
     model_cfg.data['samples_per_gpu'] = args.batch_size
     data_loader = task_processor.build_dataloader(

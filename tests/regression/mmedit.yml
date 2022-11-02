@@ -6,13 +6,13 @@ globals:
     img_bg: &img_bg ../mmediting/tests/data/gt/baboon.png
   metric_info: &metric_info
     PSNR: # named after metafile.Results.Metrics
-      eval_name: PSNR # test.py --metrics args
-      metric_key: Eval-PSNR # eval log key name
-      tolerance: 4 # metric ±n%
+      metric_key: PSNR # eval log key name
+      tolerance: 0.2 # metric ±n%
+      dataset: Set5
     SSIM:
-      eval_name: SSIM
-      metric_key: Eval-SSIM
+      metric_key: SSIM
       tolerance: 0.02 # metric ±n
+      dataset: Set5
   convert_image: &convert_image
     input_img: *img_face
     test_img: *img_bg

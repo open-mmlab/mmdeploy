@@ -305,10 +305,20 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     pytorch_metric = dict()
     using_dataset = set()
     using_task = set()
+    configured_dataset = set()
+    for items in test_yaml_metric_info.values():
+        if 'dataset' in items:
+            configured_dataset.add(items['dataset'])
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
-        pytorch_metric.update(metafile_metric['Metrics'])
         dataset = metafile_metric['Dataset']
+        _metrics = metafile_metric['Metrics']
+        if configured_dataset:
+            for ds in configured_dataset:
+                if ds in _metrics:
+                    pytorch_metric.update(_metrics[ds])
+        else:
+            pytorch_metric.update(_metrics)
         task_name = metafile_metric['Task']
         if task_name not in using_task:
             using_task.add(task_name)
@@ -530,9 +540,9 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     ]
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
-    eval_name = ' '.join(
-        list(set([metric_info[k]['eval_name'] for k in pytorch_metric])))
     if codebase_name != 'mmedit':
+        eval_name = ' '.join(
+            list(set([metric_info[k]['eval_name'] for k in pytorch_metric])))
         # mmedit dont --metric
         cmd_lines += [f'--metrics {eval_name}']
     # Test backend
