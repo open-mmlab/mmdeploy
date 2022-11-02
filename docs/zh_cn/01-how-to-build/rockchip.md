@@ -1,18 +1,26 @@
 # 支持 RKNN
 
-本教程基于 Ubuntu-18.04 和 Rockchip `rk3588` NPU。
+本教程基于 Ubuntu-18.04 和 Rockchip `rk3588` NPU。对于不同的 NPU 设备，您需要使用不同的 rknn 包.
+这是设备和安装包的关系表:
+
+| Device               | Python Package                                                   | c/c++ SDK                                          |
+| -------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
+| RK1808/RK1806        | [rknn-toolkit](https://github.com/rockchip-linux/rknn-toolkit)   | [rknpu](https://github.com/rockchip-linux/rknpu)   |
+| RV1109/RV1126        | [rknn-toolkit](https://github.com/rockchip-linux/rknn-toolkit)   | [rknpu](https://github.com/rockchip-linux/rknpu)   |
+| RK3566/RK3568/RK3588 | [rknn-toolkit2](https://github.com/rockchip-linux/rknn-toolkit2) | [rknpu2](https://github.com/rockchip-linux/rknpu2) |
+| RV1103/RV1106        | [rknn-toolkit2](https://github.com/rockchip-linux/rknn-toolkit2) | [rknpu2](https://github.com/rockchip-linux/rknpu2) |
 
 ## 安装
 
 建议为项目创建一个虚拟环境。
 
-1. 获取 RKNN-Toolkit2:
+1. 使用 git 获取 RKNN-Toolkit2 或者 RKNN-Toolkit。以 RKNN-Toolkit2 为例:
 
    ```
    git clone git@github.com:rockchip-linux/rknn-toolkit2.git
    ```
 
-2. 通过 [官方文档](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc)，安装 RKNN python 安装包. 在我们的测试中, 使用的 rknn-toolkit 版本是 1.2.0，commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`。安装 rknn-toolkit2 时，最好在安装命令后添加`--no-deps`，以避免依赖包的冲突。比如:
+2. 通过 [rknn-toolkit2 文档](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc) 或者 [rknn-toolkit 文档](https://github.com/rockchip-linux/rknn-toolkit/tree/master/doc)安装 RKNN python 安装包。安装 rknn python 包时，最好在安装命令后添加`--no-deps`，以避免依赖包的冲突。以rknn-toolkit2为例:
 
    ```
    pip install packages/rknn_toolkit2-1.2.0_f7bb160f-cp36-cp36m-linux_x86_64.whl --no-deps
@@ -70,6 +78,8 @@ backend_config = dict(
 `common_config` 的内容服务于 `rknn.config()`. `quantization_config` 的内容服务于 `rknn.build()`。
 
 ## 安装 SDK
+
+### RKNPU2 编译 MMDeploy SDK
 
 1. 获取 rknpu2:
 
@@ -144,4 +154,38 @@ label: 65, score: 0.95
     mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
   ```
 
-  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[123.675, 116.28, 103.53]`， `std_values=[58.395, 57.12, 57.375]`。
+  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[103.53, 116.28, 123.675]]`, `std_values=[[57.375, 57.12, 58.395]]`。
+
+- MMDet 模型.
+
+  YOLOV3 & YOLOX: 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # yolov3, yolox
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,  # should always be set to True
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',  # name to save the partitioned onnx
+              start=['detector_forward:input'],  # [mark_name:input, ...]
+              end=['yolo_head:input'])  # [mark_name:output, ...]
+      ])
+  ```
+
+  RetinaNet & SSD & FSAF with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)。使用 rknn-toolkit 的用户则不用。
+
+  ```python
+  # retinanet, ssd
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',
+              start='detector_forward:input',
+              end=['BaseDenseHead:output'])
+      ])
+  ```
+
+- SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
