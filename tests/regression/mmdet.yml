@@ -326,7 +326,7 @@ models:
       - deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_dynamic_solo.py
         convert_image: *convert_image
         backend_test: False
-      - deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt-fp16_dynamic-320x320-416x416_solo.py
+      - deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt-fp16_dynamic-320x320-1344x1344_solo.py
         convert_image: *convert_image
         backend_test: *default_backend_test
         sdk_config: *sdk_dynamic
