@@ -40,15 +40,7 @@ def centernet_head__predict_by_feat__default(
         kernel=self.test_cfg.local_maximum_kernel)
     det_bboxes = batch_det_bboxes.reshape([batch_size, -1, 5])
     det_labels = batch_labels.reshape(batch_size, -1)
-    '''
-    batch_border = det_bboxes.new_tensor(
-        batch_img_metas[0]['border'])[..., [2, 0, 2, 0]]
-    det_bboxes[..., :4] -= batch_border
-    print(f'debugging scale: {batch_img_metas[0]}')
-    if rescale and 'scale_factor' in batch_img_metas[0]:
-        det_bboxes[..., :4] /= det_bboxes.new_tensor(
-            batch_img_metas[0]['scale_factor']).repeat((1, 2))
-    '''
+
     if with_nms:
         det_bboxes, det_labels = self._bboxes_nms(det_bboxes, det_labels,
                                                   self.test_cfg)
