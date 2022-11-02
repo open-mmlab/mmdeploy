@@ -351,8 +351,7 @@ Result<Tensor> Tensor::FromDLPack(DLManagedTensor* managed_tensor, const std::st
 
   TensorDesc desc = {device, dtype, shape, name, stride};
   auto buffer_size = get_size(shape) * element_size(dtype);
-  auto raw_data = static_cast<void*>(static_cast<char*>(dl_tensor.data) + dl_tensor.byte_offset);
-
+  auto raw_data = static_cast<void*>(static_cast<uint8_t*>(dl_tensor.data) + dl_tensor.byte_offset);
   Tensor ret(desc);
   OUTCOME_TRY(ret.CopyFrom(raw_data, stream));
   managed_tensor->deleter(managed_tensor);
