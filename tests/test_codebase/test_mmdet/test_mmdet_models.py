@@ -1565,7 +1565,6 @@ def test_centernet_head_predict_by_feat(backend_type: Backend):
             ori_w = batch_img_metas[i]['batch_input_shape'][1]
             ori_h = batch_img_metas[i]['batch_input_shape'][0]
             border = batch_img_metas[i]['border']
-            '''
             rewrite_outputs[0][i, :, 0] *= ori_w
             rewrite_outputs[0][i, :, 1] *= ori_h
             rewrite_outputs[0][i, :, 2] *= ori_w
@@ -1575,7 +1574,6 @@ def test_centernet_head_predict_by_feat(backend_type: Backend):
             rewrite_outputs[0][i, :, 1] -= border[0]
             rewrite_outputs[0][i, :, 2] -= border[2]
             rewrite_outputs[0][i, :, 3] -= border[0]
-            '''
             assert np.allclose(
                 model_outputs[i].bboxes[:min_shape],
                 rewrite_outputs[0][i, :min_shape, :4],
