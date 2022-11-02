@@ -58,6 +58,7 @@
    05-supported-backends/onnxruntime.md
    05-supported-backends/openvino.md
    05-supported-backends/pplnn.md
+   05-supported-backends/rknn.md
    05-supported-backends/snpe.md
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
