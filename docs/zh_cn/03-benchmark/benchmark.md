@@ -707,10 +707,10 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
     <td align="center">25.9</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
     <td align="center">26.0</td>
-    <td align="center">-</td>
+    <td align="center">26.0</td>
+    <td align="center">26.0</td>
+    <td align="center">25.8</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
