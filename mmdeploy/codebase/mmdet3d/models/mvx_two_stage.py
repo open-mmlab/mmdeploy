@@ -50,8 +50,8 @@ def mvxtwostagedetector__extract_feat(ctx, self,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector._forward')
-def mvxtwostagedetector__forward(ctx, self, batch_inputs_dict: dict,
-                                 data_samples, **kwargs):
+def mvxtwostagedetector__forward(ctx, self, inputs: list, data_samples,
+                                 **kwargs):
     """Rewrite this func to remove voxelize op.
 
     Args:
@@ -64,7 +64,31 @@ def mvxtwostagedetector__forward(ctx, self, batch_inputs_dict: dict,
     Returns:
         list[dict]: Decoded bbox, scores and labels after nms.
     """
+    batch_inputs_dict = {
+        'voxels': {
+            'voxels': inputs[0],
+            'num_points': inputs[1],
+            'coors': inputs[2]
+        }
+    }
+
     _, pts_feats = self.extract_feat(batch_inputs_dict=batch_inputs_dict)
     outs = self.pts_bbox_head(pts_feats)
-    cls_score, bbox_pred, dir_cls_pred = outs[0][0], outs[1][0], outs[2][0]
-    return cls_score, bbox_pred, dir_cls_pred
+
+    if type(outs[0][0]) is dict:
+        bbox_preds, scores, dir_scores = [], [], []
+        for task_res in outs:
+            bbox_preds.append(task_res[0]['reg'])
+            bbox_preds.append(task_res[0]['height'])
+            bbox_preds.append(task_res[0]['dim'])
+            if 'vel' in task_res[0].keys():
+                bbox_preds.append(task_res[0]['vel'])
+            scores.append(task_res[0]['heatmap'])
+            dir_scores.append(task_res[0]['rot'])
+        bbox_preds = torch.cat(bbox_preds, dim=1)
+        scores = torch.cat(scores, dim=1)
+        dir_scores = torch.cat(dir_scores, dim=1)
+        return scores, bbox_preds, dir_scores
+    else:
+        cls_score, bbox_pred, dir_cls_pred = outs[0][0], outs[1][0], outs[2][0]
+        return cls_score, bbox_pred, dir_cls_pred

@@ -161,7 +161,10 @@ class VoxelDetection(BaseTask):
         if preproc is not None:
             collate_data = preproc(collate_data, False)
             del collate_data['inputs']['voxels']['voxel_centers']
-        return collate_data, collate_data['inputs']
+
+        voxels = collate_data['inputs']['voxels']
+        inputs = [voxels['voxels'], voxels['num_points'], voxels['coors']]
+        return collate_data, inputs
 
     def visualize(self,
                   image: Union[str, np.ndarray],
