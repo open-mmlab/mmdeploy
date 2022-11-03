@@ -11,14 +11,8 @@ namespace mmdeploy {
 
 using Scheduler = TypeErasedScheduler<Value>;
 
-class InlineSchedulerCreator : public Creator<Scheduler> {
- public:
-  const char* GetName() const override { return "Inline"; }
-  int GetVersion() const override { return 0; }
-  ReturnType Create(const Value&) override { return ReturnType{InlineScheduler{}}; }
-};
-
-REGISTER_MODULE(Scheduler, InlineSchedulerCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Scheduler, (Inline, 0),
+                               [](const Value&) { return Scheduler{InlineScheduler{}}; });
 
 namespace {
 
@@ -35,36 +29,21 @@ Scheduler CreateFromContext(std::unique_ptr<Context> context) {
 
 }  // namespace
 
-class SingleThreadSchedCreator : public Creator<Scheduler> {
- public:
-  const char* GetName() const override { return "SingleThread"; }
-  int GetVersion() const override { return 0; }
-  ReturnType Create(const Value&) override {
-    return CreateFromContext(std::make_unique<_single_thread_context::SingleThreadContext>());
+MMDEPLOY_REGISTER_FACTORY_FUNC(Scheduler, (SingleThread, 0), [](const Value&) {
+  return CreateFromContext(std::make_unique<_single_thread_context::SingleThreadContext>());
+});
+
+MMDEPLOY_REGISTER_FACTORY_FUNC(Scheduler, (ThreadPool, 0), [](const Value& cfg) {
+  auto num_threads = -1;
+  if (cfg.is_object() && cfg.contains("num_threads")) {
+    num_threads = cfg["num_threads"].get<int>();
   }
-};
-
-REGISTER_MODULE(Scheduler, SingleThreadSchedCreator);
-
-class StaticThreadPoolSchedCreator : public Creator<Scheduler> {
- public:
-  const char* GetName() const override { return "ThreadPool"; }
-  int GetVersion() const override { return 0; }
-  ReturnType Create(const Value& cfg) override {
-    auto num_threads = -1;
-    if (cfg.is_object() && cfg.contains("num_threads")) {
-      num_threads = cfg["num_threads"].get<int>();
-    }
-    if (num_threads >= 1) {
-      return CreateFromContext(
-          std::make_unique<__static_thread_pool::StaticThreadPool>(num_threads));
-    } else {
-      return CreateFromContext(std::make_unique<__static_thread_pool::StaticThreadPool>());
-    }
+  if (num_threads >= 1) {
+    return CreateFromContext(std::make_unique<__static_thread_pool::StaticThreadPool>(num_threads));
+  } else {
+    return CreateFromContext(std::make_unique<__static_thread_pool::StaticThreadPool>());
   }
-};
-
-REGISTER_MODULE(Scheduler, StaticThreadPoolSchedCreator);
+});
 
 struct ValueAssembler {
   using range_t = std::pair<size_t, size_t>;
@@ -117,27 +96,22 @@ TimedSingleThreadContext& gTimedSingleThreadContext() {
   return context;
 }
 
-class DynamicBatchSchedCreator : public Creator<Scheduler> {
- public:
-  const char* GetName() const override { return "DynamicBatch"; }
-  int GetVersion() const override { return 0; }
-  ReturnType Create(const Value& cfg) override {
-    using SchedulerType =
-        DynamicBatchScheduler<InlineScheduler, TypeErasedScheduler<Value>, ValueAssembler>;
-    auto scheduler = cfg["scheduler"].get<TypeErasedScheduler<Value>>();
-    auto max_batch_size = cfg["max_batch_size"].get<int>();
+static Scheduler CreateDynamicBatchScheduler(const Value& cfg) {
+  using SchedulerType =
+      DynamicBatchScheduler<InlineScheduler, TypeErasedScheduler<Value>, ValueAssembler>;
+  auto scheduler = cfg["scheduler"].get<TypeErasedScheduler<Value>>();
+  auto max_batch_size = cfg["max_batch_size"].get<int>();
 
-    TimedSingleThreadContext* timer{};
-    auto timeout = cfg["timeout"].get<int>();
-    if (timeout >= 0) {
-      timer = &gTimedSingleThreadContext();
-    }
-    return ReturnType{SchedulerType{inline_scheduler, std::move(scheduler), timer,
-                                    (size_t)max_batch_size, std::chrono::microseconds(timeout)}};
+  TimedSingleThreadContext* timer{};
+  auto timeout = cfg["timeout"].get<int>();
+  if (timeout >= 0) {
+    timer = &gTimedSingleThreadContext();
   }
-};
+  return Scheduler{SchedulerType{inline_scheduler, std::move(scheduler), timer,
+                                 (size_t)max_batch_size, std::chrono::microseconds(timeout)}};
+}
 
-REGISTER_MODULE(Scheduler, DynamicBatchSchedCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Scheduler, (DynamicBatch, 0), CreateDynamicBatchScheduler);
 
 MMDEPLOY_DEFINE_REGISTRY(TypeErasedScheduler<Value>);
 

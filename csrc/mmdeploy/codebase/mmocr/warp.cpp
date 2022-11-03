@@ -64,12 +64,7 @@ class WarpBbox {
   }
 };
 
-class WarpBboxCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "WarpBbox"; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(WarpBbox{}); }
-};
-
-REGISTER_MODULE(Module, WarpBboxCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (WarpBbox, 0),
+                               [](const Value&) { return CreateTask(WarpBbox{}); });
 
 }  // namespace mmdeploy

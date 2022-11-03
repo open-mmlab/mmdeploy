@@ -218,20 +218,16 @@ Result<Tensor> TorchNet::FromTorchTensor(const torch::Tensor& tensor, const std:
   return Tensor(desc, std::shared_ptr<void>(tensor.data_ptr(), [tensor](auto) {}));
 }
 
-class TorchNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "torchscript"; }
-  std::unique_ptr<Net> Create(const Value& cfg) override {
-    auto p = std::make_unique<TorchNet>();
-    if (auto status = p->Init(cfg)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("Failed to created TorchNet with config: {}", cfg);
-    }
-    return nullptr;
+static std::unique_ptr<Net> Create(const Value& args) {
+  auto p = std::make_unique<TorchNet>();
+  if (auto status = p->Init(args)) {
+    return p;
+  } else {
+    MMDEPLOY_ERROR("Failed to created TorchNet with config: {}", args);
   }
-};
+  return nullptr;
+}
 
-REGISTER_MODULE(Net, TorchNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (torchscript, 0), Create);
 
 }  // namespace mmdeploy::framework

@@ -5,8 +5,7 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/preprocess/transform/default_format_bundle.h"
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::cuda {
 
 template <int channels>
 void CastToFloat(const uint8_t* src, int height, int width, float* dst, cudaStream_t stream);
@@ -76,18 +75,7 @@ class DefaultFormatBundleImpl final : public ::mmdeploy::DefaultFormatBundleImpl
   }
 };
 
-class DefaultFormatBundleImplCreator : public Creator<::mmdeploy::DefaultFormatBundleImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& cfg) override {
-    return std::make_unique<DefaultFormatBundleImpl>(cfg);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::DefaultFormatBundleImpl, (cuda, 0),
+                                 DefaultFormatBundleImpl);
 
-}  // namespace cuda
-}  // namespace mmdeploy
-
-using ::mmdeploy::DefaultFormatBundleImpl;
-using ::mmdeploy::cuda::DefaultFormatBundleImplCreator;
-REGISTER_MODULE(DefaultFormatBundleImpl, DefaultFormatBundleImplCreator);
+}  // namespace mmdeploy::cuda

@@ -5,8 +5,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::cpu {
 
 class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
  public:
@@ -37,16 +36,6 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
   }
 };
 
-class PrepareImageImplCreator : public Creator<::mmdeploy::PrepareImageImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<PrepareImageImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PrepareImageImpl, (cpu, 0), PrepareImageImpl);
 
-}  // namespace cpu
-}  // namespace mmdeploy
-
-using mmdeploy::PrepareImageImpl;
-using mmdeploy::cpu::PrepareImageImplCreator;
-REGISTER_MODULE(PrepareImageImpl, PrepareImageImplCreator);
+}  // namespace mmdeploy::cpu

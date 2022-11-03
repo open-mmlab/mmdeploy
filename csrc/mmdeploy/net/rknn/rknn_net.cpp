@@ -191,26 +191,21 @@ Result<void> RKNNNet::Forward() {
   return success();
 }
 
-class RKNNNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "rknn"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    try {
-      auto p = std::make_unique<RKNNNet>();
-      if (auto r = p->Init(args)) {
-        return p;
-      } else {
-        MMDEPLOY_ERROR("error creating RKNNNet: {}", r.error().message().c_str());
-        return nullptr;
-      }
-    } catch (const std::exception& e) {
-      MMDEPLOY_ERROR("unhandled exception when creating RKNNNet: {}", e.what());
+static std::unique_ptr<Net> Create(const Value& args) {
+  try {
+    auto p = std::make_unique<RKNNNet>();
+    if (auto r = p->Init(args)) {
+      return p;
+    } else {
+      MMDEPLOY_ERROR("error creating RKNNNet: {}", r.error().message().c_str());
       return nullptr;
     }
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("unhandled exception when creating RKNNNet: {}", e.what());
+    return nullptr;
   }
-};
+}
 
-REGISTER_MODULE(Net, RKNNNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (rknn, 0), Create);
 
 }  // namespace mmdeploy::framework

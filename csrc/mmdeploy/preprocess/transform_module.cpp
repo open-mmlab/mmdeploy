@@ -16,10 +16,10 @@ TransformModule::TransformModule(TransformModule&&) noexcept = default;
 
 TransformModule::TransformModule(const Value& args) {
   const auto type = "Compose";
-  auto creator = Registry<Transform>::Get().GetCreator(type, 1);
+  auto creator = gRegistry<Transform>().Get(type);
   if (!creator) {
     MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                   Registry<Transform>::Get().List());
+                   gRegistry<Transform>().List());
     throw_exception(eEntryNotFound);
   }
   auto cfg = args;
@@ -49,15 +49,8 @@ Result<Value> TransformModule::operator()(const Value& input) {
   return ret;
 }
 
-class MMDEPLOY_API TransformModuleCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "Transform"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Module> Create(const Value& value) override {
-    return CreateTask(TransformModule{value});
-  }
-};
-
-REGISTER_MODULE(Module, TransformModuleCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Transform, 0), [](const Value& config) {
+  return CreateTask(TransformModule{config});
+});
 
 }  // namespace mmdeploy
