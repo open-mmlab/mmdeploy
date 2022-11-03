@@ -1838,7 +1838,7 @@ def test_base_dense_head_get_bboxes__rknn():
         input_names.append('cls_scores_' + str(i))
         input_names.append('bbox_preds_' + str(i))
     dynamic_axes = None
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=Backend.RKNN.value),
             onnx_config=dict(

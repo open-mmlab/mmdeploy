@@ -10,8 +10,9 @@ from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task, Backend
-from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape, get_backend
+from mmdeploy.utils import Backend, Codebase, Task
+from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
+                                         is_dynamic_shape)
 
 MMDET_TASK = Registry('mmdet_tasks')
 

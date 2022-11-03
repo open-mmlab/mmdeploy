@@ -674,13 +674,27 @@ class RKNNModel(End2EndModel):
         elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
             partition_cfgs = get_partition_config(self.deploy_cfg)
             if partition_cfgs is None:  # bbox decoding done in rknn model
+                from mmdet.structures.bbox import scale_boxes
+
                 from ..models.layers.bbox_nms import _multiclass_nms
-                return _multiclass_nms(outputs[0], outputs[1])
+                dets, labels = _multiclass_nms(outputs[0], outputs[1])
+                ret = [InstanceData() for i in range(dets.shape[0])]
+                for i, instance_data in enumerate(ret):
+                    instance_data.bboxes = dets[i, :, :4]
+                    instance_data.scores = dets[i, :, 4]
+                    instance_data.labels = labels[i]
+                    scale_factor = [
+                        1 / s for s in metainfos[i]['scale_factor']
+                    ]
+                    instance_data.bboxes = scale_boxes(instance_data.bboxes,
+                                                       scale_factor)
+                return ret
             divisor = round(len(outputs) / 2)
-            ret = head.get_bboxes(
+            ret = head.predict_by_feat(
                 outputs[:divisor],
                 outputs[divisor:],
-                metainfos,
+                batch_img_metas=metainfos,
+                rescale=True,
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         else:
             raise NotImplementedError(f'{head_cfg.type} not supported yet.')

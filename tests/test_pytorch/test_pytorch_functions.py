@@ -127,7 +127,7 @@ def test_interpolate__rknn():
     def interpolate_caller(*arg, **kwargs):
         return F.interpolate(*arg, **kwargs)
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = Config(
         dict(
             onnx_config=dict(input_shape=None),
             backend_config=dict(type='rknn', model_inputs=None),
