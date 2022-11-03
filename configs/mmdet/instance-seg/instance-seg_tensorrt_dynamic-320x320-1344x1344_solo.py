@@ -4,12 +4,12 @@ _base_ = [
 ]
 
 backend_config = dict(
-    common_config=dict(max_workspace_size=1 << 32),
+    common_config=dict(max_workspace_size=1 << 33),
     model_inputs=[
         dict(
             input_shapes=dict(
                 input=dict(
-                    min_shape=[1, 3, 64, 64],
-                    opt_shape=[1, 3, 800, 800],
-                    max_shape=[1, 3, 800, 800])))
+                    min_shape=[1, 3, 320, 320],
+                    opt_shape=[1, 3, 800, 1344],
+                    max_shape=[1, 3, 1344, 1344])))
     ])
