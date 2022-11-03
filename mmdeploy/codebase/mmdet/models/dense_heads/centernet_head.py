@@ -31,11 +31,12 @@ def centernet_head__predict_by_feat__default(
     batch_wh_preds = wh_preds[0]
     batch_offset_preds = offset_preds[0]
     batch_size = batch_center_heatmap_preds.shape[0]
+    img_shape = batch_img_metas[0]['img_shape']
     batch_det_bboxes, batch_labels = self._decode_heatmap(
         batch_center_heatmap_preds,
         batch_wh_preds,
         batch_offset_preds,
-        batch_img_metas[0]['batch_input_shape'],
+        img_shape,
         k=self.test_cfg.topk,
         kernel=self.test_cfg.local_maximum_kernel)
     det_bboxes = batch_det_bboxes.reshape([batch_size, -1, 5])
@@ -63,6 +64,7 @@ def centernet_head__decode_heatmap__default(
     # Rewrite this function to move the img_shape calculation outside the
     # model for dynamic shape deployment.
     height, width = center_heatmap_pred.shape[2:]
+    inp_h, inp_w = img_shape
     center_heatmap_pred = get_local_maximum(center_heatmap_pred, kernel=kernel)
 
     *batch_dets, topk_ys, topk_xs = get_topk_from_heatmap(
@@ -73,10 +75,10 @@ def centernet_head__decode_heatmap__default(
     offset = transpose_and_gather_feat(offset_pred, batch_index)
     topk_xs = topk_xs + offset[..., 0]
     topk_ys = topk_ys + offset[..., 1]
-    tl_x = (topk_xs - wh[..., 0] / 2) / width
-    tl_y = (topk_ys - wh[..., 1] / 2) / height
-    br_x = (topk_xs + wh[..., 0] / 2) / width
-    br_y = (topk_ys + wh[..., 1] / 2) / height
+    tl_x = (topk_xs - wh[..., 0] / 2) * (inp_w / width)
+    tl_y = (topk_ys - wh[..., 1] / 2) * (inp_h / height)
+    br_x = (topk_xs + wh[..., 0] / 2) * (inp_w / width)
+    br_y = (topk_ys + wh[..., 1] / 2) * (inp_h / height)
 
     batch_bboxes = torch.stack([tl_x, tl_y, br_x, br_y], dim=2)
     batch_bboxes = torch.cat((batch_bboxes, batch_scores[..., None]), dim=-1)
