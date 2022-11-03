@@ -44,8 +44,8 @@ Result<Value> BaseDenseHead::operator()(const Value& prep_res, const Value& infe
 
 Result<Detections> BaseDenseHead::GetBBoxes(const Value& prep_res, const Tensor& dets,
                                             const Tensor& scores) const {
-  MMDEPLOY_INFO("dets: {}, {}", dets.shape(), dets.data_type());
-  MMDEPLOY_INFO("scores: {}, {}", scores.shape(), scores.data_type());
+  MMDEPLOY_DEBUG("dets: {}, {}", dets.shape(), dets.data_type());
+  MMDEPLOY_DEBUG("scores: {}, {}", scores.shape(), scores.data_type());
 
   std::vector<float> probs;
   std::vector<int> label_ids;
