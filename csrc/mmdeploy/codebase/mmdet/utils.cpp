@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "utils.h"
 
+#include <algorithm>
 #include <numeric>
 
 using mmdeploy::framework::Tensor;
