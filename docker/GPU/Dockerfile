@@ -64,7 +64,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS="ort;trt" .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    mim install --no-cache-dir -e .
+    mim install -e .
 
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
