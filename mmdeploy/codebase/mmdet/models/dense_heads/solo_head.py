@@ -94,8 +94,6 @@ def solohead__predict_by_feat__default(ctx, self,
     mask_preds = F.interpolate(
         mask_preds.unsqueeze(0), size=upsampled_size,
         mode='bilinear')[:, :, :h, :w]
-    mask_preds = F.interpolate(
-        mask_preds, size=batch_img_metas[0]['ori_shape'][:2], mode='bilinear')
     labels = labels.reshape(batch_size, -1)
     bboxes = scores.new_zeros(scores.shape[-1], 4).view(batch_size, -1, 4)
 
