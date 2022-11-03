@@ -3,9 +3,10 @@ from typing import Sequence
 
 import torch
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     multiclass_nms,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 
@@ -118,7 +119,13 @@ def reppoints_head__get_bboxes(ctx,
             scores = scores.sigmoid()
         else:
             scores = scores.softmax(-1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+
+        # TODO: figure out why we can't reshape after permute directly
+        # TensorRT8.4 would fuse the permute+reshape,
+        # which leads to incorrect results.
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1)
+        bbox_pred = bbox_pred.reshape(batch_size, -1)
+        bbox_pred = (bbox_pred + 0).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
         if pre_topk > 0:

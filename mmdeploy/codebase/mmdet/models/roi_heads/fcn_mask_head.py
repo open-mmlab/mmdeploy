@@ -2,7 +2,7 @@
 import torch
 import torch.nn.functional as F
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend
 

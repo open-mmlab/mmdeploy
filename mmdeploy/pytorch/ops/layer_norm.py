@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Modified from:
 # https://github.com/pytorch/pytorch/blob/9ade03959392e5a90b74261012de1d806cab2253/torch/onnx/symbolic_opset9.py
-
+import torch
 from torch.onnx.symbolic_helper import parse_args
 
 from mmdeploy.core import SYMBOLIC_REWRITER
@@ -56,6 +56,26 @@ def _layer_norm_ncnn(g, input, normalized_shape, weight, bias, eps,
     """
     weight.setDebugName('layernorm_weight')
     bias.setDebugName('layernorm_bias')
+    if isinstance(normalized_shape,
+                  list) and len(normalized_shape) == 3 and normalized_shape[
+                      1] == 1 and normalized_shape[2] == 1:
+        """ncnn now has supported the layernorm which is used in NLP field
+        instead of CV, there are some differences between them, so this is a
+        special case could be replace by reshaping."""
+        [c, h, w] = normalized_shape
+        ori_shape = g.op('Constant', value_t=torch.LongTensor([1, c, h, w]))
+        shape = g.op('Constant', value_t=torch.LongTensor([1, h * w, c]))
+        input = g.op('Reshape', input, shape)
+        input = g.op(
+            'mmdeploy::LayerNorm',
+            input,
+            weight,
+            bias,
+            affine_i=1,
+            epsilon_f=eps)
+        input = g.op('Reshape', input, ori_shape)
+        return input
+
     return g.op(
         'mmdeploy::LayerNorm', input, weight, bias, affine_i=1, epsilon_f=eps)
 

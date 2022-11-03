@@ -102,6 +102,7 @@ class NCNNWrapper(BaseWrapper):
                 data = input_tensor[batch_id].contiguous()
                 data = data.detach().cpu().numpy()
                 input_mat = ncnn.Mat(data)
+                input_mat = input_mat.clone()
                 ex.input(name, input_mat)
 
             # get outputs

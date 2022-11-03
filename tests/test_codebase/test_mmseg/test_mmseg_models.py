@@ -211,8 +211,7 @@ def test_aspphead_forward(backend):
         rewrite_outputs, model_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend',
-                         [Backend.ONNXRUNTIME, Backend.OPENVINO, Backend.NCNN])
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_psphead_forward(backend):
     check_backend(backend)
     from mmseg.models.decode_heads import PSPHead

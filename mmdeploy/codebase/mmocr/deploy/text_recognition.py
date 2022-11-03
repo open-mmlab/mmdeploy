@@ -165,6 +165,8 @@ class TextRecognition(BaseTask):
 
         for k, v in batch_data.items():
             # batch_size > 1
+            if isinstance(v, list) and isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
             if isinstance(v, DataContainer):
                 batch_data[k] = v.data[0]
 
