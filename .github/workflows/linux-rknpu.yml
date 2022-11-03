@@ -1,4 +1,4 @@
-name: build_rknpu2_gcc
+name: build_rknpu
 
 on:
   push:
