@@ -21,7 +21,7 @@ def process_model_config(
     imgs: Union[Sequence[str], Sequence[np.ndarray]],
     input_shape: Optional[Sequence[int]] = None,
 ):
-    """Process the model config.
+    """Process the model config for sdk model.
 
     Args:
         model_cfg (mmengine.Config): The model config.
@@ -38,7 +38,7 @@ def process_model_config(
     data_preprocessor = cfg.model.data_preprocessor
     codec = cfg.codec
     if isinstance(codec, list):
-        codec = codec[0]
+        codec = codec[-1]
     input_size = codec['input_size'] if input_shape is None else input_shape
     test_pipeline[0] = dict(type='LoadImageFromFile')
     for i in reversed(range(len(test_pipeline))):
@@ -119,10 +119,12 @@ class MMPose(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register rewritings."""
         import mmdeploy.codebase.mmpose.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all modules from mmpose."""
         from mmpose.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -148,6 +150,14 @@ class PoseDetection(BaseTask):
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
                             **kwargs) -> torch.nn.Module:
+        """build pytorch model from model config and checkpoint
+        Args:
+            model_checkpoint (str|None): Input model checkpoint file.
+            cfg_options (dict|None): Optional config arguments.
+
+        Returns:
+            nn.Module: An initialized pytorch model.
+        """
         from mmpose.apis import init_model
         from mmpose.utils import register_all_modules
         register_all_modules()
@@ -163,11 +173,10 @@ class PoseDetection(BaseTask):
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
                             **kwargs) -> torch.nn.Module:
-        """Initialize backend model.
+        """build backend model.
 
         Args:
             model_files (Sequence[str]): Input model files. Default is None.
-
         Returns:
             nn.Module: An initialized backend model.
         """
@@ -194,6 +203,8 @@ class PoseDetection(BaseTask):
                 ``np.ndarray``.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to ``None``.
+            data_preprocessor (BaseDataPreprocessor | None): Input data pre-
+                processor. Default is ``None``.
 
         Returns:
             tuple: (data, inputs), meta information for the input image
