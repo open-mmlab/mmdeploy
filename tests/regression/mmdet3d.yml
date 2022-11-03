@@ -3,7 +3,7 @@ globals:
   checkpoint_force_download: False
   images:
     kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/000008.bin
-    nus_input: &nus_input ../mmdetection3d/tests/data/nuscenes/sweeps/LIDAR_TOP/n008-2018-09-18-12-07-26-0400__LIDAR_TOP__1537287083900561.pcd.bin
+    nus_input: &nus_input tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
 
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
