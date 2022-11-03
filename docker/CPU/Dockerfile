@@ -41,15 +41,16 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
-    /opt/conda/bin/conda clean -ya
+    /opt/conda/bin/conda clean -ya \
 
-### pytorch
-RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
+### install open-mim
+RUN /opt/conda/bin/pip install --no-cache-dir openmim
+
+### pytorch mmcv onnxruntme and openvino
+RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
+    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0" onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
+
 ENV PATH /opt/conda/bin:$PATH
-
-### install open-mim mmcv
-RUN /opt/conda/bin/pip install --no-cache-dir openmim \
-    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0" \
 
 WORKDIR /root/workspace
 
@@ -58,9 +59,6 @@ RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTI
     && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz
 
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
-
-### install onnxruntme and openvino
-RUN /opt/conda/bin/pip install onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 
 ### build ncnn
 RUN git clone https://github.com/Tencent/ncnn.git &&\
@@ -72,7 +70,7 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     make -j$(nproc) &&\
     make install &&\
     cd /root/workspace/ncnn/python &&\
-    pip install -e .
+    mim install -e .
 
 ENV PATH="/root/workspace/ncnn/build/tools/quantize/:${PATH}"
 
