@@ -299,14 +299,15 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         task = Task.INSTANCE_SEGMENTATION
 
     component = task_map[task]['component']
-    if get_backend(deploy_cfg) == Backend.RKNN:
-        if 'YOLO' in task_processor.model_cfg.model.type:
-            bbox_head = task_processor.model_cfg.model.bbox_head
-            component = bbox_head.type
-            params['anchor_generator'] = bbox_head.get('anchor_generator',
-                                                       None)
-        else:  # default using base_dense_head
-            component = 'BaseDenseHead'
+    if task == Task.OBJECT_DETECTION:
+        if get_backend(deploy_cfg) == Backend.RKNN:
+            if 'YOLO' in task_processor.model_cfg.model.type:
+                bbox_head = task_processor.model_cfg.model.bbox_head
+                component = bbox_head.type
+                params['anchor_generator'] = bbox_head.get(
+                    'anchor_generator', None)
+            else:  # default using base_dense_head
+                component = 'BaseDenseHead'
 
     if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
         if 'type' in params:
