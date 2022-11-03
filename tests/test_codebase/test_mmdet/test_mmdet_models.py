@@ -1503,7 +1503,7 @@ def test_centernet_head_predict_by_feat(backend_type: Backend):
     batch_img_metas = [{
         'border':
         np.array([11., 99., 11., 99.], dtype=np.float32),
-        'img_shape': (s, s, 3),
+        'img_shape': (s, s),
         'batch_input_shape': (s, s)
     }]
 
