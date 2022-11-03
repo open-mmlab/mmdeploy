@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <numeric>
-#include <math.h>
 
 using mmdeploy::framework::Tensor;
 

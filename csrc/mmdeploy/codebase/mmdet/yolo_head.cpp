@@ -1,6 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "yolo_head.h"
 
+#include <math.h>
+
 #include <numeric>
 
 #include "mmdeploy/core/model.h"
