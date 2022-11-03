@@ -42,7 +42,7 @@ jobs:
         run: |
           mkdir build && cd build
           cmake .. \
-            -DCMAKE_TOOLCHAIN_FILE=$(pwd)/../cmake/toolchains/arm-linux-gnueabihf.cmake \
+            -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
             -DMMDEPLOY_BUILD_SDK=ON \
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON \
             -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
