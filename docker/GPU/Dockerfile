@@ -39,7 +39,7 @@ RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime
 RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0" onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    && mim install --no-cache-dir "mmcv>=2.0.0rc2,<2.1.0" onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 
