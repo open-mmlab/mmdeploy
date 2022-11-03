@@ -38,8 +38,9 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
 ENV PATH /opt/conda/bin:$PATH
 
-### install mmcv-full
-RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
+### install mmcv
+RUN /opt/conda/bin/pip install --no-cache-dir openmim \
+    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0"
 
 WORKDIR /root/workspace
 ### get onnxruntime
@@ -63,7 +64,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS="ort;trt" .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    pip install -e .
+    mim install --no-cache-dir -e .
 
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\

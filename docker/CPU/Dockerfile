@@ -47,8 +47,9 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html
 ENV PATH /opt/conda/bin:$PATH
 
-### install open-mim
-RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cpu/torch${TORCH_VERSION}/index.html
+### install open-mim mmcv
+RUN /opt/conda/bin/pip install --no-cache-dir openmim \
+    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0" \
 
 WORKDIR /root/workspace
 
@@ -90,7 +91,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy.git &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS=ort .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    pip install -e .
+    mim install -e .
 
 ### build SDK
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:/opt/intel/openvino/deployment_tools/ngraph/lib:/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64:${LD_LIBRARY_PATH}"
