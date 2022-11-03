@@ -40,7 +40,7 @@ ENV PATH /opt/conda/bin:$PATH
 
 ### install mmcv
 RUN /opt/conda/bin/pip install --no-cache-dir openmim \
-    && mim install --no-cache-dir "mmcv>=2.0.0rc1,<2.1.0"
+    && mim install --no-cache-dir "mmcv>=2.0.0rc2,<2.1.0"
 
 WORKDIR /root/workspace
 ### get onnxruntime
