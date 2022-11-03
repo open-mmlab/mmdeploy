@@ -51,9 +51,7 @@ struct Registry<void>::Impl {
     return true;
   }
 
-  Span<Creator<void>*> Creators() {
-    return creators_;
-  }
+  Span<Creator<void>*> Creators() { return creators_; }
 
   std::vector<Creator<void>*> creators_;
   std::vector<string_view> names_;
