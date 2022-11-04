@@ -1,20 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Optional, Sequence, Tuple, Union
 
 import mmengine
 import numpy as np
 import torch
-import torch.nn as nn
 from mmdet3d.structures import get_box_type
 from mmengine import Config
 from mmengine.dataset import Compose, pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
-from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task, get_root_logger
+from mmdeploy.utils import Codebase, Task
 
 MMDET3D_TASK = Registry('mmdet3d_tasks')
 
@@ -87,10 +85,8 @@ class VoxelDetection(BaseTask):
         model = deepcopy(self.model_cfg.model)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
         model.setdefault('data_preprocessor', preprocess_cfg)
-
-        if 'data_preprocessor' in model:
-            del model['data_preprocessor']
         model = MODELS.build(model)
+
         if model_checkpoint is not None:
             from mmengine.runner.checkpoint import load_checkpoint
             load_checkpoint(model, model_checkpoint)
@@ -144,8 +140,6 @@ class VoxelDetection(BaseTask):
                 and model input.
         """
 
-        preproc = self.build_data_preprocessor()
-
         cfg = self.model_cfg
         test_pipeline = deepcopy(cfg.test_dataloader.dataset.pipeline)
         test_pipeline = Compose(test_pipeline)
@@ -167,12 +161,11 @@ class VoxelDetection(BaseTask):
         data[0]['inputs']['points'] = data[0]['inputs']['points'].to(
             self.device)
 
-        if preproc is not None:
-            collate_data = preproc(collate_data, False)
-            del collate_data['inputs']['voxels']['voxel_centers']
-
-        voxels = collate_data['inputs']['voxels']
-        inputs = [voxels['voxels'], voxels['num_points'], voxels['coors']]
+        inputs = None
+        if data_preprocessor is not None:
+            collate_data = data_preprocessor(collate_data, False)
+            voxels = collate_data['inputs']['voxels']
+            inputs = [voxels['voxels'], voxels['num_points'], voxels['coors']]
         return collate_data, inputs
 
     def visualize(self,
@@ -212,67 +205,11 @@ class VoxelDetection(BaseTask):
             pred_score_thr=0.0,
             vis_task='lidar_det')
 
-    @staticmethod
-    def run_inference(model: nn.Module,
-                      model_inputs: Dict[str, torch.Tensor]) -> List:
-        """Run inference once for a object detection model of mmdet3d.
-
-        Args:
-            model (nn.Module): Input model.
-            model_inputs (dict): A dict containing model inputs tensor and
-                meta info.
-
-        Returns:
-            list: The predictions of model inference.
-        """
-        result = model(inputs=model_inputs['inputs'])
-        return [result]
-
-    @staticmethod
-    def evaluate_outputs(model_cfg,
-                         outputs: Sequence,
-                         dataset: Dataset,
-                         metrics: Optional[str] = None,
-                         out: Optional[str] = None,
-                         metric_options: Optional[dict] = None,
-                         format_only: bool = False,
-                         log_file: Optional[str] = None):
-        if out:
-            logger = get_root_logger()
-            logger.info(f'\nwriting results to {out}')
-            mmengine.dump(outputs, out)
-        kwargs = {} if metric_options is None else metric_options
-        if format_only:
-            dataset.format_results(outputs, **kwargs)
-        if metrics:
-            eval_kwargs = model_cfg.get('evaluation', {}).copy()
-            # hard-code way to remove EvalHook args
-            for key in [
-                    'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best',
-                    'rule'
-            ]:
-                eval_kwargs.pop(key, None)
-                eval_kwargs.pop(key, None)
-            eval_kwargs.update(dict(metric=metrics, **kwargs))
-            dataset.evaluate(outputs, **eval_kwargs)
-
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
             str: the name of the model.
-        """
-        raise NotImplementedError
-
-    def get_tensor_from_input(self, input_data: Dict[str, Any],
-                              **kwargs) -> torch.Tensor:
-        """Get input tensor from input data.
-
-        Args:
-            input_data (dict): Input data containing meta info and image
-                tensor.
-        Returns:
-            torch.Tensor: An image in `Tensor`.
         """
         raise NotImplementedError
 
@@ -302,58 +239,3 @@ class VoxelDetection(BaseTask):
             dict: Composed of the preprocess information.
         """
         raise NotImplementedError
-
-    def single_gpu_test(self,
-                        model: nn.Module,
-                        data_loader: DataLoader,
-                        show: bool = False,
-                        out_dir: Optional[str] = None,
-                        **kwargs) -> List:
-        """Run test with single gpu.
-
-        Args:
-            model (nn.Module): Input model from nn.Module.
-            data_loader (DataLoader): PyTorch data loader.
-            show (bool): Specifying whether to show plotted results. Defaults
-                to `False`.
-            out_dir (str): A directory to save results, defaults to `None`.
-
-        Returns:
-            list: The prediction results.
-        """
-        model.eval()
-        results = []
-        dataset = data_loader.dataset
-
-        prog_bar = mmengine.ProgressBar(len(dataset))
-        for i, data in enumerate(data_loader):
-            with torch.no_grad():
-                result = model(data['points'][0].data,
-                               data['img_metas'][0].data, False)
-            if show:
-                # Visualize the results of MMDetection3D model
-                # 'show_results' is MMdetection3D visualization API
-                if out_dir is None:
-                    model.module.show_result(
-                        data,
-                        result,
-                        out_dir='',
-                        file_name='',
-                        show=show,
-                        snapshot=False,
-                        score_thr=0.3)
-                else:
-                    model.module.show_result(
-                        data,
-                        result,
-                        out_dir=out_dir,
-                        file_name=f'model_output{i}',
-                        show=show,
-                        snapshot=True,
-                        score_thr=0.3)
-            results.extend(result)
-
-            batch_size = len(result)
-            for _ in range(batch_size):
-                prog_bar.update()
-        return results

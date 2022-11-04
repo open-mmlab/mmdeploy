@@ -68,8 +68,7 @@ class VoxelDetectionModel(BaseBackendModel):
 
     def forward(self,
                 inputs: dict,
-                data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'predict') -> Any:
+                data_samples: Optional[List[BaseDataElement]] = None) -> Any:
         """Run forward inference.
 
         Args:
@@ -89,7 +88,12 @@ class VoxelDetectionModel(BaseBackendModel):
             'num_points': preprocessed['num_points'].to(self.device),
             'coors': preprocessed['coors'].to(self.device)
         }
+
         outputs = self.wrapper(input_dict)
+
+        if data_samples is None:
+            return outputs
+
         prediction = VoxelDetectionModel.postprocess(
             model_cfg=self.model_cfg,
             deploy_cfg=self.deploy_cfg,

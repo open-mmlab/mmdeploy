@@ -1,11 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mmengine
 import pytest
 import torch
-from torch.utils.data import DataLoader
-from torch.utils.data.dataset import Dataset
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
@@ -34,7 +32,7 @@ deploy_cfg = mmengine.Config(
             opset_version=11,
             input_shape=None,
             input_names=['voxels', 'num_points', 'coors'],
-            output_names=['scores', 'bbox_preds', 'dir_scores'])))
+            output_names=['cls_score', 'bbox_pred', 'dir_cls_pred'])))
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = None
 
@@ -58,9 +56,9 @@ def backend_model():
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(
         outputs={
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'cls_score': torch.rand(1, 18, 32, 32),
+            'bbox_pred': torch.rand(1, 42, 32, 32),
+            'dir_cls_pred': torch.rand(1, 12, 32, 32)
         })
 
     yield task_processor.build_backend_model([''])
@@ -87,45 +85,13 @@ def test_create_input(device):
 
 @pytest.mark.skipif(
     reason='Only support GPU test', condition=not torch.cuda.is_available())
-def test_run_inference(backend_model):
-    task_processor.device = 'cuda:0'
-    torch_model = task_processor.build_pytorch_model(None)
-    input_dict, _ = task_processor.create_input(pcd_path)
-
-    torch_results = task_processor.run_inference(torch_model, input_dict)
-    assert torch_results is not None
-    task_processor.device = 'cpu'
-
-
-@pytest.mark.skipif(
-    reason='Only support GPU test', condition=not torch.cuda.is_available())
 def test_single_gpu_test_and_evaluate():
     task_processor.device = 'cuda:0'
 
-    class DummyDataset(Dataset):
-
-        def __getitem__(self, index):
-            return 0
-
-        def __len__(self):
-            return 0
-
-        def evaluate(self, *args, **kwargs):
-            return 0
-
-        def format_results(self, *args, **kwargs):
-            return 0
-
-    dataset = DummyDataset()
-    # Prepare dataloader
-    dataloader = DataLoader(dataset)
-
     # Prepare dummy model
     model = DummyModel(outputs=[torch.rand([1, 10, 5]), torch.rand([1, 10])])
+
+    assert model is not None
     # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert isinstance(outputs, list)
-    output_file = NamedTemporaryFile(suffix='.pkl').name
-    task_processor.evaluate_outputs(
-        model_cfg, outputs, dataset, 'bbox', out=output_file, format_only=True)
-    task_processor.device = 'cpu'
+    with TemporaryDirectory() as dir:
+        task_processor.build_test_runner(model, dir)

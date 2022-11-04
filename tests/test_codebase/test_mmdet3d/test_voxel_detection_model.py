@@ -13,7 +13,7 @@ try:
 except ImportError:
     pytest.skip(
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
-from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import \
+from mmdeploy.codebase.mmdet3d.deploy.voxel_detection_model import \
     VoxelDetectionModel
 
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
@@ -32,15 +32,15 @@ class TestVoxelDetectionModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'cls_score': torch.rand(1, 18, 32, 32),
+            'bbox_pred': torch.rand(1, 42, 32, 32),
+            'dir_cls_pred': torch.rand(1, 12, 32, 32)
         }
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = mmengine.Config({
             'onnx_config': {
                 'input_names': ['voxels', 'num_points', 'coors'],
-                'output_names': ['scores', 'bbox_preds', 'dir_scores'],
+                'output_names': ['cls_score', 'bbox_pred', 'dir_cls_pred'],
                 'opset_version': 11
             },
             'backend_config': {
@@ -81,7 +81,7 @@ def test_build_voxel_detection_model():
         dict(
             backend_config=dict(type=Backend.ONNXRUNTIME.value),
             onnx_config=dict(
-                output_names=['scores', 'bbox_preds', 'dir_scores']),
+                output_names=['cls_score', 'bbox_pred', 'dir_cls_pred']),
             codebase_config=dict(type=Codebase.MMDET3D.value)))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
