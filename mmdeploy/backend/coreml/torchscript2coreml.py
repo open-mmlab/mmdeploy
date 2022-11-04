@@ -1,13 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict, Union, List
+from typing import Dict, List, Union
 
 import coremltools as ct
 import mmcv
 import torch
 
-from mmdeploy.utils import (get_root_logger, get_common_config,
-                            get_model_inputs, load_config)
+from mmdeploy.utils import (get_common_config, get_model_inputs,
+                            get_root_logger, load_config)
 from mmdeploy.utils.config_utils import get_ir_config
 
 try:
@@ -51,11 +51,11 @@ def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
 
 
 def from_torchscript(model_id: int,
-                     torchscript_model: Union[str, torch.jit.RecursiveScriptModule],
-                     output_file_prefix: str,
-                     deploy_cfg: Union[str, mmcv.Config],
-                     backend_files: List[str],
-                     **kwargs):
+                     torchscript_model: Union[str,
+                                              torch.jit.RecursiveScriptModule],
+                     output_file_prefix: str, deploy_cfg: Union[str,
+                                                                mmcv.Config],
+                     backend_files: List[str], **kwargs):
     """Create a coreml engine from torchscript.
 
     Args:
@@ -64,7 +64,8 @@ def from_torchscript(model_id: int,
             The torchscript model to be converted.
         output_file_prefix (str): The output file prefix.
         deploy_cfg (str | mmcv.Config): Deployment config.
-        backend_files (List[str]): Backend files used by deployment for testing pipeline
+        backend_files (List[str]):
+            Backend files used by deployment for testing pipeline
     """
 
     try:
@@ -108,9 +109,11 @@ def from_torchscript(model_id: int,
         # Compute precision must be None for neuralnetwork conversion
         compute_precision = None
     else:
-        compute_precision = ct.precision[final_params.get('compute_precision', 'FLOAT32')]
+        compute_precision = ct.precision[final_params.get(
+            'compute_precision', 'FLOAT32')]
 
-    minimum_deployment_target = final_params.get('minimum_deployment_target', None)
+    minimum_deployment_target = final_params.get('minimum_deployment_target',
+                                                 None)
 
     mlmodel = ct.convert(
         model=torchscript_model,
@@ -118,7 +121,8 @@ def from_torchscript(model_id: int,
         outputs=outputs,
         compute_precision=compute_precision,
         convert_to=convert_to,
-        minimum_deployment_target=ct.target[minimum_deployment_target] if minimum_deployment_target else None,
+        minimum_deployment_target=ct.target[minimum_deployment_target]
+        if minimum_deployment_target else None,
         skip_model_load=final_params.get('skip_model_load', False))
 
     suffix = get_model_suffix(convert_to)

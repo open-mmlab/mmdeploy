@@ -395,7 +395,7 @@ def main():
             update_sdk_pipeline(args.work_dir)
 
     elif backend == Backend.COREML:
-        from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
+        from mmdeploy.apis.coreml import from_torchscript
         coreml_pipeline_funcs = [from_torchscript]
         PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
 
@@ -404,12 +404,8 @@ def main():
             torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
             output_file_prefix = osp.join(args.work_dir, torchscript_name)
 
-            from_torchscript(
-                model_id,
-                torchscript_path,
-                output_file_prefix,
-                deploy_cfg,
-                coreml_files)
+            from_torchscript(model_id, torchscript_path, output_file_prefix,
+                             deploy_cfg, coreml_files)
 
         backend_files = coreml_files
 

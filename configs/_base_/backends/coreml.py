@@ -1,9 +1,11 @@
 backend_config = dict(
     type='coreml',
-    convert_to='mlprogram',  # mlprogram or neuralnetwork
+    # mlprogram or neuralnetwork
+    convert_to='mlprogram',
     common_config=dict(
-        compute_precision='FLOAT32',  # FLOAT16 or FLOAT32, see coremltools.precision
-        minimum_deployment_target='iOS16',  # iOS15, iOS16, etc., see coremltools.target
-        skip_model_load=False
-    ),
+        # FLOAT16 or FLOAT32, see coremltools.precision
+        compute_precision='FLOAT32',
+        # iOS15, iOS16, etc., see coremltools.target
+        minimum_deployment_target='iOS16',
+        skip_model_load=False),
 )

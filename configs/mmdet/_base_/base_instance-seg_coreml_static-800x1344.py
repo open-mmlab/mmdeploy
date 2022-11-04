@@ -1,6 +1,8 @@
 _base_ = ['./base_torchscript.py', '../../_base_/backends/coreml.py']
 
-ir_config = dict(input_shape=(1344, 800), output_names=['dets', 'labels', 'masks'])
+ir_config = dict(
+    input_shape=(1344, 800), output_names=['dets', 'labels', 'masks'])
+
 backend_config = dict(model_inputs=[
     dict(
         input_shapes=dict(
@@ -12,4 +14,3 @@ backend_config = dict(model_inputs=[
 
 # Don't know if this is necessary
 codebase_config = dict(post_processing=dict(export_postprocess_mask=False))
-
