@@ -75,6 +75,7 @@ class BaseTask(metaclass=ABCMeta):
 
         from mmengine.registry import MODELS
         data_preprocessor = MODELS.build(preprocess_cfg)
+        data_preprocessor.to(self.device)
 
         return data_preprocessor
 

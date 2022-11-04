@@ -3,7 +3,6 @@ import os.path as osp
 from typing import Any, Optional, Union
 
 import mmengine
-import torch
 
 from mmdeploy.apis.core.pipeline_manager import no_mp
 from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
@@ -64,7 +63,8 @@ def torch2onnx(img: Any,
         img,
         input_shape,
         data_preprocessor=getattr(torch_model, 'data_preprocessor', None))
-    if not isinstance(model_inputs, torch.Tensor) and len(model_inputs) == 1:
+
+    if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
     patch_metas = {'data_samples': data_samples}

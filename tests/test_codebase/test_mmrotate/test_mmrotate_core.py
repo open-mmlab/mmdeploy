@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import mmcv
+import mmengine
 import numpy as np
 import pytest
 import torch
@@ -20,7 +20,7 @@ except ImportError:
 @backend_checker(Backend.ONNXRUNTIME)
 def test_multiclass_nms_rotated():
     from mmdeploy.codebase.mmrotate.core import multiclass_nms_rotated
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -72,7 +72,7 @@ def test_multiclass_nms_rotated_with_keep_top_k(pre_top_k):
 
     from mmdeploy.codebase.mmrotate.core import multiclass_nms_rotated
     keep_top_k = 15
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(
                 output_names=None,
@@ -140,7 +140,7 @@ def test_delta_xywha_rbbox_coder_delta2bbox(backend_type: Backend,
                                             max_shape: tuple, proj_xy: bool,
                                             edge_swap: bool):
     check_backend(backend_type)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type.value, model_inputs=None),
@@ -189,7 +189,7 @@ def test_delta_xywha_rbbox_coder_delta2bbox(backend_type: Backend,
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
     check_backend(backend_type)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(type=backend_type.value, model_inputs=None),
@@ -227,7 +227,7 @@ def test_delta_midpointoffset_rbbox_delta2bbox(backend_type: Backend):
 @backend_checker(Backend.ONNXRUNTIME)
 def test_fake_multiclass_nms_rotated():
     from mmdeploy.codebase.mmrotate.core import fake_multiclass_nms_rotated
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -277,7 +277,7 @@ def test_fake_multiclass_nms_rotated():
 def test_poly2obb_le90(backend_type: Backend):
     check_backend(backend_type)
     polys = torch.rand(1, 10, 8)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -316,7 +316,7 @@ def test_poly2obb_le90(backend_type: Backend):
 def test_poly2obb_le135(backend_type: Backend):
     check_backend(backend_type)
     polys = torch.rand(1, 10, 8)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -351,7 +351,7 @@ def test_poly2obb_le135(backend_type: Backend):
 def test_obb2poly_le135(backend_type: Backend):
     check_backend(backend_type)
     rboxes = torch.rand(1, 10, 5)
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=None, input_shape=None),
             backend_config=dict(
@@ -386,7 +386,7 @@ def test_obb2poly_le135(backend_type: Backend):
 def test_gvfixcoder__decode(backend_type: Backend):
     check_backend(backend_type)
 
-    deploy_cfg = mmcv.Config(
+    deploy_cfg = mmengine.Config(
         dict(
             onnx_config=dict(output_names=['output'], input_shape=None),
             backend_config=dict(type=backend_type.value),
