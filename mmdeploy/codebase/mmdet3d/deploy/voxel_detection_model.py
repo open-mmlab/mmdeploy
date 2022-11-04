@@ -68,7 +68,8 @@ class VoxelDetectionModel(BaseBackendModel):
 
     def forward(self,
                 inputs: dict,
-                data_samples: Optional[List[BaseDataElement]] = None) -> Any:
+                data_samples: Optional[List[BaseDataElement]] = None,
+                **kwargs) -> Any:
         """Run forward inference.
 
         Args:
@@ -199,8 +200,10 @@ class VoxelDetectionModel(BaseBackendModel):
         """postprocess outputs to datasamples.
 
         Args:
-            model_cfg (Union[str, Config]): The model config from trainning repo
-            deploy_cfg (Union[str, Config]): The deploy config to specify backend and input shape # noqa: E501
+            model_cfg (Union[str, Config]): The model config from
+                trainning repo
+            deploy_cfg (Union[str, Config]): The deploy config to specify
+                backend and input shape
             outs (Dict): output bbox, cls and score
             metas (Dict): DataSample3D for bbox3d render
 
