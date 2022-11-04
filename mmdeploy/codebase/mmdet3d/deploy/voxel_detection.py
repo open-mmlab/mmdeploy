@@ -177,15 +177,15 @@ class VoxelDetection(BaseTask):
                   show_result: bool = False,
                   draw_gt: bool = False,
                   **kwargs):
-        """_summary_
+        """visualize backend output.
 
         Args:
-            image (Union[str, np.ndarray]): _description_
-            result (list): _description_
-            output_file (str): _description_
-            window_name (str, optional): _description_. Defaults to ''.
-            show_result (bool, optional): _description_. Defaults to False.
-            draw_gt (bool, optional): _description_. Defaults to False.
+            image (Union[str, np.ndarray]): pcd file path
+            result (list): output bbox, score and type
+            output_file (str): the directory to save output
+            window_name (str, optional): display window name
+            show_result (bool, optional): show result or not. Defaults to False.  # noqa: E501
+            draw_gt (bool, optional): show gt or not. Defaults to False.
         """
         cfg = self.model_cfg
         visualizer = super().get_visualizer(window_name, output_file)
