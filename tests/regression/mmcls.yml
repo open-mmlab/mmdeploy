@@ -218,3 +218,4 @@ models:
       - configs/mobileone/mobileone-s0_8xb128_in1k.py
     pipelines:
       - *pipeline_trt_static_fp16
+      - *pipeline_ort_dynamic_fp32
