@@ -129,11 +129,12 @@ class VoxelDetection(BaseTask):
         data[0]['inputs']['points'] = data[0]['inputs']['points'].to(
             self.device)
 
-        inputs = None
         if data_preprocessor is not None:
             collate_data = data_preprocessor(collate_data, False)
             voxels = collate_data['inputs']['voxels']
             inputs = [voxels['voxels'], voxels['num_points'], voxels['coors']]
+        else:
+            inputs = collate_data['inputs']
         return collate_data, inputs
 
     def visualize(self,

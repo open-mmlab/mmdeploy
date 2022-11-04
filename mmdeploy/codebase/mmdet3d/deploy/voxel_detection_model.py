@@ -225,22 +225,31 @@ class VoxelDetectionModel(BaseBackendModel):
         dir_cls_pred = outs['dir_cls_pred']
         batch_input_metas = [data_samples.metainfo for data_samples in metas]
 
+        head = None
+        cfg = None
         if 'bbox_head' in model_cfg.model:
             # pointpillars postprocess
             head = MODELS.build(model_cfg.model['bbox_head'])
+            cfg = model_cfg.model.test_cfg
+        elif 'pts_bbox_head' in model_cfg.model:
+            # centerpoint postprocess
+            head = MODELS.build(model_cfg.model['pts_bbox_head'])
+            cfg = model_cfg.model.test_cfg.pts
+        else:
+            raise NotImplementedError('mmdet3d model bbox_head not found')
+
+        if not hasattr(head, 'task_heads'):
             data_instances_3d = head.predict_by_feat(
                 cls_scores=[cls_score],
                 bbox_preds=[bbox_pred],
                 dir_cls_preds=[dir_cls_pred],
                 batch_input_metas=batch_input_metas,
-                cfg=model_cfg.model.test_cfg)
+                cfg=cfg)
 
             data_samples = VoxelDetectionModel.convert_to_datasample(
                 data_samples=metas, data_instances_3d=data_instances_3d)
 
-        elif 'pts_bbox_head' in model_cfg.model:
-            # centerpoint postprocess
-            head = MODELS.build(model_cfg.model['pts_bbox_head'])
+        else:
             pts = model_cfg.model.test_cfg.pts
 
             rets = []
@@ -355,9 +364,6 @@ class VoxelDetectionModel(BaseBackendModel):
 
             data_samples = VoxelDetectionModel.convert_to_datasample(
                 metas, data_instances_3d=ret_list)
-
-        else:
-            raise NotImplementedError('mmdet3d model bbox_head not found')
 
         return data_samples
 
