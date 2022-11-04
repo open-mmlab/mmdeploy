@@ -1838,7 +1838,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/tsn/tsn_r50_1x1x3_100e_kinetics400_rgb.py">TSN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/dev-1.x/configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py">TSN</a></td>
     <td align="center" rowspan="2">Recognition</td>
     <td align="center" rowspan="2">Kinetics-400</td>
     <td align="center">top-1</td>
@@ -1859,7 +1859,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
 <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/slowfast/slowfast_r50_4x16x1_256e_kinetics400_rgb.py">SlowFast</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/dev-1.x/configs/recognition/slowfast/slowfast_r50_8xb8-4x16x1-256e_kinetics400-rgb.py">SlowFast</a></td>
     <td align="center" rowspan="2">Recognition</td>
     <td align="center" rowspan="2">Kinetics-400</td>
     <td align="center">top-1</td>

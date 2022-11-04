@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### Install mmaction2
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmaction2#installation) to install mmocr.
+Please follow the [installation guide](https://github.com/open-mmlab/mmaction2/tree/dev-1.x#installation) to install mmocr.
 
 ### Install mmdeploy
 
@@ -37,7 +37,7 @@ If your target platform is **Ubuntu 18.04 or later version**, we encourage you t
 [scripts](../01-how-to-build/build_from_script.md). For example, the following commands install mmdeploy as well as inference engine - `ONNX Runtime`.
 
 ```shell
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
@@ -50,9 +50,9 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/master/tools/deploy.py) to convert mmocr models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmocr models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
-When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/master/configs/mmaction) of all supported backends for mmocr, under which the config file path follows the pattern:
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmaction) of all supported backends for mmocr, under which the config file path follows the pattern:
 
 ```
 {task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -75,13 +75,13 @@ In the next part，we will take `tsn` model from `video recognition` task as an 
 cd mmdeploy
 
 # download tsn model from mmaction2 model zoo
-mim download mmaction2 --config tsn_r50_1x1x3_100e_kinetics400_rgb --dest .
+mim download mmaction2 --config tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb --dest .
 
 # convert mmaction2 model to onnxruntime model with dynamic shape
 python tools/deploy.py \
     configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py \
-    tsn_r50_1x1x3_100e_kinetics400_rgb.py \
-    tsn_r50_256p_1x1x3_100e_kinetics400_rgb_20200725-22592236.pth \
+    tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb \
+    tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb_20220906-cd10898e.pth \
     tests/data/arm_wrestling.mp4 \
     --work-dir mmdeploy_models/mmaction/tsn/ort \
     --device cpu \
@@ -123,10 +123,9 @@ import numpy as np
 import torch
 
 deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
-model_cfg = 'tsn_r50_1x1x3_100e_kinetics400_rgb.py'
+model_cfg = 'tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
-backend_model = ['./work_dir/tsn/end2end.onnx']
 image = 'tests/data/arm_wrestling.mp4'
 
 # read deploy_cfg and model_cfg
@@ -134,7 +133,7 @@ deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
 # build task and backend model
 task_processor = build_task_processor(model_cfg, deploy_cfg, device)
-model = task_processor.init_backend_model(backend_model)
+model = task_processor.build_backend_model(backend_model)
 
 # process input image
 input_shape = get_input_shape(deploy_cfg)
@@ -142,14 +141,14 @@ model_inputs, _ = task_processor.create_input(image, input_shape)
 
 # do model inference
 with torch.no_grad():
-    result = task_processor.run_inference(model, model_inputs)
+    result = model.test_step(model_inputs)
 
 # show top5-results
-result = np.array(result[0])
-top_index = np.argsort(result)[::-1]
+pred_scores = result[0].pred_scores.item.tolist()
+top_index = np.argsort(pred_scores)[::-1]
 for i in range(5):
     index = top_index[i]
-    print(index, result[index])
+    print(index, pred_scores[index])
 ```
 
 ### SDK model inference
@@ -179,13 +178,13 @@ for label_id, score in result:
     print(label_id, score)
 ```
 
-Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 > MMAction2 only API of c, c++ and python for now.
 
 ## Supported models
 
-| Model                                                                                        | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
