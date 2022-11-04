@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.7
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.5.3
+ARG MMCV_VERSION
 USER root
 
 ### change the system source for installing libs
@@ -48,7 +48,8 @@ RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime and openvino
 RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && mim install --no-cache-dir "mmcv>=2.0.0rc2,<2.1.0" onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
+    && if [ -z ${MMCV_VERSION} ] ; then MMCV="mmcv>=2.0.0rc2,<2.1.0" ; else MMCV="mmcv=="${MMCV_VERSION} ; fi && \
+    && mim install --no-cache-dir ${MMCV} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
 
 ENV PATH /opt/conda/bin:$PATH
 
@@ -79,7 +80,7 @@ WORKDIR /root/workspace
 ARG VERSION
 RUN git clone https://github.com/open-mmlab/mmdeploy.git &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then git checkout -b dev-1.x ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     rm -rf build &&\
     mkdir build &&\

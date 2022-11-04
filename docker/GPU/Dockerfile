@@ -8,6 +8,7 @@ ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.5.3
 ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
+ARG MMCV_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -39,7 +40,8 @@ RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime
 RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && mim install --no-cache-dir "mmcv>=2.0.0rc2,<2.1.0" onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    && if [ -z ${MMCV_VERSION} ] ; then MMCV="mmcv>=2.0.0rc2,<2.1.0" ; else MMCV="mmcv=="${MMCV_VERSION} ; fi && \
+    && mim install --no-cache-dir ${MMCV} onnxruntime-gpu==${ONNXRUNTIME_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 
@@ -57,7 +59,7 @@ ENV TENSORRT_DIR=/workspace/tensorrt
 ARG VERSION
 RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then git checkout -b dev-1.x ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     mkdir -p build &&\
     cd build &&\
