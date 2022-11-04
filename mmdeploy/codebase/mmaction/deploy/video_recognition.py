@@ -111,11 +111,16 @@ class VideoRecognition(BaseTask):
             nn.Module: An initialized backend model.
         """
         from .video_recognition_model import build_video_recognition_model
+        data_preprocessor = self.model_cfg.model.data_preprocessor
+        data_preprocessor.setdefault('type', 'mmaction.ActionDataPreprocessor')
         model = build_video_recognition_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            data_preprocessor=data_preprocessor)
         model.to(self.device)
-        model.eval()
-        return model
+        return model.eval()
 
     def create_input(self,
                      imgs: Union[str, np.ndarray],
@@ -242,7 +247,7 @@ class VideoRecognition(BaseTask):
         """
         return input_data['inputs']
 
-    def get_preprocess(self) -> Dict:
+    def get_preprocess(self, *args, **kwargs) -> Dict:
         """Get the preprocess information for SDK.
 
         Return:
@@ -250,19 +255,70 @@ class VideoRecognition(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.test_pipeline
-        return preprocess
+        pipeline = model_cfg.test_pipeline
+        data_preprocessor = self.model_cfg.model.data_preprocessor
 
-    def get_postprocess(self) -> Dict:
+        lift = dict(type='Lift', transforms=[])
+        lift['transforms'].append(dict(type='LoadImageFromFile'))
+        transforms2index = {}
+        for i, trans in enumerate(pipeline):
+            transforms2index[trans['type']] = i
+        lift_key = [
+            'Resize', 'Normalize', 'TenCrop', 'ThreeCrop', 'CenterCrop'
+        ]
+        for key in lift_key:
+            if key == 'Normalize':
+                assert key not in transforms2index
+                mean = data_preprocessor.get('mean', [0, 0, 0])
+                std = data_preprocessor.get('std', [1, 1, 1])
+                trans = dict(type='Normalize', mean=mean, std=std, to_rgb=True)
+                lift['transforms'].append(trans)
+            if key in transforms2index:
+                index = transforms2index[key]
+                if key == 'Resize' and 'scale' in pipeline[index]:
+                    value = pipeline[index].pop('scale')
+                    if len(value) == 2 and value[0] == -1:
+                        value = value[::-1]
+                    pipeline[index]['size'] = value
+                lift['transforms'].append(pipeline[index])
+
+        meta_keys = [
+            'valid_ratio', 'flip', 'img_norm_cfg', 'filename', 'ori_shape',
+            'pad_shape', 'img_shape', 'flip_direction', 'scale_factor',
+            'ori_filename'
+        ]
+        other = []
+        must_key = ['FormatShape', 'PackActionInputs']
+        for key in must_key:
+            assert key in transforms2index
+            index = transforms2index[key]
+            if key == 'PackActionInputs':
+                if 'meta_keys' in pipeline[index]:
+                    meta_keys += pipeline[index]['meta_keys']
+                pipeline[index]['meta_keys'] = list(set(meta_keys))
+                pipeline[index]['keys'] = ['img']
+                pipeline[index]['type'] = 'Collect'
+            other.append(pipeline[index])
+
+        reorder = [lift, *other]
+        return reorder
+
+    def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
 
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.model.cls_head
+        assert 'cls_head' in self.model_cfg.model
+        assert 'num_classes' in self.model_cfg.model.cls_head
+        logger = get_root_logger()
+        logger.warning('use default top-k value 1')
+        num_classes = self.model_cfg.model.cls_head.num_classes
+        params = dict(topk=1, num_classes=num_classes)
+        postprocess = dict(type='BaseHead', params=params)
         return postprocess
 
-    def get_model_name(self) -> str:
+    def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
 
         Return:
