@@ -6,7 +6,9 @@
 #include <cstdio>
 
 namespace mmdeploy {
+namespace operation {
 namespace cuda {
+namespace impl {
 
 template <typename T, int channels>
 __global__ void normalize(const T* src, int height, int width, int stride, float* output,
@@ -57,5 +59,7 @@ template void Normalize<float, 3>(const float* src, int height, int width, int s
 template void Normalize<float, 1>(const float* src, int height, int width, int stride,
                                   float* output, const float* mean, const float* std, bool to_rgb,
                                   cudaStream_t stream);
+}  // namespace impl
 }  // namespace cuda
+}  // namespace operation
 }  // namespace mmdeploy

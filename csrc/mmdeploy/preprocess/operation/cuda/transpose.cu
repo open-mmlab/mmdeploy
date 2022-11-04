@@ -3,6 +3,7 @@
 #include <cstdint>
 
 namespace mmdeploy {
+namespace operation {
 namespace cuda {
 
 template <typename T>
@@ -37,4 +38,5 @@ template void Transpose<uint8_t>(const uint8_t* src, int height, int width, int 
 template void Transpose<float>(const float* src, int height, int width, int channels, float* dst,
                                cudaStream_t stream);
 }  // namespace cuda
+}  // namespace operation
 }  // namespace mmdeploy

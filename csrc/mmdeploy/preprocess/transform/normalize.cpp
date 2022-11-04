@@ -1,105 +1,101 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "normalize.h"
-
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-// MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
-
-NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
-  if (!args.contains("mean") || !args.contains("std")) {
-    MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
-    throw std::invalid_argument("no 'mean' or 'std' is configured");
-  }
-  for (auto& v : args["mean"]) {
-    arg_.mean.push_back(v.get<float>());
-  }
-  for (auto& v : args["std"]) {
-    arg_.std.push_back(v.get<float>());
-  }
-  arg_.to_rgb = args.value("to_rgb", true);
-}
-
-/**
-  input:
-  {
-    "ori_img": Mat,
-    "img": Tensor,
-    "attribute": "",
-    "img_shape": [int],
-    "ori_shape": [int],
-    "img_fields": [int]
-  }
-  output:
-  {
-    "img": Tensor,
-    "attribute": "",
-    "img_shape": [int],
-    "ori_shape": [int],
-    "img_fields": [string],
-    "img_norm_cfg": {
-      "mean": [float],
-      "std": [float],
-      "to_rgb": true
+class Normalize : public Transform {
+ public:
+  explicit Normalize(const Value& args) {
+    if (!args.contains("mean") || !args.contains("std")) {
+      MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
+      throw std::invalid_argument("no 'mean' or 'std' is configured");
     }
-  }
- */
-
-Result<Value> NormalizeImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-
-  // copy input data, and update its properties later
-  Value output = input;
-
-  auto img_fields = GetImageFields(input);
-  for (auto& key : img_fields) {
-    Tensor tensor = input[key].get<Tensor>();
-    auto desc = tensor.desc();
-    assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
-    assert(desc.shape.size() == 4 /*n, h, w, c*/);
-    assert(desc.shape[3] == arg_.mean.size());
-
-    OUTCOME_TRY(auto dst, NormalizeImage(tensor));
-    SetTransformData(output, key, std::move(dst));
-
-    for (auto& v : arg_.mean) {
-      output["img_norm_cfg"]["mean"].push_back(v);
+    for (auto& v : args["mean"]) {
+      mean_.push_back(v.get<float>());
     }
-    for (auto v : arg_.std) {
-      output["img_norm_cfg"]["std"].push_back(v);
+    for (auto& v : args["std"]) {
+      std_.push_back(v.get<float>());
     }
-    output["img_norm_cfg"]["to_rgb"] = arg_.to_rgb;
+    to_rgb_ = args.value("to_rgb", true);
 
-    // trace static info & runtime args
-    if (output.contains("__tracer__")) {
-      output["__tracer__"].get_ref<Tracer&>().Normalize(arg_.mean, arg_.std, arg_.to_rgb,
-                                                        desc.data_type);
+    auto context = GetContext(args);
+    normalize_ = operation::Create<operation::Normalize>(
+        context.device, operation::Normalize::Param{mean_, std_, to_rgb_}, context);
+  }
+
+  /**
+    input:
+    {
+      "ori_img": Mat,
+      "img": Tensor,
+      "attribute": "",
+      "img_shape": [int],
+      "ori_shape": [int],
+      "img_fields": [int]
     }
-  }
-  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
-  return output;
-}
+    output:
+    {
+      "img": Tensor,
+      "attribute": "",
+      "img_shape": [int],
+      "ori_shape": [int],
+      "img_fields": [string],
+      "img_norm_cfg": {
+        "mean": [float],
+        "std": [float],
+        "to_rgb": true
+      }
+    }
+   */
 
-Normalize::Normalize(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<NormalizeImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'Normalize' is not supported on specified platform");
+  Result<void> Apply(Value& input) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+
+    auto img_fields = GetImageFields(input);
+    for (auto& key : img_fields) {
+      Tensor tensor = input[key].get<Tensor>();
+      auto desc = tensor.desc();
+      assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
+      assert(desc.shape.size() == 4 /*n, h, w, c*/);
+      assert(desc.shape[3] == arg_.mean.size());
+
+      OUTCOME_TRY(auto dst, normalize_->normalize(tensor));
+      SetTransformData(input, key, std::move(dst));
+
+      for (auto& v : mean_) {
+        input["img_norm_cfg"]["mean"].push_back(v);
+      }
+      for (auto v : std_) {
+        input["img_norm_cfg"]["std"].push_back(v);
+      }
+      input["img_norm_cfg"]["to_rgb"] = to_rgb_;
+
+      // trace static info & runtime args
+      if (input.contains("__tracer__")) {
+        input["__tracer__"].get_ref<Tracer&>().Normalize(mean_, std_, to_rgb_, desc.data_type);
+      }
+    }
+    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    return success();
   }
-  impl_ = impl_creator->Create(args);
-}
+
+ private:
+  std::unique_ptr<operation::Normalize> normalize_;
+  std::vector<float> mean_;
+  std::vector<float> std_;
+  bool to_rgb_;
+};
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Normalize, 0), [](const Value& config) {
-  return std::make_unique<Normalize>(config, 0);
+  return std::make_unique<Normalize>(config);
 });
 
-MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

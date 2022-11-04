@@ -1,73 +1,75 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "default_format_bundle.h"
-
-#include <cassert>
-
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-DefaultFormatBundleImpl::DefaultFormatBundleImpl(const Value& args) : TransformImpl(args) {
-  if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
-    arg_.img_to_float = args["img_to_float"].get<bool>();
+class DefaultFormatBundle : public Transform {
+ public:
+  explicit DefaultFormatBundle(const Value& args) {
+    if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
+      img_to_float_ = args["img_to_float"].get<bool>();
+    }
+    auto context = GetContext(args);
+    to_float_ = operation::Create<operation::ToFloat>(context.device, context);
+    hwc2chw_ = operation::Create<operation::HWC2CHW>(context.device, context);
   }
-}
 
-Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(input).dump(2));
-  Value output = input;
-  if (input.contains("img")) {
-    Tensor in_tensor = input["img"].get<Tensor>();
-    OUTCOME_TRY(auto tensor, ToFloat32(in_tensor, arg_.img_to_float));
+  Result<void> Apply(Value& input) override {
+    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(input).dump(2));
 
-    // set default meta keys
-    if (!output.contains("pad_shape")) {
-      for (auto v : tensor.shape()) {
-        output["pad_shape"].push_back(v);
+    if (input.contains("img")) {
+      Tensor tensor = input["img"].get<Tensor>();
+      auto input_data_type = tensor.data_type();
+      if (img_to_float_) {
+        OUTCOME_TRY(tensor, to_float_->to_float(tensor));
+        SetTransformData(input, "img", tensor);
       }
-    }
-    if (!output.contains("scale_factor")) {
-      output["scale_factor"].push_back(1.0);
-    }
-    if (!output.contains("img_norm_cfg")) {
-      int channel = tensor.shape()[3];
-      for (int i = 0; i < channel; i++) {
-        output["img_norm_cfg"]["mean"].push_back(0.0);
-        output["img_norm_cfg"]["std"].push_back(1.0);
+
+      // set default meta keys
+      if (!input.contains("pad_shape")) {
+        for (auto v : tensor.shape()) {
+          input["pad_shape"].push_back(v);
+        }
       }
-      output["img_norm_cfg"]["to_rgb"] = false;
+      if (!input.contains("scale_factor")) {
+        input["scale_factor"].push_back(1.0);
+      }
+      if (!input.contains("img_norm_cfg")) {
+        int channel = tensor.shape()[3];
+        for (int i = 0; i < channel; i++) {
+          input["img_norm_cfg"]["mean"].push_back(0.0);
+          input["img_norm_cfg"]["std"].push_back(1.0);
+        }
+        input["img_norm_cfg"]["to_rgb"] = false;
+      }
+
+      // trace static info & runtime args
+      if (input.contains("__tracer__")) {
+        input["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(img_to_float_, input_data_type);
+      }
+
+      // transpose
+      OUTCOME_TRY(tensor, hwc2chw_->hwc2chw(tensor));
+      SetTransformData(input, "img", std::move(tensor));
     }
 
-    // trace static info & runtime args
-    if (output.contains("__tracer__")) {
-      output["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(arg_.img_to_float,
-                                                                  in_tensor.data_type());
-    }
-
-    // transpose
-    OUTCOME_TRY(tensor, HWC2CHW(tensor));
-    SetTransformData(output, "img", std::move(tensor));
+    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(input).dump(2));
+    return success();
   }
 
-  MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(output).dump(2));
-  return output;
-}
-
-DefaultFormatBundle::DefaultFormatBundle(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<DefaultFormatBundleImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'DefaultFormatBundle' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'DefaultFormatBundle' is not supported on specified platform");
-  }
-  impl_ = impl_creator->Create(args);
-}
+ private:
+  std::unique_ptr<operation::ToFloat> to_float_;
+  std::unique_ptr<operation::HWC2CHW> hwc2chw_;
+  bool img_to_float_ = true;
+};
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (DefaultFormatBundle, 0), [](const Value& config) {
-  return std::make_unique<DefaultFormatBundle>(config, 0);
+  return std::make_unique<DefaultFormatBundle>(config);
 });
 
-MMDEPLOY_DEFINE_REGISTRY(DefaultFormatBundleImpl);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

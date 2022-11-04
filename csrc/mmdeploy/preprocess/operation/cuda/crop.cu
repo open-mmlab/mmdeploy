@@ -1,9 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace mmdeploy {
+namespace operation {
 namespace cuda {
+namespace impl {
 
 template <typename T, int channels>
 __global__ void crop(const T *src, int src_w, T *dst, int dst_h, int dst_w, int offset_h,
@@ -45,5 +47,7 @@ template void Crop<float, 3>(const float *src, int src_w, float *dst, int dst_h,
 template void Crop<float, 1>(const float *src, int src_w, float *dst, int dst_h, int dst_w,
                              int offset_h, int offset_w, cudaStream_t stream);
 
+}  // namespace impl
 }  // namespace cuda
+}  // namespace operation
 }  // namespace mmdeploy

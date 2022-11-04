@@ -137,6 +137,8 @@ Platform GetPlatform(int platform_id);
 
 Platform GetPlatform(const char* platform_name);
 
+const char* GetPlatformName(PlatformId id);
+
 class MMDEPLOY_API Stream {
  public:
   Stream() = default;

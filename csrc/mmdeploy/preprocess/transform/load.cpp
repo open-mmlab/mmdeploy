@@ -1,83 +1,91 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "load.h"
+// #include "load.h"
 
 #include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/preprocess/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-PrepareImageImpl::PrepareImageImpl(const Value& args) : TransformImpl(args) {
-  arg_.to_float32 = args.value("to_float32", false);
-  arg_.color_type = args.value("color_type", std::string("color"));
-}
-/**
-   * Input:
-    {
-      "ori_img": cv::Mat,
-      "attribute": {
-      }
-    }
+using operation::ToBGR;
+using operation::ToFloat;
+using operation::ToGray;
 
-   * Output:
-    {
-      "ori_img": cv::Mat,
-      "img": Tensor,
-      "img_shape": [],
-      "ori_shape": [],
-      "img_fields": ["img"],
-      "attribute": {
-      }
-    }
-   */
+class PrepareImage : public Transform {
+ public:
+  explicit PrepareImage(const Value& args) {
+    to_float32_ = args.value("to_float32", to_float32_);
+    color_type_ = args.value("color_type", color_type_);
 
-Result<Value> PrepareImageImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-  assert(input.contains("ori_img"));
-
-  // copy input data, and update its properties later
-  Value output = input;
-
-  Mat src_mat = input["ori_img"].get<Mat>();
-  auto res = (arg_.color_type == "color" || arg_.color_type == "color_ignore_orientation"
-                  ? ConvertToBGR(src_mat)
-                  : ConvertToGray(src_mat));
-
-  OUTCOME_TRY(auto tensor, std::move(res));
-
-  for (auto v : tensor.desc().shape) {
-    output["img_shape"].push_back(v);
+    auto context = GetContext(args);
+    to_bgr_ = operation::Create<ToBGR>(context.device, context);
+    to_gray_ = operation::Create<ToGray>(context.device, context);
+    to_float_ = operation::Create<ToFloat>(context.device, context);
   }
-  output["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
-  output["img_fields"].push_back("img");
+  /**
+     * Input:
+      {
+        "ori_img": cv::Mat,
+        "attribute": {
+        }
+      }
 
-  SetTransformData(output, "img", std::move(tensor));
+     * Output:
+      {
+        "ori_img": cv::Mat,
+        "img": Tensor,
+        "img_shape": [],
+        "ori_shape": [],
+        "img_fields": ["img"],
+        "attribute": {
+        }
+      }
+     */
 
-  // trace static info & runtime args
-  Tracer tracer;
-  tracer.PrepareImage(arg_.color_type, arg_.to_float32,
-                      {1, src_mat.height(), src_mat.width(), src_mat.channel()},
-                      src_mat.pixel_format(), src_mat.type());
-  output["__tracer__"] = std::move(tracer);
+  Result<void> Apply(Value& input) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+    assert(input.contains("ori_img"));
 
-  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
+    Mat src_mat = input["ori_img"].get<Mat>();
+    auto res = (color_type_ == "color" || color_type_ == "color_ignore_orientation"
+                    ? to_bgr_->to_bgr(src_mat)
+                    : to_gray_->to_gray(src_mat));
 
-  return output;
-}
+    OUTCOME_TRY(auto tensor, std::move(res));
+    SetTransformData(input, "img", tensor);
 
-PrepareImage::PrepareImage(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<PrepareImageImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'PrepareImage' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'PrepareImage' is not supported on specified platform");
+    for (auto v : tensor.desc().shape) {
+      input["img_shape"].push_back(v);
+    }
+    input["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
+    input["img_fields"].push_back("img");
+
+    SetTransformData(input, "img", std::move(tensor));
+
+    // trace static info & runtime args
+    Tracer tracer;
+    tracer.PrepareImage(color_type_, to_float32_,
+                        {1, src_mat.height(), src_mat.width(), src_mat.channel()},
+                        src_mat.pixel_format(), src_mat.type());
+    input["__tracer__"] = std::move(tracer);
+
+    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+
+    return success();
   }
-  impl_ = impl_creator->Create(args);
-}
+
+ private:
+  std::unique_ptr<ToBGR> to_bgr_;
+  std::unique_ptr<ToGray> to_gray_;
+  std::unique_ptr<ToFloat> to_float_;
+  bool to_float32_{false};
+  std::string color_type_{"color"};
+};
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (LoadImageFromFile, 0), [](const Value& config) {
-  return std::make_unique<PrepareImage>(config, 0);
+  return std::make_unique<PrepareImage>(config);
 });
 
-MMDEPLOY_DEFINE_REGISTRY(PrepareImageImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

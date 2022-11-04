@@ -1,41 +1,36 @@
-// Copyright (c) OpenMMLab. All rights reserved.
+//
+// Created by zhangli on 11/3/22.
+//
+#include "ppl/cv/cuda/resize.h"
 
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/transform/resize.h"
-#include "ppl/cv/cuda/resize.h"
+#include "mmdeploy/preprocess/operation/vision.h"
 
-using namespace std;
+namespace mmdeploy::operation::cuda {
 
-namespace mmdeploy::cuda {
-
-class ResizeImpl final : public ::mmdeploy::ResizeImpl {
+class ResizeImpl : public Resize {
  public:
-  explicit ResizeImpl(const Value& args) : ::mmdeploy::ResizeImpl(args) {
-    if (arg_.interpolation != "bilinear" && arg_.interpolation != "nearest") {
-      MMDEPLOY_ERROR("{} interpolation is not supported", arg_.interpolation);
-      throw_exception(eNotSupported);
-    }
-  }
-  ~ResizeImpl() override = default;
+  using Resize::Resize;
 
- protected:
-  Result<Tensor> ResizeImage(const Tensor& tensor, int dst_h, int dst_w) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+  Result<Tensor> resize(const Tensor& img, int dst_h, int dst_w) override {
+    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device(), stream()));
 
-    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+    SyncOnScopeExit sync(stream(), src_tensor.buffer() != img.buffer(), src_tensor);
 
-    TensorDesc dst_desc{
-        device_, src_tensor.data_type(), {1, dst_h, dst_w, src_tensor.shape(3)}, src_tensor.name()};
+    TensorDesc dst_desc{device(),
+                        src_tensor.data_type(),
+                        {1, dst_h, dst_w, src_tensor.shape(3)},
+                        src_tensor.name()};
     Tensor dst_tensor(dst_desc);
 
-    auto stream = GetNative<cudaStream_t>(stream_);
-    if (tensor.data_type() == DataType::kINT8) {
-      OUTCOME_TRY(ResizeDispatch<uint8_t>(src_tensor, dst_tensor, stream));
-    } else if (tensor.data_type() == DataType::kFLOAT) {
-      OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, stream));
+    auto st = GetNative<cudaStream_t>(stream());
+    if (img.data_type() == DataType::kINT8) {
+      OUTCOME_TRY(ResizeDispatch<uint8_t>(src_tensor, dst_tensor, st));
+    } else if (img.data_type() == DataType::kFLOAT) {
+      OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, st));
     } else {
-      MMDEPLOY_ERROR("unsupported data type {}", tensor.data_type());
+      MMDEPLOY_ERROR("unsupported data type {}", img.data_type());
       return Status(eNotSupported);
     }
     return dst_tensor;
@@ -44,11 +39,11 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  private:
   template <class T, int C, class... Args>
   ppl::common::RetCode DispatchImpl(Args&&... args) {
-    if (arg_.interpolation == "bilinear") {
+    if (interp_ == "bilinear") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_LINEAR);
     }
-    if (arg_.interpolation == "nearest") {
+    if (interp_ == "nearest") {
       return ppl::cv::cuda::Resize<T, C>(std::forward<Args>(args)...,
                                          ppl::cv::INTERPOLATION_NEAREST_POINT);
     }
@@ -80,6 +75,12 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ResizeImpl, (cuda, 0), ResizeImpl);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Resize, (cuda, 0),
+                               [](const string_view& interp, const Context& context) {
+                                 if (interp != "bilinear" && interp != "nearest") {
+                                   throw_exception(eNotSupported);
+                                 }
+                                 return std::make_unique<ResizeImpl>(interp, context);
+                               });
 
-}  // namespace mmdeploy::cuda
+}  // namespace mmdeploy::operation::cuda

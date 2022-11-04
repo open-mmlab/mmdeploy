@@ -6,66 +6,13 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/registry.h"
+#include "mmdeploy/preprocess/operation/operation.h"
 
 namespace mmdeploy {
 
 using namespace framework;
 
-class MMDEPLOY_API TransformImpl : public Module {
- public:
-  TransformImpl() = default;
-  explicit TransformImpl(const Value& args);
-  ~TransformImpl() override = default;
-
- protected:
-  std::vector<std::string> GetImageFields(const Value& input);
-
- protected:
-  Device device_;
-  Stream stream_;
-};
-
-class MMDEPLOY_API Transform : public Module {
- public:
-  ~Transform() override = default;
-
-  Transform() = default;
-  explicit Transform(const Value& args);
-  Transform(const Transform&) = delete;
-  Transform& operator=(const Transform&) = delete;
-
-  const std::string& RuntimePlatform() const { return runtime_platform_; }
-
- protected:
-  template <typename T>
-  [[deprecated]] std::unique_ptr<T> Instantiate(const char* transform_type, const Value& args,
-                                                int version = 0) {
-    std::unique_ptr<T> impl;
-    auto impl_creator = gRegistry<T>().Get(specified_platform_, version);
-    if (nullptr == impl_creator) {
-      MMDEPLOY_WARN("Cannot find {} implementation on platform {}", transform_type,
-                    specified_platform_);
-      for (auto& name : candidate_platforms_) {
-        impl_creator = gRegistry<T>().Get(name);
-        if (impl_creator) {
-          MMDEPLOY_INFO("Fallback {} implementation to platform {}", transform_type, name);
-          break;
-        }
-      }
-    }
-    if (nullptr == impl_creator) {
-      MMDEPLOY_ERROR("cannot find {} implementation on any registered platform ", transform_type);
-      return nullptr;
-    } else {
-      return impl_creator->Create(args);
-    }
-  }
-
- protected:
-  std::string specified_platform_;
-  std::string runtime_platform_;
-  std::vector<std::string> candidate_platforms_;
-};
+namespace transform {
 
 template <typename Key, typename Val>
 void SetTransformData(Value& dst, Key&& key, Val val) {
@@ -73,7 +20,43 @@ void SetTransformData(Value& dst, Key&& key, Val val) {
   dst["__data__"].push_back(std::move(val));
 }
 
+inline std::vector<std::string> GetImageFields(const Value& input) {
+  if (input.contains("img_fields")) {
+    if (input["img_fields"].is_string()) {
+      return {input["img_fields"].get<std::string>()};
+    } else if (input["img_fields"].is_array()) {
+      std::vector<std::string> img_fields;
+      for (auto& v : input["img_fields"]) {
+        img_fields.push_back(v.get<std::string>());
+      }
+      return img_fields;
+    }
+  }
+  return {"img"};
+}
+
+inline operation::Context GetContext(const Value& config) {
+  if (config.contains("context")) {
+    auto device = config["context"]["device"].get<Device>();
+    auto stream = config["context"]["stream"].get<Stream>();
+    return {device, stream};
+  }
+  throw_exception(eInvalidArgument);
+}
+
+class Transform {
+ public:
+  virtual ~Transform() = default;
+  virtual Result<void> Apply(Value& input) = 0;
+
+  [[deprecated]] Result<Value> Process(const Value& input);
+};
+
 MMDEPLOY_DECLARE_REGISTRY(Transform, std::unique_ptr<Transform>(const Value& config));
+
+}  // namespace transform
+
+using transform::Transform;
 
 }  // namespace mmdeploy
 

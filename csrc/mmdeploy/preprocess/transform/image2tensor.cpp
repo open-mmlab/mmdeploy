@@ -1,56 +1,53 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "image2tensor.h"
-
 #include <cassert>
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/preprocess/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-ImageToTensorImpl::ImageToTensorImpl(const Value& args) : TransformImpl(args) {
-  for (auto& key : args["keys"]) {
-    arg_.keys.push_back(key.get<std::string>());
-  }
-}
-
-Result<Value> ImageToTensorImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-  Value output = input;
-  for (auto& key : arg_.keys) {
-    assert(input.contains(key));
-    Tensor src_tensor = input[key].get<Tensor>();
-    auto& shape = src_tensor.desc().shape;
-
-    assert(shape.size() == 4);
-    assert(shape[3] == 1 || shape[3] == 3);
-
-    OUTCOME_TRY(auto dst, HWC2CHW(src_tensor));
-    SetTransformData(output, key, std::move(dst));
-
-    if (output.contains("__tracer__")) {
-      output["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
+class ImageToTensor : public Transform {
+ public:
+  explicit ImageToTensor(const Value& args) {
+    for (auto& key : args["keys"]) {
+      keys_.push_back(key.get<std::string>());
     }
-  }  // for key
-  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
-  return output;
-}
-
-ImageToTensor::ImageToTensor(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<ImageToTensorImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'ImageToTensor' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'ImageToTensor' is not supported on specified platform");
+    auto context = GetContext(args);
+    hwc2chw_ = operation::Create<operation::HWC2CHW>(context.device, context);
   }
-  impl_ = impl_creator->Create(args);
-}
+
+  Result<void> Apply(Value& input) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+    for (auto& key : keys_) {
+      assert(input.contains(key));
+      Tensor src_tensor = input[key].get<Tensor>();
+      auto& shape = src_tensor.desc().shape;
+
+      assert(shape.size() == 4);
+      assert(shape[3] == 1 || shape[3] == 3);
+
+      OUTCOME_TRY(auto dst, hwc2chw_->hwc2chw(src_tensor));
+      SetTransformData(input, key, std::move(dst));
+
+      if (input.contains("__tracer__")) {
+        input["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
+      }
+    }  // for key
+    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    return success();
+  }
+
+ private:
+  std::unique_ptr<operation::HWC2CHW> hwc2chw_;
+  std::vector<std::string> keys_;
+};
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ImageToTensor, 0), [](const Value& config) {
-  return std::make_unique<ImageToTensor>(config, 0);
+  return std::make_unique<ImageToTensor>(config);
 });
 
-MMDEPLOY_DEFINE_REGISTRY(ImageToTensorImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

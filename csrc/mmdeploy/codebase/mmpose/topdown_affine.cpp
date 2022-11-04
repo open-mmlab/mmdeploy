@@ -8,7 +8,6 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/transform/resize.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv_utils.h"
@@ -24,9 +23,9 @@ cv::Point2f operator*(cv::Point2f a, cv::Point2f b) {
   return c;
 }
 
-class TopDownAffineImpl : public Module {
+class TopDownAffine : public transform::Transform {
  public:
-  explicit TopDownAffineImpl(const Value& args) noexcept {
+  explicit TopDownAffine(const Value& args) noexcept {
     use_udp_ = args.value("use_udp", use_udp_);
     backend_ = args.contains("backend") && args["backend"].is_string()
                    ? args["backend"].get<string>()
@@ -36,9 +35,9 @@ class TopDownAffineImpl : public Module {
     from_value(args["image_size"], image_size_);
   }
 
-  ~TopDownAffineImpl() override = default;
+  ~TopDownAffine() override = default;
 
-  Result<Value> Process(const Value& input) override {
+  Result<void> Apply(Value& input) override {
     MMDEPLOY_DEBUG("top_down_affine input: {}", input);
 
     Device host{"cpu"};
@@ -77,13 +76,12 @@ class TopDownAffineImpl : public Module {
       cv::warpAffine(src, dst, trans, {image_size_[0], image_size_[1]}, cv::INTER_LINEAR);
     }
 
-    Value output = input;
-    output["img"] = cpu::CVMat2Tensor(dst);
-    output["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
-    output["center"] = to_value(c);
-    output["scale"] = to_value(s);
-    MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
-    return output;
+    input["img"] = cpu::CVMat2Tensor(dst);
+    input["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
+    input["center"] = to_value(c);
+    input["scale"] = to_value(s);
+    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    return success();
   }
 
   void Box2cs(vector<float>& box, vector<float>& center, vector<float>& scale) {
@@ -169,30 +167,7 @@ class TopDownAffineImpl : public Module {
   Stream stream_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(TopDownAffineImpl,
-                           std::unique_ptr<TopDownAffineImpl>(const Value& config));
-
-MMDEPLOY_DEFINE_REGISTRY(TopDownAffineImpl);
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(TopDownAffineImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<TopDownAffineImpl>(config);
-});
-
-class TopDownAffine : public Transform {
- public:
-  explicit TopDownAffine(const Value& args) : Transform(args) {
-    impl_ = Instantiate<TopDownAffineImpl>("TopDownAffine", args);
-  }
-  ~TopDownAffine() override = default;
-
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
-
- private:
-  std::unique_ptr<TopDownAffineImpl> impl_;
-  static const std::string name_;
-};
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TopDownAffine, 0), [](const Value& config) {
+MMDEPLOY_REGISTER_FACTORY_FUNC(transform::Transform, (TopDownAffine, 0), [](const Value& config) {
   return std::make_unique<TopDownAffine>(config);
 });
 
