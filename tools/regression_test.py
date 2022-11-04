@@ -702,14 +702,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     backend_name = str(get_backend(str(deploy_cfg_path)).name).lower()
 
     # change device_type for special case
-    if backend_name in ['ncnn', 'openvino']:
+    if backend_name in ['ncnn', 'openvino', 'onnxruntime']:
         device_type = 'cpu'
-    elif backend_name == 'onnxruntime' and device_type != 'cpu':
-        import onnxruntime as ort
-        if ort.get_device() != 'GPU':
-            device_type = 'cpu'
-            logger.warning('Device type is forced to cpu '
-                           'since onnxruntime-gpu is not installed')
 
     infer_type = \
         'dynamic' if is_dynamic_shape(str(deploy_cfg_path)) else 'static'
@@ -792,9 +786,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(backend_output_path, 'sdk_test.log')
-            if backend_name == 'onnxruntime':
-                # sdk only support onnxruntime of cpu
-                device_type = 'cpu'
             # sdk test
             get_backend_fps_metric(
                 deploy_cfg_path=str(sdk_config),
