@@ -187,7 +187,7 @@ label: 65, score: 0.95
               start='detector_forward:input',
               end=['BaseDenseHead:output'],
               output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
-              [f'BaseDenseHead.cls.{i}' for i in range(5)])
+              [f'BaseDenseHead.loc.{i}' for i in range(5)])
       ])
   ```
 
