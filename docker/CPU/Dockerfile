@@ -3,7 +3,8 @@ ARG PYTHON_VERSION=3.7
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION
+ARG MMCV_VERSION=">=2.0.0rc2,<2.1.0"
+ARG MMENGINE_VERSION=">=0.3.0"
 USER root
 
 ### change the system source for installing libs
@@ -48,8 +49,7 @@ RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime and openvino
 RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && if [ -z ${MMCV_VERSION} ] ; then MMCV="mmcv>=2.0.0rc2,<2.1.0" ; else MMCV="mmcv=="${MMCV_VERSION} ; fi && \
-    && mim install --no-cache-dir ${MMCV} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev
+    && mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev mmengine${MMENGINE_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 

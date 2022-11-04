@@ -8,7 +8,8 @@ ARG ONNXRUNTIME_VERSION=1.8.1
 ARG MMCV_VERSION=1.5.3
 ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
-ARG MMCV_VERSION
+ARG MMCV_VERSION=">=2.0.0rc2,<2.1.0"
+ARG MMENGINE_VERSION=">=0.3.0"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -40,8 +41,7 @@ RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime
 RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && if [ -z ${MMCV_VERSION} ] ; then MMCV="mmcv>=2.0.0rc2,<2.1.0" ; else MMCV="mmcv=="${MMCV_VERSION} ; fi && \
-    && mim install --no-cache-dir ${MMCV} onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    && mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime-gpu==${ONNXRUNTIME_VERSION} mmengine${MMENGINE_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 
