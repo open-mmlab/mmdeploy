@@ -55,7 +55,8 @@ def mvxtwostagedetector__forward(ctx, self, inputs: list, **kwargs):
 
     Args:
         inputs (list): voxels, num_points and coors compose the input list
-        data_samples (DataSample3D): intermediate format within multiple algorithm framework  # noqa: E501
+        data_samples (DataSample3D): intermediate format within multiple
+            algorithm framework
 
     Returns:
         bbox (Tensor): Decoded bbox after nms
