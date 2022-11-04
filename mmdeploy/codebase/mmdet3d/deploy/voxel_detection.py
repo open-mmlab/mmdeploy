@@ -14,9 +14,7 @@ from mmengine.registry import Registry
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import (Backend, Codebase, Task, get_backend,
-                            get_root_logger)
-from .voxel_detection_model import VoxelDetectionModel
+from mmdeploy.utils import Codebase, Task, get_root_logger
 
 MMDET3D_TASK = Registry('mmdet3d_tasks')
 
@@ -26,6 +24,17 @@ class MMDetection3d(MMCodebase):
     """MMDetection3d codebase class."""
 
     task_registry = MMDET3D_TASK
+
+    @classmethod
+    def register_deploy_modules(mmdet3d):
+        import mmdeploy.codebase.mmdet3d.models  # noqa: F401
+
+    @classmethod
+    def register_all_modules(mmdet3d):
+        from mmdet3d.utils.setup_env import register_all_modules
+
+        mmdet3d.register_deploy_modules()
+        register_all_modules(True)
 
 
 def _get_dataset_metainfo(model_cfg: Config):
@@ -191,22 +200,12 @@ class VoxelDetection(BaseTask):
         visualizer.dataset_meta = _get_dataset_metainfo(cfg)
 
         # show the results
-        _, data_input = self.create_input(pcd=image)
-
-        if get_backend(self.deploy_cfg) != Backend.PYTORCH:
-            predictions = VoxelDetectionModel.postprocess(
-                model_cfg=self.model_cfg,
-                deploy_cfg=self.deploy_cfg,
-                outs=result,
-                metas=data_samples)
-            prediction = predictions[0]
-        else:
-            prediction = result
+        collate_data, _ = self.create_input(pcd=image)
 
         visualizer.add_datasample(
             window_name,
-            dict(points=data_input['points'][0]),
-            data_sample=prediction,
+            dict(points=collate_data['inputs']['points'][0]),
+            data_sample=result,
             draw_gt=draw_gt,
             show=show_result,
             wait_time=0,
@@ -359,11 +358,3 @@ class VoxelDetection(BaseTask):
             for _ in range(batch_size):
                 prog_bar.update()
         return results
-
-    def mode(self) -> str:
-        """Get pytorch inference mode, it depends on codebase implementation.
-
-        Returns:
-            str: codebase inference mode
-        """
-        return 'tensor'

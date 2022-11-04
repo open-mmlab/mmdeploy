@@ -72,10 +72,20 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
+    visualize = True
     try:
         # check headless
         import tkinter
         tkinter.Tk()
+    except Exception as e:
+        from mmdeploy.utils import get_root_logger
+        logger = get_root_logger()
+        logger.warn(
+            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
+        )
+        visualize = False
+
+    if visualize is True:
         data_samples = None
         if 'data_samples' in model_inputs:
             data_samples = model_inputs['data_samples']
@@ -88,10 +98,3 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             output_file=output_file,
             window_name=backend.value,
             show_result=show_result)
-
-    except Exception as e:
-        from mmdeploy.utils import get_root_logger
-        logger = get_root_logger()
-        logger.warn(
-            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
-        )

@@ -34,12 +34,14 @@ class VoxelDetectionModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
+                 model_cfg: Union[str, Config],
                  deploy_cfg: Union[str, Config],
                  data_preprocessor: Optional[Union[dict,
                                                    torch.nn.Module]] = None,
                  **kwargs):
         super().__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
+        self.model_cfg = model_cfg
         self.deploy_cfg = deploy_cfg
         self.device = device
         self._init_wrapper(
@@ -88,8 +90,13 @@ class VoxelDetectionModel(BaseBackendModel):
             'coors': preprocessed['coors'].to(self.device)
         }
         outputs = self.wrapper(input_dict)
+        prediction = VoxelDetectionModel.postprocess(
+            model_cfg=self.model_cfg,
+            deploy_cfg=self.deploy_cfg,
+            outs=outputs,
+            metas=data_samples)
 
-        return [outputs]
+        return prediction
 
     def show_result(self,
                     data: Dict,
@@ -382,6 +389,7 @@ def build_voxel_detection_model(
             backend=backend,
             backend_files=model_files,
             device=device,
+            model_cfg=model_cfg,
             deploy_cfg=deploy_cfg,
             data_preprocessor=data_preprocessor,
             **kwargs))

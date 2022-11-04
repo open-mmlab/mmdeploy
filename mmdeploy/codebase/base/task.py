@@ -303,14 +303,6 @@ class BaseTask(metaclass=ABCMeta):
             show=show_result,
             out_file=output_file)
 
-    def mode(self) -> str:
-        """Get pytorch inference mode, it depends on codebase implementation.
-
-        Returns:
-            str: codebase inference mode
-        """
-        return 'predict'
-
     @staticmethod
     @abstractmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:

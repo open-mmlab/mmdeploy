@@ -7,9 +7,9 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet3d.models.detectors.single_stage.SingleStage3DDetector._forward'  # noqa: E501
+    'mmdet3d.models.detectors.single_stage.SingleStage3DDetector.predict'  # noqa: E501
 )
-def singlestagedetector__forward(ctx,
+def singlestagedetector__predict(ctx,
                                  self,
                                  inputs: list,
                                  data_samples=None,
@@ -23,6 +23,7 @@ def singlestagedetector__forward(ctx,
             'coors': inputs[2]
         }
     }
+
     x = self.extract_feat(batch_inputs_dict)
     results = self.bbox_head.forward(x)
     return results
