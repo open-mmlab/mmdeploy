@@ -26,6 +26,15 @@ NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
   }
   arg_.to_rgb = args.value("to_rgb", true);
   arg_.to_float = args.value("to_float", true);
+  // assert `mean` is 0 and `std` is 1 when `to_float` is false
+  if (!arg_.to_float) {
+    for (int i = 0; i < arg_.mean.size(); ++i) {
+      if ((int)arg_.mean[i] != 0 || (int)arg_.std[i] != 1) {
+        MMDEPLOY_ERROR("mean {} and std {} are not supported in int8 case", arg_.mean, arg_.std);
+        throw_exception(eInvalidArgument);
+      }
+    }
+  }
 }
 
 /**
@@ -71,13 +80,6 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
       OUTCOME_TRY(auto dst, NormalizeImage(tensor));
       SetTransformData(output, key, std::move(dst));
     } else {
-      // assert `mean` is 0 and `std` is 1 when `to_float` is false
-      for (int i = 0; i < arg_.mean.size(); ++i) {
-        if ((int)arg_.mean[i] != 0 || (int)arg_.std[i] != 1) {
-          MMDEPLOY_ERROR("mean {} and std {} are not supported in int8 case", arg_.mean, arg_.std);
-          return Status(eFail);
-        }
-      }
       if (arg_.to_rgb) {
         OUTCOME_TRY(auto dst, ConvertToRGB(tensor));
         SetTransformData(output, key, std::move(dst));
