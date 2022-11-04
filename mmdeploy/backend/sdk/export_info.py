@@ -7,7 +7,8 @@ import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_ir_config, get_root_logger,
+                            get_common_config, get_ir_config,
+                            get_partition_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 from .tracer import add_transform_tag, get_transform_static
@@ -94,6 +95,9 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
     ir_name = get_ir_config(deploy_cfg)['save_file']
+    if get_partition_config(deploy_cfg) is not None:
+        ir_name = get_partition_config(
+            deploy_cfg)['partition_cfg'][0]['save_file']
     net = ir_name
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg)
@@ -187,6 +191,7 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         output_names = ir_config.get('output_names', None)
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
+        output_map = {} if backend == Backend.RKNN else output_map
     else:
         input_names = ir_config.get('input_names', None)
         input_name = input_names[0] if input_names else 'input'
