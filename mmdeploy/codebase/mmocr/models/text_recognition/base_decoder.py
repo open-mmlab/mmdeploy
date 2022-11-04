@@ -16,7 +16,7 @@ def base_decoder__forward(
     out_enc: Optional[torch.Tensor] = None,
     data_samples: Optional[Sequence[TextRecogDataSample]] = None
 ) -> Sequence[TextRecogDataSample]:
-    """Perform forward propagation of the decoder and postprocessor.
+    """Rewrite `predict` of `BaseDecoder` to skip post-process.
 
     Args:
         feat (Tensor, optional): Features from the backbone. Defaults
