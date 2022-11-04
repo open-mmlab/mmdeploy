@@ -2,9 +2,9 @@
 
 #include "normalize.h"
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
@@ -67,8 +67,22 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     assert(desc.shape.size() == 4 /*n, h, w, c*/);
     assert(desc.shape[3] == arg_.mean.size());
 
-    OUTCOME_TRY(auto dst, NormalizeImage(tensor));
-    SetTransformData(output, key, std::move(dst));
+    if (arg_.to_float) {
+      OUTCOME_TRY(auto dst, NormalizeImage(tensor));
+      SetTransformData(output, key, std::move(dst));
+    } else {
+      // assert `mean` is 0 and `std` is 1 when `to_float` is false
+      for (int i = 0; i < arg_.mean.size(); ++i) {
+        if ((int)arg_.mean[i] != 0 || (int)arg_.std[i] != 1) {
+          MMDEPLOY_ERROR("mean {} and std {} are not supported in int8 case", arg_.mean, arg_.std);
+          return Status(eFail);
+        }
+      }
+      if (arg_.to_rgb) {
+        OUTCOME_TRY(auto dst, ConvertToRGB(tensor));
+        SetTransformData(output, key, std::move(dst));
+      }
+    }
 
     for (auto& v : arg_.mean) {
       output["img_norm_cfg"]["mean"].push_back(v);

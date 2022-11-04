@@ -20,18 +20,18 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
     OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
 
     SyncOnScopeExit(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
-    if (!arg_.to_float) {
-      if (!arg_.to_rgb) {
-        return tensor;
-      }
-      auto src_mat = Tensor2CVMat(tensor);
-      auto dst_mat = ColorTransfer(src_mat, PixelFormat::kBGR, PixelFormat::kRGB);
-      return CVMat2Tensor(dst_mat);
-    } else {
-      auto mat = Tensor2CVMat(src_tensor);
-      auto dst_mat = Normalize(mat, arg_.mean, arg_.std, arg_.to_rgb, true);
-      return CVMat2Tensor(dst_mat);
-    }
+
+    auto mat = Tensor2CVMat(src_tensor);
+    auto dst_mat = Normalize(mat, arg_.mean, arg_.std, arg_.to_rgb, true);
+    return CVMat2Tensor(dst_mat);
+  }
+
+  Result<Tensor> ConvertToRGB(const Tensor& tensor) override {
+    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+    SyncOnScopeExit(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+    auto src_mat = Tensor2CVMat(tensor);
+    auto dst_mat = ColorTransfer(src_mat, PixelFormat::kBGR, PixelFormat::kRGB);
+    return CVMat2Tensor(dst_mat);
   }
 };
 
