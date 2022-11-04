@@ -100,8 +100,10 @@ class VoxelDetection(BaseTask):
 
         Args:
             pcd (str): Input pcd file path.
-            input_shape (Sequence[int], optional): model input shape.Defaults to None. # noqa: E501
-            data_preprocessor (Optional[BaseDataPreprocessor], optional): model input preprocess. Defaults to None. # noqa: E501
+            input_shape (Sequence[int], optional): model input shape.
+                Defaults to None.
+            data_preprocessor (Optional[BaseDataPreprocessor], optional):
+                model input preprocess. Defaults to None.
 
         Returns:
             tuple: (data, input), meta information for the input pcd
@@ -153,7 +155,8 @@ class VoxelDetection(BaseTask):
             result (list): output bbox, score and type
             output_file (str): the directory to save output
             window_name (str, optional): display window name
-            show_result (bool, optional): show result or not. Defaults to False.  # noqa: E501
+            show_result (bool, optional): show result or not.
+                Defaults to False.
             draw_gt (bool, optional): show gt or not. Defaults to False.
         """
         cfg = self.model_cfg
