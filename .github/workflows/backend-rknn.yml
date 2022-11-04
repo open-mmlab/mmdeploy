@@ -1,4 +1,4 @@
-name: build-rknn
+name: backend-rknn
 
 on:
   push:
