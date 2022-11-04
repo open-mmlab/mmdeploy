@@ -128,7 +128,6 @@ deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntim
 model_cfg = 'tsn_r50_1x1x3_100e_kinetics400_rgb.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
-backend_model = ['./work_dir/tsn/end2end.onnx']
 image = 'tests/data/arm_wrestling.mp4'
 
 # read deploy_cfg and model_cfg

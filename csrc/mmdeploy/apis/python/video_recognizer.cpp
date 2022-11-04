@@ -81,9 +81,7 @@ static PythonBindingRegisterer register_video_recognizer{[](py::module& m) {
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
            [](PyVideoRecognizer* self, const std::vector<PyImage>& imgs,
-              const std::pair<int, int>& info) {
-             return self->Apply(std::vector{imgs}, std::vector{info})[0];
-           })
+              const std::pair<int, int>& info) { return self->Apply({imgs}, {info})[0]; })
       .def("batch", &PyVideoRecognizer::Apply);
 }};
 

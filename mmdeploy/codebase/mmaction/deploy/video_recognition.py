@@ -320,7 +320,7 @@ class VideoRecognition(BaseTask):
             if key in transforms2index:
                 index = transforms2index[key]
                 if key == 'Normalize':
-                    pipeline[index]['to_bgr'] = True
+                    pipeline[index]['to_rgb'] = True
                 if key == 'Resize' and 'scale' in pipeline[index]:
                     value = pipeline[index].pop('scale')
                     if len(value) == 2 and value[0] == -1:
