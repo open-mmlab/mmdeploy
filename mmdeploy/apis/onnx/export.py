@@ -119,6 +119,7 @@ def export(model: torch.nn.Module,
             ), f'Expect input_metas type is dict, get {type(input_metas)}.'
             model_forward = model.forward
             model.forward = partial(model.forward, **input_metas)
+
         torch.onnx.export(
             patched_model,
             args,

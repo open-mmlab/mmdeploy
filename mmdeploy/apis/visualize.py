@@ -68,7 +68,6 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             model = task_processor.build_backend_model(model)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
-
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
