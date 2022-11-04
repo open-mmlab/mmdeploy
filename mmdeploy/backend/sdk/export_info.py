@@ -189,9 +189,11 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     backend = get_backend(deploy_cfg=deploy_cfg)
     if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
+        if get_partition_config(deploy_cfg) is not None:
+            output_names = get_partition_config(
+                deploy_cfg)['partition_cfg'][0]['output_names']
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
-        output_map = {} if backend == Backend.RKNN else output_map
     else:
         input_names = ir_config.get('input_names', None)
         input_name = input_names[0] if input_names else 'input'

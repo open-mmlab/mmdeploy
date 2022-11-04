@@ -14,7 +14,8 @@ backend_config = dict(input_size_list=[[3, 320, 320]])
 #         dict(
 #             save_file='model.onnx',  # name to save the partitioned onnx
 #             start=['detector_forward:input'],  # [mark_name:input, ...]
-#             end=['yolo_head:input'])  # [mark_name:output, ...]
+#             end=['yolo_head:input'],  # [mark_name:output, ...]
+#             output_names=[f'pred_maps.{i}' for i in range(3)])  # out names
 #     ])
 
 # # retinanet, ssd, fsaf
@@ -25,5 +26,7 @@ backend_config = dict(input_size_list=[[3, 320, 320]])
 #         dict(
 #             save_file='model.onnx',
 #             start='detector_forward:input',
-#             end=['BaseDenseHead:output'])
+#             end=['BaseDenseHead:output'],
+#             output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
+#             [f'BaseDenseHead.cls.{i}' for i in range(5)])
 #     ])
