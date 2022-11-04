@@ -79,21 +79,16 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
     except Exception as e:
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()
-        logger.warn(
+        logger.warning(
             f'render and display result skipped for headless device, exception {e}'  # noqa: E501
         )
         visualize = False
 
     if visualize is True:
-        data_samples = None
-        if 'data_samples' in model_inputs:
-            data_samples = model_inputs['data_samples']
-
         task_processor.visualize(
             image=img,
             model=model,
             result=result,
-            data_samples=data_samples,
             output_file=output_file,
             window_name=backend.value,
             show_result=show_result)

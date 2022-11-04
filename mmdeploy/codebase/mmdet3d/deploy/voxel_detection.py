@@ -183,7 +183,6 @@ class VoxelDetection(BaseTask):
                   window_name: str = '',
                   show_result: bool = False,
                   draw_gt: bool = False,
-                  data_samples=None,
                   **kwargs):
         """_summary_
 
