@@ -55,14 +55,13 @@ def mvxtwostagedetector__predict(ctx, self, inputs: list, data_samples,
     """Rewrite this func to remove voxelize op.
 
     Args:
-        voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
-        num_points (torch.Tensor): Number of points in each voxel.
-        coors (torch.Tensor): Coordinates of each voxel.
-        img_metas (list[dict]): Meta information of samples.
-        img (torch.Tensor): Input image.
-        rescale (Bool): Whether need rescale.
+        inputs (list): voxels, num_points and coors compose the input list
+        data_samples (DataSample3D): intermediate format within multiple algorithm framework  # noqa: E501
+
     Returns:
-        list[dict]: Decoded bbox, scores and labels after nms.
+        bbox (Tensor): Decoded bbox after nms
+        scores (Tensor): bbox scores
+        labels (Tensor): bbox labels
     """
     batch_inputs_dict = {
         'voxels': {

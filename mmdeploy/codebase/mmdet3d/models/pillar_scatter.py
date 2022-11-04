@@ -31,9 +31,8 @@ def pointpillarsscatter__forward(ctx,
     voxels = voxel_features.t()
     # Now scatter the blob back to the canvas.
 
-    canvas[:, indices] = voxels + 0
-    # canvas.scatter_(
-    #     dim=1, index=indices.expand(canvas.shape[0], -1), src=voxels)
+    canvas.scatter_(
+        dim=1, index=indices.expand(canvas.shape[0], -1), src=voxels)
     # Undo the column stacking to final 4-dim tensor
     canvas = canvas.view(1, self.in_channels, self.ny, self.nx)
     return canvas
