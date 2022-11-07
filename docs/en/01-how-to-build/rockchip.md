@@ -1,18 +1,26 @@
 # Build for RKNN
 
-This tutorial is based on Linux systems like Ubuntu-18.04 and Rockchip NPU like `rk3588`.
+This tutorial is based on Ubuntu-18.04 and Rockchip NPU `rk3588`. For different NPU devices, you may have to use different rknn packages.
+Below is a table describing the relationship:
+
+| Device               | Python Package                                                   | c/c++ SDK                                          |
+| -------------------- | ---------------------------------------------------------------- | -------------------------------------------------- |
+| RK1808/RK1806        | [rknn-toolkit](https://github.com/rockchip-linux/rknn-toolkit)   | [rknpu](https://github.com/rockchip-linux/rknpu)   |
+| RV1109/RV1126        | [rknn-toolkit](https://github.com/rockchip-linux/rknn-toolkit)   | [rknpu](https://github.com/rockchip-linux/rknpu)   |
+| RK3566/RK3568/RK3588 | [rknn-toolkit2](https://github.com/rockchip-linux/rknn-toolkit2) | [rknpu2](https://github.com/rockchip-linux/rknpu2) |
+| RV1103/RV1106        | [rknn-toolkit2](https://github.com/rockchip-linux/rknn-toolkit2) | [rknpu2](https://github.com/rockchip-linux/rknpu2) |
 
 ## Installation
 
 It is recommended to create a virtual environment for the project.
 
-1. get RKNN-Toolkit2 through:
+1. Get RKNN-Toolkit2 or RKNN-Toolkit through git. RKNN-Toolkit2 for example:
 
    ```
    git clone git@github.com:rockchip-linux/rknn-toolkit2.git
    ```
 
-2. install RKNN python package following [official doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc). In our testing, we used the rknn-toolkit2 1.2.0 with commit id `834ba0b0a1ab8ee27024443d77b02b5ba48b67fc`. When installing rknn-toolkit2, it is better to append `--no-deps` after the commands to avoid dependency conflicts. For example:
+2. Install RKNN python package following [rknn-toolkit2 doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc) or [rknn-toolkit doc](https://github.com/rockchip-linux/rknn-toolkit/tree/master/doc). When installing rknn python package, it is better to append `--no-deps` after the commands to avoid dependency conflicts. RKNN-Toolkit2 package for example:
 
    ```
    pip install packages/rknn_toolkit2-1.2.0_f7bb160f-cp36-cp36m-linux_x86_64.whl --no-deps
@@ -67,17 +75,19 @@ backend_config = dict(
 
 ```
 
-The contents of `common_config` are for `rknn.config()`. The contents of `quantization_config` are used to control `rknn.build()`.
+The contents of `common_config` are for `rknn.config()`. The contents of `quantization_config` are used to control `rknn.build()`. You may have to modify `target_platform` for your own preference.
 
 ## Build SDK with Rockchip NPU
 
-1. get rknpu2 through:
+### Build SDK with RKNPU2
+
+1. Get rknpu2 through git:
 
    ```
    git clone git@github.com:rockchip-linux/rknpu2.git
    ```
 
-2. for linux, download gcc cross compiler. The download link of the compiler from the official user guide of `rknpu2` was deprecated. You may use another verified [link](https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu). After download and unzip the compiler, you may open the terminal, set `RKNN_TOOL_CHAIN` and `RKNPU2_DEVICE_DIR` by `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DEVICE_DIR=/path/to/rknpu2/runtime/RK3588`.
+2. For linux, download gcc cross compiler. The download link of the compiler from the official user guide of `rknpu2` was deprecated. You may use another verified [link](https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu). After download and unzip the compiler, you may open the terminal, set `RKNN_TOOL_CHAIN` and `RKNPU2_DEVICE_DIR` by `export RKNN_TOOL_CHAIN=/path/to/gcc/usr;export RKNPU2_DEVICE_DIR=/path/to/rknpu2/runtime/RK3588`.
 
 3. after the above preparition, run the following commands:
 
@@ -144,4 +154,38 @@ label: 65, score: 0.95
     mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
   ```
 
-  Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[123.675, 116.28, 103.53]` and `std_values=[58.395, 57.12, 57.375]`.
+  Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[[103.53, 116.28, 123.675]]` and `std_values=[[57.375, 57.12, 58.395]]`.
+
+- MMDet models.
+
+  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+
+  ```python
+  # yolov3, yolox
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,  # should always be set to True
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',  # name to save the partitioned onnx
+              start=['detector_forward:input'],  # [mark_name:input, ...]
+              end=['yolo_head:input'])  # [mark_name:output, ...]
+      ])
+  ```
+
+  RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py). Users with rknn-toolkit can directly use default config.
+
+  ```python
+  # retinanet, ssd
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',
+              start='detector_forward:input',
+              end=['BaseDenseHead:output'])
+      ])
+  ```
+
+- SDK only supports int8 rknn model, which require `do_quantization=True` when converting models.
