@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# from .base import base_recognizer__forward
 from . import base_decoder  # noqa: F401,F403
 from . import crnn_decoder  # noqa: F401,F403
 from . import encoder_decoder_recognizer  # noqa: F401,F403
