@@ -99,7 +99,7 @@ class Resize : public Transform {
       }
       Tensor dst_img;
       if (dst_h != h || dst_w != w) {
-        OUTCOME_TRY(dst_img, resize_->resize(src_img, dst_h, dst_w));
+        OUTCOME_TRY(dst_img, apply(*resize_, src_img, dst_h, dst_w));
       } else {
         dst_img = src_img;
       }
@@ -109,7 +109,7 @@ class Resize : public Transform {
       input["img_shape"] = {1, dst_h, dst_w, desc.shape[3]};
       input["keep_ratio"] = keep_ratio_;
 
-      SetTransformData(input, key, std::move(dst_img));
+      input[key] = dst_img;
 
       // trace static info & runtime args
       if (input.contains("__tracer__")) {

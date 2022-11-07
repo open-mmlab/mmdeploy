@@ -14,21 +14,18 @@ class ToFloatImpl : public ToFloat {
  public:
   using ToFloat::ToFloat;
 
-  Result<Tensor> to_float(const Tensor& tensor) override {
+  Result<Tensor> apply(const Tensor& tensor) override {
     auto data_type = tensor.desc().data_type;
     if (data_type == DataType::kFLOAT) {
       return tensor;
     }
 
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device(), stream()));
-    SyncOnScopeExit(stream(), src_tensor.buffer() != tensor.buffer(), src_tensor);
-
     if (data_type == DataType::kINT8) {
-      auto desc = src_tensor.desc();
+      auto desc = tensor.desc();
       desc.data_type = DataType::kFLOAT;
 
       Tensor dst_tensor(desc);
-      Cast(src_tensor.data<uint8_t>(), dst_tensor.data<float>(), src_tensor.size(),
+      Cast(tensor.data<uint8_t>(), dst_tensor.data<float>(), tensor.size(),
            GetNative<cudaStream_t>(stream()));
 
       return dst_tensor;

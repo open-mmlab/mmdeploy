@@ -26,8 +26,7 @@ class DefaultFormatBundle : public Transform {
       Tensor tensor = input["img"].get<Tensor>();
       auto input_data_type = tensor.data_type();
       if (img_to_float_) {
-        OUTCOME_TRY(tensor, to_float_->to_float(tensor));
-        SetTransformData(input, "img", tensor);
+        OUTCOME_TRY(tensor, apply(*to_float_, tensor));
       }
 
       // set default meta keys
@@ -54,8 +53,8 @@ class DefaultFormatBundle : public Transform {
       }
 
       // transpose
-      OUTCOME_TRY(tensor, hwc2chw_->hwc2chw(tensor));
-      SetTransformData(input, "img", std::move(tensor));
+      OUTCOME_TRY(tensor, apply(*hwc2chw_, tensor));
+      input["img"] = std::move(tensor);
     }
 
     MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(input).dump(2));

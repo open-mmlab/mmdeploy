@@ -12,23 +12,20 @@ class ToFloatImpl : public ToFloat {
  public:
   using ToFloat::ToFloat;
 
-  Result<Tensor> to_float(const Tensor& tensor) override {
+  Result<Tensor> apply(const Tensor& tensor) override {
     auto data_type = tensor.desc().data_type;
     if (data_type == DataType::kFLOAT) {
       return tensor;
     }
-
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device(), stream()));
-    SyncOnScopeExit(stream(), src_tensor.buffer() != tensor.buffer(), src_tensor);
 
     if (data_type == DataType::kINT8) {
       const auto size = tensor.size();
       if (size > std::numeric_limits<int>::max()) {
         throw_exception(eNotSupported);
       }
-      cv::Mat uint8_mat(1, static_cast<int>(size), CV_8U, src_tensor.data());
+      cv::Mat uint8_mat(1, static_cast<int>(size), CV_8U, const_cast<void*>(tensor.data()));
 
-      auto desc = src_tensor.desc();
+      auto desc = tensor.desc();
       desc.data_type = DataType::kFLOAT;
       Tensor dst_tensor(desc);
 

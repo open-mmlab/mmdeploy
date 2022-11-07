@@ -7,8 +7,6 @@
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
-using namespace std;
-
 namespace mmdeploy::transform {
 
 class Normalize : public Transform {
@@ -65,10 +63,10 @@ class Normalize : public Transform {
       auto desc = tensor.desc();
       assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
       assert(desc.shape.size() == 4 /*n, h, w, c*/);
-      assert(desc.shape[3] == arg_.mean.size());
+      assert(desc.shape[3] == mean_.size());
 
-      OUTCOME_TRY(auto dst, normalize_->normalize(tensor));
-      SetTransformData(input, key, std::move(dst));
+      OUTCOME_TRY(auto dst, apply(*normalize_, tensor));
+      input[key] = std::move(dst);
 
       for (auto& v : mean_) {
         input["img_norm_cfg"]["mean"].push_back(v);

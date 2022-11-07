@@ -13,12 +13,9 @@ class PadImpl : public Pad {
   PadImpl(cv::BorderTypes border_type, float pad_val, const Context& context)
       : Pad(context), border_type_(border_type), pad_val_(pad_val) {}
 
-  Result<Tensor> pad(const Tensor& img, int top, int left, int bottom, int right) override {
-    OUTCOME_TRY(auto tensor, MakeAvailableOnDevice(img, device(), stream()));
-    SyncOnScopeExit(stream(), tensor.buffer() != img.buffer(), tensor);
-
-    cv::Mat dst_mat = mmdeploy::cpu::Pad(mmdeploy::cpu::Tensor2CVMat(tensor), top, left, bottom,
-                                         right, border_type_, pad_val_);
+  Result<Tensor> apply(const Tensor& img, int top, int left, int bottom, int right) override {
+    cv::Mat dst_mat = mmdeploy::cpu::Pad(mmdeploy::cpu::Tensor2CVMat(img), top, left, bottom, right,
+                                         border_type_, pad_val_);
     return mmdeploy::cpu::CVMat2Tensor(dst_mat);
   }
 

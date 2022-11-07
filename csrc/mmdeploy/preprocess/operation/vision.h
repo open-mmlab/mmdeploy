@@ -16,7 +16,7 @@ class MMDEPLOY_API ToBGR : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> to_bgr(const Mat& img) = 0;
+  virtual Result<Tensor> apply(const Mat& img) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(ToBGR, unique_ptr<ToBGR>(const Context& context));
 
@@ -24,7 +24,7 @@ class ToGray : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> to_gray(const Mat& img) = 0;
+  virtual Result<Tensor> apply(const Mat& img) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(ToGray, unique_ptr<ToGray>(const Context& context));
 
@@ -34,7 +34,7 @@ class Resize : public Operation {
   explicit Resize(const string_view& interp, const Context& context)
       : Operation(context), interp_(interp) {}
 
-  virtual Result<Tensor> resize(const Tensor& img, int dst_h, int dst_w) = 0;
+  virtual Result<Tensor> apply(const Tensor& img, int dst_h, int dst_w) = 0;
 
  protected:
   std::string interp_;
@@ -47,7 +47,7 @@ class Pad : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> pad(const Tensor& tensor, int top, int left, int bottom, int right) = 0;
+  virtual Result<Tensor> apply(const Tensor& tensor, int top, int left, int bottom, int right) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(Pad, unique_ptr<Pad>(const string_view& border_type, float pad_val,
                                                const Context& context));
@@ -57,7 +57,7 @@ class ToFloat : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> to_float(const Tensor& tensor) = 0;
+  virtual Result<Tensor> apply(const Tensor& tensor) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(ToFloat, unique_ptr<ToFloat>(const Context& context));
 
@@ -65,7 +65,7 @@ class HWC2CHW : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> hwc2chw(const Tensor& tensor) = 0;
+  virtual Result<Tensor> apply(const Tensor& tensor) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(HWC2CHW, unique_ptr<HWC2CHW>(const Context& context));
 
@@ -80,7 +80,7 @@ class Normalize : public Operation {
 
   using Operation::Operation;
 
-  virtual Result<Tensor> normalize(const Tensor& img) = 0;
+  virtual Result<Tensor> apply(const Tensor& img) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(Normalize, unique_ptr<Normalize>(const Normalize::Param& param,
                                                            const Context& context));
@@ -90,7 +90,7 @@ class Crop : public Operation {
  public:
   using Operation::Operation;
 
-  virtual Result<Tensor> crop(const Tensor& tensor, int top, int left, int bottom, int right) = 0;
+  virtual Result<Tensor> apply(const Tensor& tensor, int top, int left, int bottom, int right) = 0;
 };
 MMDEPLOY_DECLARE_REGISTRY(Crop, unique_ptr<Crop>(const Context& context));
 

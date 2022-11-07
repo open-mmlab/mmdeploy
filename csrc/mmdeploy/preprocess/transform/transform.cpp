@@ -8,7 +8,13 @@ namespace mmdeploy::transform {
 
 Result<Value> Transform::Process(const Value& input) {
   auto output = input;
-  OUTCOME_TRY(Apply(output));
+  {
+    operation::Session session;
+    OUTCOME_TRY(Apply(output));
+    for (const auto& buffer : session.buffers()) {
+      output["__data__"].push_back(buffer);
+    }
+  }
   return output;
 }
 

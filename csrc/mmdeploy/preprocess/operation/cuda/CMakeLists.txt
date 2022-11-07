@@ -20,6 +20,8 @@ set(SRCS resize.cpp
 
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${PPLCV_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        mmdeploy_operation
+        ${PPLCV_LIBRARIES})
 target_include_directories(${PROJECT_NAME}
         PRIVATE ${CUDA_TOOLKIT_ROOT_DIR}/include ${PPLCV_INCLUDE_DIRS})

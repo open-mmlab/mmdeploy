@@ -20,13 +20,9 @@ class CropImpl : public Crop {
  public:
   using Crop::Crop;
 
-  Result<Tensor> crop(const Tensor& tensor, int top, int left, int bottom, int right) override {
-    OUTCOME_TRY(auto device_tensor, MakeAvailableOnDevice(tensor, device(), stream()));
-
-    SyncOnScopeExit sync(stream(), device_tensor.buffer() != tensor.buffer(), device_tensor);
-
+  Result<Tensor> apply(const Tensor& tensor, int top, int left, int bottom, int right) override {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
-    auto desc = device_tensor.desc();
+    auto desc = tensor.desc();
 
     int h = bottom - top + 1;
     int w = right - left + 1;
@@ -36,9 +32,9 @@ class CropImpl : public Crop {
     TensorShape shape{1, bottom - top + 1, right - left + 1, tensor.desc().shape[3]};
     TensorDesc dst_desc{device(), tensor.desc().data_type, shape, desc.name};
     Tensor dst_tensor{dst_desc};
-    assert(device_.is_device());
+
     if (DataType::kINT8 == type) {
-      auto input = device_tensor.data<uint8_t>();
+      auto input = tensor.data<uint8_t>();
       auto output = dst_tensor.data<uint8_t>();
       if (3 == c) {
         impl::Crop<uint8_t, 3>(input, desc.shape[2], output, h, w, top, left, cuda_stream);
@@ -49,7 +45,7 @@ class CropImpl : public Crop {
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == type) {
-      auto input = static_cast<float*>(device_tensor.buffer().GetNative());
+      auto input = static_cast<float*>(tensor.buffer().GetNative());
       auto output = static_cast<float*>(dst_tensor.buffer().GetNative());
       if (3 == c) {
         impl::Crop<float, 3>(input, desc.shape[2], output, h, w, top, left, cuda_stream);

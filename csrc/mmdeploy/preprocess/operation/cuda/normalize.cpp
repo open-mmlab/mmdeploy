@@ -19,12 +19,8 @@ class NormalizeImpl : public Normalize {
   NormalizeImpl(Param param, const Context& context)
       : Normalize(context), param_(std::move(param)) {}
 
-  Result<Tensor> normalize(const Tensor& img) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device(), stream()));
-
-    SyncOnScopeExit sync(stream(), src_tensor.buffer() != img.buffer(), src_tensor);
-
-    auto src_desc = src_tensor.desc();
+  Result<Tensor> apply(const Tensor& img) override {
+    auto src_desc = img.desc();
     int h = (int)src_desc.shape[1];
     int w = (int)src_desc.shape[2];
     int c = (int)src_desc.shape[3];
@@ -36,7 +32,7 @@ class NormalizeImpl : public Normalize {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
 
     if (DataType::kINT8 == src_desc.data_type) {
-      auto input = src_tensor.data<uint8_t>();
+      auto input = img.data<uint8_t>();
       if (3 == c) {
         impl::Normalize<uint8_t, 3>(input, h, w, stride, output, param_.mean.data(),
                                     param_.std.data(), param_.to_rgb, cuda_stream);
@@ -48,7 +44,7 @@ class NormalizeImpl : public Normalize {
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == src_desc.data_type) {
-      auto input = src_tensor.data<float>();
+      auto input = img.data<float>();
       if (3 == c) {
         impl::Normalize<float, 3>(input, h, w, stride, output, param_.mean.data(),
                                   param_.std.data(), param_.to_rgb, cuda_stream);

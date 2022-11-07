@@ -5,7 +5,6 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/operation/vision.h"
-#include "mmdeploy/utils/opencv/opencv_utils.h"
 
 using namespace ppl::cv::cuda;
 
@@ -21,29 +20,25 @@ class ToBGRImpl : public ToBGR {
  public:
   using ToBGR::ToBGR;
 
-  Result<Tensor> to_bgr(const Mat& img) override {
-    auto _img = MakeAvailableOnDevice(img, device(), stream());
-    auto src_mat = _img.value();
+  Result<Tensor> apply(const Mat& img) override {
     if (img.pixel_format() == PixelFormat::kBGR) {
-      return Mat2Tensor(src_mat);
+      return Mat2Tensor(img);
     }
 
     auto cuda_stream = GetNative<cudaStream_t>(stream());
-    Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kBGR, src_mat.type(), device());
-
-    SyncOnScopeExit sync(stream(), true, src_mat, dst_mat);
+    Mat dst_mat(img.height(), img.width(), PixelFormat::kBGR, img.type(), device());
 
     ppl::common::RetCode ret = 0;
 
-    int src_h = src_mat.height();
-    int src_w = src_mat.width();
-    int src_c = src_mat.channel();
-    int src_stride = src_w * src_mat.channel();
-    uint8_t* src_ptr = src_mat.data<uint8_t>();
+    int src_h = img.height();
+    int src_w = img.width();
+    int src_c = img.channel();
+    int src_stride = src_w * img.channel();
+    auto src_ptr = img.data<uint8_t>();
 
     int dst_w = dst_mat.width();
     int dst_stride = dst_w * dst_mat.channel();
-    uint8_t* dst_ptr = dst_mat.data<uint8_t>();
+    auto dst_ptr = dst_mat.data<uint8_t>();
 
     switch (img.pixel_format()) {
       case PixelFormat::kRGB:
@@ -84,30 +79,27 @@ class ToGrayImpl : public ToGray {
  public:
   using ToGray::ToGray;
 
-  Result<Tensor> to_gray(const Mat& img) override {
-    OUTCOME_TRY(auto src_mat, MakeAvailableOnDevice(img, device(), stream()));
-
+  Result<Tensor> apply(const Mat& img) override {
     if (img.pixel_format() == PixelFormat::kGRAYSCALE) {
-      return Mat2Tensor(src_mat);
+      return Mat2Tensor(img);
     }
 
     auto st = GetNative<cudaStream_t>(stream());
-    Mat dst_mat(src_mat.height(), src_mat.width(), PixelFormat::kGRAYSCALE, src_mat.type(),
-                device());
+    Mat dst_mat(img.height(), img.width(), PixelFormat::kGRAYSCALE, img.type(), device());
 
-    SyncOnScopeExit sync(stream(), true, src_mat, dst_mat);
+    // SyncOnScopeExit sync(stream(), true, src_mat, dst_mat);
 
     ppl::common::RetCode ret = 0;
 
-    int src_h = src_mat.height();
-    int src_w = src_mat.width();
-    int src_c = src_mat.channel();
-    int src_stride = src_w * src_mat.channel();
-    uint8_t* src_ptr = src_mat.data<uint8_t>();
+    int src_h = img.height();
+    int src_w = img.width();
+    int src_c = img.channel();
+    int src_stride = src_w * img.channel();
+    auto src_ptr = img.data<uint8_t>();
 
     int dst_w = dst_mat.width();
     int dst_stride = dst_w * dst_mat.channel();
-    uint8_t* dst_ptr = dst_mat.data<uint8_t>();
+    auto dst_ptr = dst_mat.data<uint8_t>();
 
     switch (img.pixel_format()) {
       case PixelFormat::kRGB:
@@ -118,9 +110,10 @@ class ToGrayImpl : public ToGray {
         break;
       case PixelFormat::kNV12: {
         assert(src_c == 1);
-        Mat rgb_mat(src_mat.height(), src_mat.width(), PixelFormat::kRGB, src_mat.type(), device());
+        Mat rgb_mat(img.height(), img.width(), PixelFormat::kRGB, img.type(), device());
         NV122RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());
+        gSession().track(rgb_mat);
         RGB2GRAY<uint8_t>(st, rgb_mat.height(), rgb_mat.width(),
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>(), dst_stride,
                           dst_mat.data<uint8_t>());
@@ -128,9 +121,12 @@ class ToGrayImpl : public ToGray {
       }
       case PixelFormat::kNV21: {
         assert(src_c == 1);
-        Mat rgb_mat(src_mat.height(), src_mat.width(), PixelFormat::kRGB, src_mat.type(), device());
+        // Mat rgb_mat(img.height(), img.width(), PixelFormat::kRGB, img.type(), device());
+        auto rgb_mat = gSession().Create<Mat>(img.height(), img.width(), PixelFormat::kRGB,
+                                              img.type(), device());
         NV212RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());
+        gSession().track(rgb_mat);
         RGB2GRAY<uint8_t>(st, rgb_mat.height(), rgb_mat.width(),
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>(), dst_stride,
                           dst_mat.data<uint8_t>());

@@ -30,8 +30,8 @@ class ImageToTensor : public Transform {
       assert(shape.size() == 4);
       assert(shape[3] == 1 || shape[3] == 3);
 
-      OUTCOME_TRY(auto dst, hwc2chw_->hwc2chw(src_tensor));
-      SetTransformData(input, key, std::move(dst));
+      OUTCOME_TRY(auto dst, apply(*hwc2chw_, src_tensor));
+      input[key] = std::move(dst);
 
       if (input.contains("__tracer__")) {
         input["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());

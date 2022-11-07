@@ -46,7 +46,7 @@ class CenterCrop : public Transform {
       int y2 = std::min(h, y1 + crop_height) - 1;
       int x2 = std::min(w, x1 + crop_width) - 1;
 
-      OUTCOME_TRY(auto dst_tensor, crop_->crop(tensor, y1, x1, y2, x2));
+      OUTCOME_TRY(auto dst_tensor, apply(*crop_, tensor, y1, x1, y2, x2));
 
       auto& shape = dst_tensor.desc().shape;
 
@@ -71,7 +71,7 @@ class CenterCrop : public Transform {
         input["offset"].push_back(y1);
       }
 
-      SetTransformData(input, key, std::move(dst_tensor));
+      input[key] = std::move(dst_tensor);
     }
 
     MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));

@@ -41,11 +41,12 @@ class Compose : public Transform {
   }
 
   Result<void> Apply(Value& input) override {
-    for (auto& transform : transforms_) {
-      OUTCOME_TRY(transform->Apply(input));
+    {
+      operation::Session session(stream_);
+      for (auto& transform : transforms_) {
+        OUTCOME_TRY(transform->Apply(input));
+      }
     }
-    OUTCOME_TRY(stream_.Wait());
-    input.object().erase("__data__");
     return success();
   }
 

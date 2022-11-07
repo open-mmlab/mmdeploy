@@ -93,7 +93,7 @@ class Pad : public Transform {
 
       if (std::count(begin(padding), end(padding), 0) != 4) {
         OUTCOME_TRY(output_tensor,
-                    pad_->pad(tensor, padding[1], padding[0], padding[3], padding[2]));
+                    apply(*pad_, tensor, padding[1], padding[0], padding[3], padding[2]));
       } else {
         output_tensor = tensor;
       }
@@ -109,7 +109,7 @@ class Pad : public Transform {
             {(int)output_tensor.shape(1), (int)output_tensor.shape(2)}, output_tensor.data_type());
       }
 
-      SetTransformData(input, key, std::move(output_tensor));
+      input[key] = std::move(output_tensor);
     }
 
     MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));

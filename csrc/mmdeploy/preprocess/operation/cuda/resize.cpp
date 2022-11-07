@@ -13,22 +13,17 @@ class ResizeImpl : public Resize {
  public:
   using Resize::Resize;
 
-  Result<Tensor> resize(const Tensor& img, int dst_h, int dst_w) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device(), stream()));
+  Result<Tensor> apply(const Tensor& img, int dst_h, int dst_w) override {
+    assert(img.device() == device());
 
-    SyncOnScopeExit sync(stream(), src_tensor.buffer() != img.buffer(), src_tensor);
-
-    TensorDesc dst_desc{device(),
-                        src_tensor.data_type(),
-                        {1, dst_h, dst_w, src_tensor.shape(3)},
-                        src_tensor.name()};
+    TensorDesc dst_desc{device(), img.data_type(), {1, dst_h, dst_w, img.shape(3)}, img.name()};
     Tensor dst_tensor(dst_desc);
 
-    auto st = GetNative<cudaStream_t>(stream());
+    auto cuda_stream = GetNative<cudaStream_t>(stream());
     if (img.data_type() == DataType::kINT8) {
-      OUTCOME_TRY(ResizeDispatch<uint8_t>(src_tensor, dst_tensor, st));
+      OUTCOME_TRY(ResizeDispatch<uint8_t>(img, dst_tensor, cuda_stream));
     } else if (img.data_type() == DataType::kFLOAT) {
-      OUTCOME_TRY(ResizeDispatch<float>(src_tensor, dst_tensor, st));
+      OUTCOME_TRY(ResizeDispatch<float>(img, dst_tensor, cuda_stream));
     } else {
       MMDEPLOY_ERROR("unsupported data type {}", img.data_type());
       return Status(eNotSupported);

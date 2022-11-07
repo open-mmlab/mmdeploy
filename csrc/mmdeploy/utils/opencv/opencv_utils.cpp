@@ -262,16 +262,20 @@ cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right, int bo
   return dst;
 }
 
-bool Compare(const cv::Mat& src1, const cv::Mat& src2) {
+bool Compare(const cv::Mat& src1, const cv::Mat& src2, float threshold) {
   cv::Mat _src1, _src2, diff;
   src1.convertTo(_src1, CV_32FC(src1.channels()));
   src2.convertTo(_src2, CV_32FC(src2.channels()));
 
-  cv::subtract(_src1, _src2, diff);
-  diff = cv::abs(diff);
+  cv::absdiff(_src1, _src2, diff);
   auto sum = cv::sum(cv::sum(diff));
-  MMDEPLOY_DEBUG("sum: {}, average: {}", sum[0], sum[0] * 1.0 / (src1.rows * src1.cols));
-  return sum[0] / (src1.rows * src1.cols) < 0.5f;
+  auto metric = sum[0] / (src1.rows * src1.cols);
+
+  if (metric < threshold) {
+    return true;
+  }
+  MMDEPLOY_ERROR("sum: {}, average: {}", sum[0], metric);
+  return false;
 }
 
 }  // namespace cpu

@@ -10,7 +10,7 @@ class ToBGRImpl : public ToBGR {
  public:
   using ToBGR::ToBGR;
 
-  Result<Tensor> to_bgr(const Mat& img) override {
+  Result<Tensor> apply(const Mat& img) override {
     auto src_mat = mmdeploy::cpu::Mat2CVMat(img);
     auto dst_mat = mmdeploy::cpu::ColorTransfer(src_mat, img.pixel_format(), PixelFormat::kBGR);
     return ::mmdeploy::cpu::CVMat2Tensor(dst_mat);
@@ -25,7 +25,7 @@ class ToGrayImpl : public ToGray {
  public:
   using ToGray::ToGray;
 
-  Result<Tensor> to_gray(const Mat& img) override {
+  Result<Tensor> apply(const Mat& img) override {
     auto src_mat = mmdeploy::cpu::Mat2CVMat(img);
     auto dst_mat =
         mmdeploy::cpu::ColorTransfer(src_mat, img.pixel_format(), PixelFormat::kGRAYSCALE);

@@ -1,11 +1,10 @@
-//
-// Created by zhangli on 11/3/22.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #ifndef MMDEPLOY_CSRC_MMDEPLOY_PREPROCESS_OPERATION_OPERATION_H_
 #define MMDEPLOY_CSRC_MMDEPLOY_PREPROCESS_OPERATION_OPERATION_H_
 
 #include "mmdeploy/core/device.h"
+#include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
@@ -38,15 +37,17 @@ struct Context {
   Stream stream;
 };
 
-class Session;
-
-thread_local Session* g_session;
-
-class Session {
+class MMDEPLOY_API Session {
  public:
-  Session() : parent_(std::exchange(g_session, this)) {}
+  Session();
+  explicit Session(const Stream& stream);
 
-  ~Session() { g_session = std::exchange(parent_, nullptr); }
+  Session(const Session&) = delete;
+  Session(Session&&) noexcept = delete;
+  Session& operator=(const Session&) = delete;
+  Session& operator=(Session&&) noexcept = delete;
+
+  ~Session();
 
   Tensor& track(Tensor& tensor) {
     buffers_.push_back(tensor.buffer());
@@ -63,10 +64,38 @@ class Session {
     return buffer;
   }
 
+  template <typename T, typename... Args>
+  T Create(Args&&... args) {
+    return Track(T((Args &&) args...));
+  }
+
+  template <typename T>
+  T Track(T val) {
+    return val;
+  }
+
+  Mat Track(Mat mat) { return track(mat); }
+
+  Tensor Track(Tensor tensor) { return track(tensor); }
+
+  template <typename T>
+  Result<T> Track(Result<T> val) {
+    if (val.has_value()) {
+      return Track(val.value());
+    } else {
+      return val.as_failure();
+    }
+  }
+
+  const std::vector<Buffer>& buffers() const noexcept { return buffers_; }
+
  private:
   Session* parent_;
+  Stream stream_;
   std::vector<Buffer> buffers_;
 };
+
+MMDEPLOY_API Session& gSession();
 
 class Operation {
  public:
@@ -82,72 +111,46 @@ class Operation {
   }
 
   Tensor Secure(Tensor val) {
-    if (val.device() == context_.device) {
+    if (val.device() == device()) {
       return val;
     }
 
-    TensorDesc desc{context_.device, val.data_type(), val.shape(), val.name()};
+    TensorDesc desc{device(), val.data_type(), val.shape(), val.name()};
     Tensor dst(desc);
 
-    context_.stream.Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
-    MaybeSync();
+    Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
 
-    return g_session->track(dst);
+    return gSession().track(dst);
   }
 
   Mat Secure(Mat val) {
-    if (val.device() == context_.device) {
+    if (val.device() == device()) {
       return val;
     }
 
-    Mat dst{val.height(), val.width(), val.pixel_format(), val.type(), context_.device};
+    Mat dst{val.height(), val.width(), val.pixel_format(), val.type(), device()};
 
-    context_.stream.Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
-    MaybeSync();
+    Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
 
-    return g_session->track(dst);
+    return gSession().track(dst);
   }
 
-  void MaybeSync() {
-    // ! When the target device is different from stream's device (e.g. DtoH), insert a sync op as
-    //   on dst won't be synchronized wrt stream
-    if (context_.device != context_.stream.GetDevice()) {
-      context_.stream.Wait().value();
+  Result<void> Copy(const Buffer& src, Buffer& dst, size_t size) {
+    OUTCOME_TRY(stream().Copy(src, dst, size));
+    if (dst.GetDevice() != stream().GetDevice()) {
+      OUTCOME_TRY(stream().Wait());
     }
-  }
-
-  template <typename T>
-  T Track(T val) {
-    return val;
-  }
-
-  Mat Track(Mat mat) { return g_session->track(mat); }
-
-  Tensor Track(Tensor tensor) { return g_session->track(tensor); }
-
-  template <typename T>
-  Result<T> Track(Result<T> val) {
-    if (val.has_value()) {
-      return Track(val.value());
-    } else {
-      return val.as_failure();
-    }
+    return success();
   }
 
  protected:
   Context context_;
 };
 
-template <typename T>
-class CRTPOp : public Operation {
- public:
-  using Operation::Operation;
-
-  template <typename... Args>
-  auto Apply(Args&&... args) {
-    return Track(static_cast<T*>(this)->apply(Secure((Args &&) args)...));
-  }
-};
+template <typename Op, typename... Args>
+auto apply(Op& op, Args&&... args) {
+  return gSession().Track(op.apply(op.Secure((Args &&) args)...));
+}
 
 }  // namespace mmdeploy::operation
 

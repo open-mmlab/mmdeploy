@@ -10,12 +10,8 @@ class CropImpl : public Crop {
  public:
   using Crop::Crop;
 
-  Result<Tensor> crop(const Tensor& tensor, int top, int left, int bottom, int right) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device(), stream()));
-
-    SyncOnScopeExit(stream(), src_tensor.buffer() != tensor.buffer(), src_tensor);
-
-    cv::Mat mat = mmdeploy::cpu::Tensor2CVMat(src_tensor);
+  Result<Tensor> apply(const Tensor& img, int top, int left, int bottom, int right) override {
+    cv::Mat mat = mmdeploy::cpu::Tensor2CVMat(img);
     cv::Mat cropped_mat = mmdeploy::cpu::Crop(mat, top, left, bottom, right);
     return mmdeploy::cpu::CVMat2Tensor(cropped_mat);
   }

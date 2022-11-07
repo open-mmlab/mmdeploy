@@ -14,11 +14,11 @@ using namespace framework;
 
 namespace transform {
 
-template <typename Key, typename Val>
-void SetTransformData(Value& dst, Key&& key, Val val) {
-  dst[std::forward<Key>(key)] = val;
-  dst["__data__"].push_back(std::move(val));
-}
+// template <typename Key, typename Val>
+// void SetTransformData(Value& dst, Key&& key, Val val) {
+//   dst[std::forward<Key>(key)] = val;
+//   dst["__data__"].push_back(std::move(val));
+// }
 
 inline std::vector<std::string> GetImageFields(const Value& input) {
   if (input.contains("img_fields")) {
@@ -44,7 +44,7 @@ inline operation::Context GetContext(const Value& config) {
   throw_exception(eInvalidArgument);
 }
 
-class Transform {
+class MMDEPLOY_API Transform {
  public:
   virtual ~Transform() = default;
   virtual Result<void> Apply(Value& input) = 0;

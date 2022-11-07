@@ -50,19 +50,22 @@ class PrepareImage : public Transform {
 
     Mat src_mat = input["ori_img"].get<Mat>();
     auto res = (color_type_ == "color" || color_type_ == "color_ignore_orientation"
-                    ? to_bgr_->to_bgr(src_mat)
-                    : to_gray_->to_gray(src_mat));
+                    ? apply(*to_bgr_, src_mat)
+                    : apply(*to_gray_, src_mat));
 
     OUTCOME_TRY(auto tensor, std::move(res));
-    SetTransformData(input, "img", tensor);
+
+    if (to_float32_) {
+      OUTCOME_TRY(tensor, apply(*to_float_, tensor));
+    }
+
+    input["img"] = tensor;
 
     for (auto v : tensor.desc().shape) {
       input["img_shape"].push_back(v);
     }
     input["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
     input["img_fields"].push_back("img");
-
-    SetTransformData(input, "img", std::move(tensor));
 
     // trace static info & runtime args
     Tracer tracer;

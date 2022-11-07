@@ -65,20 +65,16 @@ class ResizeOCR : public transform::Transform {
       if (dst_max_width > 0) {
         valid_ratio = std::min(1., 1. * new_width / dst_max_width);
         auto resize_width = std::min(dst_max_width, new_width);
-        OUTCOME_TRY(img_resize, resize_->resize(img, dst_height, resize_width));
-        transform::SetTransformData(input, "img", img_resize);
+        OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, resize_width));
         if (new_width < dst_max_width) {
           auto pad_w = std::max(0, dst_max_width - resize_width);
-          OUTCOME_TRY(img_resize, pad_->pad(img_resize, 0, 0, 0, pad_w));
-          transform::SetTransformData(input, "img", img_resize);
+          OUTCOME_TRY(img_resize, apply(*pad_, img_resize, 0, 0, 0, pad_w));
         }
       } else {
-        OUTCOME_TRY(img_resize, resize_->resize(img, dst_height, new_width));
-        transform::SetTransformData(input, "img", img_resize);
+        OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, new_width));
       }
     } else {
-      OUTCOME_TRY(img_resize, resize_->resize(img, dst_height, dst_max_width));
-      transform::SetTransformData(input, "img", img_resize);
+      OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, dst_max_width));
     }
     Value output = input;
     output["img"] = img_resize;

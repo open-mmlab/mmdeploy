@@ -16,12 +16,8 @@ class PadImpl : public Pad {
   PadImpl(ppl::cv::BorderType border_type, float pad_val, const Context& context)
       : Pad(context), border_type_(border_type), pad_val_(pad_val) {}
 
-  Result<Tensor> pad(const Tensor& img, int top, int left, int bottom, int right) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(img, device(), stream()));
-
-    SyncOnScopeExit sync(stream(), src_tensor.buffer() != img.buffer(), src_tensor);
-
-    auto desc = src_tensor.desc();
+  Result<Tensor> apply(const Tensor& img, int top, int left, int bottom, int right) override {
+    auto desc = img.desc();
     int height = desc.shape[1];
     int width = desc.shape[2];
     int c = desc.shape[3];
@@ -36,7 +32,7 @@ class PadImpl : public Pad {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
 
     if (desc.data_type == DataType::kFLOAT) {
-      auto src_buffer = src_tensor.data<float>();
+      auto src_buffer = img.data<float>();
       auto dst_buffer = dst_tensor.data<float>();
       if (3 == c) {
         ret = CopyMakeBorder<float, 3>(cuda_stream, height, width, width * c, src_buffer,
@@ -52,7 +48,7 @@ class PadImpl : public Pad {
         return Status(eNotSupported);
       }
     } else if (desc.data_type == DataType::kINT8) {
-      auto src_buffer = src_tensor.data<uint8_t>();
+      auto src_buffer = img.data<uint8_t>();
       auto dst_buffer = dst_tensor.data<uint8_t>();
       if (3 == c) {
         ret = CopyMakeBorder<ppl::cv::uchar, 3>(cuda_stream, height, width, width * c, src_buffer,
