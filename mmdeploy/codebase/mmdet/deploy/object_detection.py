@@ -241,7 +241,8 @@ class ObjectDetection(BaseTask):
         # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
         for transform in pipeline:
             if transform['type'] == 'RandomCenterCropPad':
-                # RandomCenterCropPad needs padding_mode must be mean, so hard code it.
+                # RandomCenterCropPad needs padding_mode must be mean,
+                # hard code it.
                 if transform['test_pad_mode'][0] == 'logical_or':
                     extra_pad = dict(
                         type='Pad',
