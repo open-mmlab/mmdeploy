@@ -1,9 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Tuple
+from typing import List
 
-import torch
-from mmdet.models.utils import (get_local_maximum, get_topk_from_heatmap,
-                                transpose_and_gather_feat)
 from torch import Tensor
 
 from mmdeploy.core import FUNCTION_REWRITER
