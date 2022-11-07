@@ -24,6 +24,9 @@ class BaseTask(metaclass=ABCMeta):
         model_cfg (str | Config): Model config file.
         deploy_cfg (str | Config): Deployment config file.
         device (str): A string specifying device type.
+        experiment_name (str, optional): Name of current experiment.
+            If not specified, timestamp will be used as
+            ``experiment_name``. Defaults to ``None``.
     """
 
     def __init__(self,
@@ -70,6 +73,12 @@ class BaseTask(metaclass=ABCMeta):
         pass
 
     def build_data_preprocessor(self):
+        """build data preprocessor.
+
+        Returns:
+            BaseDataPreprocessor:
+                Initialized instance of :class:`BaseDataPreprocessor`.
+        """
         model = deepcopy(self.model_cfg.model)
         preprocess_cfg = model['data_preprocessor']
 

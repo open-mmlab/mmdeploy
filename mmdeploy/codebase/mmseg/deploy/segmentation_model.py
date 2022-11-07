@@ -29,10 +29,10 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        class_names (Sequence[str]): A list of string specifying class names.
-        palette (np.ndarray): The palette of segmentation map.
         deploy_cfg (str | mmengine.Config): Deployment config file or loaded
             Config object.
+        data_preprocessor (dict | nn.Module | None): Input data pre-
+            processor. Default is ``None``.
     """
 
     def __init__(self,
@@ -73,8 +73,9 @@ class End2EndModel(BaseBackendModel):
         Args:
             inputs (torch.Tensor): Input image tensor
                 in [N x C x H x W] format.
-            data_samples (List[BaseDataElement]): A list of meta info for
-                image(s).
+            data_samples (list[:obj:`SegDataSample`]): The seg data
+                samples. It usually includes information such as
+                `metainfo` and `gt_sem_seg`. Default to None.
             mode (str): forward mode, only support 'predict'.
             **kwargs: Other key-pair arguments.
 
@@ -93,6 +94,18 @@ class End2EndModel(BaseBackendModel):
 
     def pack_result(self, batch_outputs: torch.Tensor,
                     data_samples: List[BaseDataElement]):
+        """Pack segmentation result to data samples.
+        Args:
+            batch_outputs (Tensor): Batched segmentation output
+                tensor.
+            data_samples (list[:obj:`SegDataSample`]): The seg data
+                samples. It usually includes information such as
+                `metainfo` and `gt_sem_seg`. Default to None.
+
+        Returns:
+            list[:obj:`SegDataSample`]: The updated seg data samples.
+        """
+
         predictions = []
         for seg_pred, data_sample in zip(batch_outputs, data_samples):
             # resize seg_pred to original image shape
@@ -123,9 +136,9 @@ class RKNNModel(End2EndModel):
 
         Args:
             inputs (Tensor): Inputs with shape (N, C, H, W).
-            data_samples (List[:obj:`DetDataSample`]): The Data
-                Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+            data_samples (list[:obj:`SegDataSample`]): The seg data
+                samples. It usually includes information such as
+                `metainfo` and `gt_sem_seg`. Default to None.
 
         Returns:
             list: A list contains predictions.
@@ -156,12 +169,13 @@ class SDKEnd2EndModel(End2EndModel):
         """Run forward inference.
 
         Args:
-            img (Sequence[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
-            img_metas (Sequence[Sequence[dict]]): A list of meta info for
-                image(s).
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
+            inputs (Sequence[torch.Tensor]): A list contains input
+                image(s) in [C x H x W] format.
+            data_samples (list[:obj:`SegDataSample`]): The seg data
+                samples. It usually includes information such as
+                `metainfo` and `gt_sem_seg`. Default to None.
+            mode (str): Return what kind of value. Defaults to
+                'predict'.
 
         Returns:
             list: A list contains predictions.

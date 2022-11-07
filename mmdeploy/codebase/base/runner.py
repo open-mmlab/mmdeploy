@@ -8,15 +8,22 @@ from mmengine.runner import Runner
 
 
 class DeployTestRunner(Runner):
+    """The runner for test models.
+
+    Args:
+        log_file (str | None): The path of log file. Default is ``None``.
+        device (str): The device type.
+    """
 
     def __init__(self,
                  log_file: Optional[str] = None,
                  device: str = get_device(),
                  *args,
                  **kwargs):
+
         self._log_file = log_file
         self._device = device
-        super().__init__(*args, **kwargs)
+        super(Runner, self).__init__(*args, **kwargs)
 
     def wrap_model(self, model_wrapper_cfg: Optional[Dict],
                    model: BaseModel) -> BaseModel:
@@ -46,7 +53,7 @@ class DeployTestRunner(Runner):
                      log_level: Union[int, str] = 'INFO',
                      log_file: str = None,
                      **kwargs) -> MMLogger:
-        """Build a global asscessable MMLogger.
+        """Build a global accessible MMLogger.
 
         Args:
             log_level (int or str): The log level of MMLogger handlers.
