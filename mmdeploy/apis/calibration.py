@@ -67,7 +67,7 @@ def create_calib_input_data(calib_file: str,
 
         def get_tensor_func(input_data):
             input_data = model.data_preprocessor(input_data)
-            return input_data[0]
+            return input_data['inputs']
 
         create_calib_input_data_impl(
             calib_file,

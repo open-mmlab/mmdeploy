@@ -3,11 +3,15 @@
 cmake_minimum_required(VERSION 3.14)
 project(mmdeploy_python)
 
-set(MMDEPLOY_PYTHON_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/common.cpp)
+set(MMDEPLOY_PYTHON_SRCS
+        common.cpp
+        internal.cpp
+        pipeline.cpp)
 
 set(CMAKE_CXX_STANDARD 17)
 
 if (${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    # standard alone project
     add_subdirectory(${CMAKE_SOURCE_DIR}/../../../../third_party/pybind11
             ${CMAKE_CURRENT_BINARY_DIR}/pybind11)
     find_package(MMDeploy REQUIRED)
@@ -21,6 +25,10 @@ endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 
+# https://github.com/pybind/pybind11/issues/1604
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsized-deallocation)
+endif ()
 
 mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
 mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)

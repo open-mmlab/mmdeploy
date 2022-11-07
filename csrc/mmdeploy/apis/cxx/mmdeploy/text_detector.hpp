@@ -8,12 +8,14 @@
 
 namespace mmdeploy {
 
+namespace cxx {
+
 using TextDetection = mmdeploy_text_detection_t;
 
 class TextDetector : public NonMovable {
  public:
-  TextDetector(const Model& model, const Device& device) {
-    auto ec = mmdeploy_text_detector_create(model, device.name(), device.index(), &detector_);
+  TextDetector(const Model& model, const Context& context) {
+    auto ec = mmdeploy_text_detector_create_v2(model, context, &detector_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
@@ -62,6 +64,11 @@ class TextDetector : public NonMovable {
  private:
   mmdeploy_text_detector_t detector_{};
 };
+
+}  // namespace cxx
+
+using cxx::TextDetection;
+using cxx::TextDetector;
 
 }  // namespace mmdeploy
 

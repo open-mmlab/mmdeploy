@@ -33,8 +33,10 @@ class End2EndModel(BaseBackendModel):
         device (str): A string represents device type.
         deploy_cfg (str | mmengine.Config): Deployment config file or loaded
             Config object.
-        deploy_cfg (str | mmengine.Config): Model config file or loaded Config
+        model_cfg (str | mmengine.Config): Model config file or loaded Config
             object.
+        data_preprocessor (dict | nn.Module | None): Input data pre-
+                processor. Default is ``None``.
     """
 
     def __init__(self,
@@ -59,7 +61,8 @@ class End2EndModel(BaseBackendModel):
         # create head for decoding heatmap
         self.head = builder.build_head(model_cfg.model.head)
 
-    def _init_wrapper(self, backend, backend_files, device, **kwargs):
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str, **kwargs):
         """Initialize backend wrapper.
 
         Args:
@@ -90,8 +93,6 @@ class End2EndModel(BaseBackendModel):
                 format.
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
 
         Returns:
             list: A list contains predictions.
@@ -101,24 +102,14 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        batch_heatmaps = batch_outputs[0]
-        # flip test
-        test_cfg = self.model_cfg.model.test_cfg
-        if test_cfg.get('flip_test', False):
-            from mmpose.models.utils.tta import flip_heatmaps
-            batch_inputs_flip = inputs.flip(-1).contiguous()
-            batch_outputs_flip = self.wrapper(
-                {self.input_name: batch_inputs_flip})
-            batch_heatmaps_flip = self.wrapper.output_to_list(
-                batch_outputs_flip)[0]
-            flip_indices = data_samples[0].metainfo['flip_indices']
-            batch_heatmaps_flip = flip_heatmaps(
-                batch_heatmaps_flip,
-                flip_mode=test_cfg.get('flip_mode', 'heatmap'),
-                flip_indices=flip_indices,
-                shift_heatmap=test_cfg.get('shift_heatmap', False))
-            batch_heatmaps = (batch_heatmaps + batch_heatmaps_flip) * 0.5
-        preds = self.head.decode(batch_heatmaps)
+        codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[-1]
+        if codec.type == 'SimCCLabel':
+            batch_pred_x, batch_pred_y = batch_outputs
+            preds = self.head.decode((batch_pred_x, batch_pred_y))
+        else:
+            preds = self.head.decode(batch_outputs[0])
         results = self.pack_result(preds, data_samples)
         return results
 
@@ -233,7 +224,8 @@ def build_pose_detection_model(
         deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
-
+        data_preprocessor (Config | BaseDataPreprocessor | None): Input data
+            pre-processor. Default is ``None``.
     Returns:
         BaseBackendModel: Pose model for a configured backend.
     """

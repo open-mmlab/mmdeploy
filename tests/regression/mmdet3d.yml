@@ -2,8 +2,8 @@ globals:
   codebase_dir: ../mmdetection3d
   checkpoint_force_download: False
   images:
-    kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/kitti_000008.bin
-    nus_input: &nus_input ./tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
+    kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/000008.bin
+    nus_input: &nus_input tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
 
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
@@ -82,8 +82,8 @@ models:
   - name: PointPillars
     metafile: configs/pointpillars/metafile.yml
     model_configs:
-      - configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-3class.py
-      - configs/pointpillars/hv_pointpillars_secfpn_6x8_160e_kitti-3d-car.py
+      - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py
+      - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-car.py
     pipelines:
       - *pipeline_ort_dynamic_kitti_fp32
       - *pipeline_openvino_dynamic_kitti_fp32
@@ -91,7 +91,7 @@ models:
   - name: PointPillars
     metafile: configs/pointpillars/metafile.yml
     model_configs:
-      - configs/pointpillars/hv_pointpillars_secfpn_sbn-all_4x8_2x_nus-3d.py
+      - configs/pointpillars/pointpillars_hv_secfpn_sbn-all_8xb4-2x_nus-3d.py
     pipelines:
       - *pipeline_ort_dynamic_nus_fp32
       - *pipeline_openvino_dynamic_nus_fp32_64x4
@@ -99,7 +99,7 @@ models:
   - name: CenterPoint
     metafile: configs/centerpoint/metafile.yml
     model_configs:
-      - configs/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus.py
+      - configs/centerpoint/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py
     pipelines:
       - *pipeline_ort_dynamic_nus_fp32
       - *pipeline_openvino_dynamic_nus_fp32_20x5

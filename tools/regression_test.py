@@ -50,7 +50,10 @@ def parse_args():
         help='the dir to save checkpoint for all model',
         default='../mmdeploy_checkpoints')
     parser.add_argument(
-        '--device', type=str, help='Device type, cuda or cpu', default='cuda')
+        '--device',
+        type=str,
+        help='Device type, cuda:id or cpu, cuda:0 as default',
+        default='cuda:0')
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -415,7 +418,7 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
         Bool: test_pass: If the test pass or not.
     """
     # check if converted successes or not.
-    fps = 'x'
+    fps = '-'
     if shell_res != 0:
         backend_results = {}
     else:
@@ -727,7 +730,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         if calib_dataset_cfg is not None:
             cmd_lines += [f'--calib-dataset-cfg {calib_dataset_cfg}']
 
-    convert_log_path = backend_output_path.joinpath('convert_log.log')
+    convert_log_path = backend_output_path.joinpath('convert.log')
     return_code = run_cmd(cmd_lines, convert_log_path)
     convert_result = return_code == 0
     logger.info(f'Got convert_result = {convert_result}')

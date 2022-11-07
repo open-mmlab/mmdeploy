@@ -5,7 +5,7 @@
 
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 namespace coreml {
 class Execution;
@@ -32,6 +32,6 @@ class CoreMLNet : public Net {
   friend class coreml::Execution;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_ORT_ORT_NET_H_

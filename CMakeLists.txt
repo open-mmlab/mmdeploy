@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.8.0)
+project(MMDeploy VERSION 0.10.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -106,14 +106,6 @@ if (MMDEPLOY_BUILD_SDK)
         add_subdirectory(tests/test_csrc)
     endif ()
 
-    if (MMDEPLOY_BUILD_SDK_PYTHON_API)
-        add_subdirectory(csrc/mmdeploy/apis/python)
-    endif ()
-
-    if (MMDEPLOY_BUILD_SDK_JAVA_API)
-        add_subdirectory(csrc/mmdeploy/apis/java)
-    endif ()
-
     if (MMDEPLOY_BUILD_EXAMPLES)
         include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
         add_subdirectory(demo/csrc)
@@ -136,6 +128,7 @@ if (MMDEPLOY_BUILD_SDK)
         mmdeploy_add_deps(pplnn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS pplnn)
     endif ()
     mmdeploy_add_deps(snpe BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS snpe)
+    mmdeploy_add_deps(rknn BACKENDS ${MMDEPLOY_TARGET_BACKENDS} DEPS rknn)
 
     include(CMakePackageConfigHelpers)
     # generate the config file that is includes the exports

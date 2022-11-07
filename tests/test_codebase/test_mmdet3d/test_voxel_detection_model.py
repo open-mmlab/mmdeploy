@@ -1,9 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-
+import mmengine
 import pytest
 import torch
-from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -15,7 +13,8 @@ try:
 except ImportError:
     pytest.skip(
         f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
-from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
+from mmdeploy.codebase.mmdet3d.deploy.voxel_detection_model import \
+    VoxelDetectionModel
 
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
 model_cfg = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
@@ -33,27 +32,25 @@ class TestVoxelDetectionModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'cls_score': torch.rand(1, 18, 32, 32),
+            'bbox_pred': torch.rand(1, 42, 32, 32),
+            'dir_cls_pred': torch.rand(1, 12, 32, 32)
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({
+        deploy_cfg = mmengine.Config({
             'onnx_config': {
                 'input_names': ['voxels', 'num_points', 'coors'],
-                'output_names': ['scores', 'bbox_preds', 'dir_scores'],
+                'output_names': ['cls_score', 'bbox_pred', 'dir_cls_pred'],
                 'opset_version': 11
             },
             'backend_config': {
-                'type': 'tensorrt'
+                'type': 'onnxruntime'
             }
         })
 
         from mmdeploy.utils import load_config
         model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
         model_cfg = load_config(model_cfg_path)[0]
-        from mmdeploy.codebase.mmdet3d.deploy.voxel_detection_model import \
-            VoxelDetectionModel
         cls.end2end_model = VoxelDetectionModel(
             Backend.ONNXRUNTIME, [''],
             device='cuda',
@@ -64,14 +61,15 @@ class TestVoxelDetectionModel:
         reason='Only support GPU test',
         condition=not torch.cuda.is_available())
     def test_forward_and_show_result(self):
-        data = VoxelDetection.read_pcd_file(pcd_path, model_cfg, 'cuda')
-        results = self.end2end_model.forward(data['points'], data['img_metas'])
+        inputs = {
+            'voxels': {
+                'voxels': torch.rand((3945, 32, 4)),
+                'num_points': torch.ones((3945), dtype=torch.int32),
+                'coors': torch.ones((3945, 4), dtype=torch.int32)
+            }
+        }
+        results = self.end2end_model.forward(inputs=inputs)
         assert results is not None
-        from tempfile import TemporaryDirectory
-        with TemporaryDirectory() as dir:
-            self.end2end_model.show_result(
-                data, results, dir, 'backend_output.bin', show=False)
-            assert osp.exists(dir + '/backend_output.bin')
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -79,11 +77,11 @@ def test_build_voxel_detection_model():
     from mmdeploy.utils import load_config
     model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
     model_cfg = load_config(model_cfg_path)[0]
-    deploy_cfg = Config(
+    deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=Backend.ONNXRUNTIME.value),
             onnx_config=dict(
-                output_names=['scores', 'bbox_preds', 'dir_scores']),
+                output_names=['cls_score', 'bbox_pred', 'dir_cls_pred']),
             codebase_config=dict(type=Codebase.MMDET3D.value)))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper

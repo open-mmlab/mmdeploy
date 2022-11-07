@@ -21,7 +21,7 @@ def process_model_config(
     imgs: Union[Sequence[str], Sequence[np.ndarray]],
     input_shape: Optional[Sequence[int]] = None,
 ):
-    """Process the model config.
+    """Process the model config for sdk model.
 
     Args:
         model_cfg (mmengine.Config): The model config.
@@ -38,7 +38,7 @@ def process_model_config(
     data_preprocessor = cfg.model.data_preprocessor
     codec = cfg.codec
     if isinstance(codec, list):
-        codec = codec[0]
+        codec = codec[-1]
     input_size = codec['input_size'] if input_shape is None else input_shape
     test_pipeline[0] = dict(type='LoadImageFromFile')
     for i in reversed(range(len(test_pipeline))):
@@ -119,10 +119,12 @@ class MMPose(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register rewritings."""
         import mmdeploy.codebase.mmpose.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all modules from mmpose."""
         from mmpose.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -148,6 +150,14 @@ class PoseDetection(BaseTask):
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
                             **kwargs) -> torch.nn.Module:
+        """build pytorch model from model config and checkpoint
+        Args:
+            model_checkpoint (str|None): Input model checkpoint file.
+            cfg_options (dict|None): Optional config arguments.
+
+        Returns:
+            nn.Module: An initialized pytorch model.
+        """
         from mmpose.apis import init_model
         from mmpose.utils import register_all_modules
         register_all_modules()
@@ -163,11 +173,10 @@ class PoseDetection(BaseTask):
     def build_backend_model(self,
                             model_files: Sequence[str] = None,
                             **kwargs) -> torch.nn.Module:
-        """Initialize backend model.
+        """build backend model.
 
         Args:
             model_files (Sequence[str]): Input model files. Default is None.
-
         Returns:
             nn.Module: An initialized backend model.
         """
@@ -194,6 +203,8 @@ class PoseDetection(BaseTask):
                 ``np.ndarray``.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to ``None``.
+            data_preprocessor (BaseDataPreprocessor | None): Input data pre-
+                processor. Default is ``None``.
 
         Returns:
             tuple: (data, inputs), meta information for the input image
@@ -203,12 +214,23 @@ class PoseDetection(BaseTask):
         from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
         if isinstance(imgs, str):
-            imgs = mmcv.imread(imgs)
-        height, width = imgs.shape[:2]
-        # create dummy person results
-        person_results = [{'bbox': np.array([0, 0, width, height])}]
-        bboxes = np.array([box['bbox'] for box in person_results])
-
+            imgs = [mmcv.imread(imgs)]
+        elif isinstance(imgs, (list, tuple)):
+            img_data = []
+            for img in imgs:
+                if isinstance(img, str):
+                    img_data.append(mmcv.imread(img))
+                else:
+                    img_data.append(img)
+            imgs = img_data
+        person_results = []
+        bboxes = []
+        for img in imgs:
+            height, width = img.shape[:2]
+            # create dummy person results
+            person_results.append([{'bbox': np.array([0, 0, width, height])}])
+            bboxes.append(
+                np.array([box['bbox'] for box in person_results[-1]]))
         # build the data pipeline
         test_pipeline = [
             TRANSFORMS.build(c) for c in cfg.test_dataloader.dataset.pipeline
@@ -230,20 +252,22 @@ class PoseDetection(BaseTask):
 
         batch_data = defaultdict(list)
         meta_data = _get_dataset_metainfo(self.model_cfg)
-        for bbox in bboxes:
-            # prepare data
-            bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
-                                   ])  # shape (1,)
-            data = {
-                'img': imgs,
-                'bbox_score': bbox_score,
-                'bbox': bbox[None],  # shape (1, 4)
-            }
-            data.update(meta_data)
-            data = test_pipeline(data)
-            data['inputs'] = data['inputs'].to(self.device)
-            batch_data['inputs'].append(data['inputs'])
-            batch_data['data_samples'].append(data['data_samples'])
+        assert len(imgs) == len(bboxes) == len(person_results)
+        for i in range(len(imgs)):
+            for bbox in bboxes[i]:
+                # prepare data
+                bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
+                                       ])  # shape (1,)
+                data = {
+                    'img': imgs[i],
+                    'bbox_score': bbox_score,
+                    'bbox': bbox[None],  # shape (1, 4)
+                }
+                data.update(meta_data)
+                data = test_pipeline(data)
+                data['inputs'] = data['inputs'].to(self.device)
+                batch_data['inputs'].append(data['inputs'])
+                batch_data['data_samples'].append(data['data_samples'])
 
         if data_preprocessor is not None:
             batch_data = data_preprocessor(batch_data, False)
@@ -320,18 +344,25 @@ class PoseDetection(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
+        codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[-1]
         component = 'UNKNOWN'
         params = copy.deepcopy(self.model_cfg.model.test_cfg)
+        params.update(codec)
         if self.model_cfg.model.type == 'TopdownPoseEstimator':
-            head_type = self.model_cfg.model.head.type
-            if head_type == 'HeatmapHead':
+            component = 'TopdownHeatmapSimpleHeadDecode'
+            if codec.type == 'MSRAHeatmap':
                 params['post_process'] = 'default'
-                component = 'TopdownHeatmapSimpleHeadDecode'
-            elif head_type == 'MSPNHead':
+            elif codec.type == 'UDPHeatmap':
+                params['post_process'] = 'default'
+                params['use_udp'] = True
+            elif codec.type == 'MegviiHeatmap':
                 params['post_process'] = 'megvii'
                 params['modulate_kernel'] = self.model_cfg.kernel_sizes[-1]
-                component = 'TopdownHeatmapMSMUHeadDecode'
+            elif codec.type == 'SimCCLabel':
+                component = 'SimCCLabelDecode'
             else:
-                raise RuntimeError(f'Unsupported head type: {head_type}')
+                raise RuntimeError(f'Unsupported codecs type: {codec.type}')
         postprocess = dict(params=params, type=component)
         return postprocess

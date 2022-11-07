@@ -82,7 +82,7 @@ class CTCConvertor : public MMOCR {
     auto text = Idx2Str(indexes);
     MMDEPLOY_DEBUG("text: {}", text);
 
-    TextRecognizerOutput output{text, scores};
+    TextRecognition output{text, scores};
 
     return make_pointer(to_value(output));
   }

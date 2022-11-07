@@ -29,7 +29,6 @@ mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用�
 ```bash
 git clone https://github.com/openppl-public/ppq.git
 cd ppq
-git checkout edbecf4 # 需要一些特性和修复
 pip install -r requirements.txt
 python3 setup.py install
 ```

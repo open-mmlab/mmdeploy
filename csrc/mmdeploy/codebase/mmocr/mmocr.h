@@ -12,13 +12,15 @@
 namespace mmdeploy {
 namespace mmocr {
 
-struct TextDetectorOutput {
-  std::vector<std::array<float, 8>> boxes;
-  std::vector<float> scores;
-  MMDEPLOY_ARCHIVE_MEMBERS(boxes, scores);
+struct TextDetection {
+  std::array<float, 8> bbox;
+  float score;
+  MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
 };
 
-struct TextRecognizerOutput {
+using TextDetections = std::vector<TextDetection>;
+
+struct TextRecognition {
   std::string text;
   std::vector<float> score;
   MMDEPLOY_ARCHIVE_MEMBERS(text, score);

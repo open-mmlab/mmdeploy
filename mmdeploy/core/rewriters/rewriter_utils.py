@@ -238,7 +238,7 @@ class RewriterRegistry:
                         default_rewriter = record
                     else:
                         warnings.warn(
-                            'Detect multiple valid rewriters for'
+                            'Detect multiple valid rewriters for '
                             f'{origin_function}, use the first rewriter.')
                 else:
                     # Check if the checker is valid.

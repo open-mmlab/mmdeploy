@@ -6,6 +6,10 @@ from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.Tensor.flatten', backend=Backend.NCNN.value)
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.flatten', backend=Backend.NCNN.value)
+@FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.flatten', backend=Backend.COREML.value)
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.flatten', backend=Backend.COREML.value)

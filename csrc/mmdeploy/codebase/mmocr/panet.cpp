@@ -80,7 +80,7 @@ class PANHead : public MMOCR {
     auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
     auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
 
-    TextDetectorOutput output;
+    TextDetections output;
     for (auto& text_point : text_points) {
       auto text_confidence = text_point[0];
       auto area = text_point.size() - 2;
@@ -98,12 +98,12 @@ class PANHead : public MMOCR {
           p.y /= scale_h * downsample_ratio_;
         }
       }
-      auto& bbox = output.boxes.emplace_back();
+      auto& det = output.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = vertices[i].x;
-        bbox[i * 2 + 1] = vertices[i].y;
+        det.bbox[i * 2] = vertices[i].x;
+        det.bbox[i * 2 + 1] = vertices[i].y;
       }
-      output.scores.push_back(text_confidence);
+      det.score = text_confidence;
     }
     return to_value(output);
   }

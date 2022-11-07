@@ -1689,6 +1689,48 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">0.825</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py">Hourglass</a></td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">-</td>
+    <td align="center">0.717</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">-</td>
+    <td align="center">0.774</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py">SimCC</a></td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.607</td>
+    <td align="center">-</td>
+    <td align="center">0.608</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.668</td>
+    <td align="center">-</td>
+    <td align="center">0.672</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
