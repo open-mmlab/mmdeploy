@@ -18,15 +18,15 @@ backend_config = dict(input_size_list=[[3, 320, 320]])
 #             output_names=[f'pred_maps.{i}' for i in range(3)])  # out names
 #     ])
 
-# retinanet, ssd, fsaf
-partition_config = dict(
-    type='rknn',  # the partition policy name
-    apply_marks=True,
-    partition_cfg=[
-        dict(
-            save_file='model.onnx',
-            start='detector_forward:input',
-            end=['BaseDenseHead:output'],
-            output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
-            [f'BaseDenseHead.loc.{i}' for i in range(5)])
-    ])
+# # retinanet, ssd, fsaf
+# partition_config = dict(
+#     type='rknn',  # the partition policy name
+#     apply_marks=True,
+#     partition_cfg=[
+#         dict(
+#             save_file='model.onnx',
+#             start='detector_forward:input',
+#             end=['BaseDenseHead:output'],
+#             output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
+#             [f'BaseDenseHead.loc.{i}' for i in range(5)])
+#     ])
