@@ -438,28 +438,6 @@ def run_cmd(cmd_lines: List[str], log_path: Path):
     return return_code
 
 
-def compare_metric(metric_value: float, metric_name: str, pytorch_metric: dict,
-                   metric_info: dict):
-    """Compare metric value with the pytorch metric value and the tolerance.
-
-    Args:
-        metric_value (float): Metric value.
-        metric_name (str): metric name.
-        pytorch_metric (dict): Pytorch metric which get from metafile.
-        metric_info (dict): Metric info from test yaml.
-
-    Returns:
-        Bool: If the test pass or not.
-    """
-    if metric_value == 'x':
-        return False
-
-    metric_pytorch = pytorch_metric.get(str(metric_name))
-    tolerance_value = metric_info.get(metric_name, {}).get('tolerance', 0.00)
-    test_pass = metric_value >= (metric_pytorch - tolerance_value)
-    return test_pass
-
-
 def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
                    json_file: str):
     """Get fps and metric.
@@ -488,13 +466,13 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
         metric_key = metric_info[metric_name]['metric_key']
         tolerance = metric_info[metric_name]['tolerance']
         multi_value = metric_info[metric_name].get('multi_value', 1.0)
-        compare_flag = True
-        output_result[metric_name] = '-'
+        compare_flag = False
+        output_result[metric_name] = 'x'
         if metric_key in backend_results:
             backend_value = backend_results[metric_key] * multi_value
             output_result[metric_name] = backend_value
-            if backend_value < metric_value - tolerance:
-                compare_flag = False
+            if backend_value >= metric_value - tolerance:
+                compare_flag = True
         compare_results[metric_name] = compare_flag
 
     if len(compare_results):
