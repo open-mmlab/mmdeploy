@@ -154,7 +154,7 @@ label: 65, score: 0.95
     mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
   ```
 
-  Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[[103.53, 116.28, 123.675]]` and `std_values=[[57.375, 57.12, 58.395]]`.
+  Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[[123.675, 116.28, 103.53]]` and `std_values=[[58.395, 57.12, 57.375]]`.
 
 - MMDet models.
 

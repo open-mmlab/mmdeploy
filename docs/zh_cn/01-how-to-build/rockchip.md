@@ -187,7 +187,7 @@ backend_config = dict(
     mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
   ```
 
-  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[103.53, 116.28, 123.675]]`, `std_values=[[57.375, 57.12, 58.395]]`。
+  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[123.675, 116.28, 103.53]]`, `std_values=[[58.395, 57.12, 57.375]]`。
 
 - SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
 
