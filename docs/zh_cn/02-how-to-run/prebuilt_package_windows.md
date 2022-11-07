@@ -23,7 +23,7 @@ ______________________________________________________________________
 
 目前，`MMDeploy`在`Windows`平台下提供`TensorRT`以及`ONNX Runtime`两种预编译包，可以从[Releases](https://github.com/open-mmlab/mmdeploy/releases)获取。
 
-本篇教程以`mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1.zip`和`mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip`为例，展示预编译包的使用方法。
+本篇教程以`mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1.zip`和`mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip`为例，展示预编译包的使用方法。
 
 为了方便使用者快速上手，本教程以分类模型(mmclassification)为例，展示两种预编译包的使用方法。
 
@@ -88,9 +88,9 @@ ______________________________________________________________________
 5. 安装`mmdeploy`（模型转换）以及`mmdeploy_python`（模型推理Python API）的预编译包
 
    ```bash
-   # 先下载 mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1.zip
-   pip install .\mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.9.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.9.0-cp38-none-win_amd64.whl
+   # 先下载 mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1.zip
+   pip install .\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.10.0-py38-none-win_amd64.whl
+   pip install .\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.10.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装。
@@ -115,9 +115,9 @@ ______________________________________________________________________
 5. 安装`mmdeploy`（模型转换）以及`mmdeploy_python`（模型推理Python API）的预编译包
 
    ```bash
-   # 先下载 mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-   pip install .\mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.9.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.9.0-cp38-none-win_amd64.whl
+   # 先下载 mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
+   pip install .\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.10.0-py38-none-win_amd64.whl
+   pip install .\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.10.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装
@@ -146,7 +146,7 @@ ______________________________________________________________________
 
 ```
 ..
-|-- mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -194,7 +194,7 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 
 ```
 ..
-|-- mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -257,8 +257,8 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 
 ```
 .
-|-- mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-|-- mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -327,7 +327,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
 1. 编译 examples
 
-   在`mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\sdk\example`目录下
+   在`mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\example`目录下
 
    ```
    // 部分路径根据实际位置进行修改
@@ -335,7 +335,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    cd build
    cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
-     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
+     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
      -DONNXRUNTIME_DIR=C:\Deps\onnxruntime\onnxruntime-win-gpu-x64-1.8.1
 
    cmake --build . --config Release
@@ -345,7 +345,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    :point_right: 目的是使exe运行时可以正确找到相关dll
 
-   若选择添加环境变量，则将`mmdeploy`的运行时库路径（`mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\sdk\bin`）添加到PATH，可参考onnxruntime的添加过程。
+   若选择添加环境变量，则将`mmdeploy`的运行时库路径（`mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\bin`）添加到PATH，可参考onnxruntime的添加过程。
 
    若选择拷贝动态库，而将bin目录中的dll拷贝到刚才编译出的exe(build/Release)的同级目录下。
 
@@ -353,7 +353,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    这里建议使用cmd，这样如果exe运行时如果找不到相关的dll的话会有弹窗
 
-   在mmdeploy-0.9.0-windows-amd64-onnxruntime1.8.1\\sdk\\example\\build\\Release目录下：
+   在mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\\sdk\\example\\build\\Release目录下：
 
    ```
    .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmclassification\demo\demo.JPEG
@@ -363,7 +363,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
 1. 编译 examples
 
-   在mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example目录下
+   在mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example目录下
 
    ```
    // 部分路径根据所在硬盘的位置进行修改
@@ -371,7 +371,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    cd build
    cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
-     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
+     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
      -DTENSORRT_DIR=C:\Deps\tensorrt\TensorRT-8.2.3.0 `
      -DCUDNN_DIR=C:\Deps\cudnn\8.2.1
    cmake --build . --config Release
@@ -381,7 +381,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    :point_right: 目的是使exe运行时可以正确找到相关dll
 
-   若选择添加环境变量，则将`mmdeploy`的运行时库路径（`mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`）添加到PATH，可参考onnxruntime的添加过程。
+   若选择添加环境变量，则将`mmdeploy`的运行时库路径（`mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`）添加到PATH，可参考onnxruntime的添加过程。
 
    若选择拷贝动态库，而将bin目录中的dll拷贝到刚才编译出的exe(build/Release)的同级目录下。
 
@@ -389,7 +389,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    这里建议使用cmd，这样如果exe运行时如果找不到相关的dll的话会有弹窗
 
-   在mmdeploy-0.9.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example\\build\\Release目录下：
+   在mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example\\build\\Release目录下：
 
    ```
    .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmclassification\demo\demo.JPEG

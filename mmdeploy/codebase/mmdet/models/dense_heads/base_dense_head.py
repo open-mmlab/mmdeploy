@@ -14,7 +14,7 @@ from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
                                      pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -192,6 +192,132 @@ def base_dense_head__predict_by_feat(
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.base_dense_head.'
     'BaseDenseHead.predict_by_feat',
+    backend=Backend.RKNN.value)
+def base_dense_head__predict_by_feat__rknn(
+        ctx,
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        score_factors: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True,
+        **kwargs):
+    """Rewrite `predict_by_feat` of `BaseDenseHead` for default backend.
+    Rewrite this function to deploy model, transform network output for a
+    batch into bbox predictions.
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        cls_scores (list[Tensor]): Classification scores for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * num_classes, H, W).
+        bbox_preds (list[Tensor]): Box energies / deltas for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 4, H, W).
+        score_factors (list[Tensor], optional): Score factor for
+            all scale level, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 1, H, W). Defaults to None.
+        batch_img_metas (list[dict], Optional): Batch image meta info.
+            Defaults to None.
+        cfg (ConfigDict, optional): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
+        rescale (bool): If True, return boxes in original image space.
+            Defaults to False.
+        with_nms (bool): If True, do nms before return boxes.
+            Defaults to True.
+    Returns:
+        If with_nms == True:
+            tuple[Tensor, Tensor]: tuple[Tensor, Tensor]: (dets, labels),
+            `dets` of shape [N, num_det, 5] and `labels` of shape
+            [N, num_det].
+        Else:
+            tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
+                batch_mlvl_scores, batch_mlvl_centerness
+    """
+    # mark nodes for partition
+    @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
+    def __mark_dense_head(cls_scores, bbox_preds):
+        return cls_scores, bbox_preds
+
+    cls_scores, bbox_preds = __mark_dense_head(cls_scores, bbox_preds)
+
+    deploy_cfg = ctx.cfg
+    is_dynamic_flag = is_dynamic_shape(deploy_cfg)
+    num_levels = len(cls_scores)
+
+    featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
+    mlvl_priors = self.prior_generator.grid_priors(
+        featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
+    mlvl_priors = [priors.unsqueeze(0) for priors in mlvl_priors]
+
+    mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
+    mlvl_bbox_preds = [bbox_preds[i].detach() for i in range(num_levels)]
+    if score_factors is None:
+        with_score_factors = False
+        mlvl_score_factor = [None for _ in range(num_levels)]
+    else:
+        with_score_factors = True
+        mlvl_score_factor = [
+            score_factors[i].detach() for i in range(num_levels)
+        ]
+        mlvl_score_factors = []
+    assert batch_img_metas is not None
+    img_shape = batch_img_metas[0]['img_shape']
+
+    assert len(cls_scores) == len(bbox_preds) == len(mlvl_priors)
+    batch_size = cls_scores[0].shape[0]
+
+    mlvl_valid_bboxes = []
+    mlvl_valid_scores = []
+    mlvl_valid_priors = []
+
+    for cls_score, bbox_pred, score_factors, priors in zip(
+            mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors):
+        assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
+
+        scores = cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
+                                                       self.cls_out_channels)
+        if self.use_sigmoid_cls:
+            scores = scores.sigmoid()
+        else:
+            scores = scores.softmax(-1)[:, :, :-1]
+        if with_score_factors:
+            score_factors = score_factors.permute(0, 2, 3,
+                                                  1).reshape(batch_size,
+                                                             -1).sigmoid()
+            score_factors = score_factors.unsqueeze(2)
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        if not is_dynamic_flag:
+            priors = priors.data
+
+        mlvl_valid_bboxes.append(bbox_pred)
+        mlvl_valid_scores.append(scores)
+        mlvl_valid_priors.append(priors)
+        if with_score_factors:
+            mlvl_score_factors.append(score_factors)
+
+    batch_mlvl_bboxes_pred = torch.cat(mlvl_valid_bboxes, dim=1)
+    batch_scores = torch.cat(mlvl_valid_scores, dim=1)
+    batch_priors = torch.cat(mlvl_valid_priors, dim=1)
+    batch_bboxes = self.bbox_coder.decode(
+        batch_priors, batch_mlvl_bboxes_pred, max_shape=img_shape)
+    if with_score_factors:
+        batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
+    if not self.use_sigmoid_cls:
+        batch_scores = batch_scores[..., :self.num_classes]
+
+    if with_score_factors:
+        batch_scores = batch_scores * batch_score_factors
+        if isinstance(self, PAAHead):
+            batch_scores = batch_scores.sqrt()
+    return batch_bboxes, batch_scores
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
+    '.get_bboxes',
     backend=Backend.NCNN.value)
 def base_dense_head__predict_by_feat__ncnn(
         ctx,

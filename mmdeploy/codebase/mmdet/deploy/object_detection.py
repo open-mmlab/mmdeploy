@@ -10,8 +10,9 @@ from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task
-from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
+from mmdeploy.utils import Backend, Codebase, Task
+from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
+                                         is_dynamic_shape)
 
 MMDET_TASK = Registry('mmdet_tasks')
 
@@ -278,6 +279,14 @@ class ObjectDetection(BaseTask):
             if 'mask_thr_binary' in params['rcnn']:
                 params['mask_thr_binary'] = params['rcnn']['mask_thr_binary']
                 type = 'ResizeInstanceMask'  # for instance-seg
+        if get_backend(self.deploy_cfg) == Backend.RKNN:
+            if 'YOLO' in self.model_cfg.model.type:
+                bbox_head = self.model_cfg.model.bbox_head
+                type = bbox_head.type
+                params['anchor_generator'] = bbox_head.get(
+                    'anchor_generator', None)
+            else:  # default using base_dense_head
+                type = 'BaseDenseHead'
         return dict(type=type, params=params)
 
     def get_model_name(self, *args, **kwargs) -> str:
