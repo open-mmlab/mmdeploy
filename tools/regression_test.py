@@ -429,13 +429,13 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
         metric_key = metric_info[metric_name]['metric_key']
         tolerance = metric_info[metric_name]['tolerance']
         multi_value = metric_info[metric_name].get('multi_value', 1.0)
-        compare_flag = False
-        output_result[metric_name] = 'x'
+        compare_flag = True
+        output_result[metric_name] = '-'
         if metric_key in backend_results:
             backend_value = backend_results[metric_key] * multi_value
             output_result[metric_name] = backend_value
-            if backend_value >= metric_value - tolerance:
-                compare_flag = True
+            if backend_value < metric_value - tolerance:
+                compare_flag = False
         compare_results[metric_name] = compare_flag
 
     if len(compare_results):
@@ -489,7 +489,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     fps, backend_metric, test_pass = get_fps_metric(return_code,
                                                     pytorch_metric,
                                                     metric_info, work_dir)
-    logger.info(f'test_pass= {test_pass}, results= {backend_metric}')
+    logger.info(f'test_pass={test_pass}, results{backend_metric}')
     metric_list = []
     for metric in metric_info:
         value = '-'

@@ -103,7 +103,7 @@ tensorrt:
   pipeline_seg_trt_dynamic_fp32: &pipeline_seg_trt_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_seg_dynamic
+    # sdk_config: *sdk_seg_dynamic
     deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt_dynamic-320x320-1344x1344.py
 
   pipeline_seg_trt_dynamic_fp16: &pipeline_seg_trt_dynamic_fp16
