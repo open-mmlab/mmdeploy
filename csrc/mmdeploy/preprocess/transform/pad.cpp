@@ -34,6 +34,11 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
   } else {
     arg_.pad_val = 0.0f;
   }
+  if (args.contains("logical_or_val")) {
+    // logical_or mode support.
+    arg_.logical_or_val = args["logical_or_val"].get<int>();
+    arg_.add_pix_val = args.value("add_pix_val", 0);
+  }
   arg_.pad_to_square = args.value("pad_to_square", false);
   arg_.padding_mode = args.value("padding_mode", std::string("constant"));
   arg_.orientation_agnostic = args.value("orientation_agnostic", false);
@@ -80,6 +85,18 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["pad_size_divisor"] = arg_.size_divisor;
       output["pad_fixed_size"].push_back(pad_h);
       output["pad_fixed_size"].push_back(pad_w);
+    } else if (arg_.logical_or_val > 0) {
+      int pad_h = (height | arg_.logical_or_val) + arg_.add_pix_val;
+      int pad_w = (width | arg_.logical_or_val) + arg_.add_pix_val;
+      int offset_h = pad_h / 2 - height / 2;
+      int offset_w = pad_w / 2 - width / 2;
+      padding = {offset_w, offset_h, pad_w - width - offset_w, pad_h - height - offset_h};
+      output["border"].push_back(offset_h);
+      output["border"].push_back(offset_w);
+      output["border"].push_back(offset_h + height);
+      output["border"].push_back(offset_w + width);
+      for (int i = 0; i < 4; ++i)
+        output["scale_factor"].push_back(1);  // initialize scale factor to 1 to avoid zero.
     } else {
       output_tensor = tensor;
       output["pad_fixed_size"].push_back(height);

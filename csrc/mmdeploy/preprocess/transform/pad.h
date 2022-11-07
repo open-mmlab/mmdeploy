@@ -26,6 +26,8 @@ class MMDEPLOY_API PadImpl : public TransformImpl {
  protected:
   struct pad_arg_t {
     std::array<int, 2> size;
+    int logical_or_val;
+    int add_pix_val;
     int size_divisor;
     float pad_val;
     bool pad_to_square;

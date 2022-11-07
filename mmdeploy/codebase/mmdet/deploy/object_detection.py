@@ -237,6 +237,19 @@ class ObjectDetection(BaseTask):
             item for item in pipeline if 'Random' not in item['type']
             and 'Annotation' not in item['type']
         ]
+        extra_pad = None
+        # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
+        for transform in pipeline:
+            if transform['type'] == 'RandomCenterCropPad':
+                # RandomCenterCropPad needs padding_mode must be mean, so hard code it.
+                if transform['test_pad_mode'][0] == 'logical_or':
+                    extra_pad = dict(
+                        type='Pad',
+                        logical_or_val=transform['test_pad_mode'][1],
+                        add_pix_val=transform['test_pad_add_pix'],
+                    )
+                    # padding_mode='mean')
+
         for i, transform in enumerate(transforms):
             if transform['type'] == 'PackDetInputs':
                 meta_keys += transform[
@@ -248,12 +261,16 @@ class ObjectDetection(BaseTask):
                 transforms[i]['size'] = transforms[i].pop('scale')
 
         data_preprocessor = model_cfg.model.data_preprocessor
+
         transforms.insert(-1, dict(type='DefaultFormatBundle'))
-        transforms.insert(
-            -2,
-            dict(
-                type='Pad',
-                size_divisor=data_preprocessor.get('pad_size_divisor', 1)))
+        if extra_pad is not None:
+            transforms.insert(-2, extra_pad)
+        else:
+            transforms.insert(
+                -2,
+                dict(
+                    type='Pad',
+                    size_divisor=data_preprocessor.get('pad_size_divisor', 1)))
         transforms.insert(
             -3,
             dict(
