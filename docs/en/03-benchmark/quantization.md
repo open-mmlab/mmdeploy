@@ -29,8 +29,8 @@ Note:  [mmocr](https://github.com/open-mmlab/mmocr)  Uses 'shapely' to compute I
 
 ### Pose detection
 
-|                                                                      model                                                                       | dataset  | fp32 AP | int8 AP |
-| :----------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
-| [Hourglass](https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py) | COCO2017 |  0.717  |  0.713  |
+|                                                                         model                                                                         | dataset  | fp32 AP | int8 AP |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :-----: | :-----: |
+| [Hourglass](https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py) | COCO2017 |  0.717  |  0.713  |
 
 Note: MMPose models are tested with `flip_test` explicitly set to `False` in model configs.

@@ -28,9 +28,9 @@ tips:
 
 ## mmpose
 
-|                                                                               model                                                                               |  dataset   | spatial | snpe hybrid AR@IoU=0.50 | snpe hybrid AP@IoU=0.50 | latency(ms) |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
-| [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/master/configs/animal/2d_kpt_sview_rgb_img/topdown_heatmap/animalpose/hrnet_w32_animalpose_256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
+|                                                                                 model                                                                                  |  dataset   | spatial | snpe hybrid AR@IoU=0.50 | snpe hybrid AP@IoU=0.50 | latency(ms) |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------: | :-----: | :---------------------: | :---------------------: | :---------: |
+| [pose_hrnet_w32](https://github.com/open-mmlab/mmpose/blob/1.x/configs/animal_2d_keypoint/topdown_heatmap/animalpose/td-hm_hrnet-w32_8xb64-210e_animalpose-256x256.py) | Animalpose | 256x256 |          0.997          |          0.989          |   630±50    |
 
 tips:
 
@@ -38,9 +38,9 @@ tips:
 
 ## mmseg
 
-|                                                       model                                                       |  dataset   | spatial  | mIoU  | latency(ms) |
-| :---------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :---------: |
-| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fcn/fcn_r18-d8_512x1024_80k_cityscapes.py) | Cityscapes | 512x1024 | 71.11 |  4915±500   |
+|                                                        model                                                        |  dataset   | spatial  | mIoU  | latency(ms) |
+| :-----------------------------------------------------------------------------------------------------------------: | :--------: | :------: | :---: | :---------: |
+| [fcn](https://github.com/open-mmlab/mmsegmentation/blob/1.x/configs/fcn/fcn_r18-d8_4xb2-80k_cityscapes-512x1024.py) | Cityscapes | 512x1024 | 71.11 |  4915±500   |
 
 tips:
 
