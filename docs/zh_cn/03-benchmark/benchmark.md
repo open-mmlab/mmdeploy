@@ -799,7 +799,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/v3.0.0rc2/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
     <td align="center">Instance Segmentation</td>
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>

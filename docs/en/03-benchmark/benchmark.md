@@ -823,20 +823,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/detr/detr_r50_8x2_150e_coco.py">DETR</a></td>
-    <td align="center">Object Detection</td>
-    <td align="center">COCO2017</td>
-    <td align="center">box AP</td>
-    <td align="center">40.1</td>
-    <td align="center">40.1</td>
-    <td align="center">-</td>
-    <td align="center">40.1</td>
-    <td align="center">40.1</td>
-    <td align="center">-</td>
-    <td align="center">-</td>
-  </tr>
-  <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/v3.0.0rc2/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
     <td align="center">Instance Segmentation</td>
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
@@ -845,6 +832,30 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">32.2</td>
     <td align="center">32.2</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn/mask_rcnn_r50_fpn_1x_coco.py">Mask R-CNN</a></td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">box AP</td>
+    <td align="center">38.2</td>
+    <td align="center">38.1</td>
+    <td align="center">-</td>
+    <td align="center">38.1</td>
+    <td align="center">38.1</td>
+    <td align="center">-</td>
+    <td align="center">38.0</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">mask AP</td>
+    <td align="center">34.7</td>
+    <td align="center">34.7</td>
+    <td align="center">-</td>
+    <td align="center">33.7</td>
+    <td align="center">33.7</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
