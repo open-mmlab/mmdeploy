@@ -249,7 +249,6 @@ class ObjectDetection(BaseTask):
                         logical_or_val=transform['test_pad_mode'][1],
                         add_pix_val=transform['test_pad_add_pix'],
                     )
-                    # padding_mode='mean')
 
         for i, transform in enumerate(transforms):
             if transform['type'] == 'PackDetInputs':
