@@ -22,9 +22,9 @@ tips:
 
 ## mmocr detection
 
-|                                                       model                                                       |  dataset  | spatial  | fp32 hmean | snpe gpu hybrid hmean | latency(ms) |
-| :---------------------------------------------------------------------------------------------------------------: | :-------: | :------: | :--------: | :-------------------: | :---------: |
-| [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py) | ICDAR2015 | 1312x736 |   0.795    |    0.785 @thr=0.9     |  3100±100   |
+|                                                         model                                                         |  dataset  | spatial  | fp32 hmean | snpe gpu hybrid hmean | latency(ms) |
+| :-------------------------------------------------------------------------------------------------------------------: | :-------: | :------: | :--------: | :-------------------: | :---------: |
+| [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py) | ICDAR2015 | 1312x736 |   0.795    |    0.785 @thr=0.9     |  3100±100   |
 
 ## mmpose
 

@@ -189,13 +189,13 @@ cv2.imwrite('output_restorer.bmp', result)
 
 ## 模型支持列表
 
-| Model                                                                                            | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :----------------------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
-| [SRCNN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan)    | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [EDSR](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
-| [RDN](https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| Model                                                                               | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :---------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)    | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
+| [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
