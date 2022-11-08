@@ -30,13 +30,13 @@ def get_heatmap_head():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_heatmaphead_predict(backend_type: Backend):
+def test_heatmaphead_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_heatmap_head()
     model.cpu().eval()
     deploy_cfg = generate_mmpose_deploy_config(backend_type.value)
     feats = [torch.rand(1, 2, 32, 48)]
-    wrapped_model = WrapModel(model, 'predict', batch_data_samples=None)
+    wrapped_model = WrapModel(model, 'forward')
     rewrite_inputs = {'feats': feats}
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
@@ -59,13 +59,13 @@ def get_msmu_head():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_msmuhead_predict(backend_type: Backend):
+def test_msmuhead_forward(backend_type: Backend):
     check_backend(backend_type, True)
     model = get_msmu_head()
     model.cpu().eval()
     deploy_cfg = generate_mmpose_deploy_config(backend_type.value)
     feats = [[torch.rand(1, 16, 32, 48)]]
-    wrapped_model = WrapModel(model, 'predict', batch_data_samples=None)
+    wrapped_model = WrapModel(model, 'forward')
     rewrite_inputs = {'feats': feats}
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,

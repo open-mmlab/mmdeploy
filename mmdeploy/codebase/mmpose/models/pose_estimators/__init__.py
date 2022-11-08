@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import base, topdown
+from . import base
 
-__all__ = ['base', 'topdown']
+__all__ = ['base']
