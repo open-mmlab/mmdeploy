@@ -4,6 +4,12 @@
       "pattern": "^https://developer.nvidia.com//"
     },
     {
+      "pattern": "^https://developer.android.com/"
+    },
+    {
+      "pattern": "^https://developer.qualcomm.com/"
+    },
+    {
       "pattern": "^http://localhost"
     }
   ],
