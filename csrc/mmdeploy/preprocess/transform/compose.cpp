@@ -50,18 +50,23 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
                      Registry<Transform>::Get().List());
       throw_exception(eEntryNotFound);
     }
+    if (scope_) {
+      auto scope = scope_->CreateScope(type);
+      if (type == "Lift") {
+        cfg["context"]["scope"] = scope;
+        transform_scopes_.push_back(nullptr);
+      } else {
+        transform_scopes_.push_back(std::move(scope));
+      }
+    } else {
+      transform_scopes_.push_back(nullptr);
+    }
     auto transform = creator->Create(cfg);
     if (!transform) {
       MMDEPLOY_ERROR("Failed to create transform: {}, config: {}", type, cfg);
       throw_exception(eFail);
     }
     transforms_.push_back(std::move(transform));
-    if (scope_) {
-      auto scope = scope_->CreateScope(type);
-      transform_scopes_.push_back(std::move(scope));
-    } else {
-      transform_scopes_.push_back(nullptr);
-    }
   }
 }
 
