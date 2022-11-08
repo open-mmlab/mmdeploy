@@ -19,7 +19,6 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
                     show_result: bool = False,
                     **kwargs):
     """Run inference with PyTorch or backend model and show results.
-
     Examples:
         >>> from mmdeploy.apis import visualize_model
         >>> model_cfg = ('mmdetection/configs/fcos/'
@@ -31,7 +30,6 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         >>> device = 'cpu'
         >>> visualize_model(model_cfg, deploy_cfg, model, \
             img, device, show_result=True)
-
     Args:
         model_cfg (str | mmengine.Config): Model config file or Config object.
         deploy_cfg (str | mmengine.Config): Deployment config file or Config
@@ -71,11 +69,20 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
+    visualize = True
     try:
         # check headless
         import tkinter
         tkinter.Tk()
+    except Exception as e:
+        from mmdeploy.utils import get_root_logger
+        logger = get_root_logger()
+        logger.warning(
+            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
+        )
+        visualize = False
 
+    if visualize is True:
         task_processor.visualize(
             image=img,
             model=model,
@@ -83,9 +90,3 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             output_file=output_file,
             window_name=backend.value,
             show_result=show_result)
-    except Exception as e:
-        from mmdeploy.utils import get_root_logger
-        logger = get_root_logger()
-        logger.warn(
-            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
-        )
