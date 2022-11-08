@@ -58,17 +58,19 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  video_cls device_name model_path video_path\n");
+  if (argc != 7) {
+    fprintf(stderr,
+            "usage:\n  video_cls device_name model_path video_path video_path clip_len "
+            "frame_interval num_clips\n");
     return 1;
   }
   auto device_name = argv[1];
   auto model_path = argv[2];
   auto video_path = argv[3];
 
-  int clip_len = 1;
-  int frame_interval = 1;
-  int num_clips = 25;
+  int clip_len = std::stoi(argv[4]);
+  int frame_interval = std::stoi(argv[5]);
+  int num_clips = std::stoi(argv[6]);
 
   std::map<int, cv::Mat> buffer;
   std::vector<mmdeploy::Mat> clips;
