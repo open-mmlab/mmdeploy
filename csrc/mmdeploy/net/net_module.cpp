@@ -28,6 +28,9 @@ struct NetModule::Impl {
     auto init = [&]() -> Result<void> {
       auto name = args["name"].get<std::string>();
       auto& context = args["context"];
+      if (context.contains("scope")) {
+        is_profiling_ = true;
+      }
       auto model = context["model"].get<Model>();
       OUTCOME_TRY(auto config, model.GetModelConfig(name));
       device_ = context.value("device", Device{"cpu"});
@@ -177,6 +180,9 @@ struct NetModule::Impl {
         output[0].emplace(name, std::move(tmp));
       }
     }
+    if (is_profiling_) {
+      OUTCOME_TRY(stream_.Wait());
+    }
 
     return output;
   }
@@ -190,6 +196,7 @@ struct NetModule::Impl {
   std::map<std::string, std::string> input_mapping_;
   // outer scope to model output names
   std::map<std::string, std::string> output_mapping_;
+  bool is_profiling_{false};
 };
 
 NetModule::~NetModule() = default;
