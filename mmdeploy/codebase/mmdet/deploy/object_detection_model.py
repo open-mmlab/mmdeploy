@@ -671,6 +671,15 @@ class RKNNModel(End2EndModel):
                 metainfos,
                 cfg=self.model_cfg._cfg_dict.model.test_cfg,
                 rescale=True)
+        elif head_cfg.type == 'YOLOv5Head':
+            from mmdet.models.utils import multi_apply
+            outs = multi_apply(self.yolov5_head_forward_single, outputs,
+                               [head.num_base_priors] * len(outputs))
+            ret = head.predict_by_feat(
+                *outs,
+                batch_img_metas=metainfos,
+                cfg=self.model_cfg._cfg_dict.model.test_cfg,
+                rescale=True)
         elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
             partition_cfgs = get_partition_config(self.deploy_cfg)
             if partition_cfgs is None:  # bbox decoding done in rknn model
@@ -723,6 +732,19 @@ class RKNNModel(End2EndModel):
         for i in range(len(ret)):
             data_samples[i].pred_instances = ret[i]
         return data_samples
+
+    def yolov5_head_forward_single(
+            self, pred_map: Tensor,
+            num_base_priors: int) -> Tuple[Tensor, Tensor, Tensor]:
+        """Forward feature of a single scale level."""
+        bs, _, ny, nx = pred_map.shape
+        pred_map = pred_map.view(bs, num_base_priors, -1, ny, nx)
+
+        cls_score = pred_map[:, :, 5:, ...].reshape(bs, -1, ny, nx)
+        bbox_pred = pred_map[:, :, :4, ...].reshape(bs, -1, ny, nx)
+        objectness = pred_map[:, :, 4:5, ...].reshape(bs, -1, ny, nx)
+
+        return cls_score, bbox_pred, objectness
 
 
 def build_object_detection_model(
