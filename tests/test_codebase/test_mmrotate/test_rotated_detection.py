@@ -2,10 +2,10 @@
 import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import mmcv
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
@@ -23,7 +23,7 @@ except ImportError:
 
 model_cfg_path = 'tests/test_codebase/test_mmrotate/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(
@@ -123,7 +123,6 @@ def test_build_dataset_and_dataloader():
 
 
 def test_single_gpu_test_and_evaluate():
-    from mmcv.parallel import MMDataParallel
 
     class DummyDataset(Dataset):
 
@@ -145,7 +144,6 @@ def test_single_gpu_test_and_evaluate():
 
     # Prepare dummy model
     model = DummyModel(outputs=[torch.rand([1, 10, 6]), torch.rand([1, 10])])
-    model = MMDataParallel(model, device_ids=[0])
     # Run test
     outputs = task_processor.single_gpu_test(model, dataloader)
     assert isinstance(outputs, list)

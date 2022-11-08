@@ -3,7 +3,8 @@ import os
 import sys
 import time
 
-from ubuntu_utils import cmd_result, cu_version_name, ensure_base_env, get_job
+from ubuntu_utils import (cmd_result, cu_version_name, ensure_base_env,
+                          get_job, pytorch_version)
 
 g_jobs = 2
 
@@ -17,15 +18,9 @@ def install_libtorch(dep_dir):
     if os.path.exists(unzipped_name):
         return os.path.join(dep_dir, unzipped_name)
 
-    torch_version = None
-    try:
-        import torch
-        torch_version = torch.__version__
-    except Exception:
-        pass
-
+    torch_version = pytorch_version()
     if torch_version is None:
-        print('torch version is None, use 1.11.0')
+        print('torch version is None, try 1.11.0')
         torch_version = '1.11.0'
 
     version_name = None
@@ -46,7 +41,7 @@ def install_libtorch(dep_dir):
         torch_version, version_name)
     url = 'https://download.pytorch.org/libtorch/{}/{}'.format(
         version_name, filename)
-    os.system('wget {} -O libtorch.zip'.format(url))
+    os.system('wget -q --show-progress {} -O libtorch.zip'.format(url))
     os.system('unzip libtorch.zip')
     if not os.path.exists(unzipped_name):
         print(
@@ -67,9 +62,9 @@ def install_mmdeploy(work_dir, libtorch_dir):
     if not os.path.exists('build'):
         os.system('mkdir build')
 
+    os.system('rm -rf build/CMakeCache.txt')
+
     cmd = 'cd build &&  Torch_DIR={} cmake ..'.format(libtorch_dir)
-    cmd += ' -DCMAKE_C_COMPILER=gcc-7 '
-    cmd += ' -DCMAKE_CXX_COMPILER=g++-7 '
     cmd += ' -DMMDEPLOY_BUILD_SDK=ON '
     cmd += ' -DMMDEPLOY_BUILD_EXAMPLES=ON '
     cmd += ' -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON '
@@ -80,7 +75,12 @@ def install_mmdeploy(work_dir, libtorch_dir):
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
     os.system('python3 -m pip install -e .')
-    os.system('python3 tools/check_env.py')
+    try:
+        import mmcv
+        print(mmcv.__version__)
+        os.system('python3 tools/check_env.py')
+    except Exception:
+        print('Please install torch & mmcv later.. ≥▽≤')
     return 0
 
 
@@ -106,7 +106,7 @@ def main():
             return -1
         os.mkdir(dep_dir)
 
-    success, envs = ensure_base_env(work_dir, dep_dir)
+    success = ensure_base_env(work_dir, dep_dir)
     if success != 0:
         return -1
 
@@ -118,12 +118,9 @@ def main():
     if install_mmdeploy(work_dir, libtorch_dir) != 0:
         return -1
 
-    if len(envs) > 0:
-        print(
-            'We recommend that you set the following environment variables:\n')
-        for env in envs:
-            print(env)
-            print('\n')
+    if os.path.exists('~/mmdeploy.env'):
+        print('Please source ~/mmdeploy.env to setup your env !')
+        os.system('cat ~/mmdeploy.env')
 
 
 if __name__ == '__main__':

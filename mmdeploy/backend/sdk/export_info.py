@@ -132,7 +132,7 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     ir_config = get_ir_config(deploy_cfg)
     backend = get_backend(deploy_cfg=deploy_cfg)
-    if backend == Backend.TORCHSCRIPT:
+    if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
@@ -159,6 +159,11 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
     transforms = task_processor.get_preprocess()
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        del transforms[-2]
+        for transform in transforms:
+            if transform['type'] == 'Normalize':
+                transform['to_float'] = False
     assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item'\
         ' type of pipeline should be LoadImageFromFile'
     return dict(
