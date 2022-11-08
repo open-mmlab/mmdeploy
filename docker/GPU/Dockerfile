@@ -5,7 +5,6 @@ ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.5.3
 ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
 ARG MMCV_VERSION=">=2.0.0rc2,<2.1.0"
@@ -40,8 +39,8 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/pip install --no-cache-dir openmim
 
 ### pytorch mmcv onnxruntime
-RUN mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
-    && mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime-gpu==${ONNXRUNTIME_VERSION} mmengine${MMENGINE_VERSION}
+RUN /opt/conda/bin/mim install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
+    && /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime-gpu==${ONNXRUNTIME_VERSION} mmengine${MMENGINE_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 
@@ -66,7 +65,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS="ort;trt" .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    mim install -e .
+    /opt/conda/bin/mim install -e .
 
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
