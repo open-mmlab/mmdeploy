@@ -1,7 +1,9 @@
 _base_ = [
-    '../_base_/base_instance-seg_dynamic_solo.py',
-    '../../_base_/backends/tensorrt-fp16.py'
+    '../_base_/base_instance-seg_dynamic.py',
+    '../../_base_/backends/tensorrt-int8.py'
 ]
+
+codebase_config = dict(post_processing=dict(export_postprocess_mask=True))
 
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 33),
