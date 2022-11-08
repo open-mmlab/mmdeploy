@@ -1,7 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .base import *  # noqa: F401,F403
-from .centerpoint import *  # noqa: F401,F403
-from .mvx_two_stage import *  # noqa: F401,F403
-from .pillar_encode import *  # noqa: F401,F403
-from .pillar_scatter import *  # noqa: F401,F403
-from .voxelnet import *  # noqa: F401,F403
+from . import base  # noqa: F401,F403
+from . import mvx_two_stage  # noqa: F401,F403
+from . import pillar_encode  # noqa: F401,F403
+from . import pillar_scatter  # noqa: F401,F403

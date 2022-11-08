@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmdet.ops import (ncnn_detection_output_forward,
                                          ncnn_prior_box_forward)
 from mmdeploy.core import FUNCTION_REWRITER

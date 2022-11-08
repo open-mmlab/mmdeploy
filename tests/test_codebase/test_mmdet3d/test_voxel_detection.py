@@ -1,12 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import mmcv
+import mmengine
 import pytest
 import torch
-from torch.utils.data import DataLoader
-from torch.utils.data.dataset import Dataset
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
@@ -22,8 +19,9 @@ except ImportError:
 
 model_cfg_path = 'tests/test_codebase/test_mmdet3d/data/model_cfg.py'
 pcd_path = 'tests/test_codebase/test_mmdet3d/data/kitti/kitti_000008.bin'
+
 model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
+deploy_cfg = mmengine.Config(
     dict(
         backend_config=dict(type='onnxruntime'),
         codebase_config=dict(type='mmdet3d', task='VoxelDetection'),
@@ -34,7 +32,7 @@ deploy_cfg = mmcv.Config(
             opset_version=11,
             input_shape=None,
             input_names=['voxels', 'num_points', 'coors'],
-            output_names=['scores', 'bbox_preds', 'dir_scores'])))
+            output_names=['cls_score', 'bbox_pred', 'dir_cls_pred'])))
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = None
 
@@ -58,9 +56,9 @@ def backend_model():
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(
         outputs={
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'cls_score': torch.rand(1, 18, 32, 32),
+            'bbox_pred': torch.rand(1, 42, 32, 32),
+            'dir_cls_pred': torch.rand(1, 12, 32, 32)
         })
 
     yield task_processor.build_backend_model([''])
@@ -87,72 +85,13 @@ def test_create_input(device):
 
 @pytest.mark.skipif(
     reason='Only support GPU test', condition=not torch.cuda.is_available())
-def test_run_inference(backend_model):
-    task_processor.device = 'cuda:0'
-    torch_model = task_processor.build_pytorch_model(None)
-    input_dict, _ = task_processor.create_input(pcd_path)
-    torch_results = task_processor.run_inference(torch_model, input_dict)
-    backend_results = task_processor.run_inference(backend_model, input_dict)
-    assert torch_results is not None
-    assert backend_results is not None
-    assert len(torch_results[0]) == len(backend_results[0])
-    task_processor.device = 'cpu'
-
-
-@pytest.mark.skipif(
-    reason='Only support GPU test', condition=not torch.cuda.is_available())
-def test_visualize():
-    task_processor.device = 'cuda:0'
-    input_dict, _ = task_processor.create_input(pcd_path)
-    torch_model = task_processor.build_pytorch_model(None)
-    results = task_processor.run_inference(torch_model, input_dict)
-    with TemporaryDirectory() as dir:
-        filename = dir + 'tmp.bin'
-        task_processor.visualize(torch_model, pcd_path, results[0], filename,
-                                 'test', False)
-        assert os.path.exists(filename)
-    task_processor.device = 'cpu'
-
-
-def test_build_dataset_and_dataloader():
-    dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
-    assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
-    assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
-
-
-@pytest.mark.skipif(
-    reason='Only support GPU test', condition=not torch.cuda.is_available())
 def test_single_gpu_test_and_evaluate():
-    from mmcv.parallel import MMDataParallel
     task_processor.device = 'cuda:0'
-
-    class DummyDataset(Dataset):
-
-        def __getitem__(self, index):
-            return 0
-
-        def __len__(self):
-            return 0
-
-        def evaluate(self, *args, **kwargs):
-            return 0
-
-        def format_results(self, *args, **kwargs):
-            return 0
-
-    dataset = DummyDataset()
-    # Prepare dataloader
-    dataloader = DataLoader(dataset)
 
     # Prepare dummy model
     model = DummyModel(outputs=[torch.rand([1, 10, 5]), torch.rand([1, 10])])
-    model = MMDataParallel(model, device_ids=[0])
+
+    assert model is not None
     # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert isinstance(outputs, list)
-    output_file = NamedTemporaryFile(suffix='.pkl').name
-    task_processor.evaluate_outputs(
-        model_cfg, outputs, dataset, 'bbox', out=output_file, format_only=True)
-    task_processor.device = 'cpu'
+    with TemporaryDirectory() as dir:
+        task_processor.build_test_runner(model, dir)

@@ -1,14 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-# from .base import base_recognizer__forward
-from .base_decoder import base_decoder__forward
-from .crnn_decoder import crnndecoder__forward_train__ncnn
-from .encoder_decoder_recognizer import encoder_decoder_recognizer__forward
-from .lstm_layer import bidirectionallstm__forward__ncnn
-from .sar_decoder import *  # noqa: F401,F403
-from .sar_encoder import sar_encoder__forward
-
-__all__ = [
-    'base_decoder__forward', 'crnndecoder__forward_train__ncnn',
-    'encoder_decoder_recognizer__forward', 'bidirectionallstm__forward__ncnn',
-    'sar_encoder__forward'
-]
+from . import base_decoder  # noqa: F401,F403
+from . import crnn_decoder  # noqa: F401,F403
+from . import encoder_decoder_recognizer  # noqa: F401,F403
+from . import lstm_layer  # noqa: F401,F403
+from . import sar_decoder  # noqa: F401,F403
+from . import sar_encoder  # noqa: F401,F403
