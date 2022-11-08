@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "cudnn.h"
+#include "cuda_runtime.h"
 #include "mmdeploy/codebase/mmaction/format_shape.h"
 #include "mmdeploy/core/utils/device_utils.h"
 
@@ -9,27 +9,13 @@ using namespace std;
 namespace mmdeploy {
 namespace cuda {
 
-#define CUDNN_CHECK(condition)                                                 \
-  do {                                                                         \
-    if (condition != CUDNN_STATUS_SUCCESS) {                                   \
-      MMDEPLOY_ERROR("cudnn error, msg = {}", cudnnGetErrorString(condition)); \
-    }                                                                          \
-  } while (0);
+template <typename T>
+void Transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides, int ndim,
+               int total, cudaStream_t stream);
 
 class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
  public:
-  explicit FormatShapeImpl(const Value& args) : ::mmdeploy::FormatShapeImpl(args) {
-    CUDNN_CHECK(cudnnCreate(&handle_));
-    CUDNN_CHECK(cudnnSetStream(handle_, (cudaStream_t)stream_.GetNative()));
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&src_desc_));
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&dst_desc_));
-  }
-
-  ~FormatShapeImpl() {
-    CUDNN_CHECK(cudnnDestroy(handle_));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(src_desc_));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(dst_desc_));
-  }
+  explicit FormatShapeImpl(const Value& args) : ::mmdeploy::FormatShapeImpl(args) {}
 
  protected:
   Result<Tensor> Format(const std::vector<Tensor>& tensors, int clip_len, int num_clips) {
@@ -97,15 +83,6 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
     }
     dst.Reshape(shape);
 
-    SetCudnnTensorDescriptor(src_dims, permutation);
-    CUDNN_CHECK(cudnnTransformTensor(handle_, &one_, src_desc_, src.data<float>(), &zero_,
-                                     dst_desc_, dst.data<float>()));
-
-    return dst;
-  }
-
-  void SetCudnnTensorDescriptor(const std::vector<int> src_dims,
-                                const std::vector<int>& permutation) {
     int ndim = src_dims.size();
     std::vector<int> dst_dims(ndim);
     for (int i = 0; i < ndim; i++) {
@@ -125,17 +102,16 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
       src_strides[i] = buffer[permutation[i]];
     }
 
-    CUDNN_CHECK(cudnnSetTensorNdDescriptor(src_desc_, CUDNN_DATA_FLOAT, ndim, dst_dims.data(),
-                                           src_strides.data()));
-    CUDNN_CHECK(cudnnSetTensorNdDescriptor(dst_desc_, CUDNN_DATA_FLOAT, ndim, dst_dims.data(),
-                                           dst_strides.data()));
-  }
+    Buffer _src_strides(Device("cuda"), sizeof(int) * ndim);
+    Buffer _dst_strides(Device("cuda"), sizeof(int) * ndim);
+    OUTCOME_TRY(stream_.Copy(src_strides.data(), _src_strides));
+    OUTCOME_TRY(stream_.Copy(dst_strides.data(), _dst_strides));
 
-  constexpr static float one_{1.0};
-  constexpr static float zero_{0.0};
-  cudnnHandle_t handle_;
-  cudnnTensorDescriptor_t src_desc_;
-  cudnnTensorDescriptor_t dst_desc_;
+    ::mmdeploy::cuda::Transpose(src.data<float>(), GetNative<int*>(_src_strides), dst.data<float>(),
+                                GetNative<int*>(_dst_strides), ndim, src.size(),
+                                (cudaStream_t)stream_.GetNative());
+    return dst;
+  }
 };
 
 class FormatShapeImplCreator : public Creator<::mmdeploy::FormatShapeImpl> {
