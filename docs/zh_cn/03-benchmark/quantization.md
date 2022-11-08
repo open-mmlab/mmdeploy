@@ -20,10 +20,10 @@
 
 ### OCR 检测任务
 
-|                                                            model                                                             |  dataset  | fp32 hmean |   int8 hmean   |
-| :--------------------------------------------------------------------------------------------------------------------------: | :-------: | :--------: | :------------: |
-|      [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py)       | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
-| [TextSnake](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/textsnake/textsnake_r50_fpn_unet_1200e_ctw1500.py) |  CTW1500  |   0.817    |     0.818      |
+|                                                              model                                                               |  dataset  | fp32 hmean |   int8 hmean   |
+| :------------------------------------------------------------------------------------------------------------------------------: | :-------: | :--------: | :------------: |
+|      [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py)       | ICDAR2015 |   0.795    | 0.792 @thr=0.9 |
+| [TextSnake](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/textsnake/textsnake_resnet50_fpn-unet_1200e_ctw1500.py) |  CTW1500  |   0.817    |     0.818      |
 
 备注：[mmocr](https://github.com/open-mmlab/mmocr) 使用 `shapely` 计算 IoU，实现方法会导致轻微的精度差异
 

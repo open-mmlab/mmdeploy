@@ -317,8 +317,8 @@ def base_dense_head__predict_by_feat__rknn(
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
-    '.get_bboxes',
+    func_name='mmdet.models.dense_heads.base_dense_head.'
+    'BaseDenseHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def base_dense_head__predict_by_feat__ncnn(
         ctx,
