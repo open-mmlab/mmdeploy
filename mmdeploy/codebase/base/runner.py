@@ -23,7 +23,7 @@ class DeployTestRunner(Runner):
 
         self._log_file = log_file
         self._device = device
-        super(Runner, self).__init__(*args, **kwargs)
+        super(DeployTestRunner, self).__init__(*args, **kwargs)
 
     def wrap_model(self, model_wrapper_cfg: Optional[Dict],
                    model: BaseModel) -> BaseModel:
