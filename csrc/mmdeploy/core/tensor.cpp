@@ -43,13 +43,28 @@ inline static std::string shape_string(const TensorShape& shape) {
   return ss.str();
 }
 
+// exclusive_scan require c++17
+template <class InputIt, class OutputIt, class T, class BinaryOperation>
+static OutputIt _exclusive_scan(InputIt first, InputIt last, OutputIt d_first, T init,
+                                BinaryOperation binary_op) {
+  if (first == last) return d_first;
+  *d_first = init;
+  while (last != (first + 1)) {
+    const T& old = *d_first;
+    d_first++;
+    *d_first = binary_op(*first, old);
+    first++;
+  }
+  return d_first;
+}
+
 inline static void init_stride(const TensorShape& shape, TensorStride& stride, bool force = false) {
   if (force || stride.size() == 0) {
     TensorShape reverse_shape(shape.size());
     TensorStride reverse_stride(shape.size());
     std::reverse_copy(std::begin(shape), std::end(shape), std::begin(reverse_shape));
-    std::exclusive_scan(reverse_shape.begin(), reverse_shape.end(), reverse_stride.begin(), 1,
-                        std::multiplies<>{});
+    _exclusive_scan(reverse_shape.begin(), reverse_shape.end(), reverse_stride.begin(), 1,
+                    std::multiplies<>{});
     stride.resize(shape.size());
     std::reverse_copy(std::begin(reverse_stride), std::end(reverse_stride), std::begin(stride));
   }
@@ -220,8 +235,8 @@ Tensor Tensor::Slice(int start, int end) {
   slice.desc_.shape[0] = end - start;
   slice.buffer_ = Buffer(buffer(), start * bytes, (end - start) * bytes);
   // TODO: contiguous before slice and update stride
-  std::exclusive_scan(desc_.shape.begin(), desc_.shape.end(), desc_.stride.begin(), 1,
-                      std::multiplies<>{});
+  _exclusive_scan(desc_.shape.begin(), desc_.shape.end(), desc_.stride.begin(), 1,
+                  std::multiplies<>{});
   return slice;
 }
 
