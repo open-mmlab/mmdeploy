@@ -10,8 +10,9 @@ from mmdet.structures.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER, mark

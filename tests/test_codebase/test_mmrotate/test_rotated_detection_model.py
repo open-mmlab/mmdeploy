@@ -2,10 +2,10 @@
 import os.path as osp
 from tempfile import NamedTemporaryFile
 
-import mmengine
 import numpy as np
 import pytest
 import torch
+from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -37,7 +37,7 @@ class TestEnd2EndModel:
             'labels': torch.rand(1, 10)
         }
         cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmengine.Config(
+        deploy_cfg = Config(
             {'onnx_config': {
                 'output_names': ['dets', 'labels']
             }})
@@ -90,7 +90,7 @@ class TestEnd2EndModel:
 def test_build_rotated_detection_model():
     model_cfg_path = 'tests/test_codebase/test_mmrotate/data/model.py'
     model_cfg = load_config(model_cfg_path)[0]
-    deploy_cfg = mmengine.Config(
+    deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['dets', 'labels']),
