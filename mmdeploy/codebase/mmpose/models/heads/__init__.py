@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import heatmap_head, mspn_head, regression_head
+from . import mspn_head
 
-__all__ = ['heatmap_head', 'mspn_head', 'regression_head']
+__all__ = ['mspn_head']

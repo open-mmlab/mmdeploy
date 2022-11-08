@@ -1,24 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import detr_head
-from .base_dense_head import (base_dense_head__predict_by_feat,
-                              base_dense_head__predict_by_feat__ncnn)
-from .fovea_head import fovea_head__predict_by_feat
-from .gfl_head import gfl_head__predict_by_feat
-from .reppoints_head import reppoints_head__predict_by_feat
-from .rpn_head import rpn_head__get_bboxes__ncnn, rpn_head__predict_by_feat
-from .rtmdet_head import rtmdet_head__predict_by_feat
-from .solo_head import solohead__predict_by_feat__default
-from .yolo_head import (yolov3_head__predict_by_feat,
-                        yolov3_head__predict_by_feat__ncnn)
-from .yolox_head import (yolox_head__predict_by_feat,
-                         yolox_head__predict_by_feat__ncnn)
-
-__all__ = [
-    'rpn_head__predict_by_feat', 'rpn_head__get_bboxes__ncnn',
-    'yolov3_head__predict_by_feat', 'yolov3_head__predict_by_feat__ncnn',
-    'yolox_head__predict_by_feat', 'base_dense_head__predict_by_feat',
-    'fovea_head__predict_by_feat', 'base_dense_head__predict_by_feat__ncnn',
-    'yolox_head__predict_by_feat__ncnn', 'gfl_head__predict_by_feat',
-    'reppoints_head__predict_by_feat', 'detr_head',
-    'rtmdet_head__predict_by_feat', 'solohead__predict_by_feat__default'
-]
+from . import base_dense_head  # noqa: F401,F403
+from . import detr_head  # noqa: F401,F403
+from . import fovea_head  # noqa: F401,F403
+from . import gfl_head  # noqa: F401,F403
+from . import reppoints_head  # noqa: F401,F403
+from . import rpn_head  # noqa: F401,F403
+from . import rtmdet_head  # noqa: F401,F403
+from . import solo_head  # noqa: F401,F403
+from . import yolo_head  # noqa: F401,F403
+from . import yolox_head  # noqa: F401,F403

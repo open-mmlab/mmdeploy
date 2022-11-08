@@ -20,13 +20,10 @@ def encoder_decoder_recognizer__forward(ctx, self, batch_inputs: torch.Tensor,
         ctx (ContextCaller): The context with additional information.
         self: The instance of the class
             EncoderDecoderRecognizer.
-        img (Tensor): Input images of shape (N, C, H, W).
+        batch_inputs (Tensor): Input images of shape (N, C, H, W).
             Typically these should be mean centered and std scaled.
-        img_metas (list[dict]): A list of image info dict where each dict
-            has: 'img_shape', 'scale_factor', 'flip', and may also contain
-            'filename', 'ori_shape', 'pad_shape', and 'img_norm_cfg'.
-            For details on the values of these keys, see
-            :class:`mmdet.datasets.pipelines.Collect`.
+        data_samples (TextRecogDataSample): Containing meta information
+            and gold annotations for each of the images. Defaults to None.
 
     Returns:
         out_dec (Tensor): A feature map output from a decoder. The tensor shape

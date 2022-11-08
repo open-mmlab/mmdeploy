@@ -2,7 +2,13 @@
 
 Through user investigation, we know that most users are already familiar with python and torch before using mmdeploy. Therefore we provide scripts to simplify mmdeploy installation.
 
-Assuming you have a python ready (whether `conda` or `pyenv`), run this script to install mmdeploy + ncnn backend, `nproc` is not compulsory.
+Assuming you already have
+
+- python3 -m pip (`conda` or `pyenv`)
+- nvcc (depends on inference backend)
+- torch (not compulsory)
+
+run this script to install mmdeploy + ncnn backend, `nproc` is not compulsory.
 
 ```bash
 $ cd /path/to/mmdeploy

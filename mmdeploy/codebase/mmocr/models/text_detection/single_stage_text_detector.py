@@ -20,7 +20,7 @@ def single_stage_text_detector__forward(
 
     Args:
         batch_inputs (torch.Tensor): Images of shape (N, C, H, W).
-        batch_data_samples (list[TextDetDataSample]): A list of N
+        data_samples (list[TextDetDataSample]): A list of N
             datasamples, containing meta information and gold annotations
             for each of the images.
 
