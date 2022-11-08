@@ -726,7 +726,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/v3.0.0rc2/configs/centernet/centernet_r18_8xb16-crop512-140e_coco.py">CenterNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet/centernet_r18_8xb16-crop512-140e_coco.py">CenterNet</a></td>
     <td align="center">Object Detection</td>
     <td align="center">COCO2017</td>
     <td align="center">box AP</td>
