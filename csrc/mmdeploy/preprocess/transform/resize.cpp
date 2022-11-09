@@ -2,9 +2,9 @@
 
 #include <algorithm>
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -42,8 +42,7 @@ class Resize : public Transform {
       throw std::invalid_argument("unexpected interpolation");
     }
 
-    auto context = GetContext(args);
-    resize_ = operation::Create<operation::Resize>(context.device, interpolation_, context);
+    resize_ = operation::Managed<operation::Resize>::Create(interpolation_);
   }
   Result<void> Apply(Value& input) override {
     MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
@@ -99,7 +98,7 @@ class Resize : public Transform {
       }
       Tensor dst_img;
       if (dst_h != h || dst_w != w) {
-        OUTCOME_TRY(dst_img, apply(*resize_, src_img, dst_h, dst_w));
+        OUTCOME_TRY(resize_.Apply(src_img, dst_img, dst_h, dst_w));
       } else {
         dst_img = src_img;
       }
@@ -123,7 +122,7 @@ class Resize : public Transform {
   }
 
  protected:
-  unique_ptr<operation::Resize> resize_;
+  operation::Managed<operation::Resize> resize_;
   std::array<int, 2> img_scale_{};
   std::string interpolation_{"bilinear"};
   bool keep_ratio_{true};

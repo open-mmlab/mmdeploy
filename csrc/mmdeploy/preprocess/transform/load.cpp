@@ -1,9 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-// #include "load.h"
-
-#include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -19,10 +17,9 @@ class PrepareImage : public Transform {
     to_float32_ = args.value("to_float32", to_float32_);
     color_type_ = args.value("color_type", color_type_);
 
-    auto context = GetContext(args);
-    to_bgr_ = operation::Create<ToBGR>(context.device, context);
-    to_gray_ = operation::Create<ToGray>(context.device, context);
-    to_float_ = operation::Create<ToFloat>(context.device, context);
+    to_bgr_ = operation::Managed<ToBGR>::Create();
+    to_gray_ = operation::Managed<ToGray>::Create();
+    to_float_ = operation::Managed<ToFloat>::Create();
   }
   /**
      * Input:
@@ -49,14 +46,16 @@ class PrepareImage : public Transform {
     assert(input.contains("ori_img"));
 
     Mat src_mat = input["ori_img"].get<Mat>();
-    auto res = (color_type_ == "color" || color_type_ == "color_ignore_orientation"
-                    ? apply(*to_bgr_, src_mat)
-                    : apply(*to_gray_, src_mat));
 
-    OUTCOME_TRY(auto tensor, std::move(res));
+    Tensor tensor;
+    if (color_type_ == "color" || color_type_ == "color_ignore_orientation") {
+      OUTCOME_TRY(to_bgr_.Apply(src_mat, tensor));
+    } else {
+      OUTCOME_TRY(to_gray_.Apply(src_mat, tensor));
+    }
 
     if (to_float32_) {
-      OUTCOME_TRY(tensor, apply(*to_float_, tensor));
+      OUTCOME_TRY(to_float_.Apply(tensor, tensor));
     }
 
     input["img"] = tensor;
@@ -80,9 +79,9 @@ class PrepareImage : public Transform {
   }
 
  private:
-  std::unique_ptr<ToBGR> to_bgr_;
-  std::unique_ptr<ToGray> to_gray_;
-  std::unique_ptr<ToFloat> to_float_;
+  operation::Managed<ToBGR> to_bgr_;
+  operation::Managed<ToGray> to_gray_;
+  operation::Managed<ToFloat> to_float_;
   bool to_float32_{false};
   std::string color_type_{"color"};
 };

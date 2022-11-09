@@ -1,16 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/core/utils/device_utils.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/utils/opencv/opencv_utils.h"
 
 namespace mmdeploy::operation::cpu {
 
 class HWC2CHWImpl : public HWC2CHW {
  public:
-  using HWC2CHW::HWC2CHW;
-
-  Result<Tensor> apply(const Tensor& img) override {
+  Result<void> apply(const Tensor& img, Tensor& dst) override {
     auto shape = img.shape();
     auto height = shape[1];
     auto width = shape[2];
@@ -21,12 +18,11 @@ class HWC2CHWImpl : public HWC2CHW {
     auto dst_tensor = mmdeploy::cpu::CVMat2Tensor(dst_mat);
     dst_tensor.Reshape({1, channels, height, width});
 
-    return dst_tensor;
+    dst = std::move(dst_tensor);
+    return success();
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(HWC2CHW, (cpu, 0), [](const Context& context) {
-  return std::make_unique<HWC2CHWImpl>(context);
-});
+MMDEPLOY_REGISTER_FACTORY_FUNC(HWC2CHW, (cpu, 0), []() { return std::make_unique<HWC2CHWImpl>(); });
 
 }  // namespace mmdeploy::operation::cpu

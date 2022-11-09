@@ -2,9 +2,8 @@
 
 #include <map>
 
-#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 #include "ppl/cv/cuda/copymakeborder.h"
 
 using namespace ppl::cv::cuda;
@@ -13,11 +12,12 @@ namespace mmdeploy::operation::cuda {
 
 class PadImpl : public Pad {
  public:
-  PadImpl(ppl::cv::BorderType border_type, float pad_val, const Context& context)
-      : Pad(context), border_type_(border_type), pad_val_(pad_val) {}
+  PadImpl(ppl::cv::BorderType border_type, float pad_val)
+      : border_type_(border_type), pad_val_(pad_val) {}
 
-  Result<Tensor> apply(const Tensor& img, int top, int left, int bottom, int right) override {
-    auto desc = img.desc();
+  Result<void> apply(const Tensor& src, Tensor& dst, int top, int left, int bottom,
+                     int right) override {
+    auto desc = src.desc();
     int height = desc.shape[1];
     int width = desc.shape[2];
     int c = desc.shape[3];
@@ -32,7 +32,7 @@ class PadImpl : public Pad {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
 
     if (desc.data_type == DataType::kFLOAT) {
-      auto src_buffer = img.data<float>();
+      auto src_buffer = src.data<float>();
       auto dst_buffer = dst_tensor.data<float>();
       if (3 == c) {
         ret = CopyMakeBorder<float, 3>(cuda_stream, height, width, width * c, src_buffer,
@@ -48,7 +48,7 @@ class PadImpl : public Pad {
         return Status(eNotSupported);
       }
     } else if (desc.data_type == DataType::kINT8) {
-      auto src_buffer = img.data<uint8_t>();
+      auto src_buffer = src.data<uint8_t>();
       auto dst_buffer = dst_tensor.data<uint8_t>();
       if (3 == c) {
         ret = CopyMakeBorder<ppl::cv::uchar, 3>(cuda_stream, height, width, width * c, src_buffer,
@@ -73,7 +73,9 @@ class PadImpl : public Pad {
       assert(0);
       return Status(eNotSupported);
     }
-    return dst_tensor;
+
+    dst = std::move(dst_tensor);
+    return success();
   }
 
  private:
@@ -81,13 +83,13 @@ class PadImpl : public Pad {
   float pad_val_;
 };
 
-static auto Create(const string_view& border_type, float pad_val, const Context& context) {
+static auto Create(const string_view& border_type, float pad_val) {
   static const std::map<string_view, ppl::cv::BorderType> border_map{
       {"constant", ppl::cv::BORDER_CONSTANT},
       {"edge", ppl::cv::BORDER_REPLICATE},
       {"reflect", ppl::cv::BORDER_REFLECT_101},
       {"symmetric", ppl::cv::BORDER_REFLECT}};
-  return std::make_unique<PadImpl>(border_map.at(border_type), pad_val, context);
+  return std::make_unique<PadImpl>(border_map.at(border_type), pad_val);
 }
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Pad, (cuda, 0), Create);

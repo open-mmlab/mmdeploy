@@ -1,8 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -14,9 +14,8 @@ class DefaultFormatBundle : public Transform {
     if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
       img_to_float_ = args["img_to_float"].get<bool>();
     }
-    auto context = GetContext(args);
-    to_float_ = operation::Create<operation::ToFloat>(context.device, context);
-    hwc2chw_ = operation::Create<operation::HWC2CHW>(context.device, context);
+    to_float_ = operation::Managed<operation::ToFloat>::Create();
+    hwc2chw_ = operation::Managed<operation::HWC2CHW>::Create();
   }
 
   Result<void> Apply(Value& input) override {
@@ -26,7 +25,7 @@ class DefaultFormatBundle : public Transform {
       Tensor tensor = input["img"].get<Tensor>();
       auto input_data_type = tensor.data_type();
       if (img_to_float_) {
-        OUTCOME_TRY(tensor, apply(*to_float_, tensor));
+        OUTCOME_TRY(to_float_.Apply(tensor, tensor));
       }
 
       // set default meta keys
@@ -53,7 +52,7 @@ class DefaultFormatBundle : public Transform {
       }
 
       // transpose
-      OUTCOME_TRY(tensor, apply(*hwc2chw_, tensor));
+      OUTCOME_TRY(hwc2chw_.Apply(tensor, tensor));
       input["img"] = std::move(tensor);
     }
 
@@ -62,8 +61,8 @@ class DefaultFormatBundle : public Transform {
   }
 
  private:
-  std::unique_ptr<operation::ToFloat> to_float_;
-  std::unique_ptr<operation::HWC2CHW> hwc2chw_;
+  operation::Managed<operation::ToFloat> to_float_;
+  operation::Managed<operation::HWC2CHW> hwc2chw_;
   bool img_to_float_ = true;
 };
 

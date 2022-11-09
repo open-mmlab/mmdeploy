@@ -4,7 +4,8 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
 using namespace std;
@@ -28,9 +29,8 @@ class ResizeOCR : public transform::Transform {
     img_pad_value_ = args.value("img_pad_value", img_pad_value_);
     width_downsample_ratio_ = args.value("width_downsample_ratio", width_downsample_ratio_);
 
-    auto context = transform::GetContext(args);
-    resize_ = operation::Create<operation::Resize>(context.device, "bilinear", context);
-    pad_ = operation::Create<operation::Pad>(context.device, "constant", img_pad_value_, context);
+    resize_ = operation::Managed<operation::Resize>::Create("bilinear");
+    pad_ = operation::Managed<operation::Pad>::Create("constant", img_pad_value_);
   }
 
   ~ResizeOCR() override = default;
@@ -65,16 +65,16 @@ class ResizeOCR : public transform::Transform {
       if (dst_max_width > 0) {
         valid_ratio = std::min(1., 1. * new_width / dst_max_width);
         auto resize_width = std::min(dst_max_width, new_width);
-        OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, resize_width));
+        OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, resize_width));
         if (new_width < dst_max_width) {
           auto pad_w = std::max(0, dst_max_width - resize_width);
-          OUTCOME_TRY(img_resize, apply(*pad_, img_resize, 0, 0, 0, pad_w));
+          OUTCOME_TRY(pad_.Apply(img_resize, img_resize, 0, 0, 0, pad_w));
         }
       } else {
-        OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, new_width));
+        OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, new_width));
       }
     } else {
-      OUTCOME_TRY(img_resize, apply(*resize_, img, dst_height, dst_max_width));
+      OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, dst_max_width));
     }
     Value output = input;
     output["img"] = img_resize;
@@ -86,8 +86,8 @@ class ResizeOCR : public transform::Transform {
   }
 
  protected:
-  std::unique_ptr<operation::Resize> resize_;
-  std::unique_ptr<operation::Pad> pad_;
+  operation::Managed<operation::Resize> resize_;
+  operation::Managed<operation::Pad> pad_;
   int height_{-1};
   int min_width_{-1};
   int max_width_{-1};

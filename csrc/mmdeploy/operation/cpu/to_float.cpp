@@ -2,44 +2,41 @@
 
 #include <map>
 
-#include "mmdeploy/core/utils/device_utils.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/utils/opencv/opencv_utils.h"
 
 namespace mmdeploy::operation::cpu {
 
 class ToFloatImpl : public ToFloat {
  public:
-  using ToFloat::ToFloat;
-
-  Result<Tensor> apply(const Tensor& tensor) override {
-    auto data_type = tensor.desc().data_type;
+  Result<void> apply(const Tensor& src, Tensor& dst) override {
+    auto data_type = src.desc().data_type;
     if (data_type == DataType::kFLOAT) {
-      return tensor;
+      dst = src;
+      return success();
     }
 
     if (data_type == DataType::kINT8) {
-      const auto size = tensor.size();
+      const auto size = src.size();
       if (size > std::numeric_limits<int>::max()) {
         throw_exception(eNotSupported);
       }
-      cv::Mat uint8_mat(1, static_cast<int>(size), CV_8U, const_cast<void*>(tensor.data()));
+      cv::Mat uint8_mat(1, static_cast<int>(size), CV_8U, const_cast<void*>(src.data()));
 
-      auto desc = tensor.desc();
+      auto desc = src.desc();
       desc.data_type = DataType::kFLOAT;
       Tensor dst_tensor(desc);
 
       cv::Mat float_mat(1, static_cast<int>(size), CV_32F, dst_tensor.data());
       uint8_mat.convertTo(float_mat, CV_32F);
 
-      return dst_tensor;
+      dst = std::move(dst_tensor);
+      return success();
     }
     throw_exception(eNotSupported);
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(ToFloat, (cpu, 0), [](const Context& context) {
-  return std::make_unique<ToFloatImpl>(context);
-});
+MMDEPLOY_REGISTER_FACTORY_FUNC(ToFloat, (cpu, 0), []() { return std::make_unique<ToFloatImpl>(); });
 
 }  // namespace mmdeploy::operation::cpu

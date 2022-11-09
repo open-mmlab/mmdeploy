@@ -2,9 +2,8 @@
 
 #include <cuda_runtime.h>
 
-#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 
 namespace mmdeploy::operation::cuda {
 
@@ -16,11 +15,10 @@ void Normalize(const T* src, int height, int width, int stride, float* output, c
 
 class NormalizeImpl : public Normalize {
  public:
-  NormalizeImpl(Param param, const Context& context)
-      : Normalize(context), param_(std::move(param)) {}
+  NormalizeImpl(Param param) : param_(std::move(param)) {}
 
-  Result<Tensor> apply(const Tensor& img) override {
-    auto src_desc = img.desc();
+  Result<void> apply(const Tensor& src, Tensor& dst) override {
+    auto src_desc = src.desc();
     int h = (int)src_desc.shape[1];
     int w = (int)src_desc.shape[2];
     int c = (int)src_desc.shape[3];
@@ -32,7 +30,7 @@ class NormalizeImpl : public Normalize {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
 
     if (DataType::kINT8 == src_desc.data_type) {
-      auto input = img.data<uint8_t>();
+      auto input = src.data<uint8_t>();
       if (3 == c) {
         impl::Normalize<uint8_t, 3>(input, h, w, stride, output, param_.mean.data(),
                                     param_.std.data(), param_.to_rgb, cuda_stream);
@@ -44,7 +42,7 @@ class NormalizeImpl : public Normalize {
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == src_desc.data_type) {
-      auto input = img.data<float>();
+      auto input = src.data<float>();
       if (3 == c) {
         impl::Normalize<float, 3>(input, h, w, stride, output, param_.mean.data(),
                                   param_.std.data(), param_.to_rgb, cuda_stream);
@@ -60,16 +58,17 @@ class NormalizeImpl : public Normalize {
       assert(0);
       return Status(eNotSupported);
     }
-    return dst_tensor;
+
+    dst = std::move(dst_tensor);
+    return success();
   }
 
  protected:
   Param param_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Normalize, (cuda, 0),
-                               [](const Normalize::Param& param, const Context& context) {
-                                 return std::make_unique<NormalizeImpl>(param, context);
-                               });
+MMDEPLOY_REGISTER_FACTORY_FUNC(Normalize, (cuda, 0), [](const Normalize::Param& param) {
+  return std::make_unique<NormalizeImpl>(param);
+});
 
 }  // namespace mmdeploy::operation::cuda

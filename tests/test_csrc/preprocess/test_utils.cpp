@@ -16,6 +16,7 @@ unique_ptr<Transform> CreateTransform(const Value& cfg, Device device, Stream st
     auto _cfg = cfg;
     _cfg["context"]["device"] = device;
     _cfg["context"]["stream"] = stream;
+    operation::ContextGuard context({device, stream});
     return creator->Create(_cfg);
   } catch (std::exception& e) {
     cout << "exception: " << e.what() << endl;

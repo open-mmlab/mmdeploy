@@ -1,6 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/transform.h"
@@ -21,6 +20,8 @@ class Compose : public Transform {
       context["fuse_transform"] = true;
       context["sha256"] = sha256;
     }
+
+    operation::ContextGuard context_guard(GetContext(args));
     for (auto cfg : args["transforms"]) {
       cfg["context"] = context;
       auto type = cfg.value("type", std::string{});

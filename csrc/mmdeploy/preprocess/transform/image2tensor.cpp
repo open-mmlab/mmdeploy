@@ -2,9 +2,9 @@
 
 #include <cassert>
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -16,8 +16,7 @@ class ImageToTensor : public Transform {
     for (auto& key : args["keys"]) {
       keys_.push_back(key.get<std::string>());
     }
-    auto context = GetContext(args);
-    hwc2chw_ = operation::Create<operation::HWC2CHW>(context.device, context);
+    hwc2chw_ = operation::Managed<operation::HWC2CHW>::Create();
   }
 
   Result<void> Apply(Value& input) override {
@@ -30,7 +29,8 @@ class ImageToTensor : public Transform {
       assert(shape.size() == 4);
       assert(shape[3] == 1 || shape[3] == 3);
 
-      OUTCOME_TRY(auto dst, apply(*hwc2chw_, src_tensor));
+      Tensor dst;
+      OUTCOME_TRY(hwc2chw_.Apply(src_tensor, dst));
       input[key] = std::move(dst);
 
       if (input.contains("__tracer__")) {
@@ -42,7 +42,7 @@ class ImageToTensor : public Transform {
   }
 
  private:
-  std::unique_ptr<operation::HWC2CHW> hwc2chw_;
+  operation::Managed<operation::HWC2CHW> hwc2chw_;
   std::vector<std::string> keys_;
 };
 

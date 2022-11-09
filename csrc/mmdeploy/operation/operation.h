@@ -16,9 +16,31 @@ using namespace mmdeploy::framework;
 using std::string_view;
 using std::unique_ptr;
 
+struct Context {
+  Device device;
+  Stream stream;
+};
+
+class ContextGuard {
+ public:
+  explicit ContextGuard(Context context);
+  ~ContextGuard();
+
+  ContextGuard(const ContextGuard&) = delete;
+  ContextGuard(ContextGuard&&) noexcept = delete;
+  ContextGuard& operator=(const ContextGuard&) = delete;
+  ContextGuard& operator=(ContextGuard&&) noexcept = delete;
+
+ private:
+  Context context_;
+  Context* parent_;
+};
+
+MMDEPLOY_API Context& gContext();
+
 template <typename T, typename... Args>
-static unique_ptr<T> Create(const Device& device, Args&&... args) {
-  auto platform = GetPlatformName(device);
+static unique_ptr<T> Create(Args&&... args) {
+  auto platform = GetPlatformName(gContext().device);
   assert(platform);
   std::vector<string_view> candidates{platform, "cpu"};
   if (candidates[0] == candidates[1]) {
@@ -32,22 +54,16 @@ static unique_ptr<T> Create(const Device& device, Args&&... args) {
   return nullptr;
 }
 
-struct Context {
-  Device device;
-  Stream stream;
-};
-
 class MMDEPLOY_API Session {
  public:
   Session();
   explicit Session(const Stream& stream);
+  ~Session();
 
   Session(const Session&) = delete;
   Session(Session&&) noexcept = delete;
   Session& operator=(const Session&) = delete;
   Session& operator=(Session&&) noexcept = delete;
-
-  ~Session();
 
   Tensor& track(Tensor& tensor) {
     buffers_.push_back(tensor.buffer());
@@ -78,15 +94,6 @@ class MMDEPLOY_API Session {
 
   Tensor Track(Tensor tensor) { return track(tensor); }
 
-  template <typename T>
-  Result<T> Track(Result<T> val) {
-    if (val.has_value()) {
-      return Track(val.value());
-    } else {
-      return val.as_failure();
-    }
-  }
-
   const std::vector<Buffer>& buffers() const noexcept { return buffers_; }
 
  private:
@@ -99,58 +106,16 @@ MMDEPLOY_API Session& gSession();
 
 class Operation {
  public:
+  Operation() : context_(gContext()) {}
   explicit Operation(Context context) : context_(std::move(context)) {}
   virtual ~Operation() = default;
 
   const Device& device() const noexcept { return context_.device; }
   Stream& stream() noexcept { return context_.stream; }
 
-  template <typename T>
-  T Secure(T&& val) {
-    return (T &&) val;
-  }
-
-  Tensor Secure(Tensor val) {
-    if (val.device() == device()) {
-      return val;
-    }
-
-    TensorDesc desc{device(), val.data_type(), val.shape(), val.name()};
-    Tensor dst(desc);
-
-    Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
-
-    return gSession().track(dst);
-  }
-
-  Mat Secure(Mat val) {
-    if (val.device() == device()) {
-      return val;
-    }
-
-    Mat dst{val.height(), val.width(), val.pixel_format(), val.type(), device()};
-
-    Copy(val.buffer(), dst.buffer(), val.byte_size()).value();
-
-    return gSession().track(dst);
-  }
-
-  Result<void> Copy(const Buffer& src, Buffer& dst, size_t size) {
-    OUTCOME_TRY(stream().Copy(src, dst, size));
-    if (dst.GetDevice() != stream().GetDevice()) {
-      OUTCOME_TRY(stream().Wait());
-    }
-    return success();
-  }
-
  protected:
   Context context_;
 };
-
-template <typename Op, typename... Args>
-auto apply(Op& op, Args&&... args) {
-  return gSession().Track(op.apply(op.Secure((Args &&) args)...));
-}
 
 }  // namespace mmdeploy::operation
 

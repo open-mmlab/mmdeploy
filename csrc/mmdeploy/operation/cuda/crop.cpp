@@ -2,9 +2,8 @@
 
 #include <cuda_runtime.h>
 
-#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 
 namespace mmdeploy::operation::cuda {
 
@@ -18,23 +17,22 @@ void Crop(const T* src, int src_w, T* dst, int dst_h, int dst_w, int offset_h, i
 
 class CropImpl : public Crop {
  public:
-  using Crop::Crop;
-
-  Result<Tensor> apply(const Tensor& tensor, int top, int left, int bottom, int right) override {
+  Result<void> apply(const Tensor& src, Tensor& dst, int top, int left, int bottom,
+                     int right) override {
     auto cuda_stream = GetNative<cudaStream_t>(stream());
-    auto desc = tensor.desc();
+    auto desc = src.desc();
 
     int h = bottom - top + 1;
     int w = right - left + 1;
     int c = desc.shape[3];
     auto type = desc.data_type;
 
-    TensorShape shape{1, bottom - top + 1, right - left + 1, tensor.desc().shape[3]};
-    TensorDesc dst_desc{device(), tensor.desc().data_type, shape, desc.name};
+    TensorShape shape{1, bottom - top + 1, right - left + 1, src.desc().shape[3]};
+    TensorDesc dst_desc{device(), src.desc().data_type, shape, desc.name};
     Tensor dst_tensor{dst_desc};
 
     if (DataType::kINT8 == type) {
-      auto input = tensor.data<uint8_t>();
+      auto input = src.data<uint8_t>();
       auto output = dst_tensor.data<uint8_t>();
       if (3 == c) {
         impl::Crop<uint8_t, 3>(input, desc.shape[2], output, h, w, top, left, cuda_stream);
@@ -45,7 +43,7 @@ class CropImpl : public Crop {
         return Status(eNotSupported);
       }
     } else if (DataType::kFLOAT == type) {
-      auto input = static_cast<float*>(tensor.buffer().GetNative());
+      auto input = static_cast<float*>(src.buffer().GetNative());
       auto output = static_cast<float*>(dst_tensor.buffer().GetNative());
       if (3 == c) {
         impl::Crop<float, 3>(input, desc.shape[2], output, h, w, top, left, cuda_stream);
@@ -59,12 +57,12 @@ class CropImpl : public Crop {
       MMDEPLOY_ERROR("unsupported channels {}", c);
       return Status(eNotSupported);
     }
-    return dst_tensor;
+
+    dst = std::move(dst_tensor);
+    return success();
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Crop, (cuda, 0), [](const Context& context) {
-  return std::make_unique<CropImpl>(context);
-});
+MMDEPLOY_REGISTER_FACTORY_FUNC(Crop, (cuda, 0), [] { return std::make_unique<CropImpl>(); });
 
 }  // namespace mmdeploy::operation::cuda

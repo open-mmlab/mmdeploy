@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -25,8 +25,7 @@ class CenterCrop : public Transform {
       throw std::invalid_argument("'crop_size' should be integer or an int array of size 2");
     }
 
-    auto context = GetContext(args);
-    crop_ = operation::Create<operation::Crop>(context.device, context);
+    crop_ = operation::Managed<operation::Crop>::Create();
   }
 
   Result<void> Apply(Value& input) override {
@@ -46,7 +45,8 @@ class CenterCrop : public Transform {
       int y2 = std::min(h, y1 + crop_height) - 1;
       int x2 = std::min(w, x1 + crop_width) - 1;
 
-      OUTCOME_TRY(auto dst_tensor, apply(*crop_, tensor, y1, x1, y2, x2));
+      Tensor dst_tensor;
+      OUTCOME_TRY(crop_.Apply(tensor, dst_tensor, y1, x1, y2, x2));
 
       auto& shape = dst_tensor.desc().shape;
 
@@ -79,7 +79,7 @@ class CenterCrop : public Transform {
   }
 
  private:
-  std::unique_ptr<operation::Crop> crop_;
+  operation::Managed<operation::Crop> crop_;
   std::array<int, 2> crop_size_;
 };
 

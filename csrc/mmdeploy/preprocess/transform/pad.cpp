@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/archive/json_archive.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -40,8 +40,7 @@ class Pad : public Transform {
     padding_mode_ = args.value("padding_mode", std::string("constant"));
     orientation_agnostic_ = args.value("orientation_agnostic", false);
 
-    auto context = GetContext(args);
-    pad_ = operation::Create<operation::Pad>(context.device, padding_mode_, pad_val_, context);
+    pad_ = operation::Managed<operation::Pad>::Create(padding_mode_, pad_val_);
   }
 
   Result<void> Apply(Value& input) override {
@@ -92,8 +91,8 @@ class Pad : public Transform {
       }
 
       if (std::count(begin(padding), end(padding), 0) != 4) {
-        OUTCOME_TRY(output_tensor,
-                    apply(*pad_, tensor, padding[1], padding[0], padding[3], padding[2]));
+        OUTCOME_TRY(
+            pad_.Apply(tensor, output_tensor, padding[1], padding[0], padding[3], padding[2]));
       } else {
         output_tensor = tensor;
       }
@@ -117,7 +116,7 @@ class Pad : public Transform {
   }
 
  private:
-  std::unique_ptr<operation::Pad> pad_;
+  operation::Managed<operation::Pad> pad_;
   std::array<int, 2> size_;
   int size_divisor_;
   float pad_val_;

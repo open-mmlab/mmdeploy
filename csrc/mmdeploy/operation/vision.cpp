@@ -1,7 +1,7 @@
 //
 // Created by zhangli on 11/3/22.
 //
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/vision.h"
 
 namespace mmdeploy::operation {
 

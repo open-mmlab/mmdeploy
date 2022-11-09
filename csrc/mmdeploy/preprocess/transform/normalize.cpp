@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/preprocess/operation/vision.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -24,9 +24,9 @@ class Normalize : public Transform {
     }
     to_rgb_ = args.value("to_rgb", true);
 
-    auto context = GetContext(args);
-    normalize_ = operation::Create<operation::Normalize>(
-        context.device, operation::Normalize::Param{mean_, std_, to_rgb_}, context);
+    // auto context = GetContext(args);
+    normalize_ = operation::Managed<operation::Normalize>::Create(
+        operation::Normalize::Param{mean_, std_, to_rgb_});
   }
 
   /**
@@ -65,7 +65,8 @@ class Normalize : public Transform {
       assert(desc.shape.size() == 4 /*n, h, w, c*/);
       assert(desc.shape[3] == mean_.size());
 
-      OUTCOME_TRY(auto dst, apply(*normalize_, tensor));
+      Tensor dst;
+      OUTCOME_TRY(normalize_.Apply(tensor, dst));
       input[key] = std::move(dst);
 
       for (auto& v : mean_) {
@@ -86,7 +87,7 @@ class Normalize : public Transform {
   }
 
  private:
-  std::unique_ptr<operation::Normalize> normalize_;
+  operation::Managed<operation::Normalize> normalize_;
   std::vector<float> mean_;
   std::vector<float> std_;
   bool to_rgb_;
