@@ -224,8 +224,8 @@ export RKNPU_DIR=$(pwd)/rknpu
 
 ```shell
 sudo apt-get update
-sudo apt-get install gcc-7-arm-linux-gnueabihf
-sudo apt-get install g++-7-arm-linux-gnueabihf
+sudo apt-get install gcc-arm-linux-gnueabihf
+sudo apt-get install g++-arm-linux-gnueabihf
 ```
 
 3. 源码安装 OpenCV

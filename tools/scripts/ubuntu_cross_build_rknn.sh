@@ -22,7 +22,7 @@ install_rknpu_toolchain() {
     ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/arm-linux-gnueabihf-gcc
     ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/arm-linux-gnueabihf-g++
   else
-    sudo apt install -y gcc-7-arm-linux-gnueabihf g++-7-arm-linux-gnueabihf
+    sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   fi
   arm-linux-gnueabihf-gcc --version
   arm-linux-gnueabihf-g++ --version
@@ -58,7 +58,7 @@ build_ocv_arm_gnueabi() {
   fi
   cd opencv/build_arm_gnueabi
   rm -rf CMakeCache.txt
-  cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
+  cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
     -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
   good_nproc
   jobs=$?
@@ -76,7 +76,7 @@ build_ocv_aarch64() {
   fi
   cd opencv/build_aarch64
   rm -rf CMakeCache.txt
-  cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
+  cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
     -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
   good_nproc
   jobs=$?
@@ -147,6 +147,8 @@ print_success() {
   echo "----------------------------------------------------------------------"
 }
 
+echo "the current workspace: $(pwd)"
+
 if [ ! -e "../mmdeploy-dep" ];then
   mkdir ../mmdeploy-dep
 fi
@@ -162,6 +164,7 @@ case "$device_model" in
     ;;
   RK3566|RK3568)
     install_rknpu2_toolchain
+    build_ocv_aarch64
     cd ../mmdeploy
     build_mmdeploy_with_rknpu2 "RK356X"
     ;;
