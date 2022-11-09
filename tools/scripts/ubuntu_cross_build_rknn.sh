@@ -46,16 +46,34 @@ install_rknpu2_toolchain() {
   export RKNPU2_DIR=$(pwd)/rknpu2
 }
 
-build_ocv() {
+build_ocv_arm_gnueabi() {
   if [ ! -e "opencv" ];then
     git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
   fi
-  if [ ! -e "opencv/build_rknpu" ];then
-    mkdir -p opencv/build_rknpu
+  if [ ! -e "opencv/build_arm_gnueabi" ];then
+    mkdir -p opencv/build_arm_gnueabi
   fi
-  cd opencv/build_rknpu
+  cd opencv/build_arm_gnueabi
   rm -rf CMakeCache.txt
   cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
+    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+  good_nproc
+  jobs=$?
+  make -j${jobs} && make install
+  export OPENCV_PACKAGE_DIR=$(pwd)/install/lib/cmake/opencv4
+  cd -
+}
+
+build_ocv_aarch64() {
+  if [ ! -e "opencv" ];then
+    git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
+  fi
+  if [ ! -e "opencv/build_aarch64" ];then
+    mkdir -p opencv/build_aarch64
+  fi
+  cd opencv/build_aarch64
+  rm -rf CMakeCache.txt
+  cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
     -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
   good_nproc
   jobs=$?
@@ -109,7 +127,7 @@ build_mmdeploy_with_rknpu2() {
       -DMMDEPLOY_BUILD_EXAMPLES=ON \
       -DMMDEPLOY_TARGET_BACKENDS="rknn" \
       -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
-      -DOpenCV_DIR="${RKNPU2_DIR}"/examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
+      -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
     make -j$(nproc) && make install
 
     good_nproc
@@ -135,7 +153,7 @@ device_model=$(echo "$1" | tr [:lower:] [:upper:])
 case "$device_model" in
   RK1808|RK1806|RV1109|RV1126)
     install_rknpu_toolchain
-    build_ocv
+    build_ocv_arm_gnueabi
     cd ../mmdeploy
     build_mmdeploy_with_rknpu
     ;;
@@ -146,6 +164,7 @@ case "$device_model" in
     ;;
   RK3588|RV1106)
     install_rknpu2_toolchain
+    build_ocv_aarch64
     cd ../mmdeploy
     build_mmdeploy_with_rknpu2 "$device_model"
     ;;
