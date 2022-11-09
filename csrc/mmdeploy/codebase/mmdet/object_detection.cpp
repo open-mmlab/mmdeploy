@@ -65,7 +65,7 @@ std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value
   }
 }
 Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res) {
-  MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
+  MMDEPLOY_INFO("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
   try {
     Tensor dets, labels;
     vector<Tensor> outputs = GetDetsLabels(prep_res, infer_res);
@@ -127,6 +127,13 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
     scale_factor = {1.f, 1.f, 1.f, 1.f};
   }
 
+  int top_padding = 0;
+  int left_padding = 0;
+  if (prep_res.contains("pad_param")) {
+    top_padding = prep_res["pad_param"][0].get<int>();
+    left_padding = prep_res["pad_param"][1].get<int>();
+  }
+
   float w_offset = 0.f;
   float h_offset = 0.f;
   int ori_width = prep_res["ori_shape"][2].get<int>();
@@ -149,7 +156,7 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
     MMDEPLOY_DEBUG("ori left {}, top {}, right {}, bottom {}, label {}", left, top, right, bottom,
                    *labels_ptr);
     auto rect = MapToOriginImage(left, top, right, bottom, scale_factor.data(), w_offset, h_offset,
-                                 ori_width, ori_height);
+                                 ori_width, ori_height, top_padding, left_padding);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
       MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
                      rect[3] - rect[1]);
@@ -168,11 +175,12 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
 }
 std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float right, float bottom,
                                                   const float* scale_factor, float x_offset,
-                                                  float y_offset, int ori_width, int ori_height) {
-  left = std::max(left / scale_factor[0] + x_offset, 0.f);
-  top = std::max(top / scale_factor[1] + y_offset, 0.f);
-  right = std::min(right / scale_factor[2] + x_offset, (float)ori_width - 1.f);
-  bottom = std::min(bottom / scale_factor[3] + y_offset, (float)ori_height - 1.f);
+                                                  float y_offset, int ori_width, int ori_height,
+                                                  int top_padding, int left_padding) {
+  left = std::max((left - left_padding) / scale_factor[0] + x_offset, 0.f);
+  top = std::max((top - top_padding) / scale_factor[1] + y_offset, 0.f);
+  right = std::min((right - left_padding) / scale_factor[2] + x_offset, (float)ori_width - 1.f);
+  bottom = std::min((bottom - top_padding) / scale_factor[3] + y_offset, (float)ori_height - 1.f);
   return {left, top, right, bottom};
 }
 

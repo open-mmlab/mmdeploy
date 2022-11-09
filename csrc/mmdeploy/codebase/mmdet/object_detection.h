@@ -24,7 +24,8 @@ class ResizeBBox : public MMDetection {
 
   std::array<float, 4> MapToOriginImage(float left, float top, float right, float bottom,
                                         const float* scale_factor, float x_offset, float y_offset,
-                                        int ori_width, int ori_height);
+                                        int ori_width, int ori_height, int top_padding,
+                                        int left_padding);
 
   std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
 

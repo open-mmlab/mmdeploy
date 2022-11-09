@@ -6,6 +6,7 @@ set(SRCS
         collect_impl.cpp
         crop_impl.cpp
         image2tensor_impl.cpp
+        letter_resize_impl.cpp
         default_format_bundle_impl.cpp
         load_impl.cpp
         normalize_impl.cpp

@@ -12,6 +12,7 @@ set(SRCS
         load_impl.cpp
         normalize_impl.cpp
         pad_impl.cpp
+        letter_resize_impl.cpp
         resize_impl.cpp
         cast.cu
         crop.cu
