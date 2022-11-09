@@ -191,10 +191,12 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
     post_processor = task_processor.get_postprocess(work_dir)
+    module = get_codebase(deploy_cfg).value
+    module = 'mmdet' if module == 'mmyolo' else module
 
     return dict(
         type='Task',
-        module=get_codebase(deploy_cfg).value,
+        module=module,
         name='postprocess',
         component=post_processor['type'],
         params=post_processor.get('params', dict()),

@@ -235,14 +235,14 @@ class ObjectDetection(BaseTask):
         meta_keys = [
             'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
             'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
-            'valid_ratio'
+            'valid_ratio', 'pad_param'
         ]
         transforms = [
             item for item in pipeline if 'Random' not in item['type']
             and 'Annotation' not in item['type']
         ]
         for i, transform in enumerate(transforms):
-            if transform['type'] == 'PackDetInputs':
+            if 'PackDetInputs' in transform['type']:
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))
@@ -250,6 +250,11 @@ class ObjectDetection(BaseTask):
                 transforms[i]['type'] = 'Collect'
             if transform['type'] == 'Resize':
                 transforms[i]['size'] = transforms[i].pop('scale')
+        if self.codebase.value == 'mmyolo':
+            transforms = [
+                item for item in pipeline
+                if item['type'] not in ('ToGray', 'YOLOv5KeepRatioResize')
+            ]
 
         data_preprocessor = model_cfg.model.data_preprocessor
         transforms.insert(-1, dict(type='DefaultFormatBundle'))
