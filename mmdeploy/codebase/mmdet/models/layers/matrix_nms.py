@@ -46,9 +46,6 @@ def mask_matrix_nms__default(ctx,
                 the remaining mask in the input mask, has shape (n,).
     """
     assert len(labels) == len(masks) == len(scores)
-    if len(labels) == 0:
-        return scores.new_zeros(0), labels.new_zeros(0), masks.new_zeros(
-            0, *masks.shape[-2:]), labels.new_zeros(0)
     if mask_area is None:
         mask_area = masks.sum((1, 2)).float()
     else:

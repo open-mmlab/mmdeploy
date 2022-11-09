@@ -17,15 +17,6 @@ def solohead__predict_by_feat__default(ctx, self,
                                        batch_img_metas: List[Dict], **kwargs):
     """Rewrite `predict_by_feat` of `SOLOHead` for default backend."""
 
-    def empty_results(cls_scores, ori_shape):
-        batch_size = cls_scores.size(1)
-        scores = cls_scores.new_ones(batch_size, 0, 1)
-        masks = cls_scores.new_zeros(batch_size, 0, *ori_shape)
-        labels = cls_scores.new_ones(batch_size, 0)
-        bboxes = cls_scores.new_zeros(batch_size, 0, 4)
-        dets = torch.cat([bboxes, scores], -1)
-        return dets, labels, masks
-
     batch_size = mlvl_cls_scores[0].size(0)
     cfg = self.test_cfg
     mlvl_cls_scores = [
@@ -43,9 +34,7 @@ def solohead__predict_by_feat__default(ctx, self,
     score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
     batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
         score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
-    if len(batch_mlvl_cls_scores) == 0:
-        return empty_results(batch_mlvl_cls_scores,
-                             batch_img_metas[0]['ori_shape'][:2])
+
     cls_labels = cls_labels.view(-1)
 
     # Filter the mask mask with an area is smaller than
@@ -64,9 +53,6 @@ def solohead__predict_by_feat__default(ctx, self,
     sum_masks = masks.sum((1, 2))
     cls_scores = batch_mlvl_cls_scores
     keep = sum_masks > strides
-    if keep.sum() == 0:
-        return empty_results(batch_mlvl_cls_scores,
-                             batch_img_metas[0]['ori_shape'][:2])
     cls_scores = batch_mlvl_cls_scores.where(
         keep, batch_mlvl_cls_scores.new_zeros(1))
     sum_masks = sum_masks.where(keep, sum_masks.new_ones(1))
@@ -88,12 +74,12 @@ def solohead__predict_by_feat__default(ctx, self,
         filter_thr=cfg.filter_thr)
     # mask_matrix_nms may return an empty Tensor
 
-    if len(keep_inds) == 0:
-        return empty_results(cls_scores, batch_img_metas[0]['ori_shape'][:2])
     mask_preds = mask_preds[keep_inds]
     mask_preds = F.interpolate(
         mask_preds.unsqueeze(0), size=upsampled_size,
         mode='bilinear')[:, :, :h, :w]
+
+    mask_preds = F.interpolate(mask_preds, size=(h, w), mode='bilinear')
     labels = labels.reshape(batch_size, -1)
     bboxes = scores.new_zeros(scores.shape[-1], 4).view(batch_size, -1, 4)
 
