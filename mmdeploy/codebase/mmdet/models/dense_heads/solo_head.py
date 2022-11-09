@@ -23,6 +23,12 @@ def solohead__predict_by_feat__default(ctx, self,
         item.permute(0, 2, 3, 1).view(batch_size, -1, self.cls_out_channels)
         for item in mlvl_cls_scores
     ]
+    # Rewrite strides to avoid set_items.
+    mlvl_strides = [
+        torch.ones_like(mlvl_cls_scores[lvl][0, :, 0]) * self.strides[lvl]
+        for lvl in range(len(mlvl_cls_scores))
+    ]
+    strides = torch.cat(mlvl_strides, 0)
     assert len(mlvl_mask_preds) == len(mlvl_cls_scores)
     batch_mlvl_cls_scores = torch.cat(mlvl_cls_scores, dim=1)
     batch_mlvl_mask_preds = torch.cat(mlvl_mask_preds, dim=1)
@@ -36,16 +42,6 @@ def solohead__predict_by_feat__default(ctx, self,
         score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
 
     cls_labels = cls_labels.view(-1)
-
-    # Filter the mask mask with an area is smaller than
-    # stride of corresponding feature level
-    batch_lvl_interval = cls_labels.new_tensor(self.num_grids).pow(2).cumsum(0)
-    strides = batch_mlvl_cls_scores.new_ones(batch_lvl_interval[-1])
-    strides[:batch_lvl_interval[0]] *= self.strides[0]
-    for lvl in range(1, self.num_levels):
-        strides[batch_lvl_interval[lvl -
-                                   1]:batch_lvl_interval[lvl]] *= self.strides[
-                                       lvl]
 
     mask_preds = batch_mlvl_mask_preds.view(-1, featmap_size[0],
                                             featmap_size[1])
