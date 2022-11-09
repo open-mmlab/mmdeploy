@@ -60,7 +60,7 @@ conda install pytorch=={pytorch_version} torchvision=={torchvision_version} cpuo
 
 ```shell
 pip install -U openmim
-mim install mmcv-full
+mim install "mmcv==2.0.0rc2"
 ```
 
 **第二步**: 安装 MMDeploy 和 推理引擎
