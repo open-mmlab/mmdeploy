@@ -1,14 +1,16 @@
 # MMSegmentation 模型部署
 
-- [安装](#安装)
-  - [安装 mmcls](#安装-mmseg)
-  - [安装 mmdeploy](#安装-mmdeploy)
-- [模型转换](#模型转换)
-- [模型规范](#模型规范)
-- [模型推理](#模型推理)
-  - [后端模型推理](#后端模型推理)
-  - [SDK 模型推理](#sdk-模型推理)
-- [模型支持列表](#模型支持列表)
+- [MMSegmentation 模型部署](#mmsegmentation-模型部署)
+  - [安装](#安装)
+    - [安装 mmseg](#安装-mmseg)
+    - [安装 mmdeploy](#安装-mmdeploy)
+  - [模型转换](#模型转换)
+  - [模型规范](#模型规范)
+  - [模型推理](#模型推理)
+    - [后端模型推理](#后端模型推理)
+    - [SDK 模型推理](#sdk-模型推理)
+  - [模型支持列表](#模型支持列表)
+  - [注意事项](#注意事项)
 
 ______________________________________________________________________
 
@@ -230,6 +232,6 @@ cv2.imwrite('output_segmentation.png', img)
 
 - 所有 mmseg 模型仅支持 "whole" 推理模式。
 
-- <i id=“static_shape”>PSPNet，Fast-SCNN</i> 仅支持静态输入，因为多数推理框架的 [nn.AdaptiveAvgPool2d](https://github.com/open-mmlab/mmsegmentation/blob/97f9670c5a4a2a3b4cfb411bcc26db16b23745f7/mmseg/models/decode_heads/psp_head.py#L38) 不支持动态输入。
+- <i id=“static_shape”>PSPNet，Fast-SCNN</i> 仅支持静态输入，因为多数推理框架的 [nn.AdaptiveAvgPool2d](https://github.com/open-mmlab/mmsegmentation/blob/0c87f7a0c9099844eff8e90fa3db5b0d0ca02fee/mmseg/models/decode_heads/psp_head.py#L38) 不支持动态输入。
 
 - 对于仅支持静态形状的模型，应使用静态形状的部署配置文件，例如 `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`
