@@ -37,7 +37,7 @@
 参考[get_started](../get_started.md)文档，安装conda。
 
 ```bash
-# install pytoch & mmcv-full
+# install pytoch & mmcv
 conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
 pip install -U openmim
 mim install "mmcv>=2.0.0rc1"

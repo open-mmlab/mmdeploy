@@ -55,8 +55,8 @@ python ./tools/deploy.py \
 ```bash
 python ./tools/deploy.py \
     configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    $PATH_TO_MMDET/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
-    $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco.pth \
+    $PATH_TO_MMDET/configs/yolo/yolov3_d53_8xb8-ms-608-273e_coco.py \
+    $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
     $PATH_TO_MMDET/demo/demo.jpg \
     --work-dir work_dir \
     --show \
