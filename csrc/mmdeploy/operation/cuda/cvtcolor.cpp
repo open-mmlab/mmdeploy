@@ -104,7 +104,7 @@ class ToGrayImpl : public ToGray {
         break;
       case PixelFormat::kNV12: {
         assert(src_c == 1);
-        auto rgb_mat = gSession().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
+        auto rgb_mat = gContext().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
                                               src.type(), device());
         NV122RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());
@@ -115,7 +115,7 @@ class ToGrayImpl : public ToGray {
       }
       case PixelFormat::kNV21: {
         assert(src_c == 1);
-        auto rgb_mat = gSession().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
+        auto rgb_mat = gContext().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
                                               src.type(), device());
         NV212RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
                           rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());

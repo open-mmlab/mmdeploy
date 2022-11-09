@@ -27,7 +27,8 @@ inline Result<Tensor> Secure(const Tensor val, const Device& device, Stream& str
 
   OUTCOME_TRY(Copy(val.buffer(), dst.buffer(), val.byte_size(), stream));
 
-  return gSession().track(dst);
+  gContext().Track(dst);
+  return dst;
 }
 
 inline Result<Mat> Secure(const Mat& val, const Device& device, Stream& stream) {
@@ -39,7 +40,8 @@ inline Result<Mat> Secure(const Mat& val, const Device& device, Stream& stream) 
 
   OUTCOME_TRY(Copy(val.buffer(), dst.buffer(), val.byte_size(), stream));
 
-  return gSession().track(dst);
+  gContext().Track(dst);
+  return dst;
 }
 
 template <typename T>
@@ -75,12 +77,12 @@ struct _handler<const Mat&> {
 
 template <>
 struct _handler<Tensor&> : _base_handler<Tensor&> {
-  static void output(Tensor& tensor) { gSession().track(tensor); }
+  static void output(Tensor& tensor) { gContext().Track(tensor); }
 };
 
 template <>
 struct _handler<Mat&> : _base_handler<Mat&> {
-  static void output(Mat& mat) { gSession().track(mat); }
+  static void output(Mat& mat) { gContext().Track(mat); }
 };
 
 inline Result<void> _check() { return success(); }

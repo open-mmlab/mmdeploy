@@ -71,7 +71,7 @@ TEST_CASE("test collect", "[collect]") {
   Value input;
 
   SECTION("input is empty") {
-    auto ret = module->Process(input);
+    auto ret = module->Apply(input);
     REQUIRE(ret.has_error());
     REQUIRE(ret.error() == eInvalidArgument);
   }
@@ -79,7 +79,7 @@ TEST_CASE("test collect", "[collect]") {
   SECTION("input has 'ori_img' and 'attribute'") {
     input["ori_img"] = Tensor{};
     input["attribute"] = "this is a faked image";
-    auto ret = module->Process(input);
+    auto ret = module->Apply(input);
     REQUIRE(ret.has_error());
     REQUIRE(ret.error() == eInvalidArgument);
   }
@@ -98,7 +98,7 @@ TEST_CASE("test collect", "[collect]") {
                   {"std", {58.395, 57.12, 57.375}},
                   {"to_rgb", true}}}};
 
-    auto ret = module->Process(input);
+    auto ret = module->Apply(input);
     REQUIRE(ret.has_value());
   }
 }

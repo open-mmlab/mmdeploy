@@ -18,15 +18,11 @@ class MMDEPLOY_API Transform {
  public:
   virtual ~Transform() = default;
   virtual Result<void> Apply(Value& input) = 0;
-
-  [[deprecated]] Result<Value> Process(const Value& input);
 };
 
 MMDEPLOY_DECLARE_REGISTRY(Transform, std::unique_ptr<Transform>(const Value& config));
 
 std::vector<std::string> GetImageFields(const Value& input);
-
-operation::Context GetContext(const Value& config);
 
 }  // namespace transform
 

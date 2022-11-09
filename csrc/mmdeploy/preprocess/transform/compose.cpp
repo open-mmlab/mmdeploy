@@ -13,7 +13,9 @@ class Compose : public Transform {
 
     Value context;
     context = args["context"];
+    context["device"].get_to(device_);
     context["stream"].get_to(stream_);
+
     bool fuse_transform = args.value("fuse_transform", false);
     if (fuse_transform) {
       std::string sha256 = args.value("sha256", std::string(""));
@@ -21,7 +23,7 @@ class Compose : public Transform {
       context["sha256"] = sha256;
     }
 
-    operation::ContextGuard context_guard(GetContext(args));
+    operation::Context ctx(device_, stream_);
     for (auto cfg : args["transforms"]) {
       cfg["context"] = context;
       auto type = cfg.value("type", std::string{});
@@ -43,7 +45,7 @@ class Compose : public Transform {
 
   Result<void> Apply(Value& input) override {
     {
-      operation::Session session(stream_);
+      operation::Context context(device_, stream_);
       for (auto& transform : transforms_) {
         OUTCOME_TRY(transform->Apply(input));
       }
@@ -53,6 +55,7 @@ class Compose : public Transform {
 
  private:
   std::vector<std::unique_ptr<Transform>> transforms_;
+  Device device_;
   Stream stream_;
 };
 

@@ -9,15 +9,16 @@ unique_ptr<Transform> CreateTransform(const Value& cfg, Device device, Stream st
   auto op_version = cfg.value<int>("version", -1);
 
   try {
-    auto creator = gRegistry<Transform>().Get(op_type, op_version);
+    auto creator = gRegistry<transform::Transform>().Get(op_type, op_version);
     if (creator == nullptr) {
       return nullptr;
     }
     auto _cfg = cfg;
     _cfg["context"]["device"] = device;
     _cfg["context"]["stream"] = stream;
-    operation::ContextGuard context({device, stream});
-    return creator->Create(_cfg);
+
+    operation::Context context(device, stream);
+    return std::make_unique<Transform>(creator->Create(_cfg));
   } catch (std::exception& e) {
     cout << "exception: " << e.what() << endl;
     return nullptr;
@@ -41,6 +42,23 @@ vector<float> ImageNormCfg(const Value& value, const std::string& key) {
     res.push_back(v.get<float>());
   }
   return res;
+}
+
+Transform::Transform(std::unique_ptr<transform::Transform> transform)
+    : device_(operation::gContext().device()),
+      stream_(operation::gContext().stream()),
+      transform_(std::move(transform)) {}
+
+Result<Value> Transform::Process(const Value& input) {
+  auto output = input;
+  {
+    operation::Context context(device_, stream_);
+    OUTCOME_TRY(transform_->Apply(output));
+    for (const auto& buffer : context.buffers()) {
+      output["__data__"].push_back(buffer);
+    }
+  }
+  return output;
 }
 
 }  // namespace mmdeploy::test

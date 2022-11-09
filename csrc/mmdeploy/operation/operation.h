@@ -16,23 +16,47 @@ using namespace mmdeploy::framework;
 using std::string_view;
 using std::unique_ptr;
 
-struct Context {
-  Device device;
-  Stream stream;
-};
-
-class ContextGuard {
+class Context {
  public:
-  explicit ContextGuard(Context context);
-  ~ContextGuard();
+  Context(Device device, Stream stream);
+  ~Context();
 
-  ContextGuard(const ContextGuard&) = delete;
-  ContextGuard(ContextGuard&&) noexcept = delete;
-  ContextGuard& operator=(const ContextGuard&) = delete;
-  ContextGuard& operator=(ContextGuard&&) noexcept = delete;
+  Context(const Context&) = delete;
+  Context(Context&&) noexcept = delete;
+  Context& operator=(const Context&) = delete;
+  Context& operator=(Context&&) noexcept = delete;
+
+  void Track(const Tensor& tensor) { buffers_.push_back(tensor.buffer()); }
+  void Track(const Mat& mat) { buffers_.push_back(mat.buffer()); };
+  void Track(const Buffer& buffer) { buffers_.push_back(buffer); };
+
+  template <typename T, typename... Args>
+  T Create(Args&&... args) {
+    return _track(T((Args &&) args...));
+  }
+
+  const Device& device() const noexcept { return device_; }
+  Stream& stream() noexcept { return stream_; }
+  const std::vector<Buffer>& buffers() const noexcept { return buffers_; }
 
  private:
-  Context context_;
+  Tensor&& _track(Tensor&& tensor) {
+    Track(tensor);
+    return std::move(tensor);
+  }
+  Mat&& _track(Mat&& mat) {
+    Track(mat);
+    return std::move(mat);
+  }
+  Buffer&& _track(Buffer&& buffer) {
+    Track(buffer);
+    return std::move(buffer);
+  }
+
+ private:
+  Device device_;
+  Stream stream_;
+  std::vector<Buffer> buffers_;
   Context* parent_;
 };
 
@@ -40,7 +64,7 @@ MMDEPLOY_API Context& gContext();
 
 template <typename T, typename... Args>
 static unique_ptr<T> Create(Args&&... args) {
-  auto platform = GetPlatformName(gContext().device);
+  auto platform = GetPlatformName(gContext().device());
   assert(platform);
   std::vector<string_view> candidates{platform, "cpu"};
   if (candidates[0] == candidates[1]) {
@@ -54,67 +78,12 @@ static unique_ptr<T> Create(Args&&... args) {
   return nullptr;
 }
 
-class MMDEPLOY_API Session {
- public:
-  Session();
-  explicit Session(const Stream& stream);
-  ~Session();
-
-  Session(const Session&) = delete;
-  Session(Session&&) noexcept = delete;
-  Session& operator=(const Session&) = delete;
-  Session& operator=(Session&&) noexcept = delete;
-
-  Tensor& track(Tensor& tensor) {
-    buffers_.push_back(tensor.buffer());
-    return tensor;
-  }
-
-  Mat& track(Mat& mat) {
-    buffers_.push_back(mat.buffer());
-    return mat;
-  }
-
-  Buffer& track(Buffer& buffer) {
-    buffers_.push_back(buffer);
-    return buffer;
-  }
-
-  template <typename T, typename... Args>
-  T Create(Args&&... args) {
-    return Track(T((Args &&) args...));
-  }
-
-  template <typename T>
-  T Track(T val) {
-    return val;
-  }
-
-  Mat Track(Mat mat) { return track(mat); }
-
-  Tensor Track(Tensor tensor) { return track(tensor); }
-
-  const std::vector<Buffer>& buffers() const noexcept { return buffers_; }
-
- private:
-  Session* parent_;
-  Stream stream_;
-  std::vector<Buffer> buffers_;
-};
-
-MMDEPLOY_API Session& gSession();
-
 class Operation {
  public:
-  Operation() : context_(gContext()) {}
-  explicit Operation(Context context) : context_(std::move(context)) {}
   virtual ~Operation() = default;
 
-  const Device& device() const noexcept { return context_.device; }
-  Stream& stream() noexcept { return context_.stream; }
-
- protected:
-  Context context_;
+  static const Device& device() noexcept { return gContext().device(); }
+  static Stream& stream() noexcept { return gContext().stream(); }
 };
 
 }  // namespace mmdeploy::operation
