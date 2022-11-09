@@ -133,12 +133,12 @@ openvino:
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
     convert_image: *convert_image
-    backend_test: True
+    backend_test: False
     deploy_config: configs/mmdet/detection/single-stage_ncnn_static-800x1344.py
 
   pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
     convert_image: *convert_image
-    backend_test: True
+    backend_test: False
     deploy_config: configs/mmdet/detection/single-stage_ncnn_dynamic.py
 
 pplnn:
