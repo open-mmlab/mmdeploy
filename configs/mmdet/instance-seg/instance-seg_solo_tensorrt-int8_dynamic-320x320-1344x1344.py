@@ -6,7 +6,7 @@ _base_ = [
 codebase_config = dict(post_processing=dict(export_postprocess_mask=True))
 
 backend_config = dict(
-    common_config=dict(max_workspace_size=1 << 33),
+    common_config=dict(max_workspace_size=1 << 34),
     model_inputs=[
         dict(
             input_shapes=dict(
