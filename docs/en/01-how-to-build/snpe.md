@@ -71,7 +71,7 @@ $ python3 -m pip install -e .
 
 ## 3. Test the model
 
-Take Resnet-18 as an example. First refer to [documentation to install mmcls](https://github.com/open-mmlab/mmclassification)  and  use `tools/deploy.py` to convert the model.
+Take Resnet-18 as an example. First refer to [documentation to install mmcls](https://github.com/open-mmlab/mmclassification/tree/1.x)  and  use `tools/deploy.py` to convert the model.
 
 ```bash
 $ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py

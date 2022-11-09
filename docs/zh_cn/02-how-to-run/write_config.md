@@ -6,7 +6,7 @@
 
 <!-- TOC -->
 
-- [如何编写配置文件](#如何编写配置文件)
+- [如何写模型转换配置](#如何写模型转换配置)
   - [1. 如何编写ONNX配置](#1-如何编写onnx配置)
     - [ONNX配置参数说明](#onnx配置参数说明)
       - [示例](#示例)
@@ -21,8 +21,6 @@
   - [5. 部署配置文件命名规则](#5-部署配置文件命名规则)
     - [示例](#示例-4)
   - [6. 如何编写模型配置文件](#6-如何编写模型配置文件)
-  - [7. 注意事项](#7-注意事项)
-  - [8. 常见问题](#8-常见问题)
 
 <!-- TOC -->
 
@@ -106,7 +104,7 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 ## 3. 如何编写推理框架配置
 
-推理框架配置主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md)， [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md)， [ncnn](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md)， [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
+推理框架配置主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](../05-supported-backends/onnxruntime.md)， [TensorRT](../05-supported-backends/tensorrt.md)， [ncnn](../05-supported-backends/ncnn.md)， [PPLNN](../05-supported-backends/pplnn.md)。
 
 - `type`: 模型推理框架, 包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`， `openvino`。
 
@@ -189,4 +187,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. 如何编写模型配置文件
 
-请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/master/docs/zh_CN/tutorials/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/zh_cn/tutorials/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/zh_cn/tutorials/config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/main/docs/en/tutorials/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/master/docs/zh_cn/config.md)。
+请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMClassification](https://github.com/open-mmlab/mmclassification/blob/1.x/docs/zh_CN/user_guides/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/user_guides/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/user_guides/1_config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/user_guides/1_config.md)。
