@@ -48,7 +48,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
 RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
     && /opt/conda/bin/pip install --no-cache-dir openmim
 
-RUN mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev mmengine${MMENGINE_VERSION}
+RUN /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev mmengine${MMENGINE_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 WORKDIR /root/workspace
