@@ -30,7 +30,7 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
       }
     }
     if (!output.contains("scale_factor")) {
-      output["scale_factor"].push_back(1.0);
+      for (int i = 0; i < 4; ++i) output["scale_factor"].push_back(1.0);
     }
     if (!output.contains("img_norm_cfg")) {
       int channel = tensor.shape()[3];

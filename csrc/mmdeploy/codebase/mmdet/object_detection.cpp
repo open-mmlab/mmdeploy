@@ -127,8 +127,8 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
     scale_factor = {1.f, 1.f, 1.f, 1.f};
   }
 
-  float w_offset = 0;
-  float h_offset = 0;
+  float w_offset = 0.f;
+  float h_offset = 0.f;
   if (prep_res.contains("border")) {
     w_offset = -prep_res["border"][1].get<int>();
     h_offset = -prep_res["border"][0].get<int>();

@@ -95,10 +95,6 @@ Result<Value> PadImpl::Process(const Value& input) {
       output["border"].push_back(offset_w);
       output["border"].push_back(offset_h + height);
       output["border"].push_back(offset_w + width);
-      if (!output.contains("scale_factor")) {
-        for (int i = 0; i < 4; ++i)
-          output["scale_factor"].push_back(1);  // initialize scale factor to 1 to avoid zero.
-      }
     } else {
       output_tensor = tensor;
       output["pad_fixed_size"].push_back(height);
