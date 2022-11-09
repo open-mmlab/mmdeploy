@@ -40,6 +40,9 @@ install_rknpu_toolchain() {
 }
 
 install_rknpu2_toolchain() {
+  sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+  aarch64-linux-gnu-g++ --version
+  aarch64-linux-gnu-gcc --version
   git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu.git
   git clone https://github.com/rockchip-linux/rknpu2.git
   export RKNN_TOOL_CHAIN=$(pwd)/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
