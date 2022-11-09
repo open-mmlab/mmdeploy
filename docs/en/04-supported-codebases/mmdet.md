@@ -1,14 +1,15 @@
 # MMDetection Deployment
 
-- [Installation](#installation)
-  - [Install mmdet](#install-mmdet)
-  - [Install mmdeploy](#install-mmdeploy)
-- [Convert model](#convert-model)
-- [Model specification](#model-specification)
-- [Model inference](#model-inference)
-  - [Backend model inference](#backend-model-inference)
-  - [SDK model inference](#sdk-model-inference)
-- [Supported models](#supported-models)
+- [MMDetection Deployment](#mmdetection-deployment)
+  - [Installation](#installation)
+    - [Install mmdet](#install-mmdet)
+    - [Install mmdeploy](#install-mmdeploy)
+  - [Convert model](#convert-model)
+  - [Model specification](#model-specification)
+  - [Model inference](#model-inference)
+    - [Backend model inference](#backend-model-inference)
+    - [SDK model inference](#sdk-model-inference)
+  - [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -47,7 +48,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](../02-how-to-run/convert_model.md#usage).
 
 The command below shows an example about converting `Faster R-CNN` model to onnx model that can be inferred by ONNX Runtime.
 

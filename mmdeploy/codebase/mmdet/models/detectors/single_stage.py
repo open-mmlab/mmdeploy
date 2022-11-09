@@ -43,8 +43,7 @@ def single_stage_detector__forward(ctx,
         data_samples (List[:obj:`DetDataSample`]): The Data
             Samples. It usually includes information such as
             `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-        rescale (bool): Whether to rescale the results.
-            Defaults to True.
+        mode (str): export mode, not used.
 
     Returns:
         tuple[Tensor]: Detection results of the

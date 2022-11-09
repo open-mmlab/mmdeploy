@@ -160,6 +160,7 @@ def rpn_head__predict_by_feat(ctx,
         keep_top_k=keep_top_k)
 
 
+# TODO: Fix for 1.x
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.RPNHead.get_bboxes', backend=Backend.NCNN.value)
 def rpn_head__get_bboxes__ncnn(ctx,

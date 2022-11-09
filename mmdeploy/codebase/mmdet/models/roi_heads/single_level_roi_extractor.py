@@ -16,9 +16,6 @@ class MultiLevelRoiAlign(Function):
     backend.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-
     @staticmethod
     def symbolic(g, *args):
         """Symbolic function for creating onnx op."""
@@ -265,10 +262,12 @@ class SingleRoIExtractorOpenVINO(Function):
 
     @staticmethod
     def forward(g, output_size, featmap_strides, sample_num, rois, *feats):
+        """Run forward."""
         return SingleRoIExtractorOpenVINO.origin_output
 
     @staticmethod
     def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
+        """Symbolic function for creating onnx op."""
         from torch.onnx.symbolic_helper import _slice_helper
         rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
         domain = 'org.openvinotoolkit'
