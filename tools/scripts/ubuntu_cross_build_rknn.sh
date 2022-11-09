@@ -46,6 +46,7 @@ install_rknpu2_toolchain() {
   git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu.git
   git clone https://github.com/rockchip-linux/rknpu2.git
   export RKNN_TOOL_CHAIN=$(pwd)/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
+  export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
   export RKNPU2_DIR=$(pwd)/rknpu2
 }
 
