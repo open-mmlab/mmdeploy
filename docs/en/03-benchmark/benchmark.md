@@ -326,7 +326,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp32</td>
   </tr>
     <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet</a></td>
     <td align="center">640x640</td>
     <td align="center">10.70</td>
     <td align="center">5.62</td>
@@ -336,7 +336,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">32x32</td>
     <td align="center">1.93 </td>
     <td align="center">1.40</td>
@@ -1108,7 +1108,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1144,7 +1144,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7950</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py">PSENet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py">PSENet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1180,7 +1180,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8057</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py">PANet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py">PANet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1216,7 +1216,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7955</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1230,7 +1230,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py">SAR</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py">SAR</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1244,7 +1244,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/satrn/satrn_small.py">SATRN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn/satrn_shallow-small_5e_st_mj.py">SATRN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>

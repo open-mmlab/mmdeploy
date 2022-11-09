@@ -191,24 +191,24 @@ cv2.imwrite('output_detection.png', img)
 
 ## 模型支持列表
 
-|                                              Model                                               |         Task         | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :----------------------------------------------------------------------------------------------: | :------------------: | :---------: | :------: | :--: | :---: | :------: |
-|            [ATSS](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)            |   ObjectDetection    |      Y      |    Y     |  N   |   N   |    Y     |
-|            [FCOS](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)            |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
-|        [FoveaBox](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)        |   ObjectDetection    |      Y      |    N     |  N   |   N   |    Y     |
-|            [FSAF](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)            |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
-|       [RetinaNet](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)       |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
-|             [SSD](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)             |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
-|           [VFNet](https://github.com/open-mmlab/mmdetection/tree/master/configs/vfnet)           |   ObjectDetection    |      N      |    N     |  N   |   N   |    Y     |
-|           [YOLOv3](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
-|           [YOLOX](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
-|   [Cascade R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn)    |   ObjectDetection    |      Y      |    Y     |  N   |   Y   |    Y     |
-|    [Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)     |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [Faster R-CNN + DCN](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)  |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
-|             [GFL](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)             |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
-|       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/master/configs/reppoints)       |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |
-|            [DETR](https://github.com/open-mmlab/mmdetection/tree/master/configs/detr)            |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
-|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/master/configs/centernet)       |   Object Detection   |      Y      |    Y     |  N   |   ?   |    ?     |
-| [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
-|      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
-|      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/master/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |
+|                                             Model                                             |         Task         | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------: | :------------------: | :---------: | :------: | :--: | :---: | :------: |
+|            [ATSS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/atss)            |   ObjectDetection    |      Y      |    Y     |  N   |   N   |    Y     |
+|            [FCOS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fcos)            |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|        [FoveaBox](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/foveabox)        |   ObjectDetection    |      Y      |    N     |  N   |   N   |    Y     |
+|            [FSAF](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fsaf)            |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|       [RetinaNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/retinanet)       |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|             [SSD](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/ssd)             |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|           [VFNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/vfnet)           |   ObjectDetection    |      N      |    N     |  N   |   N   |    Y     |
+|           [YOLOv3](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolo)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|           [YOLOX](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolox)           |   ObjectDetection    |      Y      |    Y     |  Y   |   N   |    Y     |
+|   [Cascade R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn)    |   ObjectDetection    |      Y      |    Y     |  N   |   Y   |    Y     |
+|    [Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/faster_rcnn)     |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [Faster R-CNN + DCN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/faster_rcnn)  |   ObjectDetection    |      Y      |    Y     |  Y   |   Y   |    Y     |
+|             [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)             |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)       |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |
+|            [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)            |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection   |      Y      |    Y     |  N   |   ?   |    ?     |
+| [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
+|      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
+|      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |
