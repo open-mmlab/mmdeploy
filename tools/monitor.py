@@ -1,37 +1,40 @@
-import os
-import sys
-import subprocess
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import psutil
-from threading import Thread
-import time
+import os
 import re
 import statistics
+import subprocess
+import sys
+import time
+from threading import Thread
 
-WINDOWS = os.name == "nt"
-LINUX = sys.platform.startswith("linux")
+import psutil
+
+WINDOWS = os.name == 'nt'
+LINUX = sys.platform.startswith('linux')
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(
-        description='Monitor device resources')
-    parser.add_argument("device", help='device to monitor')
+    parser = argparse.ArgumentParser(description='Monitor device resources')
+    parser.add_argument('device', help='device to monitor')
     args, command = parser.parse_known_args()
     return args, command
 
 
 def parse_device(device):
-    dummy = device + ":0"
+    dummy = device + ':0'
     device, id = dummy.split(':')[:2]
     return device, id
 
 
 def silenceit(func):
+
     def wrap(*args, **kwargs):
         try:
             func(*args, **kwargs)
-        except:
+        except Exception:
             pass
+
     return wrap
 
 
@@ -59,7 +62,7 @@ class CpuMonitor:
         self.record.append((rss, hwm, usage))
 
     def _peak_rss(self, _hwm_re=re.compile(r'VmHWM:\s+(\d+)\s+kB')):
-        with open("/proc/%s/status" % self.pid) as f:
+        with open('/proc/%s/status' % self.pid) as f:
             data = f.read()
         val = _hwm_re.findall(data)[0]
         return int(val) * 1024
@@ -76,7 +79,7 @@ class CpuMonitor:
         hwm = self.record[-1][1] / 1024 / 1024
         usage = [x[2] for x in self.record]
         usage = statistics.mean(usage)
-        print(f'device: cpu')
+        print('device: cpu')
         print(f'sample count: {count}')
         print(f'memory: {hwm:.2f}M')
         print(f'usage: {usage:.2f}%')
@@ -123,7 +126,7 @@ class CudaMonitor:
         hwm = max(rss) >> 20
         usage = [x[1] for x in self.record]
         usage = statistics.mean(usage)
-        print(f'device: cuda')
+        print('device: cuda')
         print(f'sample count: {count}')
         print(f'memory: {hwm:.2f}M')
         print(f'usage: {usage:.2f}%')
@@ -163,7 +166,7 @@ class MonitorManager:
         self.thread.join()
 
     def show(self):
-        print("-- Resource Usage Info --")
+        print('-- Resource Usage Info --')
         for monitor in self.monitors:
             monitor.show()
 
