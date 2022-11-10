@@ -18,7 +18,7 @@ Here are the test conclusions of our edge devices. You can directly obtain the r
 tips:
 
 1. The ImageNet-1k dataset is too large to test, only part of the dataset is used (8000/50000)
-1. The heating of device will downgrade the frequency, so the time consumption will actually fluctuate. Here are the stable values after running for a period of time. This result is closer to the actual demand.
+2. The heating of device will downgrade the frequency, so the time consumption will actually fluctuate. Here are the stable values after running for a period of time. This result is closer to the actual demand.
 
 ## mmocr detection
 
