@@ -76,11 +76,11 @@ class ResizeOCR : public transform::Transform {
     } else {
       OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, dst_max_width));
     }
-    Value output = input;
-    output["img"] = img_resize;
-    output["resize_shape"] = to_value(img_resize.desc().shape);
-    output["pad_shape"] = output["resize_shape"];
-    output["valid_ratio"] = valid_ratio;
+
+    input["img"] = img_resize;
+    input["resize_shape"] = to_value(img_resize.desc().shape);
+    input["pad_shape"] = input["resize_shape"];
+    input["valid_ratio"] = valid_ratio;
     MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
     return success();
   }
