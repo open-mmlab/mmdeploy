@@ -33,14 +33,16 @@ class PySegmentor {
       throw std::runtime_error("failed to apply segmentor, code: " + std::to_string(status));
     }
     using Sptr = std::shared_ptr<mmdeploy_segmentation_t>;
-    Sptr result(segm, [n = mats.size()](auto p) { mmdeploy_segmentor_release_result(p, n); });
+    Sptr holder(segm, [n = mats.size()](auto p) { mmdeploy_segmentor_release_result(p, n); });
 
     std::vector<py::array> rets(mats.size());
     for (size_t i = 0; i < mats.size(); ++i) {
-      rets[i] = {{segm[i].height, segm[i].width},  // shape
-                 segm[i].mask,                     // data
-                 py::capsule(new Sptr(result),     // handle
-                             [](void* p) { delete reinterpret_cast<Sptr*>(p); })};
+      rets[i] = {
+          {segm[i].height, segm[i].width},                                 // shape
+          segm[i].mask,                                                    // data
+          py::capsule(new Sptr(holder),                                    // handle
+                      [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+      };
     }
     return rets;
   }
