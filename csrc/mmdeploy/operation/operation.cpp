@@ -20,6 +20,14 @@ Context::~Context() {
   g_context = std::exchange(parent_, nullptr);
 }
 
+static Stream GetCurrentStream() { return g_context ? g_context->stream() : Stream{}; }
+
+static Device GetCurrentDevice() { return g_context ? g_context->device() : Device{}; }
+
+Context::Context(Device device) : Context(device, GetCurrentStream()) {}
+
+Context::Context(Stream stream) : Context(GetCurrentDevice(), std::move(stream)) {}
+
 Context& gContext() {
   if (g_context) {
     return *g_context;

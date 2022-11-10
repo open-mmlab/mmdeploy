@@ -18,7 +18,9 @@ using std::unique_ptr;
 
 class Context {
  public:
-  Context(Device device, Stream stream);
+  explicit Context(Device device);
+  explicit Context(Stream stream);
+  explicit Context(Device device, Stream stream);
   ~Context();
 
   Context(const Context&) = delete;
@@ -64,15 +66,16 @@ MMDEPLOY_API Context& gContext();
 
 template <typename T, typename... Args>
 static unique_ptr<T> Create(Args&&... args) {
-  auto platform = GetPlatformName(gContext().device());
-  assert(platform);
-  std::vector<string_view> candidates{platform, "cpu"};
-  if (candidates[0] == candidates[1]) {
-    candidates.pop_back();
+  std::vector<Device> candidates{gContext().device()};
+  if (candidates[0].is_device()) {
+    candidates.emplace_back(0);
   }
-  for (const auto& name : candidates) {
-    if (auto creator = gRegistry<T>().Get(name)) {
-      return creator->Create((Args &&) args...);
+  for (const auto& device : candidates) {
+    if (auto platform = GetPlatformName(device)) {
+      if (auto creator = gRegistry<T>().Get(platform)) {
+        Context context(device);
+        return creator->Create((Args &&) args...);
+      }
     }
   }
   return nullptr;
@@ -80,10 +83,14 @@ static unique_ptr<T> Create(Args&&... args) {
 
 class Operation {
  public:
+  Operation() : device_(gContext().device()) {}
   virtual ~Operation() = default;
 
-  static const Device& device() noexcept { return gContext().device(); }
+  const Device& device() const noexcept { return device_; }
   static Stream& stream() noexcept { return gContext().stream(); }
+
+ protected:
+  Device device_;
 };
 
 }  // namespace mmdeploy::operation
