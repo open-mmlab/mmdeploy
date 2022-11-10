@@ -1,6 +1,6 @@
-# MMEditing 模型推理
+# MMEditing 模型部署
 
-- [MMEditing 模型推理](#mmediting-模型推理)
+- [MMEditing 模型部署](#mmediting-模型部署)
   - [安装](#安装)
     - [安装 mmedit](#安装-mmedit)
     - [安装 mmdeploy](#安装-mmdeploy)
