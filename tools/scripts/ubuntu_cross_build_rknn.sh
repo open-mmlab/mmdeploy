@@ -19,8 +19,8 @@ install_rknpu_toolchain() {
     echo "ubuntu 18.04 is minimum requirement, but got $ubuntu_version"
     wget wget https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz
     tar -xvf gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf.tar.xz
-    ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/arm-linux-gnueabihf-gcc
-    ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/arm-linux-gnueabihf-g++
+    sudo ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc /usr/bin/arm-linux-gnueabihf-gcc
+    sudo ln -sf $(pwd)/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ /usr/bin/arm-linux-gnueabihf-g++
   else
     sudo apt install -y gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
   fi
@@ -104,12 +104,10 @@ build_mmdeploy_with_rknpu() {
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU_DEVICE_DIR="${RKNPU_DIR}"/rknn/rknn_api/librknn_api \
     -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
-  make -j$(nproc) && make install
 
   good_nproc
   jobs=$?
-  make -j${jobs}
-  make install
+  make -j${jobs} && make install
 
   ls -lah install/bin/*
 }
@@ -120,26 +118,24 @@ build_mmdeploy_with_rknpu2() {
   device_model=$1
   if [ ! -e "build_rknpu2" ];then
       mkdir build_rknpu2
-    fi
-    cd build_rknpu2
+  fi
+  cd build_rknpu2
 
-    rm -rf CMakeCache.txt
-    cmake .. \
-      -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
-      -DMMDEPLOY_BUILD_SDK=ON \
-      -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
-      -DMMDEPLOY_BUILD_EXAMPLES=ON \
-      -DMMDEPLOY_TARGET_BACKENDS="rknn" \
-      -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
-      -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
-    make -j$(nproc) && make install
+  rm -rf CMakeCache.txt
+  cmake .. \
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
+    -DMMDEPLOY_BUILD_SDK=ON \
+    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
+    -DMMDEPLOY_TARGET_BACKENDS="rknn" \
+    -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
 
-    good_nproc
-    jobs=$?
-    make -j${jobs}
-    make install
+  good_nproc
+  jobs=$?
+  make -j${jobs} && make install
 
-    ls -lah install/bin/*
+  ls -lah install/bin/*
 }
 
 print_success() {
