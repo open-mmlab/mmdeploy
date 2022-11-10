@@ -164,8 +164,9 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         for transform in transforms:
             if transform['type'] == 'Normalize':
                 transform['to_float'] = False
-    assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item'\
-        ' type of pipeline should be LoadImageFromFile'
+    if transforms[0]['type'] != 'Lift':
+        assert transforms[0]['type'] == 'LoadImageFromFile', \
+            'The first item type of pipeline should be LoadImageFromFile'
     return dict(
         type='Task',
         module='Transform',
@@ -244,7 +245,8 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
-    if task == Task.CLASSIFICATION or task == Task.SUPER_RESOLUTION:
+    if task == Task.CLASSIFICATION or task == Task.SUPER_RESOLUTION \
+            or Task.VIDEO_RECOGNITION:
         postprocess['input'] = infer_info['output']
     else:
         postprocess['input'] = preprocess['output'] + infer_info['output']

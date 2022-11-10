@@ -9,6 +9,7 @@ from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 from mmengine.structures import BaseDataElement, LabelData
+from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
@@ -37,19 +38,11 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config] = None,
-                 model_cfg: Union[str, Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
-        model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
-        from mmaction.registry import MODELS
-        preprocessor_cfg = model_cfg.model.get('data_preprocessor', None)
-        if preprocessor_cfg is not None:
-            self.data_preprocessor = MODELS.build(
-                model_cfg.model.data_preprocessor)
-        else:
-            self.data_preprocessor = BaseDataPreprocessor()
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
-        self.model_cfg = model_cfg
         self._init_wrapper(
             backend=backend,
             backend_files=backend_files,
@@ -114,10 +107,14 @@ class End2EndModel(BaseBackendModel):
         return data_samples
 
 
-def build_video_recognition_model(model_files: Sequence[str],
-                                  model_cfg: Union[str, mmengine.Config],
-                                  deploy_cfg: Union[str, mmengine.Config],
-                                  device: str, **kwargs):
+def build_video_recognition_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, mmengine.Config],
+        deploy_cfg: Union[str, mmengine.Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+                                          BaseDataPreprocessor]] = None,
+        **kwargs):
     """Build video recognition model for different backends.
 
     Args:
@@ -127,6 +124,8 @@ def build_video_recognition_model(model_files: Sequence[str],
         deploy_cfg (str | mmengine.Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
 
     Returns:
         BaseBackendModel: Video recognizer for a configured backend.
@@ -144,7 +143,7 @@ def build_video_recognition_model(model_files: Sequence[str],
             backend_files=model_files,
             device=device,
             deploy_cfg=deploy_cfg,
-            model_cfg=model_cfg,
+            data_preprocessor=data_preprocessor,
             **kwargs))
 
     return backend_video_recognizer
