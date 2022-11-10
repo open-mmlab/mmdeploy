@@ -3,7 +3,7 @@ ARG PYTHON_VERSION=3.7
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=">=2.0.0rc2,<2.1.0"
+ARG MMCV_VERSION=">=2.0.0rc2"
 ARG MMENGINE_VERSION=">=0.3.0"
 USER root
 
@@ -69,7 +69,7 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     make -j$(nproc) &&\
     make install &&\
     cd /root/workspace/ncnn/python &&\
-    mim install -e .
+    /opt/conda/bin/mim install -e .
 
 ENV PATH="/root/workspace/ncnn/build/tools/quantize/:${PATH}"
 
@@ -88,7 +88,7 @@ RUN git clone https://github.com/open-mmlab/mmdeploy.git &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS=ort .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    mim install -e .
+    /opt/conda/bin/mim install -e .
 
 ### build SDK
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:/opt/intel/openvino/deployment_tools/ngraph/lib:/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64:${LD_LIBRARY_PATH}"
