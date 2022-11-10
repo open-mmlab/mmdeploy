@@ -25,10 +25,12 @@ class MMClassification(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register all rewriters for mmcls."""
         import mmdeploy.codebase.mmcls.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all related modules and rewriters for mmcls."""
         from mmcls.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -116,6 +118,8 @@ class Classification(BaseTask):
         deploy_cfg (Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
+        experiment_name (str, optional): The experiment name used to create
+            runner. Defaults to 'Classification'.
     """
 
     def __init__(self,
@@ -174,6 +178,8 @@ class Classification(BaseTask):
                 accepted data type are `str`, `np.ndarray`, Sequence.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Default: None.
+            data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
