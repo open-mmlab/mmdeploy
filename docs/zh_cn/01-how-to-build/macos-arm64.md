@@ -37,9 +37,10 @@
 参考[get_started](../get_started.md)文档，安装conda。
 
 ```bash
-# install pytoch & mmcv-full
+# install pytoch & mmcv
 conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
-pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
+pip install -U openmim
+mim install "mmcv>=2.0.0rc1"
 ```
 
 #### 安装 MMDeploy SDK 依赖

@@ -34,9 +34,10 @@
 Please refer to [get_started](../get_started.md) to install conda.
 
 ```bash
-# install pytorch & mmcv-full
+# install pytorch & mmcv
 conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
-pip install mmcv-full==1.6.0 -f https://download.openmmlab.com/mmcv/dist/cpu/torch1.9.0/index.html
+pip install -U openmim
+mim install "mmcv>=2.0.0rc1"
 ```
 
 ### Install Dependencies for SDK

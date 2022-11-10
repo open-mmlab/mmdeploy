@@ -7,10 +7,8 @@
     - [Install Dependencies for SDK](#install-dependencies-for-sdk)
     - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
   - [Build MMDeploy](#build-mmdeploy)
-    - [Build Options Spec](#build-options-spec)
     - [Build Model Converter](#build-model-converter)
-      - [Build Custom Ops](#build-custom-ops)
-      - [Install Model Converter](#install-model-converter)
+    - [Install Model Converter](#install-model-converter)
     - [Build SDK and Demo](#build-sdk-and-demo)
 
 ______________________________________________________________________
@@ -71,12 +69,13 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
     </td>
   </tr>
   <tr>
-    <td>mmcv-full </td>
-    <td>Install mmcv-full as follows. Refer to the <a href="https://github.com/open-mmlab/mmcv#installation">guide</a> for details.
+    <td>mmcv </td>
+    <td>Install mmcv as follows. Refer to the <a href="https://github.com/open-mmlab/mmcv/tree/2.x#installation">guide</a> for details.
 <pre><code>
 export cu_version=cu111 # cuda 11.1
 export torch_version=torch1.8
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/${cu_version}/${torch_version}/index.html
+pip install -U openmim
+mim install "mmcv>=2.0.0rc1"
 </code></pre>
     </td>
   </tr>

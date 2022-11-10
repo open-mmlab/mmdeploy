@@ -24,7 +24,7 @@ def repeat_static(ctx, input, *size):
 - `backend`是推理引擎。当模型被导入到引擎的时候，函数会被重载。如果没有给出，重载默认的参数就是重载的参数。如果后端的重载的参数不存在，将会按照预设的默认模式进行重载。
   当参数与原始的参数相同时，除了把上下文信息`ctx` 作为第一的参数外，上下文也提供了一些有用的信息，例如:部署的配置`ctx.cfg` 和原始的函数（已经被重载）`ctx.origin_func`。
 
-可参照[这些样例代码](https://github.com/open-mmlab/mmdeploy/blob/master/mmdeploy/codebase/mmcls/models/backbones/shufflenet_v2.py)。
+可参照[这些样例代码](https://github.com/open-mmlab/mmdeploy/blob/4d8ea40f55ae9a7ab39d208870fb791de9d46bf9/mmdeploy/codebase/mmcls/models/backbones/shufflenet_v2.py)。
 
 ## 模型重载器
 
@@ -87,4 +87,4 @@ def squeeze_default(ctx, g, self, dim=None):
 
 就像函数重载器的`ctx`一样，第一个参数会提供上下文信息。上下文中了一些有用的信息，例如部署配置ctx.cfg和原始功能（已被重载）`ctx.origin_func`。请注意， `ctx.origin_func`只能在`is_pytorch==False`时使用。
 
-[这里](https://github.com/open-mmlab/mmdeploy/tree/master/mmdeploy/pytorch/ops)有很多实现可参考。
+[这里](https://github.com/open-mmlab/mmdeploy/tree/6420e2044515ff2052960c0f8bb9e351e6a7f2c2/mmdeploy/pytorch/symbolics)有很多实现可参考。

@@ -8,10 +8,8 @@
       - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
       - [安装推理引擎](#安装推理引擎)
     - [编译 MMDeploy](#编译-mmdeploy)
-      - [编译选项说明](#编译选项说明)
-      - [编译安装 Model Converter](#编译安装-model-converter)
-        - [编译自定义算子](#编译自定义算子)
-        - [安装 Model Converter](#安装-model-converter)
+      - [编译 Model Converter](#编译-model-converter)
+      - [安装 Model Converter](#安装-model-converter)
       - [编译 SDK 和 Demos](#编译-sdk-和-demos)
     - [注意事项](#注意事项)
 
@@ -56,12 +54,13 @@ pip install torch==1.8.0+cu111 torchvision==0.9.0+cu111 torchaudio==0.8.0 -f htt
     </td>
   </tr>
   <tr>
-    <td>mmcv-full </td>
-    <td>参考如下命令安装 mmcv-full。更多安装方式，可查看 <a href="https://github.com/open-mmlab/mmcv">mmcv 官网</a><br>
+    <td>mmcv </td>
+    <td>参考如下命令安装 mmcv。更多安装方式，可查看 <a href="https://github.com/open-mmlab/mmcv/tree/2.x#installation">mmcv 官网</a><br>
 <pre><code>
 $env:cu_version="cu111"
 $env:torch_version="torch1.8"
-pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu_version/$env:torch_version/index.html
+pip install -U openmim
+mim install "mmcv>=2.0.0rc1"
 </code></pre>
     </td>
   </tr>
