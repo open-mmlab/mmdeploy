@@ -62,7 +62,7 @@ def onnx2rknn(onnx_model: str,
     if dataset_cfg is None and dataset_file is None:
         do_quantization = False
         logger.warning('no dataset passed in, quantization is skipped')
-    if dataset_file is None:
+    if dataset_cfg is not None:
         dataset_file = dataset_cfg
     ret = rknn.build(do_quantization=do_quantization, dataset=dataset_file)
     if ret != 0:
