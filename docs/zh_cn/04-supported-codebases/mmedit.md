@@ -50,7 +50,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ## 模型转换
 
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) 把 mmedit 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/docs/zh_cn/02-how-to-run/convert_model.md#使用方法).
 
 转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit)。
 文件的命名模式是：

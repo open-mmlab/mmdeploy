@@ -1,14 +1,15 @@
 # MMClassification Deployment
 
-- [Installation](#installation)
-  - [Install mmcls](#install-mmcls)
-  - [Install mmdeploy](#install-mmdeploy)
-- [Convert model](#convert-model)
-- [Model Specification](#model-specification)
-- [Model inference](#model-inference)
-  - [Backend model inference](#backend-model-inference)
-  - [SDK model inference](#sdk-model-inference)
-- [Supported models](#supported-models)
+- [MMSegmentation Deployment](#mmsegmentation-deployment)
+  - [Installation](#installation)
+    - [Install mmcls](#install-mmcls)
+    - [Install mmdeploy](#install-mmdeploy)
+  - [Convert model](#convert-model)
+  - [Model Specification](#model-specification)
+  - [Model inference](#model-inference)
+    - [Backend model inference](#backend-model-inference)
+    - [SDK model inference](#sdk-model-inference)
+  - [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -47,7 +48,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
 The command below shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 
