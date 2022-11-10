@@ -90,8 +90,8 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         tensorrt=lambda file: re.sub(r'\.[a-z]+', '.engine', file),
         openvino=lambda file: re.sub(r'\.[a-z]+', '.xml', file),
         ncnn=lambda file: re.sub(r'\.[a-z]+', '.param', file),
-        ascend=lambda file: re.sub(r'\.[a-z]+', '.rknn', file),
-        rknn=lambda file: re.sub(r'\.[a-z]+', '.om', file),
+        ascend=lambda file: re.sub(r'\.[a-z]+', '.om', file),
+        rknn=lambda file: re.sub(r'\.[a-z]+', '.rknn', file),
         coreml=lambda file: re.sub(r'\.[a-z]+', '.mlpackage', file),
         snpe=lambda file: re.sub(r'\.[a-z]+', '.dlc', file))
     backend_weights = dict(
