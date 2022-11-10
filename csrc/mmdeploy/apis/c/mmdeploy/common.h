@@ -128,15 +128,16 @@ MMDEPLOY_API void mmdeploy_device_destroy(mmdeploy_device_t device);
 
 /**
  * Create profiler
- * @param path
- * @param profiler
- * @return
+ * @param path path to save the profile data
+ * @param profiler handle for profiler, should be added to context and deleted by
+ * mmdeploy_profiler_destroy
+ * @return status of create
  */
 MMDEPLOY_API int mmdeploy_profiler_create(const char* path, mmdeploy_profiler_t* profiler);
 
 /**
  * Destroy profiler handle
- * @param profiler
+ * @param profiler handle for profiler, profile data will be written to disk after this call
  */
 MMDEPLOY_API void mmdeploy_profiler_destroy(mmdeploy_profiler_t profiler);
 

@@ -1,4 +1,4 @@
-#include "mmdeploy/graph/profiler.h"
+#include "mmdeploy/core/profiler.h"
 
 #include <iomanip>
 
@@ -9,7 +9,7 @@ Event* Scope::Add(Event::Type type, Index index, TimePoint time_point) {
   return profiler_->AddEvent({this, type, index, time_point});
 }
 
-ScopeSptr Scope::CreateScope(std::string_view name) {
+Scope* Scope::CreateScope(std::string_view name) {
   std::string full_name = name_ + (name_.empty() ? "" : "/") + std::string(name);
   auto node = children_.emplace_back(profiler_->CreateScope(full_name));
   node->parent_ = this;
@@ -19,7 +19,7 @@ ScopeSptr Scope::CreateScope(std::string_view name) {
 void Scope::Dump(Scope* scope, std::ofstream& ofs) {
   ofs << scope->name_ << "\n";
   for (const auto& child : scope->children_) {
-    Dump(child.get(), ofs);
+    Dump(child, ofs);
   }
 }
 
@@ -38,11 +38,11 @@ ScopedCounter::~ScopedCounter() {
 
 Profiler::Profiler(std::string_view path) : path_(path) { root_ = CreateScope("root"); }
 
-ScopeSptr Profiler::CreateScope(std::string_view name) {
-  auto node = nodes_.emplace_back(new Scope());
-  node->profiler_ = this;
-  node->name_ = name;
-  return node;
+Scope* Profiler::CreateScope(std::string_view name) {
+  auto& node = nodes_.emplace_back();
+  node.profiler_ = this;
+  node.name_ = name;
+  return &node;
 }
 
 Event* Profiler::AddEvent(Event e) {

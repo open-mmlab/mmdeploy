@@ -37,7 +37,7 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
     context["sha256"] = sha256;
   }
   if (context.contains("scope")) {
-    auto scope = context["scope"].get<ScopeSptr>();
+    auto scope = context["scope"].get<profiler::Scope*>();
     scope_ = scope->CreateScope("Compose");
   }
   for (auto cfg : args["transforms"]) {
@@ -56,7 +56,7 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
         cfg["context"]["scope"] = scope;
         transform_scopes_.push_back(nullptr);
       } else {
-        transform_scopes_.push_back(std::move(scope));
+        transform_scopes_.push_back(scope);
       }
     } else {
       transform_scopes_.push_back(nullptr);
@@ -75,7 +75,7 @@ Result<Value> Compose::Process(const Value& input) {
   Value::Array intermediates;
   int idx = 0;
   for (auto& transform : transforms_) {
-    profiler::ScopedCounter counter(transform_scopes_[idx++].get());
+    profiler::ScopedCounter counter(transform_scopes_[idx++]);
     OUTCOME_TRY(auto t, transform->Process(output));
     SaveIntermediates(t, intermediates);
     output = std::move(t);

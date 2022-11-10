@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_CSRC_MMDEPLOY_GRAPH_PROFILER_H_
-#define MMDEPLOY_CSRC_MMDEPLOY_GRAPH_PROFILER_H_
+#ifndef MMDEPLOY_CSRC_MMDEPLOY_CORE_PROFILER_H_
+#define MMDEPLOY_CSRC_MMDEPLOY_CORE_PROFILER_H_
 
 #include <atomic>
 #include <chrono>
@@ -22,8 +22,6 @@ namespace profiler {
 
 struct Profiler;
 struct Scope;
-
-using ScopeSptr = std::shared_ptr<Scope>;
 
 using Clock = std::conditional_t<std::chrono::high_resolution_clock::is_steady,
                                  std::chrono::high_resolution_clock, std::chrono::steady_clock>;
@@ -47,14 +45,14 @@ struct MMDEPLOY_API Scope {
 
   Event* Add(Event::Type type, Index index, TimePoint time_point);
 
-  ScopeSptr CreateScope(std::string_view name);
+  Scope* CreateScope(std::string_view name);
 
   void Dump(Scope* scope, std::ofstream& ofs);
   void Dump(std::ofstream& ofs) { Dump(this, ofs); }
 
   Profiler* profiler_{};
   Scope* parent_{};
-  std::vector<ScopeSptr> children_;
+  std::vector<Scope*> children_;
   std::atomic<Index> next_{};
   std::string name_;
 };
@@ -68,21 +66,20 @@ struct MMDEPLOY_API ScopedCounter {
 
 struct MMDEPLOY_API Profiler {
   explicit Profiler(std::string_view path);
-  ScopeSptr CreateScope(std::string_view name);
+  Scope* CreateScope(std::string_view name);
   Event* AddEvent(Event e);
-  ScopeSptr scope() const noexcept { return root_; }
+  Scope* scope() const noexcept { return root_; }
   void Release();
 
   std::string path_;
-  std::vector<ScopeSptr> nodes_;
+  std::deque<Scope> nodes_;
   moodycamel::ConcurrentQueue<Event*> events_;
-  ScopeSptr root_{};
+  Scope* root_{};
 };
 
 }  // namespace profiler
 
-using ScopeSptr = profiler::ScopeSptr;
-MMDEPLOY_REGISTER_TYPE_ID(ScopeSptr, 10);
+MMDEPLOY_REGISTER_TYPE_ID(profiler::Scope*, 11);
 
 }  // namespace mmdeploy
 

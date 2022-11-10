@@ -3,7 +3,7 @@
 #include "common_internal.h"
 #include "executor_internal.h"
 #include "mmdeploy/core/mat.h"
-#include "mmdeploy/graph/profiler.h"
+#include "mmdeploy/core/profiler.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
   if (!value) {
@@ -79,9 +79,11 @@ int mmdeploy_profiler_create(const char* path, mmdeploy_profiler_t* profiler) {
 }
 
 void mmdeploy_profiler_destroy(mmdeploy_profiler_t profiler) {
-  auto p = (profiler::Profiler*)profiler;
-  p->Release();
-  delete p;
+  if (profiler) {
+    auto p = (profiler::Profiler*)profiler;
+    p->Release();
+    delete p;
+  }
 }
 
 int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t type, const char* name,
@@ -102,7 +104,7 @@ int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t typ
       break;
     case MMDEPLOY_TYPE_PROFILER: {
       const auto& profiler = *(profiler::Profiler*)object;
-      ScopeSptr root(profiler.scope());
+      profiler::Scope* root(profiler.scope());
       ctx["scope"] = root;
       break;
     }

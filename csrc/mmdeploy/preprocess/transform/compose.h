@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_SRC_PREPROCESS_TRANSFORM_COMPOSE_H_
 #define MMDEPLOY_SRC_PREPROCESS_TRANSFORM_COMPOSE_H_
 
-#include "mmdeploy/graph/profiler.h"
+#include "mmdeploy/core/profiler.h"
 #include "transform.h"
 
 namespace mmdeploy {
@@ -18,8 +18,8 @@ class MMDEPLOY_API Compose : public Transform {
  private:
   std::vector<std::unique_ptr<Transform>> transforms_;
   Stream stream_;
-  std::vector<ScopeSptr> transform_scopes_;
-  ScopeSptr scope_;
+  std::vector<profiler::Scope*> transform_scopes_;
+  profiler::Scope* scope_;
 };
 
 }  // namespace mmdeploy
