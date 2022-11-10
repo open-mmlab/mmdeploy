@@ -64,7 +64,7 @@ We recommend that users follow our best practices installing MMDeploy.
 
 ```shell
 pip install -U openmim
-mim install mmcv-full
+mim install "mmcv>=2.0.0rc2"
 ```
 
 **Step 1.** Install MMDeploy and inference engine
