@@ -16,7 +16,7 @@ using namespace mmdeploy::framework;
 using std::string_view;
 using std::unique_ptr;
 
-class Context {
+class MMDEPLOY_API Context {
  public:
   explicit Context(Device device);
   explicit Context(Stream stream);

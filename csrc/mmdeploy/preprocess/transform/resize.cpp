@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <algorithm>
+#include <array>
 
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/operation/managed.h"

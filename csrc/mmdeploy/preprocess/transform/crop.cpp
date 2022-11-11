@@ -1,5 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <array>
+
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
