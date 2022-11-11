@@ -54,9 +54,6 @@ Result<Value> Transform::Process(const Value& input) {
   {
     operation::Context context(device_, stream_);
     OUTCOME_TRY(transform_->Apply(output));
-    for (const auto& buffer : context.buffers()) {
-      output["__data__"].push_back(buffer);
-    }
   }
   return output;
 }
