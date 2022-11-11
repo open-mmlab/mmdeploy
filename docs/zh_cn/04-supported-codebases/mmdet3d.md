@@ -23,10 +23,8 @@ ______________________________________________________________________
 先安装前置依赖 mmcv/mmdet/mmseg，再安装 mmdet3d
 
 ```bash
-git clone https://github.com/open-mmlab/mmcv  --branch v2.0.0rc1
-cd mmcv
-python3 -m pip install .
-cd -
+python3 -m pip install openmim --user
+python3 -m mim install mmcv==2.0.0rc1 --user
 
 git clone https://github.com/open-mmlab/mmdetection  --branch v3.0.0rc1
 cd mmdetection
