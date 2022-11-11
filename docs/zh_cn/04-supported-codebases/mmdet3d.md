@@ -24,17 +24,7 @@ ______________________________________________________________________
 
 ```bash
 python3 -m pip install openmim --user
-python3 -m mim install mmcv==2.0.0rc1 --user
-
-git clone https://github.com/open-mmlab/mmdetection  --branch v3.0.0rc1
-cd mmdetection
-python3 -m pip install .
-cd -
-
-git clone https://github.com/open-mmlab/mmsegmentation  --branch v1.0.0rc0
-cd mmsegmentation
-python3 -m pip install .
-cd -
+python3 -m mim install mmcv==2.0.0rc1 mmdet==3.0.0rc1 mmseg==1.0.0rc0 --user
 
 git clone https://github.com/open-mmlab/mmdetection3d --branch v1.1.0rc1
 cd mmdetection3d
