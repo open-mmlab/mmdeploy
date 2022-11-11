@@ -70,18 +70,12 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
     if (auto scope = Maybe{config_} / "context" / "scope" / identity<profiler::Scope*>{}) {
       auto module_name = config_.value<std::string>("module", "");
       auto name = config_.value<std::string>("name", "");
-      auto component_name = config_.value<std::string>("component", "");
-      profiler::Scope* next;
-      if (name == "Preprocess") {
-        next = (*scope)->CreateScope("Transform");
-      } else if (name == "postprocess") {
-        next = task->scope_ = (*scope)->CreateScope(component_name);
-      } else if (module_name == "Net") {
-        next = task->scope_ = (*scope)->CreateScope("infer");
-      } else {
-        next = task->scope_ = (*scope)->CreateScope(module_name);
+      string scope_name = (name != "") ? name : module_name;
+      task->scope_ = (*scope)->CreateScope(scope_name);
+      config_["context"]["scope"] = task->scope_;
+      if (module_name == "Transform") {
+        task->scope_ = nullptr;
       }
-      config_["context"]["scope"] = next;
     }
 
     OUTCOME_TRY(task->module_, CreateModule(config_));
