@@ -346,7 +346,7 @@ def test_batched_nms(backend,
         nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
         scores = torch.tensor(input_list[1], dtype=torch.float32)
 
-    from mmdeploy.codebase.mmdet.core.post_processing import _multiclass_nms
+    from mmdeploy.mmcv.ops.nms import _multiclass_nms
     expected_result = _multiclass_nms(
         nms_boxes,
         scores,
@@ -421,8 +421,7 @@ def test_batched_rotated_nms(backend,
         nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
         scores = torch.tensor(input_list[1], dtype=torch.float32)
 
-    from mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms import \
-        _multiclass_nms_rotated
+    from mmdeploy.mmcv.ops.nms_rotated import _multiclass_nms_rotated
     expected_result = _multiclass_nms_rotated(
         nms_boxes,
         scores,

@@ -8,8 +8,8 @@ from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
                                             pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -160,10 +160,12 @@ def yolov3_head__predict_by_feat(ctx,
         # keep aligned with original pipeline, improve
         # mAP by 1% for YOLOv3 in ONNX
         score_threshold = 0
+        nms_type = cfg.nms.get('type')
         return multiclass_nms(
             batch_mlvl_bboxes,
             batch_mlvl_scores,
             max_output_boxes_per_class,
+            nms_type=nms_type,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,

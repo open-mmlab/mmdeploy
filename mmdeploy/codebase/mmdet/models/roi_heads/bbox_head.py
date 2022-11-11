@@ -7,8 +7,8 @@ from mmengine import ConfigDict
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import multiclass_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -122,10 +122,12 @@ def bbox_head__predict_by_feat(ctx,
         pre_top_k = -1 if post_params.pre_top_k >= bboxes.shape[1] \
             else post_params.pre_top_k
     keep_top_k = rcnn_test_cfg.get('max_per_img', post_params.keep_top_k)
+    nms_type = rcnn_test_cfg.nms.get('type')
     dets, labels = multiclass_nms(
         bboxes,
         scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,

@@ -5,10 +5,13 @@ from . import point_sample  # noqa: F401,F403
 from . import roi_align  # noqa: F401,F403
 from . import roi_align_rotated  # noqa: F401,F403
 from . import transformer  # noqa: F401,F403
-from .nms import ONNXNMSop, TRTBatchedNMSop
-from .nms_rotated import ONNXNMSRotatedOp, TRTBatchedRotatedNMSop
+from .nms import (ONNXNMSop, TRTBatchedNMSop, fake_multiclass_nms_rotated,
+                  multiclass_nms)
+from .nms_rotated import (ONNXNMSRotatedOp, TRTBatchedRotatedNMSop,
+                          multiclass_nms_rotated)
 
 __all__ = [
     'ONNXNMSop', 'TRTBatchedNMSop', 'TRTBatchedRotatedNMSop',
-    'ONNXNMSRotatedOp'
+    'ONNXNMSRotatedOp', 'multiclass_nms', 'multiclass_nms_rotated',
+    'fake_multiclass_nms_rotated'
 ]
