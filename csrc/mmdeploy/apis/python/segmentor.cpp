@@ -58,7 +58,7 @@ static PythonBindingRegisterer register_segmentor{[](py::module& m) {
            }),
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
-           [](PySegmentor* self, const PyImage& img) -> py::array_t<int> {
+           [](PySegmentor* self, const PyImage& img) -> py::array {
              return self->Apply(std::vector{img})[0];
            })
       .def("batch", &PySegmentor::Apply);
