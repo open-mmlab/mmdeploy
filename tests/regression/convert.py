@@ -69,7 +69,7 @@ def parse_deploy_config():
 
 #backend = get_backend(model_configs_list[0][0])
 
-def website_dict():
+def website_list():
 
     model_website_list = []
     inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
@@ -98,7 +98,7 @@ def main():
     
     inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
     codebase_list,backend_list,get_task_type_list = parse_deploy_config()
-    model_website_list,model_website_task = website_dict()
+    model_website_list,model_website_task = website_list()
     platform1 = []
     i = 0
     for a in backend_list:
