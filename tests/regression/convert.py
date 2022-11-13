@@ -121,6 +121,7 @@ def main():
             url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
             url_name = f'{url}{lower_name}'
             dict['Model'] = f'[{name}]({url_name})'
+            task_type = task_type.title()
             dict['Task'] = task_type
             inference_list.append(dict)
         
@@ -128,12 +129,14 @@ def main():
             url = f'https://github.com/open-mmlab/{web}/tree/dev-3.x/configs/'
             url_name = f'{url}{lower_name}'
             dict['Model'] = f'[{name}]({url})'
+            task_type = task_type.title()
             dict['Task'] = task_type
             inference_list.append(dict)
         else:
             url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
             url_name = f'{url}{lower_name}'
             dict['Model'] = f'[{name}]({url_name})'
+            task_type = task_type.title()
             dict['Task'] = task_type
             inference_list.append(dict)
     
