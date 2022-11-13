@@ -1,19 +1,11 @@
 import argparse
-import os
 import os.path as osp
-
-import mmcv
 import yaml
+import numpy as np
 from easydict import EasyDict as edict
-from markdown.extensions.tables import TableExtension
-from mdutils.mdutils import MdUtils
 from tomark import Tomark
-
 from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
                             load_config)
-
-import numpy as np
-
 
 
 def parse_args():
@@ -46,7 +38,6 @@ def generate_inference_dict():
                     metafile_list.append(metafile)
                     model_configs_list.append(model_configs)
                     piplines_list.append(piplines)
-
                     list = [] 
                     for content in piplines:
                         
@@ -78,13 +69,36 @@ def parse_deploy_config():
 
 #backend = get_backend(model_configs_list[0][0])
 
+def website_dict():
+
+    model_website_list = []
+    inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
+    codebase_list,backend_list,get_task_type_list = parse_deploy_config()
+    
+    task_type = str(get_task_type_list[0])
+    task_type = task_type.split('.',1)[1]
+    if task_type == 'OBJECT_DETECTION':
+        task_type = task_type.split('_',1)[1]
+        task_type = task_type.lower()
+    else:
+        task_type = task_type.lower()
+    model_website_task = f'mm{task_type}'
+    #print(task_type)
+    for i in model_configs_list:
+        name = str(i[0])
+        model_name = osp.split(name)[0]
+        
+        model_website_list.append(model_name)
+
+    return model_website_list,model_website_task
+
 def main():
     args = parse_args()
     inference_list = []
     
     inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
     codebase_list,backend_list,get_task_type_list = parse_deploy_config()
-    
+    model_website_list,model_website_task = website_dict()
     platform1 = []
     i = 0
     for a in backend_list:
@@ -105,41 +119,26 @@ def main():
     task_type = str(get_task_type_list[0])
     task_type = task_type.split('.',1)[1]
     
-    if task_type == 'CLASSIFICATION':
-        web = 'mmclassification'
-    elif task_type == 'SEGMENTATION':
-        web = 'mmsegmentation'
-    else :
-        web = 'mmdetection'
-
+    x =0
     for name in name_list:
         
         dict = {}
-        lower_name = name.lower()
-        if lower_name == 'semantic fpn':
-            lower_name = 'sem_fpn'
-            url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
-            url_name = f'{url}{lower_name}'
+        website_name = model_website_list[x]
+        x += 1
+        if model_website_task == 'mmdetection':
+            url = f'https://github.com/open-mmlab/{model_website_task}/tree/3.x/'
+            url_name = f'{url}{website_name}'
             dict['Model'] = f'[{name}]({url_name})'
             task_type = task_type.title()
             dict['Task'] = task_type
-            inference_list.append(dict)
-        
-        elif web == 'mmdetection':
-            url = f'https://github.com/open-mmlab/{web}/tree/dev-3.x/configs/'
-            url_name = f'{url}{lower_name}'
-            dict['Model'] = f'[{name}]({url})'
-            task_type = task_type.title()
-            dict['Task'] = task_type
-            inference_list.append(dict)
+            inference_list.append(dict) 
         else:
-            url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
-            url_name = f'{url}{lower_name}'
+            url = f'https://github.com/open-mmlab/{model_website_task}/tree/1.x/'
+            url_name = f'{url}{website_name}'
             dict['Model'] = f'[{name}]({url_name})'
             task_type = task_type.title()
             dict['Task'] = task_type
-            inference_list.append(dict)
-    
+            inference_list.append(dict) 
 
     target_platform=[]
     for list in inference_dict:
@@ -159,10 +158,10 @@ def main():
     print(markdown)
     path = args.output_md_file
     (file,ext) = osp.splitext(path)
-    f = open(f'{file}.md','w')
-    f.write(markdown)
-    f.close()
-
+    
+    with open(f'{file}.md','w') as f:
+        f.write(markdown)
+        f.close()
 
 
 if __name__ == '__main__':
