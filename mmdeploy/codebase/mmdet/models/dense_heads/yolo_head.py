@@ -6,8 +6,8 @@ import torch
 from mmdet.utils.typing import OptConfigType
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape

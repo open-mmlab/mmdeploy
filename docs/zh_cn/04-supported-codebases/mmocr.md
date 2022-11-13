@@ -236,11 +236,11 @@ print(texts)
 
 ## 模型支持列表
 
-| Model                                                                          | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :----------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
-| [DBNet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [PSENet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet) | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [PANet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
-| [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)     | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |
-| [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn) | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| Model                                                                         | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :---------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
+| [DBNet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [PSENet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet) | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [CRNN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn)   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
+| [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)     | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |
+| [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn) | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |

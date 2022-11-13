@@ -50,8 +50,14 @@ class MMCodebase(metaclass=ABCMeta):
                 device=device))
 
     @classmethod
+    def register_deploy_modules(cls):
+        """register deploy module."""
+        raise NotImplementedError('register_deploy_modules not implemented.')
+
+    @classmethod
     def register_all_modules(cls):
-        pass
+        """register codebase module."""
+        raise NotImplementedError('register_all_modules not implemented.')
 
 
 # Note that the build function returns the class instead of its instance.

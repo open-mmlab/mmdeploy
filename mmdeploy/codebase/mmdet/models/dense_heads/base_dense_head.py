@@ -10,8 +10,9 @@ from mmdet.structures.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -316,8 +317,8 @@ def base_dense_head__predict_by_feat__rknn(
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdet.models.dense_heads.base_dense_head.BaseDenseHead'
-    '.get_bboxes',
+    func_name='mmdet.models.dense_heads.base_dense_head.'
+    'BaseDenseHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def base_dense_head__predict_by_feat__ncnn(
         ctx,

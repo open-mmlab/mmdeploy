@@ -13,7 +13,8 @@ from torch import Tensor, nn
 
 from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.codebase.mmdet import get_post_processing_params, multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_partition_config, load_config)
 
@@ -31,9 +32,9 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         deploy_cfg (str|Config): Deployment config file or loaded Config
             object.
+        data_preprocessor (dict|nn.Module): The data preprocessor.
     """
 
     def __init__(self,
@@ -171,6 +172,17 @@ class End2EndModel(BaseBackendModel):
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
                 **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+
+        Returns:
+            Any: Model output.
+        """
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
         inputs = inputs.contiguous()
         outputs = self.predict(inputs)
@@ -246,7 +258,7 @@ class End2EndModel(BaseBackendModel):
         return results
 
     def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
-        """The interface for forward test.
+        """The interface for predict.
 
         Args:
             imgs (Tensor): Input image(s) in [N x C x H x W] format.
@@ -269,19 +281,23 @@ class PartitionSingleStageModel(End2EndModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         model_cfg (str|Config): Input model config file or Config
             object.
         deploy_cfg (str|Config): Deployment config file or loaded Config
             object.
+        data_preprocessor (dict|nn.Module): The data preprocessor.
     """
 
-    def __init__(self, backend: Backend, backend_files: Sequence[str],
-                 device: str, class_names: Sequence[str],
-                 model_cfg: Union[str, Config], deploy_cfg: Union[str, Config],
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config],
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
-        super().__init__(backend, backend_files, device, class_names,
-                         deploy_cfg, **kwargs)
+        super().__init__(backend, backend_files, device, deploy_cfg,
+                         data_preprocessor, **kwargs)
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
@@ -352,16 +368,19 @@ class PartitionTwoStageModel(End2EndModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         model_cfg (str|Config): Input model config file or Config
             object.
         deploy_cfg (str|Config): Deployment config file or loaded Config
             object.
     """
 
-    def __init__(self, backend: Backend, backend_files: Sequence[str],
-                 device: str, class_names: Sequence[str],
-                 model_cfg: Union[str, Config], deploy_cfg: Union[str, Config],
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config],
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
 
         # load cfg if necessary
@@ -369,8 +388,8 @@ class PartitionTwoStageModel(End2EndModel):
 
         self.model_cfg = model_cfg
 
-        super().__init__(backend, backend_files, device, class_names,
-                         deploy_cfg, **kwargs)
+        super().__init__(backend, backend_files, device, deploy_cfg,
+                         data_preprocessor, **kwargs)
         from mmdet.models.builder import build_head, build_roi_extractor
 
         from ..models.roi_heads.bbox_head import bbox_head__get_bboxes
@@ -534,7 +553,6 @@ class NCNNEnd2EndModel(End2EndModel):
         backend_files (Sequence[str]): Paths to all required backend files
                 (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string specifying device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         model_cfg (str|Config): Input model config file or Config
             object.
         deploy_cfg (str|Config): Deployment config file or loaded Config
@@ -595,7 +613,8 @@ class SDKEnd2EndModel(End2EndModel):
         Args:
             img (Sequence[Tensor]): A list contains input image(s)
                 in [N x C x H x W] format.
-            img_metas (Sequence[dict]): A list of meta info for image(s).
+            data_samples (List[BaseDataElement]): A list of meta info
+                for image(s).
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
@@ -638,6 +657,16 @@ class RKNNModel(End2EndModel):
     """RKNNModel.
 
     RKNN inference class, converts RKNN output to mmdet format.
+
+    Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
+        model_cfg (str|Config): Input model config file or Config
+            object.
+        deploy_cfg (str|Config): Deployment config file or loaded Config
+            object.
     """
 
     def __init__(self, backend: Backend, backend_files: Sequence[str],
@@ -652,7 +681,19 @@ class RKNNModel(End2EndModel):
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
-    def _get_bboxes(self, outputs, metainfos):
+    def _get_bboxes(self, outputs: List[Tensor], metainfos: Any):
+        """get bboxes from output by meta infos.
+
+        Args:
+            outputs (List[Tensor]): The backend wrapper outputs.
+            metainfos (Any): The meta infos of inputs.
+
+        Raises:
+            NotImplementedError: Head type not supported.
+
+        Returns:
+            Any: model outputs.
+        """
         from mmdet.models import build_head
         head_cfg = self.model_cfg._cfg_dict.model.bbox_head
         head = build_head(head_cfg)

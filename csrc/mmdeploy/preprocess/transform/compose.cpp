@@ -8,6 +8,21 @@
 
 namespace mmdeploy {
 
+void SaveIntermediates(Value& value, Value::Array& intermediates) {
+  if (value.is_array()) {
+    for (auto& inner : value) {
+      if (auto it = inner.find("__data__"); it != inner.end()) {
+        std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+        it->array().clear();
+      }
+    }
+  } else if (value.is_object()) {
+    if (auto it = value.find("__data__"); it != value.end()) {
+      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+      it->array().clear();
+    }
+  }
+}
 Compose::Compose(const Value& args, int version) : Transform(args) {
   assert(args.contains("context"));
 
@@ -44,10 +59,7 @@ Result<Value> Compose::Process(const Value& input) {
   Value::Array intermediates;
   for (auto& transform : transforms_) {
     OUTCOME_TRY(auto t, transform->Process(output));
-    if (auto it = t.find("__data__"); it != t.end()) {
-      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-      it->array().clear();
-    }
+    SaveIntermediates(t, intermediates);
     output = std::move(t);
   }
   OUTCOME_TRY(stream_.Wait());

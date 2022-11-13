@@ -25,12 +25,14 @@ class MMDetection(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register all rewriters for mmdet."""
         import mmdeploy.codebase.mmdet.models  # noqa: F401
         import mmdeploy.codebase.mmdet.ops
         import mmdeploy.codebase.mmdet.structures  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all related modules and rewriters for mmdet."""
         from mmdet.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -114,6 +116,15 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 @MMDET_TASK.register_module(Task.OBJECT_DETECTION.value)
 class ObjectDetection(BaseTask):
+    """Object Detection task.
+
+    Args:
+        model_cfg (Config): The config of the model in mmdet.
+        deploy_cfg (Config): The config of deployment.
+        device (str): Device name.
+        experiment_name (str, optional): The experiment name used to create
+            runner. Defaults to 'ObjectDetection'.
+    """
 
     def __init__(self,
                  model_cfg: Config,
@@ -161,6 +172,8 @@ class ObjectDetection(BaseTask):
                 `str`, `np.ndarray`.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to `None`.
+            data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

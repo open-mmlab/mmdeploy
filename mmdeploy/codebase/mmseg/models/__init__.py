@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .decode_heads import *  # noqa: F401,F403
-from .segmentors import *  # noqa: F401,F403
-from .utils import *  # noqa: F401,F403
+from . import decode_heads  # noqa: F401,F403
+from . import segmentors  # noqa: F401,F403
+from . import utils  # noqa: F401,F403

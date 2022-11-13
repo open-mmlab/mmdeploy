@@ -163,7 +163,7 @@ conda activate mmdeploy
 
 ```shell
 sudo apt-get install -y libssl-dev
-git clone --branch v1.4.0 https://github.com/open-mmlab/mmcv.git
+git clone --branch 2.x https://github.com/open-mmlab/mmcv.git
 cd mmcv
 MMCV_WITH_OPS=1 pip install -e .
 ```
@@ -223,7 +223,7 @@ It takes about 15 minutes to install ppl.cv on a Jetson Nano. So, please be pati
 ## Install MMDeploy
 
 ```shell
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b 1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
@@ -283,15 +283,15 @@ Before running this demo, you need to convert model files to be able to use with
 MMDetection is an open source object detection toolbox based on PyTorch
 
 ```shell
-git clone https://github.com/open-mmlab/mmdetection.git
+git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
 pip install -r requirements/build.txt
 pip install -v -e .  # or "python setup.py develop"
 ```
 
-2. Follow [this document](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/tutorials/how_to_convert_model.md) on how to convert model files.
+1. Follow [this document](../02-how-to-run/convert_model.md) on how to convert model files.
 
-For this example, we have used [retinanet_r18_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/master/configs/retinanet/retinanet_r18_fpn_1x_coco.py) as the model config, and [this file](https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth) as the corresponding checkpoint file. Also for deploy config, we have used [detection_tensorrt_dynamic-320x320-1344x1344.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py)
+For this example, we have used [retinanet_r18_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/3.x/configs/retinanet/retinanet_r18_fpn_1x_coco.py) as the model config, and [this file](https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth) as the corresponding checkpoint file. Also for deploy config, we have used [detection_tensorrt_dynamic-320x320-1344x1344.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py)
 
 ```shell
 python ./tools/deploy.py \

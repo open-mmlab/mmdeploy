@@ -11,7 +11,7 @@ Notes:
 ### Prerequisite
 
 1. Install and build your target backend. You could refer to [ONNXRuntime-install](../05-supported-backends/onnxruntime.md), [TensorRT-install](../05-supported-backends/tensorrt.md), [ncnn-install](../05-supported-backends/ncnn.md), [PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md) for more information.
-2. Install and build your target codebase. You could refer to [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/master/docs/en/install.md), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/master/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/en/get_started.md#installation), [MMOCR-install](https://mmocr.readthedocs.io/en/latest/install.html), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/master/docs/en/install.md).
+2. Install and build your target codebase. You could refer to [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/1.x/docs/en/get_started.md#installation), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/get_started/install.md), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/2_get_started.md#installation).
 
 ### Usage
 
@@ -55,8 +55,8 @@ python ./tools/deploy.py \
 ```bash
 python ./tools/deploy.py \
     configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    $PATH_TO_MMDET/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
-    $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco.pth \
+    $PATH_TO_MMDET/configs/yolo/yolov3_d53_8xb8-ms-608-273e_coco.py \
+    $PATH_TO_MMDET/checkpoints/yolo/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
     $PATH_TO_MMDET/demo/demo.jpg \
     --work-dir work_dir \
     --show \
