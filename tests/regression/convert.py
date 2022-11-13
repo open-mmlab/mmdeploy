@@ -110,7 +110,7 @@ def main():
     elif task_type == 'SEGMENTATION':
         web = 'mmsegmentation'
     else :
-        web = 'mmdetction'
+        web = 'mmdetection'
 
     for name in name_list:
         
@@ -124,10 +124,10 @@ def main():
             dict['Task'] = task_type
             inference_list.append(dict)
         
-        elif web == 'mmdetction':
+        elif web == 'mmdetection':
             url = f'https://github.com/open-mmlab/{web}/tree/dev-3.x/configs/'
             url_name = f'{url}{lower_name}'
-            dict['Model'] = f'[{name}]({url_name})'
+            dict['Model'] = f'[{name}]({url})'
             dict['Task'] = task_type
             inference_list.append(dict)
         else:
