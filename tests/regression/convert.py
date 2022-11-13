@@ -1,15 +1,19 @@
 import argparse
-import yaml
-from easydict import EasyDict as edict
 import os
 import os.path as osp
-from markdown.extensions.tables import TableExtension
+
 import mmcv
-
-from tomark import Tomark
+import yaml
+from easydict import EasyDict as edict
+from markdown.extensions.tables import TableExtension
 from mdutils.mdutils import MdUtils
+from tomark import Tomark
 
-from mmdeploy.utils import get_codebase,get_backend,get_task_type
+from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
+                            load_config)
+
+import numpy as np
+
 
 
 def parse_args():
@@ -54,44 +58,85 @@ def generate_inference_dict():
                         inference_dict[name] =  list
     return inference_dict,name_list,metafile_list,model_configs_list,piplines_list
 
-def parse_deploy_config(deploy_cfg):
+def parse_deploy_config():
 
     inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
     codebase_list = []
     backend_list = []
     get_task_type_list = [] 
-    for model_config in model_configs_list:   
-        codebase = get_codebase(model_config[0])
-        backend = get_backend(model_config[0])
-        task_type = get_task_type(model_config[0])
-        codebase_list.append(codebase)
-        backend_list.append(backend)
-        get_task_type_list.append(task_type)
+    for piplines in piplines_list:
+        for i in piplines:
+            #print(i['deploy_config'])   
+            codebase = get_codebase(i['deploy_config'])
+            backend = get_backend(i['deploy_config'])
+            task_type = get_task_type(i['deploy_config'])
+
+            codebase_list.append(codebase)
+            backend_list.append(backend)
+            get_task_type_list.append(task_type)
     return codebase_list,backend_list,get_task_type_list
 
-inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
-for i in metafile_list:
-    print(i)
-backend = get_backend(model_configs_list[0][0])
+#backend = get_backend(model_configs_list[0][0])
 
 def main():
     args = parse_args()
     inference_list = []
+    
     inference_dict,name_list,metafile_list,model_configs_list,piplines_list = generate_inference_dict()
+    codebase_list,backend_list,get_task_type_list = parse_deploy_config()
+    
+    platform1 = []
+    i = 0
+    for a in backend_list:
+        a = str(backend_list[i])
+        y = a.split('.',1)[1]
+        y = y.lower()
+        platform1.append(y)
+        i+=1
+    platform1 = np.unique(platform1)
+    print(platform1)
 
-    platform = ['torchscript', 'onnxruntime', 'tensorrt-fp16', 'ncnn', 'pplnn', 'openvino','tensorrt']
+    #print(get_task_type_list)
+    #print(backend_list,codebase_list[0],get_task_type_list[0])
+    
+    #platform = ['torchscript', 'onnxruntime', 'tensorrt-fp16', 'ncnn', 'pplnn', 'openvino','tensorrt']
 
     model_configs_list
-    i = 0
+    task_type = str(get_task_type_list[0])
+    task_type = task_type.split('.',1)[1]
+    
+    if task_type == 'CLASSIFICATION':
+        web = 'mmclassification'
+    elif task_type == 'SEGMENTATION':
+        web = 'mmsegmentation'
+    else :
+        web = 'mmdetction'
+
     for name in name_list:
+        
         dict = {}
         lower_name = name.lower()
-        url = 'https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/'
-        url_name = f'{url}{lower_name}'
-        dict['Model'] = f'[{name}]({url_name})'
-        dict['Task'] = 'Segmenter'
-        inference_list.append(dict)
-        i += 1
+        if lower_name == 'semantic fpn':
+            lower_name = 'sem_fpn'
+            url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
+            url_name = f'{url}{lower_name}'
+            dict['Model'] = f'[{name}]({url_name})'
+            dict['Task'] = task_type
+            inference_list.append(dict)
+        
+        elif web == 'mmdetction':
+            url = f'https://github.com/open-mmlab/{web}/tree/dev-3.x/configs/'
+            url_name = f'{url}{lower_name}'
+            dict['Model'] = f'[{name}]({url_name})'
+            dict['Task'] = task_type
+            inference_list.append(dict)
+        else:
+            url = f'https://github.com/open-mmlab/{web}/tree/1.x/configs/'
+            url_name = f'{url}{lower_name}'
+            dict['Model'] = f'[{name}]({url_name})'
+            dict['Task'] = task_type
+            inference_list.append(dict)
+    
 
     target_platform=[]
     for list in inference_dict:
@@ -101,7 +146,7 @@ def main():
     for j in range(len(inference_list)):
         
         dict = inference_list[j]    
-        for i in platform:
+        for i in platform1:
             if i in target_platform[j]:
                 dict[i] = 'Y'
             else:
@@ -111,26 +156,14 @@ def main():
     print(markdown)
     path = args.output_md_file
     (file,ext) = osp.splitext(path)
-    f = open(f'{path}.md','w')
+    f = open(f'{file}.md','w')
     f.write(markdown)
     f.close()
 
 
+
 if __name__ == '__main__':
     main()
-
-
-                                      
-
-                    
-                    
-
-
-
-
-
-
-
 
 
             
