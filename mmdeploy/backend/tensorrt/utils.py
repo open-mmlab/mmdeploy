@@ -37,7 +37,6 @@ def load(path: str) -> trt.ICudaEngine:
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
-        trt.init_libnvinfer_plugins(logger, namespace='')
         engine = runtime.deserialize_cuda_engine(engine_bytes)
         return engine
 

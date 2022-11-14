@@ -17,14 +17,12 @@ class MMDEPLOY_API NormalizeImpl : public TransformImpl {
 
  protected:
   virtual Result<Tensor> NormalizeImage(const Tensor& img) = 0;
-  virtual Result<Tensor> ConvertToRGB(const Tensor& img) = 0;
 
  protected:
   struct normalize_arg_t {
     std::vector<float> mean;
     std::vector<float> std;
     bool to_rgb;
-    bool to_float;
   };
   using ArgType = struct normalize_arg_t;
   ArgType arg_;

@@ -28,7 +28,6 @@ class DirectoryModelImpl : public ModelImpl {
     auto _path = root_ / fs::path(file_path);
     std::ifstream ifs(_path, std::ios::binary | std::ios::in);
     if (!ifs.is_open()) {
-      MMDEPLOY_ERROR("read file {} failed", _path.string());
       return Status(eFail);
     }
     ifs.seekg(0, std::ios::end);

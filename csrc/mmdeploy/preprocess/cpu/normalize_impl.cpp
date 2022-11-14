@@ -25,14 +25,6 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
     auto dst_mat = Normalize(mat, arg_.mean, arg_.std, arg_.to_rgb, true);
     return CVMat2Tensor(dst_mat);
   }
-
-  Result<Tensor> ConvertToRGB(const Tensor& tensor) override {
-    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
-    SyncOnScopeExit(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
-    auto src_mat = Tensor2CVMat(tensor);
-    auto dst_mat = ColorTransfer(src_mat, PixelFormat::kBGR, PixelFormat::kRGB);
-    return CVMat2Tensor(dst_mat);
-  }
 };
 
 class NormalizeImplCreator : public Creator<::mmdeploy::NormalizeImpl> {
