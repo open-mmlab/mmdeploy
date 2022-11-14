@@ -42,7 +42,7 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
         MMCVRoiAlign op for onnx.
     """
     backend = get_backend(ctx.cfg)
-    if backend == Backend.PPLNN:
+    if backend == Backend.PPLNN or backend == Backend.TENSORRT:
         domain = 'mmcv'
         return g.op(
             f'{domain}::MMCVRoiAlign',

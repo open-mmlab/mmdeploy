@@ -41,7 +41,7 @@ def detrhead__predict_by_feat__default(ctx,
                                        all_bbox_preds_list: List[Tensor],
                                        batch_img_metas: List[dict],
                                        rescale: bool = True):
-    """Rewrite `get_bboxes` of `FoveaHead` for default backend."""
+    """Rewrite `predict_by_feat` of `FoveaHead` for default backend."""
     from mmdet.structures.bbox import bbox_cxcywh_to_xyxy
     cls_scores = all_cls_scores_list[-1][-1]
     bbox_preds = all_bbox_preds_list[-1][-1]

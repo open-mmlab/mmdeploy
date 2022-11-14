@@ -47,7 +47,7 @@ In order to use the prebuilt package, you need to install some third-party depen
 2. Clone the mmdeploy repository
 
    ```bash
-   git clone https://github.com/open-mmlab/mmdeploy.git
+   git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git
    ```
 
    :point_right: The main purpose here is to use the configs, so there is no need to compile `mmdeploy`.
@@ -55,14 +55,14 @@ In order to use the prebuilt package, you need to install some third-party depen
 3. Install mmclassification
 
    ```bash
-   git clone https://github.com/open-mmlab/mmclassification.git
+   git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
    cd mmclassification
    pip install -e .
    ```
 
 4. Prepare a PyTorch model as our example
 
-   Download the pth [resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth). The corresponding config of the model is [resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/master/configs/resnet/resnet18_8xb32_in1k.py)
+   Download the pth [resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth). The corresponding config of the model is [resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py)
 
 After the above work is done, the structure of the current working directory should be:
 

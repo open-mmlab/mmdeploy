@@ -42,7 +42,7 @@
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 ```
 
-如要使用 [MMClassification](https://mmclassification.readthedocs.io/en/latest/getting_started.html)， 需要用户自己安装使用。
+如要使用 [MMClassification](https://mmclassification.readthedocs.io/en/1.x/get_started.html)， 需要用户自己安装使用。
 
 ## 使用
 
@@ -158,7 +158,7 @@ label: 65, score: 0.95
 
 - MMDet 模型.
 
-  YOLOV3 & YOLOX: 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+  YOLOV3 & YOLOX: 将下面的模型拆分配置写入到 [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py):
 
   ```python
   # yolov3, yolox
@@ -173,7 +173,7 @@ label: 65, score: 0.95
       ])
   ```
 
-  RetinaNet & SSD & FSAF with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)。使用 rknn-toolkit 的用户则不用。
+  RetinaNet & SSD & FSAF with rknn-toolkit2, 将下面的模型拆分配置写入到 [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)。使用 rknn-toolkit 的用户则不用。
 
   ```python
   # retinanet, ssd

@@ -1,7 +1,7 @@
 # MMRotate 模型部署
 
 - [安装](#安装)
-  - [安装 mmcls](#安装-mmrotate)
+  - [安装 mmrotate](#安装-mmrotate)
   - [安装 mmdeploy](#安装-mmdeploy)
 - [模型转换](#模型转换)
 - [模型规范](#模型规范)

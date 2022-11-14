@@ -2,12 +2,16 @@
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend
+from mmdeploy.utils import Backend, get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.necks.ssd_neck.L2Norm.forward')
 def l2norm__forward__default(ctx, self, x):
+    """Default rewriter for l2norm.
+
+    Implement with functinoal.normalize .
+    """
     return torch.nn.functional.normalize(
         x, dim=1) * self.weight[None, :, None, None]
 
@@ -20,10 +24,16 @@ def l2norm__forward__tensorrt(ctx, self, x):
 
     TensorRT7 does not support dynamic clamp, which is used in normalize.
     """
-    import tensorrt as trt
-    from packaging import version
-    trt_version = version.parse(trt.__version__)
-    if trt_version.major >= 8:
+    logger = get_root_logger()
+    trt_version_major = 8
+    try:
+        import tensorrt as trt
+        from packaging import version
+        trt_version = version.parse(trt.__version__)
+        trt_version_major = trt_version.major
+    except Exception:
+        logger.warning('Can not get TensorRT version.')
+    if trt_version_major >= 8:
         return l2norm__forward__default(ctx, self, x)
     else:
         return ctx.origin_func(self, x)

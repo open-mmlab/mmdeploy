@@ -169,7 +169,7 @@ models:
   - name: YOLOV3
     metafile: configs/yolo/metafile.yml
     model_configs:
-      - configs/yolo/yolov3_d53_320_273e_coco.py
+      - configs/yolo/yolov3_d53_8xb8-320-273e_coco.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
@@ -244,7 +244,7 @@ models:
   - name: YOLOX
     metafile: configs/yolox/metafile.yml
     model_configs:
-      - configs/yolox/yolox_s_8x8_300e_coco.py
+      - configs/yolox/yolox_s_8xb8-300e_coco.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32

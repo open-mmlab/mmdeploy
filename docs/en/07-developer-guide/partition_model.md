@@ -6,7 +6,7 @@ MMDeploy supports exporting PyTorch models to partitioned onnx models. With this
 
 To support the model partition, we need to add `Mark` nodes in the ONNX model. This could be done with mmdeploy's `@mark` decorator. Note that to make the `mark` work, the marking operation should be included in a rewriting function.
 
-At first, we would mark the model input, which could be done by marking the input tensor `img` in the `forward` method of `BaseDetector` class, which is the parent class of all detector classes. Thus we name this marking point as `detector_forward` and mark the inputs as `input`. Since there could be three outputs for detectors such as `Mask RCNN`, the outputs are marked as  `dets`, `labels`, and `masks`. The following code shows the idea of adding mark functions and calling the mark functions in the rewrite. For source code, you could refer to [mmdeploy/codebase/mmdet/models/detectors/base.py](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/detectors/base.py)
+At first, we would mark the model input, which could be done by marking the input tensor `img` in the `forward` method of `BaseDetector` class, which is the parent class of all detector classes. Thus we name this marking point as `detector_forward` and mark the inputs as `input`. Since there could be three outputs for detectors such as `Mask RCNN`, the outputs are marked as  `dets`, `labels`, and `masks`. The following code shows the idea of adding mark functions and calling the mark functions in the rewrite. For source code, you could refer to [mmdeploy/codebase/mmdet/models/detectors/single_stage.py](https://github.com/open-mmlab/mmdeploy/blob/4fc8828af84281b62be143012cd9f9dafd1e7cc2/mmdeploy/codebase/mmdet/models/detectors/single_stage.py)
 
 ```python
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -25,7 +25,7 @@ def base_detector__forward(ctx, self, img, img_metas=None, **kwargs):
     return __forward_impl(...)
 ```
 
-Then, we have to mark the output feature of `YOLOV3Head`, which is the input argument `pred_maps` in `get_bboxes` method of `YOLOV3Head` class. We could add a internal function to only mark the `pred_maps` inside [`yolov3_head__get_bboxes`](https://github.com/open-mmlab/mmdeploy/blob/86a50e343a3a45d7bc2ba3256100accc4973e71d/mmdeploy/codebase/mmdet/models/dense_heads/yolo_head.py#L14) function as following.
+Then, we have to mark the output feature of `YOLOV3Head`, which is the input argument `pred_maps` in `get_bboxes` method of `YOLOV3Head` class. We could add a internal function to only mark the `pred_maps` inside [`yolov3_head__get_bboxes`](https://github.com/open-mmlab/mmdeploy/blob/4fc8828af84281b62be143012cd9f9dafd1e7cc2/mmdeploy/codebase/mmdet/models/dense_heads/yolo_head.py#L16) function as following.
 
 ```python
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -78,7 +78,7 @@ Once we have marks of nodes and the deployment config with `parition_config` bei
 ```shell
 python tools/torch2onnx.py \
 configs/mmdet/detection/yolov3_partition_onnxruntime_static.py \
-../mmdetection/configs/yolo/yolov3_d53_mstrain-608_273e_coco.py \
+../mmdetection/configs/yolo/yolov3_d53_8xb8-ms-608-273e_coco.py \
 https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_d53_mstrain-608_273e_coco/yolov3_d53_mstrain-608_273e_coco_20210518_115020-a2c3acb8.pth \
 ../mmdetection/demo/demo.jpg \
 --work-dir ./work-dirs/mmdet/yolov3/ort/partition

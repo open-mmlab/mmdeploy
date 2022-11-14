@@ -6,7 +6,6 @@
     - [安装依赖包](#安装依赖包)
       - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
     - [编译 MMDeploy](#编译-mmdeploy)
-      - [编译选项说明](#编译选项说明)
       - [编译 SDK 和 Demos](#编译-sdk-和-demos)
 
 ______________________________________________________________________
@@ -99,7 +98,7 @@ make -j$(nproc) install
     <tr>
   <td>OpenJDK </td>
   <td>编译Java API之前需要先准备OpenJDK开发环境</br>
-  请参考 <a href='https://github.com/open-mmlab/mmdeploy/blob/master/csrc/mmdeploy/apis/java/README.md'> Java API 编译 </a> 进行构建.
+  请参考 <a href='https://github.com/open-mmlab/mmdeploy/blob/1.x/csrc/mmdeploy/apis/java/README.md'> Java API 编译 </a> 进行构建.
   </td>
   </tr>
 </tbody>

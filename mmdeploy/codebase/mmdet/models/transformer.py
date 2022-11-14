@@ -8,14 +8,16 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmdet.models.utils.transformer.PatchMerging.forward',
     backend='tensorrt')
 def patch_merging__forward__tensorrt(ctx, self, x, input_size):
-    """Rewrite forward function of PatchMerging class for TensorRT.
-    In original implementation, mmdet applies nn.unfold to accelerate the
-    inferece. However, the onnx graph of it can not be parsed correctly by
-    TensorRT. In mmdeploy, it is replaced.
+    """Rewrite forward function of PatchMerging class for TensorRT. In original
+    implementation, mmdet applies nn.unfold to accelerate the inference.
+    However, the onnx graph of it can not be parsed correctly by TensorRT. In
+    mmdeploy, it is replaced.
+
     Args:
         x (Tensor): Has shape (B, H*W, C_in).
         input_size (tuple[int]): The spatial shape of x, arrange as (H, W).
             Default: None.
+
     Returns:
         tuple: Contains merged results and its spatial shape.
             - x (Tensor): Has shape (B, Merged_H * Merged_W, C_out)

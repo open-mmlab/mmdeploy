@@ -75,7 +75,7 @@ tips:
 
 ## 三、测试模型
 
-以 Resnet-18 为例。先参照[文档安装 mmcls](https://github.com/open-mmlab/mmclassification)，然后使用 `tools/deploy.py` 转换模型。
+以 Resnet-18 为例。先参照[文档安装 mmcls](https://github.com/open-mmlab/mmclassification/tree/1.x)，然后使用 `tools/deploy.py` 转换模型。
 
 ```bash
 $ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
