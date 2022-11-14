@@ -18,7 +18,8 @@ def pointpillarsscatter__forward(ctx,
         voxel_features (torch.Tensor): Voxel features from voxel encoder layer.
         coors (torch.Tensor): Coordinates of each voxel.
             The first column indicates the sample ID.
-        batch_size (int): Number of samples in the current batch.
+        batch_size (int): Number of samples in the current batch, batch_size=1
+            by default.
     """
     canvas = torch.zeros(
         self.in_channels,
