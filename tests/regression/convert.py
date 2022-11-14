@@ -123,20 +123,16 @@ def main():
         platform1.append(y)
         i += 1
     platform1 = np.unique(platform1)
-    print(platform1)
-
     model_configs_list
     task_type = str(get_task_type_list[0])
     task_type = task_type.split('.', 1)[1]
 
     x = 0
     for name in name_list:
-
         dict = {}
         website_name = model_website_list[x]
         x += 1
         if model_website_task == 'mmdetection':
-
             url = f'{link}{model_website_task}/tree/3.x/'
             url_name = f'{url}{website_name}'
             dict['Model'] = f'[{name}]({url_name})'
@@ -169,7 +165,7 @@ def main():
     path = args.output_md_file
     (file, ext) = osp.splitext(path)
 
-    with open(f'{file}.txt', 'w') as f:
+    with open(f'{file}.md', 'w') as f:
         f.write(markdown)
         f.close()
 
