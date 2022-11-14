@@ -11,6 +11,9 @@ void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
     if (gather->op_type() != "Gather") {
       continue;
     }
+    if (weights.find(std::string(gather->input(1))) == weights.end()) {
+      continue;
+    }
     auto indices = get_node_attr_from_input_ai(weights[gather->input(1)]);
     if (indices.size() != 1) {
       continue;
