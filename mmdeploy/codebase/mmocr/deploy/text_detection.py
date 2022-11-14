@@ -225,7 +225,12 @@ class TextDetection(BaseTask):
             if transform['type'] == 'Resize':
                 transforms[i]['size'] = transforms[i].pop('scale')
 
-        data_preprocessor = model_cfg.model.data_preprocessor
+        if 'data_preprocessor' in model_cfg.model:
+            data_preprocessor = model_cfg.model.data_preprocessor
+        elif 'MMDetWrapper' == self.model_cfg.model.type:
+            data_preprocessor = model_cfg.model.cfg.data_preprocessor
+        else:
+            raise ValueError(f'Unsupported model config {model_cfg.model} ')
         transforms.insert(-1, dict(type='DefaultFormatBundle'))
         transforms.insert(
             -2,
@@ -247,7 +252,20 @@ class TextDetection(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.model.det_head
+        if 'det_head' in self.model_cfg.model:
+            postprocess = self.model_cfg.model.det_head
+        elif 'MMDetWrapper' == self.model_cfg.model.type:
+            params = self.model_cfg.model.cfg.test_cfg
+            type = 'ResizeInstanceMask'  # default for object detection
+            if 'rpn' in params:
+                params['min_bbox_size'] = params['rpn']['min_bbox_size']
+            if 'rcnn' in params:
+                params['score_thr'] = params['rcnn']['score_thr']
+                if 'mask_thr_binary' in params['rcnn']:
+                    params['mask_thr_binary'] = params['rcnn'][
+                        'mask_thr_binary']
+                    type = 'ResizeInstanceMask'  # for instance-seg
+            return dict(type=type, params=params)
         return postprocess
 
     def get_model_name(self, *args, **kwargs) -> str:
