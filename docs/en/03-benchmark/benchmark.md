@@ -64,7 +64,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp32</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet50_b32x8_imagenet.py"> ResNet </a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet50_8xb32_in1k.py"> ResNet </a></td>
     <td align="center">224x224</td>
     <td align="center">2.97</td>
     <td align="center">1.26</td>
@@ -78,7 +78,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">2.49</td>
   </tr>
   <tr>
-    <td align="center"> <a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py"> ResNeXt </a></td>
+    <td align="center"> <a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnext/resnext50-32x4d_8xb32_in1k.py"> ResNeXt </a></td>
     <td align="center">224x224</td>
     <td align="center">4.31</td>
     <td align="center">1.42</td>
@@ -92,7 +92,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"> <a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/seresnet/seresnet50_b32x8_imagenet.py">  SE-ResNet </a></td>
+    <td align="center"> <a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/seresnet/seresnet50_8xb32_in1k.py">  SE-ResNet </a></td>
     <td align="center">224x224</td>
     <td align="center">3.41</td>
     <td align="center">1.66</td>
@@ -106,7 +106,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py">  ShuffleNetV2 </a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py">  ShuffleNetV2 </a></td>
     <td align="center">224x224</td>
     <td align="center">1.37</td>
     <td align="center">1.19</td>
@@ -277,7 +277,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN</a></td>
     <td align="center">32x32</td>
     <td align="center">12.64</td>
     <td align="center">12.42</td>
@@ -286,7 +286,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">7.67</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
     <td align="center">32x32</td>
     <td align="center">0.70</td>
     <td align="center">0.35</td>
@@ -443,7 +443,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnet/resnet18_b32x8_imagenet.py">ResNet-18</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py">ResNet-18</a></td>
     <td align="center">top-1</td>
     <td align="center">69.90</td>
     <td align="center">69.90</td>
@@ -466,7 +466,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">89.43</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">ResNeXt-50</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnext/resnext50-32x4d_8xb32_in1k.py">ResNeXt-50</a></td>
     <td align="center">top-1</td>
     <td align="center">77.90</td>
     <td align="center">77.90</td>
@@ -489,7 +489,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/resnext/resnext50_32x4d_b32x8_imagenet.py">SE-ResNet-50</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/seresnet/seresnext50-32x4d_8xb32_in1k.py">SE-ResNet-50</a></td>
     <td align="center">top-1</td>
     <td align="center">77.74</td>
     <td align="center">77.74</td>
@@ -512,7 +512,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v1/shufflenet_v1_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV1 1.0x</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/shufflenet_v1/shufflenet-v1-1x_16xb64_in1k.py">ShuffleNetV1 1.0x</a></td>
     <td align="center">top-1</td>
     <td align="center">68.13</td>
     <td align="center">68.13</td>
@@ -535,7 +535,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py">ShuffleNetV2 1.0x</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py">ShuffleNetV2 1.0x</a></td>
     <td align="center">top-1</td>
     <td align="center">69.55</td>
     <td align="center">69.55</td>
@@ -558,7 +558,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/tree/master/configs/mobilenet_v2/mobilenet_v2_b32x8_imagenet.py">MobileNet V2</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py">MobileNet V2</a></td>
     <td align="center">top-1</td>
     <td align="center">71.86</td>
     <td align="center">71.86</td>
@@ -581,7 +581,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">90.42</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py">Vision Transformer</a></td>
     <td align="center">top-1</td>
     <td align="center">85.43</td>
     <td align="center">85.43</td>
@@ -604,7 +604,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">97.77</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-tiny_16xb64_in1k.py">Swin Transformer</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/1.x/configs/swin_transformer/swin-tiny_16xb64_in1k.py">Swin Transformer</a></td>
     <td align="center">top-1</td>
     <td align="center">81.18</td>
     <td align="center">81.18</td>
@@ -902,7 +902,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -925,7 +925,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8096</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py">ESRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_x4c64b23g32_1xb16-400k_div2k.py">ESRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -948,7 +948,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7765</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN-PSNR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN-PSNR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -971,7 +971,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8557</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py">SRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srgan_resnet/srgan_x4c64b16_1xb16-1000k_div2k.py">SRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -994,7 +994,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7839</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py">SRResNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srgan_resnet/msrresnet_x4c64b16_1xb16-1000k_div2k.py">SRResNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1017,7 +1017,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8488</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py">Real-ESRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/real_esrgan/realesrnet_c64b23g32_4xb12-lr2e-4-1000k_df2k-ost.py">Real-ESRNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1040,7 +1040,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8123</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/edsr/edsr_x4c64b16_1xb16-300k_div2k.py">EDSR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
