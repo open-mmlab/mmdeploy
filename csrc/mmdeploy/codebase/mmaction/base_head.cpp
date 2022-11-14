@@ -62,8 +62,10 @@ class BaseHead : public MMAction {
 };
 
 REGISTER_CODEBASE_COMPONENT(MMAction, BaseHead);
+
 using SlowFastHead = BaseHead;
 REGISTER_CODEBASE_COMPONENT(MMAction, SlowFastHead);
+
 using TSNHead = BaseHead;
 REGISTER_CODEBASE_COMPONENT(MMAction, TSNHead);
 
