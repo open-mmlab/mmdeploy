@@ -29,6 +29,7 @@
 | [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)           | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer) | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |  N   |
 | [SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)     | MMClassification |      Y      |      Y      |    Y     |  N   |   ?   |    N     |   ?    |  N   |
+| [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)                  | MMClassification |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [FCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn)                                | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [PSPNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet)[\*static](#note)         | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [DeepLabV3](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3)                    | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |
