@@ -72,10 +72,6 @@ At present, the voxelize preprocessing and postprocessing of mmdet3d are not con
 
 The caller needs to refer to the corresponding [python implementation](../../../mmdeploy/codebase/mmdet3d/deploy/voxel_detection_model.py) to complete.
 
-mmdeploy currently not merge preprocess and postprocess of mmdet3d into onnx, and C++ SDK has not yet implemented voxelize operation.
-
-User needs to implement it by referring to [Python version](../../../mmdeploy/codebase/mmdet3d/deploy/voxel_detection_model.py).
-
 ## Supported models
 
 |                                                                                  model                                                                                  | dataset  | onnxruntime | openvino | tensorrt\* |
