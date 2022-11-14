@@ -48,7 +48,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
 
         Args:
             backend (Backend): The backend enum type.
-            beckend_files (Sequence[str]): Paths to all required backend files(
+            backend_files (Sequence[str]): Paths to all required backend files(
                 e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
             device (str): A string specifying device type.
             input_names (Sequence[str] | None): Names of model inputs in

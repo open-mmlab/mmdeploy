@@ -6,8 +6,9 @@ from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
@@ -63,7 +64,7 @@ def reppoints_head__predict_by_feat(
         cfg: Optional[ConfigDict] = None,
         rescale: bool = False,
         with_nms: bool = True) -> InstanceData:
-    """Rewrite `get_bboxes` of `RepPointsHead` for default backend.
+    """Rewrite `predict_by_feat` of `RepPointsHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.

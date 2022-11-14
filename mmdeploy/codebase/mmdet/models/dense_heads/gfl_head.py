@@ -7,8 +7,9 @@ from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     pad_with_value)
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
@@ -109,8 +110,18 @@ def gfl_head__predict_by_feat(ctx,
                                                   1).reshape(batch_size,
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
-        bbox_pred = batched_integral(self.integral,
-                                     bbox_pred.permute(0, 2, 3, 1)) * stride[0]
+
+        def _batched_integral(intergral, x):
+            batch_size = x.size(0)
+            x = F.softmax(
+                x.reshape(batch_size, -1, intergral.reg_max + 1), dim=2)
+            x = F.linear(x,
+                         intergral.project.type_as(x).unsqueeze(0)).reshape(
+                             batch_size, -1, 4)
+            return x
+
+        bbox_pred = _batched_integral(
+            self.integral, bbox_pred.permute(0, 2, 3, 1)) * stride[0]
         if not is_dynamic_flag:
             priors = priors.data
         if pre_topk > 0:
@@ -180,12 +191,3 @@ def gfl_head__predict_by_feat(ctx,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,
         keep_top_k=keep_top_k)
-
-
-def batched_integral(intergral, x):
-    batch_size = x.size(0)
-    x = F.softmax(x.reshape(batch_size, -1, intergral.reg_max + 1), dim=2)
-    x = F.linear(x,
-                 intergral.project.type_as(x).unsqueeze(0)).reshape(
-                     batch_size, -1, 4)
-    return x

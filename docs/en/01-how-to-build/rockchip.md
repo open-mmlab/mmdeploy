@@ -42,7 +42,7 @@ It is recommended to create a virtual environment for the project.
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 ```
 
-To work with models from [MMClassification](https://mmclassification.readthedocs.io/en/latest/getting_started.html), you may need to install it additionally.
+To work with models from [MMClassification](https://mmclassification.readthedocs.io/en/1.x/get_started.html), you may need to install it additionally.
 
 ## Usage
 
@@ -158,7 +158,7 @@ label: 65, score: 0.95
 
 - MMDet models.
 
-  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
+  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static-320x320.py):
 
   ```python
   # yolov3, yolox
@@ -173,7 +173,7 @@ label: 65, score: 0.95
       ])
   ```
 
-  RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py). Users with rknn-toolkit can directly use default config.
+  RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static-320x320.py). Users with rknn-toolkit can directly use default config.
 
   ```python
   # retinanet, ssd

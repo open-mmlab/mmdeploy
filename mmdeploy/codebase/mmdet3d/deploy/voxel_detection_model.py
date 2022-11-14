@@ -28,6 +28,7 @@ class VoxelDetectionModel(BaseBackendModel):
         model_cfg (str | Config): The model config.
         deploy_cfg (str|Config): Deployment config file or loaded
             Config object.
+        data_preprocessor (dict|torch.nn.Module): The input preprocessor
     """
 
     def __init__(self,
@@ -73,12 +74,10 @@ class VoxelDetectionModel(BaseBackendModel):
         """Run forward inference.
 
         Args:
-            points (Sequence[torch.Tensor]): A list contains input pcd(s)
-                in [N, ndim] float tensor. points[:, :3] contain xyz points
-                and points[:, 3:] contain other information like reflectivity
-            img_metas (Sequence[dict]): A list of meta info for image(s).
-            return_loss (Bool): Consistent with the pytorch model.
-                Default = False.
+            inputs (dict): A dict contains `voxels` which wrapped `voxels`,
+                `num_points` and `coors`
+            data_samples (List[BaseDataElement]): A list of meta info for
+                image(s).
 
         Returns:
             list: A list contains predictions.

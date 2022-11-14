@@ -118,7 +118,6 @@ GPU: ncnn, TensorRT, PPLNN
   </tr>
 </tbody>
 </table>
-
 <table class="docutils">
 <thead>
   <tr>
@@ -142,8 +141,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp32</td>
     <td align="center" colspan="1">fp16</td>
   </tr>
-
-<tr>
+  <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOv3</a></td>
     <td align="center">320x320</td>
     <td align="center">14.76</td>
@@ -325,7 +323,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp32</td>
   </tr>
     <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet</a></td>
     <td align="center">640x640</td>
     <td align="center">10.70</td>
     <td align="center">5.62</td>
@@ -335,7 +333,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">32x32</td>
     <td align="center">1.93 </td>
     <td align="center">1.40</td>
@@ -372,7 +370,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
     <td align="center">512x1024</td>
     <td align="center">128.42</td>
     <td align="center">23.97</td>
@@ -381,7 +379,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">27.00</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
     <td align="center">1x3x512x1024</td>
     <td align="center">119.77</td>
     <td align="center">24.10</td>
@@ -390,7 +388,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">27.26</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3/deeplabv3_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3/deeplabv3/deeplabv3_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3</a></td>
     <td align="center">512x1024</td>
     <td align="center">226.75</td>
     <td align="center">31.80</td>
@@ -399,7 +397,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">36.01</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_80k_cityscapes.py">DeepLabV3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3+</a></td>
     <td align="center">512x1024</td>
     <td align="center">151.25</td>
     <td align="center">47.03</td>
@@ -600,6 +598,27 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">97.77</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmclassification/blob/master/configs/swin_transformer/swin-tiny_16xb64_in1k.py">Swin Transformer</a></td>
+    <td align="center">top-1</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">81.18</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">95.61</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -727,7 +746,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">37.3</td>
     <td align="center">37.1</td>
     <td align="center">37.3</td>
-    <td align="center">-</td>
+    <td align="center">37.2</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/atss/atss_r50_fpn_1x_coco.py">ATSS</a></td>
@@ -1070,7 +1089,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/dbnet/dbnet_r18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1106,7 +1125,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7950</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/psenet/psenet_r50_fpnf_600e_icdar2015.py">PSENet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py">PSENet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1142,7 +1161,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8057</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textdet/panet/panet_r18_fpem_ffm_600e_icdar2015.py">PANet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py">PANet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1178,7 +1197,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7955</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/crnn/crnn_academic_dataset.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1192,7 +1211,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/sar/sar_r31_parallel_decoder_academic.py">SAR</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py">SAR</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1206,7 +1225,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/tree/master/configs/textrecog/satrn/satrn_small.py">SATRN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn/satrn_shallow-small_5e_st_mj.py">SATRN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1250,7 +1269,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">72.25</td>
@@ -1263,7 +1282,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">72.35</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.55</td>
@@ -1276,7 +1295,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">78.67</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3/deeplabv3_r50-d8_512x1024_40k_cityscapes.py">deeplabv3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3/deeplabv3_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.09</td>
@@ -1289,7 +1308,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">79.06</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/deeplabv3plus/deeplabv3plus_r50-d8_512x1024_40k_cityscapes.py">deeplabv3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3+</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
@@ -1302,7 +1321,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">79.51</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py">Fast-SCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastscnn/fast_scnn_8xb4-160k_cityscapes-512x1024.py">Fast-SCNN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">70.96</td>
@@ -1315,7 +1334,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/unet/fcn_unet_s5-d16_4x4_512x1024_160k_cityscapes.py">UNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/unet/unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py">UNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">69.10</td>
@@ -1328,7 +1347,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ann/ann_r50-d8_512x1024_40k_cityscapes.py">ANN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ann/ann_r50-d8_4xb2-40k_cityscapes-512x1024.py">ANN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1341,7 +1360,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/apcnet/apcnet_r50-d8_512x1024_40k_cityscapes.py">APCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/apcnet/apcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">APCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1354,7 +1373,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv1/bisenetv1_r18-d32_4x4_1024x1024_160k_cityscapes.py">BiSeNetV1</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV1</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.44</td>
@@ -1367,7 +1386,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/bisenetv2/bisenetv2_fcn_4x4_1024x1024_160k_cityscapes.py">BiSeNetV2</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv2/bisenetv2_fcn_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV2</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">73.21</td>
@@ -1380,7 +1399,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/cgnet/cgnet_512x1024_60k_cityscapes.py">CGNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/cgnet/cgnet_fcn_4xb8-60k_cityscapes-512x1024.py">CGNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">68.25</td>
@@ -1393,7 +1412,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/emanet/emanet_r50-d8_512x1024_80k_cityscapes.py">EMANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/emanet/emanet_r50-d8_4xb2-80k_cityscapes-512x1024.py">EMANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.59</td>
@@ -1406,7 +1425,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/encnet/encnet_r50-d8_512x1024_40k_cityscapes.py">EncNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/encnet/encnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">EncNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.67</td>
@@ -1419,7 +1438,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/erfnet/erfnet_fcn_4x4_512x1024_160k_cityscapes.py">ERFNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/erfnet/erfnet_fcn_4xb4-160k_cityscapes-512x1024.py">ERFNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">71.08</td>
@@ -1432,7 +1451,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_512x1024_80k_cityscapes.py">FastFCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_4xb2-80k_cityscapes-512x1024.py">FastFCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.12</td>
@@ -1445,7 +1464,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/gcnet/gcnet_r50-d8_512x1024_40k_cityscapes.py">GCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/gcnet/gcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">GCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.69</td>
@@ -1458,7 +1477,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/icnet/icnet_r18-d8_832x832_80k_cityscapes.py">ICNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/icnet/icnet_r18-d8_4xb2-80k_cityscapes-832x832.py">ICNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.29</td>
@@ -1471,7 +1490,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/isanet/isanet_r50-d8_512x1024_40k_cityscapes.py">ISANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/isanet/isanet_r50-d8_4xb2-40k_cityscapes-512x1024.py">ISANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.49</td>
@@ -1484,7 +1503,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/ocrnet/ocrnet_hr18s_512x1024_40k_cityscapes.py">OCRNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ocrnet/ocrnet_hr18s_4xb2-40k_cityscapes-512x1024.py">OCRNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.30</td>
@@ -1497,7 +1516,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/point_rend/pointrend_r50_512x1024_80k_cityscapes.py">PointRend</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/point_rend/pointrend_r50_4xb2-80k_cityscapes-512x1024.py">PointRend</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.47</td>
@@ -1510,7 +1529,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/sem_fpn/fpn_r50_512x1024_80k_cityscapes.py">Semantic FPN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/sem_fpn/fpn_r50_4xb2-80k_cityscapes-512x1024.py">Semantic FPN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.52</td>
@@ -1523,7 +1542,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc/stdc1_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc/stdc1_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.10</td>
@@ -1536,7 +1555,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/stdc/stdc2_in1k-pre_512x1024_80k_cityscapes.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc/stdc2_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.17</td>
@@ -1549,7 +1568,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/master/configs/upernet/upernet_r50_512x1024_40k_cityscapes.py">UPerNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/upernet/upernet_r50_4xb2-40k_cityscapes-512x1024.py">UPerNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.10</td>
@@ -1562,7 +1581,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/master/configs/segmenter/segmenter_vit-s_linear_8x1_512x512_160k_ade20k.py">Segmenter</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/1.x/configs/segmenter/segmenter_vit-s_fcn_8xb1-160k_ade20k-512x512.py">Segmenter</a></td>
     <td align="center">ADE20K</td>
     <td align="center">mIoU</td>
     <td align="center">44.32</td>
@@ -1603,7 +1622,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hrnet_w48_coco_256x192.py">HRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hrnet-w48_8xb32-210e_coco-256x192.py">HRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1624,7 +1643,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.802</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/litehrnet_30_coco_256x192.py">LiteHRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_litehrnet-30_8xb64-210e_coco-256x192.py">LiteHRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1645,7 +1664,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.728</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/tree/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/4xmspn50_coco_256x192.py">MSPN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_4xmspn50_8xb32-210e_coco-256x192.py">MSPN</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1666,7 +1685,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.825</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py">Hourglass</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py">Hourglass</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1788,6 +1807,76 @@ GPU: ncnn, TensorRT, PPLNN
 </table>
 </div>
 
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">mmaction2</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">model</td>
+    <td align="center">task</td>
+    <td align="center">dataset</td>
+    <td align="center">metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/dev-1.x/configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py">TSN</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+<tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/dev-1.x/configs/recognition/slowfast/slowfast_r50_8xb8-4x16x1-256e_kinetics400-rgb.py">SlowFast</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">74.45</td>
+    <td align="center">-</td>
+    <td align="center">75.62</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">91.55</td>
+    <td align="center">-</td>
+    <td align="center">92.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</tbody>
+</table>
+</div>
 ## 备注
 
 - 由于某些数据集在代码库中包含各种分辨率的图像，例如 MMDet，速度基准是通过 MMDeploy 中的静态配置获得的，而性能基准是通过动态配置获得的

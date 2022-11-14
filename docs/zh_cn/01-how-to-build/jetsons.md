@@ -149,9 +149,8 @@ conda activate mmdeploy
 
   ```shell
   sudo apt-get install -y libssl-dev
-  git clone https://github.com/open-mmlab/mmcv.git
+  git clone --branch 2.x https://github.com/open-mmlab/mmcv.git
   cd mmcv
-  git checkout v1.4.0
   MMCV_WITH_OPS=1 pip install -e .
   ```
 
@@ -200,7 +199,7 @@ conda activate mmdeploy
 ## 安装 MMDeploy
 
 ```shell
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b 1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 export MMDEPLOY_DIR=$(pwd)
 ```

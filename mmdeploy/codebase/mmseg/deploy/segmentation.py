@@ -65,9 +65,9 @@ def _get_dataset_metainfo(model_cfg: Config):
     """Get metainfo of dataset.
 
     Args:
-        model_cfg Config: Input model Config object.
+        model_cfg (Config): Input model Config object.
     Returns:
-        (list[str], list[np.ndarray]): Class names and palette
+        (list[str], list[np.ndarray]): Class names and palette.
     """
     from mmseg import datasets  # noqa
     from mmseg.registry import DATASETS
@@ -106,10 +106,12 @@ class MMSegmentation(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register deploy modules."""
         import mmdeploy.codebase.mmseg.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all modules."""
         from mmseg.utils.set_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -167,7 +169,8 @@ class Segmentation(BaseTask):
                 `np.ndarray`, `torch.Tensor`.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Defaults to `None`.
-
+            data_preprocessor (BaseDataPreprocessor | None): Input data pre-
+                            processor. Default is ``None``.
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
@@ -200,11 +203,11 @@ class Segmentation(BaseTask):
         """
 
         Args:
-            name:
-            save_dir:
+            name (str): Name of visualizer.
+            save_dir (str): Directory to save drawn results.
 
         Returns:
-
+            SegLocalVisualizer: Instance of mmseg visualizer.
         """
         # import to make SegLocalVisualizer could be built
         from mmseg.visualization import SegLocalVisualizer  # noqa: F401,F403
@@ -236,7 +239,7 @@ class Segmentation(BaseTask):
             window_name (str): The name of visualization window. Defaults to
                 an empty string.
             show_result (bool): Whether to show result in windows, defaults
-                to `False`.
+                to ``False``.
             opacity: (float): Opacity of painted segmentation map.
                     Defaults to `0.5`.
         """

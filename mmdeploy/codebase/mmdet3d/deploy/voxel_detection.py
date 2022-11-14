@@ -152,6 +152,7 @@ class VoxelDetection(BaseTask):
 
         Args:
             image (Union[str, np.ndarray]): pcd file path
+            model (torch.nn.Module): input pytorch model
             result (list): output bbox, score and type
             output_file (str): the directory to save output
             window_name (str, optional): display window name

@@ -72,11 +72,11 @@ def test_pillar_encoder(backend_type: Backend):
         deploy_cfg=deploy_cfg)
     if isinstance(rewrite_outputs, dict):
         rewrite_outputs = rewrite_outputs['output']
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        if isinstance(rewrite_output, torch.Tensor):
-            rewrite_output = rewrite_output.cpu().numpy()
-        assert np.allclose(
-            model_output.shape, rewrite_output.shape, rtol=1e-03, atol=1e-03)
+    if isinstance(rewrite_outputs, list):
+        rewrite_outputs = rewrite_outputs[0]
+
+    assert np.allclose(
+        model_outputs.shape, rewrite_outputs.shape, rtol=1e-03, atol=1e-03)
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
@@ -103,13 +103,10 @@ def test_pointpillars_scatter(backend_type: Backend):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    if isinstance(rewrite_outputs, dict):
-        rewrite_outputs = rewrite_outputs['output']
-    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
-        if isinstance(rewrite_output, torch.Tensor):
-            rewrite_output = rewrite_output.cpu().numpy()
-        assert np.allclose(
-            model_output.shape, rewrite_output.shape, rtol=1e-03, atol=1e-03)
+    if isinstance(rewrite_outputs, list):
+        rewrite_outputs = rewrite_outputs[0]
+    assert np.allclose(
+        model_outputs.shape, rewrite_outputs.shape, rtol=1e-03, atol=1e-03)
 
 
 def get_centerpoint():

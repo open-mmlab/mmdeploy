@@ -5,8 +5,9 @@ import torch
 from mmengine import ConfigDict
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, is_dynamic_shape
@@ -159,6 +160,7 @@ def rpn_head__predict_by_feat(ctx,
         keep_top_k=keep_top_k)
 
 
+# TODO: Fix for 1.x
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.RPNHead.get_bboxes', backend=Backend.NCNN.value)
 def rpn_head__get_bboxes__ncnn(ctx,
