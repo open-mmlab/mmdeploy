@@ -171,6 +171,7 @@ def build_super_resolution_model(
                                           BaseDataPreprocessor]] = None,
         **kwargs):
     """Build super resolution model for different backends.
+
     Args:
         model_files (Sequence[str]): Input model file(s).
         model_cfg (str | Config): Input model config file or Config

@@ -221,7 +221,7 @@ class Classification(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     def get_visualizer(self, name: str, save_dir: str):
-        """Get mmcls visualizer
+        """Get mmcls visualizer.
 
         Args:
             name (str): Name of visualizer.
