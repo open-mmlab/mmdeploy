@@ -60,7 +60,7 @@ class MMDEPLOY_API Model {
   Result<void> Init(const void* buffer, size_t size);
 
   /**
-   * @brief Return a the model's meta info
+   * @brief Return the model's meta info
    * @param name the name of a model in the SDK model file
    * @return
    */
