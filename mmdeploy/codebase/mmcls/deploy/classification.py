@@ -131,6 +131,11 @@ class Classification(BaseTask):
                                              experiment_name)
 
     def build_data_preprocessor(self):
+        """Build data preprocessor.
+
+        Returns:
+            nn.Module: A model build with mmcls data_preprocessor.
+        """
         model_cfg = deepcopy(self.model_cfg)
         data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
         data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
@@ -216,6 +221,14 @@ class Classification(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     def get_visualizer(self, name: str, save_dir: str):
+        """Get mmcls visualizer
+
+        Args:
+            name (str): Name of visualizer.
+            save_dir (str): Directory to save drawn results.
+        Returns:
+            ClsVisualizer: Instance of mmcls visualizer.
+        """
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:

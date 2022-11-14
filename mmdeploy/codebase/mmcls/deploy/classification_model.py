@@ -25,7 +25,6 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         deploy_cfg (str | Config): Deployment config file or loaded Config
             object.
         data_preprocessor (BaseDataPreprocessor): The data preprocessor

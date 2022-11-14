@@ -170,6 +170,19 @@ def build_super_resolution_model(
         data_preprocessor: Optional[Union[Config,
                                           BaseDataPreprocessor]] = None,
         **kwargs):
+    """Build super resolution model for different backends.
+    Args:
+        model_files (Sequence[str]): Input model file(s).
+        model_cfg (str | Config): Input model config file or Config
+            object.
+        deploy_cfg (str | Config): Input deployment config file or
+            Config object.
+        device (str):  Device to input model
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
+    Returns:
+        End2EndModel: Super Resolution model for a configured backend.
+    """
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 
