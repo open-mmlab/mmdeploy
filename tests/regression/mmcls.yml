@@ -1,4 +1,5 @@
 globals:
+  url: https://github.com/open-mmlab/
   codebase_dir: ../mmclassification
   checkpoint_force_download: False
   images:
