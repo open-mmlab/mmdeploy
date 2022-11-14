@@ -79,7 +79,7 @@ struct MMDEPLOY_API Profiler {
 
 }  // namespace profiler
 
-MMDEPLOY_REGISTER_TYPE_ID(profiler::Scope*, 11);
+MMDEPLOY_REGISTER_TYPE_ID(profiler::Scope*, 10);
 
 }  // namespace mmdeploy
 

@@ -19,7 +19,7 @@ class MMDEPLOY_API Compose : public Transform {
   std::vector<std::unique_ptr<Transform>> transforms_;
   Stream stream_;
   std::vector<profiler::Scope*> transform_scopes_;
-  profiler::Scope* scope_;
+  profiler::Scope* scope_{nullptr};
 };
 
 }  // namespace mmdeploy
