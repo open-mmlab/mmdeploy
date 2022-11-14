@@ -81,6 +81,8 @@
 | RotatedRetinaNet            | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)  |
 | Oriented RCNN               | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)    |
 | Gliding Vertex              | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)   |
+| TSN                         | MMAction2        |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |      [config](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/tsn)      |
+| SlowFast                    | MMAction2        |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/slowfast)    |
 
 ## Note
 

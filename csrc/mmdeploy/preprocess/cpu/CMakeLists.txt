@@ -5,6 +5,9 @@ project(mmdeploy_cpu_transform_impl)
 set(SRCS
         collect_impl.cpp
         crop_impl.cpp
+        ten_crop_impl.cpp
+        three_crop_impl.cpp
+        crop_utils.cpp
         image2tensor_impl.cpp
         default_format_bundle_impl.cpp
         load_impl.cpp
