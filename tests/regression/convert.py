@@ -73,7 +73,7 @@ def parse_deploy_config():
 def website_list():
     model_website_list = []
     _, _, model_configs_list, _ = generate_inference_dict()
-    codebase_list, backend_list, get_task_type_list = parse_deploy_config()
+    _, _, get_task_type_list = parse_deploy_config()
 
     task_type = str(get_task_type_list[0])
     task_type = task_type.split('.', 1)[1]
@@ -96,7 +96,7 @@ def main():
 
     inference_dict, name_list, model_configs_list, _ = generate_inference_dict(
     )
-    codebase_list, backend_list, get_task_type_list = parse_deploy_config()
+    _, backend_list, get_task_type_list = parse_deploy_config()
     model_website_list, model_website_task = website_list()
     platform1 = []
     i = 0
