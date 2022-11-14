@@ -5,7 +5,6 @@ import os.path as osp
 import numpy as np
 import yaml
 from easydict import EasyDict as edict
-from tomark import Tomark
 
 from mmdeploy.utils import get_backend, get_codebase, get_task_type
 
@@ -89,10 +88,28 @@ def website_list():
     return model_website_list, model_website_task
 
 
+def table(listOfDicts):
+    """Loop through a list of dicts and return a markdown table as a multi-line
+    string.
+
+    listOfDicts -- A list of dictionaries, each dict is a row
+    """
+    markdowntable = ''
+    markdownheader = '| ' + ' | '.join(map(str, listOfDicts[0].keys())) + ' |'
+    markdownheaderseparator = '|-----' * len(listOfDicts[0].keys()) + '|'
+    markdowntable += markdownheader + '\n'
+    markdowntable += markdownheaderseparator + '\n'
+    for row in listOfDicts:
+        markdownrow = ''
+        for key, col in row.items():
+            markdownrow += '| ' + str(col) + ' '
+        markdowntable += markdownrow + '|' + '\n'
+    return markdowntable
+
+
 def main():
     args = parse_args()
     inference_list = []
-
     long, name_list, model_configs_list, _, link = generate_inference_dict()
     inference_dict = long
     _, backend_list, get_task_type_list = parse_deploy_config()
@@ -147,13 +164,12 @@ def main():
                 dict[i] = 'Y'
             else:
                 dict[i] = 'N'
-
-    markdown = Tomark.table(inference_list)
+    markdown = table(inference_list)
     print(markdown)
     path = args.output_md_file
     (file, ext) = osp.splitext(path)
 
-    with open(f'{file}.md', 'w') as f:
+    with open(f'{file}.txt', 'w') as f:
         f.write(markdown)
         f.close()
 
