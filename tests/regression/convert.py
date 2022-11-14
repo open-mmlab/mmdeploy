@@ -29,32 +29,31 @@ def generate_inference_dict():
     with open(args.yaml_cfg, 'r') as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
         config = edict(config)
-        for k, v in config.items():
-            if k == 'models':
-                for model in v:
-                    name = model['name']
-                    metafile = model['metafile']
-                    model_configs = model['model_configs']
-                    piplines = model['pipelines']
-                    name_list.append(name)
-                    metafile_list.append(metafile)
-                    model_configs_list.append(model_configs)
-                    piplines_list.append(piplines)
-                    list = []
-                    for content in piplines:
-
-                        deploy_config = content['deploy_config']
-                        (file, ext) = osp.splitext(deploy_config)
-                        platform = osp.basename(file)
-                        inference_platform = platform.split('_')[1]
-                        list.append(inference_platform)
-                        inference_dict[name] = list
-    return inference_dict, name_list, model_configs_list, piplines_list
+        url = config.globals.url
+        for i in range(len(config.models)):
+            model = config.models[i]
+            name = model.name
+            metafile = model.metafile
+            model_configs = model.model_configs
+            piplines = model.pipelines
+            name_list.append(name)
+            metafile_list.append(metafile)
+            model_configs_list.append(model_configs)
+            piplines_list.append(piplines)
+            list = []
+            for content in piplines:
+                deploy_config = content.deploy_config
+                (file, ext) = osp.splitext(deploy_config)
+                platform = osp.basename(file)
+                inference_platform = platform.split('_')[1]
+                list.append(inference_platform)
+                inference_dict[name] = list
+    return inference_dict, name_list, model_configs_list, piplines_list, url
 
 
 def parse_deploy_config():
 
-    _, _, _, piplines_list = generate_inference_dict()
+    _, _, _, piplines_list, _ = generate_inference_dict()
     codebase_list = []
     backend_list = []
     get_task_type_list = []
@@ -72,7 +71,7 @@ def parse_deploy_config():
 
 def website_list():
     model_website_list = []
-    _, _, model_configs_list, _ = generate_inference_dict()
+    _, _, model_configs_list, _, _ = generate_inference_dict()
     _, _, get_task_type_list = parse_deploy_config()
 
     task_type = str(get_task_type_list[0])
@@ -94,8 +93,8 @@ def main():
     args = parse_args()
     inference_list = []
 
-    inference_dict, name_list, model_configs_list, _ = generate_inference_dict(
-    )
+    long, name_list, model_configs_list, _, link = generate_inference_dict()
+    inference_dict = long
     _, backend_list, get_task_type_list = parse_deploy_config()
     model_website_list, model_website_task = website_list()
     platform1 = []
@@ -119,17 +118,16 @@ def main():
         dict = {}
         website_name = model_website_list[x]
         x += 1
-        front = 'https://github.com/open-mmlab/'
         if model_website_task == 'mmdetection':
 
-            url = f'{front}{model_website_task}/tree/3.x/'
+            url = f'{link}{model_website_task}/tree/3.x/'
             url_name = f'{url}{website_name}'
             dict['Model'] = f'[{name}]({url_name})'
             task_type = task_type.title()
             dict['Task'] = task_type
             inference_list.append(dict)
         else:
-            url = f'{front}{model_website_task}/tree/1.x/'
+            url = f'{link}{model_website_task}/tree/1.x/'
             url_name = f'{url}{website_name}'
             dict['Model'] = f'[{name}]({url_name})'
             task_type = task_type.title()
