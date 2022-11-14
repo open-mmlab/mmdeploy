@@ -13,6 +13,14 @@ def is_available():
     return importlib.util.find_spec('rknn') is not None
 
 
+def package_info():
+    import pkg_resources
+    for p in pkg_resources.working_set:
+        if 'rknn' in p.project_name:
+            return dict(name=p.project_name, version=p.version)
+    return dict(name=None, version=None)
+
+
 def device_available():
     """Check whether device available.
 
