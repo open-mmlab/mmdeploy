@@ -73,7 +73,7 @@ struct MMDEPLOY_API Profiler {
 
   std::string path_;
   std::deque<Scope> nodes_;
-  moodycamel::ConcurrentQueue<Event*> events_;
+  moodycamel::ConcurrentQueue<std::unique_ptr<Event>> events_;
   Scope* root_{};
 };
 

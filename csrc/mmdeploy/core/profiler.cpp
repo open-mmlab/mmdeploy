@@ -46,8 +46,9 @@ Scope* Profiler::CreateScope(std::string_view name) {
 }
 
 Event* Profiler::AddEvent(Event e) {
-  Event* pe = new Event(e);
-  events_.enqueue(pe);
+  auto uptr = std::make_unique<Event>(e);
+  Event* pe = uptr.get();
+  events_.enqueue(std::move(uptr));
   return pe;
 }
 
@@ -56,24 +57,22 @@ void Profiler::Release() {
   root_->Dump(ofs);
   ofs << "----\n";
 
-  Event* item;
-  std::vector<Event*> vec;
+  std::unique_ptr<Event> item;
+  std::vector<std::unique_ptr<Event>> vec;
   while (events_.try_dequeue(item)) {
-    vec.push_back(item);
+    vec.push_back(std::move(item));
   }
 
   std::sort(vec.begin(), vec.end(),
-            [](const Event* a, const Event* b) { return a->time_point < b->time_point; });
+            [](const std::unique_ptr<Event>& a, const std::unique_ptr<Event>& b) {
+              return a->time_point < b->time_point;
+            });
 
   for (int i = 0; i < vec.size(); i++) {
     ofs << vec[i]->scope->name_ << " " << vec[i]->type << " " << vec[i]->index << " "
         << std::chrono::duration_cast<std::chrono::microseconds>(vec[i]->time_point - TimePoint{})
                .count()
         << "\n";
-  }
-
-  for (int i = 0; i < vec.size(); i++) {
-    delete vec[i];
   }
 }
 
