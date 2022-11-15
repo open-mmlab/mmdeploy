@@ -37,7 +37,7 @@ def check_backend():
 
     import mmdeploy.apis.rknn as rknn_apis
     logger.info(f'rknn: {rknn_apis.package_info()}\t'
-                f'adb_device_available:{rknn_apis.device_available()}')
+                f'adb_device_available: {rknn_apis.device_available()}')
 
     import mmdeploy.apis.pplnn as pplnn_apis
     logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')

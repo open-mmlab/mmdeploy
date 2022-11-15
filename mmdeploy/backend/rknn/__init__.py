@@ -16,7 +16,7 @@ def is_available():
 def package_info():
     import pkg_resources
     for p in pkg_resources.working_set:
-        if 'rknn' in p.project_name:
+        if p.project_name.startswith('rknn-toolkit'):
             return dict(name=p.project_name, version=p.version)
     return dict(name=None, version=None)
 
