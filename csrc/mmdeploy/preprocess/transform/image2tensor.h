@@ -45,7 +45,8 @@ class MMDEPLOY_API ImageToTensor : public Transform {
   std::unique_ptr<ImageToTensorImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(ImageToTensorImpl);
+MMDEPLOY_DECLARE_REGISTRY(ImageToTensorImpl,
+                          std::unique_ptr<ImageToTensorImpl>(const Value& config));
 
 }  // namespace mmdeploy
 

@@ -50,15 +50,7 @@ class PseHeadCpuImpl : public PseHeadImpl {
   Device device_;
 };
 
-class PseHeadCpuImplCreator : public ::mmdeploy::Creator<PseHeadImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<PseHeadImpl> Create(const Value&) override {
-    return std::make_unique<PseHeadCpuImpl>();
-  }
-};
-
-REGISTER_MODULE(PseHeadImpl, PseHeadCpuImplCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(PseHeadImpl, (cpu, 0),
+                               [] { return std::make_unique<PseHeadCpuImpl>(); });
 
 }  // namespace mmdeploy::mmocr

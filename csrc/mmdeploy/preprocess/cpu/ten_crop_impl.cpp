@@ -32,16 +32,7 @@ class TenCropImpl : public ::mmdeploy::TenCropImpl {
   }
 };
 
-class TenCropImplCreator : public Creator<::mmdeploy::TenCropImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<TenCropImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::TenCropImpl, (cpu, 0), TenCropImpl);
 
 }  // namespace cpu
 }  // namespace mmdeploy
-
-using ::mmdeploy::TenCropImpl;
-using ::mmdeploy::cpu::TenCropImplCreator;
-REGISTER_MODULE(TenCropImpl, TenCropImplCreator);

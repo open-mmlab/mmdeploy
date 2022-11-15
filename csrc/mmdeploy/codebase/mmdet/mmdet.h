@@ -12,8 +12,7 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/serialization.h"
 
-namespace mmdeploy {
-namespace mmdet {
+namespace mmdeploy::mmdet {
 
 struct Detection {
   int index;
@@ -26,10 +25,8 @@ struct Detection {
 
 using Detections = std::vector<Detection>;
 
-DECLARE_CODEBASE(MMDetection, mmdet);
-}  // namespace mmdet
+MMDEPLOY_DECLARE_CODEBASE(MMDetection, mmdet);
 
-MMDEPLOY_DECLARE_REGISTRY(mmdet::MMDetection);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmdet
 
 #endif  // MMDEPLOY_SRC_CODEBASE_MMDET_MMDET_H_
