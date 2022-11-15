@@ -133,7 +133,7 @@ class DBHead : public MMOCR {
   std::unique_ptr<DbHeadImpl> impl_;
 };
 
-REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
 
 MMDEPLOY_DEFINE_REGISTRY(DbHeadImpl);
 

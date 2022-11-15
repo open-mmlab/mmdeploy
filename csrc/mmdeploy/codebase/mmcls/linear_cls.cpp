@@ -67,7 +67,7 @@ class LinearClsHead : public MMClassification {
   int topk_{1};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMClassification, LinearClsHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMClassification, LinearClsHead);
 
 class CropBox {
  public:
