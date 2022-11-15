@@ -27,9 +27,12 @@ def device_available():
     Returns:
         bool: True if the device is available.
     """
-    ret = subprocess.check_output('adb devices', shell=True)
-    match = re.search(r'\\n\w+\\tdevice', str(ret))
-    return match is not None
+    try:
+        ret = subprocess.check_output('adb devices', shell=True)
+        match = re.search(r'\\n\w+\\tdevice', str(ret))
+        return match is not None
+    except Exception:
+        return False
 
 
 __all__ = []
