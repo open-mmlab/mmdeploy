@@ -8,9 +8,9 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
-from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
+from mmdeploy.utils.config_utils import (disable_norm4rknn, get_input_shape,
                                          get_rknn_quantization,
-                                         is_dynamic_shape, disable_norm4rknn)
+                                         is_dynamic_shape)
 from mmdeploy.utils.constants import Backend
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
@@ -28,7 +28,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
-        rknn_quantization (bool): Wheather do quantization for RKNN backend.
+        rknn_quantization (bool): Whether do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.

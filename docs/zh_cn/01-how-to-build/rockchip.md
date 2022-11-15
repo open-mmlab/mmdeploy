@@ -171,24 +171,6 @@ backend_config = dict(
 
 ### 问题说明
 
-- 量化失败.
-
-  经验来说, 如果 `do_quantization` 被设置为 `True`，RKNN 需要的输入没有被归一化过。请修改 `Normalize` 在 `model_cfg` 的设置，如将
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-  ```
-
-  改为
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
-  ```
-
-  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[123.675, 116.28, 103.53]]`, `std_values=[[58.395, 57.12, 57.375]]`。
-
 - SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
 
 ## 模型推理

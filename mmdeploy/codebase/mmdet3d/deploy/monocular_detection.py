@@ -18,7 +18,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmdet3d.deploy.mmdetection3d import MMDET3D_TASK
-from mmdeploy.utils import Task, Backend, get_root_logger
+from mmdeploy.utils import Backend, Task, get_root_logger
 from mmdeploy.utils.config_utils import is_dynamic_shape
 
 
@@ -66,7 +66,7 @@ class MonocularDetection(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray],
                      input_shape: Optional[Sequence[int]] = None,
-                     backend: Optional[Backend] = None,**kwargs) \
+                     backend: Optional[Backend] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
 

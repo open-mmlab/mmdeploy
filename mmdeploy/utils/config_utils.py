@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Sequence, Union
 import mmcv
 
 from .constants import Backend, Codebase, Task
-from .utils import deprecate, get_root_logger
+from .utils import deprecate
 
 
 def load_config(*args) -> List[mmcv.Config]:
@@ -435,7 +435,7 @@ def disable_norm4rknn(transforms: Sequence[Dict], flag: bool = False):
     Returns:
         (common_params, transforms): Configurations after swap.
     """
-    if flag == True:
+    if flag is True:
         for trans in transforms:
             if trans['type'] == 'Normalize':
                 trans['mean'] = [0, 0, 0]

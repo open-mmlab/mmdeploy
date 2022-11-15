@@ -10,7 +10,7 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, Backend, get_input_shape
+from mmdeploy.utils import Backend, Task, get_input_shape
 from .mmrotate import MMROTATE_TASK
 
 

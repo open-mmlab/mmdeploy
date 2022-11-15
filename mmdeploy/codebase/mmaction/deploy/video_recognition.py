@@ -8,7 +8,7 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import (Task, Backend, get_backend_config, get_input_shape,
+from mmdeploy.utils import (Backend, Task, get_backend_config, get_input_shape,
                             get_root_logger)
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 from .mmaction import MMACTION_TASK

@@ -8,8 +8,8 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger, Backend
-from mmdeploy.utils.config_utils import (get_input_shape, disable_norm4rknn,
+from mmdeploy.utils import Backend, Task, get_root_logger
+from mmdeploy.utils.config_utils import (disable_norm4rknn, get_input_shape,
                                          get_rknn_quantization)
 from .mmclassification import MMCLS_TASK
 
@@ -26,7 +26,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are `str`, `np.ndarray`.
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
-        rknn_quantization (bool): Wheather do quantization for RKNN backend.
+        rknn_quantization (bool): Whether do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.
@@ -118,7 +118,7 @@ class Classification(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
-                     backend:Optional[Backend] = None,**kwargs) \
+                     backend: Optional[Backend] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for classifier.
 

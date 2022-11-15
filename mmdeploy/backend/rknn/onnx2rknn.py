@@ -4,10 +4,11 @@ from typing import Optional, Union
 import mmcv
 from rknn.api import RKNN
 
-from mmdeploy.utils import (get_common_config, get_onnx_config,
+from mmdeploy.utils import (get_backend_config, get_common_config,
+                            get_normalization, get_onnx_config,
                             get_partition_config, get_quantization_config,
-                            get_root_logger, load_config, get_backend_config,
-                            get_rknn_quantization, get_normalization)
+                            get_rknn_quantization, get_root_logger,
+                            load_config)
 
 
 def onnx2rknn(onnx_model: str,
@@ -42,7 +43,7 @@ def onnx2rknn(onnx_model: str,
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
     # update norm value
-    if get_rknn_quantization(deploy_cfg) == True:
+    if get_rknn_quantization(deploy_cfg) is True:
         transform = get_normalization(model_cfg)
         common_params.update(
             dict(

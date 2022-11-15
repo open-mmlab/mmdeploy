@@ -8,8 +8,8 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import (Task, Backend, get_input_shape,
-                            get_rknn_quantization, disable_norm4rknn)
+from mmdeploy.utils import (Backend, Task, disable_norm4rknn, get_input_shape,
+                            get_rknn_quantization)
 from .mmsegmentation import MMSEG_TASK
 
 
@@ -25,7 +25,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
-        rknn_quantization (bool): Wheather do quantization for RKNN backend.
+        rknn_quantization (bool): Whether do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.

@@ -7,7 +7,6 @@ import torch
 
 from mmdeploy.codebase import BaseTask
 from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
-from mmdeploy.utils.config_utils import get_rknn_quantization
 
 
 def visualize_model(model_cfg: Union[str, mmcv.Config],
