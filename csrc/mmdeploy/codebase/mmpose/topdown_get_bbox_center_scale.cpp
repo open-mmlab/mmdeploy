@@ -68,19 +68,23 @@ class TopDownGetBboxCenterScaleImpl : public TransformImpl {
   vector<int> image_size_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(TopDownGetBboxCenterScaleImpl,
-                           std::unique_ptr<TopDownGetBboxCenterScaleImpl>(const Value& config));
+class TopDownGetBboxCenterScaleImplCreator : public Creator<TopDownGetBboxCenterScaleImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override {
+    return std::make_unique<TopDownGetBboxCenterScaleImpl>(args);
+  }
+};
 
 MMDEPLOY_DEFINE_REGISTRY(TopDownGetBboxCenterScaleImpl);
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(TopDownGetBboxCenterScaleImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<TopDownGetBboxCenterScaleImpl>(config);
-});
+REGISTER_MODULE(TopDownGetBboxCenterScaleImpl, TopDownGetBboxCenterScaleImplCreator);
 
 class TopDownGetBboxCenterScale : public Transform {
  public:
   explicit TopDownGetBboxCenterScale(const Value& args) : Transform(args) {
-    auto impl_creator = gRegistry<TopDownGetBboxCenterScaleImpl>().Get("cpu");
+    auto impl_creator = Registry<TopDownGetBboxCenterScaleImpl>::Get().GetCreator("cpu", 1);
     impl_ = impl_creator->Create(args);
   }
   ~TopDownGetBboxCenterScale() override = default;
@@ -92,8 +96,6 @@ class TopDownGetBboxCenterScale : public Transform {
   static const std::string name_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TopDownGetBboxCenterScale, 0), [](const Value& config) {
-  return std::make_unique<TopDownGetBboxCenterScale>(config);
-});
+DECLARE_AND_REGISTER_MODULE(Transform, TopDownGetBboxCenterScale, 1);
 
 }  // namespace mmdeploy

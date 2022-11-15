@@ -132,7 +132,15 @@ class ZipModelImpl : public ModelImpl {
   std::map<std::string, int> file_index_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(ModelImpl, (ZipModel, 0),
-                               [] { return std::make_unique<ZipModelImpl>(); });
+class ZipModelImplRegister {
+ public:
+  ZipModelImplRegister() {
+    (void)ModelRegistry::Get().Register("ZipModel", []() -> std::unique_ptr<ModelImpl> {
+      return std::make_unique<ZipModelImpl>();
+    });
+  }
+};
+
+static ZipModelImplRegister folder_model_register;
 
 }  // namespace mmdeploy::framework

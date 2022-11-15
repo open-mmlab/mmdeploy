@@ -176,6 +176,6 @@ std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float r
   return {left, top, right, bottom};
 }
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
+REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
 
 }  // namespace mmdeploy::mmdet

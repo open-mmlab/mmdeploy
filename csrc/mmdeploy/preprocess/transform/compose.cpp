@@ -40,10 +40,10 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
     MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
-    auto creator = gRegistry<Transform>().Get(type, version);
+    auto creator = Registry<Transform>::Get().GetCreator(type, version);
     if (!creator) {
       MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                     gRegistry<Transform>().List());
+                     Registry<Transform>::Get().List());
       throw_exception(eEntryNotFound);
     }
     auto transform = creator->Create(cfg);
@@ -67,8 +67,17 @@ Result<Value> Compose::Process(const Value& input) {
   return std::move(output);
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Compose, 0), [](const Value& config) {
-  return std::make_unique<Compose>(config, 0);
-});
+class ComposeCreator : public Creator<Transform> {
+ public:
+  const char* GetName() const override { return "Compose"; }
+  int GetVersion() const override { return version_; }
+  ReturnType Create(const Value& args) override {
+    return std::make_unique<Compose>(args, version_);
+  }
 
+ private:
+  int version_{1};
+};
+
+REGISTER_MODULE(Transform, ComposeCreator);
 }  // namespace mmdeploy

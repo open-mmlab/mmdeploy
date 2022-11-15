@@ -4,7 +4,8 @@
 
 using namespace std;
 
-namespace mmdeploy::elena {
+namespace mmdeploy {
+namespace elena {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
@@ -25,6 +26,16 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ResizeImpl, (elena, 0), ResizeImpl);
+class ResizeImplCreator : public Creator<mmdeploy::ResizeImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return std::make_unique<ResizeImpl>(args); }
+};
 
-}  // namespace mmdeploy::elena
+}  // namespace elena
+}  // namespace mmdeploy
+
+using mmdeploy::ResizeImpl;
+using mmdeploy::elena::ResizeImplCreator;
+REGISTER_MODULE(ResizeImpl, ResizeImplCreator);

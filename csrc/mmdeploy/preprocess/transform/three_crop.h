@@ -42,8 +42,7 @@ class MMDEPLOY_API ThreeCrop : public Transform {
   std::unique_ptr<ThreeCropImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(ThreeCropImpl, std::unique_ptr<ThreeCropImpl>(const Value& config));
-
+MMDEPLOY_DECLARE_REGISTRY(ThreeCropImpl);
 }  // namespace mmdeploy
 
 #endif

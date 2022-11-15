@@ -4,7 +4,8 @@
 
 using namespace std;
 
-namespace mmdeploy::elena {
+namespace mmdeploy {
+namespace elena {
 
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
@@ -26,6 +27,16 @@ class PadImpl : public ::mmdeploy::PadImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PadImpl, (elena, 0), PadImpl);
+class PadImplCreator : public Creator<::mmdeploy::PadImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<PadImpl>(args); }
+};
 
-}  // namespace mmdeploy::elena
+}  // namespace elena
+}  // namespace mmdeploy
+
+using mmdeploy::PadImpl;
+using mmdeploy::elena::PadImplCreator;
+REGISTER_MODULE(PadImpl, PadImplCreator);

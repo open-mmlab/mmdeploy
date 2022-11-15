@@ -9,7 +9,8 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
 
-namespace mmdeploy::mmrotate {
+namespace mmdeploy {
+namespace mmrotate {
 
 struct RotatedDetectorOutput {
   struct Detection {
@@ -22,8 +23,10 @@ struct RotatedDetectorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(detections);
 };
 
-MMDEPLOY_DECLARE_CODEBASE(MMRotate, mmrotate);
+DECLARE_CODEBASE(MMRotate, mmrotate);
+}  // namespace mmrotate
 
-}  // namespace mmdeploy::mmrotate
+MMDEPLOY_DECLARE_REGISTRY(mmrotate::MMRotate);
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_MMROTATE_H

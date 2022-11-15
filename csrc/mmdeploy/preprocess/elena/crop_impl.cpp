@@ -4,7 +4,8 @@
 
 using namespace std;
 
-namespace mmdeploy::elena {
+namespace mmdeploy {
+namespace elena {
 
 class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
  public:
@@ -27,6 +28,17 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CenterCropImpl, (elena, 0), CenterCropImpl);
+class CenterCropImplCreator : public Creator<::mmdeploy::CenterCropImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<CenterCropImpl>(args); }
+};
 
-}  // namespace mmdeploy::elena
+}  // namespace elena
+}  // namespace mmdeploy
+
+using ::mmdeploy::CenterCropImpl;
+using ::mmdeploy::elena::CenterCropImplCreator;
+
+REGISTER_MODULE(CenterCropImpl, CenterCropImplCreator);

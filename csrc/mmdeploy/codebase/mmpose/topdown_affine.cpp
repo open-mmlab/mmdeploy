@@ -169,14 +169,18 @@ class TopDownAffineImpl : public Module {
   Stream stream_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(TopDownAffineImpl,
-                           std::unique_ptr<TopDownAffineImpl>(const Value& config));
+class TopDownAffineImplCreator : public Creator<TopDownAffineImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override {
+    return std::make_unique<TopDownAffineImpl>(args);
+  }
+};
 
 MMDEPLOY_DEFINE_REGISTRY(TopDownAffineImpl);
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(TopDownAffineImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<TopDownAffineImpl>(config);
-});
+REGISTER_MODULE(TopDownAffineImpl, TopDownAffineImplCreator);
 
 class TopDownAffine : public Transform {
  public:
@@ -192,8 +196,6 @@ class TopDownAffine : public Transform {
   static const std::string name_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TopDownAffine, 0), [](const Value& config) {
-  return std::make_unique<TopDownAffine>(config);
-});
+DECLARE_AND_REGISTER_MODULE(Transform, TopDownAffine, 1);
 
 }  // namespace mmdeploy

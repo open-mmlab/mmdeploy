@@ -7,7 +7,8 @@
 
 using namespace std;
 
-namespace mmdeploy::cpu {
+namespace mmdeploy {
+namespace cpu {
 
 class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
  public:
@@ -34,6 +35,18 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::NormalizeImpl, (cpu, 0), NormalizeImpl);
+class NormalizeImplCreator : public Creator<::mmdeploy::NormalizeImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  std::unique_ptr<::mmdeploy::NormalizeImpl> Create(const Value& args) override {
+    return make_unique<NormalizeImpl>(args);
+  }
+};
 
-}  // namespace mmdeploy::cpu
+}  // namespace cpu
+}  // namespace mmdeploy
+
+using mmdeploy::NormalizeImpl;
+using mmdeploy::cpu::NormalizeImplCreator;
+REGISTER_MODULE(NormalizeImpl, NormalizeImplCreator);

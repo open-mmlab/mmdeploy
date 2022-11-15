@@ -109,6 +109,6 @@ class DeepposeRegressionHeadDecode : public MMPose {
   }
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, DeepposeRegressionHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, DeepposeRegressionHeadDecode);
 
 }  // namespace mmdeploy::mmpose

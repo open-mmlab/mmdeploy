@@ -71,7 +71,15 @@ class PseHeadCudaImpl : public PseHeadImpl {
   std::optional<ConnectedComponents> cc_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(PseHeadImpl, (cuda, 0),
-                               [] { return std::make_unique<PseHeadCudaImpl>(); });
+class PseHeadCudaImplCreator : public ::mmdeploy::Creator<PseHeadImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<PseHeadImpl> Create(const Value&) override {
+    return std::make_unique<PseHeadCudaImpl>();
+  }
+};
+
+REGISTER_MODULE(PseHeadImpl, PseHeadCudaImplCreator);
 
 }  // namespace mmdeploy::mmocr

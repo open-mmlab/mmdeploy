@@ -61,12 +61,10 @@ class BaseHead : public MMAction {
   int topk_{1};
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, BaseHead);
-
+REGISTER_CODEBASE_COMPONENT(MMAction, BaseHead);
 using SlowFastHead = BaseHead;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, SlowFastHead);
-
+REGISTER_CODEBASE_COMPONENT(MMAction, SlowFastHead);
 using TSNHead = BaseHead;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, TSNHead);
+REGISTER_CODEBASE_COMPONENT(MMAction, TSNHead);
 
 }  // namespace mmdeploy::mmaction

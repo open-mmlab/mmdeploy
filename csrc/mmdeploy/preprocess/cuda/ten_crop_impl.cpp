@@ -71,7 +71,19 @@ class TenCropImpl : public ::mmdeploy::TenCropImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::TenCropImpl, (cuda, 0), TenCropImpl);
+class TenCropImplCreator : public Creator<::mmdeploy::TenCropImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<TenCropImpl>(args); }
+
+ private:
+  int version_{1};
+};
 
 }  // namespace cuda
 }  // namespace mmdeploy
+
+using ::mmdeploy::TenCropImpl;
+using ::mmdeploy::cuda::TenCropImplCreator;
+REGISTER_MODULE(TenCropImpl, TenCropImplCreator);

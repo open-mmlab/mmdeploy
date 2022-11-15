@@ -374,16 +374,16 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
   string target_type_{"GaussianHeatmap"};
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapBaseHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapBaseHeadDecode);
 
 // decode process is same
 using TopdownHeatmapSimpleHeadDecode = TopdownHeatmapBaseHeadDecode;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapSimpleHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapSimpleHeadDecode);
 using TopdownHeatmapMultiStageHeadDecode = TopdownHeatmapBaseHeadDecode;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMultiStageHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMultiStageHeadDecode);
 using ViPNASHeatmapSimpleHeadDecode = TopdownHeatmapBaseHeadDecode;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, ViPNASHeatmapSimpleHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, ViPNASHeatmapSimpleHeadDecode);
 using TopdownHeatmapMSMUHeadDecode = TopdownHeatmapBaseHeadDecode;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMSMUHeadDecode);
+REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapMSMUHeadDecode);
 
 }  // namespace mmdeploy::mmpose

@@ -41,7 +41,7 @@ class MMDEPLOY_API Normalize : public Transform {
   std::unique_ptr<NormalizeImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(NormalizeImpl, std::unique_ptr<NormalizeImpl>(const Value& config));
+MMDEPLOY_DECLARE_REGISTRY(NormalizeImpl);
 
 }  // namespace mmdeploy
 #endif  // MMDEPLOY_NORMALIZE_H

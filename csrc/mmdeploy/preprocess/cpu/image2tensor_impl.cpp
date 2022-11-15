@@ -4,7 +4,8 @@
 #include "mmdeploy/preprocess/transform/image2tensor.h"
 #include "opencv_utils.h"
 
-namespace mmdeploy::cpu {
+namespace mmdeploy {
+namespace cpu {
 
 class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
  public:
@@ -30,6 +31,18 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ImageToTensorImpl, (cpu, 0), ImageToTensorImpl);
+class ImageToTensorImplCreator : public Creator<::mmdeploy::ImageToTensorImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override {
+    return std::make_unique<ImageToTensorImpl>(args);
+  }
+};
 
-}  // namespace mmdeploy::cpu
+}  // namespace cpu
+}  // namespace mmdeploy
+
+using mmdeploy::ImageToTensorImpl;
+using mmdeploy::cpu::ImageToTensorImplCreator;
+REGISTER_MODULE(ImageToTensorImpl, ImageToTensorImplCreator);

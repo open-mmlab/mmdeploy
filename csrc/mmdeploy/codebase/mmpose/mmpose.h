@@ -9,7 +9,8 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
 
-namespace mmdeploy::mmpose {
+namespace mmdeploy {
+namespace mmpose {
 
 struct PoseDetectorOutput {
   struct KeyPoint {
@@ -21,8 +22,11 @@ struct PoseDetectorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(key_points);
 };
 
-MMDEPLOY_DECLARE_CODEBASE(MMPose, mmpose);
+DECLARE_CODEBASE(MMPose, mmpose);
 
-}  // namespace mmdeploy::mmpose
+}  // namespace mmpose
+
+MMDEPLOY_DECLARE_REGISTRY(mmpose::MMPose);
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_MMPOSE_H

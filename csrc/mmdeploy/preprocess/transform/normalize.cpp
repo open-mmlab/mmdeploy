@@ -105,7 +105,7 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
 }
 
 Normalize::Normalize(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<NormalizeImpl>().Get(specified_platform_, version);
+  auto impl_creator = Registry<NormalizeImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Normalize' is not supported on specified platform");
@@ -113,9 +113,17 @@ Normalize::Normalize(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Normalize, 0), [](const Value& config) {
-  return std::make_unique<Normalize>(config, 0);
-});
+class NormalizeCreator : public Creator<Transform> {
+ public:
+  const char* GetName() const override { return "Normalize"; }
+  int GetVersion() const override { return version_; }
+  ReturnType Create(const Value& args) override { return make_unique<Normalize>(args, version_); }
+
+ private:
+  int version_{1};
+};
+
+REGISTER_MODULE(Transform, NormalizeCreator);
 
 MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
 

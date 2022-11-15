@@ -12,13 +12,12 @@ namespace {
 
 class PlusCreator : public Creator<Module> {
  public:
-  std::string_view name() const noexcept override { return "Plus"; }
+  const char* GetName() const override { return "Plus"; }
   std::unique_ptr<Module> Create(const Value&) override {
     return CreateTask([](int a, int b) { return a + b; });
   }
 };
-
-MMDEPLOY_REGISTER_CREATOR(Module, PlusCreator);
+REGISTER_MODULE(Module, PlusCreator);
 
 const auto json_config1 = R"(
 {

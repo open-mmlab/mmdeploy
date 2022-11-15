@@ -178,21 +178,26 @@ Result<void> OrtNet::Forward() {
   return success();
 }
 
-static std::unique_ptr<Net> Create(const Value& args) {
-  try {
-    auto p = std::make_unique<OrtNet>();
-    if (auto r = p->Init(args)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
+class OrtNetCreator : public Creator<Net> {
+ public:
+  const char* GetName() const override { return "onnxruntime"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Net> Create(const Value& args) override {
+    try {
+      auto p = std::make_unique<OrtNet>();
+      if (auto r = p->Init(args)) {
+        return p;
+      } else {
+        MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
+        return nullptr;
+      }
+    } catch (const std::exception& e) {
+      MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
       return nullptr;
     }
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
-    return nullptr;
   }
-}
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (onnxruntime, 0), Create);
+REGISTER_MODULE(Net, OrtNetCreator);
 
 }  // namespace mmdeploy::framework

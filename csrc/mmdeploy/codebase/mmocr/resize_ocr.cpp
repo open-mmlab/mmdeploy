@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
 
 class ResizeOCRImpl : public Module {
  public:
@@ -130,13 +130,16 @@ class ResizeOCRImpl : public Module {
   Stream stream_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(ResizeOCRImpl, std::unique_ptr<ResizeOCRImpl>(const Value& config));
+class ResizeOCRImplCreator : public Creator<ResizeOCRImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return std::make_unique<ResizeOCRImpl>(args); }
+};
 
 MMDEPLOY_DEFINE_REGISTRY(ResizeOCRImpl);
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(ResizeOCRImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<ResizeOCRImpl>(config);
-});
+REGISTER_MODULE(ResizeOCRImpl, ResizeOCRImplCreator);
 
 class ResizeOCR : public Transform {
  public:
@@ -152,8 +155,5 @@ class ResizeOCR : public Transform {
   static const std::string name_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ResizeOCR, 0), [](const Value& config) {
-  return std::make_unique<ResizeOCR>(config);
-});
-
-}  // namespace mmdeploy::mmocr
+DECLARE_AND_REGISTER_MODULE(Transform, ResizeOCR, 1);
+}  // namespace mmdeploy

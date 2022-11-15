@@ -9,7 +9,8 @@
 #include "mmdeploy/core/tensor.h"
 #include "opencv2/core.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+namespace mmocr {
 
 class PaHeadImpl {
  public:
@@ -33,8 +34,10 @@ class PaHeadImpl {
   Stream stream_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(PaHeadImpl, std::unique_ptr<PaHeadImpl>());
+}  // namespace mmocr
 
-}  // namespace mmdeploy::mmocr
+MMDEPLOY_DECLARE_REGISTRY(mmocr::PaHeadImpl);
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_CODEBASE_MMOCR_PANET_H_

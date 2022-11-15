@@ -30,7 +30,7 @@ class FormatShapeImpl : public TransformImpl {
   ArgType arg_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(FormatShapeImpl, std::unique_ptr<FormatShapeImpl>(const Value& config));
+MMDEPLOY_DECLARE_REGISTRY(FormatShapeImpl);
 
 }  // namespace mmdeploy
 

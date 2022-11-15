@@ -4,7 +4,8 @@
 
 using namespace std;
 
-namespace mmdeploy::elena {
+namespace mmdeploy {
+namespace elena {
 
 class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
  public:
@@ -25,6 +26,18 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::NormalizeImpl, (elena, 0), NormalizeImpl);
+class NormalizeImplCreator : public Creator<::mmdeploy::NormalizeImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  std::unique_ptr<::mmdeploy::NormalizeImpl> Create(const Value& args) override {
+    return make_unique<NormalizeImpl>(args);
+  }
+};
 
-}  // namespace mmdeploy::elena
+}  // namespace elena
+}  // namespace mmdeploy
+
+using mmdeploy::NormalizeImpl;
+using mmdeploy::elena::NormalizeImplCreator;
+REGISTER_MODULE(NormalizeImpl, NormalizeImplCreator);

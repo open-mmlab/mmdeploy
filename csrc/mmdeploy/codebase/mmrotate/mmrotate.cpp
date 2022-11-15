@@ -2,8 +2,14 @@
 
 #include "mmdeploy/codebase/mmrotate/mmrotate.h"
 
-namespace mmdeploy::mmrotate {
+using namespace std;
 
-MMDEPLOY_REGISTER_CODEBASE(MMRotate);
+namespace mmdeploy {
+namespace mmrotate {
 
-}  // namespace mmdeploy::mmrotate
+REGISTER_CODEBASE(MMRotate);
+
+}  // namespace mmrotate
+
+MMDEPLOY_DEFINE_REGISTRY(mmrotate::MMRotate);
+}  // namespace mmdeploy

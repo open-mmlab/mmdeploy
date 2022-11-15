@@ -10,7 +10,8 @@
 using namespace std;
 using namespace ppl::cv::cuda;
 
-namespace mmdeploy::cuda {
+namespace mmdeploy {
+namespace cuda {
 
 template <int channels>
 void CastToFloat(const uint8_t* src, int height, int width, float* dst, cudaStream_t stream);
@@ -162,6 +163,16 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PrepareImageImpl, (cuda, 0), PrepareImageImpl);
+class PrepareImageImplCreator : public Creator<::mmdeploy::PrepareImageImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<PrepareImageImpl>(args); }
+};
 
-}  // namespace mmdeploy::cuda
+}  // namespace cuda
+}  // namespace mmdeploy
+
+using mmdeploy::PrepareImageImpl;
+using mmdeploy::cuda::PrepareImageImplCreator;
+REGISTER_MODULE(PrepareImageImpl, PrepareImageImplCreator);

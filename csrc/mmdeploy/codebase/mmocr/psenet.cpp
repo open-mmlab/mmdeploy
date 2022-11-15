@@ -11,7 +11,8 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+namespace mmocr {
 
 void contour_expand(const cv::Mat_<uint8_t>& kernel_masks, const cv::Mat_<int32_t>& kernel_label,
                     const cv::Mat_<float>& score, int min_kernel_area, int kernel_num,
@@ -31,14 +32,14 @@ class PSEHead : public MMOCR {
       downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
-    auto creator = gRegistry<PseHeadImpl>().Get(platform);
+    auto creator = Registry<PseHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
       MMDEPLOY_ERROR(
           "PSEHead: implementation for platform \"{}\" not found. Available platforms: {}",
-          platform, gRegistry<PseHeadImpl>().List());
+          platform, Registry<PseHeadImpl>::Get().List());
       throw_exception(eEntryNotFound);
     }
-    impl_ = creator->Create();
+    impl_ = creator->Create(nullptr);
     impl_->Init(stream_);
   }
 
@@ -117,8 +118,10 @@ class PSEHead : public MMOCR {
   std::unique_ptr<PseHeadImpl> impl_;
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, PSEHead);
+REGISTER_CODEBASE_COMPONENT(MMOCR, PSEHead);
 
-MMDEPLOY_DEFINE_REGISTRY(PseHeadImpl);
+}  // namespace mmocr
 
-}  // namespace mmdeploy::mmocr
+MMDEPLOY_DEFINE_REGISTRY(mmocr::PseHeadImpl);
+
+}  // namespace mmdeploy

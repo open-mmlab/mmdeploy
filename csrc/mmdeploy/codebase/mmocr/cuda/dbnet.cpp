@@ -73,7 +73,15 @@ class DbHeadCudaImpl : public DbHeadImpl {
   std::optional<ConnectedComponents> cc_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(DbHeadImpl, (cuda, 0),
-                               [] { return std::make_unique<DbHeadCudaImpl>(); });
+class DbHeadCudaImplCreator : public ::mmdeploy::Creator<DbHeadImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<DbHeadImpl> Create(const Value&) override {
+    return std::make_unique<DbHeadCudaImpl>();
+  }
+};
+
+REGISTER_MODULE(DbHeadImpl, DbHeadCudaImplCreator);
 
 }  // namespace mmdeploy::mmocr

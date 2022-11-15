@@ -138,7 +138,16 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
   cudnnTensorDescriptor_t dst_desc_;
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::FormatShapeImpl, (cuda, 0), FormatShapeImpl);
+class FormatShapeImplCreator : public Creator<::mmdeploy::FormatShapeImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<FormatShapeImpl>(args); }
+};
 
 }  // namespace cuda
 }  // namespace mmdeploy
+
+using ::mmdeploy::FormatShapeImpl;
+using ::mmdeploy::cuda::FormatShapeImplCreator;
+REGISTER_MODULE(FormatShapeImpl, FormatShapeImplCreator);

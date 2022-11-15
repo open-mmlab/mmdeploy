@@ -32,10 +32,10 @@ struct NetModule::Impl {
       OUTCOME_TRY(auto config, model.GetModelConfig(name));
       device_ = context.value("device", Device{"cpu"});
       stream_ = context.value("stream", Stream::GetDefault(device_));
-      auto creator = gRegistry<Net>().Get(config.backend);
+      auto creator = Registry<Net>::Get().GetCreator(config.backend);
       if (!creator) {
         MMDEPLOY_ERROR("Net backend not found: {}, available backends: {}", config.backend,
-                       gRegistry<Net>().List());
+                       Registry<Net>::Get().List());
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
@@ -227,7 +227,15 @@ Result<Value> NetModule::operator()(const Value& input) {
   }
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Net, 0),
-                               [](const Value& config) { return CreateTask(NetModule{config}); });
+class NetModuleCreator : public Creator<Module> {
+ public:
+  const char* GetName() const override { return "Net"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Module> Create(const Value& value) override {
+    return CreateTask(NetModule{value});
+  }
+};
+
+REGISTER_MODULE(Module, NetModuleCreator);
 
 }  // namespace mmdeploy::framework

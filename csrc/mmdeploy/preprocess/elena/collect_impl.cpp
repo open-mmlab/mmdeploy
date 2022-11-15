@@ -12,7 +12,8 @@
 #include "mmdeploy/preprocess/transform/collect.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 
-namespace mmdeploy::elena {
+namespace mmdeploy {
+namespace elena {
 
 using namespace trace;
 
@@ -127,6 +128,18 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
   std::string device_name_;
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CollectImpl, (elena, 0), CollectImpl);
+class CollectImplCreator : public Creator<::mmdeploy::CollectImpl> {
+ public:
+  const char* GetName() const override { return "elena"; }
+  int GetVersion() const override { return 1; }
+  std::unique_ptr<::mmdeploy::CollectImpl> Create(const Value& args) override {
+    return std::make_unique<CollectImpl>(args);
+  }
+};
 
-}  // namespace mmdeploy::elena
+}  // namespace elena
+}  // namespace mmdeploy
+
+using mmdeploy::CollectImpl;
+using mmdeploy::elena::CollectImplCreator;
+REGISTER_MODULE(CollectImpl, CollectImplCreator);

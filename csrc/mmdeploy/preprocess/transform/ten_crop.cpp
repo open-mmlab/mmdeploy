@@ -65,7 +65,7 @@ Result<Value> TenCropImpl::Process(const Value& input) {
 }
 
 TenCrop::TenCrop(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<TenCropImpl>().Get(specified_platform_, version);
+  auto impl_creator = Registry<TenCropImpl>::Get().GetCreator(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'TenCrop' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
@@ -73,9 +73,18 @@ TenCrop::TenCrop(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TenCrop, 0), [](const Value& config) {
-  return std::make_unique<TenCrop>(config, 0);
-});
+class TenCropCreator : public Creator<Transform> {
+ public:
+  const char* GetName(void) const override { return "TenCrop"; }
+  int GetVersion(void) const override { return version_; }
+  ReturnType Create(const Value& args) override {
+    return std::make_unique<TenCrop>(args, version_);
+  }
 
+ private:
+  int version_{1};
+};
+
+REGISTER_MODULE(Transform, TenCropCreator);
 MMDEPLOY_DEFINE_REGISTRY(TenCropImpl);
 }  // namespace mmdeploy

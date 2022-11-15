@@ -343,16 +343,21 @@ Result<std::vector<TensorShape>> PPLNet::InferOutputShapes(Span<TensorShape> inp
 
 PPLNet::~PPLNet() = default;
 
-static std::unique_ptr<Net> Create(const Value& args) {
-  auto p = std::make_unique<PPLNet>();
-  if (auto r = p->Init(args)) {
-    return p;
-  } else {
-    MMDEPLOY_ERROR("error creating PPLNet: {}", r.error().message().c_str());
-    return nullptr;
+class PPLNetCreator : public Creator<Net> {
+ public:
+  const char* GetName() const override { return "pplnn"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Net> Create(const Value& args) override {
+    auto p = std::make_unique<PPLNet>();
+    if (auto r = p->Init(args)) {
+      return p;
+    } else {
+      MMDEPLOY_ERROR("error creating PPLNet: {}", r.error().message().c_str());
+      return nullptr;
+    }
   }
-}
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (pplnn, 0), Create);
+REGISTER_MODULE(Net, PPLNetCreator);
 
 }  // namespace mmdeploy::framework

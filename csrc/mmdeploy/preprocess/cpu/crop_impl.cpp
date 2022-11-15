@@ -6,7 +6,8 @@
 
 using namespace std;
 
-namespace mmdeploy::cpu {
+namespace mmdeploy {
+namespace cpu {
 
 class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
  public:
@@ -25,6 +26,17 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CenterCropImpl, (cpu, 0), CenterCropImpl);
+class CenterCropImplCreator : public Creator<::mmdeploy::CenterCropImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return make_unique<CenterCropImpl>(args); }
+};
 
-}  // namespace mmdeploy::cpu
+}  // namespace cpu
+}  // namespace mmdeploy
+
+using ::mmdeploy::CenterCropImpl;
+using ::mmdeploy::cpu::CenterCropImplCreator;
+
+REGISTER_MODULE(CenterCropImpl, CenterCropImplCreator);

@@ -58,7 +58,7 @@ Result<Value> FormatShapeImpl::Process(const Value& input) {
 class FormatShape : public Transform {
  public:
   explicit FormatShape(const Value& args, int version = 0) : Transform(args) {
-    auto impl_creator = gRegistry<FormatShapeImpl>().Get(specified_platform_, version);
+    auto impl_creator = Registry<FormatShapeImpl>::Get().GetCreator(specified_platform_, version);
     if (nullptr == impl_creator) {
       MMDEPLOY_ERROR("'FormatShape' is not supported on '{}' platform", specified_platform_);
       throw std::domain_error("'FormatShape' is not supported on specified platform");
@@ -73,10 +73,17 @@ class FormatShape : public Transform {
   std::unique_ptr<FormatShapeImpl> impl_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (FormatShape, 0), [](const Value& config) {
-  return std::make_unique<FormatShape>(config, 0);
-});
+class FormatShapeCreator : public Creator<Transform> {
+ public:
+  const char* GetName(void) const override { return "FormatShape"; }
+  int GetVersion(void) const override { return version_; }
+  ReturnType Create(const Value& args) override { return make_unique<FormatShape>(args, version_); }
 
+ private:
+  int version_{1};
+};
+
+REGISTER_MODULE(Transform, FormatShapeCreator);
 MMDEPLOY_DEFINE_REGISTRY(FormatShapeImpl);
 
 }  // namespace mmdeploy

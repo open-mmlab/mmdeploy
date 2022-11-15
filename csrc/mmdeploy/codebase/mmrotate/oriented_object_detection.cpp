@@ -108,6 +108,6 @@ class ResizeRBBox : public MMRotate {
   float score_thr_;
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMRotate, ResizeRBBox);
+REGISTER_CODEBASE_COMPONENT(MMRotate, ResizeRBBox);
 
 }  // namespace mmdeploy::mmrotate

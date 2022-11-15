@@ -252,21 +252,26 @@ Result<void> OpenVINONet::Forward() {
   return success();
 }
 
-static std::unique_ptr<Net> Create(const Value& args) {
-  try {
-    auto p = std::make_unique<OpenVINONet>();
-    if (auto r = p->Init(args)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("error creating OpenVINONet: {}", r.error().message().c_str());
+class OpenVINONetCreator : public Creator<Net> {
+ public:
+  const char* GetName() const override { return "openvino"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Net> Create(const Value& args) override {
+    try {
+      auto p = std::make_unique<OpenVINONet>();
+      if (auto r = p->Init(args)) {
+        return p;
+      } else {
+        MMDEPLOY_ERROR("error creating OpenVINONet: {}", r.error().message().c_str());
+        return nullptr;
+      }
+    } catch (const std::exception& e) {
+      MMDEPLOY_ERROR("unhandled exception when creating OpenVINONet: {}", e.what());
       return nullptr;
     }
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("unhandled exception when creating OpenVINONet: {}", e.what());
-    return nullptr;
   }
-}
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (openvino, 0), Create);
+REGISTER_MODULE(Net, OpenVINONetCreator);
 
 }  // namespace mmdeploy::framework

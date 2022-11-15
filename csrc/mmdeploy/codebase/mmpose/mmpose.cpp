@@ -2,8 +2,14 @@
 
 #include "mmdeploy/codebase/mmpose/mmpose.h"
 
-namespace mmdeploy::mmpose {
+using namespace std;
 
-MMDEPLOY_REGISTER_CODEBASE(MMPose);
+namespace mmdeploy {
+namespace mmpose {
 
-}  // namespace mmdeploy::mmpose
+REGISTER_CODEBASE(MMPose);
+
+}
+
+MMDEPLOY_DEFINE_REGISTRY(mmpose::MMPose);
+}  // namespace mmdeploy

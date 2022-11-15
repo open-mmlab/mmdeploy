@@ -2,7 +2,8 @@
 
 #include "mmdeploy/preprocess/transform/collect.h"
 
-namespace mmdeploy::cuda {
+namespace mmdeploy {
+namespace cuda {
 
 class CollectImpl : public ::mmdeploy::CollectImpl {
  public:
@@ -10,6 +11,18 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
   ~CollectImpl() = default;
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CollectImpl, (cuda, 0), CollectImpl);
+class CollectImplCreator : public Creator<::mmdeploy::CollectImpl> {
+ public:
+  const char* GetName() const override { return "cuda"; }
+  int GetVersion() const override { return 1; }
+  std::unique_ptr<::mmdeploy::CollectImpl> Create(const Value& args) override {
+    return std::make_unique<CollectImpl>(args);
+  }
+};
 
-}  // namespace mmdeploy::cuda
+}  // namespace cuda
+}  // namespace mmdeploy
+
+using mmdeploy::CollectImpl;
+using mmdeploy::cuda::CollectImplCreator;
+REGISTER_MODULE(CollectImpl, CollectImplCreator);

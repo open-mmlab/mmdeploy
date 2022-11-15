@@ -20,7 +20,7 @@ TEST_CASE("test ncnn net", "[.ncnn_net][resource]") {
   REQUIRE(model);
 
   auto backend("ncnn");
-  auto creator = gRegistry<Net>().Get(backend);
+  auto creator = Registry<Net>::Get().GetCreator(backend);
   REQUIRE(creator);
 
   Device device{"cpu"};

@@ -2,8 +2,14 @@
 
 #include "mmdeploy/codebase/mmseg/mmseg.h"
 
-namespace mmdeploy::mmseg {
+using namespace std;
 
-MMDEPLOY_REGISTER_CODEBASE(MMSegmentation);
+namespace mmdeploy {
+namespace mmseg {
 
-}  // namespace mmdeploy::mmseg
+REGISTER_CODEBASE(MMSegmentation);
+
+}
+
+MMDEPLOY_DEFINE_REGISTRY(mmseg::MMSegmentation);
+}  // namespace mmdeploy

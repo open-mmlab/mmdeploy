@@ -50,6 +50,6 @@ class MultiLabelLinearClsHead : public MMClassification {
   static constexpr const auto kHost = Device{0};
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMClassification, MultiLabelLinearClsHead);
+REGISTER_CODEBASE_COMPONENT(MMClassification, MultiLabelLinearClsHead);
 
 }  // namespace mmdeploy::mmcls

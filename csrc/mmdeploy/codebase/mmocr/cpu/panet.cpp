@@ -49,7 +49,15 @@ class PaHeadCpuImpl : public PaHeadImpl {
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(PaHeadImpl, (cpu, 0),
-                               [] { return std::make_unique<PaHeadCpuImpl>(); });
+class PaHeadCpuImplCreator : public ::mmdeploy::Creator<PaHeadImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<PaHeadImpl> Create(const Value&) override {
+    return std::make_unique<PaHeadCpuImpl>();
+  }
+};
+
+REGISTER_MODULE(PaHeadImpl, PaHeadCpuImplCreator);
 
 }  // namespace mmdeploy::mmocr

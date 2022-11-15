@@ -45,7 +45,7 @@ namespace {
 
 inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
   auto type = config["module"].get<std::string>();
-  auto creator = gRegistry<Module>().Get(type);
+  auto creator = Registry<Module>::Get().GetCreator(type);
   if (!creator) {
     MMDEPLOY_ERROR("failed to find module creator: {}", type);
     return Status(eEntryNotFound);
@@ -86,8 +86,13 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   }
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Task, 0), [](const Value& config) {
-  return std::make_unique<TaskBuilder>(config);
-});
+class TaskCreator : public Creator<Builder> {
+ public:
+  const char* GetName() const override { return "Task"; }
+  unique_ptr<Builder> Create(const Value& config) override {
+    return std::make_unique<TaskBuilder>(config);
+  }
+};
+REGISTER_MODULE(Builder, TaskCreator);
 
 }  // namespace mmdeploy::graph

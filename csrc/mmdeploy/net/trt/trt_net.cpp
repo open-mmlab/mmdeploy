@@ -210,14 +210,19 @@ Result<void> TRTNet::Forward() {
 
 Result<void> TRTNet::ForwardAsync(Event* event) { return Status(eNotSupported); }
 
-static std::unique_ptr<Net> Create(const Value& args) {
-  auto p = std::make_unique<TRTNet>();
-  if (p->Init(args)) {
-    return p;
+class TRTNetCreator : public Creator<Net> {
+ public:
+  const char* GetName() const override { return "tensorrt"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Net> Create(const Value& args) override {
+    auto p = std::make_unique<TRTNet>();
+    if (p->Init(args)) {
+      return p;
+    }
+    return nullptr;
   }
-  return nullptr;
-}
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (tensorrt, 0), Create);
+REGISTER_MODULE(Net, TRTNetCreator);
 
 }  // namespace mmdeploy::framework

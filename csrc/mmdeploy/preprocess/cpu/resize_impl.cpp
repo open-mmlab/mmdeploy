@@ -8,7 +8,8 @@
 
 using namespace std;
 
-namespace mmdeploy::cpu {
+namespace mmdeploy {
+namespace cpu {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
@@ -28,6 +29,16 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ResizeImpl, (cpu, 0), ResizeImpl);
+class ResizeImplCreator : public Creator<mmdeploy::ResizeImpl> {
+ public:
+  const char* GetName() const override { return "cpu"; }
+  int GetVersion() const override { return 1; }
+  ReturnType Create(const Value& args) override { return std::make_unique<ResizeImpl>(args); }
+};
 
-}  // namespace mmdeploy::cpu
+}  // namespace cpu
+}  // namespace mmdeploy
+
+using mmdeploy::ResizeImpl;
+using mmdeploy::cpu::ResizeImplCreator;
+REGISTER_MODULE(ResizeImpl, ResizeImplCreator);

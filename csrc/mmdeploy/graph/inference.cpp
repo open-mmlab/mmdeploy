@@ -67,8 +67,14 @@ Result<void> InferenceBuilder::CheckOutputs(Builder& builder) {
   return success();
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Inference, 0), [](const Value& config) {
-  return std::make_unique<InferenceBuilder>(config);
-});
+class InferenceCreator : public Creator<Builder> {
+ public:
+  const char* GetName() const override { return "Inference"; }
+  unique_ptr<Builder> Create(const Value& config) override {
+    return std::make_unique<InferenceBuilder>(config);
+  }
+};
+
+REGISTER_MODULE(Builder, InferenceCreator);
 
 }  // namespace mmdeploy::graph

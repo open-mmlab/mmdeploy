@@ -7,7 +7,8 @@
 #include "mmdeploy/graph/common.h"
 #include "mmdeploy/graph/flattened.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy {
+namespace graph {
 
 namespace {
 
@@ -105,7 +106,7 @@ Result<unique_ptr<Builder>> Builder::CreateFromConfig(const Value& config) {
       }
     }
   }
-  auto creator = gRegistry<Builder>().Get(type);
+  auto creator = Registry<Builder>::Get().GetCreator(type);
   if (!creator) {
     MMDEPLOY_ERROR("failed to find node creator: {}", type);
     return Status(eEntryNotFound);
@@ -127,6 +128,8 @@ Result<std::vector<std::string>> ParseStringArray(const Value& value) {
   return Status(eInvalidArgument);
 }
 
-MMDEPLOY_DEFINE_REGISTRY(Builder);
+}  // namespace graph
 
-}  // namespace mmdeploy::graph
+MMDEPLOY_DEFINE_REGISTRY(graph::Builder);
+
+}  // namespace mmdeploy

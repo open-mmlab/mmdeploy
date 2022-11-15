@@ -9,7 +9,8 @@
 #include "mmdeploy/core/tensor.h"
 #include "opencv2/core.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+namespace mmocr {
 
 class PseHeadImpl {
  public:
@@ -28,8 +29,10 @@ class PseHeadImpl {
   Stream stream_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(PseHeadImpl, std::unique_ptr<PseHeadImpl>());
+}  // namespace mmocr
 
-}  // namespace mmdeploy::mmocr
+MMDEPLOY_DECLARE_REGISTRY(mmocr::PseHeadImpl);
+
+}  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_CODEBASE_MMOCR_PSENET_H_

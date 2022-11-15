@@ -70,8 +70,13 @@ class AddBboxField {
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (AddBboxField, 0),
-                               [](const Value&) { return CreateTask(AddBboxField{}); });
+class AddBboxFieldCreator : public Creator<Module> {
+ public:
+  const char* GetName() const override { return "AddBboxField"; }
+  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(AddBboxField{}); }
+};
+
+REGISTER_MODULE(Module, AddBboxFieldCreator);
 
 class FilterBbox {
  public:
@@ -86,8 +91,13 @@ class FilterBbox {
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (FilterBbox, 0),
-                               [](const Value&) { return CreateTask(FilterBbox{}); });
+class FilterBboxCreator : public Creator<Module> {
+ public:
+  const char* GetName() const override { return "FilterBbox"; }
+  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(FilterBbox{}); }
+};
+
+REGISTER_MODULE(Module, FilterBboxCreator);
 
 static std::vector<std::pair<int, int>> skeleton{
     {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},

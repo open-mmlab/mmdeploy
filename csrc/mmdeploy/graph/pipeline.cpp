@@ -14,8 +14,13 @@ Result<unique_ptr<Node>> PipelineBuilder::BuildImpl() {
   return StaticRouterBuilder{}.Build(config_).value();
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Pipeline, 0), [](const Value& config) {
-  return std::make_unique<PipelineBuilder>(config);
-});
+class PipelineCreator : public Creator<Builder> {
+ public:
+  const char* GetName() const override { return "Pipeline"; }
+  unique_ptr<Builder> Create(const Value& config) override {
+    return std::make_unique<PipelineBuilder>(config);
+  }
+};
+REGISTER_MODULE(Builder, PipelineCreator);
 
 }  // namespace mmdeploy::graph

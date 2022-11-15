@@ -305,16 +305,22 @@ Result<void> CoreMLNet::ForwardAsync(Event *event) {
   return Status(eNotSupported);
 }
 
-static std::unique_ptr<Net> Create(const Value &args) {
-  auto p = std::make_unique<CoreMLNet>();
-  if (auto r = p->Init(args)) {
-    return p;
-  } else {
-    MMDEPLOY_ERROR("error creating CoreMLNet: {}", r.error().message().c_str());
-    return nullptr;
+class CoreMLNetCreator : public Creator<Net> {
+public:
+  const char *GetName() const override { return "coreml"; }
+  int GetVersion() const override { return 0; }
+  std::unique_ptr<Net> Create(const Value &args) override {
+    auto p = std::make_unique<CoreMLNet>();
+    if (auto r = p->Init(args)) {
+      return p;
+    } else {
+      MMDEPLOY_ERROR("error creating CoreMLNet: {}",
+                     r.error().message().c_str());
+      return nullptr;
+    }
   }
-}
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (coreml, 0), Create);
+REGISTER_MODULE(Net, CoreMLNetCreator);
 
 } // namespace mmdeploy

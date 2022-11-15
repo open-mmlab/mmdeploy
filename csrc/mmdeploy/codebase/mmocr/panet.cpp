@@ -11,7 +11,9 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+
+namespace mmocr {
 
 std::vector<std::vector<float>> pixel_group_cpu(const cv::Mat_<float>& score,
                                                 const cv::Mat_<uint8_t>& mask,
@@ -33,14 +35,14 @@ class PANHead : public MMOCR {
       downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
-    auto creator = gRegistry<PaHeadImpl>().Get(platform);
+    auto creator = Registry<PaHeadImpl>::Get().GetCreator(platform);
     if (!creator) {
       MMDEPLOY_ERROR(
           "PANHead: implementation for platform \"{}\" not found. Available platforms: {}",
-          platform, gRegistry<PaHeadImpl>().List());
+          platform, Registry<PaHeadImpl>::Get().List());
       throw_exception(eEntryNotFound);
     }
-    impl_ = creator->Create();
+    impl_ = creator->Create(nullptr);
     impl_->Init(stream_);
   }
 
@@ -119,8 +121,10 @@ class PANHead : public MMOCR {
   std::unique_ptr<PaHeadImpl> impl_;
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, PANHead);
+REGISTER_CODEBASE_COMPONENT(MMOCR, PANHead);
 
-MMDEPLOY_DEFINE_REGISTRY(PaHeadImpl);
+}  // namespace mmocr
 
-}  // namespace mmdeploy::mmocr
+MMDEPLOY_DEFINE_REGISTRY(mmocr::PaHeadImpl);
+
+}  // namespace mmdeploy
