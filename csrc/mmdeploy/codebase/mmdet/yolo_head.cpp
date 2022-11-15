@@ -63,14 +63,14 @@ static float sigmoid(float x) { return 1.0 / (1.0 + expf(-x)); }
 
 static float unsigmoid(float y) { return -1.0 * logf((1.0 / y) - 1.0); }
 
-int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, std::vector<std::vector<int>> anchor,
+int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<int>>& anchor,
                              int grid_h, int grid_w, int height, int width, int stride,
                              std::vector<float>& boxes, std::vector<float>& objProbs,
                              std::vector<int>& classId, float threshold) const {
   auto input = const_cast<float*>(feat_map.data<float>());
-  int prop_box_size = feat_map.shape(1) / anchor.size();
-  int kClasses = prop_box_size - 5;
-  int validCount = 0;
+  auto prop_box_size = feat_map.shape(1) / anchor.size();
+  const int kClasses = prop_box_size - 5;
+  int valid_count = 0;
   int grid_len = grid_h * grid_w;
   float thres = unsigmoid(threshold);
   for (int a = 0; a < anchor.size(); a++) {
@@ -110,19 +110,19 @@ int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, std::vector<std::vector<int
           }
           objProbs.push_back(sigmoid(maxClassProbs) * sigmoid(box_confidence));
           classId.push_back(maxClassId);
-          validCount++;
+          valid_count++;
         }
       }
     }
   }
-  return validCount;
+  return valid_count;
 }
 
 Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
                                        const std::vector<Tensor>& pred_maps) const {
-  std::vector<float> filterBoxes;
-  std::vector<float> objProbs;
-  std::vector<int> classId;
+  std::vector<float> filter_boxes;
+  std::vector<float> obj_probs;
+  std::vector<int> class_id;
 
   int model_in_h = prep_res["img_shape"][1].get<int>();
   int model_in_w = prep_res["img_shape"][2].get<int>();
@@ -132,18 +132,18 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
     int grid_h = model_in_h / stride;
     int grid_w = model_in_w / stride;
     YOLOFeatDecode(pred_maps[i], anchors_[i], grid_h, grid_w, model_in_h, model_in_w, stride,
-                   filterBoxes, objProbs, classId, score_thr_);
+                   filter_boxes, obj_probs, class_id, score_thr_);
   }
 
   std::vector<int> indexArray;
-  for (int i = 0; i < objProbs.size(); ++i) {
+  for (int i = 0; i < obj_probs.size(); ++i) {
     indexArray.push_back(i);
   }
-  Sort(objProbs, classId, indexArray);
+  Sort(obj_probs, class_id, indexArray);
 
   Tensor dets(TensorDesc{Device{0, 0}, DataType::kFLOAT,
-                         TensorShape{int(filterBoxes.size() / 4), 4}, "dets"});
-  memcpy(dets.data<float>(), (float*)filterBoxes.data(), filterBoxes.size() * sizeof(float));
+                         TensorShape{int(filter_boxes.size() / 4), 4}, "dets"});
+  memcpy(dets.data<float>(), (float*)filter_boxes.data(), filter_boxes.size() * sizeof(float));
   NMS(dets, iou_threshold_, indexArray);
 
   Detections objs;
@@ -165,8 +165,8 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
     auto y1 = clamp(det_ptr[j * 4 + 1], 0, model_in_h);
     auto x2 = clamp(det_ptr[j * 4 + 2], 0, model_in_w);
     auto y2 = clamp(det_ptr[j * 4 + 3], 0, model_in_h);
-    int label_id = classId[i];
-    float score = objProbs[i];
+    int label_id = class_id[i];
+    float score = obj_probs[i];
 
     MMDEPLOY_DEBUG("{}-th box: ({}, {}, {}, {}), {}, {}", i, x1, y1, x2, y2, label_id, score);
 
@@ -194,8 +194,8 @@ Result<Value> YOLOV3Head::operator()(const Value& prep_res, const Value& infer_r
 }
 
 std::vector<float> YOLOV3Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
-                                           int stride, std::vector<std::vector<int>> anchor, int j,
-                                           int i, int a) const {
+                                           int stride, const std::vector<std::vector<int>>& anchor,
+                                           int j, int i, int a) const {
   box_x = (box_x + j) * (float)stride;
   box_y = (box_y + i) * (float)stride;
   box_w = expf(box_w) * (float)anchor[a][0];
@@ -210,8 +210,8 @@ Result<Value> YOLOV5Head::operator()(const Value& prep_res, const Value& infer_r
 }
 
 std::vector<float> YOLOV5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
-                                           int stride, std::vector<std::vector<int>> anchor, int j,
-                                           int i, int a) const {
+                                           int stride, const std::vector<std::vector<int>>& anchor,
+                                           int j, int i, int a) const {
   box_x = box_x * 2 - 0.5;
   box_y = box_y * 2 - 0.5;
   box_w = box_w * 2 - 0.5;

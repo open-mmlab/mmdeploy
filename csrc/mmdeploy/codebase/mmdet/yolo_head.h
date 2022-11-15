@@ -11,14 +11,14 @@ class YOLOHead : public MMDetection {
  public:
   explicit YOLOHead(const Value& cfg);
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
-  int YOLOFeatDecode(const Tensor& feat_map, std::vector<std::vector<int>> anchor, int grid_h,
-                     int grid_w, int height, int width, int stride, std::vector<float>& boxes,
-                     std::vector<float>& objProbs, std::vector<int>& classId,
-                     float threshold) const;
+  int YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<int>>& anchor,
+                     int grid_h, int grid_w, int height, int width, int stride,
+                     std::vector<float>& boxes, std::vector<float>& objProbs,
+                     std::vector<int>& classId, float threshold) const;
   Result<Detections> GetBBoxes(const Value& prep_res, const std::vector<Tensor>& pred_maps) const;
   virtual std::vector<float> yolo_decode(float box_x, float box_y, float box_w, float box_h,
-                                         int stride, std::vector<std::vector<int>> anchor, int j,
-                                         int i, int a) const = 0;
+                                         int stride, const std::vector<std::vector<int>>& anchor,
+                                         int j, int i, int a) const = 0;
 
  private:
   float score_thr_{0.4f};
@@ -34,7 +34,7 @@ class YOLOV3Head : public YOLOHead {
   explicit YOLOV3Head(const Value& cfg);
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::vector<float> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
-                                 std::vector<std::vector<int>> anchor, int j, int i,
+                                 const std::vector<std::vector<int>>& anchor, int j, int i,
                                  int a) const override;
 };
 
@@ -43,7 +43,7 @@ class YOLOV5Head : public YOLOHead {
   explicit YOLOV5Head(const Value& cfg);
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::vector<float> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
-                                 std::vector<std::vector<int>> anchor, int j, int i,
+                                 const std::vector<std::vector<int>>& anchor, int j, int i,
                                  int a) const override;
 };
 
