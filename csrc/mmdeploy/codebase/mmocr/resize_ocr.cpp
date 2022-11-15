@@ -15,7 +15,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmocr {
 
 class ResizeOCRImpl : public Module {
  public:
@@ -156,4 +156,4 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ResizeOCR, 0), [](const Value& config
   return std::make_unique<ResizeOCR>(config);
 });
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmocr
