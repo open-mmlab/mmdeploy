@@ -20,7 +20,7 @@ TEST_CASE("test trt net", "[.trt_net][resource]") {
   REQUIRE(model);
 
   auto backend("tensorrt");
-  auto creator = Registry<Net>::Get().GetCreator(backend);
+  auto creator = gRegistry<Net>().Get(backend);
   REQUIRE(creator);
 
   Device device{"cuda"};

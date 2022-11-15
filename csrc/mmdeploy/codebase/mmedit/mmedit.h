@@ -9,16 +9,12 @@
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/serialization.h"
 
-namespace mmdeploy {
-namespace mmedit {
+namespace mmdeploy::mmedit {
 
 using RestorerOutput = Mat;
 
-DECLARE_CODEBASE(MMEdit, mmedit);
+MMDEPLOY_DECLARE_CODEBASE(MMEdit, mmedit);
 
-}  // namespace mmedit
-
-MMDEPLOY_DECLARE_REGISTRY(mmedit::MMEdit);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmedit
 
 #endif  // MMDEPLOY_SRC_CODEBASE_MMEDIT_MMEDIT_H_

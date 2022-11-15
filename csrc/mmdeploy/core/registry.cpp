@@ -2,53 +2,80 @@
 
 #include "mmdeploy/core/registry.h"
 
+#include <algorithm>
+#include <cassert>
+
+#include "mmdeploy/core/logger.h"
+
 namespace mmdeploy {
 
-Registry<void>::Registry() = default;
+namespace _registry {
+
+struct Registry<void>::Impl {
+  template <typename It>
+  auto convert(It u, It v) {
+    return std::pair{creators_.begin() + (u - names_.begin()),
+                     creators_.begin() + (v - names_.begin())};
+  }
+
+  Creator<void>* Get(const string_view& name, int version) {
+    const auto& [u, v] = std::equal_range(names_.begin(), names_.end(), name);
+    const auto& [i, j] = convert(u, v);
+    if (version == -1) {
+      if (auto n = j - i; n == 1) {
+        return *i;
+      }
+      return nullptr;
+    }
+    for (const auto& creator : iterator_range(i, j)) {
+      if (creator->version() == version) {
+        return creator;
+      }
+    }
+    return nullptr;
+  }
+
+  bool Add(Creator<void>& creator) {
+    const auto& [u, v] = std::equal_range(names_.begin(), names_.end(), creator.name());
+    const auto& [i, j] = convert(u, v);
+    if (i != j) {
+      for (const auto& other : iterator_range(i, j)) {
+        if (creator.version() == other->version()) {
+          MMDEPLOY_WARN("Adding duplicated creator ({}, {}).", creator.name(), creator.version());
+          return false;
+        }
+      }
+    }
+    names_.insert(v, creator.name());
+    creators_.insert(j, &creator);
+    return true;
+  }
+
+  Span<Creator<void>*> Creators() { return creators_; }
+
+  std::vector<Creator<void>*> creators_;
+  std::vector<string_view> names_;
+};
+
+Registry<void>::Registry() : impl_(std::make_unique<Impl>()) {}
 
 Registry<void>::~Registry() = default;
 
 bool Registry<void>::AddCreator(Creator<void>& creator) {
-  MMDEPLOY_DEBUG("Adding creator: {}", creator.GetName());
-  auto key = creator.GetName();
-  if (entries_.find(key) == entries_.end()) {
-    entries_.insert(std::make_pair(key, &creator));
-    return true;
-  }
-
-  for (auto iter = entries_.lower_bound(key); iter != entries_.upper_bound(key); ++iter) {
-    if (iter->second->GetVersion() == creator.GetVersion()) {
-      return false;
-    }
-  }
-
-  entries_.insert(std::make_pair(key, &creator));
-  return true;
+  assert(impl_);
+  return impl_->Add(creator);
 }
 
-Creator<void>* Registry<void>::GetCreator(const std::string& type, int version) {
-  auto iter = entries_.find(type);
-  if (iter == entries_.end()) {
-    return nullptr;
-  }
-  if (0 == version) {
-    return iter->second;
-  }
-
-  for (auto iter = entries_.lower_bound(type); iter != entries_.upper_bound(type); ++iter) {
-    if (iter->second->GetVersion() == version) {
-      return iter->second;
-    }
-  }
-  return nullptr;
+Creator<void>* Registry<void>::GetCreator(const std::string_view& name, int version) {
+  assert(impl_);
+  return impl_->Get(name, version);
 }
 
-std::vector<std::string> Registry<void>::List() {
-  std::vector<std::string> list;
-  for (const auto& [name, _] : entries_) {
-    list.push_back(name);
-  }
-  return list;
+Span<Creator<void>*> Registry<void>::Creators() {
+  assert(impl_);
+  return impl_->Creators();
 }
+
+}  // namespace _registry
 
 }  // namespace mmdeploy

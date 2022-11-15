@@ -54,12 +54,8 @@ const auto config_json = R"(
 
 namespace mmdeploy {
 
-#define REGISTER_SIMPLE_MODULE(name, fn)                                             \
-  class name##_Creator : public ::mmdeploy::Creator<Module> {                        \
-    const char* GetName() const override { return #name; }                           \
-    std::unique_ptr<Module> Create(const Value&) override { return CreateTask(fn); } \
-  };                                                                                 \
-  REGISTER_MODULE(Module, name##_Creator)
+#define REGISTER_SIMPLE_MODULE(name, fn) \
+  MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (name, 0), [](const Value&) { return CreateTask(fn); });
 
 std::optional<std::array<float, 4>> keypoints_to_bbox(const std::vector<cv::Point2f>& keypoints,
                                                       const std::vector<float>& scores, float img_h,
