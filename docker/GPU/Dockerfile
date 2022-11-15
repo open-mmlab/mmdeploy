@@ -5,9 +5,10 @@ ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
-ARG MMCV_VERSION=1.5.3
 ARG PPLCV_VERSION=0.7.0
 ENV FORCE_CUDA="1"
+ARG MMCV_VERSION=">=2.0.0rc2"
+ARG MMENGINE_VERSION=">=0.3.0"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -34,18 +35,20 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
-### pytorch
-RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch
+### install pytorch openmim
+RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch -c conda-forge -y \
+    && /opt/conda/bin/pip install --no-cache-dir openmim
+
+
+### pytorch mmcv onnxruntime
+RUN /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime-gpu==${ONNXRUNTIME_VERSION} mmengine${MMENGINE_VERSION}
+
 ENV PATH /opt/conda/bin:$PATH
-
-### install mmcv-full
-RUN /opt/conda/bin/pip install mmcv-full==${MMCV_VERSION} -f https://download.openmmlab.com/mmcv/dist/cu${CUDA//./}/torch${TORCH_VERSION}/index.html
-
 WORKDIR /root/workspace
+
 ### get onnxruntime
 RUN wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz \
-    && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION}
+    && tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz
 
 ### cp trt from pip to conda
 RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/conda/lib/python${PYTHON_VERSION}/site-packages/
@@ -56,14 +59,14 @@ ENV TENSORRT_DIR=/workspace/tensorrt
 ARG VERSION
 RUN git clone https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on master" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then git checkout -b dev-1.x ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     mkdir -p build &&\
     cd build &&\
     cmake -DMMDEPLOY_TARGET_BACKENDS="ort;trt" .. &&\
     make -j$(nproc) &&\
     cd .. &&\
-    pip install -e .
+    /opt/conda/bin/mim install -e .
 
 ### build sdk
 RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
