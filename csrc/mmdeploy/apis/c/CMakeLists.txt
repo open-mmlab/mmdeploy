@@ -55,6 +55,19 @@ foreach (TASK ${TASK_LIST})
             DESTINATION include/mmdeploy)
 endforeach ()
 
+foreach (TASK ${MMDEPLOY_CODECS})
+    set(TARGET_NAME mmdeploy_${TASK})
+    set(OBJECT_NAME mmdeploy_${TASK}_obj)
+    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.cpp)
+    mmdeploy_add_library(${TARGET_NAME})
+    target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME})
+    target_include_directories(${TARGET_NAME} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include>)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.h
+            DESTINATION include/mmdeploy)
+endforeach ()
+
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
         FILES_MATCHING
         PATTERN "*.cpp"

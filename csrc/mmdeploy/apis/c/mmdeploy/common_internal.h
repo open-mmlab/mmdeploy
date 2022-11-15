@@ -5,6 +5,8 @@
 
 #include "common.h"
 #include "handle.h"
+#include "jpeg_decoder.h"
+#include "mmdeploy/codecs/nvjpeg/jpeg_decoder.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/value.h"
 #include "model.h"
@@ -45,6 +47,14 @@ inline Model* Cast(mmdeploy_model_t model) { return reinterpret_cast<Model*>(mod
 inline Mat Cast(const mmdeploy_mat_t& mat) {
   return Mat{mat.height,         mat.width, PixelFormat(mat.format),
              DataType(mat.type), mat.data,  mat.device ? *(const Device*)mat.device : Device{0}};
+}
+
+inline mmdeploy_jpeg_decoder_t Cast(codecs::JPEGDecoder* decoder) {
+  return reinterpret_cast<mmdeploy_jpeg_decoder_t>(decoder);
+}
+
+inline codecs::JPEGDecoder* Cast(mmdeploy_jpeg_decoder_t decoder) {
+  return reinterpret_cast<codecs::JPEGDecoder*>(decoder);
 }
 
 template <typename F>
@@ -90,7 +100,7 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
   T release() noexcept { return std::exchange(v_, nullptr); }
 
   auto operator*() { return Cast(v_); }
-  auto operator-> () { return Cast(v_); }
+  auto operator->() { return Cast(v_); }
 
   T* ptr() noexcept { return &v_; }
 
