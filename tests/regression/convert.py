@@ -1,173 +1,91 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import os
 import os.path as osp
+from enum import Enum
 
-import numpy as np
 import yaml
 from easydict import EasyDict as edict
 
-from mmdeploy.utils import get_backend, get_codebase, get_task_type
+from mmdeploy.utils import get_backend, get_task_type, load_config
+
+
+class Tree(Enum):
+    mmcls = 'tree/1.x',
+    mmdet = 'tree/3.x',
+    mmdet3d = 'tree/1.x',
+    mmedit = 'tree/1.x',
+    mmocr = 'tree/1.x',
+    mmpose = 'tree/1.x',
+    mmrotate = 'tree/1.x',
+    mmseg = 'tree/1.x'
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='From yaml export markdown')
-    parser.add_argument('yaml_cfg', help='yml config path')
-    parser.add_argument('output_md_file', help='Output markdown file path')
+    parser.add_argument('yml_file', help='yml config path')
+    parser.add_argument('output', help='Output markdown file path')
     args = parser.parse_args()
     return args
 
 
-def generate_inference_dict():
-    args = parse_args()
-    inference_dict = {}
-    name_list = []
-    metafile_list = []
-    model_configs_list = []
-    piplines_list = []
-
-    with open(args.yaml_cfg, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-        config = edict(config)
-        url = config.globals.url
-        for i in range(len(config.models)):
-            model = config.models[i]
-            name = model.name
-            metafile = model.metafile
-            model_configs = model.model_configs
-            piplines = model.pipelines
-            name_list.append(name)
-            metafile_list.append(metafile)
-            model_configs_list.append(model_configs)
-            piplines_list.append(piplines)
-            list = []
-            for content in piplines:
-                deploy_config = content.deploy_config
-                (file, ext) = osp.splitext(deploy_config)
-                platform = osp.basename(file)
-                inference_platform = platform.split('_')[1]
-                list.append(inference_platform)
-                inference_dict[name] = list
-    return inference_dict, name_list, model_configs_list, piplines_list, url
-
-
-def parse_deploy_config():
-
-    _, _, _, piplines_list, _ = generate_inference_dict()
-    codebase_list = []
-    backend_list = []
-    get_task_type_list = []
-    for piplines in piplines_list:
-        for i in piplines:
-            codebase = get_codebase(i['deploy_config'])
-            backend = get_backend(i['deploy_config'])
-            task_type = get_task_type(i['deploy_config'])
-
-            codebase_list.append(codebase)
-            backend_list.append(backend)
-            get_task_type_list.append(task_type)
-    return codebase_list, backend_list, get_task_type_list
-
-
-def website_list():
-    model_website_list = []
-    _, _, model_configs_list, _, _ = generate_inference_dict()
-    _, _, get_task_type_list = parse_deploy_config()
-
-    task_type = str(get_task_type_list[0])
-    task_type = task_type.split('.', 1)[1]
-    if task_type == 'OBJECT_DETECTION':
-        task_type = task_type.split('_', 1)[1]
-        task_type = task_type.lower()
-    else:
-        task_type = task_type.lower()
-    model_website_task = f'mm{task_type}'
-    for i in model_configs_list:
-        name = str(i[0])
-        model_name = osp.split(name)[0]
-        model_website_list.append(model_name)
-    return model_website_list, model_website_task
-
-
-def table(listOfDicts):
-    """Loop through a list of dicts and return a markdown table as a multi-line
-    string.
-
-    listOfDicts -- A list of dictionaries, each dict is a row
-    """
-    markdowntable = ''
-    markdownheader = '| ' + ' | '.join(map(str, listOfDicts[0].keys())) + ' |'
-    markdownheaderseparator = '|-----' * len(listOfDicts[0].keys()) + '|'
-    markdowntable += markdownheader + '\n'
-    markdowntable += markdownheaderseparator + '\n'
-    for row in listOfDicts:
-        markdownrow = ''
-        for key, col in row.items():
-            markdownrow += '| ' + str(col) + ' '
-        markdowntable += markdownrow + '|' + '\n'
-    return markdowntable
-
-
 def main():
+
     args = parse_args()
-    inference_list = []
-    long, name_list, model_configs_list, _, link = generate_inference_dict()
-    inference_dict = long
-    _, backend_list, get_task_type_list = parse_deploy_config()
-    model_website_list, model_website_task = website_list()
-    platform1 = []
-    i = 0
-    for a in backend_list:
-        a = str(backend_list[i])
-        y = a.split('.', 1)[1]
-        y = y.lower()
-        platform1.append(y)
-        i += 1
-    platform1 = np.unique(platform1)
-    model_configs_list
-    task_type = str(get_task_type_list[0])
-    task_type = task_type.split('.', 1)[1]
+    assert osp.exists(args.yml_file), f'File not exists: {args.yml_file}'
+    output_dir, _ = osp.split(args.output)
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+    backends = [
+        'onnxruntime', 'tensorrt', 'torchscript', 'pplnn', 'openvino', 'ncnn'
+    ]
+    header = ['model', 'task'] + backends
+    aligner = [':--'] * 2 + [':--'] * len(backends)
 
-    x = 0
-    for name in name_list:
-        dict = {}
-        website_name = model_website_list[x]
-        x += 1
-        if model_website_task == 'mmdetection':
-            url = f'{link}{model_website_task}/tree/3.x/'
-            url_name = f'{url}{website_name}'
-            dict['Model'] = f'[{name}]({url_name})'
-            task_type = task_type.title()
-            dict['Task'] = task_type
-            inference_list.append(dict)
-        else:
-            url = f'{link}{model_website_task}/tree/1.x/'
-            url_name = f'{url}{website_name}'
-            dict['Model'] = f'[{name}]({url_name})'
-            task_type = task_type.title()
-            dict['Task'] = task_type
-            inference_list.append(dict)
+    def write_row_f(writer, row):
+        writer.write('|' + '|'.join(row) + '|\n')
 
-    target_platform = []
-    for list in inference_dict:
-        a = inference_dict[list]
-        target_platform.append(a)
+    print(f'Processing{args.yml_file}')
+    with open(args.yml_file, 'r') as reader, open(args.output, 'w') as writer:
+        config = yaml.load(reader, Loader=yaml.FullLoader)
+        config = edict(config)
+        write_row_f(writer, header)
+        write_row_f(writer, aligner)
+        repo_url = config.globals.repo_url
+        (head, tail) = osp.split(args.yml_file)
+        (head, tail) = osp.splitext(tail)
+        tree = Tree[head].value[0]
+        print(tree)
+        for i in range(len(config.models)):
+            name = config.models[i].name
+            model_configs = config.models[i].model_configs
+            pipelines = config.models[i].pipelines
+            config_url = osp.join(repo_url, tree, model_configs[0])
+            config_url, _ = osp.split(config_url)
+            support_backends = {b: 'N' for b in backends}
+            deploy_config = [
+                pipelines[i].deploy_config for i in range(len(pipelines))
+            ]
+            cfg = [
+                load_config(deploy_config[i])
+                for i in range(len(deploy_config))
+            ]
+            task = [
+                get_task_type(cfg[i][0]).value
+                for i in range(len(deploy_config))
+            ]
+            backend_type = [
+                get_backend(cfg[i][0]).value
+                for i in range(len(deploy_config))
+            ]
+            for i in range(len(deploy_config)):
+                support_backends[backend_type[i]] = 'Y'
+            support_backends = [support_backends[i] for i in backends]
+            model_name = f'[{name}]({config_url})'
+            row = [model_name, task[i]] + support_backends
 
-    for j in range(len(inference_list)):
-
-        dict = inference_list[j]
-        for i in platform1:
-            if i in target_platform[j]:
-                dict[i] = 'Y'
-            else:
-                dict[i] = 'N'
-    markdown = table(inference_list)
-    print(markdown)
-    path = args.output_md_file
-    (file, ext) = osp.splitext(path)
-
-    with open(f'{file}.md', 'w') as f:
-        f.write(markdown)
-        f.close()
+            write_row_f(writer, row)
+            print(f'Save to {args.output}')
 
 
 if __name__ == '__main__':

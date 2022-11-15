@@ -1,5 +1,5 @@
 globals:
-  url: https://github.com/open-mmlab/
+  repo_url: https://github.com/open-mmlab/mmsegmentation
   codebase_dir: ../mmsegmentation
   checkpoint_force_download: False
   images:
