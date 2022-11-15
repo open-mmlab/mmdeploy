@@ -30,7 +30,6 @@ def parse_args():
 
 
 def main():
-
     args = parse_args()
     assert osp.exists(args.yml_file), f'File not exists: {args.yml_file}'
     output_dir, _ = osp.split(args.output)
