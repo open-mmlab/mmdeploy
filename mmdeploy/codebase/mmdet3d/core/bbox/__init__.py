@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .centerpoint_bbox_coders import *  # noqa: F401,F403
-from .fcos3d_bbox_coder import *  # noqa: F401,F403
-from .utils import *  # noqa: F401,F403
+from . import centerpoint_bbox_coders  # noqa: F401,F403
+from . import fcos3d_bbox_coder  # noqa: F401,F403
+from .utils import points_img2cam
+
+__all__ = ['points_img2cam']

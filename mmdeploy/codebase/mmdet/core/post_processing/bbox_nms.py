@@ -2,9 +2,8 @@
 import torch
 from torch import Tensor
 
-import mmdeploy
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
+from mmdeploy.mmcv.ops.nms import ONNXNMSop, TRTBatchedNMSop
 from mmdeploy.utils import IR, is_dynamic_batch
 from mmdeploy.utils.constants import Backend
 
@@ -166,7 +165,8 @@ def _multiclass_nms_single(boxes: Tensor,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms')
+    func_name='mmdeploy.codebase.mmdet.core.post_processing'
+    '.bbox_nms._multiclass_nms')
 def multiclass_nms__default(ctx,
                             boxes: Tensor,
                             scores: Tensor,
@@ -223,7 +223,8 @@ def multiclass_nms__default(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.core.post_processing'
+    '.bbox_nms._multiclass_nms',
     backend='tensorrt')
 def multiclass_nms_static(ctx,
                           boxes: Tensor,
@@ -274,12 +275,12 @@ def multiclass_nms_static(ctx,
 @mark('multiclass_nms', inputs=['boxes', 'scores'], outputs=['dets', 'labels'])
 def multiclass_nms(*args, **kwargs):
     """Wrapper function for `_multiclass_nms`."""
-    return mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms(
-        *args, **kwargs)
+    return _multiclass_nms(*args, **kwargs)
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.core.post_processing'
+    '.bbox_nms._multiclass_nms',
     backend=Backend.COREML.value)
 def multiclass_nms__coreml(ctx,
                            boxes: Tensor,
@@ -340,7 +341,8 @@ def multiclass_nms__coreml(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.core.post_processing'
+    '.bbox_nms._multiclass_nms',
     ir=IR.TORCHSCRIPT)
 def multiclass_nms__torchscript(ctx,
                                 boxes: Tensor,
@@ -441,7 +443,8 @@ class AscendBatchNMSOp(torch.autograd.Function):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
+    func_name='mmdeploy.codebase.mmdet.core.post_processing'
+    '.bbox_nms._multiclass_nms',
     backend='ascend')
 def multiclass_nms__ascend(ctx,
                            boxes: Tensor,

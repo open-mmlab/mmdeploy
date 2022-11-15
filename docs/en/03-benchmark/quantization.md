@@ -47,3 +47,14 @@ Note: MMPose models are tested with `flip_test` explicitly set to `False` in mod
 | :-----------------------------------------------------------------------------------------------------------------: | :-----: | :------------: | :------------: |
 | [EDSRx2](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py) |  Set5   | 35.7733/0.9365 | 35.4266/0.9334 |
 | [EDSRx4](https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py) |  Set5   | 30.2194/0.8498 | 29.9340/0.8409 |
+
+### mmseg
+
+|                                                             model                                                              |  dataset   | fp32 mIoU | int8 mIoU |
+| :----------------------------------------------------------------------------------------------------------------------------: | :--------: | :-------: | :-------: |
+| [Fast-SCNN](https://github.com/open-mmlab/mmsegmentation/blob/master/configs/fastscnn/fast_scnn_lr0.12_8x4_160k_cityscapes.py) | cityscapes |   70.96   |   70.24   |
+
+Note:
+
+- Int8 models of the Fast-SCNN requires ncnnoptimize.
+- NCNN will extract 512 images from the train as a calibration dataset

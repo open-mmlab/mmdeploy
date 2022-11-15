@@ -2,8 +2,10 @@
 import torch
 import torch.nn.functional as F
 
-from mmdeploy.codebase.mmdet import (gather_topk, get_post_processing_params,
-                                     multiclass_nms, pad_with_value)
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
 

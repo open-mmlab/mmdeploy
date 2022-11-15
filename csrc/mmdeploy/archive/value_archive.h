@@ -53,6 +53,10 @@ inline Value to_value(T&& val) {
   return value;
 }
 
+// fast path
+inline Value to_value(const Value& v) { return v; }
+inline Value to_value(Value&& v) { return std::move(v); }
+
 template <typename T>
 void from_value(const Value& value, T&& x);
 
@@ -106,6 +110,9 @@ void from_value(const Value& value, T&& x) {
   ValueInputArchive archive(value);
   archive(std::forward<T>(x));
 }
+
+// Required to avoid Value::Pointer being unwrapped by Value::get_to()
+inline void from_value(const Value& value, Value& x) { x = value; }
 
 template <typename T>
 inline T from_value(const Value& value) {
