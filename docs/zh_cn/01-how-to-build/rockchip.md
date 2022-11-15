@@ -105,7 +105,7 @@ python tools/deploy.py \
 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)
 
 ```python
-# yolov3, yolox
+# yolov3, yolox for rknn-toolkit and rknn-toolkit2
 partition_config = dict(
   type='rknn',  # the partition policy name
   apply_marks=True,  # should always be set to True

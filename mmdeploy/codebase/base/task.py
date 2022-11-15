@@ -9,6 +9,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
                             get_codebase_config, get_root_logger)
+from mmdeploy.utils.constants import Backend
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -142,15 +143,17 @@ class BaseTask(metaclass=ABCMeta):
     @abstractmethod
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Sequence[int] = None,
+                     input_shape: Optional[Sequence[int]] = None,
+                     backend: Optional[Backend] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
         Args:
             imgs (str | np.ndarray | Sequence): Input image(s),
                 accepted data types are `str`, `np.ndarray`.
-            input_shape (list[int]): Input shape of image in (width, height)
-                format, defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input

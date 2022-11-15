@@ -161,7 +161,7 @@ label: 65, score: 0.95
   YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
 
   ```python
-  # yolov3, yolox
+  # yolov3, yolox for rknn-toolkit and rknn-toolkit2
   partition_config = dict(
       type='rknn',  # the partition policy name
       apply_marks=True,  # should always be set to True

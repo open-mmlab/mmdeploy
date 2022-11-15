@@ -6,7 +6,7 @@ codebase_config = dict(model_type='rknn')
 
 backend_config = dict(input_size_list=[[3, 320, 320]])
 
-# # yolov3, yolox
+# # yolov3, yolox for rknn-toolkit and rknn-toolkit2
 # partition_config = dict(
 #     type='rknn',  # the partition policy name
 #     apply_marks=True,  # should always be set to True
@@ -18,7 +18,7 @@ backend_config = dict(input_size_list=[[3, 320, 320]])
 #             output_names=[f'pred_maps.{i}' for i in range(3)])  # out names
 #     ])
 
-# # retinanet, ssd, fsaf
+# # retinanet, ssd, fsaf for rknn-toolkit2
 # partition_config = dict(
 #     type='rknn',  # the partition policy name
 #     apply_marks=True,

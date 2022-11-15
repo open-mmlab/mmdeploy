@@ -8,14 +8,16 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger
-from mmdeploy.utils.config_utils import get_input_shape
+from mmdeploy.utils import Task, get_root_logger, Backend
+from mmdeploy.utils.config_utils import (get_input_shape, disable_norm4rknn,
+                                         get_rknn_quantization)
 from .mmclassification import MMCLS_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
                          imgs: Sequence[Union[str, np.ndarray]],
-                         input_shape: Optional[Sequence[int]] = None):
+                         input_shape: Optional[Sequence[int]] = None,
+                         rknn_quantization: bool = False):
     """Process the model config.
 
     Args:
@@ -24,6 +26,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are `str`, `np.ndarray`.
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
+        rknn_quantization (bool): Wheather do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.
@@ -35,6 +38,9 @@ def process_model_config(model_cfg: mmcv.Config,
     else:
         if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.data.test.pipeline.pop(0)
+
+    cfg.data.test.pipeline = disable_norm4rknn(cfg.data.test.pipeline,
+                                               rknn_quantization)
     # check whether input_shape is valid
     if input_shape is not None:
         if 'crop_size' in cfg.data.test.pipeline[2]:
@@ -111,15 +117,17 @@ class Classification(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Optional[Sequence[int]] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     backend:Optional[Backend] = None,**kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for classifier.
 
         Args:
             imgs (Union[str, np.ndarray, Sequence]): Input image(s),
                 accepted data type are `str`, `np.ndarray`, Sequence.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Default: None.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -128,7 +136,10 @@ class Classification(BaseTask):
         from mmcv.parallel import collate, scatter
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        quantization_flag = get_rknn_quantization(
+            self.deploy_cfg) and backend != Backend.PYTORCH
+        cfg = process_model_config(self.model_cfg, imgs, input_shape,
+                                   quantization_flag)
         data_list = []
         test_pipeline = Compose(cfg.data.test.pipeline)
         for img in imgs:

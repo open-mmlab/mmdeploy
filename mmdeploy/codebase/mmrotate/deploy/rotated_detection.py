@@ -10,7 +10,7 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils import Task, Backend, get_input_shape
 from .mmrotate import MMROTATE_TASK
 
 
@@ -150,15 +150,17 @@ class RotatedDetection(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     backend: Optional[Backend] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for rotated object detection.
 
         Args:
             imgs (str | np.ndarray): Input image(s), accepted data type are
             `str`, `np.ndarray`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

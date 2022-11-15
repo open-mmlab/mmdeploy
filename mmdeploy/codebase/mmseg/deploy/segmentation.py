@@ -8,13 +8,15 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils import (Task, Backend, get_input_shape,
+                            get_rknn_quantization, disable_norm4rknn)
 from .mmsegmentation import MMSEG_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
-                         input_shape: Optional[Sequence[int]] = None):
+                         input_shape: Optional[Sequence[int]] = None,
+                         rknn_quantization: bool = False):
     """Process the model config.
 
     Args:
@@ -23,6 +25,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
+        rknn_quantization (bool): Wheather do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.
@@ -33,6 +36,9 @@ def process_model_config(model_cfg: mmcv.Config,
     if isinstance(imgs[0], np.ndarray):
         # set loading pipeline type
         cfg.data.test.pipeline[0] = LoadImage()
+
+    cfg.data.test.pipeline = disable_norm4rknn(cfg.data.test.pipeline,
+                                               rknn_quantization)
     # for static exporting
     if input_shape is not None:
         for pipeline in cfg.data.test.pipeline[1:]:
@@ -107,15 +113,17 @@ class Segmentation(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     backend: Optional[Backend] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
 
         Args:
             imgs (Any): Input image(s), accepted data type are `str`,
                 `np.ndarray`, `torch.Tensor`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -125,7 +133,10 @@ class Segmentation(BaseTask):
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
         imgs = [mmcv.imread(_) for _ in imgs]
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        quantization_flag = get_rknn_quantization(
+            self.deploy_cfg) and backend != Backend.PYTORCH
+        cfg = process_model_config(self.model_cfg, imgs, input_shape,
+                                   quantization_flag)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:

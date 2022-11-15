@@ -1,10 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Sequence, Union
 
 import mmcv
 
 from .constants import Backend, Codebase, Task
-from .utils import deprecate
+from .utils import deprecate, get_root_logger
 
 
 def load_config(*args) -> List[mmcv.Config]:
@@ -393,3 +393,51 @@ def get_dynamic_axes(
                 raise KeyError('No names were found to define dynamic axes.')
         dynamic_axes = dict(zip(axes_names, dynamic_axes))
     return dynamic_axes
+
+
+def get_normalization(model_cfg: Union[str, mmcv.Config]):
+    model_cfg = load_config(model_cfg)[0]
+    pipelines = model_cfg.data.test.pipeline
+    for i, pipeline in enumerate(pipelines):
+        if pipeline['type'] == 'MultiScaleFlipAug':
+            assert 'transforms' in pipeline
+            for trans in pipeline['transforms']:
+                if trans['type'] == 'Normalize':
+                    return trans
+        else:
+            if pipeline['type'] == 'Normalize':
+                return pipeline
+
+
+def get_rknn_quantization(deploy_cfg: mmcv.Config):
+    """Get the flag of `do_quantization` for rknn backend.
+
+    Args:
+        deploy_cfg (mmcv.Config): The content of config.
+
+    Returns:
+        bool: Do quantization or not.
+    """
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        return get_backend_config(
+            deploy_cfg)['quantization_config']['do_quantization']
+    return False
+
+
+def disable_norm4rknn(transforms: Sequence[Dict], flag: bool = False):
+    """Set Normalization values for RKNN quantization.
+
+    Args:
+        common_params (Dict): Configs for rknn.config().
+        transforms (Sequence[Dict]): A sequence of transformation.
+        flag (bool): Whether swap or not. Default to False.
+
+    Returns:
+        (common_params, transforms): Configurations after swap.
+    """
+    if flag == True:
+        for trans in transforms:
+            if trans['type'] == 'Normalize':
+                trans['mean'] = [0, 0, 0]
+                trans['std'] = [1, 1, 1]
+    return transforms

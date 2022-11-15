@@ -7,6 +7,7 @@ import torch
 
 from mmdeploy.codebase import BaseTask
 from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
+from mmdeploy.utils.config_utils import get_rknn_quantization
 
 
 def visualize_model(model_cfg: Union[str, mmcv.Config],
@@ -67,7 +68,7 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         else:
             model = task_processor.init_backend_model(model, **kwargs)
 
-    model_inputs, _ = task_processor.create_input(img, input_shape)
+    model_inputs, _ = task_processor.create_input(img, input_shape, backend)
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 

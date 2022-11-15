@@ -8,14 +8,18 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.utils import Task
-from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
+from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
+                                         get_rknn_quantization,
+                                         is_dynamic_shape, disable_norm4rknn)
+from mmdeploy.utils.constants import Backend
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
                          imgs: Union[Sequence[str], Sequence[np.ndarray]],
-                         input_shape: Optional[Sequence[int]] = None):
+                         input_shape: Optional[Sequence[int]] = None,
+                         rknn_quantization: bool = False):
     """Process the model config.
 
     Args:
@@ -24,6 +28,7 @@ def process_model_config(model_cfg: mmcv.Config,
             data type are List[str], List[np.ndarray].
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
+        rknn_quantization (bool): Wheather do quantization for RKNN backend.
 
     Returns:
         mmcv.Config: the model config after processing.
@@ -40,6 +45,7 @@ def process_model_config(model_cfg: mmcv.Config,
     if input_shape is not None:
         cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
         transforms = cfg.data.test.pipeline[1]['transforms']
+        transforms = disable_norm4rknn(transforms, rknn_quantization)
         for trans in transforms:
             trans_type = trans['type']
             if trans_type == 'Resize' and len(input_shape) != 1:
@@ -103,15 +109,17 @@ class ObjectDetection(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     backend: Optional[Backend] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
 
         Args:
             imgs (str|np.ndarray): Input image(s), accpeted data type are
                 `str`, `np.ndarray`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -121,7 +129,10 @@ class ObjectDetection(BaseTask):
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
         dynamic_flag = is_dynamic_shape(self.deploy_cfg)
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        quantization_flag = get_rknn_quantization(
+            self.deploy_cfg) and backend != Backend.PYTORCH
+        cfg = process_model_config(self.model_cfg, imgs, input_shape,
+                                   quantization_flag)
         # Drop pad_to_square when static shape. Because static shape should
         # ensure the shape before input image.
         if not dynamic_flag:
@@ -291,7 +302,9 @@ class ObjectDetection(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        quantization_flag = get_rknn_quantization(self.deploy_cfg)
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape,
+                                         quantization_flag)
         preprocess = model_cfg.data.test.pipeline
         return preprocess
 
