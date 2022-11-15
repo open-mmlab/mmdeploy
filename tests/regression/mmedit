@@ -1,0 +1,7 @@
+|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
+|:--|:--|:--|:--|:--|:--|:--|:--|
+|[SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/restorers/srcnn)|SuperResolution|Y|Y|Y|Y|Y|Y|
+|[ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/restorers/esrgan)|SuperResolution|Y|Y|Y|Y|Y|Y|
+|[SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/restorers/srresnet_srgan)|SuperResolution|Y|Y|Y|Y|Y|Y|
+|[Real-ESRNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/restorers/real_esrgan)|SuperResolution|Y|Y|Y|Y|Y|Y|
+|[EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/restorers/edsr)|SuperResolution|Y|Y|Y|N|Y|Y|

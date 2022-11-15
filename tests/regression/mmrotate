@@ -1,0 +1,6 @@
+|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
+|:--|:--|:--|:--|:--|:--|:--|:--|
+|[RotatedRetinanet](https://github.com/open-mmlab/mmrotate/tree/1.x/configs/rotated_retinanet)|RotatedDetection|Y|Y|N|N|N|N|
+|[oriented_rcnn](https://github.com/open-mmlab/mmrotate/tree/1.x/configs/oriented_rcnn)|RotatedDetection|Y|Y|N|N|N|N|
+|[gliding_vertex](https://github.com/open-mmlab/mmrotate/tree/1.x/configs/gliding_vertex)|RotatedDetection|N|Y|N|N|N|N|
+|[RoITransformer](https://github.com/open-mmlab/mmrotate/tree/1.x/configs/roi_trans)|RotatedDetection|Y|Y|N|N|N|N|

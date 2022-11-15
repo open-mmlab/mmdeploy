@@ -1,0 +1,12 @@
+|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
+|:--|:--|:--|:--|:--|:--|:--|:--|
+|[ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)|Classification|Y|Y|Y|Y|Y|Y|
+|[ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)|Classification|Y|Y|Y|Y|Y|Y|
+|[DenseNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/densenet)|Classification|Y|Y|Y|Y|Y|Y|
+|[SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)|Classification|Y|Y|Y|Y|Y|Y|
+|[MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v2)|Classification|Y|Y|Y|Y|Y|Y|
+|[ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v1)|Classification|N|Y|Y|N|N|Y|
+|[ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)|Classification|N|Y|Y|N|N|Y|
+|[VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer)|Classification|Y|Y|Y|N|N|Y|
+|[SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)|Classification|Y|Y|Y|N|N|N|
+|[EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/efficientnet)|Classification|Y|Y|N|N|N|N|

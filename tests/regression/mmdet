@@ -1,0 +1,16 @@
+|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
+|:--|:--|:--|:--|:--|:--|:--|:--|
+|[YOLOV3](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolo)|ObjectDetection|Y|Y|Y|N|Y|Y|
+|[SSD](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/ssd)|ObjectDetection|Y|Y|Y|N|N|Y|
+|[RetinaNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/retinanet)|ObjectDetection|Y|Y|Y|Y|Y|Y|
+|[Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn)|ObjectDetection|Y|Y|Y|N|Y|N|
+|[FCOS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fcos)|ObjectDetection|Y|Y|Y|N|Y|Y|
+|[FSAF](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fsaf)|ObjectDetection|Y|Y|Y|Y|Y|Y|
+|[YOLOX](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolox)|ObjectDetection|Y|Y|Y|N|Y|Y|
+|[Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/faster_rcnn)|ObjectDetection|Y|Y|Y|Y|Y|Y|
+|[ATSS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/atss)|ObjectDetection|Y|Y|N|N|Y|N|
+|[Cascade R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn)|ObjectDetection|Y|Y|N|Y|Y|N|
+|[GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)|ObjectDetection|Y|Y|N|N|Y|N|
+|[DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)|ObjectDetection|Y|Y|N|N|N|N|
+|[Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)|ObjectDetection|Y|Y|Y|N|Y|N|
+|[Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)|ObjectDetection|Y|Y|N|N|N|N|

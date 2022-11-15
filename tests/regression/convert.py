@@ -13,12 +13,12 @@ from mmdeploy.utils import get_backend, get_task_type, load_config
 class Tree(Enum):
     mmcls = 'tree/1.x',
     mmdet = 'tree/3.x',
-    mmdet3d = 'tree/1.x',
+    mmdet3d = 'tree/1.1',
     mmedit = 'tree/1.x',
     mmocr = 'tree/1.x',
     mmpose = 'tree/1.x',
     mmrotate = 'tree/1.x',
-    mmseg = 'tree/1.x'
+    mmseg = 'tree/1.x',
 
 
 def parse_args():
@@ -84,7 +84,7 @@ def main():
             row = [model_name, task[i]] + support_backends
 
             write_row_f(writer, row)
-            print(f'Save to {args.output}')
+        print(f'Save to {args.output}')
 
 
 if __name__ == '__main__':
