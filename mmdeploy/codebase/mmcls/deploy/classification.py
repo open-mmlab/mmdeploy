@@ -25,10 +25,12 @@ class MMClassification(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register all rewriters for mmcls."""
         import mmdeploy.codebase.mmcls.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all related modules and rewriters for mmcls."""
         from mmcls.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -116,6 +118,8 @@ class Classification(BaseTask):
         deploy_cfg (Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
+        experiment_name (str, optional): The experiment name used to create
+            runner. Defaults to 'Classification'.
     """
 
     def __init__(self,
@@ -127,6 +131,11 @@ class Classification(BaseTask):
                                              experiment_name)
 
     def build_data_preprocessor(self):
+        """Build data preprocessor.
+
+        Returns:
+            nn.Module: A model build with mmcls data_preprocessor.
+        """
         model_cfg = deepcopy(self.model_cfg)
         data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
         data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
@@ -174,6 +183,8 @@ class Classification(BaseTask):
                 accepted data type are `str`, `np.ndarray`, Sequence.
             input_shape (list[int]): A list of two integer in (width, height)
                 format specifying input shape. Default: None.
+            data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
@@ -210,6 +221,14 @@ class Classification(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     def get_visualizer(self, name: str, save_dir: str):
+        """Get mmcls visualizer.
+
+        Args:
+            name (str): Name of visualizer.
+            save_dir (str): Directory to save drawn results.
+        Returns:
+            ClsVisualizer: Instance of mmcls visualizer.
+        """
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
         if metainfo is not None:

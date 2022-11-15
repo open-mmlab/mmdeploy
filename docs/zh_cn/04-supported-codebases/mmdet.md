@@ -209,6 +209,7 @@ cv2.imwrite('output_detection.png', img)
 |             [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)             |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
 |       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)       |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |
 |            [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)            |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection   |      Y      |    Y     |  N   |   ?   |    ?     |
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |

@@ -29,6 +29,8 @@ class End2EndModel(BaseBackendModel):
         model_cfg(mmengine.Config): Input model config object.
         deploy_cfg(str | mmengine.Config):Deployment config file or loaded
             Config object.
+        data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
     """
 
     def __init__(self,
@@ -74,10 +76,10 @@ class End2EndModel(BaseBackendModel):
         it is an image.
 
         Args:
-            lq (torch.Tensor): The input low-quality image of the model.
-            test_mode (bool): When test_mode is set, the output is evaluation
-                result. Otherwise it is an image. Default to `False`.
-            *args: Other arguments.
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
             **kwargs: Other key-pair arguments.
 
         Returns:
@@ -129,9 +131,10 @@ class SDKEnd2EndModel(End2EndModel):
         it is an image.
 
         Args:
-            lq (torch.Tensor): The input low-quality image of the model.
-            test_mode (bool): When test_mode is set, the output is evaluation
-                result. Otherwise it is an image. Default to `False`.
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
@@ -167,6 +170,20 @@ def build_super_resolution_model(
         data_preprocessor: Optional[Union[Config,
                                           BaseDataPreprocessor]] = None,
         **kwargs):
+    """Build super resolution model for different backends.
+
+    Args:
+        model_files (Sequence[str]): Input model file(s).
+        model_cfg (str | Config): Input model config file or Config
+            object.
+        deploy_cfg (str | Config): Input deployment config file or
+            Config object.
+        device (str):  Device to input model
+        data_preprocessor (BaseDataPreprocessor | Config): The data
+            preprocessor of the model.
+    Returns:
+        End2EndModel: Super Resolution model for a configured backend.
+    """
     model_cfg = load_config(model_cfg)[0]
     deploy_cfg = load_config(deploy_cfg)[0]
 

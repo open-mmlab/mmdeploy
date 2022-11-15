@@ -199,9 +199,8 @@ class End2EndModel(BaseBackendModel):
 
             bboxes = dets[:, :4]
             scores = dets[:, 4]
-
             # perform rescale
-            if rescale:
+            if rescale and 'scale_factor' in img_metas[i]:
                 scale_factor = img_metas[i]['scale_factor']
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     if len(scale_factor) == 2:
@@ -212,12 +211,19 @@ class End2EndModel(BaseBackendModel):
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
                 bboxes /= scale_factor
 
+            # Most of models in mmdetection 3.x use `pad_param`, but some
+            # models like CenterNet uses `border`.
+            # offset pixel of the top-left corners between original image
+            # and padded/enlarged image, 'pad_param' is used when exporting
+            # CornerNet and CentripetalNet to onnx
+            pad_key = None
             if 'pad_param' in img_metas[i]:
-                # offset pixel of the top-left corners between original image
-                # and padded/enlarged image, 'pad_param' is used when exporting
-                # CornerNet and CentripetalNet to onnx
-                x_off = img_metas[i]['pad_param'][2]
-                y_off = img_metas[i]['pad_param'][0]
+                pad_key = 'pad_param'
+            elif 'border' in img_metas[i]:
+                pad_key = 'border'
+            if pad_key is not None:
+                x_off = img_metas[i][pad_key][2]
+                y_off = img_metas[i][pad_key][0]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)

@@ -21,6 +21,7 @@
 | [VFNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/vfnet)                               | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)                       | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
+| [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                       | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
 | [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)                        | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
@@ -29,6 +30,7 @@
 | [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)           | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer) | MMClassification |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |  N   |
 | [SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)     | MMClassification |      Y      |      Y      |    Y     |  N   |   ?   |    N     |   ?    |  N   |
+| [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)                  | MMClassification |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [FCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn)                                | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [PSPNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet)[\*static](#note)         | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [DeepLabV3](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3)                    | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |
