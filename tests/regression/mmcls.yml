@@ -212,6 +212,14 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_static_fp16
 
+  - name: MobileOne
+    metafile: configs/mobileone/metafile.yml
+    model_configs:
+      - configs/mobileone/mobileone-s0_8xb128_in1k.py
+    pipelines:
+      - *pipeline_trt_static_fp16
+      - *pipeline_ort_dynamic_fp32
+
   - name: EfficientNet
     metafile: configs/efficientnet/metafile.yml
     model_configs:

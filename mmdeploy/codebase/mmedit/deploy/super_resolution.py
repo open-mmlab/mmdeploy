@@ -166,6 +166,8 @@ class SuperResolution(BaseTask):
             imgs (str | np.ndarray): Input image(s).
             input_shape (Sequence[int] | None): A list of two integer in
              (width, height) format specifying input shape. Defaults to `None`.
+            data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

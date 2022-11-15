@@ -300,6 +300,17 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
 
+  - name: CenterNet
+    metafile: configs/centernet/metafile.yml
+    model_configs:
+      - configs/centernet/centernet_r18_8xb16-crop512-140e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-64x64-800x800.py
+        convert_image: *convert_image
+        backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic
+
   - name: Mask R-CNN
     metafile: configs/mask_rcnn/metafile.yml
     model_configs:

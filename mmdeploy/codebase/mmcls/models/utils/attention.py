@@ -19,7 +19,7 @@ def multiheadattention__forward__ncnn(ctx, self, qkv_input):
         ctx (ContextCaller): The context with additional information.
         self (MultiheadAttention): The instance of the class
         MultiheadAttention.
-        x (Tensor): Input features of shape (N, Cin, H, W).
+        qkv_input (Tensor): Input features of shape (N, Cin, H, W).
     Returns:
         out (Tensor): A feature map output from MultiHeadAttention. The tensor
         shape (N, Cout, H, W).
