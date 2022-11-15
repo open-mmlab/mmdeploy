@@ -24,19 +24,7 @@ class ThreeCropImpl : public ::mmdeploy::ThreeCropImpl {
   }
 };
 
-class ThreeCropImplCreator : public Creator<::mmdeploy::ThreeCropImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<ThreeCropImpl>(args); }
-
- private:
-  int version_{1};
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ThreeCropImpl, (cuda, 0), ThreeCropImpl);
 
 }  // namespace cuda
 }  // namespace mmdeploy
-
-using ::mmdeploy::ThreeCropImpl;
-using ::mmdeploy::cuda::ThreeCropImplCreator;
-REGISTER_MODULE(ThreeCropImpl, ThreeCropImplCreator);

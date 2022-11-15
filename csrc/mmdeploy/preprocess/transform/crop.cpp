@@ -77,7 +77,7 @@ Result<Value> CenterCropImpl::Process(const Value& input) {
 }
 
 CenterCrop::CenterCrop(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<CenterCropImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<CenterCropImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'CenterCrop' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
@@ -85,16 +85,9 @@ CenterCrop::CenterCrop(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class CenterCropCreator : public Creator<Transform> {
- public:
-  const char* GetName(void) const override { return "CenterCrop"; }
-  int GetVersion(void) const override { return version_; }
-  ReturnType Create(const Value& args) override { return make_unique<CenterCrop>(args, version_); }
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (CenterCrop, 0), [](const Value& config) {
+  return std::make_unique<CenterCrop>(config, 0);
+});
 
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, CenterCropCreator);
 MMDEPLOY_DEFINE_REGISTRY(CenterCropImpl);
 }  // namespace mmdeploy

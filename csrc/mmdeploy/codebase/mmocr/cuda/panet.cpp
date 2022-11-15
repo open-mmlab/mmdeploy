@@ -96,15 +96,7 @@ class PaHeadCudaImpl : public PaHeadImpl {
   std::optional<ConnectedComponents> cc_;
 };
 
-class PaHeadCudaImplCreator : public ::mmdeploy::Creator<PaHeadImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<PaHeadImpl> Create(const Value&) override {
-    return std::make_unique<PaHeadCudaImpl>();
-  }
-};
-
-REGISTER_MODULE(PaHeadImpl, PaHeadCudaImplCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(PaHeadImpl, (cuda, 0),
+                               [] { return std::make_unique<PaHeadCudaImpl>(); });
 
 }  // namespace mmdeploy::mmocr

@@ -89,17 +89,6 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
   }
 };
 
-class NormalizeImplCreator : public Creator<::mmdeploy::NormalizeImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  std::unique_ptr<::mmdeploy::NormalizeImpl> Create(const Value& args) override {
-    return make_unique<NormalizeImpl>(args);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::NormalizeImpl, (cuda, 0), NormalizeImpl);
 
 }  // namespace mmdeploy::cuda
-
-using mmdeploy::NormalizeImpl;
-using mmdeploy::cuda::NormalizeImplCreator;
-REGISTER_MODULE(NormalizeImpl, NormalizeImplCreator);
