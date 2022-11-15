@@ -28,6 +28,7 @@ class Task(AdvancedEnum):
     MONOCULAR_DETECTION = 'MonocularDetection'
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
+    VIDEO_RECOGNITION = 'VideoRecognition'
 
 
 class Codebase(AdvancedEnum):
@@ -40,6 +41,7 @@ class Codebase(AdvancedEnum):
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
+    MMACTION = 'mmaction'
 
 
 class IR(AdvancedEnum):
@@ -84,7 +86,9 @@ SDK_TASK_MAP = {
     Task.POSE_DETECTION:
     dict(component='Detector', cls_name='PoseDetector'),
     Task.ROTATED_DETECTION:
-    dict(component='ResizeRBBox', cls_name='RotatedDetector')
+    dict(component='ResizeRBBox', cls_name='RotatedDetector'),
+    Task.VIDEO_RECOGNITION:
+    dict(component='BaseHead', cls_name='VideoRecognizer')
 }
 
 TENSORRT_MAX_TOPK = 3840

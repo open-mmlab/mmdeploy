@@ -106,6 +106,6 @@ class ResizeInstanceMask : public ResizeBBox {
   float mask_thr_binary_{.5f};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeInstanceMask);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeInstanceMask);
 
 }  // namespace mmdeploy::mmdet

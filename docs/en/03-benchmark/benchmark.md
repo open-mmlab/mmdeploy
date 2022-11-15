@@ -1849,6 +1849,77 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
 </table>
 </div>
 
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">mmaction2</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">model</td>
+    <td align="center">task</td>
+    <td align="center">dataset</td>
+    <td align="center">metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/tsn/tsn_r50_1x1x3_100e_kinetics400_rgb.py">TSN</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+<tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/slowfast/slowfast_r50_4x16x1_256e_kinetics400_rgb.py">SlowFast</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">74.45</td>
+    <td align="center">-</td>
+    <td align="center">75.62</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">91.55</td>
+    <td align="center">-</td>
+    <td align="center">92.10</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
 ## Notes
 
 - As some datasets contain images with various resolutions in codebase like MMDet. The speed benchmark is gained through static configs in MMDeploy, while the performance benchmark is gained through dynamic ones.
