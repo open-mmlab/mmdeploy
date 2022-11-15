@@ -1,5 +1,5 @@
 globals:
-  repo_url: https://github.com/open-mmlab/mmpose/tree/1.x
+  repo_url: https://github.com/open-mmlab/mmpose/tree/master
   codebase_dir: ../mmpose
   checkpoint_force_download: False
   images:
