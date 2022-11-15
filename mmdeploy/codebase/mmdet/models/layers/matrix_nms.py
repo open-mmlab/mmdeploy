@@ -46,10 +46,7 @@ def mask_matrix_nms__default(ctx,
                 the remaining mask in the input mask, has shape (n,).
     """
     assert len(labels) == len(masks) == len(scores)
-    if mask_area is None:
-        mask_area = masks.sum((1, 2)).float()
-    else:
-        assert len(masks) == len(mask_area)
+    assert len(masks) == len(mask_area)
     # sort and keep top nms_pre
     nms_pre = max(0, nms_pre)
     if nms_pre == 0:
@@ -108,9 +105,8 @@ def mask_matrix_nms__default(ctx,
     # update the score.
     scores = scores * decay_coefficient
 
-    if filter_thr > 0:
-        keep = scores >= filter_thr
-        scores = scores.where(keep, scores.new_zeros(1))
+    keep = scores >= filter_thr
+    scores = scores.where(keep, scores.new_zeros(1))
 
     # sort and keep top max_num
     scores, sort_inds = torch.topk(scores, max(max_num, 0))

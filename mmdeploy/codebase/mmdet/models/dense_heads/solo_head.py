@@ -35,8 +35,7 @@ def solohead__predict_by_feat__default(ctx, self,
     featmap_size = batch_mlvl_mask_preds.size()[-2:]
     h, w = batch_img_metas[0]['img_shape'][:2]
     upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
-    cls_labels = batch_mlvl_cls_scores.argmax(dim=-1)
-    batch_mlvl_cls_scores = torch.max(batch_mlvl_cls_scores, -1).values
+    batch_mlvl_cls_scores, cls_labels = torch.max(batch_mlvl_cls_scores, -1)
     score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
     batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
         score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
@@ -68,7 +67,6 @@ def solohead__predict_by_feat__default(ctx, self,
         kernel=cfg.kernel,
         sigma=cfg.sigma,
         filter_thr=cfg.filter_thr)
-    # mask_matrix_nms may return an empty Tensor
 
     mask_preds = mask_preds[keep_inds]
     mask_preds = F.interpolate(
