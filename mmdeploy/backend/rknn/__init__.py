@@ -15,10 +15,12 @@ def is_available():
 
 def package_info():
     import pkg_resources
-    for p in pkg_resources.working_set:
-        if p.project_name.startswith('rknn-toolkit'):
-            return dict(name=p.project_name, version=p.version)
-    return dict(name=None, version=None)
+    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit', None)
+    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit2', toolkit)
+    if toolkit is None:
+        return dict(name=None, version=None)
+    else:
+        return dict(name=toolkit.project_name, version=toolkit.version)
 
 
 def device_available():
