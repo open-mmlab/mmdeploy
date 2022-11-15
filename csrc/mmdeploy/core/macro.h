@@ -22,6 +22,8 @@
 #define _MMDEPLOY_PP_CONCAT_IMPL(s1, s2) s1##s2
 #define MMDEPLOY_PP_CONCAT(s1, s2) _MMDEPLOY_PP_CONCAT_IMPL(s1, s2)
 
+#define MMDEPLOY_PP_EXPAND(...) __VA_ARGS__
+
 // ! Be aware of ODR violation when using __COUNTER__
 #ifdef __COUNTER__
 #define MMDEPLOY_ANONYMOUS_VARIABLE(str) MMDEPLOY_PP_CONCAT(str, __COUNTER__)

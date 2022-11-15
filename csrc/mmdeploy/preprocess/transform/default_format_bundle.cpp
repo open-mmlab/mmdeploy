@@ -57,8 +57,7 @@ Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
 }
 
 DefaultFormatBundle::DefaultFormatBundle(const Value& args, int version) : Transform(args) {
-  auto impl_creator =
-      Registry<DefaultFormatBundleImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<DefaultFormatBundleImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'DefaultFormatBundle' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'DefaultFormatBundle' is not supported on specified platform");
@@ -66,17 +65,9 @@ DefaultFormatBundle::DefaultFormatBundle(const Value& args, int version) : Trans
   impl_ = impl_creator->Create(args);
 }
 
-class DefaultFormatBundleCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "DefaultFormatBundle"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<DefaultFormatBundle>(args, version_);
-  }
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (DefaultFormatBundle, 0), [](const Value& config) {
+  return std::make_unique<DefaultFormatBundle>(config, 0);
+});
 
- private:
-  int version_{1};
-};
-REGISTER_MODULE(Transform, DefaultFormatBundleCreator);
 MMDEPLOY_DEFINE_REGISTRY(DefaultFormatBundleImpl);
 }  // namespace mmdeploy

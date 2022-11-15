@@ -88,6 +88,6 @@ class ResizeMask : public MMSegmentation {
   bool little_endian_;
 };
 
-REGISTER_CODEBASE_COMPONENT(MMSegmentation, ResizeMask);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMSegmentation, ResizeMask);
 
 }  // namespace mmdeploy::mmseg

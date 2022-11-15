@@ -8,8 +8,7 @@
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/tensor.h"
 
-namespace mmdeploy {
-namespace mmseg {
+namespace mmdeploy::mmseg {
 
 struct SegmentorOutput {
   Tensor mask;
@@ -19,11 +18,8 @@ struct SegmentorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(mask, height, width, classes);
 };
 
-DECLARE_CODEBASE(MMSegmentation, mmseg);
+MMDEPLOY_DECLARE_CODEBASE(MMSegmentation, mmseg);
 
-}  // namespace mmseg
-
-MMDEPLOY_DECLARE_REGISTRY(mmseg::MMSegmentation);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmseg
 
 #endif  // MMDEPLOY_MMSEG_H

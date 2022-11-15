@@ -4,8 +4,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace elena {
+namespace mmdeploy::elena {
 
 class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
  public:
@@ -53,16 +52,6 @@ class PrepareImageImpl : public ::mmdeploy::PrepareImageImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-class PrepareImageImplCreator : public Creator<::mmdeploy::PrepareImageImpl> {
- public:
-  const char* GetName() const override { return "elena"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<PrepareImageImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PrepareImageImpl, (elena, 0), PrepareImageImpl);
 
-}  // namespace elena
-}  // namespace mmdeploy
-
-using mmdeploy::PrepareImageImpl;
-using mmdeploy::elena::PrepareImageImplCreator;
-REGISTER_MODULE(PrepareImageImpl, PrepareImageImplCreator);
+}  // namespace mmdeploy::elena
