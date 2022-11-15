@@ -1,5 +1,5 @@
 globals:
-  repo_url: https://github.com/open-mmlab/mmdetection
+  repo_url: https://github.com/open-mmlab/mmdetection/tree/3.x
   codebase_dir: ../mmdetection
   checkpoint_force_download: False
   images:

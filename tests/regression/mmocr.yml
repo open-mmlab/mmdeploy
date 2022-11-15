@@ -1,5 +1,5 @@
 globals:
-  repo_url: https://github.com/open-mmlab/mmocr
+  repo_url: https://github.com/open-mmlab/mmocr/tree/1.x
   codebase_dir: ../mmocr
   checkpoint_force_download: False
   images:

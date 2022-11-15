@@ -2,23 +2,11 @@
 import argparse
 import os
 import os.path as osp
-from enum import Enum
 
 import yaml
 from easydict import EasyDict as edict
 
 from mmdeploy.utils import get_backend, get_task_type, load_config
-
-
-class Tree(Enum):
-    mmcls = 'tree/1.x',
-    mmdet = 'tree/3.x',
-    mmdet3d = 'tree/1.1',
-    mmedit = 'tree/1.x',
-    mmocr = 'tree/1.x',
-    mmpose = 'tree/1.x',
-    mmrotate = 'tree/1.x',
-    mmseg = 'tree/1.x',
 
 
 def parse_args():
@@ -51,15 +39,11 @@ def main():
         write_row_f(writer, header)
         write_row_f(writer, aligner)
         repo_url = config.globals.repo_url
-        (head, tail) = osp.split(args.yml_file)
-        (head, tail) = osp.splitext(tail)
-        tree = Tree[head].value[0]
-        print(tree)
         for i in range(len(config.models)):
             name = config.models[i].name
             model_configs = config.models[i].model_configs
             pipelines = config.models[i].pipelines
-            config_url = osp.join(repo_url, tree, model_configs[0])
+            config_url = osp.join(repo_url, model_configs[0])
             config_url, _ = osp.split(config_url)
             support_backends = {b: 'N' for b in backends}
             deploy_config = [

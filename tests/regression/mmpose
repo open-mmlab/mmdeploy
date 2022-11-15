@@ -1,7 +1,0 @@
-|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
-|:--|:--|:--|:--|:--|:--|:--|:--|
-|[HRNET](https://github.com/open-mmlab/mmpose/tree/1.x/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco)|PoseDetection|Y|Y|N|N|Y|Y|
-|[LiteHRNet](https://github.com/open-mmlab/mmpose/tree/1.x/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco)|PoseDetection|Y|Y|N|N|Y|N|
-|[MSPN](https://github.com/open-mmlab/mmpose/tree/1.x/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco)|PoseDetection|Y|Y|N|N|Y|Y|
-|[Hourglass](https://github.com/open-mmlab/mmpose/tree/1.x/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco)|PoseDetection|Y|Y|N|N|Y|Y|
-|[ViPNARS](https://github.com/open-mmlab/mmpose/tree/1.x/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco)|PoseDetection|N|N|N|N|N|Y|

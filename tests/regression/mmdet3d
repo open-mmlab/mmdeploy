@@ -1,5 +1,0 @@
-|model|task|onnxruntime|tensorrt|torchscript|pplnn|openvino|ncnn|
-|:--|:--|:--|:--|:--|:--|:--|:--|
-|[PointPillars](https://github.com/open-mmlab/mmdetection3d/tree/1.1/configs/pointpillars)|VoxelDetection|Y|Y|N|N|Y|N|
-|[PointPillars](https://github.com/open-mmlab/mmdetection3d/tree/1.1/configs/pointpillars)|VoxelDetection|Y|Y|N|N|Y|N|
-|[CenterPoint](https://github.com/open-mmlab/mmdetection3d/tree/1.1/configs/centerpoint)|VoxelDetection|Y|Y|N|N|Y|N|
