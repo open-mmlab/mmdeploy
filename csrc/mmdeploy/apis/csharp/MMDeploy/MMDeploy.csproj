@@ -17,7 +17,16 @@
     <MMDeployNativeDlls>$(MSBuildThisFileDirectory)\..\..\..\..\..</MMDeployNativeDlls>
   </PropertyGroup>
   <ItemGroup>
-    <Content CopyToOutputDirectory="PreserveNewest" Include="$(MMDeployNativeDlls)\build\bin\Release\mmdeploy.dll" Pack="true" PackagePath="runtimes\win-x64\native\mmdeploy.dll" />
+    <Content Include="$(MMDeployNativeDlls)\build\bin\Release\mmdeploy.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>runtimes\win-x64\native\mmdeploy_extern.dll</PackagePath>
+    </Content>
+    <Content Include="MMDeploy.props">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>build\net48\MMDeploy.props</PackagePath>
+    </Content>
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
