@@ -11,7 +11,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 def gvfixcoder__decode(ctx, self, hboxes, fix_deltas):
     """Rewriter for GVFixCoder decode, support more dimension input."""
 
-    assert hboxes.size(1) == 4
+    assert hboxes.size(
+        -1) == 4, f'expect hboxes.size(-1)==4 get {hboxes.size(-1)}.'
     hboxes = get_box_tensor(hboxes)
     x1 = hboxes[..., 0::4]
     y1 = hboxes[..., 1::4]

@@ -3,9 +3,11 @@ from typing import Any, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
+from mmdet.structures.bbox import scale_boxes
 from mmengine import Config, Registry
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.structures import BaseDataElement, InstanceData
+from mmrotate.structures.bbox import RotatedBoxes
 from torch import nn
 
 from mmdeploy.codebase.base import BaseBackendModel
@@ -113,28 +115,19 @@ class End2EndModel(BaseBackendModel):
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_size = inputs.shape[0]
-        rescale = kwargs.get('rescale', False)
-
+        img_metas = [data_sample.metainfo for data_sample in data_samples]
         results = []
+        rescale = kwargs.get('rescale', True)
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
+            bboxes = RotatedBoxes(dets[:, :-1], clone=False)
+            scores = dets[:, -1]
             result = InstanceData()
 
             if rescale:
                 scale_factor = img_metas[i]['scale_factor']
-
-                if isinstance(scale_factor, (list, tuple, np.ndarray)):
-                    assert len(scale_factor) == 4
-                    scale_factor = np.array(scale_factor)[None, :]  # [1,4]
-                scale_factor = torch.from_numpy(scale_factor).to(
-                    device=dets.device)
-                dets[:, :4] /= scale_factor
-
-            dets = dets.cpu().numpy()
-            labels = labels.cpu().numpy()
-
-            bboxes = dets[:, :4]
-            scores = dets[:, 4]
+                scale_factor = [1 / s for s in scale_factor]
+                bboxes = scale_boxes(bboxes, scale_factor)
 
             result.scores = scores
             result.bboxes = bboxes
@@ -216,12 +209,13 @@ def build_rotated_detection_model(
     model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
 
     backend_rotated_detector = __BACKEND_MODEL.build(
-        model_type,
-        backend=backend,
-        backend_files=model_files,
-        device=device,
-        deploy_cfg=deploy_cfg,
-        data_preprocessor=data_preprocessor,
-        **kwargs)
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
 
     return backend_rotated_detector

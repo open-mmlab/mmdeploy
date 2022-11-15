@@ -24,8 +24,8 @@ class MMRotate(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
-        import mmdeploy.codebase.mmrotate.core  # noqa: F401
         import mmdeploy.codebase.mmrotate.models  # noqa: F401
+        import mmdeploy.codebase.mmrotate.structures  # noqa: F401
         from mmdeploy.codebase.mmdet.deploy.object_detection import MMDetection
         MMDetection.register_deploy_modules()
 
@@ -77,23 +77,26 @@ def process_model_config(model_cfg: Config,
     Returns:
         Config: the model config after processing.
     """
-    from mmdet.datasets import replace_ImageToTensor
-
-    cfg = copy.deepcopy(model_cfg)
+    cfg = model_cfg.copy()
 
     if isinstance(imgs[0], np.ndarray):
+        cfg = cfg.copy()
         # set loading pipeline type
-        cfg.data.test.pipeline[0].type = 'LoadImageFromWebcam'
-    # for static exporting
-    if input_shape is not None:
-        cfg.data.test.pipeline[1]['img_scale'] = tuple(input_shape)
-        transforms = cfg.data.test.pipeline[1]['transforms']
-        for trans in transforms:
-            trans_type = trans['type']
-            if trans_type == 'Pad' and 'size_divisor' in trans:
-                trans['size_divisor'] = 1
+        cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
 
-    cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
+    pipeline = cfg.test_pipeline
+
+    for i, transform in enumerate(pipeline):
+        # for static exporting
+        if input_shape is not None and transform.type == 'Resize':
+            pipeline[i].keep_ratio = False
+            pipeline[i].scale = tuple(input_shape)
+
+    pipeline = [
+        transform for transform in pipeline
+        if transform.type != 'LoadAnnotations'
+    ]
+    cfg.test_pipeline = pipeline
     return cfg
 
 
@@ -170,7 +173,6 @@ class RotatedDetection(BaseTask):
 
         model = build_rotated_detection_model(
             model_files,
-            self.model_cfg,
             self.deploy_cfg,
             device=self.device,
             data_preprocessor=data_preprocessor)
@@ -195,7 +197,7 @@ class RotatedDetection(BaseTask):
             tuple: (data, img), meta information for the input image and input.
         """
         from mmcv.transforms import Compose
-        if isinstance(imgs, Sequence):
+        if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')
         elif isinstance(imgs, (np.ndarray, str)):
@@ -289,3 +291,30 @@ class RotatedDetection(BaseTask):
         if metainfo is not None:
             visualizer.dataset_meta = metainfo
         return visualizer
+
+    def visualize(self, image: Union[str, np.ndarray], result: list,
+                  output_file: str, *args, **kwargs):
+        """Visualize predictions of a model.
+
+        Args:
+            image (str | np.ndarray): Input image to draw predictions on.
+            result (list): A list of predictions.
+            output_file (str): Output file to save drawn image.
+            window_name (str): The name of visualization window. Defaults to
+                an empty string.
+            show_result (bool): Whether to show result in windows, defaults
+                to `False`.
+            draw_gt (bool): Whether to show ground truth in windows, defaults
+                to `False`.
+        """
+        from mmrotate.structures.bbox import RotatedBoxes
+        pred_instances = result._pred_instances
+        pred_instances.scores = pred_instances.scores.detach().cpu()
+        pred_instances.bboxes = pred_instances.bboxes.detach().cpu()
+        pred_instances.labels = pred_instances.labels.detach().cpu()
+        if isinstance(pred_instances.bboxes, torch.Tensor):
+            pred_instances.bboxes = RotatedBoxes(
+                pred_instances.bboxes, clone=True)
+
+        return super().visualize(image, result.cpu(), output_file, *args,
+                                 **kwargs)

@@ -89,6 +89,15 @@ def anchorgenerator__single_level_grid_priors__trt(
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
     """
+    from mmdet.models.task_modules.prior_generators import AnchorGenerator
+    if type(self) != AnchorGenerator:
+        # only use custom node on default generator.
+        return ctx.origin_func(
+            self,
+            featmap_size=featmap_size,
+            level_idx=level_idx,
+            dtype=dtype,
+            device=device)
     feat_h, feat_w = featmap_size
     if isinstance(feat_h, int) and isinstance(feat_w, int):
         return ctx.origin_func(self, featmap_size, level_idx, dtype,

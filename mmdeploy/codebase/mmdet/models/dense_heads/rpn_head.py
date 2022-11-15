@@ -99,7 +99,8 @@ def rpn_head__predict_by_feat(ctx,
             # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
             scores = cls_score.softmax(-1)[..., 0]
         scores = scores.reshape(batch_size, -1, 1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        dim = self.bbox_coder.encode_size
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
 
         # use static anchor if input shape is static
         if not is_dynamic_flag:
@@ -239,7 +240,8 @@ def rpn_head__get_bboxes__ncnn(ctx,
             # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
             scores = cls_score.softmax(-1)[..., 0]
         scores = scores.reshape(batch_size, -1, 1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        dim = self.bbox_coder.encode_size
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
         anchors = anchors.expand_as(bbox_pred).data
 
         if pre_topk > 0:
