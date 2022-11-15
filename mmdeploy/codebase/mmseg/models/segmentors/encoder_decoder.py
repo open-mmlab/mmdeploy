@@ -2,6 +2,7 @@
 import torch.nn.functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils.config_utils import get_codebase_config
 from mmdeploy.utils.constants import Backend
 
 
@@ -25,6 +26,8 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
     """
     seg_logit = self.encode_decode(img, img_meta)
     seg_logit = F.softmax(seg_logit, dim=1)
+    if get_codebase_config(ctx.cfg).get('do_argmax', False) is True:
+        return seg_logit
     seg_pred = seg_logit.argmax(dim=1, keepdim=True)
     return seg_pred
 
