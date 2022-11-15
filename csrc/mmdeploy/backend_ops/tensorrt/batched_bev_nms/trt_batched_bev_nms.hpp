@@ -78,4 +78,4 @@ class TRTBatchedBEVNMSCreator : public TRTPluginCreatorBase {
                                             size_t serialLength) TRT_NOEXCEPT override;
 };
 }  // namespace mmdeploy
-#endif
+#endif  // TRT_BATCHED_NMS_PLUGIN_CUSTOM_H
