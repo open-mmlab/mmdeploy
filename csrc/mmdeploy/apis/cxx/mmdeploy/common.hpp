@@ -78,7 +78,7 @@ class Device {
 
 class Profiler {
  public:
-  explicit Profiler(std::string path) : path_(path) {
+  explicit Profiler(std::string_view path) : path_(path) {
     mmdeploy_profiler_t profiler{};
     auto ec = mmdeploy_profiler_create(path.c_str(), &profiler);
     if (ec != MMDEPLOY_SUCCESS) {
