@@ -35,10 +35,6 @@ def check_backend():
     logger.info(f'ncnn: {ncnn_version}\tops_is_avaliable : '
                 f'{ncnn_apis.is_custom_ops_available()}')
 
-    import mmdeploy.apis.rknn as rknn_apis
-    logger.info(f'rknn: {rknn_apis.package_info()}\t'
-                f'adb_device_available: {rknn_apis.device_available()}')
-
     import mmdeploy.apis.pplnn as pplnn_apis
     logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
 
@@ -53,6 +49,9 @@ def check_backend():
 
     import mmdeploy.apis.coreml as coreml_apis
     logger.info(f'coreml_is_available: {coreml_apis.is_available()}')
+
+    import mmdeploy.apis.rknn as rknn_apis
+    logger.info(f'rknn_is_avaliable: {rknn_apis.is_available()}')
 
 
 def check_codebase():

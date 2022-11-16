@@ -13,16 +13,6 @@ def is_available():
     return importlib.util.find_spec('rknn') is not None
 
 
-def package_info():
-    import pkg_resources
-    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit', None)
-    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit2', toolkit)
-    if toolkit is None:
-        return dict(name=None, version=None)
-    else:
-        return dict(name=toolkit.project_name, version=toolkit.version)
-
-
 def device_available():
     """Check whether device available.
 
