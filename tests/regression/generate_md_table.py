@@ -10,9 +10,10 @@ from mmdeploy.utils import get_backend, get_task_type, load_config
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='From yaml export markdown')
-    parser.add_argument('yml_file', help='yml config path')
-    parser.add_argument('output', help='Output markdown file path')
+    parser = argparse.ArgumentParser(
+        description='from yaml export markdown table')
+    parser.add_argument('yml_file', help='input yml config path')
+    parser.add_argument('output', help='output markdown file path')
     args = parser.parse_args()
     return args
 
