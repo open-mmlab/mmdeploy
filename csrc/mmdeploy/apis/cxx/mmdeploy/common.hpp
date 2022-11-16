@@ -80,7 +80,7 @@ class Profiler {
  public:
   explicit Profiler(std::string_view path) : path_(path) {
     mmdeploy_profiler_t profiler{};
-    auto ec = mmdeploy_profiler_create(path.c_str(), &profiler);
+    auto ec = mmdeploy_profiler_create(path_, &profiler);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
