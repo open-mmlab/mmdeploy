@@ -117,8 +117,9 @@ def export(model: torch.nn.Module,
             assert isinstance(
                 input_metas, dict
             ), f'Expect input_metas type is dict, get {type(input_metas)}.'
-            model_forward = model.forward
-            model.forward = partial(model.forward, **input_metas)
+            model_forward = patched_model.forward
+            patched_model.forward = partial(patched_model.forward,
+                                            **input_metas)
 
         torch.onnx.export(
             patched_model,
@@ -133,4 +134,4 @@ def export(model: torch.nn.Module,
             verbose=verbose)
 
         if input_metas is not None:
-            model.forward = model_forward
+            patched_model.forward = model_forward

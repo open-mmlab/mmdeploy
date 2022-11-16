@@ -328,3 +328,14 @@ models:
     pipelines:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
+
+  - name: RTMDet
+    metafile: configs/rtmdet/metafile.yml
+    model_configs:
+      - configs/rtmdet/rtmdet_s_8xb32-300e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - deploy_config: configs/mmdet/detection/detection_tensorrt_static-640x640.py
+        convert_image: *convert_image
+        backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic
