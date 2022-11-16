@@ -13,15 +13,15 @@ pip install easydict
 ## 2.用法
 
 ```
-python ./tests/regression/generate_md_table.py "${yml_file}" "${output}"
+python tests/regression/generate_md_table.py \
+    ${yml_file} \
+    ${output}
 ```
 
 ### 参数解析
 
-```
-yml_file:  输入 yml 配置路径
-output: 输出markdown文件路径
-```
+- `yml_file:`  输入 yml 配置路径
+- `output:` 输出markdown文件路径
 
 ### 例子
 
