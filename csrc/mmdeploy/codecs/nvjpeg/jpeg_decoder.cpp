@@ -145,7 +145,6 @@ struct JPEGDecoder::Impl {
 
   ~Impl() {
     try {
-      CHECK_NVJPEG(nvjpegDestroy(handle_));
       CHECK_NVJPEG(nvjpegJpegStreamDestroy(jpeg_streams_[0]));
       CHECK_NVJPEG(nvjpegJpegStreamDestroy(jpeg_streams_[1]));
       CHECK_NVJPEG(nvjpegJpegStateDestroy(state_));
@@ -155,6 +154,7 @@ struct JPEGDecoder::Impl {
       CHECK_NVJPEG(nvjpegBufferPinnedDestroy(pinned_buffers_[1]));
       CHECK_NVJPEG(nvjpegBufferDeviceDestroy(device_buffer_));
       CHECK_NVJPEG(nvjpegDecodeParamsDestroy(decode_params_));
+      CHECK_NVJPEG(nvjpegDestroy(handle_));  // destroy last
     } catch (const std::exception& e) {
       MMDEPLOY_ERROR("JPEGDecoder doesn't deconstruct properly");
     }

@@ -17,3 +17,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_LIBRARIES} nvjpeg)
 add_library(mmdeploy::nvjpeg ALIAS ${PROJECT_NAME})
 
 set(MMDEPLOY_CODECS ${MMDEPLOY_CODECS} jpeg_decoder CACHE INTERNAL "")
+set(MMDEPLOY_CODECS_LIBS ${MMDEPLOY_CODECS_LIBS} mmdeploy_nvjpeg CACHE INTERNAL "")

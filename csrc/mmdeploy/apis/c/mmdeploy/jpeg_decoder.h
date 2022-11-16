@@ -35,11 +35,13 @@ MMDEPLOY_API void mmdeploy_jpeg_decoder_destroy(mmdeploy_jpeg_decoder_t decoder)
  * @param[in] length buffer length for each image
  * @param[in] count number of image
  * @param[in] format the output image format, only support bgr or rgb
- * @param[out] results decode results
+ * @param[out] dev_results decode results with data on cuda
+ * @param[out] host_results decode results with data on cpu
  */
 MMDEPLOY_API int mmdeploy_jpeg_decoder_apply(mmdeploy_jpeg_decoder_t decoder, const char** raw_data,
                                              int* length, int count, mmdeploy_pixel_format_t format,
-                                             mmdeploy_mat_t** results);
+                                             mmdeploy_mat_t** dev_results,
+                                             mmdeploy_mat_t** host_results);
 
 /**
  * @brief Release the inference result buffer created by \ref mmdeploy_jpeg_decoder_apply

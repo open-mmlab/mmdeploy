@@ -68,6 +68,10 @@ foreach (TASK ${MMDEPLOY_CODECS})
             DESTINATION include/mmdeploy)
 endforeach ()
 
+if (TARGET mmdeploy_nvjpeg)
+    target_link_libraries(mmdeploy_jpeg_decoder PUBLIC mmdeploy_nvjpeg)
+endif ()
+
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
         FILES_MATCHING
         PATTERN "*.cpp"
@@ -78,7 +82,8 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     add_library(mmdeploy SHARED)
     mmdeploy_load_static(mmdeploy MMDeployStaticModules)
     mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
-    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS} mmdeploy_execution)
+    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS} mmdeploy_execution
+        ${MMDEPLOY_CODECS_LIBS})
     target_include_directories(mmdeploy PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
