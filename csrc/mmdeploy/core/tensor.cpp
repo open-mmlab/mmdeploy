@@ -346,8 +346,8 @@ Result<DLManagedTensor*> Tensor::ToDLPack(Stream stream) {
   OUTCOME_TRY(dl_tensor.dtype, ToDLDataType(desc.data_type));
   dl_tensor.ndim = desc.shape.size();
   dl_tensor.byte_offset = 0;
-  dl_tensor.shape = (long*)(&(desc.shape[0]));
-  dl_tensor.strides = (long*)(&(desc.stride[0]));
+  dl_tensor.shape = (int64_t*)(&(desc.shape[0]));
+  dl_tensor.strides = nullptr;
 
   return managed_tensor;
 }
