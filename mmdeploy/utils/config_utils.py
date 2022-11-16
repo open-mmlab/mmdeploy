@@ -396,6 +396,14 @@ def get_dynamic_axes(
 
 
 def get_normalization(model_cfg: Union[str, mmcv.Config]):
+    """Get the Nomalize transform from model config.
+
+    Args:
+        model_cfg (mmcv.Config): The content of config.
+
+    Returns:
+        dict: The Normalize transform.
+    """
     model_cfg = load_config(model_cfg)[0]
     pipelines = model_cfg.data.test.pipeline
     for i, pipeline in enumerate(pipelines):
@@ -428,12 +436,11 @@ def disable_norm4rknn(transforms: Sequence[Dict], flag: bool = False):
     """Set Normalization values for RKNN quantization.
 
     Args:
-        common_params (Dict): Configs for rknn.config().
         transforms (Sequence[Dict]): A sequence of transformation.
         flag (bool): Whether swap or not. Default to False.
 
     Returns:
-        (common_params, transforms): Configurations after swap.
+        dict: transforms after modification.
     """
     if flag is True:
         for trans in transforms:
