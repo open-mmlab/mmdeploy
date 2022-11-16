@@ -306,24 +306,27 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     model_info = meta_info[model_config_name]
     metafile_metric_info = model_info['Results']
     pytorch_metric = dict()
-    using_dataset = set()
-    using_task = set()
+    using_dataset = []
+    using_task = []
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
         pytorch_metric.update(metafile_metric['Metrics'])
         dataset = metafile_metric['Dataset']
         task_name = metafile_metric['Task']
         if task_name not in using_task:
-            using_task.add(task_name)
+            using_task.append(task_name)
         if dataset not in using_dataset:
-            using_dataset.add(dataset)
+            using_dataset.append(dataset)
 
-    dataset_type = '|'.join(list(using_dataset))
-    task_type = '|'.join(list(using_task))
+    dataset_type = '|'.join(using_dataset)
+    task_type = '|'.join(using_task)
     metric_list = []
-    for metric in test_yaml_metric_info:
+    for metric, metric_info in test_yaml_metric_info.items():
         value = '-'
         if metric in pytorch_metric:
+            if 'dataset' in metric_info:
+                idx = using_dataset.index(metric_info['dataset'])
+                pytorch_metric.update(metafile_metric_info[idx]['Metrics'])
             value = pytorch_metric[metric]
         metric_list.append({metric: value})
     valid_pytorch_metric = {
