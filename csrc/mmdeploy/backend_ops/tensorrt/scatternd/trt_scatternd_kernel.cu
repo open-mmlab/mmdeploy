@@ -51,7 +51,7 @@ void TRTONNXScatterNDKernelLauncher(const T* data, const int* indices, const T* 
   }
 
   // output = np.copy(data)
-  cudaMemcpyAsync(output, data, data_size * sizeof(T), cudaMemcpyDeviceToDevice);
+  cudaMemcpyAsync(output, data, data_size * sizeof(T), cudaMemcpyDeviceToDevice, stream);
 
   int num_update_indice = 1;
   for (int i = 0; i < indice_nbDims - 1; ++i) {

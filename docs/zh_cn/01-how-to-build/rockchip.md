@@ -177,11 +177,7 @@ backend_config = dict(
 
 ### Host 交叉编译
 
-mmdeploy 提供 2 种交叉编译方式：
-
-1. 执行编译脚本（推荐）
-
-在 Ubuntu 主机上，执行如下命令：
+若 host 是 Ubuntu 18.04 及以上版本，推荐脚本编译：
 
 ```shell
 bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
@@ -189,7 +185,7 @@ bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
 
 命令中的参数 model 表示瑞芯微芯片的型号，目前支持 rv1126，rk3588。
 
-2. 手动配置环境并编译
+以下是对脚本中编译过程的说明。
 
 如下表所示，瑞芯微提供了 2 套 RKNN API 工具包，对应于不同的芯片型号。而每套 RKNN API 工具包又分别对应不同的 gcc 交叉编译工具。
 
@@ -200,27 +196,41 @@ bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
 
 以支持的 rv1126 和 rk3588 为例，mmdeploy 在 ubuntu18.04 上的交叉编译过程如下：
 
-- rv11126
+- **rv11126**
 
-````shell
-# 1. 下载 RKNN API 包
+1. 下载 RKNN API 包
+
+```shell
 git clone https://github.com/rockchip-linux/rknpu
 export RKNPU_DIR=$(pwd)/rknpu
+```
 
-# 2. 准备 gcc 交叉编译工具
+2. 准备 gcc 交叉编译工具
+
+```shell
 sudo apt-get update
-sudo apt-get install gcc-7-arm-linux-gnueabihf
-sudo apt-get install g++-7-arm-linux-gnueabihf
+sudo apt-get install gcc-arm-linux-gnueabihf
+sudo apt-get install g++-arm-linux-gnueabihf
+```
 
-# 3. 下载 OpenCV
-## 在rknpu2中，有opencv-linux-armhf库。路径是 rknpu2/examples/3rdparty/opencv/opencv-linux-armhf
-git clone https://github.com/rockchip-linux/rknpu2
-export RKNPU2_DIR=$(pwd)/rknpu2
+3. 源码安装 OpenCV
 
-# 3. 编译 mmdeploy SDK
+```shell
+git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
+cd opencv
+mkdir -p build_arm_gnueabi && cd build_arm_gnueabi
+cmake .. -DCMAKE_INSTALL_PREFIX=install \
+    -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
+    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+make -j $(nproc) && make install
+export OpenCV_ARM_INSTALL_DIR=$(pwd)/install
+```
+
+4. 编译 mmdeploy SDK
+
 ```shell
 cd /path/to/mmdeploy
-mkdir -p build && rm -rf build/CM* && cd build
+mkdir -p build && cd build
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
 -DMMDEPLOY_BUILD_SDK=ON \
@@ -228,25 +238,45 @@ cmake .. \
 -DMMDEPLOY_BUILD_EXAMPLES=ON \
 -DMMDEPLOY_TARGET_BACKENDS="rknn" \
 -DRKNPU_DEVICE_DIR=${RKNPU_DIR}/rknn/rknn_api/librknn_api \
--DOpenCV_DIR=${RKNPU2_DIR}/examples/3rdparty/opencv/opencv-linux-armhf/share/OpenCV
+-DOpenCV_DIR=${OpenCV_ARM_INSTALL_DIR}/lib/cmake/opencv4
 make -j$(nproc) && make install
-````
+```
 
-- rk3588
+- **rk3588**
+
+1. 下载 RKNN API 包
 
 ```shell
-# 1. 下载 RKNN API 包
 git clone https://github.com/rockchip-linux/rknpu2
 export RKNPU2_DEVICE_DIR=$(pwd)/rknpu2/runtime/RK3588
+```
 
-# 2. 准备 gcc 交叉编译工具
+2. 准备 gcc 交叉编译工具
+
+```shell
 git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
 export RKNN_TOOL_CHAIN=$(pwd)/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
 export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
+```
 
-# 3. 编译 mmdeploy SDK
+3. 下载 opencv 预编译包
+
+```shell
+git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
+cd opencv
+mkdir -p build_aarch64 && cd build_aarch64
+cmake .. -DCMAKE_INSTALL_PREFIX=install
+    -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
+    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+make -j $(nproc) && make install
+export OpenCV_AARCH64_INSTALL_DIR=$(pwd)/install
+```
+
+4. 编译 mmdeploy SDK
+
+```shell
 cd /path/to/mmdeploy
-mkdir -p build && rm -rf build/CM* && cd build
+mkdir -p build && cd build
 export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
@@ -254,7 +284,7 @@ cmake \
     -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
-    -DOpenCV_DIR=${RKNPU2_DEVICE_DIR}/../../examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
+    -DOpenCV_DIR=${OpenCV_AARCH64_INSTALL_DIR}/lib/cmake/opencv4
 make -j $(nproc) && make install
 ```
 
