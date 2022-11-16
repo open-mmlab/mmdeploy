@@ -64,7 +64,7 @@ static float sigmoid(float x) { return 1.0 / (1.0 + expf(-x)); }
 
 static float unsigmoid(float y) { return -1.0 * logf((1.0 / y) - 1.0); }
 
-int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<int>>& anchor,
+int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<float>>& anchor,
                              int grid_h, int grid_w, int height, int width, int stride,
                              std::vector<float>& boxes, std::vector<float>& obj_probs,
                              std::vector<int>& class_id, float threshold) const {
@@ -193,13 +193,13 @@ Result<Value> YOLOV3Head::operator()(const Value& prep_res, const Value& infer_r
 }
 
 std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
-                                             int stride,
-                                             const std::vector<std::vector<int>>& anchor, int j,
+                                             float stride,
+                                             const std::vector<std::vector<float>>& anchor, int j,
                                              int i, int a) const {
-  box_x = (box_x + j) * (float)stride;
-  box_y = (box_y + i) * (float)stride;
-  box_w = expf(box_w) * (float)anchor[a][0];
-  box_h = expf(box_h) * (float)anchor[a][1];
+  box_x = (box_x + j) * stride;
+  box_y = (box_y + i) * stride;
+  box_w = expf(box_w) * anchor[a][0];
+  box_h = expf(box_h) * anchor[a][1];
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
 
@@ -208,17 +208,17 @@ Result<Value> YOLOV5Head::operator()(const Value& prep_res, const Value& infer_r
 }
 
 std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
-                                             int stride,
-                                             const std::vector<std::vector<int>>& anchor, int j,
+                                             float stride,
+                                             const std::vector<std::vector<float>>& anchor, int j,
                                              int i, int a) const {
   box_x = box_x * 2 - 0.5;
   box_y = box_y * 2 - 0.5;
   box_w = box_w * 2 - 0.5;
   box_h = box_h * 2 - 0.5;
-  box_x = (box_x + j) * (float)stride;
-  box_y = (box_y + i) * (float)stride;
-  box_w = box_w * box_w * (float)anchor[a][0];
-  box_h = box_h * box_h * (float)anchor[a][1];
+  box_x = (box_x + j) * stride;
+  box_y = (box_y + i) * stride;
+  box_w = box_w * box_w * anchor[a][0];
+  box_h = box_h * box_h * anchor[a][1];
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
 
