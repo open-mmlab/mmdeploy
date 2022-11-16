@@ -18,10 +18,8 @@ python tests/regression/generate_md_table.py \
 
 ### Description
 
-```
-- `yml_file:`  input yml config path
-- `output:` output markdown file path
-```
+- `yml_file:` input yml config path
+- `output:`  output markdown file path
 
 ### Example
 
