@@ -13,7 +13,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmpose.deploy.mmpose import MMPOSE_TASK
-from mmdeploy.utils import Backend, Task, get_input_shape
+from mmdeploy.utils import Task, get_input_shape
 
 
 def process_model_config(
@@ -131,7 +131,6 @@ class PoseDetection(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
-                     backend: Optional[Backend] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for pose detection.
 

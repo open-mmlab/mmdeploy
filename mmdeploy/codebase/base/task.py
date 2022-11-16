@@ -8,8 +8,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
-                            get_codebase_config, get_root_logger)
-from mmdeploy.utils.constants import Backend
+                            get_codebase_config, get_rknn_quantization,
+                            get_root_logger)
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -140,11 +140,30 @@ class BaseTask(metaclass=ABCMeta):
         return self.codebase_class.single_gpu_test(model, data_loader, show,
                                                    out_dir, **kwargs)
 
+    def reset_model_cfg_norm(self):
+        """Reset the norm values in model_cfg for some backends.
+
+        For example, in rknn-int8 backend, Normalize is moved to rknn models.
+        The processes of visualization and dump-info need this func.
+        """
+        if get_rknn_quantization(self.deploy_cfg):
+            pipelines = self.model_cfg.data.test.pipeline
+            for i, pipeline in enumerate(pipelines):
+                if pipeline['type'] == 'MultiScaleFlipAug':
+                    assert 'transforms' in pipeline
+                    for trans in pipeline['transforms']:
+                        if trans['type'] == 'Normalize':
+                            trans['mean'] = [0, 0, 0]
+                            trans['std'] = [1, 1, 1]
+                else:
+                    if pipeline['type'] == 'Normalize':
+                        pipeline['mean'] = [0, 0, 0]
+                        pipeline['std'] = [1, 1, 1]
+
     @abstractmethod
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
-                     backend: Optional[Backend] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
@@ -153,7 +172,6 @@ class BaseTask(metaclass=ABCMeta):
                 accepted data types are `str`, `np.ndarray`.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
-            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input

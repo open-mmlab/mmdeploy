@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Dict, List, Optional, Union
 
 import mmcv
 
@@ -430,21 +430,3 @@ def get_rknn_quantization(deploy_cfg: mmcv.Config):
         return get_backend_config(
             deploy_cfg)['quantization_config']['do_quantization']
     return False
-
-
-def disable_norm4rknn(transforms: Sequence[Dict], flag: bool = False):
-    """Set Normalization values for RKNN quantization.
-
-    Args:
-        transforms (Sequence[Dict]): A sequence of transformation.
-        flag (bool): Whether swap or not. Default to False.
-
-    Returns:
-        dict: transforms after modification.
-    """
-    if flag is True:
-        for trans in transforms:
-            if trans['type'] == 'Normalize':
-                trans['mean'] = [0, 0, 0]
-                trans['std'] = [1, 1, 1]
-    return transforms

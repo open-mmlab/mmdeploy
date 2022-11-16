@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
-from mmdeploy.utils import Backend, Task, get_input_shape, load_config
+from mmdeploy.utils import Task, get_input_shape, load_config
 
 
 def process_model_config(model_cfg: mmcv.Config,
@@ -117,7 +117,6 @@ class SuperResolution(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray],
                      input_shape: Optional[Sequence[int]] = None,
-                     backend: Optional[Backend] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for editing processor.
 
@@ -125,7 +124,6 @@ class SuperResolution(BaseTask):
             imgs (str | np.ndarray): Input image(s).
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
-            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

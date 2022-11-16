@@ -10,7 +10,7 @@ from torch import nn
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Backend, Task, get_input_shape
+from mmdeploy.utils import Task, get_input_shape
 from .mmocr import MMOCR_TASK
 
 
@@ -108,8 +108,7 @@ class TextDetection(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Optional[Sequence[int]] = None,
-                     backend: Optional[Backend] = None, **kwargs) \
+                     input_shape: Optional[Sequence[int]] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
 
@@ -118,7 +117,6 @@ class TextDetection(BaseTask):
             `str`, `np.ndarray`.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
-            backend (Backend | None): Target backend. Default to `None`.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
