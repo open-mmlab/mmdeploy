@@ -187,6 +187,8 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
   return objs;
 }
 
+YOLOV3Head::YOLOV3Head(const Value& cfg) : YOLOHead(cfg) {}
+
 Result<Value> YOLOV3Head::operator()(const Value& prep_res, const Value& infer_res) {
   return YOLOHead::operator()(prep_res, infer_res);
 }
@@ -201,6 +203,8 @@ std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box
   box_h = expf(box_h) * (float)anchor[a][1];
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
+
+YOLOV5Head::YOLOV5Head(const Value& cfg) : YOLOHead(cfg) {}
 
 Result<Value> YOLOV5Head::operator()(const Value& prep_res, const Value& infer_res) {
   return YOLOHead::operator()(prep_res, infer_res);

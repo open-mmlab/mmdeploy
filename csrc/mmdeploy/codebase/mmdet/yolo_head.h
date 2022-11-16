@@ -31,7 +31,7 @@ class YOLOHead : public MMDetection {
 
 class YOLOV3Head : public YOLOHead {
  public:
-  using YOLOHead::YOLOHead;
+  explicit YOLOV3Head(const Value& cfg);
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
                                    const std::vector<std::vector<int>>& anchor, int j, int i,
@@ -40,7 +40,7 @@ class YOLOV3Head : public YOLOHead {
 
 class YOLOV5Head : public YOLOHead {
  public:
-  using YOLOHead::YOLOHead;
+  explicit YOLOV5Head(const Value& cfg);
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
                                    const std::vector<std::vector<int>>& anchor, int j, int i,
