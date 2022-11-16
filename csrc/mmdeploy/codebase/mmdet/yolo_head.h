@@ -13,8 +13,8 @@ class YOLOHead : public MMDetection {
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   int YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<int>>& anchor,
                      int grid_h, int grid_w, int height, int width, int stride,
-                     std::vector<float>& boxes, std::vector<float>& objProbs,
-                     std::vector<int>& classId, float threshold) const;
+                     std::vector<float>& boxes, std::vector<float>& obj_probs,
+                     std::vector<int>& class_id, float threshold) const;
   Result<Detections> GetBBoxes(const Value& prep_res, const std::vector<Tensor>& pred_maps) const;
   virtual std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h,
                                            int stride, const std::vector<std::vector<int>>& anchor,
@@ -31,7 +31,7 @@ class YOLOHead : public MMDetection {
 
 class YOLOV3Head : public YOLOHead {
  public:
-  explicit YOLOV3Head(const Value& cfg);
+  using YOLOHead::YOLOHead;
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
                                    const std::vector<std::vector<int>>& anchor, int j, int i,
@@ -40,7 +40,7 @@ class YOLOV3Head : public YOLOHead {
 
 class YOLOV5Head : public YOLOHead {
  public:
-  explicit YOLOV5Head(const Value& cfg);
+  using YOLOHead::YOLOHead;
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);
   std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, int stride,
                                    const std::vector<std::vector<int>>& anchor, int j, int i,

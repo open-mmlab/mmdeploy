@@ -3,6 +3,7 @@
 
 #include <math.h>
 
+#include <algorithm>
 #include <numeric>
 
 #include "mmdeploy/core/model.h"
@@ -65,8 +66,8 @@ static float unsigmoid(float y) { return -1.0 * logf((1.0 / y) - 1.0); }
 
 int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<int>>& anchor,
                              int grid_h, int grid_w, int height, int width, int stride,
-                             std::vector<float>& boxes, std::vector<float>& objProbs,
-                             std::vector<int>& classId, float threshold) const {
+                             std::vector<float>& boxes, std::vector<float>& obj_probs,
+                             std::vector<int>& class_id, float threshold) const {
   auto input = const_cast<float*>(feat_map.data<float>());
   auto prop_box_size = feat_map.shape(1) / anchor.size();
   const int kClasses = prop_box_size - 5;
@@ -100,16 +101,16 @@ int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vect
           boxes.push_back(box_y + box_h);
 
           float max_class_probs = in_ptr[5 * grid_len];
-          int max_classId = 0;
+          int max_class_id = 0;
           for (int k = 1; k < kClasses; ++k) {
             float prob = in_ptr[(5 + k) * grid_len];
             if (prob > max_class_probs) {
-              max_classId = k;
+              max_class_id = k;
               max_class_probs = prob;
             }
           }
-          objProbs.push_back(sigmoid(max_class_probs) * sigmoid(box_confidence));
-          classId.push_back(max_classId);
+          obj_probs.push_back(sigmoid(max_class_probs) * sigmoid(box_confidence));
+          class_id.push_back(max_class_id);
           valid_count++;
         }
       }
@@ -187,8 +188,6 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
   return objs;
 }
 
-YOLOV3Head::YOLOV3Head(const Value& cfg) : YOLOHead(cfg) {}
-
 Result<Value> YOLOV3Head::operator()(const Value& prep_res, const Value& infer_res) {
   return YOLOHead::operator()(prep_res, infer_res);
 }
@@ -203,8 +202,6 @@ std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box
   box_h = expf(box_h) * (float)anchor[a][1];
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
-
-YOLOV5Head::YOLOV5Head(const Value& cfg) : YOLOHead(cfg) {}
 
 Result<Value> YOLOV5Head::operator()(const Value& prep_res, const Value& infer_res) {
   return YOLOHead::operator()(prep_res, infer_res);
