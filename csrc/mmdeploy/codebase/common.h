@@ -68,7 +68,7 @@ class CodebaseCreator : public Creator<Module> {
   MMDEPLOY_REGISTER_CREATOR(Module, codebase##_##Creator) \
   MMDEPLOY_DEFINE_REGISTRY(codebase)
 
-#define MMDEPLOY_REGISTER_CODEBASE_COMPONENT(codebase, component_type)                             \
+#define MMDEPLOY_REGISTER_CODEBASE_COMPONENT(codebase, component_type)                    \
   MMDEPLOY_REGISTER_FACTORY_FUNC(codebase, (component_type, 0), [](const Value& config) { \
     return CreateTask(component_type(config));                                            \
   })
