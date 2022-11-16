@@ -73,6 +73,17 @@ class Crop : public Operation {
 };
 MMDEPLOY_DECLARE_REGISTRY(Crop, unique_ptr<Crop>());
 
+class Flip : public Operation {
+ public:
+  explicit Flip(int flip_code) : flip_code_(flip_code) {}
+
+  virtual Result<void> apply(const Tensor& src, Tensor& dst) = 0;
+
+ protected:
+  int flip_code_;
+};
+MMDEPLOY_DECLARE_REGISTRY(Flip, unique_ptr<Flip>(int flip_code));
+
 // TODO: warp affine
 
 }  // namespace mmdeploy::operation

@@ -129,8 +129,6 @@ class Resize : public Transform {
   bool keep_ratio_{true};
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Resize, 0), [](const Value& config) {
-  return std::make_unique<Resize>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Resize);
 
 }  // namespace mmdeploy::transform

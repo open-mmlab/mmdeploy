@@ -9,14 +9,14 @@ using namespace std;
 
 namespace mmdeploy {
 
-FormatShapeImpl::FormatShapeImpl(const Value& args) : TransformImpl(args) {
-  arg_.input_format = args.value("input_format", std::string(""));
-  if (arg_.input_format != "NCHW" && arg_.input_format != "NCTHW") {
+FormatShape::FormatShape(const Value& args) {
+  auto input_format = args.value("input_format", std::string(""));
+  if (input_format != "NCHW" && input_format != "NCTHW") {
     throw std::domain_error("'input_format' should be 'NCHW' or 'NCTHW'");
   }
 }
 
-Result<Value> FormatShapeImpl::Process(const Value& input) {
+Result<void> FormatShape::Apply(Value& input) {
   MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
 
   if (!input.is_array()) {
@@ -49,34 +49,17 @@ Result<Value> FormatShapeImpl::Process(const Value& input) {
     }
   }
 
-  Value output;
-  OUTCOME_TRY(auto img, Format(images, clip_len, num_clips));
-  SetTransformData(output, "img", std::move(img));
-  return output;
+  Tensor dst;
+  OUTCOME_TRY(format_.Apply(images, dst, clip_len, num_clips));
+  input["img"] = std::move(dst);
+
+  return success();
 }
 
-class FormatShape : public Transform {
- public:
-  explicit FormatShape(const Value& args, int version = 0) : Transform(args) {
-    auto impl_creator = gRegistry<FormatShapeImpl>().Get(specified_platform_, version);
-    if (nullptr == impl_creator) {
-      MMDEPLOY_ERROR("'FormatShape' is not supported on '{}' platform", specified_platform_);
-      throw std::domain_error("'FormatShape' is not supported on specified platform");
-    }
-    impl_ = impl_creator->Create(args);
-  }
-  ~FormatShape() override = default;
-
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
-
- protected:
-  std::unique_ptr<FormatShapeImpl> impl_;
-};
-
 MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (FormatShape, 0), [](const Value& config) {
-  return std::make_unique<FormatShape>(config, 0);
+  return std::make_unique<FormatShape>(config);
 });
 
-MMDEPLOY_DEFINE_REGISTRY(FormatShapeImpl);
+MMDEPLOY_DEFINE_REGISTRY(FormatShapeOp);
 
 }  // namespace mmdeploy

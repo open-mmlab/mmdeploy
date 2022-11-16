@@ -7,29 +7,25 @@
 #include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
-Lift::Lift(const Value& args, int version) : Transform(args) {
-  std::string type = "Compose";
-  auto creator = gRegistry<Transform>().Get(type, version);
-  if (!creator) {
+
+Lift::Lift(const Value& args) {
+  const char* type = "compose";
+  if (auto creator = gRegistry<Transform>().Get(type)) {
+    compose_ = creator->Create(args);
+  } else {
     MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
                    gRegistry<Transform>().List());
     throw_exception(eEntryNotFound);
   }
-  compose_ = creator->Create(args);
 }
 
-Result<Value> Lift::Process(const Value& input) {
-  Value output;
-  for (int i = 0; i < input.size(); i++) {
-    Value single = input[i];
-    OUTCOME_TRY(auto t, compose_->Process(single));
-    output.push_back(std::move(t));
+Result<void> Lift::Apply(Value& input) {
+  for (auto& item : input.array()) {
+    OUTCOME_TRY(compose_->Apply(item));
   }
-  return std::move(output);
+  return success();
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Lift, 0), [](const Value& config) {
-  return std::make_unique<Lift>(config, 0);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Lift);
 
 }  // namespace mmdeploy

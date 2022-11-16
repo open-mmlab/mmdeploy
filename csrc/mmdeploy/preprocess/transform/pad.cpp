@@ -127,7 +127,6 @@ class Pad : public Transform {
   std::string padding_mode_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Pad, 0),
-                               [](const Value& config) { return std::make_unique<Pad>(config); });
+MMDEPLOY_REGISTER_TRANSFORM(Pad);
 
 }  // namespace mmdeploy::transform

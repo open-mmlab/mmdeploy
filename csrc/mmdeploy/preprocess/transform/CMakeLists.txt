@@ -5,7 +5,7 @@ project(mmdeploy_transform)
 set(SRCS
         collect.cpp
         compose.cpp
-        crop.cpp
+        center_crop.cpp
         three_crop.cpp
         ten_crop.cpp
         image2tensor.cpp

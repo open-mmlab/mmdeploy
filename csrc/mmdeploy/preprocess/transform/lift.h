@@ -7,12 +7,12 @@
 
 namespace mmdeploy {
 
-class MMDEPLOY_API Lift : public Transform {
+class Lift : public Transform {
  public:
-  explicit Lift(const Value& args, int version = 0);
+  explicit Lift(const Value& args);
   ~Lift() override = default;
 
-  Result<Value> Process(const Value& input) override;
+  Result<void> Apply(Value& input) override;
 
  private:
   std::unique_ptr<Transform> compose_;

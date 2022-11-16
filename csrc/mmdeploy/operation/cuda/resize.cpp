@@ -80,6 +80,7 @@ static auto Create(const string_view& interp) {
   } else if (interp == "nearest") {
     type = ppl::cv::InterpolationType::INTERPOLATION_NEAREST_POINT;
   } else {
+    MMDEPLOY_ERROR("unsupported interpolation method: {}", interp);
     throw_exception(eNotSupported);
   }
   return std::make_unique<ResizeImpl>(type);

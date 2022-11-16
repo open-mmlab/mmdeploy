@@ -63,8 +63,6 @@ class Collect : public Transform {
   std::vector<std::string> meta_keys_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Collect, 0), [](const Value& config) {
-  return std::make_unique<Collect>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Collect);
 
 }  // namespace mmdeploy::transform

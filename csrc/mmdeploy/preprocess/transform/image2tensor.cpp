@@ -46,8 +46,6 @@ class ImageToTensor : public Transform {
   std::vector<std::string> keys_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ImageToTensor, 0), [](const Value& config) {
-  return std::make_unique<ImageToTensor>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(ImageToTensor);
 
 }  // namespace mmdeploy::transform

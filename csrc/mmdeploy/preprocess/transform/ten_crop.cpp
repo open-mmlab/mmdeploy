@@ -1,30 +1,46 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/preprocess/transform/ten_crop.h"
-
-#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
 using namespace std;
 
 namespace mmdeploy {
 
-TenCropImpl::TenCropImpl(const Value& args) : TransformImpl(args) {
+class MMDEPLOY_API TenCrop : public Transform {
+ public:
+  explicit TenCrop(const Value& args);
+  ~TenCrop() override = default;
+
+  Result<void> Apply(Value& input) override;
+
+ protected:
+  std::array<int, 2> crop_size;
+  operation::Managed<operation::Crop> crop_;
+  operation::Managed<operation::Flip> flip_;
+};
+
+TenCrop::TenCrop(const Value& args) {
   // (w, h) of crop size
   if (!args.contains(("crop_size"))) {
     throw std::invalid_argument("'crop_size' is expected");
   }
   if (args["crop_size"].is_number_integer()) {
-    int crop_size = args["crop_size"].get<int>();
-    arg_.crop_size[0] = arg_.crop_size[1] = crop_size;
+    crop_size[0] = crop_size[1] = args["crop_size"].get<int>();
   } else if (args["crop_size"].is_array() && args["crop_size"].size() == 2) {
-    arg_.crop_size[0] = args["crop_size"][0].get<int>();
-    arg_.crop_size[1] = args["crop_size"][1].get<int>();
+    crop_size[0] = args["crop_size"][0].get<int>();
+    crop_size[1] = args["crop_size"][1].get<int>();
   } else {
     throw std::invalid_argument("'crop_size' should be integer or an int array of size 2");
   }
+
+  crop_ = operation::Managed<operation::Crop>::Create();
+  // horizontal flip
+  flip_ = operation::Managed<operation::Flip>::Create(1);
 }
 
-Result<Value> TenCropImpl::Process(const Value& input) {
+Result<void> TenCrop::Apply(Value& input) {
   MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
 
   // copy input data, and update its properties
@@ -32,8 +48,8 @@ Result<Value> TenCropImpl::Process(const Value& input) {
   auto tensor = input["img"].get<Tensor>();
   int img_h = tensor.shape(1);
   int img_w = tensor.shape(2);
-  int crop_w = arg_.crop_size[0];
-  int crop_h = arg_.crop_size[1];
+  int crop_w = crop_size[0];
+  int crop_h = crop_size[1];
 
   int w_step = (img_w - crop_w) / 4;
   int h_step = (img_h - crop_h) / 4;
@@ -49,33 +65,21 @@ Result<Value> TenCropImpl::Process(const Value& input) {
     int y2 = offy + crop_h - 1;
     int x1 = offx;
     int x2 = offx + crop_w - 1;
-    OUTCOME_TRY(auto cropped_tensor, CropImage(tensor, y1, x1, y2, x2));
-    OUTCOME_TRY(auto flipped_tensor, HorizontalFlip(cropped_tensor));
-    cropped.push_back(std::move(cropped_tensor));
-    cropped.push_back(std::move(flipped_tensor));
+    // ! No reallocation
+    auto& cropped_tensor = cropped.emplace_back();
+    auto& flipped_tensor = cropped.emplace_back();
+
+    OUTCOME_TRY(crop_.Apply(tensor, cropped_tensor, y1, x1, y2, x2));
+    OUTCOME_TRY(flip_.Apply(cropped_tensor, flipped_tensor));
   }
 
-  output["imgs"] = Value{};
-  for (int i = 0; i < cropped.size(); i++) {
-    output["imgs"].push_back(cropped[i]);
-    output["__data__"].push_back(std::move(cropped[i]));
-  }
+  Value::Array imgs;
+  std::move(cropped.begin(), cropped.end(), std::back_inserter(imgs));
+  input["imgs"] = std::move(imgs);
 
-  return output;
+  return success();
 }
 
-TenCrop::TenCrop(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<TenCropImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'TenCrop' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'Resize' is not supported on specified platform");
-  }
-  impl_ = impl_creator->Create(args);
-}
+MMDEPLOY_REGISTER_TRANSFORM(TenCrop);
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TenCrop, 0), [](const Value& config) {
-  return std::make_unique<TenCrop>(config, 0);
-});
-
-MMDEPLOY_DEFINE_REGISTRY(TenCropImpl);
 }  // namespace mmdeploy

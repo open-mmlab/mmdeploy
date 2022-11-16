@@ -85,8 +85,6 @@ class CenterCrop : public Transform {
   std::array<int, 2> crop_size_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (CenterCrop, 0), [](const Value& config) {
-  return std::make_unique<CenterCrop>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(CenterCrop);
 
 }  // namespace mmdeploy::transform

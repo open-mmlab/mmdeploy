@@ -61,7 +61,7 @@ struct _handler<const Tensor&> : _base_handler<const Tensor&> {
   static type input(const Tensor& tensor, const Device& device, Stream& stream) {
     return Secure(tensor, device, stream);
   }
-  static const Tensor& pass(const Result<Tensor>& tensor) { return tensor.value(); }
+  static const Tensor& pass(const type& tensor) { return tensor.value(); }
   static void output(const Result<Tensor>&) {}
 };
 
@@ -71,8 +71,22 @@ struct _handler<const Mat&> {
   static type input(const Mat& mat, const Device& device, Stream& stream) {
     return Secure(mat, device, stream);
   }
-  static const Mat& pass(const Result<Mat>& mat) { return mat.value(); }
-  static void output(const Result<Mat>&) {}
+  static const Mat& pass(const type& mat) { return mat.value(); }
+  static void output(const type&) {}
+};
+
+template <>
+struct _handler<const std::vector<Tensor>&> {
+  using type = Result<std::vector<Tensor>>;
+  static type input(const std::vector<Tensor>& tensors, const Device& device, Stream& stream) {
+    std::vector<Tensor> rets(tensors.size());
+    for (size_t i = 0; i < tensors.size(); ++i) {
+      OUTCOME_TRY(rets[i], Secure(tensors[i], device, stream));
+    }
+    return rets;
+  }
+  static const std::vector<Tensor>& pass(const type& tensors) { return tensors.value(); }
+  static void output(const type&) {}
 };
 
 template <>
@@ -110,13 +124,14 @@ struct apply_impl<Ret (C::*)(Args...)> {
 
   template <typename Op, typename... As>
   Result<void> operator()(Op& op, As&&... as) const {
-    std::tuple<typename _handler<Args>::type...> tmps{
-        _handler<Args>::input((As &&) as, device, stream)...};
-    return apply(op, tmps, std::index_sequence_for<Args...>{});
+    return apply(op, std::index_sequence_for<Args...>{}, (As &&) as...);
   }
 
-  template <typename Op, typename Tmps, size_t... Is>
-  Result<void> apply(Op& op, Tmps& tmps, std::index_sequence<Is...>) const {
+  template <typename Op, typename... As, size_t... Is>
+  Result<void> apply(Op& op, std::index_sequence<Is...>, As&&... as) const {
+    // transform input args and store them in a tuple
+    std::tuple<typename _handler<Args>::type...> tmps{
+        _handler<Args>::input((As &&) as, device, stream)...};
     // check if any copy operations are failed
     OUTCOME_TRY(_check(std::get<Is>(tmps)...));
     // apply the operation

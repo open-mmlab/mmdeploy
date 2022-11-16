@@ -93,8 +93,6 @@ class Normalize : public Transform {
   bool to_rgb_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Normalize, 0), [](const Value& config) {
-  return std::make_unique<Normalize>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Normalize);
 
 }  // namespace mmdeploy::transform

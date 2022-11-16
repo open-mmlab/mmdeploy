@@ -20,9 +20,15 @@ class MMDEPLOY_API Transform {
   virtual Result<void> Apply(Value& input) = 0;
 };
 
+std::vector<std::string> GetImageFields(const Value& input);
+
 MMDEPLOY_DECLARE_REGISTRY(Transform, std::unique_ptr<Transform>(const Value& config));
 
-std::vector<std::string> GetImageFields(const Value& input);
+#define MMDEPLOY_REGISTER_TRANSFORM2(type, desc) \
+  MMDEPLOY_REGISTER_FACTORY_FUNC(                \
+      Transform, desc, [](const Value& config) { return std::make_unique<type>(config); });
+
+#define MMDEPLOY_REGISTER_TRANSFORM(type) MMDEPLOY_REGISTER_TRANSFORM2(type, (type, 0))
 
 }  // namespace transform
 

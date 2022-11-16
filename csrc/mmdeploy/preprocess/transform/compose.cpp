@@ -59,8 +59,6 @@ class Compose : public Transform {
   Stream stream_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Compose, 0), [](const Value& config) {
-  return std::make_unique<Compose>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Compose);
 
 }  // namespace mmdeploy::transform

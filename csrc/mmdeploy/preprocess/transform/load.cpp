@@ -86,8 +86,6 @@ class PrepareImage : public Transform {
   std::string color_type_{"color"};
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (LoadImageFromFile, 0), [](const Value& config) {
-  return std::make_unique<PrepareImage>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM2(PrepareImage, (LoadImageFromFile, 0));
 
 }  // namespace mmdeploy::transform

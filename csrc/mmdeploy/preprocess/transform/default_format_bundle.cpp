@@ -66,8 +66,6 @@ class DefaultFormatBundle : public Transform {
   bool img_to_float_ = true;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (DefaultFormatBundle, 0), [](const Value& config) {
-  return std::make_unique<DefaultFormatBundle>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(DefaultFormatBundle);
 
 }  // namespace mmdeploy::transform
