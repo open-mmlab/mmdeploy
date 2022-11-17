@@ -52,7 +52,7 @@ def install_tvm(dep_dir):
     # git clone
     if not osp.exists('tvm'):
         os.system(
-            'git clone --recursive https://github.com/apache/tvm tvm'  # noqa: E501
+            'git clone --branch v0.10.0 --depth 1 --recursive https://github.com/apache/tvm tvm'  # noqa: E501
         )
 
     tvm_dir = osp.join(dep_dir, 'tvm')
