@@ -36,9 +36,11 @@ class End2EndModel(BaseBackendModel):
         model_cfg: Optional[mmengine.Config] = None,
         **kwargs,
     ):
+        data_preprocessor = model_cfg.model.get('data_preprocessor', {})
+        data_preprocessor.update(
+            model_cfg.model.get('cfg', {}).get('data_preprocessor', {}))
         super(End2EndModel, self).__init__(
-            deploy_cfg=deploy_cfg,
-            data_preprocessor=model_cfg.model.data_preprocessor)
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
 
