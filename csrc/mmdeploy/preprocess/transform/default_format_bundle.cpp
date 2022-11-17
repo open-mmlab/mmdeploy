@@ -18,45 +18,45 @@ class DefaultFormatBundle : public Transform {
     hwc2chw_ = operation::Managed<operation::HWC2CHW>::Create();
   }
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(input).dump(2));
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(data).dump(2));
 
-    if (input.contains("img")) {
-      Tensor tensor = input["img"].get<Tensor>();
+    if (data.contains("img")) {
+      Tensor tensor = data["img"].get<Tensor>();
       auto input_data_type = tensor.data_type();
       if (img_to_float_) {
         OUTCOME_TRY(to_float_.Apply(tensor, tensor));
       }
 
       // set default meta keys
-      if (!input.contains("pad_shape")) {
+      if (!data.contains("pad_shape")) {
         for (auto v : tensor.shape()) {
-          input["pad_shape"].push_back(v);
+          data["pad_shape"].push_back(v);
         }
       }
-      if (!input.contains("scale_factor")) {
-        input["scale_factor"].push_back(1.0);
+      if (!data.contains("scale_factor")) {
+        data["scale_factor"].push_back(1.0);
       }
-      if (!input.contains("img_norm_cfg")) {
+      if (!data.contains("img_norm_cfg")) {
         int channel = tensor.shape()[3];
         for (int i = 0; i < channel; i++) {
-          input["img_norm_cfg"]["mean"].push_back(0.0);
-          input["img_norm_cfg"]["std"].push_back(1.0);
+          data["img_norm_cfg"]["mean"].push_back(0.0);
+          data["img_norm_cfg"]["std"].push_back(1.0);
         }
-        input["img_norm_cfg"]["to_rgb"] = false;
+        data["img_norm_cfg"]["to_rgb"] = false;
       }
 
       // trace static info & runtime args
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(img_to_float_, input_data_type);
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(img_to_float_, input_data_type);
       }
 
       // transpose
       OUTCOME_TRY(hwc2chw_.Apply(tensor, tensor));
-      input["img"] = std::move(tensor);
+      data["img"] = std::move(tensor);
     }
 
-    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(data).dump(2));
     return success();
   }
 

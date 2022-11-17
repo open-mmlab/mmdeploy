@@ -17,7 +17,7 @@ namespace transform {
 class MMDEPLOY_API Transform {
  public:
   virtual ~Transform() = default;
-  virtual Result<void> Apply(Value& input) = 0;
+  virtual Result<void> Apply(Value& data) = 0;
 };
 
 std::vector<std::string> GetImageFields(const Value& input);

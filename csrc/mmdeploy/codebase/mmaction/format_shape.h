@@ -27,7 +27,7 @@ class FormatShape : public Transform {
  public:
   explicit FormatShape(const Value& args);
 
-  Result<void> Apply(Value& input) override;
+  Result<void> Apply(Value& data) override;
 
  private:
   operation::Managed<FormatShapeOp> format_;

@@ -85,12 +85,12 @@ class Normalize : public Transform {
     }
    */
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
 
-    auto img_fields = GetImageFields(input);
+    auto img_fields = GetImageFields(data);
     for (auto& key : img_fields) {
-      Tensor tensor = input[key].get<Tensor>();
+      Tensor tensor = data[key].get<Tensor>();
       auto desc = tensor.desc();
       assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
       assert(desc.shape.size() == 4 /*n, h, w, c*/);
@@ -105,22 +105,22 @@ class Normalize : public Transform {
         OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
         dst = to_tensor(src_mat);
       }
-      input[key] = std::move(dst);
+      data[key] = std::move(dst);
 
       for (auto& v : mean_) {
-        input["img_norm_cfg"]["mean"].push_back(v);
+        data["img_norm_cfg"]["mean"].push_back(v);
       }
       for (auto v : std_) {
-        input["img_norm_cfg"]["std"].push_back(v);
+        data["img_norm_cfg"]["std"].push_back(v);
       }
-      input["img_norm_cfg"]["to_rgb"] = to_rgb_;
+      data["img_norm_cfg"]["to_rgb"] = to_rgb_;
 
       // trace static info & runtime args
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().Normalize(mean_, std_, to_rgb_, desc.data_type);
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().Normalize(mean_, std_, to_rgb_, desc.data_type);
       }
     }
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 

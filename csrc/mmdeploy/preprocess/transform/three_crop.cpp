@@ -28,10 +28,10 @@ class ThreeCrop : public Transform {
   explicit ThreeCrop(const Value& args);
   ~ThreeCrop() override = default;
 
-  Result<void> Apply(Value& input) override;
+  Result<void> Apply(Value& data) override;
 
  protected:
-  std::array<int, 2> crop_size_;
+  std::array<int, 2> crop_size_{};
   operation::Managed<operation::Crop> crop_;
 };
 
@@ -52,8 +52,8 @@ ThreeCrop::ThreeCrop(const Value& args) {
   crop_ = operation::Managed<operation::Crop>::Create();
 }
 
-Result<void> ThreeCrop::Apply(Value& input) {
-  auto tensor = input["img"].get<Tensor>();
+Result<void> ThreeCrop::Apply(Value& data) {
+  auto tensor = data["img"].get<Tensor>();
   auto desc = tensor.desc();
   int img_h = desc.shape[1];
   int img_w = desc.shape[2];
@@ -83,7 +83,7 @@ Result<void> ThreeCrop::Apply(Value& input) {
 
   Value::Array imgs;
   std::move(cropped.begin(), cropped.end(), std::back_inserter(imgs));
-  input["imgs"] = std::move(imgs);
+  data["imgs"] = std::move(imgs);
   return success();
 }
 

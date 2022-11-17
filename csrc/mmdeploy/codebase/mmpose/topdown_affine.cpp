@@ -37,11 +37,11 @@ class TopDownAffine : public transform::Transform {
 
   ~TopDownAffine() override = default;
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("top_down_affine input: {}", input);
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("top_down_affine input: {}", data);
 
     Device host{"cpu"};
-    auto _img = input["img"].get<Tensor>();
+    auto _img = data["img"].get<Tensor>();
     OUTCOME_TRY(auto img, MakeAvailableOnDevice(_img, host, stream_));
     stream_.Wait().value();
     auto src = cpu::Tensor2CVMat(img);
@@ -50,18 +50,18 @@ class TopDownAffine : public transform::Transform {
     vector<float> bbox;
     vector<float> c;  // center
     vector<float> s;  // scale
-    if (input.contains("center") && input.contains("scale")) {
+    if (data.contains("center") && data.contains("scale")) {
       // after mmpose v0.26.0
-      from_value(input["center"], c);
-      from_value(input["scale"], s);
+      from_value(data["center"], c);
+      from_value(data["scale"], s);
     } else {
       // before mmpose v0.26.0
-      from_value(input["bbox"], bbox);
+      from_value(data["bbox"], bbox);
       Box2cs(bbox, c, s);
     }
     // end prepare data
 
-    auto r = input["rotation"].get<float>();
+    auto r = data["rotation"].get<float>();
 
     cv::Mat dst;
     if (use_udp_) {
@@ -76,11 +76,11 @@ class TopDownAffine : public transform::Transform {
       cv::warpAffine(src, dst, trans, {image_size_[0], image_size_[1]}, cv::INTER_LINEAR);
     }
 
-    input["img"] = cpu::CVMat2Tensor(dst);
-    input["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
-    input["center"] = to_value(c);
-    input["scale"] = to_value(s);
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    data["img"] = cpu::CVMat2Tensor(dst);
+    data["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
+    data["center"] = to_value(c);
+    data["scale"] = to_value(s);
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 

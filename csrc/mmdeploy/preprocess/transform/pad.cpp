@@ -45,13 +45,13 @@ class Pad : public Transform {
     pad_ = operation::Managed<operation::Pad>::Create(padding_mode_, pad_val_);
   }
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
 
-    auto img_fields = GetImageFields(input);
+    auto img_fields = GetImageFields(data);
     for (auto& key : img_fields) {
       Tensor output_tensor;
-      auto tensor = input[key].get<Tensor>();
+      auto tensor = data[key].get<Tensor>();
       assert(tensor.desc().shape.size() == 4);
       assert(tensor.desc().shape[0] == 1);
       assert(tensor.desc().shape[3] == 3 || tensor.desc().shape[3] == 1);
@@ -63,8 +63,8 @@ class Pad : public Transform {
       if (pad_to_square_) {
         int max_size = std::max(tensor.shape(1), tensor.shape(2));
         padding = {0, 0, max_size - width, max_size - height};
-        input["pad_fixed_size"].push_back(max_size);
-        input["pad_fixed_size"].push_back(max_size);
+        data["pad_fixed_size"].push_back(max_size);
+        data["pad_fixed_size"].push_back(max_size);
       } else if (size_[0] != 0 && size_[1] != 0) {
         if (orientation_agnostic_) {
           auto size_min = min(size_[0], size_[1]);
@@ -72,24 +72,24 @@ class Pad : public Transform {
           auto pad_h = width < height ? size_max : size_min;
           auto pad_w = width < height ? size_min : size_max;
           padding = {0, 0, pad_w - width, pad_h - height};
-          input["pad_fixed_size"].push_back(pad_h);
-          input["pad_fixed_size"].push_back(pad_w);
+          data["pad_fixed_size"].push_back(pad_h);
+          data["pad_fixed_size"].push_back(pad_w);
         } else {
           padding = {0, 0, size_[1] - width, size_[0] - height};
-          input["pad_fixed_size"].push_back(size_[0]);
-          input["pad_fixed_size"].push_back(size_[1]);
+          data["pad_fixed_size"].push_back(size_[0]);
+          data["pad_fixed_size"].push_back(size_[1]);
         }
       } else if (size_divisor_ != 1) {
         auto pad_h = (height + size_divisor_ - 1) / size_divisor_ * size_divisor_;
         auto pad_w = (width + size_divisor_ - 1) / size_divisor_ * size_divisor_;
         padding = {0, 0, pad_w - width, pad_h - height};
-        input["pad_size_divisor"] = size_divisor_;
-        input["pad_fixed_size"].push_back(pad_h);
-        input["pad_fixed_size"].push_back(pad_w);
+        data["pad_size_divisor"] = size_divisor_;
+        data["pad_fixed_size"].push_back(pad_h);
+        data["pad_fixed_size"].push_back(pad_w);
       } else {
         output_tensor = tensor;
-        input["pad_fixed_size"].push_back(height);
-        input["pad_fixed_size"].push_back(width);
+        data["pad_fixed_size"].push_back(height);
+        data["pad_fixed_size"].push_back(width);
       }
 
       if (std::count(begin(padding), end(padding), 0) != 4) {
@@ -100,20 +100,20 @@ class Pad : public Transform {
       }
 
       for (auto& v : output_tensor.shape()) {
-        input["pad_shape"].push_back(v);
+        data["pad_shape"].push_back(v);
       }
 
       // trace static info & runtime args
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().Pad(
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().Pad(
             pad_val_, {padding[1], padding[0], padding[3], padding[2]},
             {(int)output_tensor.shape(1), (int)output_tensor.shape(2)}, output_tensor.data_type());
       }
 
-      input[key] = std::move(output_tensor);
+      data[key] = std::move(output_tensor);
     }
 
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 

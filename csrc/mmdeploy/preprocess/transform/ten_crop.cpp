@@ -15,10 +15,10 @@ class MMDEPLOY_API TenCrop : public Transform {
   explicit TenCrop(const Value& args);
   ~TenCrop() override = default;
 
-  Result<void> Apply(Value& input) override;
+  Result<void> Apply(Value& data) override;
 
  protected:
-  std::array<int, 2> crop_size_;
+  std::array<int, 2> crop_size_{};
   operation::Managed<operation::Crop> crop_;
   operation::Managed<operation::Flip> flip_;
 };
@@ -42,12 +42,12 @@ TenCrop::TenCrop(const Value& args) {
   flip_ = operation::Managed<operation::Flip>::Create(1);
 }
 
-Result<void> TenCrop::Apply(Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+Result<void> TenCrop::Apply(Value& data) {
+  MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
 
   // copy input data, and update its properties
-  Value output = input;
-  auto tensor = input["img"].get<Tensor>();
+  Value output = data;
+  auto tensor = data["img"].get<Tensor>();
   int img_h = tensor.shape(1);
   int img_w = tensor.shape(2);
   int crop_w = crop_size_[0];
@@ -77,7 +77,7 @@ Result<void> TenCrop::Apply(Value& input) {
 
   Value::Array imgs;
   std::move(cropped.begin(), cropped.end(), std::back_inserter(imgs));
-  input["imgs"] = std::move(imgs);
+  data["imgs"] = std::move(imgs);
 
   return success();
 }

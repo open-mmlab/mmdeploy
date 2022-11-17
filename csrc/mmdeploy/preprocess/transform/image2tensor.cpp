@@ -19,11 +19,11 @@ class ImageToTensor : public Transform {
     hwc2chw_ = operation::Managed<operation::HWC2CHW>::Create();
   }
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
     for (auto& key : keys_) {
-      assert(input.contains(key));
-      Tensor src_tensor = input[key].get<Tensor>();
+      assert(data.contains(key));
+      Tensor src_tensor = data[key].get<Tensor>();
       auto& shape = src_tensor.desc().shape;
 
       assert(shape.size() == 4);
@@ -31,13 +31,13 @@ class ImageToTensor : public Transform {
 
       Tensor dst;
       OUTCOME_TRY(hwc2chw_.Apply(src_tensor, dst));
-      input[key] = std::move(dst);
+      data[key] = std::move(dst);
 
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
       }
     }  // for key
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 

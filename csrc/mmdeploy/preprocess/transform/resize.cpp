@@ -45,12 +45,12 @@ class Resize : public Transform {
 
     resize_ = operation::Managed<operation::Resize>::Create(interpolation_);
   }
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-    auto img_fields = GetImageFields(input);
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    auto img_fields = GetImageFields(data);
 
     for (auto& key : img_fields) {
-      Tensor src_img = input[key].get<Tensor>();
+      Tensor src_img = data[key].get<Tensor>();
       auto desc = src_img.desc();
       assert(desc.shape.size() == 4);
 
@@ -60,13 +60,13 @@ class Resize : public Transform {
       int dst_w = 0;
       float scale_factor = 0.f;
 
-      if (input.contains("scale")) {
-        assert(input["scale"].is_array() && input["scale"].size() == 2);
-        dst_h = input["scale"][0].get<int>();
-        dst_w = input["scale"][1].get<int>();
-      } else if (input.contains("scale_factor")) {
-        assert(input["scale_factor"].is_number());
-        scale_factor = input["scale_factor"].get<float>();
+      if (data.contains("scale")) {
+        assert(data["scale"].is_array() && data["scale"].size() == 2);
+        dst_h = data["scale"][0].get<int>();
+        dst_w = data["scale"][1].get<int>();
+      } else if (data.contains("scale_factor")) {
+        assert(data["scale_factor"].is_number());
+        scale_factor = data["scale_factor"].get<float>();
         dst_h = int(h * scale_factor + 0.5);
         dst_w = int(w * scale_factor + 0.5);
       } else {
@@ -105,20 +105,20 @@ class Resize : public Transform {
       }
       auto w_scale = dst_w * 1.0 / w;
       auto h_scale = dst_h * 1.0 / h;
-      input["scale_factor"] = {w_scale, h_scale, w_scale, h_scale};
-      input["img_shape"] = {1, dst_h, dst_w, desc.shape[3]};
-      input["keep_ratio"] = keep_ratio_;
+      data["scale_factor"] = {w_scale, h_scale, w_scale, h_scale};
+      data["img_shape"] = {1, dst_h, dst_w, desc.shape[3]};
+      data["keep_ratio"] = keep_ratio_;
 
-      input[key] = dst_img;
+      data[key] = dst_img;
 
       // trace static info & runtime args
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().Resize(interpolation_, {dst_h, dst_w},
-                                                      src_img.data_type());
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().Resize(interpolation_, {dst_h, dst_w},
+                                                     src_img.data_type());
       }
     }
 
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 

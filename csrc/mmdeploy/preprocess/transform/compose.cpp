@@ -43,11 +43,11 @@ class Compose : public Transform {
     }
   }
 
-  Result<void> Apply(Value& input) override {
+  Result<void> Apply(Value& data) override {
     {
       operation::Context context(device_, stream_);
       for (auto& transform : transforms_) {
-        OUTCOME_TRY(transform->Apply(input));
+        OUTCOME_TRY(transform->Apply(data));
       }
     }
     return success();

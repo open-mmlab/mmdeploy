@@ -30,12 +30,12 @@ class CenterCrop : public Transform {
     crop_ = operation::Managed<operation::Crop>::Create();
   }
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-    auto img_fields = GetImageFields(input);
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    auto img_fields = GetImageFields(data);
 
     for (auto& key : img_fields) {
-      auto tensor = input[key].get<Tensor>();
+      auto tensor = data[key].get<Tensor>();
       auto desc = tensor.desc();
       int h = desc.shape[1];
       int w = desc.shape[2];
@@ -53,36 +53,36 @@ class CenterCrop : public Transform {
       auto& shape = dst_tensor.desc().shape;
 
       // trace static info & runtime args
-      if (input.contains("__tracer__")) {
-        input["__tracer__"].get_ref<Tracer&>().CenterCrop(
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().CenterCrop(
             {y1, x1, h - (int)shape[1] - y1, w - (int)shape[2] - x1},
             {(int)shape[1], (int)shape[2]}, tensor.data_type());
       }
 
-      input["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
-      if (input.contains("scale_factor")) {
+      data["img_shape"] = {shape[0], shape[1], shape[2], shape[3]};
+      if (data.contains("scale_factor")) {
         // image has been processed by `Resize` transform before.
         // Compute cropped image's offset against the original image
-        assert(input["scale_factor"].is_array() && input["scale_factor"].size() >= 2);
-        float w_scale = input["scale_factor"][0].get<float>();
-        float h_scale = input["scale_factor"][1].get<float>();
-        input["offset"].push_back(x1 / w_scale);
-        input["offset"].push_back(y1 / h_scale);
+        assert(data["scale_factor"].is_array() && data["scale_factor"].size() >= 2);
+        float w_scale = data["scale_factor"][0].get<float>();
+        float h_scale = data["scale_factor"][1].get<float>();
+        data["offset"].push_back(x1 / w_scale);
+        data["offset"].push_back(y1 / h_scale);
       } else {
-        input["offset"].push_back(x1);
-        input["offset"].push_back(y1);
+        data["offset"].push_back(x1);
+        data["offset"].push_back(y1);
       }
 
-      input[key] = std::move(dst_tensor);
+      data[key] = std::move(dst_tensor);
     }
 
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
     return success();
   }
 
  private:
   operation::Managed<operation::Crop> crop_;
-  std::array<int, 2> crop_size_;
+  std::array<int, 2> crop_size_{};
 };
 
 MMDEPLOY_REGISTER_TRANSFORM(CenterCrop);

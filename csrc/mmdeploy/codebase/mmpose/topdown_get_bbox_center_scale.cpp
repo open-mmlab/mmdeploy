@@ -23,16 +23,16 @@ class TopDownGetBboxCenterScale : public transform::Transform {
 
   ~TopDownGetBboxCenterScale() override = default;
 
-  Result<void> Apply(Value& input) override {
+  Result<void> Apply(Value& data) override {
     vector<float> bbox;
-    from_value(input["bbox"], bbox);
+    from_value(data["bbox"], bbox);
 
     vector<float> c;  // center
     vector<float> s;  // scale
 
     Box2cs(bbox, c, s, padding_, pixel_std_);
-    input["center"] = to_value(c);
-    input["scale"] = to_value(s);
+    data["center"] = to_value(c);
+    data["scale"] = to_value(s);
 
     return success();
   }

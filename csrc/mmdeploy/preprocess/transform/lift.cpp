@@ -19,8 +19,8 @@ Lift::Lift(const Value& args) {
   }
 }
 
-Result<void> Lift::Apply(Value& input) {
-  for (auto& item : input.array()) {
+Result<void> Lift::Apply(Value& data) {
+  for (auto& item : data.array()) {
     OUTCOME_TRY(compose_->Apply(item));
   }
   return success();

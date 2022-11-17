@@ -35,23 +35,23 @@ class ResizeOCR : public transform::Transform {
 
   ~ResizeOCR() override = default;
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", input);
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", data);
     auto dst_height = height_;
     auto dst_min_width = min_width_;
     auto dst_max_width = max_width_;
 
     std::vector<int> img_shape;  // NHWC
-    from_value(input["img_shape"], img_shape);
+    from_value(data["img_shape"], img_shape);
 
     std::vector<int> ori_shape;  // NHWC
-    from_value(input["ori_shape"], ori_shape);
+    from_value(data["ori_shape"], ori_shape);
 
     auto ori_height = ori_shape[1];
     auto ori_width = ori_shape[2];
     auto valid_ratio = 1.f;
 
-    auto img = input["img"].get<Tensor>();
+    auto img = data["img"].get<Tensor>();
     Tensor img_resize;
     if (keep_aspect_ratio_) {
       auto new_width = static_cast<int>(std::ceil(1.f * dst_height / ori_height * ori_width));
@@ -77,10 +77,10 @@ class ResizeOCR : public transform::Transform {
       OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, dst_max_width));
     }
 
-    input["img"] = img_resize;
-    input["resize_shape"] = to_value(img_resize.desc().shape);
-    input["pad_shape"] = input["resize_shape"];
-    input["valid_ratio"] = valid_ratio;
+    data["img"] = img_resize;
+    data["resize_shape"] = to_value(img_resize.desc().shape);
+    data["pad_shape"] = data["resize_shape"];
+    data["valid_ratio"] = valid_ratio;
     MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
     return success();
   }

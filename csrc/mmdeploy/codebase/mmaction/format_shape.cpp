@@ -16,42 +16,42 @@ FormatShape::FormatShape(const Value& args) {
   }
 }
 
-Result<void> FormatShape::Apply(Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
+Result<void> FormatShape::Apply(Value& data) {
+  MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
 
-  if (!input.is_array()) {
+  if (!data.is_array()) {
     MMDEPLOY_ERROR("input of format shape should be array");
     return Status(eInvalidArgument);
   }
-  if (!(input[0].contains("img") || input[0].contains("img"))) {
+  if (!(data[0].contains("img") || data[0].contains("img"))) {
     MMDEPLOY_ERROR("input should contains imgs or img");
     return Status(eInvalidArgument);
   }
 
-  int n_image = input.size();
-  int clip_len = input[0]["clip_len"].get<int>();
-  int num_clips = input[0]["num_clips"].get<int>();
+  int n_image = data.size();
+  int clip_len = data[0]["clip_len"].get<int>();
+  int num_clips = data[0]["num_clips"].get<int>();
   std::vector<Tensor> images;
 
-  if (input[0].contains("imgs")) {
-    int n_crop = input[0]["imgs"].size();
+  if (data[0].contains("imgs")) {
+    int n_crop = data[0]["imgs"].size();
     int total = n_image * n_crop;
     images.reserve(total);
     for (int i = 0; i < n_crop; i++) {
       for (int j = 0; j < n_image; j++) {
-        images.push_back(input[j]["imgs"][i].get<Tensor>());
+        images.push_back(data[j]["imgs"][i].get<Tensor>());
       }
     }
-  } else if (input[0].contains("img")) {
+  } else if (data[0].contains("img")) {
     images.reserve(n_image);
     for (int i = 0; i < n_image; i++) {
-      images.push_back(input[i]["img"].get<Tensor>());
+      images.push_back(data[i]["img"].get<Tensor>());
     }
   }
 
   Tensor dst;
   OUTCOME_TRY(format_.Apply(images, dst, clip_len, num_clips));
-  input["img"] = std::move(dst);
+  data["img"] = std::move(dst);
 
   return success();
 }

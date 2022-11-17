@@ -45,11 +45,11 @@ class PrepareImage : public Transform {
       }
      */
 
-  Result<void> Apply(Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-    assert(input.contains("ori_img"));
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    assert(data.contains("ori_img"));
 
-    Mat src_mat = input["ori_img"].get<Mat>();
+    Mat src_mat = data["ori_img"].get<Mat>();
     Mat dst_mat;
     if (color_type_ == "color" || color_type_ == "color_ignore_orientation") {
       OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
@@ -61,22 +61,22 @@ class PrepareImage : public Transform {
       OUTCOME_TRY(to_float_.Apply(tensor, tensor));
     }
 
-    input["img"] = tensor;
+    data["img"] = tensor;
 
     for (auto v : tensor.desc().shape) {
-      input["img_shape"].push_back(v);
+      data["img_shape"].push_back(v);
     }
-    input["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
-    input["img_fields"].push_back("img");
+    data["ori_shape"] = {1, src_mat.height(), src_mat.width(), src_mat.channel()};
+    data["img_fields"].push_back("img");
 
     // trace static info & runtime args
     Tracer tracer;
     tracer.PrepareImage(color_type_, to_float32_,
                         {1, src_mat.height(), src_mat.width(), src_mat.channel()},
                         src_mat.pixel_format(), src_mat.type());
-    input["__tracer__"] = std::move(tracer);
+    data["__tracer__"] = std::move(tracer);
 
-    MMDEPLOY_DEBUG("output: {}", to_json(input).dump(2));
+    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
 
     return success();
   }

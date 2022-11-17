@@ -12,7 +12,7 @@ class Lift : public Transform {
   explicit Lift(const Value& args);
   ~Lift() override = default;
 
-  Result<void> Apply(Value& input) override;
+  Result<void> Apply(Value& data) override;
 
  private:
   std::unique_ptr<Transform> compose_;
