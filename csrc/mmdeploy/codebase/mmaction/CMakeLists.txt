@@ -8,6 +8,7 @@ add_subdirectory(cpu)
 add_subdirectory(cuda)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     mmdeploy_operation
+    mmdeploy_transform
     mmdeploy_opencv_utils)
 
 add_library(mmdeploy::mmaction ALIAS ${PROJECT_NAME})
