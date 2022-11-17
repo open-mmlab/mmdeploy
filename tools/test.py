@@ -139,17 +139,12 @@ def main():
     if args.speed_test:
         with_sync = not is_device_cpu
 
-        if isinstance(test_dataloader, list):
-            # mmediting test_dataloader using this case.
-            batch_size = test_dataloader[0]['batch_size']
-        else:
-            batch_size = test_dataloader['batch_size']
         with TimeCounter.activate(
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
                 file=args.log2file,
-                batch_size=batch_size):
+                batch_size=args.batch_size):
             runner.test()
 
     else:
