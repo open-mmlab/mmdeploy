@@ -18,6 +18,7 @@ class ResizeMask : public MMSegmentation {
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
+      if (cfg["params"].contains("do_argmax")) do_argmax_ = cfg["params"]["do_argmax"].get<bool>();
       little_endian_ = IsLittleEndian();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
@@ -31,8 +32,13 @@ class ResizeMask : public MMSegmentation {
     auto mask = inference_result["output"].get<Tensor>();
     MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),
                    mask.shape(), mask.data_type());
-    if (!(mask.shape().size() == 4 && mask.shape(0) == 1 && mask.shape(1) == 1)) {
+    if (!(mask.shape().size() == 4 && mask.shape(0) == 1)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}", mask.shape());
+      return Status(eNotSupported);
+    }
+    if ((mask.shape(1) != 1) && do_argmax_) {
+      MMDEPLOY_ERROR("probability feat map with shape: {} requires `do_argmax_=false`",
+                     mask.shape());
       return Status(eNotSupported);
     }
 
@@ -43,6 +49,29 @@ class ResizeMask : public MMSegmentation {
     Device host{"cpu"};
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
     OUTCOME_TRY(stream_.Wait());
+
+    if (!do_argmax_ && mask.shape(1) > 1 && mask.shape(1) == classes_ &&
+        host_tensor.data_type() == DataType::kFLOAT) {
+      int stride = height * width;
+      Tensor mask_out = TensorDesc{Device("cpu"),
+                                   DataType::kFLOAT,
+                                   {mask.shape(0), 1, mask.shape(2), mask.shape(3)},
+                                   "argmax_out"};
+      auto ptr = host_tensor.data<float>();
+      auto out_ptr = mask_out.data<float>();
+      for (int i = 0; i < stride; i++, ptr++) {
+        auto v = *ptr;
+        auto idx = 0.f;
+        for (int j = 0; j < classes_; j++) {
+          if (v < *(ptr + stride * j)) {
+            v = *(ptr + stride * j);
+            idx = j;
+          }
+        }
+        *out_ptr++ = idx;
+      }
+      host_tensor = mask_out;
+    }
 
     OUTCOME_TRY(auto cv_type, GetCvType(mask.data_type()));
     cv::Mat mask_mat(height, width, cv_type, host_tensor.data());
@@ -85,6 +114,7 @@ class ResizeMask : public MMSegmentation {
 
  protected:
   int classes_{};
+  bool do_argmax_{true};
   bool little_endian_;
 };
 

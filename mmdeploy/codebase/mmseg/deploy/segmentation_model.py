@@ -110,7 +110,7 @@ class End2EndModel(BaseBackendModel):
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         if get_codebase_config(self.deploy_cfg).get('do_argmax',
-                                                    False) is True:
+                                                    True) is False:
             outputs = [
                 output.argmax(dim=1, keepdim=True) for output in outputs
             ]
