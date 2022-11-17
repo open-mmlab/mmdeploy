@@ -1,5 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <array>
+
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
@@ -16,7 +18,7 @@ class MMDEPLOY_API TenCrop : public Transform {
   Result<void> Apply(Value& input) override;
 
  protected:
-  std::array<int, 2> crop_size;
+  std::array<int, 2> crop_size_;
   operation::Managed<operation::Crop> crop_;
   operation::Managed<operation::Flip> flip_;
 };
@@ -27,10 +29,10 @@ TenCrop::TenCrop(const Value& args) {
     throw std::invalid_argument("'crop_size' is expected");
   }
   if (args["crop_size"].is_number_integer()) {
-    crop_size[0] = crop_size[1] = args["crop_size"].get<int>();
+    crop_size_[0] = crop_size_[1] = args["crop_size"].get<int>();
   } else if (args["crop_size"].is_array() && args["crop_size"].size() == 2) {
-    crop_size[0] = args["crop_size"][0].get<int>();
-    crop_size[1] = args["crop_size"][1].get<int>();
+    crop_size_[0] = args["crop_size"][0].get<int>();
+    crop_size_[1] = args["crop_size"][1].get<int>();
   } else {
     throw std::invalid_argument("'crop_size' should be integer or an int array of size 2");
   }
@@ -48,8 +50,8 @@ Result<void> TenCrop::Apply(Value& input) {
   auto tensor = input["img"].get<Tensor>();
   int img_h = tensor.shape(1);
   int img_w = tensor.shape(2);
-  int crop_w = crop_size[0];
-  int crop_h = crop_size[1];
+  int crop_w = crop_size_[0];
+  int crop_h = crop_size_[1];
 
   int w_step = (img_w - crop_w) / 4;
   int h_step = (img_h - crop_h) / 4;

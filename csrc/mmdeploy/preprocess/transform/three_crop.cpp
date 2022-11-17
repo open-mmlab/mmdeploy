@@ -1,5 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <array>
+
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
@@ -29,7 +31,7 @@ class ThreeCrop : public Transform {
   Result<void> Apply(Value& input) override;
 
  protected:
-  std::array<int, 2> crop_size;
+  std::array<int, 2> crop_size_;
   operation::Managed<operation::Crop> crop_;
 };
 
@@ -39,10 +41,10 @@ ThreeCrop::ThreeCrop(const Value& args) {
     throw std::invalid_argument("'crop_size' is expected");
   }
   if (args["crop_size"].is_number_integer()) {
-    crop_size[0] = crop_size[1] = args["crop_size"].get<int>();
+    crop_size_[0] = crop_size_[1] = args["crop_size"].get<int>();
   } else if (args["crop_size"].is_array() && args["crop_size"].size() == 2) {
-    crop_size[0] = args["crop_size"][0].get<int>();
-    crop_size[1] = args["crop_size"][1].get<int>();
+    crop_size_[0] = args["crop_size"][0].get<int>();
+    crop_size_[1] = args["crop_size"][1].get<int>();
   } else {
     throw std::invalid_argument("'crop_size' should be integer or an int array of size 2");
   }
@@ -55,8 +57,8 @@ Result<void> ThreeCrop::Apply(Value& input) {
   auto desc = tensor.desc();
   int img_h = desc.shape[1];
   int img_w = desc.shape[2];
-  int crop_w = crop_size[0];
-  int crop_h = crop_size[1];
+  int crop_w = crop_size_[0];
+  int crop_h = crop_size_[1];
   OUTCOME_TRY(check_input_shape(img_h, img_w, crop_h, crop_w));
 
   std::array<std::pair<int, int>, 3> offsets;
