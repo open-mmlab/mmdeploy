@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
@@ -20,7 +21,7 @@ class ImageToTensor : public Transform {
   }
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("input: {}", data);
     for (auto& key : keys_) {
       assert(data.contains(key));
       Tensor src_tensor = data[key].get<Tensor>();
@@ -37,7 +38,7 @@ class ImageToTensor : public Transform {
         data["__tracer__"].get_ref<Tracer&>().ImageToTensor(src_tensor.data_type());
       }
     }  // for key
-    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 

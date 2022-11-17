@@ -10,7 +10,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmocr {
 
 class ResizeOCR : public transform::Transform {
  public:
@@ -81,7 +81,7 @@ class ResizeOCR : public transform::Transform {
     data["resize_shape"] = to_value(img_resize.desc().shape);
     data["pad_shape"] = data["resize_shape"];
     data["valid_ratio"] = valid_ratio;
-    MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 
@@ -97,8 +97,6 @@ class ResizeOCR : public transform::Transform {
   std::string backend_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(transform::Transform, (ResizeOCR, 0), [](const Value& config) {
-  return std::make_unique<ResizeOCR>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(ResizeOCR);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmocr

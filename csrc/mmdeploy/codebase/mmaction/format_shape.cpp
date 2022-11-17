@@ -2,12 +2,12 @@
 
 #include "mmdeploy/codebase/mmaction/format_shape.h"
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmaction {
 
 FormatShape::FormatShape(const Value& args) {
   auto input_format = args.value("input_format", std::string(""));
@@ -17,7 +17,7 @@ FormatShape::FormatShape(const Value& args) {
 }
 
 Result<void> FormatShape::Apply(Value& data) {
-  MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+  MMDEPLOY_DEBUG("input: {}", data);
 
   if (!data.is_array()) {
     MMDEPLOY_ERROR("input of format shape should be array");
@@ -56,10 +56,8 @@ Result<void> FormatShape::Apply(Value& data) {
   return success();
 }
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (FormatShape, 0), [](const Value& config) {
-  return std::make_unique<FormatShape>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(FormatShape);
 
 MMDEPLOY_DEFINE_REGISTRY(FormatShapeOp);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction

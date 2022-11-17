@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
@@ -46,7 +47,7 @@ class PrepareImage : public Transform {
      */
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("input: {}", data);
     assert(data.contains("ori_img"));
 
     Mat src_mat = data["ori_img"].get<Mat>();
@@ -76,7 +77,7 @@ class PrepareImage : public Transform {
                         src_mat.pixel_format(), src_mat.type());
     data["__tracer__"] = std::move(tracer);
 
-    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
 
     return success();
   }

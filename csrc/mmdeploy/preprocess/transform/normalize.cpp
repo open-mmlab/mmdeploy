@@ -86,7 +86,7 @@ class Normalize : public Transform {
    */
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("input: {}", data);
 
     auto img_fields = GetImageFields(data);
     for (auto& key : img_fields) {
@@ -120,7 +120,7 @@ class Normalize : public Transform {
         data["__tracer__"].get_ref<Tracer&>().Normalize(mean_, std_, to_rgb_, desc.data_type);
       }
     }
-    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 

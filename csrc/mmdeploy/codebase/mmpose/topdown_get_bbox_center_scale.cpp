@@ -2,7 +2,6 @@
 
 #include <vector>
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
@@ -11,7 +10,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmpose {
 
 class TopDownGetBboxCenterScale : public transform::Transform {
  public:
@@ -62,9 +61,6 @@ class TopDownGetBboxCenterScale : public transform::Transform {
   vector<int> image_size_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(transform::Transform, (TopDownGetBboxCenterScale, 0),
-                               [](const Value& config) {
-                                 return std::make_unique<TopDownGetBboxCenterScale>(config);
-                               });
+MMDEPLOY_REGISTER_TRANSFORM(TopDownGetBboxCenterScale);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmpose

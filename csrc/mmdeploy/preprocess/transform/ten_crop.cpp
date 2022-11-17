@@ -2,15 +2,16 @@
 
 #include <array>
 
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-class MMDEPLOY_API TenCrop : public Transform {
+class TenCrop : public Transform {
  public:
   explicit TenCrop(const Value& args);
   ~TenCrop() override = default;
@@ -43,7 +44,7 @@ TenCrop::TenCrop(const Value& args) {
 }
 
 Result<void> TenCrop::Apply(Value& data) {
-  MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+  MMDEPLOY_DEBUG("input: {}", data);
 
   // copy input data, and update its properties
   Value output = data;
@@ -84,4 +85,4 @@ Result<void> TenCrop::Apply(Value& data) {
 
 MMDEPLOY_REGISTER_TRANSFORM(TenCrop);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

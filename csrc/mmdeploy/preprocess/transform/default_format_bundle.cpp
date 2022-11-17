@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
@@ -19,7 +20,7 @@ class DefaultFormatBundle : public Transform {
   }
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", data);
 
     if (data.contains("img")) {
       Tensor tensor = data["img"].get<Tensor>();
@@ -56,7 +57,7 @@ class DefaultFormatBundle : public Transform {
       data["img"] = std::move(tensor);
     }
 
-    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", data);
     return success();
   }
 

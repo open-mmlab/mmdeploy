@@ -2,6 +2,7 @@
 
 #include <array>
 
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
@@ -31,7 +32,7 @@ class CenterCrop : public Transform {
   }
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("input: {}", data);
     auto img_fields = GetImageFields(data);
 
     for (auto& key : img_fields) {
@@ -76,7 +77,7 @@ class CenterCrop : public Transform {
       data[key] = std::move(dst_tensor);
     }
 
-    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 

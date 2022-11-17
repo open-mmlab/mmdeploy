@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
 namespace {
 
@@ -89,4 +89,4 @@ Result<void> ThreeCrop::Apply(Value& data) {
 
 MMDEPLOY_REGISTER_TRANSFORM(ThreeCrop);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform

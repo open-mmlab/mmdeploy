@@ -6,8 +6,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::mmaction::cuda {
 
 #define CUDNN_CHECK(condition)                                                 \
   do {                                                                         \
@@ -142,5 +141,4 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeOp, (cuda, 0), [](std::string input_fo
   return std::make_unique<FormatShapeImpl>(std::move(input_format));
 });
 
-}  // namespace cuda
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction::cuda

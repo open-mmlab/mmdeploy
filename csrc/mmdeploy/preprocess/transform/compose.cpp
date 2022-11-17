@@ -27,7 +27,7 @@ class Compose : public Transform {
     for (auto cfg : args["transforms"]) {
       cfg["context"] = context;
       auto type = cfg.value("type", std::string{});
-      MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
+      MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, cfg);
       auto creator = gRegistry<Transform>().Get(type);
       if (!creator) {
         MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,

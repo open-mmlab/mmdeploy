@@ -2,7 +2,6 @@
 
 #include <set>
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
@@ -14,9 +13,9 @@
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmpose {
 
-cv::Point2f operator*(cv::Point2f a, cv::Point2f b) {
+cv::Point2f operator*(const cv::Point2f& a, const cv::Point2f& b) {
   cv::Point2f c;
   c.x = a.x * b.x;
   c.y = a.y * b.y;
@@ -80,7 +79,7 @@ class TopDownAffine : public transform::Transform {
     data["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
     data["center"] = to_value(c);
     data["scale"] = to_value(s);
-    MMDEPLOY_DEBUG("output: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 
@@ -167,8 +166,6 @@ class TopDownAffine : public transform::Transform {
   Stream stream_;
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(transform::Transform, (TopDownAffine, 0), [](const Value& config) {
-  return std::make_unique<TopDownAffine>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(TopDownAffine);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmpose

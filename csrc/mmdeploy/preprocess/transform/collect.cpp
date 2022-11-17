@@ -1,6 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
 namespace mmdeploy::transform {
@@ -27,7 +27,7 @@ class Collect : public Transform {
   }
 
   Result<void> Apply(Value& data) override {
-    MMDEPLOY_DEBUG("input: {}", to_json(data).dump(2));
+    MMDEPLOY_DEBUG("input: {}", data);
     Value::Object output;
 
     // collect 'ori_img' and 'attribute' from `input`, because those two fields
@@ -54,7 +54,7 @@ class Collect : public Transform {
     }
 
     data = std::move(output);
-    MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
+    MMDEPLOY_DEBUG("output: {}", data);
     return success();
   }
 

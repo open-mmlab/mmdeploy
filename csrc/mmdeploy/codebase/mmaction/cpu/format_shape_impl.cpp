@@ -5,8 +5,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::mmaction::cpu {
 
 class FormatShapeImpl : public FormatShapeOp {
  public:
@@ -122,5 +121,4 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeOp, (cpu, 0), [](std::string input_for
   return std::make_unique<FormatShapeImpl>(std::move(input_format));
 });
 
-}  // namespace cpu
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction::cpu
