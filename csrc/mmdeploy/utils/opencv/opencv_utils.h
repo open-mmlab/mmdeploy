@@ -70,8 +70,7 @@ MMDEPLOY_API cv::Mat Transpose(const cv::Mat& src);
  * @param dst_format
  * @return
  */
-MMDEPLOY_API cv::Mat CvtColor(const cv::Mat& src, PixelFormat src_format,
-                                   PixelFormat dst_format);
+MMDEPLOY_API cv::Mat CvtColor(const cv::Mat& src, PixelFormat src_format, PixelFormat dst_format);
 
 /**
  *
