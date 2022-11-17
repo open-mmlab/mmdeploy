@@ -8,8 +8,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::cpu {
 
 using namespace framework;
 
@@ -169,88 +168,67 @@ cv::Mat Transpose(const cv::Mat& src) {
   return _dst;
 }
 
-cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format, PixelFormat dst_format) {
-  cv::Mat dst;
-  if (dst_format == PixelFormat::kBGR) {
-    switch (src_format) {
-      case PixelFormat::kRGB:
-        cv::cvtColor(src, dst, cv::COLOR_RGB2BGR);
-        break;
-      case PixelFormat::kBGR:
-        dst = src;
-        break;
-      case PixelFormat::kGRAYSCALE:
-        cv::cvtColor(src, dst, cv::COLOR_GRAY2BGR);
-        break;
-      case PixelFormat::kNV12:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2BGR_NV12);
-        break;
-      case PixelFormat::kNV21:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2BGR_NV21);
-        break;
-      case PixelFormat::kBGRA:
-        cv::cvtColor(src, dst, cv::COLOR_BGRA2BGR);
-        break;
-      default:
-        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
-        assert(0);
-        return {};
+namespace {
+
+class ColorConversionTable {
+  static constexpr auto kSize = static_cast<size_t>(PixelFormat::kCOUNT);
+
+  int codes_[kSize][kSize]{};
+
+  // until we have "Deducing `this`" in C++23
+  template <typename Self>
+  static auto& get_impl(Self& self, PixelFormat src, PixelFormat dst) {
+    return self.codes_[static_cast<int32_t>(src)][static_cast<int32_t>(dst)];
+  }
+
+ public:
+  auto& get(PixelFormat src, PixelFormat dst) noexcept { return get_impl(*this, src, dst); }
+  auto& get(PixelFormat src, PixelFormat dst) const noexcept { return get_impl(*this, src, dst); }
+
+  ColorConversionTable() {
+    for (auto& row : codes_) {
+      std::fill(std::begin(row), std::end(row), -1);
     }
-  } else if (dst_format == PixelFormat::kRGB) {
-    switch (src_format) {
-      case PixelFormat::kRGB:
-        dst = src;
-        break;
-      case PixelFormat::kBGR:
-        cv::cvtColor(src, dst, cv::COLOR_BGR2RGB);
-        break;
-      case PixelFormat::kGRAYSCALE:
-        cv::cvtColor(src, dst, cv::COLOR_GRAY2RGB);
-        break;
-      case PixelFormat::kNV12:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2RGB_NV12);
-        break;
-      case PixelFormat::kNV21:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2RGB_NV21);
-        break;
-      case PixelFormat::kBGRA:
-        cv::cvtColor(src, dst, cv::COLOR_BGRA2RGB);
-        break;
-      default:
-        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
-        assert(0);
-        return {};
-    }
-  } else if (dst_format == PixelFormat::kGRAYSCALE) {
-    switch (src_format) {
-      case PixelFormat::kGRAYSCALE:
-        dst = src;
-        break;
-      case PixelFormat::kBGR:
-        cv::cvtColor(src, dst, cv::COLOR_BGR2GRAY);
-        break;
-      case PixelFormat::kRGB:
-        cv::cvtColor(src, dst, cv::COLOR_RGB2GRAY);
-        break;
-      case PixelFormat::kNV12:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2GRAY_NV12);
-        break;
-      case PixelFormat::kNV21:
-        cv::cvtColor(src, dst, cv::COLOR_YUV2GRAY_NV21);
-        break;
-      case PixelFormat::kBGRA:
-        cv::cvtColor(src, dst, cv::COLOR_BGRA2GRAY);
-        break;
-      default:
-        MMDEPLOY_ERROR("unsupported src mat's element type {}", src_format);
-        assert(0);
-        return {};
-    }
-  } else {
-    MMDEPLOY_ERROR("unsupported target mat's element type {}", dst_format);
-    assert(0);
+    using namespace pixel_formats;
+    // to BGR
+    get(kRGB, kBGR) = cv::COLOR_RGB2BGR;
+    get(kGRAY, kBGR) = cv::COLOR_GRAY2BGR;
+    get(kNV21, kBGR) = cv::COLOR_YUV2BGR_NV21;
+    get(kNV12, kBGR) = cv::COLOR_YUV2BGR_NV12;
+    get(kBGRA, kBGR) = cv::COLOR_BGRA2BGR;
+    // to RGB
+    get(kBGR, kRGB) = cv::COLOR_BGR2RGB;
+    get(kGRAY, kRGB) = cv::COLOR_GRAY2RGB;
+    get(kNV21, kRGB) = cv::COLOR_YUV2RGB_NV21;
+    get(kNV12, kRGB) = cv::COLOR_YUV2RGB_NV12;
+    get(kBGRA, kRGB) = cv::COLOR_BGRA2RGB;
+    // to GRAY
+    get(kBGR, kGRAY) = cv::COLOR_BGR2GRAY;
+    get(kRGB, kGRAY) = cv::COLOR_RGB2GRAY;
+    get(kNV21, kGRAY) = cv::COLOR_YUV2GRAY_NV21;
+    get(kNV12, kGRAY) = cv::COLOR_YUV2GRAY_NV12;
+    get(kBGRA, kGRAY) = cv::COLOR_BGRA2GRAY;
+  }
+};
+
+int GetConversionCode(PixelFormat src_fmt, PixelFormat dst_fmt) {
+  static const ColorConversionTable table{};
+  return table.get(src_fmt, dst_fmt);
+}
+
+}  // namespace
+
+cv::Mat CvtColor(const cv::Mat& src, PixelFormat src_format, PixelFormat dst_format) {
+  if (src_format == dst_format) {
+    return src;
+  }
+  auto code = GetConversionCode(src_format, dst_format);
+  if (code == -1) {
+    MMDEPLOY_ERROR("Unsupported color conversion {} -> {}", src_format, dst_format);
     return {};
   }
+  cv::Mat dst;
+  cv::cvtColor(src, dst, code);
   return dst;
 }
 
@@ -278,5 +256,4 @@ bool Compare(const cv::Mat& src1, const cv::Mat& src2, float threshold) {
   return false;
 }
 
-}  // namespace cpu
-}  // namespace mmdeploy
+}  // namespace mmdeploy::cpu

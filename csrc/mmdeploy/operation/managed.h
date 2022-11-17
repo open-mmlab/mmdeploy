@@ -17,7 +17,7 @@ inline Result<void> Copy(const Buffer& src, Buffer& dst, size_t size, Stream& st
   return success();
 }
 
-inline Result<Tensor> Secure(const Tensor val, const Device& device, Stream& stream) {
+inline Result<Tensor> Secure(const Tensor& val, const Device& device, Stream& stream) {
   if (val.device() == device) {
     return val;
   }
@@ -132,10 +132,13 @@ struct apply_impl<Ret (C::*)(Args...)> {
     // transform input args and store them in a tuple
     std::tuple<typename _handler<Args>::type...> tmps{
         _handler<Args>::input((As &&) as, device, stream)...};
+
     // check if any copy operations are failed
     OUTCOME_TRY(_check(std::get<Is>(tmps)...));
+
     // apply the operation
     OUTCOME_TRY(op.apply(_handler<Args>::pass(std::get<Is>(tmps))...));
+
     // track output data (Tensor& and Mat&)
     (_handler<Args>::output(std::get<Is>(tmps)), ...);
     return success();

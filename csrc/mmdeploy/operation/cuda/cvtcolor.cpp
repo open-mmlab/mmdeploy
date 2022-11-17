@@ -9,138 +9,119 @@ using namespace ppl::cv::cuda;
 
 namespace mmdeploy::operation::cuda {
 
-inline Tensor Mat2Tensor(const Mat& mat) {
-  TensorDesc desc{
-      mat.buffer().GetDevice(), mat.type(), {1, mat.height(), mat.width(), mat.channel()}, ""};
-  return {desc, mat.buffer()};
+template <typename T>
+using Converter = ppl::common::RetCode (*)(cudaStream_t stream, int height, int width,
+                                           int inWidthStride, const T* inData, int outWidthStride,
+                                           T* outData);
+
+namespace {
+
+template <typename T>
+ppl::common::RetCode CopyLuma(cudaStream_t stream, int height, int width, int inWidthStride,
+                              const T* inData, int outWidthStride, T* outData) {
+  auto ec = cudaMemcpyAsync(outData, inData, height * width * sizeof(T), cudaMemcpyDefault, stream);
+  if (ec == cudaSuccess) {
+    return ppl::common::RC_SUCCESS;
+  }
+  return ppl::common::RC_OTHER_ERROR;
 }
 
-class ToBGRImpl : public ToBGR {
+template <typename T>
+class ConverterTable {
+  static constexpr auto kSize = static_cast<size_t>(PixelFormat::kCOUNT);
+
+  Converter<T> converters_[kSize][kSize]{};  // value-initialize to zeros
+
+  template <typename Self>
+  static auto& get_impl(Self& self, PixelFormat src, PixelFormat dst) {
+    return self.converters_[static_cast<int32_t>(src)][static_cast<int32_t>(dst)];
+  }
+
  public:
-  Result<void> apply(const Mat& src, Tensor& dst) override {
-    if (src.pixel_format() == PixelFormat::kBGR) {
-      dst = Mat2Tensor(src);
+  auto& get(PixelFormat src, PixelFormat dst) noexcept { return get_impl(*this, src, dst); }
+  auto& get(PixelFormat src, PixelFormat dst) const noexcept { return get_impl(*this, src, dst); }
+
+  ConverterTable() {
+    using namespace pixel_formats;
+    // to BGR
+    get(kRGB, kBGR) = RGB2BGR<T>;
+    get(kGRAY, kBGR) = GRAY2BGR<T>;
+    if constexpr (std::is_same_v<T, uint8_t>) {
+      get(kNV21, kBGR) = NV212BGR<T>;
+      get(kNV12, kBGR) = NV122BGR<T>;
+    }
+    get(kBGRA, kBGR) = BGRA2BGR<T>;
+
+    // to RGB
+    get(kBGR, kRGB) = BGR2RGB<T>;
+    get(kGRAY, kRGB) = GRAY2RGB<T>;
+    if constexpr (std::is_same_v<T, uint8_t>) {
+      get(kNV21, kRGB) = NV212RGB<T>;
+      get(kNV12, kRGB) = NV122RGB<T>;
+    }
+    get(kBGRA, kRGB) = BGRA2RGB<T>;
+
+    // to GRAY
+    get(kBGR, kGRAY) = BGR2GRAY<T>;
+    get(kRGB, kGRAY) = RGB2GRAY<T>;
+    get(kNV21, kGRAY) = CopyLuma<T>;
+    get(kNV12, kGRAY) = CopyLuma<T>;
+    get(kBGRA, kGRAY) = BGRA2GRAY<T>;
+  }
+};
+
+template <typename T>
+Converter<T> GetConverter(PixelFormat src, PixelFormat dst) {
+  static const ConverterTable<T> table{};
+  return table.get(src, dst);
+}
+
+}  // namespace
+
+class CvtColorImpl : public CvtColor {
+ public:
+  Result<void> apply(const Mat& src, Mat& dst, PixelFormat dst_fmt) override {
+    if (src.pixel_format() == dst_fmt) {
+      dst = src;
       return success();
     }
 
     auto cuda_stream = GetNative<cudaStream_t>(stream());
-    Mat dst_mat(src.height(), src.width(), PixelFormat::kBGR, src.type(), device());
 
-    ppl::common::RetCode ret = 0;
+    auto height = src.height();
+    auto width = src.width();
+    auto channels = src.channel();
+    auto stride = width * channels;
 
-    int src_h = src.height();
-    int src_w = src.width();
-    int src_c = src.channel();
-    int src_stride = src_w * src.channel();
-    auto src_ptr = src.data<uint8_t>();
+    Mat dst_mat(height, width, dst_fmt, src.type(), device());
 
-    int dst_w = dst_mat.width();
-    int dst_stride = dst_w * dst_mat.channel();
-    auto dst_ptr = dst_mat.data<uint8_t>();
+    auto convert = [&](auto type) -> Result<void> {
+      using T = typename decltype(type)::type;
+      auto converter = GetConverter<T>(src.pixel_format(), dst_fmt);
+      if (!converter) {
+        return Status(eNotSupported);
+      }
+      auto ret =
+          converter(cuda_stream, height, width, stride, src.data<T>(), stride, dst_mat.data<T>());
+      if (ret != ppl::common::RC_SUCCESS) {
+        return Status(eFail);
+      }
+      dst = std::move(dst_mat);
+      return success();
+    };
 
-    switch (src.pixel_format()) {
-      case PixelFormat::kRGB:
-        ret = RGB2BGR<uint8_t>(cuda_stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kGRAYSCALE:
-        ret =
-            GRAY2BGR<uint8_t>(cuda_stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kNV12:
-        assert(src_c == 1);
-        NV122BGR<uint8_t>(cuda_stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kNV21:
-        assert(src_c == 1);
-        NV212BGR<uint8_t>(cuda_stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kBGRA:
-        BGRA2BGR<uint8_t>(cuda_stream, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
+    switch (src.type()) {
+      case DataType::kINT8:
+        return convert(basic_type<uint8_t>{});
+      case DataType::kFLOAT:
+        return convert(basic_type<float>{});
       default:
-        MMDEPLOY_ERROR("src type: unknown type {}", src.pixel_format());
         return Status(eNotSupported);
     }
-    if (ret != 0) {
-      MMDEPLOY_ERROR("color transfer from {} to BGR failed, ret {}", src.pixel_format(), ret);
-      return Status(eFail);
-    }
-    dst = Mat2Tensor(dst_mat);
-    return success();
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(ToBGR, (cuda, 0), [] { return std::make_unique<ToBGRImpl>(); });
-
-class ToGrayImpl : public ToGray {
- public:
-  Result<void> apply(const Mat& src, Tensor& dst) override {
-    if (src.pixel_format() == PixelFormat::kGRAYSCALE) {
-      dst = Mat2Tensor(src);
-      return success();
-    }
-
-    auto st = GetNative<cudaStream_t>(stream());
-    Mat dst_mat(src.height(), src.width(), PixelFormat::kGRAYSCALE, src.type(), device());
-
-    ppl::common::RetCode ret = 0;
-
-    int src_h = src.height();
-    int src_w = src.width();
-    int src_c = src.channel();
-    int src_stride = src_w * src.channel();
-    auto src_ptr = src.data<uint8_t>();
-
-    int dst_w = dst_mat.width();
-    int dst_stride = dst_w * dst_mat.channel();
-    auto dst_ptr = dst_mat.data<uint8_t>();
-
-    switch (src.pixel_format()) {
-      case PixelFormat::kRGB:
-        ret = RGB2GRAY<uint8_t>(st, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kBGR:
-        ret = BGR2GRAY<uint8_t>(st, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      case PixelFormat::kNV12: {
-        assert(src_c == 1);
-        auto rgb_mat = gContext().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
-                                              src.type(), device());
-        NV122RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
-                          rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());
-        RGB2GRAY<uint8_t>(st, rgb_mat.height(), rgb_mat.width(),
-                          rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>(), dst_stride,
-                          dst_mat.data<uint8_t>());
-        break;
-      }
-      case PixelFormat::kNV21: {
-        assert(src_c == 1);
-        auto rgb_mat = gContext().Create<Mat>(src.height(), src.width(), PixelFormat::kRGB,
-                                              src.type(), device());
-        NV212RGB<uint8_t>(st, src_h, src_w, src_stride, src_ptr,
-                          rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>());
-        RGB2GRAY<uint8_t>(st, rgb_mat.height(), rgb_mat.width(),
-                          rgb_mat.width() * rgb_mat.channel(), rgb_mat.data<uint8_t>(), dst_stride,
-                          dst_mat.data<uint8_t>());
-        break;
-      }
-      case PixelFormat::kBGRA:
-        BGRA2GRAY<uint8_t>(st, src_h, src_w, src_stride, src_ptr, dst_stride, dst_ptr);
-        break;
-      default:
-        MMDEPLOY_ERROR("src type: unknown type {}", src.pixel_format());
-        throw_exception(eNotSupported);
-    }
-    if (ret != 0) {
-      MMDEPLOY_ERROR("color transfer from {} to Gray failed", src.pixel_format());
-      throw_exception(eFail);
-    }
-
-    dst = Mat2Tensor(dst_mat);
-    return success();
-  }
-};
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(ToGray, (cuda, 0), [] { return std::make_unique<ToGrayImpl>(); });
+MMDEPLOY_REGISTER_FACTORY_FUNC(CvtColor, (cuda, 0),
+                               [] { return std::make_unique<CvtColorImpl>(); });
 
 }  // namespace mmdeploy::operation::cuda

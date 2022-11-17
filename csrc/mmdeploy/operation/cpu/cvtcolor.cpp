@@ -5,29 +5,16 @@
 
 namespace mmdeploy::operation::cpu {
 
-class ToBGRImpl : public ToBGR {
+class CvtColorImpl : public CvtColor {
  public:
-  Result<void> apply(const Mat& src, Tensor& dst) override {
+  Result<void> apply(const Mat& src, Mat& dst, PixelFormat dst_fmt) override {
     auto src_mat = mmdeploy::cpu::Mat2CVMat(src);
-    auto dst_mat = mmdeploy::cpu::ColorTransfer(src_mat, src.pixel_format(), PixelFormat::kBGR);
-    dst = ::mmdeploy::cpu::CVMat2Tensor(dst_mat);
+    auto dst_mat = mmdeploy::cpu::CvtColor(src_mat, src.pixel_format(), dst_fmt);
+    dst = mmdeploy::cpu::CVMat2Mat(dst_mat, dst_fmt);
     return success();
   }
 };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(ToBGR, (cpu, 0), []() { return std::make_unique<ToBGRImpl>(); });
-
-class ToGrayImpl : public ToGray {
- public:
-  Result<void> apply(const Mat& src, Tensor& dst) override {
-    auto src_mat = mmdeploy::cpu::Mat2CVMat(src);
-    auto dst_mat =
-        mmdeploy::cpu::ColorTransfer(src_mat, src.pixel_format(), PixelFormat::kGRAYSCALE);
-    dst = mmdeploy::cpu::CVMat2Tensor(dst_mat);
-    return success();
-  }
-};
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(ToGray, (cpu, 0), []() { return std::make_unique<ToGrayImpl>(); });
+MMDEPLOY_REGISTER_FACTORY_FUNC(CvtColor, (cpu, 0), [] { return std::make_unique<CvtColorImpl>(); });
 
 }  // namespace mmdeploy::operation::cpu

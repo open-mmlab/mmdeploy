@@ -12,17 +12,11 @@
 
 namespace mmdeploy::operation {
 
-class MMDEPLOY_API ToBGR : public Operation {
+class CvtColor : public Operation {
  public:
-  virtual Result<void> apply(const Mat& src, Tensor& dst) = 0;
+  virtual Result<void> apply(const Mat& src, Mat& dst, PixelFormat dst_fmt) = 0;
 };
-MMDEPLOY_DECLARE_REGISTRY(ToBGR, unique_ptr<ToBGR>());
-
-class ToGray : public Operation {
- public:
-  virtual Result<void> apply(const Mat& src, Tensor& dst) = 0;
-};
-MMDEPLOY_DECLARE_REGISTRY(ToGray, unique_ptr<ToGray>());
+MMDEPLOY_DECLARE_REGISTRY(CvtColor, unique_ptr<CvtColor>());
 
 // resize in HWC format
 class Resize : public Operation {

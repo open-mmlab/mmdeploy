@@ -7,9 +7,14 @@
 
 namespace mmdeploy::transform {
 
-using operation::ToBGR;
+using operation::CvtColor;
 using operation::ToFloat;
-using operation::ToGray;
+
+inline Tensor to_tensor(const Mat& mat) {
+  assert(mat.pixel_format() != PixelFormat::kNV12 && mat.pixel_format() != PixelFormat::kNV21);
+  TensorDesc desc{mat.device(), mat.type(), {1, mat.height(), mat.width(), mat.channel()}, ""};
+  return {desc, mat.buffer()};
+}
 
 class PrepareImage : public Transform {
  public:
@@ -17,8 +22,7 @@ class PrepareImage : public Transform {
     to_float32_ = args.value("to_float32", to_float32_);
     color_type_ = args.value("color_type", color_type_);
 
-    to_bgr_ = operation::Managed<ToBGR>::Create();
-    to_gray_ = operation::Managed<ToGray>::Create();
+    cvt_color_ = operation::Managed<CvtColor>::Create();
     to_float_ = operation::Managed<ToFloat>::Create();
   }
   /**
@@ -46,14 +50,13 @@ class PrepareImage : public Transform {
     assert(input.contains("ori_img"));
 
     Mat src_mat = input["ori_img"].get<Mat>();
-
-    Tensor tensor;
+    Mat dst_mat;
     if (color_type_ == "color" || color_type_ == "color_ignore_orientation") {
-      OUTCOME_TRY(to_bgr_.Apply(src_mat, tensor));
+      OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
     } else {
-      OUTCOME_TRY(to_gray_.Apply(src_mat, tensor));
+      OUTCOME_TRY(cvt_color_.Apply(dst_mat, dst_mat, PixelFormat::kGRAYSCALE));
     }
-
+    auto tensor = to_tensor(dst_mat);
     if (to_float32_) {
       OUTCOME_TRY(to_float_.Apply(tensor, tensor));
     }
@@ -79,8 +82,7 @@ class PrepareImage : public Transform {
   }
 
  private:
-  operation::Managed<ToBGR> to_bgr_;
-  operation::Managed<ToGray> to_gray_;
+  operation::Managed<CvtColor> cvt_color_;
   operation::Managed<ToFloat> to_float_;
   bool to_float32_{false};
   std::string color_type_{"color"};
