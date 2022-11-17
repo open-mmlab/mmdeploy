@@ -51,3 +51,5 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 - <i id="static_shape">PSPNet, Fast-SCNN</i> only support static shape, because [nn.AdaptiveAvgPool2d](https://github.com/open-mmlab/mmsegmentation/blob/97f9670c5a4a2a3b4cfb411bcc26db16b23745f7/mmseg/models/decode_heads/psp_head.py#L38) is not supported in most of backends dynamically.
 
 - For models only supporting static shape, you should use the deployment config file of static shape such as `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`.
+
+- For users prefer deployed models generate probability feature map, put `codebase_config = dict(do_argmax=False)` in deploy configs.
