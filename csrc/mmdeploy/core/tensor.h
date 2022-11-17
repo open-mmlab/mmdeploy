@@ -6,7 +6,6 @@
 #include <string>
 #include <vector>
 
-#include "dlpack.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/types.h"
 
@@ -15,14 +14,12 @@ namespace mmdeploy {
 namespace framework {
 
 using TensorShape = std::vector<int64_t>;
-using TensorStride = std::vector<int64_t>;
 
 struct TensorDesc {
   Device device;
   DataType data_type{DataType::kFLOAT};
   TensorShape shape;
   std::string name;
-  TensorStride stride{TensorStride()};
 };
 
 class MMDEPLOY_API Tensor {
@@ -41,13 +38,10 @@ class MMDEPLOY_API Tensor {
   const TensorDesc& desc() const;
   const TensorShape& shape() const;
   TensorShape::value_type shape(int dim) const;
-  const TensorStride& stride() const;
-  TensorStride::value_type stride(int dim) const;
   DataType data_type() const;
   const char* name() const;
   int64_t size() const;
   int64_t byte_size() const;
-  bool is_contiguous() const;
 
   const Buffer& buffer() const;
   Buffer& buffer();
@@ -66,10 +60,6 @@ class MMDEPLOY_API Tensor {
 
   Result<void> CopyFrom(void* host_ptr, Stream stream = {});
   Result<void> CopyTo(void* host_ptr, Stream stream = {}) const;
-
-  Result<DLManagedTensor*> ToDLPack(Stream stream = {});
-  static Result<Tensor> FromDLPack(DLManagedTensor* managed_tensor, const std::string& name = "",
-                                   Stream stream = {});
 
   Allocator allocator() { return allocator_; }
 

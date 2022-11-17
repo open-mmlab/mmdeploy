@@ -11,6 +11,7 @@
 
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/filesystem.h"
+#include "mmdeploy/utils/dlpack/dlpack_utils.h"
 
 namespace mmdeploy::framework {
 
@@ -202,7 +203,7 @@ Result<void> TVMNet::Forward() {
       setter(0, "main");
       for (int k = 0; k < num_inputs; ++k) {
         auto v = input_tensors_[k];
-        OUTCOME_TRY(auto managed_tensor, v.ToDLPack(stream_));
+        OUTCOME_TRY(auto managed_tensor, ToDLPack(v, stream_));
         OUTCOME_TRY(stream_.Wait());
         args_arr[k] = tvm::runtime::NDArray::FromDLPack(managed_tensor);
 
@@ -219,13 +220,13 @@ Result<void> TVMNet::Forward() {
       if (ret.type_code() == kTVMNDArrayHandle) {
         tvm::runtime::NDArray ndarray = ret.AsObjectRef<tvm::runtime::NDArray>();
         Tensor& v = output_tensors_[0];
-        OUTCOME_TRY(v, Tensor::FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
+        OUTCOME_TRY(v, FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
       } else if (ret.type_code() == kTVMObjectHandle) {
         const auto& adt = ret.AsObjectRef<tvm::runtime::ADT>();
         for (int i = 0; i < output_tensors_.size(); ++i) {
           tvm::runtime::NDArray ndarray = tvm::runtime::Downcast<tvm::runtime::NDArray>(adt[i]);
           Tensor& v = output_tensors_[i];
-          OUTCOME_TRY(v, Tensor::FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
+          OUTCOME_TRY(v, FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
         }
       } else {
         MMDEPLOY_ERROR("error return type code {}", ret.type_code());
@@ -236,7 +237,7 @@ Result<void> TVMNet::Forward() {
 
       // set input
       for (auto v : input_tensors_) {
-        OUTCOME_TRY(auto managed_tensor, v.ToDLPack(stream_));
+        OUTCOME_TRY(auto managed_tensor, ToDLPack(v, stream_));
         OUTCOME_TRY(stream_.Wait());
         auto ndarray = tvm::runtime::NDArray::FromDLPack(managed_tensor);
 
@@ -250,7 +251,7 @@ Result<void> TVMNet::Forward() {
       for (int i = 0; i < output_tensors_.size(); ++i) {
         tvm::runtime::NDArray ndarray = func_get_output_(i);
         Tensor& v = output_tensors_[i];
-        OUTCOME_TRY(v, Tensor::FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
+        OUTCOME_TRY(v, FromDLPack(ndarray.ToDLPack(), v.name(), stream_));
       }
 
       OUTCOME_TRY(stream_.Wait());

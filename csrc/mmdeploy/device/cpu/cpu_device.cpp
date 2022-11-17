@@ -11,16 +11,12 @@ class CpuHostMemory : public NonCopyable {
  public:
   CpuHostMemory() : size_(), data_(), owned_data_{false} {}
   Result<void> Init(size_t size, size_t alignment) {
-    size_t space = size + alignment - 1;
-    data_ = std::malloc(space);
+    size_t space = (size + alignment - 1) / alignment * alignment;
+    data_ = std::aligned_alloc(alignment, space);
     if (!data_) {
       return Status(eOutOfMemory);
     }
     aligned_data_ = data_;
-    std::align(alignment, size, aligned_data_, space);
-    if (!aligned_data_) {
-      return Status(eOutOfMemory);
-    }
     size_ = size;
     owned_data_ = true;
     return success();
