@@ -1,14 +1,14 @@
-# How to generate supported-backends markdown table
+# generate_md_table
 
-This tutorial describes how to generate supported-backends markdown table.
+This tool can be used to generate supported-backends markdown table.
 
-## 1.python Environment
+## python Environment
 
 ```
 pip install easydict
 ```
 
-## 2.Usage
+## Usage
 
 ```
 python tests/regression/generate_md_table.py \
@@ -16,22 +16,20 @@ python tests/regression/generate_md_table.py \
     ${output}
 ```
 
-### Description
+## Description of all arguments
 
 - `yml_file:` input yml config path
 - `output:`  output markdown file path
 
-### Example
+## Example:
 
-Generate backends markdown table from mmseg.yml
+Generate backends markdown table from mmocr.yml
 
 ```
-python tests/regression/generate_md_table.py tests/regression/mmseg.yml tests/regression/mmseg.md
+python tests/regression/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md
 ```
 
-## 3.Generated Table
-
-This is an example of MMOCR generate backends markdown table
+And the output look like this:
 
 | model                                                                        | task            | onnxruntime | tensorrt | torchscript | pplnn | openvino | ncnn |
 | :--------------------------------------------------------------------------- | :-------------- | :---------- | :------- | :---------- | :---- | :------- | :--- |
