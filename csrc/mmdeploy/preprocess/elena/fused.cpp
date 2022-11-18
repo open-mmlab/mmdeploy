@@ -77,13 +77,19 @@ class Fused : public Transform {
     }
   }
 
+  struct Context {
+    Context() { operation::gContext().set_use_dummy(false); }
+    ~Context() { operation::gContext().set_use_dummy(true); }
+  };
+
   Result<void> Apply(Value& data) override {
     auto tracer = data["__tracer__"].get<Tracer>();
     Mat _src_mat = data["ori_img"].get<Mat>();
 
-    // ! Create a scope that `use_dummy` is false
-    operation::Context context(device_);
     auto& stream = operation::gContext().stream();
+
+    // ! Create a scope that `use_dummy` is false
+    Context context;
     OUTCOME_TRY(auto src_mat, operation::Secure(_src_mat, device_, stream));
 
     ExtractTransParamVisitor visitor{};

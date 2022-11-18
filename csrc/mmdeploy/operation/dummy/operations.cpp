@@ -87,7 +87,7 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(Pad, (dummy, 0), [](const string_view& border_typ
 class ResizeImpl : public Resize {
  public:
   Result<void> apply(const Tensor& src, Tensor& dst, int dst_h, int dst_w) override {
-    dst = {{Device{0}, dst.data_type(), {1, dst_h, dst_w, dst.shape(3)}}, g_dummy_buffer()};
+    dst = {{Device{0}, dst.data_type(), {1, dst_h, dst_w, src.shape(3)}}, g_dummy_buffer()};
     return success();
   }
 };

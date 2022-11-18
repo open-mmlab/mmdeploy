@@ -65,7 +65,7 @@ class Compose : public Transform {
             break;
           }
         }
-        transforms.insert(it, {{"type", "Fused"}, {"hash_code", hash_code_}});
+        transforms.insert(it, Value::Object{{"type", "Fused"}, {"hash_code", hash_code_}});
       }
     }
   }
