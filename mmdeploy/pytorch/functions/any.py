@@ -9,7 +9,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def any__default(ctx, input, *args, **kwargs) -> torch.Tensor:
     """Rewrite `any` for ONNX."""
     if len(args) == 0 and kwargs == {}:
-        return (input != 0).float().sum() > 0
+        return (input != 0).sum() > 0
 
     keepdim = False
     if len(args) == 2:
