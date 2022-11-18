@@ -1,5 +1,5 @@
 #!/bin/bash
-
+repo_version=${1:-v1.0}
 ## keep container alive
 nohup sleep infinity >sleep.log 2>&1 &
 
@@ -22,7 +22,14 @@ export MMDEPLOY_DIR=/root/workspace/mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
 
 cd /root/workspace
-git clone --depth 1 --branch master https://github.com/open-mmlab/mmdetection.git
+mmdet_version=mmdet
+mmdet_branch=master
+if [ $repo_version == "v2.0" ]; then
+    mmdet_version="mmdet>=3.0.0rc1"
+    mmdet_branch=3.x
+fi
+
+git clone --depth 1 --branch $mmdet_branch https://github.com/open-mmlab/mmdetection.git
 
 cd ${MMDEPLOY_DIR}
 
@@ -40,7 +47,7 @@ done
 
 conda activate torch1.10.0
 pip install openmim
-mim install mmdet
+mim install $mmdet_version
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
 pip install -r requirements/build.txt

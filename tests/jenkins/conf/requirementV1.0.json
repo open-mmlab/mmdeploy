@@ -38,5 +38,10 @@
         "branch": "main",
         "version": "mmrotate",
         "mmcv": "mmcv-full==1.6.0"
+    },
+    "mmaction": {
+        "branch": "master",
+        "version": "mmaction2",
+        "mmcv": "mmcv-full"
     }
 }
