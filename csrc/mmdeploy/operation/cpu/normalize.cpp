@@ -11,7 +11,7 @@ class NormalizeImpl : public Normalize {
 
   Result<void> apply(const Tensor& src, Tensor& dst) override {
     auto mat = mmdeploy::cpu::Tensor2CVMat(src);
-    auto dst_mat = mmdeploy::cpu::Normalize(mat, param_.mean, param_.std, param_.to_rgb, true);
+    auto dst_mat = mmdeploy::cpu::Normalize(mat, param_.mean, param_.std, param_.to_rgb, false);
     auto output = mmdeploy::cpu::CVMat2Tensor(dst_mat);
 
     dst = std::move(output);

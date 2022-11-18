@@ -135,7 +135,7 @@ void normalize3(const T* __restrict__ src, float* __restrict__ dst, size_t size,
                 const float* std) {
   const float _mean[3] = {mean[0], mean[1], mean[2]};
   const float _inv[3] = {1.f / std[0], 1.f / std[1], 1.f / std[2]};
-  for (size_t i = 0; i < size; i += 3) {
+  for (size_t i = 0; i < size * 3; i += 3) {
     dst[i] = (src[i + a0] - _mean[0]) * _inv[0];
     dst[i + 1] = (src[i + a1] - _mean[1]) * _inv[1];
     dst[i + 2] = (src[i + a2] - _mean[2]) * _inv[2];
