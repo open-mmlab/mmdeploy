@@ -488,7 +488,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     # to stop Dataloader OOM in docker CI
-    if codebase_name not in ['medit', 'mmocr']:
+    if codebase_name not in ['mmedit', 'mmocr', 'mmcls']:
         cfg_options = 'test_dataloader.num_workers=0 ' \
                       'test_dataloader.persistent_workers=False ' \
                       'val_dataloader.num_workers=0 ' \
