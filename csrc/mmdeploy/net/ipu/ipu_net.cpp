@@ -24,8 +24,9 @@ mmdeploy::DataType IPUNet::ipu_type_convert(const popef::DataType& ipu_type) {
   } else if (ipu_type == popef::DataType::F8) {
     mtype = mmdeploy::DataType::kINT8;
   } else {
-    throw std::invalid_argument(
-        "invalid data type for IPU backend, current legit is : fp32, fp16, fp8");
+    mtype = mmdeploy::DataType::kINT8;
+    // throw std::invalid_argument(
+    //     "invalid data type for IPU backend, current legit is : fp32, fp16, fp8");
   }
   return mtype;
 }
@@ -94,11 +95,13 @@ Result<void> IPUNet::Init(const Value& args) {
 
   for (int i=0; i<input_desc.size(); i++){
     input_desc[i].shape[0] *= batch_per_step;
+    input_desc[i].size_in_bytes *= batch_per_step;
     MMDEPLOY_INFO("input desc shape {} ", input_desc[i].shape);
   } 
 
   for (int i=0; i<output_desc.size(); i++){
     output_desc[i].shape[0] *= batch_per_step;
+    output_desc[i].size_in_bytes *= batch_per_step;
   } 
 
   input_memory = examples::allocateHostInputData(input_desc);
