@@ -130,13 +130,52 @@ cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right) {
   return src(cv::Range(top, bottom + 1), cv::Range(left, right + 1)).clone();
 }
 
+template <int a0, int a1, int a2, typename T>
+void normalize3(const T* __restrict__ src, float* __restrict__ dst, size_t size, const float* mean,
+                const float* std) {
+  const float _mean[3] = {mean[0], mean[1], mean[2]};
+  const float _inv[3] = {1.f / std[0], 1.f / std[1], 1.f / std[2]};
+  for (size_t i = 0; i < size; i += 3) {
+    dst[i] = (src[i + a0] - _mean[0]) * _inv[0];
+    dst[i + 1] = (src[i + a1] - _mean[1]) * _inv[1];
+    dst[i + 2] = (src[i + a2] - _mean[2]) * _inv[2];
+  }
+}
+
+template <typename T>
+void normalize1(const T* __restrict__ src, float* __restrict__ dst, size_t size, const float* mean,
+                const float* std) {
+  float _mean = mean[0];
+  float _inv = 1.f / std[0];
+  for (size_t i = 0; i < size; ++i) {
+    dst[i] = (src[i] - _mean) * _inv;
+  }
+}
+
 cv::Mat Normalize(cv::Mat& src, const std::vector<float>& mean, const std::vector<float>& std,
                   bool to_rgb, bool inplace) {
   assert(src.channels() == mean.size());
   assert(mean.size() == std.size());
 
-  cv::Mat dst;
+  if (!inplace && src.isContinuous() && (src.channels() == 3 || src.channels() == 1)) {
+    if (src.depth() == CV_8U) {
+      cv::Mat dst(src.size(), CV_32FC(src.channels()));
+      auto normalize = src.channels() == 3
+                           ? (to_rgb ? normalize3<2, 1, 0, uint8_t> : normalize3<0, 1, 2, uint8_t>)
+                           : normalize1<uint8_t>;
+      normalize(src.ptr<uint8_t>(), dst.ptr<float>(), src.total(), mean.data(), std.data());
+      return dst;
+    } else if (src.depth() == CV_32F) {
+      cv::Mat dst(src.size(), CV_32FC(src.channels()));
+      auto normalize = src.channels() == 3
+                           ? (to_rgb ? normalize3<2, 1, 0, float> : normalize3<0, 1, 2, float>)
+                           : normalize1<float>;
+      normalize(src.ptr<float>(), dst.ptr<float>(), src.total(), mean.data(), std.data());
+      return dst;
+    }
+  }
 
+  cv::Mat dst;
   if (src.depth() == CV_32F) {
     dst = inplace ? src : src.clone();
   } else {
