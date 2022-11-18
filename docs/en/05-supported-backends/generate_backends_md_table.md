@@ -2,12 +2,6 @@
 
 This tool can be used to generate supported-backends markdown table.
 
-## python Environment
-
-```
-pip install easydict
-```
-
 ## Usage
 
 ```

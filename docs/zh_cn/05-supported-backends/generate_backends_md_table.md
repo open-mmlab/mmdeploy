@@ -2,14 +2,6 @@
 
 生成mmdeploy支持的后端表。
 
-## Python 环境依赖
-
-需要安装generate_md_table的环境
-
-```
-pip install easydict
-```
-
 ## 用法
 
 ```
