@@ -29,9 +29,12 @@ python tools/deploy.py \
 | :----------: | :------------: | :---------: | :------: | :--: | :---: | :------: | :------------------------------------------------------------------------------------: |
 | PointPillars | VoxelDetection |      Y      |   Y\*    |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars) |
 
-## 注意事项
+1. TensorRT 实测 **cu102+TRT8.4** 可以正常可视化，使用 cuda-11 或 TRT8.2 版本需关注这些 issue
 
-1. 体素检测 onnx 模型不包含 model.voxelize 层和模型后处理，可用 python api 来调这些函数。
+- [TRT8.2 assertion `is_tensor`](https://github.com/NVIDIA/TensorRT/issues/1541)
+- [TRT8.4 output NaN](https://github.com/NVIDIA/TensorRT/issues/2338)
+
+2. 体素检测 onnx 模型不包含 model.voxelize 层和模型后处理，可用 python api 来调这些函数。
 
 示例：
 
@@ -40,8 +43,3 @@ from mmdeploy.codebase.mmdet3d.deploy import VoxelDetectionModel
 VoxelDetectionModel.voxelize(...)
 VoxelDetectionModel.post_process(...)
 ```
-
-2. TensorRT 实测 cu102+TRT8.4 可以正常可视化，cuda11 或 TRT8.2 版本需关注这些 issue。
-
-- [TRT8.2 assertion `is_tensor`](https://github.com/NVIDIA/TensorRT/issues/1541)
-- [TRT8.4 output NaN](https://github.com/NVIDIA/TensorRT/issues/2338)
