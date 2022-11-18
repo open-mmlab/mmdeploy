@@ -261,7 +261,7 @@ class Segmentation(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         load_from_file = self.model_cfg.data.test.pipeline[0]
-        self.reset_model_cfg_norm()
+        self.update_preprocess_pipeline()
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         preprocess = model_cfg.data.test.pipeline
         preprocess[0] = load_from_file

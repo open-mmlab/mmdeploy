@@ -66,7 +66,7 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
             model = task_processor.init_pytorch_model(model[0])
         else:
             model = task_processor.init_backend_model(model, **kwargs)
-            task_processor.reset_model_cfg_norm()
+            task_processor.update_preprocess_pipeline()
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():

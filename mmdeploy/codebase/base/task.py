@@ -140,11 +140,11 @@ class BaseTask(metaclass=ABCMeta):
         return self.codebase_class.single_gpu_test(model, data_loader, show,
                                                    out_dir, **kwargs)
 
-    def reset_model_cfg_norm(self):
-        """Reset the norm values in model_cfg for some backends.
+    def update_preprocess_pipeline(self):
+        """Update preprocess pipeline if necessary.
 
-        For example, in rknn-int8 backend, Normalize is moved to rknn models.
-        The processes of visualization and dump-info need this func.
+        This would change model_cfg permanently. Reloading model_cfg is
+        required to use the original configuration.
         """
         if get_rknn_quantization(self.deploy_cfg):
             pipelines = self.model_cfg.data.test.pipeline
