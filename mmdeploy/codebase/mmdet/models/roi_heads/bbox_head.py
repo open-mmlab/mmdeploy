@@ -87,9 +87,9 @@ def bbox_head__predict_by_feat(ctx,
             cls_scores, dim=-1) if cls_scores is not None else None
 
     if bbox_preds is not None:
-        num_classes = 1 if self.reg_class_agnostic else self.num_classes
-        if num_classes > 1:
-            rois = rois.repeat_interleave(num_classes, dim=1)
+        # num_classes = 1 if self.reg_class_agnostic else self.num_classes
+        # if num_classes > 1:
+        #     rois = rois.repeat_interleave(num_classes, dim=1)
         bboxes = self.bbox_coder.decode(
             rois[..., 1:], bbox_preds, max_shape=img_shape)
         bboxes = get_box_tensor(bboxes)

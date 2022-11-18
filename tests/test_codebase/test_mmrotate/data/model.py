@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 dataset_type = 'DOTADataset'
-data_root = 'data/split_ss_dota/'
+data_root = 'tests/test_codebase/test_mmrotate/data/'
+ann_file = 'dota_sample/'
 file_client_args = dict(backend='disk')
 train_pipeline = [
     dict(
@@ -42,8 +43,8 @@ train_dataloader = dict(
     batch_sampler=None,
     dataset=dict(
         type='DOTADataset',
-        data_root='data/split_ss_dota/',
-        ann_file='trainval/annfiles/',
+        data_root=data_root,
+        ann_file=ann_file,
         data_prefix=dict(img_path='trainval/images/'),
         img_shape=(1024, 1024),
         filter_cfg=dict(filter_empty_gt=True),
@@ -71,8 +72,8 @@ val_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='DOTADataset',
-        data_root='data/split_ss_dota/',
-        ann_file='trainval/annfiles/',
+        data_root=data_root,
+        ann_file=ann_file,
         data_prefix=dict(img_path='trainval/images/'),
         img_shape=(1024, 1024),
         test_mode=True,
@@ -99,8 +100,8 @@ test_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='DOTADataset',
-        data_root='data/split_ss_dota/',
-        ann_file='trainval/annfiles/',
+        data_root=data_root,
+        ann_file=ann_file,
         data_prefix=dict(img_path='trainval/images/'),
         img_shape=(1024, 1024),
         test_mode=True,
@@ -141,7 +142,7 @@ param_scheduler = [
 ]
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.005, momentum=0.9, weight_decay=0.0001),
+    optimizer=dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001),
     clip_grad=dict(max_norm=35, norm_type=2))
 default_scope = 'mmrotate'
 default_hooks = dict(
@@ -164,9 +165,9 @@ log_processor = dict(type='LogProcessor', window_size=50, by_epoch=True)
 log_level = 'INFO'
 load_from = None
 resume = False
-angle_version = 'le90'
+angle_version = 'le135'
 model = dict(
-    type='mmdet.FasterRCNN',
+    type='mmdet.RetinaNet',
     data_preprocessor=dict(
         type='mmdet.DetDataPreprocessor',
         mean=[123.675, 116.28, 103.53],
@@ -188,113 +189,52 @@ model = dict(
         type='mmdet.FPN',
         in_channels=[256, 512, 1024, 2048],
         out_channels=256,
+        start_level=1,
+        add_extra_convs='on_input',
         num_outs=5),
-    rpn_head=dict(
-        type='OrientedRPNHead',
+    bbox_head=dict(
+        type='mmdet.RetinaHead',
+        num_classes=15,
         in_channels=256,
+        stacked_convs=4,
         feat_channels=256,
         anchor_generator=dict(
-            type='mmdet.AnchorGenerator',
-            scales=[8],
-            ratios=[0.5, 1.0, 2.0],
-            strides=[4, 8, 16, 32, 64],
-            use_box_type=True),
+            type='FakeRotatedAnchorGenerator',
+            angle_version='le135',
+            octave_base_scale=4,
+            scales_per_octave=3,
+            ratios=[1.0, 0.5, 2.0],
+            strides=[8, 16, 32, 64, 128]),
         bbox_coder=dict(
-            type='MidpointOffsetCoder',
-            angle_version='le90',
-            target_means=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
-            target_stds=[1.0, 1.0, 1.0, 1.0, 0.5, 0.5]),
+            type='DeltaXYWHTRBBoxCoder',
+            angle_version='le135',
+            norm_factor=1,
+            edge_swap=False,
+            proj_xy=True,
+            target_means=(0.0, 0.0, 0.0, 0.0, 0.0),
+            target_stds=(1.0, 1.0, 1.0, 1.0, 1.0)),
         loss_cls=dict(
-            type='mmdet.CrossEntropyLoss', use_sigmoid=True, loss_weight=1.0),
-        loss_bbox=dict(
-            type='mmdet.SmoothL1Loss',
-            beta=0.1111111111111111,
-            loss_weight=1.0)),
-    roi_head=dict(
-        type='mmdet.StandardRoIHead',
-        bbox_roi_extractor=dict(
-            type='RotatedSingleRoIExtractor',
-            roi_layer=dict(
-                type='RoIAlignRotated',
-                out_size=7,
-                sample_num=2,
-                clockwise=True),
-            out_channels=256,
-            featmap_strides=[4, 8, 16, 32]),
-        bbox_head=dict(
-            type='mmdet.Shared2FCBBoxHead',
-            predict_box_type='rbox',
-            in_channels=256,
-            fc_out_channels=1024,
-            roi_feat_size=7,
-            num_classes=15,
-            reg_predictor_cfg=dict(type='mmdet.Linear'),
-            cls_predictor_cfg=dict(type='mmdet.Linear'),
-            bbox_coder=dict(
-                type='DeltaXYWHTRBBoxCoder',
-                angle_version='le90',
-                norm_factor=None,
-                edge_swap=True,
-                proj_xy=True,
-                target_means=(0.0, 0.0, 0.0, 0.0, 0.0),
-                target_stds=(0.1, 0.1, 0.2, 0.2, 0.1)),
-            reg_class_agnostic=True,
-            loss_cls=dict(
-                type='mmdet.CrossEntropyLoss',
-                use_sigmoid=False,
-                loss_weight=1.0),
-            loss_bbox=dict(
-                type='mmdet.SmoothL1Loss', beta=1.0, loss_weight=1.0))),
+            type='mmdet.FocalLoss',
+            use_sigmoid=True,
+            gamma=2.0,
+            alpha=0.25,
+            loss_weight=1.0),
+        loss_bbox=dict(type='mmdet.L1Loss', loss_weight=1.0)),
     train_cfg=dict(
-        rpn=dict(
-            assigner=dict(
-                type='mmdet.MaxIoUAssigner',
-                pos_iou_thr=0.7,
-                neg_iou_thr=0.3,
-                min_pos_iou=0.3,
-                match_low_quality=True,
-                ignore_iof_thr=-1,
-                iou_calculator=dict(type='RBbox2HBboxOverlaps2D')),
-            sampler=dict(
-                type='mmdet.RandomSampler',
-                num=256,
-                pos_fraction=0.5,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=False),
-            allowed_border=0,
-            pos_weight=-1,
-            debug=False),
-        rpn_proposal=dict(
-            nms_pre=2000,
-            max_per_img=2000,
-            nms=dict(type='nms', iou_threshold=0.8),
-            min_bbox_size=0),
-        rcnn=dict(
-            assigner=dict(
-                type='mmdet.MaxIoUAssigner',
-                pos_iou_thr=0.5,
-                neg_iou_thr=0.5,
-                min_pos_iou=0.5,
-                match_low_quality=False,
-                iou_calculator=dict(type='RBboxOverlaps2D'),
-                ignore_iof_thr=-1),
-            sampler=dict(
-                type='mmdet.RandomSampler',
-                num=512,
-                pos_fraction=0.25,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=True),
-            pos_weight=-1,
-            debug=False)),
+        assigner=dict(
+            type='mmdet.MaxIoUAssigner',
+            pos_iou_thr=0.5,
+            neg_iou_thr=0.4,
+            min_pos_iou=0,
+            ignore_iof_thr=-1,
+            iou_calculator=dict(type='RBboxOverlaps2D')),
+        sampler=dict(type='mmdet.PseudoSampler'),
+        allowed_border=-1,
+        pos_weight=-1,
+        debug=False),
     test_cfg=dict(
-        rpn=dict(
-            nms_pre=2000,
-            max_per_img=2000,
-            nms=dict(type='nms', iou_threshold=0.8),
-            min_bbox_size=0),
-        rcnn=dict(
-            nms_pre=2000,
-            min_bbox_size=0,
-            score_thr=0.05,
-            nms=dict(type='nms_rotated', iou_threshold=0.1),
-            max_per_img=2000)))
+        nms_pre=2000,
+        min_bbox_size=0,
+        score_thr=0.05,
+        nms=dict(type='nms_rotated', iou_threshold=0.1),
+        max_per_img=2000))

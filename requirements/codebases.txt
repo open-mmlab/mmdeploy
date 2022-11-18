@@ -4,4 +4,5 @@ mmdet3d @ git+https://github.com/open-mmlab/mmdetection3d.git@dev-1.x
 mmedit @ git+https://github.com/open-mmlab/mmediting.git@1.x
 mmocr @ git+https://github.com/open-mmlab/mmocr.git@dev-1.x
 mmpose>=1.0.0rc0
+mmrotate @git+https://github.com/open-mmlab/mmrotate.git@dev-1.x
 mmsegmentation>=1.0.0rc0

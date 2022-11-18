@@ -746,10 +746,10 @@ def test_gather(backend,
     else:
         data = input_list[0]
         indice = input_list[1]
-    assert data.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {data.shape[0]}')
-    assert indice.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {indice.shape[0]}')
+    assert data.shape[0] == 1, ('ncnn batch must be 1,'
+                                f'but got {data.shape[0]}')
+    assert indice.shape[0] == 1, ('ncnn batch must be 1,'
+                                  f'but got {indice.shape[0]}')
 
     gather_node = make_node('Gather', input_names, output_names, axis=axis + 1)
     gather_graph = make_graph([gather_node], 'gather_graph', [
@@ -1161,3 +1161,69 @@ def test_gather_topk(backend, save_dir=None):
             input_names=['x'],
             output_names=['out'],
             save_dir=save_dir)
+
+
+@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('pre_top_k', [-1, 1000])
+def test_multiclass_nms_rotated_with_keep_top_k(backend, pre_top_k):
+    backend.check_env()
+    from mmdeploy.mmcv.ops import multiclass_nms
+    from mmdeploy.utils.test import get_onnx_model
+    keep_top_k = 15
+    deploy_cfg = Config(
+        dict(
+            onnx_config=dict(
+                output_names=None,
+                input_shape=None,
+                dynamic_axes=dict(
+                    boxes={
+                        0: 'batch_size',
+                        1: 'num_boxes'
+                    },
+                    scores={
+                        0: 'batch_size',
+                        1: 'num_boxes',
+                        2: 'num_classes'
+                    },
+                ),
+            ),
+            backend_config=dict(type=backend.backend_name),
+            codebase_config=dict(
+                type='mmrotate',
+                task='RotatedDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    pre_top_k=pre_top_k,
+                    keep_top_k=keep_top_k,
+                ))))
+
+    num_classes = 5
+    num_boxes = 2
+    batch_size = 1
+    export_boxes = torch.rand(batch_size, num_boxes, 5)
+    export_scores = torch.ones(batch_size, num_boxes, num_classes)
+    model_inputs = {'boxes': export_boxes, 'scores': export_scores}
+
+    wrapped_func = WrapFunction(
+        multiclass_nms, nms_type='nms_rotated', keep_top_k=keep_top_k)
+
+    onnx_model_path = get_onnx_model(
+        wrapped_func, model_inputs=model_inputs, deploy_cfg=deploy_cfg)
+
+    num_boxes = 100
+    test_boxes = torch.rand(batch_size, num_boxes, 5)
+    test_scores = torch.ones(batch_size, num_boxes, num_classes)
+    model_inputs = {'boxes': test_boxes, 'scores': test_scores}
+
+    import mmdeploy.backend.onnxruntime as ort_apis
+    backend_model = ort_apis.ORTWrapper(onnx_model_path, 'cpu', None)
+    output = backend_model.forward(model_inputs)
+    output = backend_model.output_to_list(output)
+    dets = output[0]
+
+    # Subtract 1 dim since we pad the tensors
+    assert dets.shape[1] - 1 < keep_top_k, \
+        'multiclass_nms_rotated returned more values than "keep_top_k"\n' \
+        f'dets.shape: {dets.shape}\n' \
+        f'keep_top_k: {keep_top_k}'

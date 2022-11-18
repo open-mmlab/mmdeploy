@@ -287,7 +287,8 @@ def _multiclass_nms(boxes: Tensor,
                     iou_threshold: float = 0.5,
                     score_threshold: float = 0.05,
                     pre_top_k: int = -1,
-                    keep_top_k: int = -1):
+                    keep_top_k: int = -1,
+                    output_index: bool = False):
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
 
     This function helps exporting to onnx with batch and multiclass NMS op. It
@@ -295,6 +296,7 @@ def _multiclass_nms(boxes: Tensor,
     shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
     4).
     """
+    assert not output_index, 'output_index is not supported on this backend.'
     max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
@@ -324,7 +326,8 @@ def _multiclass_nms_single(boxes: Tensor,
                            iou_threshold: float = 0.5,
                            score_threshold: float = 0.05,
                            pre_top_k: int = -1,
-                           keep_top_k: int = -1):
+                           keep_top_k: int = -1,
+                           output_index: bool = False):
     """Create a dummy onnx::NonMaxSuppression op while exporting to ONNX.
 
     Single batch nms could be optimized.
@@ -334,11 +337,13 @@ def _multiclass_nms_single(boxes: Tensor,
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
 
     # pre topk
+    pre_topk_inds = None
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.squeeze(0).topk(pre_top_k)
         boxes = boxes[:, topk_inds, :]
         scores = scores[:, topk_inds, :]
+        pre_topk_inds = topk_inds
 
     scores = scores.permute(0, 2, 1)
     selected_indices = ONNXNMSop.apply(boxes, scores,
@@ -368,7 +373,11 @@ def _multiclass_nms_single(boxes: Tensor,
     dets = dets[:, topk_inds, ...]
     labels = labels[:, topk_inds, ...]
 
-    return dets, labels
+    if output_index:
+        bbox_index = pre_topk_inds[None, topk_inds]
+        return dets, labels, bbox_index
+    else:
+        return dets, labels
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -407,7 +416,6 @@ def multiclass_nms__default(ctx,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
             and `labels` of shape [N, num_det].
     """
-    assert not output_index, 'output_index is not supported on this backend.'
     deploy_cfg = ctx.cfg
     batch_size = boxes.size(0)
     if not is_dynamic_batch(deploy_cfg) and batch_size == 1:
@@ -418,7 +426,8 @@ def multiclass_nms__default(ctx,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,
-            keep_top_k=keep_top_k)
+            keep_top_k=keep_top_k,
+            output_index=output_index)
     else:
         return ctx.origin_func(
             boxes,
@@ -427,7 +436,8 @@ def multiclass_nms__default(ctx,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,
-            keep_top_k=keep_top_k)
+            keep_top_k=keep_top_k,
+            output_index=output_index)
 
 
 @FUNCTION_REWRITER.register_rewriter(

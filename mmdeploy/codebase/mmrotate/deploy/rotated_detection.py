@@ -82,7 +82,7 @@ def process_model_config(model_cfg: Config,
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
+        cfg.test_pipeline[0].type = 'mmdet.LoadImageFromNDArray'
 
     pipeline = cfg.test_pipeline
 
@@ -109,8 +109,8 @@ def _get_dataset_metainfo(model_cfg: Config):
     Returns:
         list[str]: A list of string specifying names of different class.
     """
-    from mmdet import datasets  # noqa
-    from mmdet.registry import DATASETS
+    from mmrotate import datasets  # noqa
+    from mmrotate.registry import DATASETS
 
     module_dict = DATASETS.module_dict
 
@@ -196,7 +196,7 @@ class RotatedDetection(BaseTask):
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
-        from mmcv.transforms import Compose
+        from mmengine.dataset import Compose
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')
@@ -307,14 +307,10 @@ class RotatedDetection(BaseTask):
             draw_gt (bool): Whether to show ground truth in windows, defaults
                 to `False`.
         """
-        from mmrotate.structures.bbox import RotatedBoxes
         pred_instances = result._pred_instances
         pred_instances.scores = pred_instances.scores.detach().cpu()
         pred_instances.bboxes = pred_instances.bboxes.detach().cpu()
         pred_instances.labels = pred_instances.labels.detach().cpu()
-        if isinstance(pred_instances.bboxes, torch.Tensor):
-            pred_instances.bboxes = RotatedBoxes(
-                pred_instances.bboxes, clone=True)
 
         return super().visualize(image, result.cpu(), output_file, *args,
                                  **kwargs)
