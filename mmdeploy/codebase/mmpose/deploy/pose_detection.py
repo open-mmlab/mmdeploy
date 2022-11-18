@@ -3,7 +3,7 @@
 import copy
 import logging
 import os
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -131,6 +131,7 @@ class PoseDetection(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for pose detection.
 
@@ -139,7 +140,8 @@ class PoseDetection(BaseTask):
                 ``np.ndarray``.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
-            backend (Backend | None): Target backend. Default to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -111,7 +111,8 @@ class Classification(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Optional[Sequence[int]] = None, **kwargs) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for classifier.
 
@@ -120,6 +121,8 @@ class Classification(BaseTask):
                 accepted data type are `str`, `np.ndarray`, Sequence.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -128,7 +131,10 @@ class Classification(BaseTask):
         from mmcv.parallel import collate, scatter
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        model_cfg = self.model_cfg
+        if pipeline_updater is not None:
+            cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+        cfg = process_model_config(model_cfg, imgs, input_shape)
         data_list = []
         test_pipeline = Compose(cfg.data.test.pipeline)
         for img in imgs:
@@ -276,8 +282,8 @@ class Classification(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        self.update_preprocess_pipeline()
-        cfg = process_model_config(self.model_cfg, [''], input_shape)
+        cfg = self.update_test_pipeline(self.deploy_cfg, self.model_cfg)
+        cfg = process_model_config(cfg, [''], input_shape)
         preprocess = cfg.data.test.pipeline
         return preprocess
 

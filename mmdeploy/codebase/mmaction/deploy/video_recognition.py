@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -148,6 +148,7 @@ class VideoRecognition(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for recognizer.
 
@@ -156,6 +157,8 @@ class VideoRecognition(BaseTask):
                 `np.ndarray`, `torch.Tensor`.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.

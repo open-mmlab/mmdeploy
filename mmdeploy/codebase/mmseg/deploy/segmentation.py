@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -108,7 +108,8 @@ class Segmentation(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Optional[Sequence[int]] = None, **kwargs) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
 
@@ -117,6 +118,8 @@ class Segmentation(BaseTask):
                 `np.ndarray`, `torch.Tensor`.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -126,7 +129,10 @@ class Segmentation(BaseTask):
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
         imgs = [mmcv.imread(_) for _ in imgs]
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
+        model_cfg = self.model_cfg
+        if pipeline_updater is not None:
+            cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+        cfg = process_model_config(model_cfg, imgs, input_shape)
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
@@ -261,8 +267,8 @@ class Segmentation(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         load_from_file = self.model_cfg.data.test.pipeline[0]
-        self.update_preprocess_pipeline()
-        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        cfg = self.update_test_pipeline(self.deploy_cfg, self.model_cfg)
+        model_cfg = process_model_config(cfg, [''], input_shape)
         preprocess = model_cfg.data.test.pipeline
         preprocess[0] = load_from_file
         return preprocess

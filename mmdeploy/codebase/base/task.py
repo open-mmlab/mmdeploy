@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -140,14 +140,20 @@ class BaseTask(metaclass=ABCMeta):
         return self.codebase_class.single_gpu_test(model, data_loader, show,
                                                    out_dir, **kwargs)
 
-    def update_preprocess_pipeline(self):
-        """Update preprocess pipeline if necessary.
+    @staticmethod
+    def update_test_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
+        """Update preprocess pipeline.
 
-        This would change model_cfg permanently. Reloading model_cfg is
-        required to use the original configuration.
+        Args:
+            model_cfg (str | mmcv.Config): Model config file.
+            deploy_cfg (str | mmcv.Config): Deployment config file.
+
+        Returns:
+            cfg (mmcv.Config): Updated model_cfg.
         """
-        if get_rknn_quantization(self.deploy_cfg):
-            pipelines = self.model_cfg.data.test.pipeline
+        cfg = model_cfg.deepcopy()
+        if get_rknn_quantization(deploy_cfg):
+            pipelines = cfg.data.test.pipeline
             for i, pipeline in enumerate(pipelines):
                 if pipeline['type'] == 'MultiScaleFlipAug':
                     assert 'transforms' in pipeline
@@ -159,11 +165,14 @@ class BaseTask(metaclass=ABCMeta):
                     if pipeline['type'] == 'Normalize':
                         pipeline['mean'] = [0, 0, 0]
                         pipeline['std'] = [1, 1, 1]
+            cfg.data.test.pipeline = pipelines
+        return cfg
 
     @abstractmethod
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
                      input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
@@ -172,6 +181,8 @@ class BaseTask(metaclass=ABCMeta):
                 accepted data types are `str`, `np.ndarray`.
             input_shape (Sequence[int] | None): Input shape of image in
                 (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input
