@@ -1,6 +1,4 @@
-//
-// Created by zhangli on 11/3/22.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #ifndef MMDEPLOY_CSRC_MMDEPLOY_PREPROCESS_OPERATION_RESIZE_H_
 #define MMDEPLOY_CSRC_MMDEPLOY_PREPROCESS_OPERATION_RESIZE_H_

@@ -9,6 +9,7 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy::operation {
 
@@ -41,6 +42,9 @@ class MMDEPLOY_API Context {
   Stream& stream() noexcept { return stream_; }
   const std::vector<Buffer>& buffers() const noexcept { return buffers_; }
 
+  bool use_dummy() const noexcept { return use_dummy_; }
+  void set_use_dummy(bool value) noexcept { use_dummy_ = value; }
+
  private:
   Tensor&& _track(Tensor&& tensor) {
     Track(tensor);
@@ -59,6 +63,7 @@ class MMDEPLOY_API Context {
   Device device_;
   Stream stream_;
   std::vector<Buffer> buffers_;
+  bool use_dummy_{false};
   Context* parent_;
 };
 
@@ -66,19 +71,29 @@ MMDEPLOY_API Context& gContext();
 
 template <typename T, typename... Args>
 static unique_ptr<T> Create(Args&&... args) {
-  std::vector<Device> candidates{gContext().device()};
-  if (candidates[0].is_device()) {
-    candidates.emplace_back(0);
-  }
-  for (const auto& device : candidates) {
-    if (auto platform = GetPlatformName(device)) {
-      if (auto creator = gRegistry<T>().Get(platform)) {
-        Context context(device);
-        return creator->Create((Args &&) args...);
+  std::vector<string_view> tried;
+  if (!gContext().use_dummy()) {
+    std::vector<Device> candidates{gContext().device()};
+    if (candidates[0].is_device()) {
+      candidates.emplace_back(0);
+    }
+    for (const auto& device : candidates) {
+      if (auto platform = GetPlatformName(device)) {
+        tried.emplace_back(platform);
+        if (auto creator = gRegistry<T>().Get(platform)) {
+          Context context(device);
+          return creator->Create((Args &&) args...);
+        }
       }
     }
+  } else {
+    tried.emplace_back("dummy");
+    if (auto creator = gRegistry<T>().Get("dummy")) {
+      return creator->Create((Args &&) args...);
+    }
   }
-  return nullptr;
+  MMDEPLOY_ERROR("Unable to create operation, tried platforms: {}", tried);
+  throw_exception(eNotSupported);
 }
 
 class Operation {

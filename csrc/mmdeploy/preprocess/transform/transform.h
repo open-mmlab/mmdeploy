@@ -20,7 +20,7 @@ class MMDEPLOY_API Transform {
   virtual Result<void> Apply(Value& data) = 0;
 };
 
-std::vector<std::string> GetImageFields(const Value& input);
+MMDEPLOY_API std::vector<std::string> GetImageFields(const Value& input);
 
 MMDEPLOY_DECLARE_REGISTRY(Transform, std::unique_ptr<Transform>(const Value& config));
 

@@ -18,7 +18,7 @@ inline Result<void> Copy(const Buffer& src, Buffer& dst, size_t size, Stream& st
 }
 
 inline Result<Tensor> Secure(const Tensor& val, const Device& device, Stream& stream) {
-  if (val.device() == device) {
+  if (val.device() == device || gContext().use_dummy()) {
     return val;
   }
 
@@ -32,7 +32,7 @@ inline Result<Tensor> Secure(const Tensor& val, const Device& device, Stream& st
 }
 
 inline Result<Mat> Secure(const Mat& val, const Device& device, Stream& stream) {
-  if (val.device() == device) {
+  if (val.device() == device || gContext().use_dummy()) {
     return val;
   }
 
@@ -174,6 +174,8 @@ class Managed {
  private:
   std::unique_ptr<Op> op_;
 };
+
+using _apply::Secure;
 
 }  // namespace mmdeploy::operation
 

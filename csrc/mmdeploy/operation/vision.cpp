@@ -1,6 +1,5 @@
-//
-// Created by zhangli on 11/3/22.
-//
+// Copyright (c) OpenMMLab. All rights reserved.
+
 #include "mmdeploy/operation/vision.h"
 
 namespace mmdeploy::operation {

@@ -16,15 +16,12 @@ class Compose : public Transform {
     context["device"].get_to(device_);
     context["stream"].get_to(stream_);
 
-    bool fuse_transform = args.value("fuse_transform", false);
-    if (fuse_transform) {
-      std::string sha256 = args.value("sha256", std::string(""));
-      context["fuse_transform"] = true;
-      context["sha256"] = sha256;
-    }
-
+    auto transforms = args["transforms"].array();
     operation::Context ctx(device_, stream_);
-    for (auto cfg : args["transforms"]) {
+
+    EnableTransformFusion(args, transforms);
+
+    for (auto cfg : transforms) {
       cfg["context"] = context;
       auto type = cfg.value("type", std::string{});
       MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, cfg);
@@ -46,6 +43,9 @@ class Compose : public Transform {
   Result<void> Apply(Value& data) override {
     {
       operation::Context context(device_, stream_);
+      if (!hash_code_.empty()) {
+        context.set_use_dummy(true);
+      }
       for (auto& transform : transforms_) {
         OUTCOME_TRY(transform->Apply(data));
       }
@@ -54,9 +54,26 @@ class Compose : public Transform {
   }
 
  private:
+  void EnableTransformFusion(const Value& args, Value::Array& transforms) {
+    if (args.value("fuse_transform", false)) {
+      hash_code_ = args.value("sha256", hash_code_);
+      if (!hash_code_.empty()) {
+        operation::gContext().set_use_dummy(true);
+        auto it = transforms.begin();
+        for (; it != transforms.end(); ++it) {
+          if (it->value<std::string>("type", {}) == "Collect") {
+            break;
+          }
+        }
+        transforms.insert(it, {{"type", "Fused"}, {"hash_code", hash_code_}});
+      }
+    }
+  }
+
   std::vector<std::unique_ptr<Transform>> transforms_;
   Device device_;
   Stream stream_;
+  std::string hash_code_;
 };
 
 MMDEPLOY_REGISTER_TRANSFORM(Compose);
