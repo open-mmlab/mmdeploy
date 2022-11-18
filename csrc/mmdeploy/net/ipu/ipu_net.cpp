@@ -83,13 +83,23 @@ Result<void> IPUNet::Init(const Value& args) {
   // //   OUTCOME_TRY(auto onnx, model.ReadFile(config.net))
   std::string popef_path = args["popef_path"].get<std::string>();
 
+  batch_per_step = args["batch_per_step"].get<int>();
+
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
   model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
 
   input_desc = model_runner->getExecuteInputs();
-
   output_desc = model_runner->getExecuteOutputs();
+
+  for (int i=0; i<input_desc.size(); i++){
+    input_desc[i].shape[0] *= batch_per_step;
+    MMDEPLOY_INFO("input desc shape {} ", input_desc[i].shape);
+  } 
+
+  for (int i=0; i<output_desc.size(); i++){
+    output_desc[i].shape[0] *= batch_per_step;
+  } 
 
   input_memory = examples::allocateHostInputData(input_desc);
   output_memory = examples::allocateHostInputData(output_desc);

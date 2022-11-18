@@ -41,9 +41,10 @@ class IPUWrapper(BaseWrapper):
 
     def __init__(self,
                  popef_file: str,
+                 bps=1,
                  output_names: Optional[Sequence[str]] = None):
         super().__init__(output_names)
-
+        self.bps = bps
         # Create model runner
         config = model_runtime.ModelRunnerConfig()
         config.device_wait_config = model_runtime.DeviceWaitConfig(
@@ -67,18 +68,22 @@ class IPUWrapper(BaseWrapper):
         for input_desc, input_tensor in zip(input_descriptions, input_tensors):
             print("\tname:", input_desc.name, "shape:", input_tensor.shape,
                   "dtype:", input_tensor.dtype)
+            input_tensor = np.repeat(input_tensor, repeats=self.bps, axis=0)
             self.input_view[input_desc.name] = input_tensor
 
     def forward(self, inputs):
 
         for key in inputs.keys():
             self.input_view[key] = inputs[key]
-        result = self.runner.execute(self.input_view)
+        result = self.runner.executeAsync(self.input_view)
+        result.wait()
         output_descriptions = self.runner.getExecuteOutputs()
 
         outputs = {}
         print("Processing output tensors:")
         for output_desc in output_descriptions:
+            out_shape = output_desc.shape
+            out_shape[0] = out_shape[0] * self.bps
             output_tensor = np.frombuffer(result[output_desc.name],
                                           dtype=popef.popefTypeToNumpyDType(
                 output_desc.data_type)).reshape(

@@ -34,7 +34,8 @@ TEST_CASE("test ipu net", "[net]") {
   // {"name", model.meta().models[0].name},
   Value net_config{
       {"popef_path",
-       "/localdata/cn-customer-engineering/qiangg/mmdeploy_repo/mmdeploy/build/resnet50.popef"}};
+       "/localdata/cn-customer-engineering/qiangg/projects/byte-mlperf-1/session_cache/2272664960880696850.popef"},
+       {"batch_per_step", 128}};
   auto net = creator->Create(net_config);
   // auto net = mmdeploy::IPUNet();
   // auto init_result = net.Init(net_config);

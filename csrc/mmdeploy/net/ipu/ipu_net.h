@@ -40,6 +40,7 @@ class IPUNet : public Net {
   model_runtime::OutputMemory output_memory;
   std::vector<model_runtime::DataDesc> input_desc;
   std::vector<model_runtime::DataDesc> output_desc;
+  int batch_per_step;
 
   Device device_;
   Stream stream_;
