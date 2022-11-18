@@ -41,6 +41,7 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
         x2 (Tensor): The x2 for bounding boxes.
         y2 (Tensor): The y2 for bounding boxes.
         max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+
     Returns:
         tuple(Tensor): The clipped x1, y1, x2, y2.
     """
@@ -87,6 +88,7 @@ def clip_bboxes__trt8(ctx, x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
         x2 (Tensor): The x2 for bounding boxes.
         y2 (Tensor): The y2 for bounding boxes.
         max_shape (Tensor | Sequence[int]): The (H,W) of original image.
+
     Returns:
         tuple(Tensor): The clipped x1, y1, x2, y2.
     """
@@ -125,7 +127,7 @@ def pad_with_value(x: Tensor,
 def pad_with_value_if_necessary(x: Tensor,
                                 pad_dim: int,
                                 pad_size: int,
-                                pad_value: Optional[Any] = None):
+                                pad_value: Optional[Any] = None) -> Tensor:
     """Pad a tensor with a value along some dim if necessary.
 
     Args:
@@ -144,7 +146,7 @@ def pad_with_value_if_necessary(x: Tensor,
 def __pad_with_value_if_necessary(x: Tensor,
                                   pad_dim: int,
                                   pad_size: int,
-                                  pad_value: Optional[Any] = None):
+                                  pad_value: Optional[Any] = None) -> Tensor:
     """Pad a tensor with a value along some dim, do nothing on default.
 
     Args:
@@ -162,11 +164,12 @@ def __pad_with_value_if_necessary(x: Tensor,
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.codebase.mmdet.deploy.utils.__pad_with_value_if_necessary',
     backend=Backend.TENSORRT.value)
-def __pad_with_value_if_necessary__tensorrt(ctx,
-                                            x: Tensor,
-                                            pad_dim: int,
-                                            pad_size: int,
-                                            pad_value: Optional[Any] = None):
+def __pad_with_value_if_necessary__tensorrt(
+        ctx,
+        x: Tensor,
+        pad_dim: int,
+        pad_size: int,
+        pad_value: Optional[Any] = None) -> Tensor:
     """Pad a tensor with a value along some dim.
 
     Args:

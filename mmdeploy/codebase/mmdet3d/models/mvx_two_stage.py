@@ -31,11 +31,8 @@ def mvxtwostagedetector__extract_feat(ctx, self,
     """Rewrite this func to remove voxelize op.
 
     Args:
-        voxels (torch.Tensor): Point features or raw points in shape (N, M, C).
-        num_points (torch.Tensor): Number of points in each voxel.
-        coors (torch.Tensor): Coordinates of each voxel.
-        img (torch.Tensor): Input image.
-        img_metas (list[dict]): Meta information of samples.
+        batch_inputs_dict (dict): Input dict comprises `voxels`, `num_points`
+            and `coors`
     Returns:
         tuple(torch.Tensor) : image feature and points feather.
     """
@@ -54,9 +51,7 @@ def mvxtwostagedetector__forward(ctx, self, inputs: list, **kwargs):
     """Rewrite this func to remove voxelize op.
 
     Args:
-        inputs (list): voxels, num_points and coors compose the input list
-        data_samples (DataSample3D): intermediate format within multiple
-            algorithm framework
+        inputs (list): input list comprises voxels, num_points and coors
 
     Returns:
         bbox (Tensor): Decoded bbox after nms

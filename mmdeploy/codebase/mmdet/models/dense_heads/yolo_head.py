@@ -3,7 +3,7 @@ from typing import Sequence
 
 import numpy as np
 import torch
-from mmdet.utils.typing import OptConfigType
+from mmdet.utils import OptConfigType
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,

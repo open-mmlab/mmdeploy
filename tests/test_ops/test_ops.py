@@ -293,9 +293,10 @@ def test_instance_norm(backend,
     else:
         dynamic_axes = None
 
-    norm = nn.InstanceNorm2d(c, affine=True)
-    wrapped_model = WrapFunction(norm).eval()
+    wrapped_model = nn.InstanceNorm2d(c, affine=True).eval().cuda()
 
+    cudnn_enable = torch.backends.cudnn.enabled
+    torch.backends.cudnn.enabled = False
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         backend.run_and_validate(
             wrapped_model, [input],
@@ -304,6 +305,7 @@ def test_instance_norm(backend,
             dynamic_axes=dynamic_axes,
             output_names=['output'],
             save_dir=save_dir)
+    torch.backends.cudnn.enabled = cudnn_enable
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -764,11 +766,11 @@ def test_gather(backend,
     # so the ncnn_outputs has 2 dimensions, not 1.
     import importlib
 
-    import onnxruntime
     assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
          not installed.'
 
     import numpy as np
+    import onnxruntime
     session = onnxruntime.InferenceSession(gather_model.SerializeToString())
     model_outputs = session.run(
         output_names,

@@ -1,14 +1,15 @@
 # MMClassification 模型部署
 
-- [安装](#安装)
-  - [安装 mmcls](#安装-mmcls)
-  - [安装 mmdeploy](#安装-mmdeploy)
-- [模型转换](#模型转换)
-- [模型规范](#模型规范)
-- [模型推理](#模型推理)
-  - [后端模型推理](#后端模型推理)
-  - [SDK 模型推理](#sdk-模型推理)
-- [模型支持列表](#模型支持列表)
+- [MMClassification 模型部署](#mmclassification-模型部署)
+  - [安装](#安装)
+    - [安装 mmcls](#安装-mmcls)
+    - [安装 mmdeploy](#安装-mmdeploy)
+  - [模型转换](#模型转换)
+  - [模型规范](#模型规范)
+  - [模型推理](#模型推理)
+    - [后端模型推理](#后端模型推理)
+    - [SDK 模型推理](#sdk-模型推理)
+  - [模型支持列表](#模型支持列表)
 
 ______________________________________________________________________
 
@@ -48,7 +49,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ## 模型转换
 
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) 把 mmcls 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/docs/zh_cn/02-how-to-run/convert_model.md#使用方法).
 
 以下，我们将演示如何把 `resnet18` 转换为 onnx 模型。
 

@@ -12,6 +12,7 @@ class GridPriorsTRTOp(torch.autograd.Function):
     @staticmethod
     def forward(ctx, base_anchors, feat_h, feat_w, stride_h: int,
                 stride_w: int):
+        """Generate grid priors by base anchors."""
         device = base_anchors.device
         dtype = base_anchors.dtype
         shift_x = torch.arange(0, feat_w, device=device).to(dtype) * stride_w
@@ -38,6 +39,7 @@ class GridPriorsTRTOp(torch.autograd.Function):
     @symbolic_helper.parse_args('v', 'v', 'v', 'i', 'i')
     def symbolic(g, base_anchors, feat_h, feat_w, stride_h: int,
                  stride_w: int):
+        """Map ops to onnx symbolics."""
         # zero_h and zero_w is used to provide shape to GridPriorsTRT
         feat_h = symbolic_helper._unsqueeze_helper(g, feat_h, [0])
         feat_w = symbolic_helper._unsqueeze_helper(g, feat_w, [0])

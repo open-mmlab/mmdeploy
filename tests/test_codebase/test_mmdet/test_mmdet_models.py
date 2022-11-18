@@ -1382,6 +1382,111 @@ def test_yolov3_head_predict_by_feat_ncnn():
         assert rewrite_outputs.shape[-1] == 6
 
 
+def get_centernet_head_model():
+    """CenterNet Head Config."""
+    test_cfg = Config(dict(topk=100, local_maximum_kernel=3, max_per_img=100))
+
+    from mmdet.models.dense_heads import CenterNetHead
+    model = CenterNetHead(8, 8, 4, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_centernet_head_predict_by_feat(backend_type: Backend):
+    """Test predict_by_feat rewrite of CenterNetHead."""
+    check_backend(backend_type)
+    centernet_head = get_centernet_head_model()
+    centernet_head.cpu().eval()
+    s = 128
+    batch_img_metas = [{
+        'border':
+        np.array([11., 99., 11., 99.], dtype=np.float32),
+        'img_shape': (s, s),
+        'batch_input_shape': (s, s)
+    }]
+
+    output_names = ['dets', 'labels']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+    seed_everything(1234)
+    center_heatmap_preds = [
+        torch.rand(1, centernet_head.num_classes, s // 4, s // 4)
+    ]
+    seed_everything(5678)
+    wh_preds = [torch.rand(1, 2, s // 4, s // 4)]
+    seed_everything(9101)
+    offset_preds = [torch.rand(1, 2, s // 4, s // 4)]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'center_heatmap_preds': center_heatmap_preds,
+        'wh_preds': wh_preds,
+        'offset_preds': offset_preds,
+        'batch_img_metas': batch_img_metas,
+        'with_nms': False
+    }
+    model_outputs = get_model_outputs(centernet_head, 'predict_by_feat',
+                                      model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        centernet_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
+    rewrite_inputs = {
+        'center_heatmap_preds': center_heatmap_preds,
+        'wh_preds': wh_preds,
+        'offset_preds': offset_preds,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            border = batch_img_metas[i]['border']
+
+            rewrite_outputs[0][i, :, 0] -= border[2]
+            rewrite_outputs[0][i, :, 1] -= border[0]
+            rewrite_outputs[0][i, :, 2] -= border[2]
+            rewrite_outputs[0][i, :, 3] -= border[0]
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
+
+
 def get_yolox_head_model():
     """YOLOX Head Config."""
     test_cfg = Config(

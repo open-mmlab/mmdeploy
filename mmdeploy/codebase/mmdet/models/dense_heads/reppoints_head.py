@@ -64,7 +64,7 @@ def reppoints_head__predict_by_feat(
         cfg: Optional[ConfigDict] = None,
         rescale: bool = False,
         with_nms: bool = True) -> InstanceData:
-    """Rewrite `get_bboxes` of `RepPointsHead` for default backend.
+    """Rewrite `predict_by_feat` of `RepPointsHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.

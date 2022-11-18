@@ -15,10 +15,12 @@ class MMEditing(MMCodebase):
 
     @classmethod
     def register_deploy_modules(cls):
+        """register all rewriters for mmedit."""
         import mmdeploy.codebase.mmedit.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
+        """register all related modules and rewriters for mmedit."""
         from mmedit.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
