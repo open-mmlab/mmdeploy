@@ -81,6 +81,8 @@ class Fused : public Transform {
     auto tracer = data["__tracer__"].get<Tracer>();
     Mat _src_mat = data["ori_img"].get<Mat>();
 
+    // ! Create a scope that `use_dummy` is false
+    operation::Context context(device_);
     auto& stream = operation::gContext().stream();
     OUTCOME_TRY(auto src_mat, operation::Secure(_src_mat, device_, stream));
 
