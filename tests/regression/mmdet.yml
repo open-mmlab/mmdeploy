@@ -328,3 +328,16 @@ models:
     pipelines:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
+
+  - name: SOLO
+    metafile: configs/solo/metafile.yml
+    model_configs:
+      - configs/solo/solo_r50_fpn_1x_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/instance-seg/instance-seg_solo_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: False
+      - deploy_config: configs/mmdet/instance-seg/instance-seg_solo_tensorrt-fp16_dynamic-320x320-1344x1344.py
+        convert_image: *convert_image
+        backend_test: *default_backend_test
+        sdk_config: *sdk_dynamic

@@ -11,6 +11,7 @@
 | [FCOS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fcos)                                 | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
 | [FSAF](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/fsaf)                                 | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  Y   |
 | [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)                      | MMDetection      |      Y      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
+| [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [SSD](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/ssd)[\*](#note)                        | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  Y   |
 | [FoveaBox](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/foveabox)                         | MMDetection      |      Y      |      Y      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [ATSS](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/atss)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
