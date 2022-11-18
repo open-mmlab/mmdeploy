@@ -98,9 +98,15 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
     pip install -r requirements/build.txt
     pip install -v .
 
-    ## install requirements from conf
-    mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
 
+    if [[ $codebase == "mmdet3d" ]] && [[ $branch == "dev-1.x" ]]; then
+        echo "Install mmdet3d dev-1.x specially"
+        mim install mmengine "mmcv>=2.0.0rc1"
+        mim install /root/workspace/${codebase_fullname}
+    else
+        ## install requirements from conf
+        mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
+    fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
