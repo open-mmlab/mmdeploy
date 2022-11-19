@@ -64,15 +64,7 @@ class DbHeadCpuImpl : public DbHeadImpl {
   Device device_;
 };
 
-class DbHeadCpuImplCreator : public ::mmdeploy::Creator<DbHeadImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<DbHeadImpl> Create(const Value&) override {
-    return std::make_unique<DbHeadCpuImpl>();
-  }
-};
-
-REGISTER_MODULE(DbHeadImpl, DbHeadCpuImplCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(DbHeadImpl, (cpu, 0),
+                               [] { return std::make_unique<DbHeadCpuImpl>(); });
 
 }  // namespace mmdeploy::mmocr

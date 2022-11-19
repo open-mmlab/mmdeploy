@@ -60,8 +60,8 @@ inline Result<Value::Object> Scatter(Value::Array array, const vector<std::strin
   return output;
 }
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
-Result<tuple<Value, vector<int> > > Flatten(V&& input) {
+template <class V, std::enable_if_t<is_value_v<std::decay_t<V>>, bool> = true>
+Result<tuple<Value, vector<int>>> Flatten(V&& input) {
   if (!input.is_array()) {
     return Status(eInvalidArgument);
   }
@@ -81,7 +81,7 @@ Result<tuple<Value, vector<int> > > Flatten(V&& input) {
   return {output, idxs};
 }
 
-template <class V, std::enable_if_t<is_value_v<std::decay_t<V> >, bool> = true>
+template <class V, std::enable_if_t<is_value_v<std::decay_t<V>>, bool> = true>
 Result<Value> Unflatten(V&& input, const vector<int>& idxs) {
   if (!input.is_array()) {
     return Status(eInvalidArgument);
@@ -107,6 +107,15 @@ MMDEPLOY_API Result<Value> DistribAO(const Value& ao);
 
 // array of arrays -> array of arrays, this is equivalent to transpose
 MMDEPLOY_API Result<Value> DistribAA(const Value& a);
+
+MMDEPLOY_API std::tuple<Value::Array, std::vector<int>> FlattenArray(Value::Array values,
+                                                                     const vector<bool>& predicate);
+
+MMDEPLOY_API Value::Array UnflattenArray(Value::Array values, const vector<int>& index,
+                                         const vector<bool>& predicate);
+
+MMDEPLOY_API Value::Array BroadcastArray(Value::Array values, const std::vector<int>& index,
+                                         const vector<bool>& predicate);
 
 }  // namespace mmdeploy::graph
 

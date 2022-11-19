@@ -2,12 +2,8 @@
 
 #include "mmdeploy/codebase/mmcls/mmcls.h"
 
-namespace mmdeploy {
-namespace mmcls {
+namespace mmdeploy::mmcls {
 
-REGISTER_CODEBASE(MMClassification);
+MMDEPLOY_REGISTER_CODEBASE(MMClassification);
 
-}
-
-MMDEPLOY_DEFINE_REGISTRY(mmcls::MMClassification);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmcls

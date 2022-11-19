@@ -2,8 +2,7 @@
 
 #include "mmdeploy/preprocess/transform/image2tensor.h"
 
-namespace mmdeploy {
-namespace elena {
+namespace mmdeploy::elena {
 
 class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
  public:
@@ -24,18 +23,6 @@ class ImageToTensorImpl : public ::mmdeploy::ImageToTensorImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-class ImageToTensorImplCreator : public Creator<::mmdeploy::ImageToTensorImpl> {
- public:
-  const char* GetName() const override { return "elena"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<ImageToTensorImpl>(args);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ImageToTensorImpl, (elena, 0), ImageToTensorImpl);
 
-}  // namespace elena
-}  // namespace mmdeploy
-
-using mmdeploy::ImageToTensorImpl;
-using mmdeploy::elena::ImageToTensorImplCreator;
-REGISTER_MODULE(ImageToTensorImpl, ImageToTensorImplCreator);
+}  // namespace mmdeploy::elena

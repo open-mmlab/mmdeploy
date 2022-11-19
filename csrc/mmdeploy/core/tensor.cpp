@@ -11,7 +11,7 @@
 
 using std::stringstream;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 static inline int64_t element_size(DataType data_type) {
   switch (data_type) {
@@ -198,4 +198,4 @@ Tensor Tensor::Slice(int start, int end) {
 
 TensorShape::value_type Tensor::shape(int dim) const { return desc().shape[dim]; }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

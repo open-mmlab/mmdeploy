@@ -12,8 +12,8 @@ import torch
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.config_utils import get_ir_config
-from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
-                                 get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapModel, backend_checker, check_backend,
+                                 get_model_outputs, get_rewrite_outputs)
 
 try:
     import_codebase(Codebase.MMDET)
@@ -1613,6 +1613,80 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
         rewrite_outputs = rewrite_outputs[0]
 
     assert rewrite_outputs.shape[-1] == 6
+
+
+@backend_checker(Backend.RKNN)
+def test_base_dense_head_get_bboxes__rknn():
+    """Test get_bboxes rewrite of ssd head for rknn."""
+    ssd_head = get_ssd_head_model()
+    ssd_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['output']
+    input_names = []
+    for i in range(6):
+        input_names.append('cls_scores_' + str(i))
+        input_names.append('bbox_preds_' + str(i))
+    dynamic_axes = None
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=Backend.RKNN.value),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None,
+                dynamic_axes=dynamic_axes),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                model_type='rknn',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=5000,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # For the ssd_head:
+    # the cls_score's size: (1, 30, 20, 20), (1, 30, 10, 10),
+    # (1, 30, 5, 5), (1, 30, 3, 3), (1, 30, 2, 2), (1, 30, 1, 1)
+    # the bboxes's size: (1, 24, 20, 20), (1, 24, 10, 10),
+    # (1, 24, 5, 5), (1, 24, 3, 3), (1, 24, 2, 2), (1, 24, 1, 1)
+    feat_shape = [20, 10, 5, 3, 2, 1]
+    num_prior = 6
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 30, feat_shape[i], feat_shape[i])
+        for i in range(num_prior)
+    ]
+    seed_everything(5678)
+    bboxes = [
+        torch.rand(1, 24, feat_shape[i], feat_shape[i])
+        for i in range(num_prior)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = [s, s]
+    wrapped_model = WrapModel(
+        ssd_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    # output should be of shape [1, N, 4]
+    assert rewrite_outputs[0].shape[-1] == 4
 
 
 @pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])

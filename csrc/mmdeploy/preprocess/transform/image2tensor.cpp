@@ -39,7 +39,7 @@ Result<Value> ImageToTensorImpl::Process(const Value& input) {
 }
 
 ImageToTensor::ImageToTensor(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<ImageToTensorImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<ImageToTensorImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'ImageToTensor' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'ImageToTensor' is not supported on specified platform");
@@ -47,17 +47,10 @@ ImageToTensor::ImageToTensor(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class ImageToTensorCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "ImageToTensor"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<ImageToTensor>(args, version_);
-  }
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ImageToTensor, 0), [](const Value& config) {
+  return std::make_unique<ImageToTensor>(config, 0);
+});
 
- private:
-  int version_{1};
-};
-REGISTER_MODULE(Transform, ImageToTensorCreator);
 MMDEPLOY_DEFINE_REGISTRY(ImageToTensorImpl);
+
 }  // namespace mmdeploy

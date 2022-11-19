@@ -9,6 +9,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("test pplnn net", "[.ppl_net][resource]") {
   auto& gResource = MMDeployTestResources::Get();
@@ -19,7 +20,7 @@ TEST_CASE("test pplnn net", "[.ppl_net][resource]") {
   REQUIRE(model);
 
   auto backend = "pplnn";
-  auto creator = Registry<Net>::Get().GetCreator(backend);
+  auto creator = gRegistry<Net>().Get(backend);
   REQUIRE(creator);
 
   Device device{"cpu"};

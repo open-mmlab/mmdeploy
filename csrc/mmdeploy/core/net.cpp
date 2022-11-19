@@ -4,11 +4,8 @@
 
 #include "registry.h"
 
-namespace mmdeploy {
-
-// template class Registry<Net>;
-// template class Creator<Net>;
+namespace mmdeploy::framework {
 
 MMDEPLOY_DEFINE_REGISTRY(Net);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

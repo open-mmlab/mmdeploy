@@ -3,9 +3,10 @@ from typing import Sequence
 
 import torch
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (gather_topk,
+                                            get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import is_dynamic_shape
 
@@ -37,11 +38,14 @@ def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
     Use `self.moment_transfer` in `points2bbox` will cause error:
     RuntimeError: Input, output and indices must be on the current device
     """
-    moment_transfer = self.moment_transfer
-    delattr(self, 'moment_transfer')
-    self.moment_transfer = torch.tensor(moment_transfer.data)
+    update_moment = hasattr(self, 'moment_transfer')
+    if update_moment:
+        moment_transfer = self.moment_transfer
+        delattr(self, 'moment_transfer')
+        self.moment_transfer = torch.tensor(moment_transfer.data)
     ret = ctx.origin_func(self, pts, y_first=y_first)
-    self.moment_transfer = moment_transfer
+    if update_moment:
+        self.moment_transfer = moment_transfer
     return ret
 
 
@@ -115,7 +119,13 @@ def reppoints_head__get_bboxes(ctx,
             scores = scores.sigmoid()
         else:
             scores = scores.softmax(-1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+
+        # TODO: figure out why we can't reshape after permute directly
+        # TensorRT8.4 would fuse the permute+reshape,
+        # which leads to incorrect results.
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1)
+        bbox_pred = bbox_pred.reshape(batch_size, -1)
+        bbox_pred = (bbox_pred + 0).reshape(batch_size, -1, 4)
         if not is_dynamic_flag:
             priors = priors.data
         if pre_topk > 0:
@@ -131,12 +141,17 @@ def reppoints_head__get_bboxes(ctx,
             else:
                 max_scores, _ = nms_pre_score[..., :-1].max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
-            batch_inds = torch.arange(
-                batch_size, device=bbox_pred.device).unsqueeze(-1)
-            prior_inds = batch_inds.new_zeros((1, 1))
-            priors = priors[prior_inds, topk_inds, :]
-            bbox_pred = bbox_pred[batch_inds, topk_inds, :]
-            scores = scores[batch_inds, topk_inds, :]
+            bbox_pred, scores = gather_topk(
+                bbox_pred,
+                scores,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=True)
+            priors = gather_topk(
+                priors,
+                inds=topk_inds,
+                batch_size=batch_size,
+                is_batched=False)
 
         bbox_pred = _bbox_pre_decode(priors, bbox_pred,
                                      self.point_strides[level_idx])

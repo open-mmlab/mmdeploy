@@ -17,7 +17,7 @@
 using std::string;
 using std::vector;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 struct NetModule::Impl {
   using Input = std::map<std::string, Tensor>;
@@ -32,10 +32,10 @@ struct NetModule::Impl {
       OUTCOME_TRY(auto config, model.GetModelConfig(name));
       device_ = context.value("device", Device{"cpu"});
       stream_ = context.value("stream", Stream::GetDefault(device_));
-      auto creator = Registry<Net>::Get().GetCreator(config.backend);
+      auto creator = gRegistry<Net>().Get(config.backend);
       if (!creator) {
         MMDEPLOY_ERROR("Net backend not found: {}, available backends: {}", config.backend,
-                       Registry<Net>::Get().List());
+                       gRegistry<Net>().List());
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
@@ -227,15 +227,7 @@ Result<Value> NetModule::operator()(const Value& input) {
   }
 }
 
-class NetModuleCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "Net"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Module> Create(const Value& value) override {
-    return CreateTask(NetModule{value});
-  }
-};
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Net, 0),
+                               [](const Value& config) { return CreateTask(NetModule{config}); });
 
-REGISTER_MODULE(Module, NetModuleCreator);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

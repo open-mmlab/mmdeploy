@@ -9,6 +9,7 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("model constructor", "[model]") {
   SECTION("default constructor") {
@@ -45,22 +46,4 @@ TEST_CASE("model init", "[model]") {
       }
     }
   }
-}
-
-TEST_CASE("ModelRegistry", "[model]") {
-  class ANewModelImpl : public ModelImpl {
-    Result<void> Init(const std::string& sdk_model_path) override { return Status(eNotSupported); }
-    Result<std::string> ReadFile(const std::string& file_path) const override {
-      return Status(eNotSupported);
-    }
-    Result<deploy_meta_info_t> ReadMeta() const override {
-      deploy_meta_info_t meta;
-      return meta;
-    }
-  };
-
-  // Test duplicated register. `DirectoryModel` is already registered.
-  (void)ModelRegistry::Get().Register("DirectoryModel", []() -> std::unique_ptr<ModelImpl> {
-    return std::make_unique<ANewModelImpl>();
-  });
 }

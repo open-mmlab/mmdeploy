@@ -5,8 +5,10 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/normalize.h"
+#include "ppl/cv/cuda/cvtcolor.h"
 
 using namespace std;
+using namespace ppl::cv::cuda;
 
 namespace mmdeploy::cuda {
 
@@ -66,19 +68,27 @@ class NormalizeImpl : public ::mmdeploy::NormalizeImpl {
     }
     return dst_tensor;
   }
-};
 
-class NormalizeImplCreator : public Creator<::mmdeploy::NormalizeImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  std::unique_ptr<::mmdeploy::NormalizeImpl> Create(const Value& args) override {
-    return make_unique<NormalizeImpl>(args);
+  Result<Tensor> ConvertToRGB(const Tensor& tensor) override {
+    OUTCOME_TRY(auto src_tensor, MakeAvailableOnDevice(tensor, device_, stream_));
+
+    SyncOnScopeExit sync(stream_, src_tensor.buffer() != tensor.buffer(), src_tensor);
+
+    auto src_desc = src_tensor.desc();
+    int h = (int)src_desc.shape[1];
+    int w = (int)src_desc.shape[2];
+    int c = (int)src_desc.shape[3];
+    int stride = w * c;
+    auto stream = ::mmdeploy::GetNative<cudaStream_t>(stream_);
+
+    TensorDesc dst_desc{device_, DataType::kINT8, src_desc.shape, src_desc.name};
+    Tensor dst_tensor{dst_desc};
+    RGB2BGR<uint8_t>(stream, h, w, stride, tensor.data<uint8_t>(), stride,
+                     dst_tensor.data<uint8_t>());
+    return dst_tensor;
   }
 };
 
-}  // namespace mmdeploy::cuda
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::NormalizeImpl, (cuda, 0), NormalizeImpl);
 
-using mmdeploy::NormalizeImpl;
-using mmdeploy::cuda::NormalizeImplCreator;
-REGISTER_MODULE(NormalizeImpl, NormalizeImplCreator);
+}  // namespace mmdeploy::cuda

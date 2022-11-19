@@ -395,20 +395,18 @@ def main():
             update_sdk_pipeline(args.work_dir)
 
     elif backend == Backend.COREML:
-        from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
+        from mmdeploy.apis.coreml import from_torchscript
         coreml_pipeline_funcs = [from_torchscript]
         PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
-        model_inputs = get_model_inputs(deploy_cfg)
+
         coreml_files = []
         for model_id, torchscript_path in enumerate(ir_files):
             torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
             output_file_prefix = osp.join(args.work_dir, torchscript_name)
-            convert_to = deploy_cfg.backend_config.convert_to
-            from_torchscript(torchscript_path, output_file_prefix,
-                             ir_config.input_names, ir_config.output_names,
-                             model_inputs[model_id].input_shapes, convert_to)
-            suffix = get_model_suffix(convert_to)
-            coreml_files.append(output_file_prefix + suffix)
+
+            from_torchscript(model_id, torchscript_path, output_file_prefix,
+                             deploy_cfg, coreml_files)
+
         backend_files = coreml_files
     elif backend == Backend.IPU:
         from mmdeploy.apis.ipu import onnx_to_popef
@@ -423,46 +421,33 @@ def main():
     if args.test_img is None:
         args.test_img = args.img
 
-    headless = False
-    # check headless or not for all platforms.
-    try:
-        import tkinter
-        tkinter.Tk()
-    except Exception:
-        headless = True
+    extra = dict(
+        backend=backend,
+        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+        show_result=args.show)
+    if backend == Backend.SNPE:
+        extra['uri'] = args.uri
 
-    # for headless installation.
-    if not headless:
-        extra = dict(
-            backend=backend,
-            output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
-            show_result=args.show)
-        if backend == Backend.SNPE:
-            extra['uri'] = args.uri
+    # get backend inference result, try render
+    create_process(
+        f'visualize {backend.value} model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
+        kwargs=extra,
+        ret_value=ret_value)
 
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=extra,
-            ret_value=ret_value)
-
-        # visualize pytorch model
-        create_process(
-            'visualize pytorch model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=Backend.PYTORCH,
-                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
-    else:
-        logger.warning(
-            '\"visualize_model\" has been skipped may be because it\'s \
-            running on a headless device.')
+    # get pytorch model inference result, try visualize if possible
+    create_process(
+        'visualize pytorch model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img, args.device),
+        kwargs=dict(
+            backend=Backend.PYTORCH,
+            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+            show_result=args.show),
+        ret_value=ret_value)
     logger.info('All process success.')
 
 

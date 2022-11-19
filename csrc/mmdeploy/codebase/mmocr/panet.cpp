@@ -11,9 +11,7 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "opencv2/imgproc/imgproc.hpp"
 
-namespace mmdeploy {
-
-namespace mmocr {
+namespace mmdeploy::mmocr {
 
 std::vector<std::vector<float>> pixel_group_cpu(const cv::Mat_<float>& score,
                                                 const cv::Mat_<uint8_t>& mask,
@@ -35,14 +33,14 @@ class PANHead : public MMOCR {
       downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
-    auto creator = Registry<PaHeadImpl>::Get().GetCreator(platform);
+    auto creator = gRegistry<PaHeadImpl>().Get(platform);
     if (!creator) {
       MMDEPLOY_ERROR(
           "PANHead: implementation for platform \"{}\" not found. Available platforms: {}",
-          platform, Registry<PaHeadImpl>::Get().List());
+          platform, gRegistry<PaHeadImpl>().List());
       throw_exception(eEntryNotFound);
     }
-    impl_ = creator->Create(nullptr);
+    impl_ = creator->Create();
     impl_->Init(stream_);
   }
 
@@ -80,7 +78,7 @@ class PANHead : public MMOCR {
     auto scale_w = _data["img_metas"]["scale_factor"][0].get<float>();
     auto scale_h = _data["img_metas"]["scale_factor"][1].get<float>();
 
-    TextDetectorOutput output;
+    TextDetections output;
     for (auto& text_point : text_points) {
       auto text_confidence = text_point[0];
       auto area = text_point.size() - 2;
@@ -98,12 +96,12 @@ class PANHead : public MMOCR {
           p.y /= scale_h * downsample_ratio_;
         }
       }
-      auto& bbox = output.boxes.emplace_back();
+      auto& det = output.emplace_back();
       for (int i = 0; i < 4; ++i) {
-        bbox[i * 2] = vertices[i].x;
-        bbox[i * 2 + 1] = vertices[i].y;
+        det.bbox[i * 2] = vertices[i].x;
+        det.bbox[i * 2 + 1] = vertices[i].y;
       }
-      output.scores.push_back(text_confidence);
+      det.score = text_confidence;
     }
     return to_value(output);
   }
@@ -121,10 +119,8 @@ class PANHead : public MMOCR {
   std::unique_ptr<PaHeadImpl> impl_;
 };
 
-REGISTER_CODEBASE_COMPONENT(MMOCR, PANHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, PANHead);
 
-}  // namespace mmocr
+MMDEPLOY_DEFINE_REGISTRY(PaHeadImpl);
 
-MMDEPLOY_DEFINE_REGISTRY(mmocr::PaHeadImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmocr

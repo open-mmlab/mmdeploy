@@ -40,6 +40,8 @@ endif ()
 
 if ("ipu" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(ipu)
+if ("rknn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(rknn)
 endif ()
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp)

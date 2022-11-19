@@ -215,7 +215,7 @@ def single_roi_extractor__forward(ctx,
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
     if num_levels == 1:
         assert len(rois) > 0, 'The number of rois should be positive'
-        if backend == Backend.TORCHSCRIPT:
+        if backend == Backend.TORCHSCRIPT or backend == Backend.COREML:
             self.roi_layers[0].use_torchvision = True
         return self.roi_layers[0](feats[0], rois)
 
@@ -241,7 +241,7 @@ def single_roi_extractor__forward(ctx,
         inds = mask.nonzero(as_tuple=False).squeeze(1)
         rois_t = rois[inds]
         # use the roi align in torhcvision
-        if backend == Backend.TORCHSCRIPT:
+        if backend == Backend.TORCHSCRIPT or backend == Backend.COREML:
             self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats[inds] = roi_feats_t
@@ -316,3 +316,39 @@ def single_roi_extractor__forward__openvino(ctx,
     args = (output_size, featmap_strides, sample_num, rois, *feats)
     result = SingleRoIExtractorOpenVINO.apply(*args)
     return result
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend=Backend.COREML.value)
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
+def single_roi_extractor__forward__coreml(ctx,
+                                          self,
+                                          feats,
+                                          rois,
+                                          roi_scale_factor=None):
+    """Rewrite `forward` of SingleRoIExtractor for coreml."""
+    out_size = self.roi_layers[0].output_size
+    num_levels = len(feats)
+    roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
+    if num_levels == 1:
+        assert len(rois) > 0, 'The number of rois should be positive'
+        self.roi_layers[0].use_torchvision = True
+        return self.roi_layers[0](feats[0], rois)
+
+    target_lvls = self.map_roi_levels(rois, num_levels)
+
+    if roi_scale_factor is not None:
+        rois = self.roi_rescale(rois, roi_scale_factor)
+
+    for i in range(num_levels):
+        mask = target_lvls == i
+        # inds = mask.nonzero(as_tuple=False).squeeze(1)
+        rois_t = rois * mask.unsqueeze(-1)
+        # use the roi align in torhcvision
+        self.roi_layers[i].use_torchvision = True
+        roi_feats_t = self.roi_layers[i](feats[i], rois_t)
+        roi_feats = roi_feats + roi_feats_t * (rois_t[:, -1] > 0).reshape(
+            -1, 1, 1, 1)
+    # slice to recover original size
+    return roi_feats

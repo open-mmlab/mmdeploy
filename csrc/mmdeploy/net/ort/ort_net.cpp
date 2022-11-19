@@ -9,7 +9,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "onnxruntime_register.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 static TensorShape to_shape(const Ort::TypeInfo& info) {
   auto shape = info.GetTensorTypeAndShapeInfo().GetShape();
@@ -178,26 +178,21 @@ Result<void> OrtNet::Forward() {
   return success();
 }
 
-class OrtNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "onnxruntime"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    try {
-      auto p = std::make_unique<OrtNet>();
-      if (auto r = p->Init(args)) {
-        return p;
-      } else {
-        MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
-        return nullptr;
-      }
-    } catch (const std::exception& e) {
-      MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
+static std::unique_ptr<Net> Create(const Value& args) {
+  try {
+    auto p = std::make_unique<OrtNet>();
+    if (auto r = p->Init(args)) {
+      return p;
+    } else {
+      MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
       return nullptr;
     }
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
+    return nullptr;
   }
-};
+}
 
-REGISTER_MODULE(Net, OrtNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (onnxruntime, 0), Create);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

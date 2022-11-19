@@ -183,7 +183,7 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     ir_config = get_ir_config(deploy_cfg)
 
     backend = get_backend(deploy_cfg=deploy_cfg)
-    if backend == Backend.TORCHSCRIPT:
+    if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
@@ -252,8 +252,17 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
             meta_keys += transform[
                 'meta_keys'] if 'meta_keys' in transform else []
             transform['meta_keys'] = list(set(meta_keys))
-    assert transforms[0]['type'] == 'LoadImageFromFile', 'The first item type'\
-        ' of pipeline should be LoadImageFromFile'
+
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        del transforms[-2]
+        for transform in transforms:
+            if transform['type'] == 'Normalize':
+                transform['to_float'] = False
+
+    if transforms[0]['type'] != 'Lift':
+        assert transforms[0]['type'] == 'LoadImageFromFile', \
+            'The first item type of pipeline should be ' \
+            'LoadImageFromFile'
 
     return dict(
         type=type,
@@ -290,6 +299,15 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         task = Task.INSTANCE_SEGMENTATION
 
     component = task_map[task]['component']
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        if 'YOLO' in task_processor.model_cfg.model.type:
+            bbox_head = task_processor.model_cfg.model.bbox_head
+            component = bbox_head.type
+            params['anchor_generator'] = bbox_head.get('anchor_generator',
+                                                       None)
+        else:  # default using base_dense_head
+            component = 'BaseDenseHead'
+
     if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
         if 'type' in params:
             component = params.pop('type')
@@ -345,7 +363,9 @@ def get_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
-    if task == Task.CLASSIFICATION or task == Task.SUPER_RESOLUTION:
+    if task in [
+            Task.CLASSIFICATION, Task.SUPER_RESOLUTION, Task.VIDEO_RECOGNITION
+    ]:
         postprocess['input'] = infer_info['output']
     else:
         postprocess['input'] = preprocess['output'] + infer_info['output']

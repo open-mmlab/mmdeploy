@@ -8,6 +8,22 @@
 
 namespace mmdeploy {
 
+void SaveIntermediates(Value& value, Value::Array& intermediates) {
+  if (value.is_array()) {
+    for (auto& inner : value) {
+      if (auto it = inner.find("__data__"); it != inner.end()) {
+        std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+        it->array().clear();
+      }
+    }
+  } else if (value.is_object()) {
+    if (auto it = value.find("__data__"); it != value.end()) {
+      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
+      it->array().clear();
+    }
+  }
+}
+
 Compose::Compose(const Value& args, int version) : Transform(args) {
   assert(args.contains("context"));
 
@@ -24,10 +40,10 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
     MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
-    auto creator = Registry<Transform>::Get().GetCreator(type, version);
+    auto creator = gRegistry<Transform>().Get(type, version);
     if (!creator) {
       MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                     Registry<Transform>::Get().List());
+                     gRegistry<Transform>().List());
       throw_exception(eEntryNotFound);
     }
     auto transform = creator->Create(cfg);
@@ -44,27 +60,15 @@ Result<Value> Compose::Process(const Value& input) {
   Value::Array intermediates;
   for (auto& transform : transforms_) {
     OUTCOME_TRY(auto t, transform->Process(output));
-    if (auto it = t.find("__data__"); it != t.end()) {
-      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-      it->array().clear();
-    }
+    SaveIntermediates(t, intermediates);
     output = std::move(t);
   }
   OUTCOME_TRY(stream_.Wait());
   return std::move(output);
 }
 
-class ComposeCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "Compose"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<Compose>(args, version_);
-  }
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Compose, 0), [](const Value& config) {
+  return std::make_unique<Compose>(config, 0);
+});
 
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, ComposeCreator);
 }  // namespace mmdeploy

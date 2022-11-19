@@ -11,6 +11,7 @@
 #include "test_utils.h"
 
 using namespace mmdeploy;
+using namespace framework;
 using namespace mmdeploy::test;
 using namespace std;
 

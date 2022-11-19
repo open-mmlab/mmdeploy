@@ -1,11 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict, Sequence, Union
+from typing import Dict, List, Union
 
 import coremltools as ct
+import mmcv
 import torch
 
-from mmdeploy.utils import get_root_logger
+from mmdeploy.utils import (get_common_config, get_model_inputs,
+                            get_root_logger, load_config)
+from mmdeploy.utils.config_utils import get_ir_config
 
 try:
     # user might need ops from torchvision
@@ -47,30 +50,22 @@ def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
     return ct.TensorType(shape=shape, name=name)
 
 
-def from_torchscript(torchscript_model: Union[str,
+def from_torchscript(model_id: int,
+                     torchscript_model: Union[str,
                                               torch.jit.RecursiveScriptModule],
-                     output_file_prefix: str,
-                     input_names: Sequence[str],
-                     output_names: Sequence[str],
-                     input_shapes: Dict,
-                     convert_to: str = 'neuralnetwork',
-                     fp16_mode: bool = False,
-                     skip_model_load: bool = True,
-                     **kwargs):
+                     output_file_prefix: str, deploy_cfg: Union[str,
+                                                                mmcv.Config],
+                     backend_files: List[str], **kwargs):
     """Create a coreml engine from torchscript.
 
     Args:
+         model_id (int): Index of input model.
         torchscript_model (Union[str, torch.jit.RecursiveScriptModule]):
             The torchscript model to be converted.
         output_file_prefix (str): The output file prefix.
-        input_names (Sequence[str]): The input names of the model.
-        output_names (Sequence[str]): The output names of the model.
-        input_shapes (Dict): The input shapes include max_shape, min_shape and
-            default_shape
-        convert_to (str, optional): The converted model type, can be
-            'neuralnetwork' or 'mlprogram'. Defaults to 'neuralnetwork'.
-        fp16_mode (bool, optional): Convert to fp16 model. Defaults to False.
-        skip_model_load (bool, optional): Skip model load. Defaults to True.
+        deploy_cfg (str | mmcv.Config): Deployment config.
+        backend_files (List[str]):
+            Backend files used by deployment for testing pipeline
     """
 
     try:
@@ -85,23 +80,40 @@ def from_torchscript(torchscript_model: Union[str,
     if isinstance(torchscript_model, str):
         torchscript_model = torch.jit.load(torchscript_model)
 
+    deploy_cfg = load_config(deploy_cfg)[0]
+
+    common_params = get_common_config(deploy_cfg)
+    model_params = get_model_inputs(deploy_cfg)[model_id]
+
+    final_params = common_params
+    final_params.update(model_params)
+
+    ir_config = get_ir_config(deploy_cfg)
+
+    input_names = ir_config.get('input_names', [])
+    input_shapes = final_params['input_shapes']
     inputs = []
-    outputs = []
 
     for name in input_names:
         shape = create_shape(name, input_shapes[name])
         inputs.append(shape)
 
+    output_names = ir_config.get('output_names', [])
+    outputs = []
+
     for name in output_names:
         outputs.append(ct.TensorType(name=name))
 
+    convert_to = deploy_cfg.backend_config.convert_to
     if convert_to == 'neuralnetwork':
+        # Compute precision must be None for neuralnetwork conversion
         compute_precision = None
     else:
-        if fp16_mode:
-            compute_precision = ct.precision.FLOAT16
-        else:
-            compute_precision = ct.precision.FLOAT32
+        compute_precision = ct.precision[final_params.get(
+            'compute_precision', 'FLOAT32')]
+
+    minimum_deployment_target = final_params.get('minimum_deployment_target',
+                                                 None)
 
     mlmodel = ct.convert(
         model=torchscript_model,
@@ -109,8 +121,11 @@ def from_torchscript(torchscript_model: Union[str,
         outputs=outputs,
         compute_precision=compute_precision,
         convert_to=convert_to,
-        skip_model_load=False)
+        minimum_deployment_target=ct.target[minimum_deployment_target]
+        if minimum_deployment_target else None,
+        skip_model_load=final_params.get('skip_model_load', False))
 
     suffix = get_model_suffix(convert_to)
     output_path = output_file_prefix + suffix
+    backend_files.append(output_path)
     mlmodel.save(output_path)

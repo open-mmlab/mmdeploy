@@ -11,6 +11,8 @@
 namespace mmdeploy {
 namespace cpu {
 
+using namespace framework;
+
 Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format) {
   std::shared_ptr<void> data(mat.data, [mat = mat](void* p) {});
   DataType type;

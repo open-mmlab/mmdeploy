@@ -885,6 +885,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <th align="center">ONNX Runtime</th>
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
+    <th align="center" colspan="3">NCNN</th>
   </tr>
 </thead>
 <tbody>
@@ -900,6 +901,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp16</td>
     <td align="center">int8</td>
     <td align="center">fp16</td>
+    <td align="center">fp32</td>
+    <td align="center">int8</td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srcnn/srcnn_x4k915_g1_1000k_div2k.py">SRCNN</a></td>
@@ -913,6 +916,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">28.4286</td>
     <td align="center">28.1995</td>
     <td align="center">28.4311</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -923,6 +928,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8096</td>
     <td align="center">0.7934</td>
     <td align="center">0.8096</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_x4c64b23g32_g1_400k_div2k.py">ESRGAN</a></td>
@@ -936,6 +943,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">28.2624</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -946,6 +955,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.7765</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/esrgan/esrgan_psnr_x4c64b23g32_g1_1000k_div2k.py">ESRGAN-PSNR</a></td>
@@ -959,6 +970,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.0426</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -969,6 +982,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8557</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/srgan_x4c64b16_g1_1000k_div2k.py">SRGAN</a></td>
@@ -982,6 +997,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.9388</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -992,6 +1009,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.7839</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/srresnet_srgan/msrresnet_x4c64b16_g1_1000k_div2k.py">SRResNet</a></td>
@@ -1005,6 +1024,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">30.2294</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1015,6 +1036,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8488</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/real_esrgan/realesrnet_c64b23g32_12x4_lr2e-4_1000k_df2k_ost.py">Real-ESRNet</a></td>
@@ -1028,6 +1051,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">27.7049</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1038,9 +1063,11 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center"> - </td>
     <td align="center"> - </td>
     <td align="center">0.8123</td>
+    <td align="center"> - </td>
+    <td align="center"> - </td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/tree/master/configs/restorers/edsr/edsr_x4c64b16_g1_300k_div2k.py">EDSRx4</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1051,6 +1078,8 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">30.2211</td>
     <td align="center">30.1383</td>
     <td align="center">-</td>
+    <td align="center">30.2194</td>
+    <td align="center">29.9340</td>
   </tr>
   <tr>
     <td align="center">SSIM</td>
@@ -1061,6 +1090,35 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8497</td>
     <td align="center">0.8469</td>
     <td align="center"> - </td>
+    <td align="center">0.8498</td>
+    <td align="center">0.8409</td>
+  </tr>
+    <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/master/configs/restorers/edsr/edsr_x2c64b16_g1_300k_div2k.py">EDSRx2</a></td>
+    <td align="center" rowspan="2">Super Resolution</td>
+    <td align="center" rowspan="2">Set5</td>
+    <td align="center">PSNR</td>
+    <td align="center">35.7592</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">35.7733</td>
+    <td align="center">35.4266</td>
+  </tr>
+  <tr>
+    <td align="center">SSIM</td>
+    <td align="center">0.9372</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center"> - </td>
+    <td align="center">0.9365</td>
+    <td align="center">0.9334</td>
   </tr>
 </tbody>
 </table>
@@ -1689,6 +1747,27 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">0.825</td>
   </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/master/configs/body/2d_kpt_sview_rgb_img/topdown_heatmap/coco/hourglass52_coco_256x256.py">Hourglass</a></td>
+    <td align="center" rowspan="2">Pose Detection</td>
+    <td align="center" rowspan="2">COCO</td>
+    <td align="center">AP</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">0.717</td>
+    <td align="center">-</td>
+    <td align="center">0.717</td>
+  </tr>
+  <tr>
+    <td align="center">AR</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">0.774</td>
+    <td align="center">-</td>
+    <td align="center">0.774</td>
+  </tr>
 </tbody>
 </table>
 </div>
@@ -1762,6 +1841,77 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.761</td>
     <td align="center">-</td>
     <td align="center">0.758</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+</tbody>
+</table>
+</div>
+
+<div style="margin-left: 25px;">
+<table class="docutils">
+<thead>
+  <tr>
+    <th align="center" colspan="4">mmaction2</th>
+    <th align="center">Pytorch</th>
+    <th align="center">ONNXRuntime</th>
+    <th align="center" colspan="2">TensorRT</th>
+    <th align="center">PPLNN</th>
+    <th align="center">OpenVINO</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td align="center">model</td>
+    <td align="center">task</td>
+    <td align="center">dataset</td>
+    <td align="center">metrics</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp32</td>
+    <td align="center">fp16</td>
+    <td align="center">fp16</td>
+    <td align="center">fp32</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/tsn/tsn_r50_1x1x3_100e_kinetics400_rgb.py">TSN</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">69.71</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">88.75</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+<tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/master/configs/recognition/slowfast/slowfast_r50_4x16x1_256e_kinetics400_rgb.py">SlowFast</a></td>
+    <td align="center" rowspan="2">Recognition</td>
+    <td align="center" rowspan="2">Kinetics-400</td>
+    <td align="center">top-1</td>
+    <td align="center">74.45</td>
+    <td align="center">-</td>
+    <td align="center">75.62</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">top-5</td>
+    <td align="center">91.55</td>
+    <td align="center">-</td>
+    <td align="center">92.10</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>

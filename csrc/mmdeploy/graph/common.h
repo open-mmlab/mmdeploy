@@ -24,28 +24,32 @@ inline std::true_type Check(T&&) {
 
 }  // namespace
 
-template <typename EntryType, typename RetType = typename Creator<EntryType>::ReturnType>
-inline Result<RetType> CreateFromRegistry(const Value& config, const char* key = "type") {
-  MMDEPLOY_DEBUG("config: {}", config);
-  auto type = config[key].get<std::string>();
-  auto creator = Registry<EntryType>::Get().GetCreator(type);
-  if (!creator) {
-    MMDEPLOY_ERROR("Failed to find creator: {}. Available: {}", type,
-                   Registry<EntryType>::Get().List());
-    return Status(eEntryNotFound);
+namespace _maybe {
+
+struct Maybe {
+  std::optional<std::reference_wrapper<const Value>> val_;
+  explicit operator bool() const noexcept { return val_.has_value(); }
+  const Value& operator*() const noexcept { return val_->get(); }
+  const Value* operator->() const noexcept { return &val_->get(); }
+};
+
+inline Maybe operator/(const Maybe& maybe, const string& p) {
+  if (maybe && maybe->contains(p)) {
+    return {(*maybe)[p]};
   }
-  auto inst = creator->Create(config);
-  if (!Check(inst)) {
-    MMDEPLOY_ERROR("Failed to create module: {}, config: {}", type, config);
-    return Status(eFail);
-  }
-  return std::move(inst);
+  return {std::nullopt};
 }
 
-class BaseNode : public Node {
- protected:
-  explicit BaseNode(const Value& cfg);
-};
+template <typename T>
+inline std::optional<T> operator/(const Maybe& maybe, identity<T>) {
+  if (maybe) {
+    return maybe->get<T>();
+  }
+  return std::nullopt;
+}
+}  // namespace _maybe
+
+using _maybe::Maybe;
 
 }  // namespace mmdeploy::graph
 

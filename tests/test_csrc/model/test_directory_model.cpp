@@ -8,12 +8,13 @@
 #include "test_resource.h"
 
 using namespace mmdeploy;
+using namespace framework;
 
 TEST_CASE("test directory model", "[.model][resource]") {
   std::unique_ptr<ModelImpl> model_impl;
-  for (auto& entry : ModelRegistry::Get().ListEntries()) {
-    if (entry.name == "DirectoryModel") {
-      model_impl = entry.creator();
+  for (auto& entry : gRegistry<ModelImpl>().Creators()) {
+    if (entry->name() == "DirectoryModel") {
+      model_impl = entry->Create();
       break;
     }
   }

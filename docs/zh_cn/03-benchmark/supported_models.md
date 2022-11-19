@@ -4,14 +4,14 @@
 
 | Model                       | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO | Ascend | RKNN |                                          Model config                                           |
 | :-------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: | :----: | :--: | :---------------------------------------------------------------------------------------------: |
-| RetinaNet                   | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)        |
+| RetinaNet                   | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet)        |
 | Faster R-CNN                | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |       [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn)       |
 | YOLOv3                      | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   Y    |  Y   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo)           |
 | YOLOX                       | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  Y   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/yolox)          |
 | FCOS                        | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos)           |
-| FSAF                        | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)           |
+| FSAF                        | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  Y   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf)           |
 | Mask R-CNN                  | MMDetection      |      Y      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/mask_rcnn)        |
-| SSD[\*](#note)              | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |           [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)           |
+| SSD[\*](#note)              | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  Y   |           [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd)           |
 | FoveaBox                    | MMDetection      |      Y      |      Y      |    N     |  N   |   N   |    Y     |   N    |  N   |        [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/foveabox)         |
 | ATSS                        | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |          [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/atss)           |
 | GFL                         | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    Y     |   N    |  N   |           [config](https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl)           |
@@ -73,11 +73,16 @@
 | HRNet                       | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |     [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hrnet-cvpr-2019)     |
 | MSPN                        | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |     [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#mspn-arxiv-2019)     |
 | LiteHRNet                   | MMPose           |      N      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#litehrnet-cvpr-2021)   |
+| Hourglass                   | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |   [config](https://mmpose.readthedocs.io/en/latest/papers/backbones.html#hourglass-eccv-2016)   |
+| ViPNAS                      | MMPose           |      ?      |      ?      |    ?     |  Y   |   ?   |    ?     |   ?    |  ?   |   [config](https://mmpose.readthedocs.io/zh_CN/latest/papers/backbones.html#vipnas-cvpr-2021)   |
 | PointPillars                | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |     [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars)      |
 | CenterPoint (pillar)        | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |      [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/centerpoint)      |
+| Fcos3d                      | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |        [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/fcos3d)         |
 | RotatedRetinaNet            | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   | [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md)  |
 | Oriented RCNN               | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)    |
 | Gliding Vertex              | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)   |
+| TSN                         | MMAction2        |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |      [config](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/tsn)      |
+| SlowFast                    | MMAction2        |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |   [config](https://github.com/open-mmlab/mmaction2/tree/master/configs/recognition/slowfast)    |
 
 ## Note
 

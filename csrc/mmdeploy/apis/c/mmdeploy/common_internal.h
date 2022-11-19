@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "handle.h"
+#include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/value.h"
 #include "model.h"
 #include "pipeline.h"
@@ -23,19 +24,28 @@ inline Value Take(mmdeploy_value_t v) {
   return value;
 }
 
-mmdeploy_value_t Take(Value v) {
+inline Value* Cast(mmdeploy_context_t c) { return reinterpret_cast<Value*>(c); }
+
+inline mmdeploy_value_t Take(Value v) {
   return Cast(new Value(std::move(v)));  // NOLINT
 }
 
-mmdeploy_pipeline_t Cast(AsyncHandle* pipeline) {
+inline mmdeploy_pipeline_t Cast(AsyncHandle* pipeline) {
   return reinterpret_cast<mmdeploy_pipeline_t>(pipeline);
 }
 
-AsyncHandle* Cast(mmdeploy_pipeline_t pipeline) { return reinterpret_cast<AsyncHandle*>(pipeline); }
+inline AsyncHandle* Cast(mmdeploy_pipeline_t pipeline) {
+  return reinterpret_cast<AsyncHandle*>(pipeline);
+}
 
-mmdeploy_model_t Cast(Model* model) { return reinterpret_cast<mmdeploy_model_t>(model); }
+inline mmdeploy_model_t Cast(Model* model) { return reinterpret_cast<mmdeploy_model_t>(model); }
 
-Model* Cast(mmdeploy_model_t model) { return reinterpret_cast<Model*>(model); }
+inline Model* Cast(mmdeploy_model_t model) { return reinterpret_cast<Model*>(model); }
+
+inline Mat Cast(const mmdeploy_mat_t& mat) {
+  return Mat{mat.height,         mat.width, PixelFormat(mat.format),
+             DataType(mat.type), mat.data,  mat.device ? *(const Device*)mat.device : Device{0}};
+}
 
 template <typename F>
 std::invoke_result_t<F> Guard(F f) {
@@ -53,7 +63,7 @@ template <typename T, typename SFINAE = void>
 class wrapped {};
 
 template <typename T>
-class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
+class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
  public:
   wrapped() noexcept : v_(nullptr) {}
   explicit wrapped(T v) noexcept : v_(v) {}
@@ -91,8 +101,5 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))> > {
 };
 
 }  // namespace
-
-MMDEPLOY_API int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count,
-                                              mmdeploy_value_t* value);
 
 #endif  // MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_

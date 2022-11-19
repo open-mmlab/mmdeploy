@@ -119,6 +119,30 @@ def test_interpolate_static():
     assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
+@backend_checker(Backend.RKNN)
+def test_interpolate__rknn():
+    input = torch.rand([1, 2, 2, 2])
+    model_output = F.interpolate(input, scale_factor=[2, 2])
+
+    def interpolate_caller(*arg, **kwargs):
+        return F.interpolate(*arg, **kwargs)
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='rknn', model_inputs=None),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+    wrapped_func = WrapFunction(interpolate_caller, size=[4, 4])
+    rewrite_output, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
+
+
 @backend_checker(Backend.NCNN)
 def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
@@ -496,3 +520,18 @@ def test_scaled_dot_product_attention():
         run_with_backend=True)
     assert torch.allclose(pytorch_output[0],
                           rewrite_output[0].to(pytorch_output[0].device))
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('num', [5, 7])
+def test_mod__tensorrt(num):
+    input = torch.rand(1, 3, 6, 6).cuda()
+    model = WrapFunction(lambda input: input % num)
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'], shape=[1, 3, 6, 6]),
+        run_with_backend=True)
+    assert torch.allclose(
+        pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)
