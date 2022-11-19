@@ -185,7 +185,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
 
 ## Supported models
 
