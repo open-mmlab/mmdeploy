@@ -11,6 +11,7 @@ def is_available():
     try:
         import popart
         device = popart.DeviceManager.acquireAvailableDevice()
+        import popconverter
 
         return True
     except Exception as e:
@@ -24,8 +25,9 @@ __all__ = []
 if is_available():
     try:
         from .wrapper import IPUWrapper
+        from .converter import onnx_to_popef
 
-        __all__ += ['IPUWrapper']
+        __all__ += ['IPUWrapper', 'onnx_to_popef']
     except Exception as e:
         print(e)
         pass

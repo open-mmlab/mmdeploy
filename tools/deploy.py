@@ -410,6 +410,15 @@ def main():
             suffix = get_model_suffix(convert_to)
             coreml_files.append(output_file_prefix + suffix)
         backend_files = coreml_files
+    elif backend == Backend.IPU:
+        from mmdeploy.apis.ipu import onnx_to_popef
+        popef_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            popef_path = onnx_path.replace('.onnx', '.popef')
+            ipu_config = ir_config['ipu_config']
+            onnx_to_popef(onnx_path, popef_path, ipu_config)
+            popoef_files.append(popef_path)
+        backend_files = popef_files
 
     if args.test_img is None:
         args.test_img = args.img
