@@ -38,6 +38,7 @@ git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
 
 - [Linux-x86_64](linux-x86_64.md)
 - [Windows](windows.md)
+- [MacOS](macos-arm64.md)
 - [Android-aarch64](android.md)
 - [NVIDIA Jetson](jetsons.md)
 - [Qcom SNPE](snpe.md)

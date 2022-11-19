@@ -70,6 +70,23 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
 | Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
 | Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
+[![Build Status][pass-backend-ort]][ci-backend-ort]
+[![Build Status][pass-backend-pplnn]][ci-backend-pplnn]
+[![Build Status][pass-backend-ncnn]][ci-backend-ncnn]
+[![Build Status][pass-backend-torchscript]][ci-backend-torchscript]
+[![Build Status][pass-backend-ascend]][ci-backend-ascend]
+[![Build Status][pass-backend-coreml]][ci-backend-coreml]
+[![Build Status][pass-backend-snpe]][ci-backend-snpe]
+[![Build Status][pass-backend-rknn]][ci-backend-rknn]
+
+<!-- [![Build Status][pass-backend-riscv64]][ci-backend-riscv64] -->
+
+<!-- [![Build Status][pass-backend-rknp]][ci-backend-rkpnu] -->
+
+<!-- [pass-backend-riscv64]: -->
+
+<!-- [pass-backend-rknpu]:  -->
+
 ### Efficient and scalable C/C++ SDK Framework
 
 All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
@@ -82,11 +99,13 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
   - [Build from Script](docs/en/01-how-to-build/build_from_script.md)
   - [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
+  - [Build for Windows](docs/en/01-how-to-build/windows.md)
   - [Build for macOS](docs/en/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
+  - [Build for Rockchip](docs/en/01-how-to-build/rockchip.md)
   - [Cross Build for aarch64](docs/en/01-how-to-build/cross_build_ncnn_aarch64.md)
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
@@ -164,3 +183,20 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab image and video editing toolbox.
 - [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab image and video generative models toolbox.
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab model deployment framework.
+
+[ci-backend-ascend]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml
+[ci-backend-coreml]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml
+[ci-backend-ncnn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml
+[ci-backend-ort]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml
+[ci-backend-pplnn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml
+[ci-backend-rknn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml
+[ci-backend-snpe]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml
+[ci-backend-torchscript]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml
+[pass-backend-ascend]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ascend
+[pass-backend-coreml]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-coreml
+[pass-backend-ncnn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ncnn
+[pass-backend-ort]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ort
+[pass-backend-pplnn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-pplnn
+[pass-backend-rknn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-rknn
+[pass-backend-snpe]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-snpe
+[pass-backend-torchscript]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ort

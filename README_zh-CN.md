@@ -68,6 +68,23 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 | Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
 | Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
+[![Build Status][pass-backend-ort]][ci-backend-ort]
+[![Build Status][pass-backend-pplnn]][ci-backend-pplnn]
+[![Build Status][pass-backend-ncnn]][ci-backend-ncnn]
+[![Build Status][pass-backend-torchscript]][ci-backend-torchscript]
+[![Build Status][pass-backend-ascend]][ci-backend-ascend]
+[![Build Status][pass-backend-coreml]][ci-backend-coreml]
+[![Build Status][pass-backend-snpe]][ci-backend-snpe]
+[![Build Status][pass-backend-rknn]][ci-backend-rknn]
+
+<!-- [![Build Status][pass-backend-riscv64]][ci-backend-riscv64] -->
+
+<!-- [![Build Status][pass-backend-rknp]][ci-backend-rkpnu] -->
+
+<!-- [pass-backend-riscv64]: -->
+
+<!-- [pass-backend-rknpu]:  -->
+
 ### SDK 可高度定制化
 
 - Transform 数据预处理
@@ -81,11 +98,13 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [一键式脚本安装](docs/zh_cn/01-how-to-build/build_from_script.md)
   - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
   - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
+  - [Build for Windows](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for macOS](docs/zh_cn/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/zh_cn/01-how-to-build/jetsons.md)
   - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
+  - [Build for Rockchip](docs/zh_cn/01-how-to-build/rockchip.md)
   - [Cross Build for aarch64](docs/zh_cn/01-how-to-build/cross_build_ncnn_aarch64.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
@@ -190,3 +209,20 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - 🔥 提供与各行各业开发者充分交流的平台
 
 干货满满 📘，等您来撩 💗，OpenMMLab 社区期待您的加入 👬
+
+[ci-backend-ascend]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml
+[ci-backend-coreml]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml
+[ci-backend-ncnn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml
+[ci-backend-ort]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml
+[ci-backend-pplnn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml
+[ci-backend-rknn]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml
+[ci-backend-snpe]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml
+[ci-backend-torchscript]: https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml
+[pass-backend-ascend]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ascend
+[pass-backend-coreml]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-coreml
+[pass-backend-ncnn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ncnn
+[pass-backend-ort]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ort
+[pass-backend-pplnn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-pplnn
+[pass-backend-rknn]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-rknn
+[pass-backend-snpe]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-snpe
+[pass-backend-torchscript]: https://img.shields.io/github/workflow/status/open-mmlab/mmdeploy/backend-ort
