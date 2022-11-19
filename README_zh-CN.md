@@ -79,7 +79,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 <!-- [![Build Status][pass-backend-riscv64]][ci-backend-riscv64] -->
 
-<!-- [![Build Status][pass-backend-rknp]][ci-backend-rkpnu] -->
+<!-- [![Build Status][pass-backend-rknpu]][ci-backend-rkpnu] -->
 
 <!-- [pass-backend-riscv64]: -->
 
