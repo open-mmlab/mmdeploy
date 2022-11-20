@@ -75,9 +75,10 @@ def install_tvm(dep_dir):
     os.system(
         """ echo 'export LD_LIBRARY_PATH={}:$LD_LIBRARY_PATH' >> ~/mmdeploy.env """  # noqa: E501
         .format(os.path.join(tvm_dir, 'build')))
-    os.system(
-        """ echo 'export PYTHONPATH={}:$PYTHONPATH' >> ~/mmdeploy.env """  # noqa: E501
-        .format(os.path.join(tvm_dir, 'python')))
+
+    # install python package
+    os.chdir(osp.join(tvm_dir, 'python'))
+    os.system(""" python3 setup.py install --user """)
 
     return tvm_dir
 
