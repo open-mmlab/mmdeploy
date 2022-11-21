@@ -28,6 +28,11 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
     conda activate torch${TORCH_VERSION}
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
+    if [ $TORCH_VERSION == "1.8.0" ]; then
+        # fix torchscript issue of no libnvrtc-builtins.so.11.1
+        export torch_lib_dir=$(python -m pip show torch | grep Location | awk '{print $2}')
+        cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
+    fi
     # need to build for each env
     # TODO add openvino
     mkdir -p $MMDEPLOY_DIR/build && cd $MMDEPLOY_DIR/build
