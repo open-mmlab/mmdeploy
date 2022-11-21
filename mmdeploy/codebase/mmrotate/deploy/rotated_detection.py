@@ -260,11 +260,61 @@ class RotatedDetection(BaseTask):
         """
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        # rename sdk RResize -> Resize
-        model_cfg.data.test.pipeline = replace_RResize(
-            model_cfg.data.test.pipeline)
-        preprocess = model_cfg.data.test.pipeline
-        return preprocess
+        pipeline = model_cfg.test_pipeline
+        meta_keys = [
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
+            'valid_ratio'
+        ]
+
+        def _remove_scope(trans_type):
+            trans_type = trans_type.split('.')
+            if len(trans_type) > 1:
+                trans_type = trans_type[1:]
+            return '.'.join(trans_type)
+
+        # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
+        for i, transform in enumerate(pipeline):
+            naive_trans_type = _remove_scope(transform['type'])
+            if naive_trans_type == 'RandomCenterCropPad':
+                if transform['test_pad_mode'][0] == 'logical_or':
+                    extra_pad = dict(
+                        type='Pad',
+                        logical_or_val=transform['test_pad_mode'][1],
+                        add_pix_val=transform['test_pad_add_pix'],
+                    )
+                    pipeline[i] = extra_pad
+        transforms = [
+            item for item in pipeline if 'Random' not in item['type']
+            and 'Annotation' not in item['type']
+        ]
+        for i, transform in enumerate(transforms):
+            naive_trans_type = _remove_scope(transform['type'])
+            if naive_trans_type == 'PackDetInputs':
+                meta_keys += transform[
+                    'meta_keys'] if 'meta_keys' in transform else []
+                transform['meta_keys'] = list(set(meta_keys))
+                transform['keys'] = ['img']
+                transforms[i]['type'] = 'Collect'
+            if naive_trans_type == 'Resize':
+                transforms[i]['size'] = transforms[i].pop('scale')
+
+        data_preprocessor = model_cfg.model.data_preprocessor
+
+        transforms.insert(-1, dict(type='DefaultFormatBundle'))
+        transforms.insert(
+            -2,
+            dict(
+                type='Pad',
+                size_divisor=data_preprocessor.get('pad_size_divisor', 1)))
+        transforms.insert(
+            -3,
+            dict(
+                type='Normalize',
+                to_rgb=data_preprocessor.get('bgr_to_rgb', False),
+                mean=data_preprocessor.get('mean', [0, 0, 0]),
+                std=data_preprocessor.get('std', [1, 1, 1])))
+        return transforms
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK.
@@ -272,8 +322,13 @@ class RotatedDetection(BaseTask):
         Return:
             dict: Composed of the postprocess information.
         """
-        postprocess = self.model_cfg.model.test_cfg
-        return postprocess
+        params = self.model_cfg.model.test_cfg
+        type = 'ResizeRBBox'  # default for object detection
+        if 'rpn' in params:
+            params['min_bbox_size'] = params['rpn']['min_bbox_size']
+        if 'rcnn' in params:
+            params['score_thr'] = params['rcnn']['score_thr']
+        return dict(type=type, params=params)
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.
