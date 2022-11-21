@@ -49,10 +49,16 @@ def main():
                 tmp_report = report_failed.loc[report_failed[test_pass_key] ==
                                                'False']  # noqa
                 num_failed = len(tmp_report)
+                if num_failed == 0:
+                    continue
                 model_failed = set(tmp_report['Model'])
                 report_failed = report_failed.loc[report_failed['Model'].isin(
                     model_failed)]
-                model_failed_str = ', '.join(list(model_failed))
+                model_failed_with_backend = set()
+                for idx, row in tmp_report.iterrows():
+                    s = f'{row["Model"]}+{row["Backend"]}'
+                    model_failed_with_backend.add(s)
+                model_failed_str = ' || '.join(list(model_failed_with_backend))
                 stats.append([version, num_failed, model_failed_str])
                 url_prefix = tv_dir.replace('/data2/regression_log',
                                             args.url_prefix)
