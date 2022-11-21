@@ -22,14 +22,14 @@ def main():
     assert osp.exists(regression_dir)
     codebase_dirs = glob.glob(osp.join(regression_dir, 'mm*'))
     codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
-
+    test_stats_path = osp.join(regression_dir, 'stats_report.xlsx')
+    test_stats_writer = pd.ExcelWriter(test_stats_path)
     for i, cb_dir in enumerate(codebase_dirs):
         _, codebase_name = osp.split(cb_dir)
         # cb_log = cb_dir + '.log'
         torch_versions = [
             d for d in os.listdir(cb_dir) if d.startswith('torch')
         ]
-        report_stats_path = osp.join(cb_dir, 'report_stats.xlsx')
         report_detail_path = osp.join(cb_dir, 'report_detail.xlsx')
         stats = []
         with pd.ExcelWriter(report_detail_path) as writer:
@@ -79,9 +79,11 @@ def main():
 
         df_stats = pd.DataFrame(
             stats, columns=['Torch', 'Failed Number', 'Failed Model Name'])
-        df_stats.to_excel(report_stats_path)
-        print(f'Save results to {report_stats_path}')
+        df_stats.to_excel(
+            test_stats_writer, sheet_name=codebase_name, index=False)
         print(f'Save results to {report_detail_path}')
+
+    test_stats_writer.close()
 
 
 if __name__ == '__main__':
