@@ -131,7 +131,7 @@ cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right) {
 }
 
 template <int a0, int a1, int a2, typename T>
-void normalize3(const T* __restrict__ src, float* __restrict__ dst, size_t size, const float* mean,
+void normalize3(const T* __restrict src, float* __restrict dst, size_t size, const float* mean,
                 const float* std) {
   const float _mean[3] = {mean[0], mean[1], mean[2]};
   const float _inv[3] = {1.f / std[0], 1.f / std[1], 1.f / std[2]};
@@ -143,7 +143,7 @@ void normalize3(const T* __restrict__ src, float* __restrict__ dst, size_t size,
 }
 
 template <typename T>
-void normalize1(const T* __restrict__ src, float* __restrict__ dst, size_t size, const float* mean,
+void normalize1(const T* __restrict src, float* __restrict dst, size_t size, const float* mean,
                 const float* std) {
   float _mean = mean[0];
   float _inv = 1.f / std[0];
