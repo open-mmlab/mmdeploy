@@ -45,12 +45,15 @@ def main():
                 report = pd.read_excel(report_excel_path)
                 test_pass_key = report.columns[-1]
                 report_failed = report.loc[report[test_pass_key].isin(
-                    [False, '-'])]
-                tmp_report = report_failed.loc[report[test_pass_key] ==  # noqa
-                                               False]  # noqa
+                    ['False', '-'])]
+                tmp_report = report_failed.loc[report_failed[test_pass_key] ==
+                                               'False']  # noqa
                 num_failed = len(tmp_report)
-                model_failed = ', '.join(list(set(tmp_report['Model'])))
-                stats.append([version, num_failed, model_failed])
+                model_failed = set(tmp_report['Model'])
+                report_failed = report_failed.loc[report_failed['Model'].isin(
+                    model_failed)]
+                model_failed_str = ', '.join(list(model_failed))
+                stats.append([version, num_failed, model_failed_str])
                 url_prefix = tv_dir.replace('/data2/regression_log',
                                             args.url_prefix)
 
@@ -66,7 +69,7 @@ def main():
                     return url
 
                 report_failed['LOG_URL'] = report_failed.apply(add_url, axis=1)
-                report_failed.to_excel(writer, sheet_name=version)
+                report_failed.to_excel(writer, sheet_name=version, index=False)
 
         df_stats = pd.DataFrame(
             stats, columns=['Torch', 'Failed Number', 'Failed Model Name'])
