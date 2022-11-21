@@ -24,7 +24,7 @@ def main():
     codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
 
     for i, cb_dir in enumerate(codebase_dirs):
-        codebase_name, _ = osp.split(cb_dir)
+        _, codebase_name = osp.split(cb_dir)
         # cb_log = cb_dir + '.log'
         torch_versions = [
             d for d in os.listdir(cb_dir) if d.startswith('torch')
@@ -43,14 +43,14 @@ def main():
                         f'Report file not found: {report_excel_path}')
                     continue
                 report = pd.read_excel(report_excel_path)
-                report.index = report['Model']
                 test_pass_key = report.columns[-1]
-                test_passes = report[test_pass_key]
-                failed = (test_passes == False)  # noqa E712
-                num_failed = len(failed)
-                model_failed = ', '.join(list(set(failed.index)))
+                report_failed = report.loc[report[test_pass_key].isin(
+                    [False, '-'])]
+                tmp_report = report_failed.loc[report[test_pass_key] ==  # noqa
+                                               False]  # noqa
+                num_failed = len(tmp_report)
+                model_failed = ', '.join(list(set(tmp_report['Model'])))
                 stats.append([version, num_failed, model_failed])
-                report_failed = report.loc[test_passes.isin([False, '-'])]
                 url_prefix = tv_dir.replace('/data2/regression_log',
                                             args.url_prefix)
 
