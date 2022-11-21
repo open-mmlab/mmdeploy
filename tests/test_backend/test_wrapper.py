@@ -131,6 +131,12 @@ def onnx2backend(backend, onnx_file):
             dict(input_shapes=dict(input=test_img.shape)))
         from_onnx(onnx_file, work_dir, model_inputs)
         return backend_file
+    elif backend == Backend.IPU:
+        from mmdeploy.apis.ipu import onnx_to_popef
+        popef_file = onnx_file.replace('.onnx', '.popef')
+        ipu_config = {'bps': 1}
+        onnx_to_popef(onnx_file, popef_file, ipu_config)
+        return popef_file
 
 
 def create_wrapper(backend, model_files):
@@ -172,6 +178,10 @@ def create_wrapper(backend, model_files):
         from mmdeploy.backend.ascend import AscendWrapper
         ascend_model = AscendWrapper(model_files)
         return ascend_model
+    elif backend == Backend.IPU:
+        from mmdeploy.backend.ipu import IPUWrapper
+        ipu_model = IPUWrapper(model_files)
+        return ipu_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -207,13 +217,17 @@ def run_wrapper(backend, wrapper, input):
     elif backend == Backend.ASCEND:
         results = wrapper({'input': input})['output']
         return results
+    elif backend == Backend.IPU:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN
+    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
+    Backend.IPU
 ]
 
 

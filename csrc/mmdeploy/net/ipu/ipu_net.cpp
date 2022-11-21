@@ -84,7 +84,7 @@ Result<void> IPUNet::Init(const Value& args) {
   // //   OUTCOME_TRY(auto onnx, model.ReadFile(config.net))
   std::string popef_path = args["popef_path"].get<std::string>();
 
-  batch_per_step = args["batch_per_step"].get<int>();
+  batch_per_step = args["bps"].get<int>();
 
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
