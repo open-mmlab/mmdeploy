@@ -1,0 +1,79 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import argparse
+import glob
+import logging
+import os
+import os.path as osp
+
+import pandas as pd
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='Regression Test')
+    parser.add_argument('regression_dir')
+    parser.add_argument('--url-prefix', default='http://10.1.52.36:8989')
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_args()
+    regression_dir = args.regression_dir
+    assert osp.exists(regression_dir)
+    codebase_dirs = glob.glob(osp.join(regression_dir, 'mm*'))
+    codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
+
+    for i, cb_dir in enumerate(codebase_dirs):
+        codebase_name, _ = osp.split(cb_dir)
+        # cb_log = cb_dir + '.log'
+        torch_versions = [
+            d for d in os.listdir(cb_dir) if d.startswith('torch')
+        ]
+        report_stats_path = osp.join(cb_dir, 'report_stats.xlsx')
+        report_detail_path = osp.join(cb_dir, 'report_detail.xlsx')
+        stats = []
+        with pd.ExcelWriter(report_detail_path) as writer:
+            for tv in torch_versions:
+                version = tv.replace('torch', '')
+                tv_dir = osp.join(cb_dir, tv)
+                report_excel_path = osp.join(tv_dir,
+                                             f'{codebase_name}_report.xlsx')
+                if not osp.exists(report_excel_path):
+                    logging.error(
+                        f'Report file not found: {report_excel_path}')
+                    continue
+                report = pd.read_excel(report_excel_path)
+                report.index = report['Model']
+                test_pass_key = report.columns[-1]
+                test_passes = report[test_pass_key]
+                failed = (test_passes == False)  # noqa E712
+                num_failed = len(failed)
+                model_failed = ', '.join(list(set(failed.index)))
+                stats.append([version, num_failed, model_failed])
+                report_failed = report.loc[test_passes.isin([False, '-'])]
+                url_prefix = tv_dir.replace('/data2/regression_log',
+                                            args.url_prefix)
+
+                def add_url(row):
+                    url = '-'
+                    if str(row[test_pass_key]) == 'False':
+                        ckpt = row['Checkpoint']
+                        if ckpt != 'x':
+                            url = osp.split(ckpt)[0].replace(
+                                '${WORK_DIR}', url_prefix)
+                        else:
+                            url = url_prefix
+                    return url
+
+                report_failed['LOG_URL'] = report_failed.apply(add_url, axis=1)
+                report_failed.to_excel(writer, sheet_name=version)
+
+        df_stats = pd.DataFrame(
+            stats, columns=['Torch', 'Failed Number', 'Failed Model Name'])
+        df_stats.to_excel(report_stats_path)
+        print(f'Save results to {report_stats_path}')
+        print(f'Save results to {report_detail_path}')
+
+
+if __name__ == '__main__':
+    main()
