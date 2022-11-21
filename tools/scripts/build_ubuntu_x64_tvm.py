@@ -66,7 +66,7 @@ def install_tvm(dep_dir):
     os.chdir(osp.join(tvm_dir, 'build'))
 
     os.system(
-        """ sed -i "s/set(USE_LLVM OFF)/set(USE_LLVM /usr/bin/llvm-config)/g" cmake/config.cmake """  # noqa: E501
+        """ sed -i "s@set(USE_LLVM OFF)@set(USE_LLVM /usr/bin/llvm-config-10)@g" cmake/config.cmake """  # noqa: E501
     )
 
     os.system('cmake .. && make -j {} && make runtime'.format(g_jobs))
