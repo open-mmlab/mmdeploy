@@ -19,7 +19,7 @@ Scope* Scope::CreateScope(std::string_view name) {
 }
 
 void Scope::Dump(Scope* scope, std::ofstream& ofs) {
-  ofs << scope->name_ << "\n";
+  ofs << scope->name_ << " " << (void*)scope << "\n";
   for (const auto& child : scope->children_) {
     Dump(child, ofs);
   }
@@ -71,8 +71,9 @@ void Profiler::Release() {
             });
 
   for (int i = 0; i < vec.size(); i++) {
-    ofs << vec[i]->scope->name_ << " " << vec[i]->type << " " << vec[i]->index << " "
-        << std::chrono::duration_cast<std::chrono::microseconds>(vec[i]->time_point - TimePoint{})
+    ofs << (void*)vec[i]->scope << " " << vec[i]->type << " " << vec[i]->index << " "
+        << std::chrono::duration_cast<std::chrono::microseconds>(vec[i]->time_point -
+                                                                 vec[0]->time_point)
                .count()
         << "\n";
   }

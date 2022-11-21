@@ -21,11 +21,14 @@ def main():
     graph = graph.strip().split('\n')
     events = events.strip().split('\n')
 
+    addr2name = {}
     name2id = {}
     id2name = {}
-    for i, name in enumerate(graph):
+    for i, line in enumerate(graph):
+        name, addr = line.split()
         name2id[name] = i
         id2name[i] = name
+        addr2name[addr] = name
 
     n_active = {i: 0 for i in range(len(name2id))}
     n_call = {i: 0 for i in range(len(name2id))}
@@ -39,7 +42,7 @@ def main():
 
     for event in events:
         words = event.split()
-        name = words[0]
+        name = addr2name[words[0]]
         id = name2id[name]
         used_id.add(id)
         kind, index, ts = map(int, words[1:])
