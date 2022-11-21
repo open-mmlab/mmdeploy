@@ -27,5 +27,5 @@ def abi_language_decoder___get_length__default(ctx,
     # add `.float()` before `argmax()`
     out = ((out.float().cumsum(dim) == 1) & out).float().argmax(dim)
     out = out + 1
-    out = torch.where(abn, out, out.new_tensor(logit.shape[1])).float()
+    out = torch.where(abn, out, out.clone().detach()).float()
     return out
