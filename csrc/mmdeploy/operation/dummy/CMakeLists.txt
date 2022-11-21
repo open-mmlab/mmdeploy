@@ -6,6 +6,4 @@ set(SRCS operations.cpp)
 
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-        mmdeploy_operation
-        mmdeploy_opencv_utils)
+target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy_operation)

@@ -1,6 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
@@ -15,6 +16,11 @@ class Compose : public Transform {
     context = args["context"];
     context["device"].get_to(device_);
     context["stream"].get_to(stream_);
+
+    if (auto parent = context.value<profiler::Scope*>("scope", nullptr)) {
+      scope_ = parent->CreateScope("Compose");
+      context["scope"] = scope_;
+    }
 
     auto transforms = args["transforms"].array();
     operation::Context ctx(device_, stream_);
@@ -37,17 +43,26 @@ class Compose : public Transform {
         throw_exception(eFail);
       }
       transforms_.push_back(std::move(transform));
+      if (scope_) {
+        transform_scopes_.push_back(scope_->CreateScope(type));
+      }
     }
   }
 
   Result<void> Apply(Value& data) override {
-    {
-      operation::Context context(device_, stream_);
-      if (!hash_code_.empty()) {
-        context.set_use_dummy(true);
+    profiler::ScopedCounter counter(scope_);
+    operation::Context context(device_, stream_);
+    if (!hash_code_.empty()) {
+      context.set_use_dummy(true);
+    }
+    for (size_t i = 0; i < transforms_.size(); ++i) {
+      std::optional<profiler::ScopedCounter> child_counter;
+      if (scope_) {
+        child_counter.emplace(transform_scopes_[i]);
       }
-      for (auto& transform : transforms_) {
-        OUTCOME_TRY(transform->Apply(data));
+      OUTCOME_TRY(transforms_[i]->Apply(data));
+      if (scope_) {
+        OUTCOME_TRY(stream_.Wait());
       }
     }
     return success();
@@ -73,6 +88,8 @@ class Compose : public Transform {
   std::vector<std::unique_ptr<Transform>> transforms_;
   Device device_;
   Stream stream_;
+  std::vector<profiler::Scope*> transform_scopes_;
+  profiler::Scope* scope_{};
   std::string hash_code_;
 };
 
