@@ -56,6 +56,8 @@ typedef enum mmdeploy_status_t {
 
 typedef struct mmdeploy_device* mmdeploy_device_t;
 
+typedef struct mmdeploy_profiler* mmdeploy_profiler_t;
+
 typedef struct mmdeploy_mat_t {
   uint8_t* data;
   int height;
@@ -88,6 +90,7 @@ typedef enum mmdeploy_context_type_t {
   MMDEPLOY_TYPE_MODEL = 2,
   MMDEPLOY_TYPE_SCHEDULER = 3,
   MMDEPLOY_TYPE_MAT = 4,
+  MMDEPLOY_TYPE_PROFILER = 5,
 } mmdeploy_context_type_t;
 
 #if __cplusplus
@@ -122,6 +125,21 @@ MMDEPLOY_API int mmdeploy_device_create(const char* device_name, int device_id,
  * @param device
  */
 MMDEPLOY_API void mmdeploy_device_destroy(mmdeploy_device_t device);
+
+/**
+ * Create profiler
+ * @param path path to save the profile data
+ * @param profiler handle for profiler, should be added to context and deleted by
+ * mmdeploy_profiler_destroy
+ * @return status of create
+ */
+MMDEPLOY_API int mmdeploy_profiler_create(const char* path, mmdeploy_profiler_t* profiler);
+
+/**
+ * Destroy profiler handle
+ * @param profiler handle for profiler, profile data will be written to disk after this call
+ */
+MMDEPLOY_API void mmdeploy_profiler_destroy(mmdeploy_profiler_t profiler);
 
 /**
  * Create context
