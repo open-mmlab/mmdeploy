@@ -61,7 +61,7 @@ Description
 
 Calibration set is used to calculate quantization layer parameters. Some DFQ (Data Free Quantization) methods do not even require a dataset.
 
-- Create a folder, just put in some pictures (no directory structure, no negative example, no special filename format)
+- Create a folder, just put in some images (no directory structure, no negative example, no special filename format)
 - The image needs to be the data comes from real scenario otherwise the accuracy would be drop
 - You can not quantize model with test dataset
   | Type  | Train dataset | Validation dataset | Test dataset  | Calibration dataset |
