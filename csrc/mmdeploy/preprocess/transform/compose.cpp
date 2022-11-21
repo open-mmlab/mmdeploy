@@ -36,6 +36,10 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
     context["fuse_transform"] = true;
     context["sha256"] = sha256;
   }
+  if (context.contains("scope")) {
+    auto scope = context["scope"].get<profiler::Scope*>();
+    scope_ = scope->CreateScope("Compose");
+  }
   for (auto cfg : args["transforms"]) {
     cfg["context"] = context;
     auto type = cfg.value("type", std::string{});
@@ -45,6 +49,17 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
       MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
                      gRegistry<Transform>().List());
       throw_exception(eEntryNotFound);
+    }
+    if (scope_) {
+      auto scope = scope_->CreateScope(type);
+      if (type == "Lift") {
+        cfg["context"]["scope"] = scope;
+        transform_scopes_.push_back(nullptr);
+      } else {
+        transform_scopes_.push_back(scope);
+      }
+    } else {
+      transform_scopes_.push_back(nullptr);
     }
     auto transform = creator->Create(cfg);
     if (!transform) {
@@ -58,10 +73,15 @@ Compose::Compose(const Value& args, int version) : Transform(args) {
 Result<Value> Compose::Process(const Value& input) {
   Value output = input;
   Value::Array intermediates;
+  int idx = 0;
   for (auto& transform : transforms_) {
+    profiler::ScopedCounter counter(transform_scopes_[idx++]);
     OUTCOME_TRY(auto t, transform->Process(output));
     SaveIntermediates(t, intermediates);
     output = std::move(t);
+    if (transform_scopes_[idx - 1]) {
+      OUTCOME_TRY(stream_.Wait());
+    }
   }
   OUTCOME_TRY(stream_.Wait());
   return std::move(output);
