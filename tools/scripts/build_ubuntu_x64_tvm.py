@@ -80,6 +80,11 @@ def install_tvm(dep_dir):
     os.chdir(osp.join(tvm_dir, 'python'))
     os.system(""" python3 setup.py install --user """)
 
+    # install dependency
+    os.system(
+        """ python3 -m pip install xgboost decorator psutil scipy attrs tornado """  # noqa: E501
+    )
+
     return tvm_dir
 
 
