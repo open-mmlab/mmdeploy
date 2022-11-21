@@ -68,8 +68,7 @@ class Fused : public Transform {
   explicit Fused(const Value& args) {
     device_ = operation::gContext().device();
     tag_ = args["hash_code"].get<std::string>();
-    tag_.append("_");
-    tag_.append(GetPlatformName(device_));
+    tag_.append("_").append(GetPlatformName(device_));
     func_ = FuseKernel::Get().GetFunc(tag_);
     if (!func_) {
       MMDEPLOY_ERROR("can't find fuse function with tag: {}", tag_);
