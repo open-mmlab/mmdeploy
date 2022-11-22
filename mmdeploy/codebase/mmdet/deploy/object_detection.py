@@ -249,7 +249,8 @@ class ObjectDetection(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -287,7 +288,10 @@ class ObjectDetection(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+            results = dataset.evaluate(outputs, **eval_kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+            logger.info(results)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

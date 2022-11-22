@@ -50,6 +50,7 @@ ${MODEL_CFG} \
 - `--speed-test`:  Whether to activate speed test.
 - `--warmup`: warmup before counting inference elapse, require setting speed-test first.
 - `--log-interval`: The interval between each log, require setting speed-test first.
+- `--json-file`: The path of json file to save evaluation results. Default is `./results.json`.
 
 \* Other arguments in `tools/test.py` are used for speed test. They have no concern with evaluation.
 

@@ -227,7 +227,8 @@ class Segmentation(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -257,7 +258,10 @@ class Segmentation(BaseTask):
         if format_only:
             dataset.format_results(outputs, **kwargs)
         if metrics:
-            dataset.evaluate(outputs, metrics, logger=logger, **kwargs)
+            results = dataset.evaluate(
+                outputs, metrics, logger=logger, **kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

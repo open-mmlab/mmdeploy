@@ -272,6 +272,7 @@ class PoseDetection(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          log_file: Optional[str] = None,
+                         json_file: Optional[str] = None,
                          **kwargs):
         """Perform post-processing to predictions of model.
 
@@ -307,6 +308,8 @@ class PoseDetection(BaseTask):
             eval_config.update(dict(metric=metrics))
 
         results = dataset.evaluate(outputs, res_folder, **eval_config)
+        if json_file is not None:
+            mmcv.dump(results, json_file, indent=4)
         for k, v in sorted(results.items()):
             logger.info(f'{k}: {v:.4f}')
 

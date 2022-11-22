@@ -228,7 +228,8 @@ class Classification(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None) -> None:
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None) -> None:
         """Perform post-processing to predictions of model.
 
         Args:
@@ -249,9 +250,11 @@ class Classification(BaseTask):
         """
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
-
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+
             for k, v in results.items():
                 logger.info(f'{k} : {v:.2f}')
         else:
