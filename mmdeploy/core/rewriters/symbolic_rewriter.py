@@ -141,7 +141,7 @@ class SymbolicRewriter:
             from torch.onnx.symbolic_registry import \
                 _registry as pytorch_registry
             for function_name, domain, version in self._pytorch_symbolic:
-                # Same to ungister_op() in torch 1.9.0+
+                # Same to unregister_op() in torch 1.9.0+
                 del pytorch_registry[(domain, version)][function_name]
                 if not pytorch_registry[(domain, version)]:
                     del pytorch_registry[(domain, version)]
