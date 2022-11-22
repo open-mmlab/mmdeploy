@@ -267,15 +267,9 @@ class RotatedDetection(BaseTask):
             'valid_ratio'
         ]
 
-        def _remove_scope(trans_type):
-            trans_type = trans_type.split('.')
-            if len(trans_type) > 1:
-                trans_type = trans_type[1:]
-            return '.'.join(trans_type)
-
         # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
         for i, transform in enumerate(pipeline):
-            naive_trans_type = _remove_scope(transform['type'])
+            _, naive_trans_type = Registry.split_scope_key(transform['type'])
             if naive_trans_type == 'RandomCenterCropPad':
                 if transform['test_pad_mode'][0] == 'logical_or':
                     extra_pad = dict(
@@ -289,7 +283,7 @@ class RotatedDetection(BaseTask):
             and 'Annotation' not in item['type']
         ]
         for i, transform in enumerate(transforms):
-            naive_trans_type = _remove_scope(transform['type'])
+            _, naive_trans_type = Registry.split_scope_key(transform['type'])
             if naive_trans_type == 'PackDetInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []

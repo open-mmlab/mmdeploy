@@ -60,7 +60,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ```shell
 cd mmdeploy
 
-# download unet model from mmrotate model zoo
+# download rotated-faster-rcnn model from mmrotate model zoo
 mim download mmrotate --config rotated-faster-rcnn-le90_r50_fpn_1x_dota --dest .
 wget https://github.com/open-mmlab/mmrotate/raw/main/demo/dota_demo.jpg
 
@@ -169,7 +169,7 @@ import numpy as np
 
 img = cv2.imread('./dota_demo.jpg')
 
-# create a classifier
+# create a detector
 detector = RotatedDetector(model_path='./mmdeploy_models/mmrotate/ort', device_name='cpu', device_id=0)
 # perform inference
 det = detector(img)

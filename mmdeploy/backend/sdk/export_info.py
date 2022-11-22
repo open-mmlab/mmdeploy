@@ -164,6 +164,8 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     # NOTE: There is a potential risk that transforms with same names in
     # different scope might have different behavior
     for transform in transforms:
+        _, transform['type'] = mmengine.Registry.split_scope_key(
+            transform['type'])
         trans_type = transform['type']
         trans_type = trans_type.split('.')
         if len(trans_type) > 1:
