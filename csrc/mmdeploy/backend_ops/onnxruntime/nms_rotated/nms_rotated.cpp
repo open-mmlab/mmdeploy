@@ -261,8 +261,8 @@ float rotated_boxes_intersection(const RotatedBox& box1, const RotatedBox& box2)
   return polygon_area(orderedPts, num_convex);
 }
 
-NMSRotatedKernel::NMSRotatedKernel(OrtApi api, const OrtKernelInfo* info)
-    : api_(api), ort_(api_), info_(info) {
+NMSRotatedKernel::NMSRotatedKernel(const OrtApi& api, const OrtKernelInfo* info)
+    : ort_(api), info_(info) {
   iou_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "iou_threshold");
   score_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "score_threshold");
 
