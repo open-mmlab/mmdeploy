@@ -233,20 +233,16 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
         checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
     else:
-        if Path(checkpoint).exists():
-            # To invoice the path which is 'A.a B.b' when test sdk.
-            checkpoint = Path(checkpoint).absolute().resolve()
-        elif backend_name == 'ncnn':
-            # ncnn have 2 backend file but only need xxx.param
-            checkpoint = checkpoint.split('.param')[0] + '.param'
+        parent_dir, filename = os.path.split(checkpoint)
+        parent_dir = os.path.abspath(parent_dir)
         work_dir = report_txt_path.parent.absolute().resolve()
-        checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
+        parent_dir = parent_dir.replace(str(work_dir), '${WORK_DIR}')
+        checkpoint = os.path.join(parent_dir, filename)
 
     # save to tmp file
     tmp_str = f'{model_name},{model_config},{task_name},{checkpoint},' \
               f'{dataset},{backend_name},{deploy_config},' \
-              f'{static_or_dynamic},{precision_type},{conversion_result},' \
-              f'{fps},'
+              f'{static_or_dynamic},{precision_type},{conversion_result},'
 
     # save to report
     report_dict.get('Model').append(model_name)
@@ -747,12 +743,14 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
+        report_checkpoint = backend_output_path.joinpath(backend_file_name[0])
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
             backend_path = backend_output_path.joinpath(backend_file)
             backend_path = str(backend_path.absolute().resolve())
             convert_checkpoint_path += f'{str(backend_path)} '
     else:
+        report_checkpoint = backend_output_path.joinpath(backend_file_name)
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
     # Test the model
@@ -813,10 +811,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         metric_list = [{metric: '-'} for metric in metric_info]
         fps = '-'
         test_pass = convert_result
-        if convert_result:
-            report_checkpoint = convert_checkpoint_path
-        else:
-            report_checkpoint = 'x'
         dataset_type = metafile_dataset['dataset']
         task_name = metafile_dataset['task']
         # update the report
@@ -825,7 +819,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             model_name=model_name,
             model_config=str(model_cfg_path),
             task_name=task_name,
-            checkpoint=report_checkpoint,
+            checkpoint=str(report_checkpoint),
             dataset=dataset_type,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
