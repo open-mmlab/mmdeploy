@@ -159,7 +159,7 @@ class RKNNEnd2EndModel(End2EndModel):
             List[np.ndarray]: A list of classification prediction.
         """
         outputs = self.wrapper({self.input_name: imgs})
-        outputs = [out.numpy() for out in outputs]
+        outputs = [out.numpy() for out in outputs.values()]
         return outputs
 
 

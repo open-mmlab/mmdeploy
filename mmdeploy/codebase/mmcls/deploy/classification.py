@@ -133,7 +133,7 @@ class Classification(BaseTask):
             imgs = [imgs]
         model_cfg = self.model_cfg
         if pipeline_updater is not None:
-            cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+            model_cfg = pipeline_updater(self.deploy_cfg, model_cfg)
         cfg = process_model_config(model_cfg, imgs, input_shape)
         data_list = []
         test_pipeline = Compose(cfg.data.test.pipeline)

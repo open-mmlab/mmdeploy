@@ -57,11 +57,13 @@ class RKNNWrapper(BaseWrapper):
             inputs (Dict[str, torch.Tensor]): Input name and tensor pairs.
 
         Return:
-            Sequence[torch.Tensor]: The output tensors.
+            Dict[str, torch.Tensor]: The output tensors. The keys of the dict
+                represent the sequence of the outputs of RKNN model.
         """
         rknn_out = self.__rknnnn_execute(
             [i.permute(0, 2, 3, 1).cpu().numpy() for i in inputs.values()])
-        return [torch.from_numpy(out) for out in rknn_out]
+        rknn_out = [torch.from_numpy(out) for out in rknn_out]
+        return {str(i): x for i, x in enumerate(rknn_out)}
 
     @TimeCounter.count_time(Backend.RKNN.value)
     def __rknnnn_execute(self, inputs: Sequence[np.array]):

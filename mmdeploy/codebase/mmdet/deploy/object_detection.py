@@ -125,7 +125,7 @@ class ObjectDetection(BaseTask):
         dynamic_flag = is_dynamic_shape(self.deploy_cfg)
         model_cfg = self.model_cfg
         if pipeline_updater is not None:
-            cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+            model_cfg = pipeline_updater(self.deploy_cfg, model_cfg)
         cfg = process_model_config(model_cfg, imgs, input_shape)
         # Drop pad_to_square when static shape. Because static shape should
         # ensure the shape before input image.
