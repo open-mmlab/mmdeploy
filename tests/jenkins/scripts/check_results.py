@@ -31,6 +31,7 @@ def main():
             d for d in os.listdir(cb_dir) if d.startswith('torch')
         ]
         report_detail_path = osp.join(cb_dir, 'report_detail.xlsx')
+        report_stats_path = osp.join(cb_dir, 'report_stats.xlsx')
         stats = []
         with pd.ExcelWriter(report_detail_path) as writer:
             for tv in torch_versions:
@@ -67,9 +68,11 @@ def main():
                     url = '-'
                     if str(row[test_pass_key]) == 'False':
                         ckpt = row['Checkpoint']
-                        if ckpt != 'x':
+                        if '${WORK_DIR}' in ckpt:
                             url = osp.split(ckpt)[0].replace(
                                 '${WORK_DIR}', url_prefix)
+                            if '.' in osp.split(url)[1]:
+                                url = osp.split(url)[0]
                         else:
                             url = url_prefix
                     return url
@@ -79,6 +82,8 @@ def main():
 
         df_stats = pd.DataFrame(
             stats, columns=['Torch', 'Failed Number', 'Failed Model Name'])
+        df_stats.to_excel(
+            report_stats_path, sheet_name=codebase_name, index=False)
         df_stats.to_excel(
             test_stats_writer, sheet_name=codebase_name, index=False)
         print(f'Save results to {report_detail_path}')
