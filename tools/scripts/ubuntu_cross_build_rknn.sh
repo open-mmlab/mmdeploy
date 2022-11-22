@@ -60,7 +60,7 @@ build_ocv_arm_gnueabi() {
   cd opencv/build_arm_gnueabi
   rm -rf CMakeCache.txt
   cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
-    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+    -DBUILD_TIFF=ON -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
   good_nproc
   jobs=$?
   make -j${jobs} && make install
