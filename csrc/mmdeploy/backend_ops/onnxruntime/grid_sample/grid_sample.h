@@ -7,7 +7,7 @@
 namespace mmdeploy {
 
 struct GridSampleKernel {
-  GridSampleKernel(const OrtApi& api, const OrtKernelInfo *info);
+  GridSampleKernel(const OrtApi &api, const OrtKernelInfo *info);
 
   void Compute(OrtKernelContext *context);
 
@@ -22,7 +22,7 @@ struct GridSampleKernel {
 };
 
 struct GridSampleOp : Ort::CustomOpBase<GridSampleOp, GridSampleKernel> {
-  void *CreateKernel(const OrtApi& api, const OrtKernelInfo *info) const {
+  void *CreateKernel(const OrtApi &api, const OrtKernelInfo *info) const {
     return new GridSampleKernel(api, info);
   };
 
