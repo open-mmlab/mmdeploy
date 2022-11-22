@@ -10,20 +10,20 @@
 #include <string>
 #include <vector>
 
-#include "mmdeploy/jpeg_decoder.h"
+#include "mmdeploy/image_decoder.h"
 
 using namespace std;
 
 int main(int argc, char **argv) {
   if (argc != 4) {
-    printf("./benchmark_jpeg_decode image_folder batch_size total\n");
+    printf("./benchmark_image_decode image_folder batch_size total\n");
   }
   const char *img_folder = argv[1];
   int batch_size = stoi(argv[2]);
   int total = stoi(argv[3]);
 
-  mmdeploy_jpeg_decoder_t decoder;
-  mmdeploy_jpeg_decoder_create(0, &decoder);
+  mmdeploy_image_decoder_t decoder;
+  mmdeploy_image_decoder_create(nullptr, "cuda", 0, &decoder);
 
   vector<pair<int, int>> resolutions = {{-1, -1},    {640, 480},   {960, 640},
                                         {1280, 720}, {1920, 1080}, {3840, 2160}};
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
       printf("opencv: %ld\n", dur);
     }
 
-    // jpeg_decoder
+    // image_decoder
     {
       auto t0 = std::chrono::high_resolution_clock::now();
       for (int i = 0; i < total / batch_size; i++) {
@@ -70,9 +70,10 @@ int main(int argc, char **argv) {
           batch_length.push_back(buffers[p].size());
         }
 
-        mmdeploy_jpeg_decoder_apply(decoder, batch_buffer.data(), batch_length.data(), batch_size,
-                                    MMDEPLOY_PIXEL_FORMAT_BGR, &dev_result, nullptr);
-        mmdeploy_jpeg_decoder_release_result(dev_result, batch_size);
+        int res = mmdeploy_image_decoder_apply(decoder, batch_buffer.data(), batch_length.data(),
+                                               batch_size, MMDEPLOY_PIXEL_FORMAT_BGR, &dev_result,
+                                               nullptr);
+        if (res == MMDEPLOY_SUCCESS) mmdeploy_image_decoder_release_result(dev_result, batch_size);
       }
       auto t1 = std::chrono::high_resolution_clock::now();
       auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count();
@@ -80,5 +81,5 @@ int main(int argc, char **argv) {
     }
   }
 
-  mmdeploy_jpeg_decoder_destroy(decoder);
+  mmdeploy_image_decoder_destroy(decoder);
 }

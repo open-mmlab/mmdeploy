@@ -51,8 +51,6 @@ else ()
 endif ()
 
 set(MMDEPLOY_TASKS "" CACHE INTERNAL "")
-set(MMDEPLOY_CODECS "" CACHE INTERNAL "")
-set(MMDEPLOY_CODECS_LIBS "" CACHE INTERNAL "")
 
 if (MMDEPLOY_COVERAGE)
     add_compile_options(-coverage -fprofile-arcs -ftest-coverage)

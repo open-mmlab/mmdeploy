@@ -1,34 +1,31 @@
-// Copyright (c) OpenMMLab. All rights reserved.
-
-#include "jpeg_decoder.h"
+#include "mmdeploy/codecs/nvjpeg/nvjpeg_decoder.h"
 
 #include <cuda_runtime.h>
 #include <nvjpeg.h>
 
-#include <map>
-#include <mutex>
-#include <vector>
-
+#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
-#include "mmdeploy/core/archive.h"
+#include "mmdeploy/codecs/decoder.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/device_impl.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/mat.h"
-#include "mmdeploy/core/value.h"
 
-#define CHECK_NVJPEG(call)                                                      \
-  {                                                                             \
-    nvjpegStatus_t _e = (call);                                                 \
-    if (_e != NVJPEG_STATUS_SUCCESS) {                                          \
-      MMDEPLOY_ERROR("NVJPEG failure: '#{}' at {} {}", _e, __FILE__, __LINE__); \
-      throw std::runtime_error("NVJPEG failure");                               \
-    }                                                                           \
+void check_nvjpeg(int err, int line, const char* file, bool exit) {
+  if (err != 0) {
+    MMDEPLOY_ERROR("NVJPEG failure: '#{}' at {} {}", err, line, file);
+    if (exit) {
+      throw std::runtime_error("NVJPEG failure");
+    }
   }
+}
+
+#define CHECK_NVJPEG(call) check_nvjpeg(call, __LINE__, __FILE__, true)
+#define CHECK_NVJPEG_NT(call) check_nvjpeg(call, __LINE__, __FILE__, false)
 
 namespace mmdeploy {
 
-namespace codecs {
+namespace nvjpeg {
 
 using namespace framework;
 
@@ -102,7 +99,7 @@ tDevMalloc GeDevtMalloc(int device_id) { return dev_malloc_funcs[device_id]; }
 
 tDevFree GetDevFree(int device_id) { return dev_free_funcs[device_id]; }
 
-struct JPEGDecoder::Impl {
+struct ImageDecoder::Impl {
   Device device_;
   cudaStream_t stream_;
   nvjpegHandle_t handle_;
@@ -116,11 +113,11 @@ struct JPEGDecoder::Impl {
 
   bool hw_decode_available_;  // A100, A30
 
-  Impl(int device_id) {
-    device_ = Device("cuda", device_id);
+  Result<void> Init(const Value& cfg) {
+    device_ = cfg["device"].get<Device>();
     auto stream = Stream::GetDefault(device_);
     stream_ = GetNative<cudaStream_t>(stream);
-
+    auto device_id = device_.device_id();
     nvjpegDevAllocator_t dev_allocator = {GeDevtMalloc(device_id), GetDevFree(device_id)};
     hw_decode_available_ = true;
     nvjpegStatus_t status = nvjpegCreateEx(NVJPEG_BACKEND_HARDWARE, &dev_allocator, nullptr,
@@ -141,30 +138,29 @@ struct JPEGDecoder::Impl {
     CHECK_NVJPEG(nvjpegBufferPinnedCreate(handle_, NULL, &pinned_buffers_[1]));
     CHECK_NVJPEG(nvjpegBufferDeviceCreate(handle_, &dev_allocator, &device_buffer_));
     CHECK_NVJPEG(nvjpegDecodeParamsCreate(handle_, &decode_params_));
+    return success();
   }
 
   ~Impl() {
-    try {
-      CHECK_NVJPEG(nvjpegJpegStreamDestroy(jpeg_streams_[0]));
-      CHECK_NVJPEG(nvjpegJpegStreamDestroy(jpeg_streams_[1]));
-      CHECK_NVJPEG(nvjpegJpegStateDestroy(state_));
-      CHECK_NVJPEG(nvjpegDecoderDestroy(decoder_));
-      CHECK_NVJPEG(nvjpegJpegStateDestroy(decoupled_state_));
-      CHECK_NVJPEG(nvjpegBufferPinnedDestroy(pinned_buffers_[0]));
-      CHECK_NVJPEG(nvjpegBufferPinnedDestroy(pinned_buffers_[1]));
-      CHECK_NVJPEG(nvjpegBufferDeviceDestroy(device_buffer_));
-      CHECK_NVJPEG(nvjpegDecodeParamsDestroy(decode_params_));
-      CHECK_NVJPEG(nvjpegDestroy(handle_));  // destroy last
-    } catch (const std::exception& e) {
-      MMDEPLOY_ERROR("JPEGDecoder doesn't deconstruct properly");
-    }
+    CHECK_NVJPEG_NT(nvjpegJpegStreamDestroy(jpeg_streams_[0]));
+    CHECK_NVJPEG_NT(nvjpegJpegStreamDestroy(jpeg_streams_[1]));
+    CHECK_NVJPEG_NT(nvjpegJpegStateDestroy(state_));
+    CHECK_NVJPEG_NT(nvjpegDecoderDestroy(decoder_));
+    CHECK_NVJPEG_NT(nvjpegJpegStateDestroy(decoupled_state_));
+    CHECK_NVJPEG_NT(nvjpegBufferPinnedDestroy(pinned_buffers_[0]));
+    CHECK_NVJPEG_NT(nvjpegBufferPinnedDestroy(pinned_buffers_[1]));
+    CHECK_NVJPEG_NT(nvjpegBufferDeviceDestroy(device_buffer_));
+    CHECK_NVJPEG_NT(nvjpegDecodeParamsDestroy(decode_params_));
+    CHECK_NVJPEG_NT(nvjpegDestroy(handle_));  // destroy last
   }
 
-  void Prepare(const std::vector<const char*>& raw_data, const std::vector<int>& length,
-               PixelFormat format, std::vector<const unsigned char*>& batched_data,
-               std::vector<size_t>& batched_len, std::vector<nvjpegImage_t>& batched_nv_images,
-               std::vector<const unsigned char*>& normal_data, std::vector<size_t>& normal_len,
-               std::vector<nvjpegImage_t>& normal_nv_images, std::vector<Mat>& mats) {
+  Result<void> Prepare(const std::vector<const char*>& raw_data, const std::vector<int>& length,
+                       PixelFormat format, std::vector<const unsigned char*>& batched_data,
+                       std::vector<size_t>& batched_len,
+                       std::vector<nvjpegImage_t>& batched_nv_images,
+                       std::vector<const unsigned char*>& normal_data,
+                       std::vector<size_t>& normal_len,
+                       std::vector<nvjpegImage_t>& normal_nv_images, std::vector<Mat>& mats) {
     int n_image = raw_data.size();
 
     for (int i = 0; i < n_image; i++) {
@@ -207,10 +203,12 @@ struct JPEGDecoder::Impl {
         normal_nv_images.push_back(out_image);
       }
     }
+
+    return success();
   }
 
-  Result<Value> Apply(const std::vector<const char*>& raw_data, const std::vector<int>& length,
-                      PixelFormat format) {
+  Result<Value> Process(const std::vector<const char*>& raw_data, const std::vector<int>& length,
+                        PixelFormat format) {
     if (format != PixelFormat::kBGR && format != PixelFormat::kRGB ||
         raw_data.size() != length.size()) {
       return Status(eInvalidArgument);
@@ -224,8 +222,8 @@ struct JPEGDecoder::Impl {
     std::vector<nvjpegImage_t> normal_nv_images;
     std::vector<Mat> mats;
 
-    Prepare(raw_data, length, format, batched_data, batched_len, batched_nv_images, normal_data,
-            normal_len, normal_nv_images, mats);
+    OUTCOME_TRY(Prepare(raw_data, length, format, batched_data, batched_len, batched_nv_images,
+                        normal_data, normal_len, normal_nv_images, mats));
 
     nvjpegOutputFormat_t output_format =
         (format == PixelFormat::kBGR) ? NVJPEG_OUTPUT_BGRI : NVJPEG_OUTPUT_RGBI;
@@ -250,7 +248,7 @@ struct JPEGDecoder::Impl {
             nvjpegStateAttachPinnedBuffer(decoupled_state_, pinned_buffers_[buffer_index]));
         CHECK_NVJPEG(nvjpegDecodeJpegHost(handle_, decoder_, decoupled_state_, decode_params_,
                                           jpeg_streams_[buffer_index]));
-        cudaStreamSynchronize(stream_);
+        CHECK_NVJPEG(cudaStreamSynchronize(stream_));
 
         CHECK_NVJPEG(nvjpegDecodeJpegTransferToDevice(handle_, decoder_, decoupled_state_,
                                                       jpeg_streams_[buffer_index], stream_));
@@ -262,16 +260,40 @@ struct JPEGDecoder::Impl {
 
     return to_value(mats);
   }
+
+  Result<Value> Process(const Value& input) {
+    auto _input = from_value<std::vector<ImageDecoderInput>>(input["input"]);
+    std::vector<const char*> raw_data;
+    std::vector<int> length;
+    PixelFormat format = PixelFormat::kBGR;
+
+    for (int i = 0; i < _input.size(); i++) {
+      raw_data.push_back(_input[i].raw_data);
+      length.push_back(_input[i].length);
+      format = _input[i].format;
+    }
+    return Process(raw_data, length, format);
+  }
 };
 
-JPEGDecoder::JPEGDecoder(int device_id) { impl_ = std::make_unique<Impl>(device_id); }
+ImageDecoder::ImageDecoder() { impl_ = std::make_unique<Impl>(); }
 
-Result<Value> JPEGDecoder::Apply(const std::vector<const char*>& raw_data,
-                                 const std::vector<int>& length, PixelFormat format) {
-  return impl_->Apply(raw_data, length, format);
+Result<void> ImageDecoder::Init(const Value& cfg) { return impl_->Init(cfg); }
+
+Result<Value> ImageDecoder::Process(const Value& input) { return impl_->Process(input); }
+
+ImageDecoder::~ImageDecoder() = default;
+
+}  // namespace nvjpeg
+
+static std::unique_ptr<::mmdeploy::ImageDecoder> Create(const Value& args) {
+  auto p = std::make_unique<nvjpeg::ImageDecoder>();
+  if (p->Init(args)) {
+    return p;
+  }
+  return nullptr;
 }
 
-JPEGDecoder::~JPEGDecoder() = default;
+MMDEPLOY_REGISTER_FACTORY_FUNC(ImageDecoder, (cuda, 0), Create);
 
-}  // namespace codecs
 }  // namespace mmdeploy

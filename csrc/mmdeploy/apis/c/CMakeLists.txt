@@ -20,6 +20,7 @@ set(COMMON_LIST
         common
         model
         executor
+        image_decoder
         pipeline)
 
 set(TASK_LIST ${MMDEPLOY_TASKS})
@@ -55,23 +56,6 @@ foreach (TASK ${TASK_LIST})
             DESTINATION include/mmdeploy)
 endforeach ()
 
-foreach (TASK ${MMDEPLOY_CODECS})
-    set(TARGET_NAME mmdeploy_${TASK})
-    set(OBJECT_NAME mmdeploy_${TASK}_obj)
-    add_object(${OBJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.cpp)
-    mmdeploy_add_library(${TARGET_NAME})
-    target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME})
-    target_include_directories(${TARGET_NAME} PUBLIC
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:include>)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.h
-            DESTINATION include/mmdeploy)
-endforeach ()
-
-if (TARGET mmdeploy_nvjpeg)
-    target_link_libraries(mmdeploy_jpeg_decoder PUBLIC mmdeploy_nvjpeg)
-endif ()
-
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
         FILES_MATCHING
         PATTERN "*.cpp"
@@ -82,8 +66,7 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     add_library(mmdeploy SHARED)
     mmdeploy_load_static(mmdeploy MMDeployStaticModules)
     mmdeploy_load_dynamic(mmdeploy MMDeployDynamicModules)
-    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS} mmdeploy_execution
-        ${MMDEPLOY_CODECS_LIBS})
+    target_link_libraries(mmdeploy PRIVATE ${CAPI_OBJS} mmdeploy_execution)
     target_include_directories(mmdeploy PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
