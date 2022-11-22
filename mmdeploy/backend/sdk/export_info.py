@@ -161,17 +161,9 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     transforms = task_processor.get_preprocess()
 
     # remove scope name
-    # NOTE: There is a potential risk that transforms with same names in
-    # different scope might have different behavior
     for transform in transforms:
         _, transform['type'] = mmengine.Registry.split_scope_key(
             transform['type'])
-        trans_type = transform['type']
-        trans_type = trans_type.split('.')
-        if len(trans_type) > 1:
-            trans_type = trans_type[1:]
-        trans_type = '.'.join(trans_type)
-        transform['type'] = trans_type
 
     if get_backend(deploy_cfg) == Backend.RKNN:
         del transforms[-2]
