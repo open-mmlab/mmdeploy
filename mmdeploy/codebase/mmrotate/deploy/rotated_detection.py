@@ -267,10 +267,15 @@ class RotatedDetection(BaseTask):
             'valid_ratio'
         ]
 
+        # remove scope name
+        # NOTE: There is a potential risk that transforms with same names in
+        # different scope might have different behavior
+        for transform in pipeline:
+            _, transform['type'] = Registry.split_scope_key(transform['type'])
+
         # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
         for i, transform in enumerate(pipeline):
-            _, naive_trans_type = Registry.split_scope_key(transform['type'])
-            if naive_trans_type == 'RandomCenterCropPad':
+            if transform['type'] == 'RandomCenterCropPad':
                 if transform['test_pad_mode'][0] == 'logical_or':
                     extra_pad = dict(
                         type='Pad',
@@ -283,14 +288,13 @@ class RotatedDetection(BaseTask):
             and 'Annotation' not in item['type']
         ]
         for i, transform in enumerate(transforms):
-            _, naive_trans_type = Registry.split_scope_key(transform['type'])
-            if naive_trans_type == 'PackDetInputs':
+            if transform['type'] == 'PackDetInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))
                 transform['keys'] = ['img']
                 transforms[i]['type'] = 'Collect'
-            if naive_trans_type == 'Resize':
+            if transform['type'] == 'Resize':
                 transforms[i]['size'] = transforms[i].pop('scale')
 
         data_preprocessor = model_cfg.model.data_preprocessor
