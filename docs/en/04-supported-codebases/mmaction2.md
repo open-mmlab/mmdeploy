@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### Install mmaction2
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmaction2#installation) to install mmocr.
+Please follow the [installation guide](https://github.com/open-mmlab/mmaction2#installation) to install mmaction2.
 
 ### Install mmdeploy
 
