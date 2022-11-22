@@ -8,5 +8,6 @@ partition_config = dict(
         dict(
             save_file='yolov3.onnx',
             start=['detector_forward:input'],
-            end=['yolo_head:input'])
+            end=['yolo_head:input'],
+            output_names=[f'pred_maps.{i}' for i in range(3)])
     ])

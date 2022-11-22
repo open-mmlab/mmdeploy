@@ -7,7 +7,8 @@ import mmcv
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_common_config, get_ir_config, get_root_logger,
+                            get_common_config, get_ir_config,
+                            get_partition_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 from .tracer import add_transform_tag, get_transform_static
@@ -94,6 +95,9 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
     ir_name = get_ir_config(deploy_cfg)['save_file']
+    if get_partition_config(deploy_cfg) is not None:
+        ir_name = get_partition_config(
+            deploy_cfg)['partition_cfg'][0]['save_file']
     net = ir_name
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg)
@@ -185,6 +189,9 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
     backend = get_backend(deploy_cfg=deploy_cfg)
     if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
+        if get_partition_config(deploy_cfg) is not None:
+            output_names = get_partition_config(
+                deploy_cfg)['partition_cfg'][0]['output_names']
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
     else:
@@ -258,6 +265,8 @@ def get_preprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         for transform in transforms:
             if transform['type'] == 'Normalize':
                 transform['to_float'] = False
+                transform['mean'] = [0, 0, 0]
+                transform['std'] = [1, 1, 1]
 
     if transforms[0]['type'] != 'Lift':
         assert transforms[0]['type'] == 'LoadImageFromFile', \
@@ -299,14 +308,15 @@ def get_postprocess(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         task = Task.INSTANCE_SEGMENTATION
 
     component = task_map[task]['component']
-    if get_backend(deploy_cfg) == Backend.RKNN:
-        if 'YOLO' in task_processor.model_cfg.model.type:
-            bbox_head = task_processor.model_cfg.model.bbox_head
-            component = bbox_head.type
-            params['anchor_generator'] = bbox_head.get('anchor_generator',
-                                                       None)
-        else:  # default using base_dense_head
-            component = 'BaseDenseHead'
+    if task == Task.OBJECT_DETECTION:
+        if get_backend(deploy_cfg) == Backend.RKNN:
+            if 'YOLO' in task_processor.model_cfg.model.type:
+                bbox_head = task_processor.model_cfg.model.bbox_head
+                component = bbox_head.type
+                params['anchor_generator'] = bbox_head.get(
+                    'anchor_generator', None)
+            else:  # default using base_dense_head
+                component = 'BaseDenseHead'
 
     if task != Task.SUPER_RESOLUTION and task != Task.SEGMENTATION:
         if 'type' in params:

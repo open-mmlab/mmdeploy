@@ -722,6 +722,7 @@ class RKNNModel(End2EndModel):
                 class labels of shape [N, num_det].
         """
         outputs = self.wrapper({self.input_name: imgs})
+        outputs = [i for i in outputs.values()]
         ret = self._get_bboxes(outputs, img_metas)
         return ret
 
