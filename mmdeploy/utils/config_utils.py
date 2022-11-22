@@ -396,7 +396,7 @@ def get_dynamic_axes(
 
 
 def get_normalization(model_cfg: Union[str, mmcv.Config]):
-    """Get the Nomalize transform from model config.
+    """Get the Normalize transform from model config.
 
     Args:
         model_cfg (mmcv.Config): The content of config.
