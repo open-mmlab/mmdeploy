@@ -38,7 +38,8 @@ def parse_args():
         help='test performance if it set')
     parser.add_argument(
         '--backends', nargs='+', help='test specific backend(s)')
-    parser.add_argument('--models', nargs='+', help='test specific model(s)')
+    parser.add_argument(
+        '--models', nargs='+', default=['all'], help='test specific model(s)')
     parser.add_argument(
         '--work-dir',
         type=str,
@@ -893,11 +894,8 @@ def main():
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
 
-    if args.models is None:
-        logger.info('Regression test for all models in test yaml.')
-    else:
-        args.models = tuple([_filter_string(s) for s in args.models])
-        logger.info(f'Regression test models list = {args.models}')
+    args.models = [_filter_string(s) for s in args.models]
+    logger.info(f'Regression test models list = {args.models}')
 
     assert ' ' not in args.work_dir, \
         f'No empty space included in {args.work_dir}'
@@ -963,7 +961,7 @@ def main():
                                f'skipping {model_name_origin}...')
                 continue
 
-            if args.models is not None and model_name_new not in args.models:
+            if args.models != ['all'] and model_name_new not in args.models:
                 logger.info(
                     f'Test specific model mode, skip {model_name_origin}...')
                 continue
