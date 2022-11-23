@@ -65,6 +65,11 @@ if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
     LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
     cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/
     cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/
+else
+    # fix mmocr pt1.12 cudnn version mismatch
+    cudnn_dir=/root/workspace/mmdeploy_benchmark/cudnn-linux-x86_64-8.3.2.44_cuda11.5-archive
+    cp -r $cudnn_dir/include/cudnn* /usr/local/cuda-11.3/include/
+    cp -r $cudnn_dir/lib/libcudnn* /usr/local/cuda-11.3/lib64/
 fi
 
 
