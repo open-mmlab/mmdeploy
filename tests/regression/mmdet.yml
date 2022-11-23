@@ -4,26 +4,21 @@ globals:
   images:
     input_img: &input_img ../mmdetection/demo/demo.jpg
     test_img: &test_img ./tests/data/tiger.jpeg
-    img_blank: &img_blank
   metric_info: &metric_info
     box AP: # named after metafile.Results.Metrics
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 0.2 # metric ±n%
-      task_name: Object Detection # metafile.Results.Task
-      dataset: COCO # metafile.Results.Dataset
+      multi_value: 100
     mask AP:
       eval_name: segm
       metric_key: segm_mAP
       tolerance: 1 # metric ±n%
-      task_name: Instance Segmentation
-      dataset: COCO
+      multi_value: 100
     PQ:
       eval_name: proposal
       metric_key: '?'
       tolerance: 0.1 # metric ±n%
-      task_name: Panoptic Segmentation
-      dataset: COCO
   convert_image: &convert_image
     input_img: *input_img
     test_img: *test_img

@@ -2,8 +2,7 @@
 
 #include "mmdeploy/preprocess/transform/default_format_bundle.h"
 
-namespace mmdeploy {
-namespace elena {
+namespace mmdeploy::elena {
 
 class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
  public:
@@ -39,18 +38,7 @@ class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
   Buffer dummy_buffer_{Device{"cpu"}, 0, nullptr};
 };
 
-class DefaultFormatBundleImplCreator : public Creator<::mmdeploy::DefaultFormatBundleImpl> {
- public:
-  const char* GetName() const override { return "elena"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<DefaultFormatBundleImpl>(args);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::DefaultFormatBundleImpl, (elena, 0),
+                                 DefaultFormatBundleImpl);
 
-}  // namespace elena
-}  // namespace mmdeploy
-
-using mmdeploy::DefaultFormatBundleImpl;
-using mmdeploy::elena::DefaultFormatBundleImplCreator;
-REGISTER_MODULE(DefaultFormatBundleImpl, DefaultFormatBundleImplCreator);
+}  // namespace mmdeploy::elena

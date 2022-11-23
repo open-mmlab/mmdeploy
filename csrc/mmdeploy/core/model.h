@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "mmdeploy/core/mpl/type_traits.h"
-#include "serialization.h"
-#include "types.h"
+#include "mmdeploy/core/serialization.h"
+#include "mmdeploy/core/types.h"
 
 namespace mmdeploy {
 
@@ -37,31 +37,21 @@ class ModelImpl;
 
 /**
  * @class Model
- * @brief Read sdk model from file.
- * @note there might be more than one models in an sdk model file. For example,
- * in case of faster-rcnn model, it splits into two models, one is rpn and the
- * other is cnn for roi classification.
+ * @brief Load SDK model from file or buffer.
  */
 class MMDEPLOY_API Model {
  public:
   Model() = default;
 
-  /**
-   * @brief construct `Model` with an sdk model's path
-   * @param model_path file path of an sdk model. It can be a file or a
-   * directory. Refer to `Load`
-   * @note An exception might be threw. `Try...catch...` is strongly recommended
-   * when this constructor is used
-   */
   explicit Model(const std::string& model_path);
 
-  Model(const void* buffer, size_t size);
+  explicit Model(const void* buffer, size_t size);
 
   ~Model() = default;
 
   /**
-   * @brief Load an sdk model.
-   * @param model_path file path of an sdk model. It can be a file or a
+   * @brief Load SDK model.
+   * @param model_path file path of the model. It can be a file or a
    * directory.
    * @return status with an error code.
    */
@@ -70,24 +60,22 @@ class MMDEPLOY_API Model {
   Result<void> Init(const void* buffer, size_t size);
 
   /**
-   * @brief Return a specified model's meta info
-   * @param name the name of a model in sdk model file
+   * @brief Return the model's meta info
+   * @param name the name of a model in the SDK model file
    * @return
    */
   Result<model_meta_info_t> GetModelConfig(const std::string& name) const;
 
   /**
-   * @brief Read specified file from an sdk model
-   * @param file_path path relative to the root directory of an sdk model.
-   * @return the content of specified file if success, which can be accessed by
-   * `Result<T>.value()`. Otherwise, error code is returned that can be obtained
-   * by `Result<T>.error()`
+   * @brief Read file from the SDK model
+   * @param file_path path relative to the root directory of the model.
+   * @return the content of file on success
    */
   Result<std::string> ReadFile(const std::string& file_path) noexcept;
 
   /**
-   * @brief get meta information of an sdk model
-   * @return sdk model's meta information
+   * @brief get meta information of the model
+   * @return SDK model's meta information
    */
   const deploy_meta_info_t& meta() const { return meta_; }
 
@@ -107,55 +95,6 @@ class MMDEPLOY_API Model {
   std::string model_path_;
   std::shared_ptr<ModelImpl> impl_;
   deploy_meta_info_t meta_;
-};
-
-/**
- * @class ModelRegistry
- * @brief SDK model implementor's factory. The following code shows how to
- * register a new implementor to the factory.
- * @example
- * class ANewModelImpl : public ModelImpl {
- * };
- * class ANewModelImplRegister {
- *  public:
- *   ANewModelImplRegister() {
- *     ModelRegistry::Get().Register("ANewModelImpl",
- *     []()->unique_ptr<ModelImpl>{return make_unique<ANewModelImpl>();});
- *   }
- * };
- * ANewModelImplRegister a_new_model_impl_register;
- */
-class MMDEPLOY_API ModelRegistry {
- public:
-  using Creator = std::function<std::unique_ptr<ModelImpl>()>;
-  struct Entry {
-    std::string name;
-    Creator creator;
-  };
-
-  /**
-   * @brief Return global instance of `ModelRegistry`
-   */
-  static ModelRegistry& Get();
-
-  /**
-   * @brief Register an sdk model format denoted by an specified `ModelImpl`
-   * @param name sdk model implementor's name
-   * @param creator method to create an sdk model implementor
-   * @return Status of registering result
-   */
-  Result<void> Register(const std::string& name, Creator creator);
-
-  /**
-   * @brief Return the registered sdk model implementors
-   */
-  const std::vector<Entry>& ListEntries() const { return entries_; }
-
- private:
-  ModelRegistry() = default;
-
- private:
-  std::vector<Entry> entries_;
 };
 
 }  // namespace framework

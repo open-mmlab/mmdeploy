@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from pathlib import Path
 
 from ubuntu_utils import cmd_result, ensure_base_env, get_job
 
@@ -65,7 +66,7 @@ def install_pplnn(dep_dir, build_cuda):
 
     os.system('cd python/package && ./build.sh')
     os.system(
-        'cd /tmp/pyppl-package/dist && python3 -m pip install pyppl*.whl --force-reinstall'  # noqa: E501
+        'cd /tmp/pyppl-package/dist && python3 -m pip install pyppl*.whl --force-reinstall --user'  # noqa: E501
     )
 
     pplnn_cmake_dir = os.path.join(pplnn_dir,
@@ -150,7 +151,7 @@ def main():
                         build_cuda) != 0:
         return -1
 
-    if os.path.exists('~/mmdeploy.env'):
+    if os.path.exists(Path('~/mmdeploy.env').expanduser()):
         print('Please source ~/mmdeploy.env to setup your env !')
         os.system('cat ~/mmdeploy.env')
 

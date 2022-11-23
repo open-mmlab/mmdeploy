@@ -2,9 +2,9 @@
 
 #include "normalize.h"
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
 
 using namespace std;
@@ -25,6 +25,16 @@ NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
     arg_.std.push_back(v.get<float>());
   }
   arg_.to_rgb = args.value("to_rgb", true);
+  arg_.to_float = args.value("to_float", true);
+  // assert `mean` is 0 and `std` is 1 when `to_float` is false
+  if (!arg_.to_float) {
+    for (int i = 0; i < arg_.mean.size(); ++i) {
+      if ((int)arg_.mean[i] != 0 || (int)arg_.std[i] != 1) {
+        MMDEPLOY_ERROR("mean {} and std {} are not supported in int8 case", arg_.mean, arg_.std);
+        throw_exception(eInvalidArgument);
+      }
+    }
+  }
 }
 
 /**
@@ -66,8 +76,15 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
     assert(desc.shape.size() == 4 /*n, h, w, c*/);
     assert(desc.shape[3] == arg_.mean.size());
 
-    OUTCOME_TRY(auto dst, NormalizeImage(tensor));
-    SetTransformData(output, key, std::move(dst));
+    if (arg_.to_float) {
+      OUTCOME_TRY(auto dst, NormalizeImage(tensor));
+      SetTransformData(output, key, std::move(dst));
+    } else {
+      if (arg_.to_rgb) {
+        OUTCOME_TRY(auto dst, ConvertToRGB(tensor));
+        SetTransformData(output, key, std::move(dst));
+      }
+    }
 
     for (auto& v : arg_.mean) {
       output["img_norm_cfg"]["mean"].push_back(v);
@@ -88,7 +105,7 @@ Result<Value> NormalizeImpl::Process(const Value& input) {
 }
 
 Normalize::Normalize(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<NormalizeImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<NormalizeImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Normalize' is not supported on specified platform");
@@ -96,17 +113,9 @@ Normalize::Normalize(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class NormalizeCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "Normalize"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override { return make_unique<Normalize>(args, version_); }
-
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, NormalizeCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Normalize, 0), [](const Value& config) {
+  return std::make_unique<Normalize>(config, 0);
+});
 
 MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
 

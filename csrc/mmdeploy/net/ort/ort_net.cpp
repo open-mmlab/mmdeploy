@@ -74,7 +74,11 @@ Result<void> OrtNet::Init(const Value& args) {
   };
 
   for (int i = 0; i < n_inputs; ++i) {
+#if ORT_API_VERSION >= 13
+    auto input_name = session_.GetInputNameAllocated(i, allocator).release();
+#else
     auto input_name = session_.GetInputName(i, allocator);
+#endif
     auto type_info = session_.GetInputTypeInfo(i);
     auto shape = to_shape(type_info);
     MMDEPLOY_DEBUG("input {}, shape = {}", i, shape);
@@ -88,7 +92,11 @@ Result<void> OrtNet::Init(const Value& args) {
   auto n_outputs = session_.GetOutputCount();
 
   for (int i = 0; i < n_outputs; ++i) {
+#if ORT_API_VERSION >= 13
+    auto output_name = session_.GetOutputNameAllocated(i, allocator).release();
+#else
     auto output_name = session_.GetOutputName(i, allocator);
+#endif
     auto type_info = session_.GetOutputTypeInfo(i);
     auto shape = to_shape(type_info);
     MMDEPLOY_DEBUG("output {}, shape = {}", i, shape);
@@ -178,26 +186,21 @@ Result<void> OrtNet::Forward() {
   return success();
 }
 
-class OrtNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "onnxruntime"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    try {
-      auto p = std::make_unique<OrtNet>();
-      if (auto r = p->Init(args)) {
-        return p;
-      } else {
-        MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
-        return nullptr;
-      }
-    } catch (const std::exception& e) {
-      MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
+static std::unique_ptr<Net> Create(const Value& args) {
+  try {
+    auto p = std::make_unique<OrtNet>();
+    if (auto r = p->Init(args)) {
+      return p;
+    } else {
+      MMDEPLOY_ERROR("error creating OrtNet: {}", r.error().message().c_str());
       return nullptr;
     }
+  } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("unhandled exception when creating ORTNet: {}", e.what());
+    return nullptr;
   }
-};
+}
 
-REGISTER_MODULE(Net, OrtNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (onnxruntime, 0), Create);
 
 }  // namespace mmdeploy::framework

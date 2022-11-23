@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from pathlib import Path
 
 from ubuntu_utils import cmd_result, ensure_base_env, get_job
 
@@ -175,7 +176,7 @@ def main():
     if install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir) != 0:
         return -1
 
-    if os.path.exists('~/mmdeploy.env'):
+    if os.path.exists(Path('~/mmdeploy.env').expanduser()):
         print('Please source ~/mmdeploy.env to setup your env !')
         os.system('cat ~/mmdeploy.env')
 

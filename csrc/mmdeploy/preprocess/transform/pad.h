@@ -47,7 +47,7 @@ class MMDEPLOY_API Pad : public Transform {
   std::unique_ptr<PadImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(PadImpl);
+MMDEPLOY_DECLARE_REGISTRY(PadImpl, std::unique_ptr<PadImpl>(const Value& config));
 
 }  // namespace mmdeploy
 

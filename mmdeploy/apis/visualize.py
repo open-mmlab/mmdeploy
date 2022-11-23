@@ -64,10 +64,12 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
 
         if backend == Backend.PYTORCH:
             model = task_processor.init_pytorch_model(model[0])
+            model_inputs, _ = task_processor.create_input(img, input_shape)
         else:
             model = task_processor.init_backend_model(model, **kwargs)
+            model_inputs, _ = task_processor.create_input(
+                img, input_shape, task_processor.update_test_pipeline)
 
-    model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 

@@ -27,11 +27,14 @@ python tools/deploy.py \
 
 |    Model     |      Task      | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |                                      Model config                                      |
 | :----------: | :------------: | :---------: | :------: | :--: | :---: | :------: | :------------------------------------------------------------------------------------: |
-| PointPillars | VoxelDetection |      Y      |    Y     |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars) |
+| PointPillars | VoxelDetection |      Y      |   Y\*    |  N   |   N   |    Y     | [config](https://github.com/open-mmlab/mmdetection3d/blob/master/configs/pointpillars) |
 
-## Reminder
+1. mmdet3d models on **cu102+TRT8.4** can be visualized normally. For cuda-11 or TRT8.2 users, these issues should be checked
 
-Voxel detection onnx model excludes model.voxelize layer and model post process, and you can use python api to call these func.
+- [TRT8.2 assertion `is_tensor`](https://github.com/NVIDIA/TensorRT/issues/1541)
+- [TRT8.4 output NaN](https://github.com/NVIDIA/TensorRT/issues/2338)
+
+2. Voxel detection onnx model excludes model.voxelize layer and model post process, and you can use python api to call these func.
 
 Example:
 

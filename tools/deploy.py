@@ -372,6 +372,7 @@ def main():
                 onnx_path,
                 output_path,
                 deploy_cfg_path,
+                model_cfg_path,
                 dataset_file=dataset_file)
 
             backend_files.append(output_path)
@@ -395,20 +396,18 @@ def main():
             update_sdk_pipeline(args.work_dir)
 
     elif backend == Backend.COREML:
-        from mmdeploy.apis.coreml import from_torchscript, get_model_suffix
+        from mmdeploy.apis.coreml import from_torchscript
         coreml_pipeline_funcs = [from_torchscript]
         PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
-        model_inputs = get_model_inputs(deploy_cfg)
+
         coreml_files = []
         for model_id, torchscript_path in enumerate(ir_files):
             torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
             output_file_prefix = osp.join(args.work_dir, torchscript_name)
-            convert_to = deploy_cfg.backend_config.convert_to
-            from_torchscript(torchscript_path, output_file_prefix,
-                             ir_config.input_names, ir_config.output_names,
-                             model_inputs[model_id].input_shapes, convert_to)
-            suffix = get_model_suffix(convert_to)
-            coreml_files.append(output_file_prefix + suffix)
+
+            from_torchscript(model_id, torchscript_path, output_file_prefix,
+                             deploy_cfg, coreml_files)
+
         backend_files = coreml_files
 
     if args.test_img is None:

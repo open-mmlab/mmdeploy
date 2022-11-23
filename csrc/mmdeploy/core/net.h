@@ -8,9 +8,7 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
-
-namespace framework {
+namespace mmdeploy::framework {
 
 class Net {
  public:
@@ -24,10 +22,8 @@ class Net {
   virtual Result<void> ForwardAsync(Event* event) = 0;
 };
 
-}  // namespace framework
+MMDEPLOY_DECLARE_REGISTRY(Net, std::unique_ptr<Net>(const Value& config));
 
-MMDEPLOY_DECLARE_REGISTRY(framework::Net);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_CORE_NET_H_

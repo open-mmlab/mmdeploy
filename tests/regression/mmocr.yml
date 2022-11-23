@@ -10,15 +10,12 @@ globals:
     hmean-iou: # named after metafile.Results.Metrics
       eval_name: hmean-iou # test.py --metrics args
       metric_key: 0_hmean-iou:hmean # eval key name
-      tolerance: 0.15 # metric ±n%
-      task_name: Text Detection # metafile.Results.Task
-      dataset: ICDAR2015 # metafile.Results.Dataset
+      tolerance: 0.01 # metric ±n%
     word_acc:
       eval_name: acc
       metric_key: 0_word_acc_ignore_case
-      tolerance: 0.05 # metric ±n%
-      task_name: Text Recognition
-      dataset: IIIT5K
+      tolerance: 1.0 # metric
+      multi_value: 100
   convert_image_det: &convert_image_det
     input_img: *img_densetext_det
     test_img: *img_demo_text_det

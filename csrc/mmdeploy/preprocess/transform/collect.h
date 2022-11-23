@@ -35,7 +35,7 @@ class MMDEPLOY_API Collect : public Transform {
   std::unique_ptr<CollectImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(CollectImpl);
+MMDEPLOY_DECLARE_REGISTRY(CollectImpl, std::unique_ptr<CollectImpl>(const Value& config));
 
 }  // namespace mmdeploy
 
