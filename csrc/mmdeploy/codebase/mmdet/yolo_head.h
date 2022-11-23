@@ -39,7 +39,7 @@ class YOLOV3Head : public YOLOHead {
                                    int a) const override;
 };
 
-class YOLOV5Head : public YOLOHead {
+class YOLOv5Head : public YOLOHead {
  public:
   using YOLOHead::YOLOHead;
   Result<Value> operator()(const Value& prep_res, const Value& infer_res);

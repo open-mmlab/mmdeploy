@@ -154,6 +154,14 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
   } else {
     scale_factor = {1.f, 1.f, 1.f, 1.f};
   }
+
+  int top_padding = 0;
+  int left_padding = 0;
+  if (prep_res.contains("pad_param")) {
+    top_padding = prep_res["pad_param"][0].get<int>();
+    left_padding = prep_res["pad_param"][1].get<int>();
+  }
+
   int ori_width = prep_res["ori_shape"][2].get<int>();
   int ori_height = prep_res["ori_shape"][1].get<int>();
   auto det_ptr = dets.data<float>();
@@ -171,7 +179,8 @@ Result<Detections> YOLOHead::GetBBoxes(const Value& prep_res,
 
     MMDEPLOY_DEBUG("{}-th box: ({}, {}, {}, {}), {}, {}", i, x1, y1, x2, y2, label_id, score);
 
-    auto rect = MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0, ori_width, ori_height);
+    auto rect = MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0, ori_width, ori_height,
+                                 top_padding, left_padding);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
       MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
                      rect[3] - rect[1]);
@@ -203,18 +212,18 @@ std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
 
-Result<Value> YOLOV5Head::operator()(const Value& prep_res, const Value& infer_res) {
+Result<Value> YOLOv5Head::operator()(const Value& prep_res, const Value& infer_res) {
   return YOLOHead::operator()(prep_res, infer_res);
 }
 
-std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
+std::array<float, 4> YOLOv5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
                                              float stride,
                                              const std::vector<std::vector<float>>& anchor, int j,
                                              int i, int a) const {
   box_x = box_x * 2 - 0.5;
   box_y = box_y * 2 - 0.5;
-  box_w = box_w * 2 - 0.5;
-  box_h = box_h * 2 - 0.5;
+  box_w = sigmoid(box_w) * 2;
+  box_h = sigmoid(box_h) * 2;
   box_x = (box_x + j) * stride;
   box_y = (box_y + i) * stride;
   box_w = box_w * box_w * anchor[a][0];
@@ -223,6 +232,6 @@ std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box
 }
 
 REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV3Head);
-REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV5Head);
+REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOv5Head);
 
 }  // namespace mmdeploy::mmdet

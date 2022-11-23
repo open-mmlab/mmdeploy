@@ -11,7 +11,8 @@
 namespace mmdeploy::mmdet {
 std::array<float, 4> MapToOriginImage(float left, float top, float right, float bottom,
                                       const float* scale_factor, float x_offset, float y_offset,
-                                      int ori_width, int ori_height);
+                                      int ori_width, int ori_height, int top_padding,
+                                      int left_padding);
 // @brief Filter results using score threshold and topk candidates.
 // scores (Tensor): The scores, shape (num_bboxes, K).
 // probs: The scores after being filtered

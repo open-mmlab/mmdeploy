@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional, Sequence, Union
+from typing import Dict, Optional, Sequence
 
 import numpy as np
 import torch
@@ -70,22 +70,3 @@ class RKNNWrapper(BaseWrapper):
     def __rknnnn_execute(self, inputs: Sequence[np.array]):
         """Run inference with RKNN."""
         return self.rknn.inference(inputs)
-
-    def output_to_list(
-        self, output_dict: Union[Dict[str, torch.Tensor],
-                                 Sequence[torch.Tensor]]
-    ) -> Sequence[torch.Tensor]:
-        """Convert the output dict of forward() to a tensor list.
-
-        Args:
-            output_dict (Dict[str, torch.Tensor]): Key-value pairs of model
-                outputs.
-
-        Returns:
-            List[torch.Tensor]: An output value list whose order is determined
-                by the ouput_names list.
-        """
-        if not isinstance(output_dict, dict):
-            return output_dict
-        outputs = [output_dict[name] for name in self._output_names]
-        return outputs
