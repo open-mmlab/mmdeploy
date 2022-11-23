@@ -54,8 +54,6 @@ for codebase in ${codebase_list[@]}; do
         /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}.log 2>&1 &
         wait
         docker stop $container_id
-        # generate results
-        python3 ${HOME}/mmdeploy/tests/jenkins/scripts/check_results.py ${log_dir}
         echo "${codebase} convert finish!"
         cat ${log_dir}/${codebase}.log
         echo >&1000

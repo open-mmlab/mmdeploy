@@ -149,6 +149,8 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         --models $EXEC_MODELS \
         --backends $EXEC_BACKENDS \
         ${exec_performance} 2>&1 | tee ${log_path}
+    # get stats results
+    python ${MMDEPLOY_DIR}/tests/jenkins/scripts/check_results.py /root/workspace/mmdeploy_regression_working_dir
 done
 
 echo "end_time-$(date +%Y%m%d%H%M)"
