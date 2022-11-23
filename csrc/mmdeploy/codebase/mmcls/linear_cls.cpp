@@ -37,6 +37,7 @@ class LinearClsHead : public MMClassification {
     }
 
     auto class_num = (int)output.shape(1);
+    topk_ = topk_ < class_num ? topk_ : class_num;
 
     OUTCOME_TRY(auto _scores, MakeAvailableOnDevice(output, kHost, stream()));
     OUTCOME_TRY(stream().Wait());
