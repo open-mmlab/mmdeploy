@@ -127,7 +127,7 @@ import torch
 deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
 model_cfg = 'tsn_r50_1x1x3_100e_kinetics400_rgb.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
+backend_model = ['./mmdeploy_models/mmaction/tsn/ort/end2end.onnx']
 image = 'tests/data/arm_wrestling.mp4'
 
 # read deploy_cfg and model_cfg
