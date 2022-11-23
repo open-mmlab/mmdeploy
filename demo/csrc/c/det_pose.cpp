@@ -28,7 +28,7 @@ const auto config_json = R"(
     {
       "type": "Task",
       "module": "FilterBbox",
-      "input": ["dets", "img"],
+      "input": "dets",
       "output": "human"
     },
     {
@@ -73,7 +73,7 @@ class AddBboxField {
 MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (AddBboxField, 0),
                                [](const Value&) { return CreateTask(AddBboxField{}); });
 
-Result<Value> FilterBbox(const Value& dets, const Value&) {
+Result<Value> FilterBbox(const Value& dets) {
   Value::Array rets;
   for (const auto& det : dets) {
     if (det["label_id"].get<int>() == 0 && det["score"].get<float>() >= 0.3) {
