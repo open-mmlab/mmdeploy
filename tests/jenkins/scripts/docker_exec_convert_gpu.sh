@@ -32,31 +32,34 @@ function getFullName() {
     if [ "$codebase_" = "mmyolo" ]; then codebase_fullname="mmyolo"; fi
 }
 
+## prepare for mmdeploy test
+ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
+ln -s /root/workspace/jenkins mmdeploy/tests
+
+export codebase=$1
+getFullName $codebase
+export MMDEPLOY_DIR=/root/workspace/mmdeploy
+export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$2
 
 ## parameters
-export codebase=$1
-export performance=$2
-export TENSORRT_VERSION=$3
-export REQUIREMENT=$4
-export EXEC_TORCH_VERSIONS=$5
-export EXEC_MODELS=$6
-export EXEC_BACKENDS=$7
+export exec_performance=$(grep exec_performance ${CONFIG} | sed 's/exec_performance=//')
+export EXEC_MODELS=$(grep exec_models ${CONFIG} | sed 's/exec_models=//')
+export EXEC_BACKENDS=$(grep exec_backends ${CONFIG} | sed 's/exec_backends=//')
+export EXEC_TORCH_VERSIONS=$(grep exec_torch_versions ${CONFIG} | sed 's/exec_torch_versions=//')
+export TENSORRT_VERSION=$(grep tensorrt_version ${CONFIG} | sed 's/tensorrt_version=//')
+export REQUIRE_JSON=${MMDEPLOY_DIR}/tests/jenkins/conf/$(grep requirement ${CONFIG} | sed 's/requirement=//')
 
-if [[ "${performance}" == "y" ]]; then
+if [[ "${exec_performance}" == "y" ]]; then
     export exec_performance="-p"
 else
     export exec_performance=""
 fi
 
-getFullName $codebase
-export MMDEPLOY_DIR=/root/workspace/mmdeploy
-export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
 
-cp -R /root/workspace/jenkins/ mmdeploy/tests/
 echo "start_time-$(date +%Y%m%d%H%M)"
 ## clone ${codebase}
 
-branch=$(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep branch | awk -F ':' '{print $2}')
+branch=$(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep branch | awk -F ':' '{print $2}')
 git clone --branch ${branch} --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
 
 ## init tensorrt
@@ -73,8 +76,7 @@ else
 fi
 
 
-## build mmdeploy
-ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
+
 
 for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     conda activate torch${TORCH_VERSION}
@@ -121,7 +123,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         mim install /root/workspace/${codebase_fullname}
     else
         ## install requirements from conf
-        mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
+        mim install $(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
     fi
     ## start regression
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}

@@ -1,7 +1,8 @@
 #!/bin/bash
 
 ## parameters
-config="${HOME}/mmdeploy/tests/jenkins/conf/${1:-default.config}"
+config_filename=${1:-default.config}
+config="${HOME}/mmdeploy/tests/jenkins/conf/${config_filename}"
 if [ -f "$config" ]; then
     echo "Using config: $config"
 else
@@ -11,18 +12,11 @@ fi
 
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
-exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//')
-exec_models=$(grep exec_models ${config} | sed 's/exec_models=//')
-exec_backends=$(grep exec_backends ${config} | sed 's/exec_backends=//')
-exec_torch_versions=$(grep exec_torch_versions ${config} | sed 's/exec_torch_versions=//')
 
 max_job_nums=$(grep max_job_nums ${config} | sed 's/max_job_nums=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
 repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
-TENSORRT_VERSION=$(grep tensorrt_version ${config} | sed 's/tensorrt_version=//')
-REQUIREMENT=$(grep requirement ${config} | sed 's/requirement=//')
-
 
 ## make log_dir
 date_snap=$(date +%Y%m%d)
@@ -57,7 +51,7 @@ for codebase in ${codebase_list[@]}; do
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${exec_performance} ${TENSORRT_VERSION} ${REQUIREMENT} "${exec_torch_versions}" "${exec_models}" "${exec_backends}" " >${log_dir}/${codebase}.log 2>&1 &
+        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}.log 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"
