@@ -33,13 +33,21 @@ function getFullName() {
 }
 
 ## prepare for mmdeploy test
+export MMDEPLOY_DIR=/root/workspace/mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 ln -s /root/workspace/jenkins mmdeploy/tests
 
+
 export codebase=$1
 getFullName $codebase
-export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$2
+
+# deal with mmyolo special
+if [ "${codebase}" == "mmyolo"  ]; then
+  export yolo_dep=/root/workspace/mmdeploy_benchmark/mmyolo-deps
+  ln -s $yolo_dep/mmyolo-configs ${MMDEPLOY_DIR}/configs/mmyolo
+  cp $yolo_dep/mmyolo.yml ${MMDEPLOY_DIR}/tests/regression/mmyolo.yml
+fi
 
 ## parameters
 export exec_performance=$(grep exec_performance ${CONFIG} | sed 's/exec_performance=//')
@@ -121,6 +129,10 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         echo "Install mmdet3d dev-1.x specially"
         mim install mmengine "mmcv>=2.0.0rc1"
         mim install /root/workspace/${codebase_fullname}
+    elif [ "${codebase_fullname}" == "mmyolo"  ]; then
+        pip install -e /root/workspace/mmyolo
+        mim install 'mmdet>=3.0.0rc0'
+        mim install 'mmcv>=2.0.0rc0' mmengine
     else
         ## install requirements from conf
         mim install $(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')

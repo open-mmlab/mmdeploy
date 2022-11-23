@@ -43,5 +43,10 @@
         "branch": "dev",
         "version": "mmyolo",
         "mmcv": "mmcv>=2.0.0rc0"
+    },
+    "mmrotate": {
+        "branch": "dev-1.x",
+        "version": "mmrotate>=1.0.0rc0",
+        "mmcv": "mmcv>=2.0.0rc0"
     }
 }
