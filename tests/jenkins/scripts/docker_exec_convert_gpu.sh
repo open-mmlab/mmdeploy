@@ -38,6 +38,9 @@ export codebase=$1
 export performance=$2
 export TENSORRT_VERSION=$3
 export REQUIREMENT=$4
+export EXEC_TORCH_VERSIONS=$5
+export EXEC_MODELS=$6
+export EXEC_BACKENDS=$7
 
 if [[ "${performance}" == "y" ]]; then
     export exec_performance="-p"
@@ -64,10 +67,11 @@ if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
     cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/
 fi
 
+
 ## build mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 
-for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
+for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     conda activate torch${TORCH_VERSION}
     if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
         pip install /root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl
@@ -87,7 +91,7 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
         -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON -DMMDEPLOY_BUILD_TEST=ON \
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
         -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
+        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
         -DMMDEPLOY_SHARED_LIBS=OFF \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
         -DCUDNN_DIR=${CUDNN_DIR} \
@@ -123,7 +127,8 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
         --codebase ${codebase} \
         --work-dir ${log_dir} \
         --device cuda:0 \
-        --backends onnxruntime tensorrt ncnn torchscript openvino \
+        --models $EXEC_MODELS \
+        --backends $EXEC_BACKENDS \
         ${exec_performance} 2>&1 | tee ${log_path}
 done
 
