@@ -23,7 +23,7 @@ def main():
     codebase_dirs = glob.glob(osp.join(regression_dir, 'mm*'))
     codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
     test_stats_path = osp.join(regression_dir, 'stats_report.xlsx')
-    test_stats_writer = pd.ExcelWriter(test_stats_path)
+    test_stats_writer = pd.ExcelWriter(test_stats_path, engine='xlsxwriter')
     for i, cb_dir in enumerate(codebase_dirs):
         _, codebase_name = osp.split(cb_dir)
         # cb_log = cb_dir + '.log'
@@ -33,7 +33,7 @@ def main():
         report_detail_path = osp.join(cb_dir, 'report_detail.xlsx')
         report_stats_path = osp.join(cb_dir, 'report_stats.xlsx')
         stats = []
-        with pd.ExcelWriter(report_detail_path) as writer:
+        with pd.ExcelWriter(report_detail_path, engine='xlsxwriter') as writer:
             for tv in torch_versions:
                 version = tv.replace('torch', '')
                 tv_dir = osp.join(cb_dir, tv)

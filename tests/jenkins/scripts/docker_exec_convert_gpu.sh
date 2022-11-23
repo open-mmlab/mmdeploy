@@ -116,7 +116,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     make -j $(nproc)
     make install && cd $MMDEPLOY_DIR
 
-    pip install openmim
+    pip install openmim xlsxwriter
     pip install -r requirements/tests.txt
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
