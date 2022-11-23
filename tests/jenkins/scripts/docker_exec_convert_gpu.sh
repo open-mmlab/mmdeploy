@@ -43,8 +43,8 @@ getFullName $codebase
 export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$2
 
 # deal with mmyolo special
-if [ "${codebase}" == "mmyolo"  ]; then
-  export yolo_dep=/root/workspace/mmdeploy_benchmark/mmyolo-deps
+if [ ${codebase} == "mmyolo" ]; then
+  export yolo_dep=/root/workspace/mmyolo-deps
   ln -s $yolo_dep/mmyolo-configs ${MMDEPLOY_DIR}/configs/mmyolo
   cp $yolo_dep/mmyolo.yml ${MMDEPLOY_DIR}/tests/regression/mmyolo.yml
 fi
@@ -82,8 +82,6 @@ else
     cp -r $cudnn_dir/include/cudnn* /usr/local/cuda-11.3/include/
     cp -r $cudnn_dir/lib/libcudnn* /usr/local/cuda-11.3/lib64/
 fi
-
-
 
 
 for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
@@ -141,6 +139,8 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
+    # log env
+    python tools/check_env.py 2>&1 | tee ${log_dir}/check_env.log
     # ignore pplnn as it's too slow
     python ./tools/regression_test.py \
         --codebase ${codebase} \

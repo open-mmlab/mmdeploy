@@ -43,6 +43,7 @@ for codebase in ${codebase_list[@]}; do
             docker run -itd \
                 --gpus all \
                 -v /data2/checkpoints/:/root/workspace/mmdeploy_checkpoints \
+                -v /data2/benchmark/mmyolo-deps/:/root/workspace/mmyolo-deps \
                 -v ${log_dir}:/root/workspace/mmdeploy_regression_working_dir \
                 -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
                 -v ~/mmdeploy/tests/jenkins:/root/workspace/jenkins\
