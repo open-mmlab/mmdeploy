@@ -6,8 +6,7 @@ import torch
 from mmdet.utils import OptConfigType
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
-                                            pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
@@ -114,29 +113,8 @@ def yolov3_head__predict_by_feat(ctx,
 
     post_params = get_post_processing_params(deploy_cfg)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    confidence_threshold = cfg.get('conf_thr',
-                                   post_params.confidence_threshold)
-
-    # follow original pipeline of YOLOv3
-    if confidence_threshold > 0:
-        mask = batch_mlvl_conf_scores >= confidence_threshold
-        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
-            mask, batch_mlvl_conf_scores.new_zeros(1))
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask.unsqueeze(-1), batch_mlvl_scores.new_zeros(1))
-
-    if score_threshold > 0:
-        mask = batch_mlvl_scores > score_threshold
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask, batch_mlvl_scores.new_zeros(1))
 
     if pre_topk > 0:
-        batch_mlvl_bboxes = pad_with_value_if_necessary(
-            batch_mlvl_bboxes, 1, pre_topk)
-        batch_mlvl_conf_scores = pad_with_value_if_necessary(
-            batch_mlvl_conf_scores, 1, pre_topk, 0.)
-        batch_mlvl_scores = pad_with_value_if_necessary(
-            batch_mlvl_scores, 1, pre_topk, 0.)
         _, topk_inds = conf_pred.topk(pre_topk)
         batch_inds = torch.arange(
             batch_size, device=device).unsqueeze(-1).long()
