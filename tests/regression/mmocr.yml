@@ -12,6 +12,7 @@ globals:
     word_acc:
       metric_key: IIIT5K/recog/word_acc_ignore_case_symbol
       tolerance: 0.05 # metric ±n%
+      dataset: IIIT5K
   convert_image_det: &convert_image_det
     input_img: *img_densetext_det
     test_img: *img_demo_text_det

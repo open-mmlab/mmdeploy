@@ -256,8 +256,9 @@ def get_pipeline(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task = get_task_type(deploy_cfg)
     input_names = preprocess['input']
     output_names = postprocess['output']
-    if task == Task.CLASSIFICATION or task == Task.SUPER_RESOLUTION \
-            or task == Task.VIDEO_RECOGNITION:
+    if task in [
+            Task.CLASSIFICATION, Task.SUPER_RESOLUTION, Task.VIDEO_RECOGNITION
+    ]:
         postprocess['input'] = infer_info['output']
     else:
         postprocess['input'] = preprocess['output'] + infer_info['output']

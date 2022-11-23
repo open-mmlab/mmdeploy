@@ -2,6 +2,7 @@ aenum
 grpcio
 h5py
 matplotlib
+mmengine
 multiprocess
 numpy
 onnx>=1.8.0
