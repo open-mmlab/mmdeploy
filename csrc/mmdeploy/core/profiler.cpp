@@ -12,14 +12,17 @@ Event* Scope::Add(Event::Type type, Index index, TimePoint time_point) {
 }
 
 Scope* Scope::CreateScope(std::string_view name) {
-  std::string full_name = name_ + (name_.empty() ? "" : "/") + std::string(name);
-  auto node = children_.emplace_back(profiler_->CreateScope(full_name));
+  auto node = children_.emplace_back(profiler_->CreateScope(name));
   node->parent_ = this;
   return node;
 }
 
 void Scope::Dump(Scope* scope, std::ofstream& ofs) {
-  ofs << scope->name_ << " " << (void*)scope << "\n";
+  ofs << scope->name_ << " " << (void*)scope << " ";
+  for (auto& child : scope->children_) {
+    ofs << (void*)child << " ";
+  }
+  ofs << "\n";
   for (const auto& child : scope->children_) {
     Dump(child, ofs);
   }

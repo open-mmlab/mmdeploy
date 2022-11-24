@@ -13,6 +13,20 @@ def parse_args():
     return args
 
 
+def get_name(addr, prev, addr2name, used_addr, depth, skip):
+    node_name = addr2name[addr] if not skip else ''
+    if addr not in prev:
+        return ' ' * depth * 4 + node_name
+    prev_addr = prev[addr]
+    if prev_addr in used_addr:
+        depth += 1
+        skip = True
+    prev_name = get_name(prev[addr], prev, addr2name, used_addr, depth, skip)
+    if len(prev_name.split()) == 0:
+        return prev_name + node_name
+    return prev_name + '/' + node_name
+
+
 def main():
     args = parse_args()
     with open(args.profile_file) as f:
@@ -22,28 +36,37 @@ def main():
     events = events.strip().split('\n')
 
     addr2name = {}
-    name2id = {}
-    id2name = {}
+    addr2id = {}
+    id2addr = {}
+    next = {}
+    prev = {}
     for i, line in enumerate(graph):
-        name, addr = line.split()
-        name2id[name] = i
-        id2name[i] = name
+        info = line.split()
+        name, addr = info[:2]
         addr2name[addr] = name
+        addr2id[addr] = i
+        id2addr[i] = addr
+        next[addr] = []
+        for child in info[2:]:
+            next[addr].append(child)
+            prev[child] = addr
 
-    n_active = {i: 0 for i in range(len(name2id))}
-    n_call = {i: 0 for i in range(len(name2id))}
-    t_occupy = {i: 0 for i in range(len(name2id))}
-    t_usage = {i: 0 for i in range(len(name2id))}
-    t_time = {i: [] for i in range(len(name2id))}
+    n_active = {i: 0 for i in range(len(addr2id))}
+    n_call = {i: 0 for i in range(len(addr2id))}
+    t_occupy = {i: 0 for i in range(len(addr2id))}
+    t_usage = {i: 0 for i in range(len(addr2id))}
+    t_time = {i: [] for i in range(len(addr2id))}
     used_id = set()
+    used_addr = set()
     event_start = {}
     now = 0
     t_min = 0
 
     for event in events:
         words = event.split()
-        name = addr2name[words[0]]
-        id = name2id[name]
+        addr = words[0]
+        id = addr2id[addr]
+        used_addr.add(addr)
         used_id.add(id)
         kind, index, ts = map(int, words[1:])
 
@@ -79,8 +102,11 @@ def main():
         t_mean = np.mean(times) / 1000
         t_50 = times[int(len(times) * 0.5)] / 1000
         t_90 = times[int(len(times) * 0.9)] / 1000
-        table.add_row(
-            [id2name[id], occupy, usage, n_call[id], t_mean, t_50, t_90])
+        name = get_name(id2addr[id], prev, addr2name, used_addr, 0, False)
+        if len(next[id2addr[id]]) != 0:
+            occupy = '-'
+            usage = '-'
+        table.add_row([name, occupy, usage, n_call[id], t_mean, t_50, t_90])
     print(table.draw())
 
 
