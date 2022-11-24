@@ -34,7 +34,7 @@ deploy_cfg = mmcv.Config(
             opset_version=11,
             input_shape=None,
             input_names=['voxels', 'num_points', 'coors'],
-            output_names=['scores', 'bbox_preds', 'dir_scores'])))
+            output_names=['bboxes', 'scores', 'labels'])))
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
 task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
@@ -52,9 +52,9 @@ def backend_model():
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(
         outputs={
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'bboxes': torch.rand(1, 50, 7),
+            'scores': torch.rand(1, 50),
+            'labels': torch.rand(1, 50)
         })
 
     yield task_processor.init_backend_model([''])

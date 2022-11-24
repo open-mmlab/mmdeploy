@@ -155,10 +155,7 @@ def test_centerpoint(backend_type: Backend):
             cfg=deploy_cfg,
             backend=deploy_cfg.backend_config.type,
             opset=deploy_cfg.onnx_config.opset_version):
-        outputs = model.forward(*data)
-        head = get_centerpoint_head()
-        rewrite_outputs = head.get_bboxes(*[[i] for i in outputs],
-                                          inputs['img_metas'][0])
+        rewrite_outputs = model.forward(*data)
     assert rewrite_outputs is not None
 
 
