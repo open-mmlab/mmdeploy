@@ -54,7 +54,7 @@ class CropImpl : public Crop {
         return Status(eNotSupported);
       }
     } else {
-      MMDEPLOY_ERROR("unsupported channels {}", c);
+      MMDEPLOY_ERROR("unsupported type {}", type);
       return Status(eNotSupported);
     }
 

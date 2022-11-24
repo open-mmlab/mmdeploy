@@ -130,15 +130,15 @@ cv::Mat Crop(const cv::Mat& src, int top, int left, int bottom, int right) {
   return src(cv::Range(top, bottom + 1), cv::Range(left, right + 1)).clone();
 }
 
-template <int a0, int a1, int a2, typename T>
+template <int C0, int C1, int C2, typename T>
 void normalize3(const T* __restrict src, float* __restrict dst, size_t size, const float* mean,
                 const float* std) {
   const float _mean[3] = {mean[0], mean[1], mean[2]};
   const float _inv[3] = {1.f / std[0], 1.f / std[1], 1.f / std[2]};
   for (size_t i = 0; i < size * 3; i += 3) {
-    dst[i] = (src[i + a0] - _mean[0]) * _inv[0];
-    dst[i + 1] = (src[i + a1] - _mean[1]) * _inv[1];
-    dst[i + 2] = (src[i + a2] - _mean[2]) * _inv[2];
+    dst[i] = (src[i + C0] - _mean[0]) * _inv[0];
+    dst[i + 1] = (src[i + C1] - _mean[1]) * _inv[1];
+    dst[i + 2] = (src[i + C2] - _mean[2]) * _inv[2];
   }
 }
 
