@@ -10,7 +10,7 @@ void fuse_identity(onnx::GraphProto* mutable_graph,
     onnx::NodeProto* node = mutable_graph->mutable_node(i);
     for (int j = 0; j < node->input_size(); ++j) {
       std::string output_name = node->input(j);
-      onnx::NodeProto* last_node = find_node_by_output_name(mutable_graph, output_name);W
+      onnx::NodeProto* last_node = find_node_by_output_name(mutable_graph, output_name);
       if (last_node && last_node->op_type() == "Identity") {
         node->set_input(j, last_node->input(0));
         node_reference[last_node->output(0)] -= 1;
