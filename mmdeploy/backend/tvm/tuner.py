@@ -348,7 +348,17 @@ class AutoScheduleTuner(TVMTunerBase):
             builder = build_auto_scheduler_builder(builder)
 
         if isinstance(runner, Dict):
-            runner = build_auto_scheduler_runner(runner)
+            # CUDA device need a different process for measurement
+            if runner['type'] == 'LocalRunner':
+                runner.pop('type')
+                if Target(target).kind != 'llvm':
+                    if 'enable_cpu_cache_flush' in runner:
+                        runner['enable_cpu_cache_flush'] = False
+                self._measure_ctx = auto_scheduler.LocalRPCMeasureContext(
+                    **runner)
+                runner = self._measure_ctx.runner
+            else:
+                runner = build_auto_scheduler_runner(runner)
 
         tune_option = auto_scheduler.TuningOptions(
             num_measure_trials=num_measure_trials,
