@@ -34,7 +34,7 @@ class Normalize : public Transform {
   explicit Normalize(const Value& args) {
     if (!args.contains("mean") || !args.contains("std")) {
       MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
-      throw std::invalid_argument("no 'mean' or 'std' is configured");
+      throw_exception(eInvalidArgument);
     }
     for (auto& v : args["mean"]) {
       mean_.push_back(v.get<float>());

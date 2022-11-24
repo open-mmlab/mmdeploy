@@ -9,11 +9,12 @@ class Collect : public Transform {
  public:
   explicit Collect(const Value& args) {
     if (!args.contains("keys") || !args["keys"].is_array()) {
-      throw std::invalid_argument(
-          "'keys' is missed in arguments, or it is not an array as expected");
+      MMDEPLOY_ERROR("'keys' is missed in arguments, or it is not an array as expected");
+      throw_exception(eInvalidArgument);
     }
     if (args.contains("meta_keys") && !args["meta_keys"].is_array()) {
-      throw std::invalid_argument("'meta_keys' has to be an array");
+      MMDEPLOY_ERROR("'meta_keys' has to be an array");
+      throw_exception(eInvalidArgument);
     }
 
     for (auto& v : args["keys"]) {

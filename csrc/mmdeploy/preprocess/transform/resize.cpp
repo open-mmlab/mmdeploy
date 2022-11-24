@@ -25,14 +25,14 @@ class Resize : public Transform {
       } else if (args["size"].is_array()) {
         if (args["size"].size() != 2) {
           MMDEPLOY_ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
-          throw std::length_error("'size' expects an array of size 2");
+          throw_exception(eInvalidArgument);
         }
         auto height = args["size"][0].get<int>();
         auto width = args["size"][1].get<int>();
         img_scale_ = {height, width};
       } else {
         MMDEPLOY_ERROR("'size' is expected to be an integer or and array of size 2");
-        throw std::domain_error("'size' is expected to be an integer or and array of size 2");
+        throw_exception(eInvalidArgument);
       }
     }
     interpolation_ = args.value<string>("interpolation", "bilinear");
@@ -41,7 +41,7 @@ class Resize : public Transform {
     if (std::find(interpolations.begin(), interpolations.end(), interpolation_) ==
         interpolations.end()) {
       MMDEPLOY_ERROR("'{}' interpolation is not supported", interpolation_);
-      throw std::invalid_argument("unexpected interpolation");
+      throw_exception(eInvalidArgument);
     }
 
     resize_ = operation::Managed<operation::Resize>::Create(interpolation_);

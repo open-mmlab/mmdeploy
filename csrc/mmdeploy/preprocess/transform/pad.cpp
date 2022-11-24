@@ -21,7 +21,8 @@ class Pad : public Transform {
     }
     if (args.contains("size") && args["size"].is_array()) {
       if (args["size"].size() != 2) {
-        throw std::invalid_argument("the length of size should be 2");
+        MMDEPLOY_ERROR("the length of size should be 2");
+        throw_exception(eInvalidArgument);
       }
       size_[0] = args["size"][0].get<int>();
       size_[1] = args["size"][1].get<int>();
@@ -34,7 +35,8 @@ class Pad : public Transform {
       } else if (args["pad_val"].contains("img")) {
         pad_val_ = args["pad_val"]["img"][0].get<float>();
       } else {
-        throw std::invalid_argument("args must be number or img dict");
+        MMDEPLOY_ERROR("args must be number or img dict");
+        throw_exception(eInvalidArgument);
       }
     } else {
       pad_val_ = 0.0f;

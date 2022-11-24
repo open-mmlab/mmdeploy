@@ -27,7 +27,8 @@ class TenCrop : public Transform {
 TenCrop::TenCrop(const Value& args) {
   // (w, h) of crop size
   if (!args.contains(("crop_size"))) {
-    throw std::invalid_argument("'crop_size' is expected");
+    MMDEPLOY_ERROR("'crop_size' is expected");
+    throw_exception(eInvalidArgument);
   }
   if (args["crop_size"].is_number_integer()) {
     crop_size_[0] = crop_size_[1] = args["crop_size"].get<int>();
@@ -35,7 +36,8 @@ TenCrop::TenCrop(const Value& args) {
     crop_size_[0] = args["crop_size"][0].get<int>();
     crop_size_[1] = args["crop_size"][1].get<int>();
   } else {
-    throw std::invalid_argument("'crop_size' should be integer or an int array of size 2");
+    MMDEPLOY_ERROR("'crop_size' should be integer or an int array of size 2");
+    throw_exception(eInvalidArgument);
   }
 
   crop_ = operation::Managed<operation::Crop>::Create();
