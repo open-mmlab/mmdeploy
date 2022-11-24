@@ -194,7 +194,6 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_openvino_dynamic_fp32
 
   - name: ANN
     metafile: configs/ann/ann.yml
@@ -379,4 +378,3 @@ models:
       - *pipeline_trt_static_fp32_512x512
       - *pipeline_openvino_static_fp32_512x512
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ts_fp32
