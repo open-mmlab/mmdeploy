@@ -252,7 +252,9 @@ class End2EndModel(BaseBackendModel):
                 # avoid to resize masks with zero dim
                 if rescale and masks.shape[0] != 0:
                     masks = torch.nn.functional.interpolate(
-                        masks.unsqueeze(0), size=(ori_h, ori_w))
+                        masks.unsqueeze(0),
+                        size=(ori_h, ori_w),
+                        mode='bilinear')
                     masks = masks.squeeze(0)
                 elif masks.shape[0] == 0:
                     masks = torch.zeros(0, ori_h, ori_w)

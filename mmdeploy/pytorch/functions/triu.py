@@ -4,6 +4,7 @@ import torch
 from mmdeploy.core import FUNCTION_REWRITER
 
 
+@FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.triu')
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.triu')
 def triu__default(ctx,
                   input: torch.Tensor,

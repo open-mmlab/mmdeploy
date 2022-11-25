@@ -33,8 +33,6 @@ def solohead__predict_by_feat__default(ctx, self,
     batch_mlvl_cls_scores = torch.cat(mlvl_cls_scores, dim=1)
     batch_mlvl_mask_preds = torch.cat(mlvl_mask_preds, dim=1)
     featmap_size = batch_mlvl_mask_preds.size()[-2:]
-    h, w = batch_img_metas[0]['img_shape'][:2]
-    upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
     batch_mlvl_cls_scores, cls_labels = torch.max(batch_mlvl_cls_scores, -1)
     score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
     batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
@@ -68,12 +66,12 @@ def solohead__predict_by_feat__default(ctx, self,
         sigma=cfg.sigma,
         filter_thr=cfg.filter_thr)
 
-    mask_preds = mask_preds[keep_inds]
+    h, w = batch_img_metas[0]['img_shape'][:2]
+    upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
+    mask_preds = mask_preds[keep_inds].unsqueeze(0)
     mask_preds = F.interpolate(
-        mask_preds.unsqueeze(0), size=upsampled_size,
-        mode='bilinear')[:, :, :h, :w]
+        mask_preds, size=upsampled_size, mode='bilinear')[:, :, :h, :w]
 
-    mask_preds = F.interpolate(mask_preds, size=(h, w), mode='bilinear')
     labels = labels.reshape(batch_size, -1)
     bboxes = scores.new_zeros(scores.shape[-1], 4).view(batch_size, -1, 4)
 

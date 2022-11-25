@@ -49,16 +49,12 @@ def mask_matrix_nms__default(ctx,
     assert len(masks) == len(mask_area)
     # sort and keep top nms_pre
     nms_pre = max(0, nms_pre)
-    if nms_pre == 0:
+    if nms_pre <= 0:
         nms_pre = scores.shape[0]
     # tensorrt only support static topk, so using topk instead of sort
     scores, sort_inds = torch.topk(scores, nms_pre)
 
     keep_inds = sort_inds
-    if nms_pre > 0 and len(sort_inds) > nms_pre:
-        sort_inds = sort_inds[:nms_pre]
-        keep_inds = keep_inds[:nms_pre]
-        scores = scores[:nms_pre]
     masks = masks.int()[sort_inds]
     mask_area = mask_area[sort_inds]
     labels = labels[sort_inds]
@@ -66,7 +62,7 @@ def mask_matrix_nms__default(ctx,
     flatten_masks = masks.reshape(num_masks, -1).float()
     # inter.
     inter_matrix = torch.mm(flatten_masks, flatten_masks.transpose(1, 0))
-    expanded_mask_area = mask_area.expand(num_masks, num_masks)
+    expanded_mask_area = mask_area.unsqueeze(1)
     # TensorRT does not support NonZero, so mask_area with value 0 is
     # in this matrix which should be processed to avoid divided by 0.
     total_area = expanded_mask_area + expanded_mask_area.transpose(
@@ -74,22 +70,19 @@ def mask_matrix_nms__default(ctx,
     total_mask = total_area > 0
     total_area = total_area.where(total_mask, total_area.new_ones(1))
     # Upper triangle iou matrix.
-    # Use torch.triu for rewriter.
-    iou_matrix = torch.triu(inter_matrix / total_area, diagonal=1)
+    iou_matrix = (inter_matrix / total_area).triu(diagonal=1)
     # label_specific matrix.
-    expanded_labels = labels.expand(num_masks, num_masks)
+    expanded_labels = labels.unsqueeze(1)
     # Upper triangle label matrix.
-    # Trt needs int not bool to send to the triu rewriter.
-    # Use torch.triu for rewriter.
-    label_matrix = torch.triu(
-        (expanded_labels == expanded_labels.transpose(1, 0)).int(), diagonal=1)
+    label_matrix = expanded_labels == expanded_labels.transpose(1, 0)
+
+    # IoU decay
+    decay_iou = iou_matrix.where(label_matrix, iou_matrix.new_zeros(1))
 
     # IoU compensation
-    compensate_iou, _ = (iou_matrix * label_matrix).max(0)
+    compensate_iou, _ = decay_iou.max(0)
     compensate_iou = compensate_iou.expand(num_masks,
                                            num_masks).transpose(1, 0)
-    # IoU decay
-    decay_iou = iou_matrix * label_matrix
 
     # Calculate the decay_coefficient
     if kernel == 'gaussian':
@@ -111,10 +104,7 @@ def mask_matrix_nms__default(ctx,
     # sort and keep top max_num
     scores, sort_inds = torch.topk(scores, max(max_num, 0))
     keep_inds = keep_inds[sort_inds]
-    if max_num > 0 and len(sort_inds) > max_num:
-        sort_inds = sort_inds[:max_num]
-        keep_inds = keep_inds[:max_num]
-        scores = scores[:max_num]
+
     # gather should not be bool in trt
     masks = masks.int()[sort_inds]
     labels = labels[sort_inds]
