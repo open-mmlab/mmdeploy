@@ -16,7 +16,7 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_partition_config, load_config)
+                            get_ir_config, get_partition_config, load_config)
 
 
 def __build_backend_model(partition_name: str, backend: Backend,
@@ -677,6 +677,22 @@ class RKNNModel(End2EndModel):
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
+
+    def _init_wrapper(self, backend, backend_files, device):
+        output_names = None
+        if self.deploy_cfg is not None:
+            ir_config = get_ir_config(self.deploy_cfg)
+            output_names = ir_config.get('output_names', None)
+            if get_partition_config(self.deploy_cfg) is not None:
+                output_names = get_partition_config(
+                    self.deploy_cfg)['partition_cfg'][0]['output_names']
+
+        self.wrapper = BaseBackendModel._build_wrapper(
+            backend,
+            backend_files,
+            device,
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def _get_bboxes(self, outputs, img_metas):
         from mmdet.models import build_head
