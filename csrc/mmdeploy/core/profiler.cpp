@@ -41,7 +41,7 @@ ScopedCounter::~ScopedCounter() {
   }
 }
 
-Profiler::Profiler(std::string_view path) : path_(path) { root_ = CreateScope("root"); }
+Profiler::Profiler(std::string_view path) : path_(path) { root_ = CreateScope("."); }
 
 Scope* Profiler::CreateScope(std::string_view name) {
   auto& node = nodes_.emplace_back();

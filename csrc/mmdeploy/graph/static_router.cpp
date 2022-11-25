@@ -133,7 +133,7 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
   try {
     auto pipeline = std::make_unique<StaticRouter>();
     if (config.contains("context") && config["context"].contains("scope")) {
-      auto name = config.value("name", std::string("@"));
+      auto name = config.value("name", std::string("Pipeline"));
       auto scope = config["context"]["scope"].get<profiler::Scope*>();
       pipeline->scope_ = scope->CreateScope(name);
     }
