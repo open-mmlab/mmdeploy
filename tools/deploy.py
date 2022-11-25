@@ -6,6 +6,7 @@ import os.path as osp
 from functools import partial
 
 import mmengine
+import rtmins
 import torch.multiprocessing as mp
 from torch.multiprocessing import Process, set_start_method
 
