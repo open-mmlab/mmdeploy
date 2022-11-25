@@ -24,12 +24,7 @@ def topk__dynamic(ctx,
     if dim is None:
         dim = int(input.ndim - 1)
     size = input.shape[dim]
-    if not isinstance(k, torch.Tensor):
-        k = torch.tensor(k, device=input.device, dtype=torch.long)
-    # Always keep topk op for dynamic input
-    if isinstance(size, torch.Tensor):
-        size = size.to(input.device)
-    k = torch.where(k < size, k, size)
+    k = min(k, size)
     return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)
 
 
