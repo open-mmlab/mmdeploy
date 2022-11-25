@@ -678,7 +678,15 @@ class RKNNModel(End2EndModel):
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths rknn model files.
+            device (str): A string specifying device type.
+        """
         output_names = None
         if self.deploy_cfg is not None:
             ir_config = get_ir_config(self.deploy_cfg)
