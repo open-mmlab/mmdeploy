@@ -3,7 +3,7 @@ _base_ = [
     '../../_base_/backends/tensorrt-int8.py'
 ]
 
-codebase_config = dict(post_processing=dict(export_postprocess_mask=True))
+codebase_config = dict(post_processing=dict(export_postprocess_mask=False))
 
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 34),

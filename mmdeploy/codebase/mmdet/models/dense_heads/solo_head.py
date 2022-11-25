@@ -6,6 +6,7 @@ from mmdet.models.layers import mask_matrix_nms
 from torch import Tensor
 from torch.nn import functional as F
 
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -44,7 +45,6 @@ def solohead__predict_by_feat__default(ctx, self,
                                             featmap_size[1])
     masks = (mask_preds > cfg.mask_thr).int()
     sum_masks = masks.sum((1, 2))
-    cls_scores = batch_mlvl_cls_scores
     keep = sum_masks > strides
     cls_scores = batch_mlvl_cls_scores.where(
         keep, batch_mlvl_cls_scores.new_zeros(1))
@@ -67,13 +67,24 @@ def solohead__predict_by_feat__default(ctx, self,
         filter_thr=cfg.filter_thr)
 
     h, w = batch_img_metas[0]['img_shape'][:2]
-    upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
     mask_preds = mask_preds[keep_inds].unsqueeze(0)
-    mask_preds = F.interpolate(
-        mask_preds, size=upsampled_size, mode='bilinear')[:, :, :h, :w]
+
+    mmdet_params = get_post_processing_params(ctx.cfg)
+    export_postprocess_mask = mmdet_params.get('export_postprocess_mask', True)
+    if export_postprocess_mask:
+        upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
+        mask_preds = F.interpolate(
+            mask_preds, size=upsampled_size, mode='bilinear')
 
     labels = labels.reshape(batch_size, -1)
-    bboxes = scores.new_zeros(scores.shape[-1], 4).view(batch_size, -1, 4)
+    bboxes = scores.new_zeros(scores.shape[-1], 2).view(batch_size, -1, 2)
+    # full screen box so we can postprocess mask outside the model
+    bboxes = torch.cat([
+        bboxes,
+        bboxes.new_full((*bboxes.shape[:2], 1), w),
+        bboxes.new_full((*bboxes.shape[:2], 1), h)
+    ],
+                       dim=-1)
 
     dets = torch.cat([bboxes, scores.reshape(batch_size, -1, 1)], dim=-1)
     return dets, labels, mask_preds
