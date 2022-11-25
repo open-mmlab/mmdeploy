@@ -129,8 +129,7 @@ class ObjectDetection(BaseTask):
         if pipeline_updater is not None:
             model_cfg = pipeline_updater(self.deploy_cfg, model_cfg)
         cfg = process_model_config(model_cfg, imgs, input_shape)
-        # Drop pad_to_square when static shape. Because static shape should
-        # ensure the shape before input image.
+
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
