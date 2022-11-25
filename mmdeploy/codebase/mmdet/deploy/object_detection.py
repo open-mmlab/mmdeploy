@@ -45,9 +45,6 @@ def process_model_config(model_cfg: mmcv.Config,
             if trans_type == 'Resize' and len(input_shape) != 1:
                 trans['keep_ratio'] = False
             elif trans_type == 'Pad':
-                if trans.get('pad_to_square', False):
-                    # pad_to_square is mutually exclusive with size and divisor
-                    pass
                 if 'size_divisor' in trans:
                     trans['size_divisor'] = 1
                 else:
