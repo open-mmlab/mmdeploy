@@ -7,8 +7,7 @@ from mmengine.model import BaseModel
 from torch import nn
 
 from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
-                            get_common_config, get_ir_config,
-                            get_partition_config, get_task_type)
+                            get_common_config, get_ir_config, get_task_type)
 
 
 class BaseBackendModel(BaseModel, metaclass=ABCMeta):
@@ -29,9 +28,6 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
         if deploy_cfg is not None:
             ir_config = get_ir_config(deploy_cfg)
             output_names = ir_config.get('output_names', None)
-            if get_partition_config(deploy_cfg) is not None:
-                output_names = get_partition_config(
-                    deploy_cfg)['partition_cfg'][0]['output_names']
             input_names = ir_config.get('input_names', None)
         # TODO use input_names instead in the future for multiple inputs
         self.input_name = input_names[0] if input_names else 'input'

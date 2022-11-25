@@ -16,7 +16,7 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_partition_config, load_config)
+                            get_ir_config, get_partition_config, load_config)
 
 # Use registry to store models with different partition methods
 # If a model doesn't need to partition, we don't need this registry
@@ -688,6 +688,29 @@ class RKNNModel(End2EndModel):
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
+
+    def _init_wrapper(self, backend, backend_files, device):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths rknn model files.
+            device (str): A string specifying device type.
+        """
+        output_names = None
+        if self.deploy_cfg is not None:
+            ir_config = get_ir_config(self.deploy_cfg)
+            output_names = ir_config.get('output_names', None)
+            if get_partition_config(self.deploy_cfg) is not None:
+                output_names = get_partition_config(
+                    self.deploy_cfg)['partition_cfg'][0]['output_names']
+
+        self.wrapper = BaseBackendModel._build_wrapper(
+            backend,
+            backend_files,
+            device,
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def _get_bboxes(self, outputs: List[Tensor], metainfos: Any):
         """get bboxes from output by meta infos.
