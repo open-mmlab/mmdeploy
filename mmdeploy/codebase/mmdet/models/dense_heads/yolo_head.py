@@ -112,7 +112,6 @@ def yolov3_head__predict_by_feat(ctx,
     batch_mlvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
     post_params = get_post_processing_params(deploy_cfg)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
 
     if pre_topk > 0:
         _, topk_inds = conf_pred.topk(pre_topk)
