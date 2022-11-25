@@ -129,7 +129,6 @@ def yolov3_head__get_bboxes(ctx,
     batch_mlvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
     post_params = get_post_processing_params(ctx.cfg)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
 
     batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores
