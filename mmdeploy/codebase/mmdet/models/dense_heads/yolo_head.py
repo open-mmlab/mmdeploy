@@ -129,19 +129,6 @@ def yolov3_head__get_bboxes(ctx,
     batch_mlvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
     post_params = get_post_processing_params(ctx.cfg)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    confidence_threshold = cfg.get('conf_thr',
-                                   post_params.confidence_threshold)
-
-    # follow original pipeline of YOLOv3
-    if confidence_threshold > 0:
-        mask = batch_mlvl_conf_scores >= confidence_threshold
-        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
-            mask, batch_mlvl_conf_scores.new_zeros(1))
-    if score_threshold > 0:
-        mask = batch_mlvl_scores > score_threshold
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask, batch_mlvl_scores.new_zeros(1))
 
     batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores
