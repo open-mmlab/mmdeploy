@@ -179,7 +179,9 @@ Result<Tensor> FromDLPack(DLManagedTensor* managed_tensor, const std::string& na
   auto raw_data = static_cast<void*>(static_cast<uint8_t*>(dl_tensor.data) + dl_tensor.byte_offset);
   Tensor ret(desc);
   OUTCOME_TRY(ret.CopyFrom(raw_data, stream));
-  managed_tensor->deleter(managed_tensor);
+
+  // delete old tensor
+  if (managed_tensor->deleter != nullptr) managed_tensor->deleter(managed_tensor);
   return ret;
 }
 }  // namespace mmdeploy

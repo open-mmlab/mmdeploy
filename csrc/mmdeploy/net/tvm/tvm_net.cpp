@@ -215,6 +215,7 @@ Result<void> TVMNet::Forward() {
 
       // run
       tvm::runtime::TVMRetValue ret = func_run_("main");
+      OUTCOME_TRY(stream_.Wait());
 
       // get output
       if (ret.type_code() == kTVMNDArrayHandle) {
