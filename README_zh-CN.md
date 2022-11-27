@@ -50,6 +50,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [mmpose](docs/zh_cn/04-supported-codebases/mmpose.md)
 - [mmdet3d](docs/zh_cn/04-supported-codebases/mmdet3d.md)
 - [mmrotate](docs/zh_cn/04-supported-codebases/mmrotate.md)
+- [mmaction2](docs/zh_cn/04-supported-codebases/mmaction2.md)
 
 ### 支持多种推理后端
 
