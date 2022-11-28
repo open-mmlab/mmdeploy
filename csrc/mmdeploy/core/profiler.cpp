@@ -12,14 +12,17 @@ Event* Scope::Add(Event::Type type, Index index, TimePoint time_point) {
 }
 
 Scope* Scope::CreateScope(std::string_view name) {
-  std::string full_name = name_ + (name_.empty() ? "" : "/") + std::string(name);
-  auto node = children_.emplace_back(profiler_->CreateScope(full_name));
+  auto node = children_.emplace_back(profiler_->CreateScope(name));
   node->parent_ = this;
   return node;
 }
 
 void Scope::Dump(Scope* scope, std::ofstream& ofs) {
-  ofs << scope->name_ << "\n";
+  ofs << scope->name_ << " " << (void*)scope << " ";
+  for (auto& child : scope->children_) {
+    ofs << (void*)child << " ";
+  }
+  ofs << "\n";
   for (const auto& child : scope->children_) {
     Dump(child, ofs);
   }
@@ -38,7 +41,7 @@ ScopedCounter::~ScopedCounter() {
   }
 }
 
-Profiler::Profiler(std::string_view path) : path_(path) { root_ = CreateScope("root"); }
+Profiler::Profiler(std::string_view path) : path_(path) { root_ = CreateScope("."); }
 
 Scope* Profiler::CreateScope(std::string_view name) {
   auto& node = nodes_.emplace_back();
@@ -71,8 +74,9 @@ void Profiler::Release() {
             });
 
   for (int i = 0; i < vec.size(); i++) {
-    ofs << vec[i]->scope->name_ << " " << vec[i]->type << " " << vec[i]->index << " "
-        << std::chrono::duration_cast<std::chrono::microseconds>(vec[i]->time_point - TimePoint{})
+    ofs << (void*)vec[i]->scope << " " << vec[i]->type << " " << vec[i]->index << " "
+        << std::chrono::duration_cast<std::chrono::microseconds>(vec[i]->time_point -
+                                                                 vec[0]->time_point)
                .count()
         << "\n";
   }
