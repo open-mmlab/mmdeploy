@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import os
 
 from mmcv import DictAction
 from mmcv.parallel import MMDataParallel
@@ -60,6 +61,11 @@ def parse_args():
         help='log evaluation results and speed to file',
         default=None)
     parser.add_argument(
+        '--json-file',
+        type=str,
+        help='log evaluation results to json file',
+        default='./results.json')
+    parser.add_argument(
         '--speed-test', action='store_true', help='activate speed test')
     parser.add_argument(
         '--warmup',
@@ -73,6 +79,15 @@ def parse_args():
         help='the interval between each log, require setting '
         'speed-test first',
         default=100)
+    parser.add_argument(
+        '--batch-size',
+        type=int,
+        default=1,
+        help='the batch size for test, would override `samples_per_gpu`'
+        'in  data config.')
+    parser.add_argument(
+        '--uri',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
 
     args = parser.parse_args()
     return args
@@ -97,17 +112,20 @@ def main():
     # prepare the dataset loader
     dataset_type = 'test'
     dataset = task_processor.build_dataset(model_cfg, dataset_type)
+    # override samples_per_gpu that used for training
+    model_cfg.data['samples_per_gpu'] = args.batch_size
     data_loader = task_processor.build_dataloader(
         dataset,
-        samples_per_gpu=1,
+        samples_per_gpu=model_cfg.data.samples_per_gpu,
         workers_per_gpu=model_cfg.data.workers_per_gpu)
 
     # load the model of the backend
-    model = task_processor.init_backend_model(args.model)
+    model = task_processor.init_backend_model(args.model, uri=args.uri)
 
     is_device_cpu = (args.device == 'cpu')
     device_id = None if is_device_cpu else parse_device_id(args.device)
 
+    destroy_model = model.destroy
     model = MMDataParallel(model, device_ids=[device_id])
     # The whole dataset test wrapped a MMDataParallel class outside the module.
     # As mmcls.apis.test.py single_gpu_test defined, the MMDataParallel needs
@@ -122,15 +140,28 @@ def main():
                 warmup=args.warmup,
                 log_interval=args.log_interval,
                 with_sync=with_sync,
-                file=args.log2file):
+                file=args.log2file,
+                batch_size=model_cfg.data.samples_per_gpu):
             outputs = task_processor.single_gpu_test(model, data_loader,
                                                      args.show, args.show_dir)
     else:
         outputs = task_processor.single_gpu_test(model, data_loader, args.show,
                                                  args.show_dir)
-    task_processor.evaluate_outputs(model_cfg, outputs, dataset, args.metrics,
-                                    args.out, args.metric_options,
-                                    args.format_only, args.log2file)
+    json_dir, _ = os.path.split(args.json_file)
+    if json_dir:
+        os.makedirs(json_dir, exist_ok=True)
+    task_processor.evaluate_outputs(
+        model_cfg,
+        outputs,
+        dataset,
+        args.metrics,
+        args.out,
+        args.metric_options,
+        args.format_only,
+        args.log2file,
+        json_file=args.json_file)
+    # only effective when the backend requires explicit clean-up (e.g. Ascend)
+    destroy_model()
 
 
 if __name__ == '__main__':

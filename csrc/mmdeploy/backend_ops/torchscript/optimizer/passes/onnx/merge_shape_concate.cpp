@@ -18,7 +18,7 @@ using torch::jit::Value;
 void MergeShapeConcate(Node* node) {
   auto inputs = node->inputs();
 
-  std::vector<long> gather_value;
+  std::vector<int64_t> gather_value;
   Value* shape_from = nullptr;
 
   std::vector<Node*> node_to_remove{node};
@@ -54,7 +54,7 @@ void MergeShapeConcate(Node* node) {
     if (!is_kind(constant_node, "onnx::Constant")) return;
 
     auto gather_indices_val = constant_node->t(Symbol::attr("value"));
-    long* data_ptr = gather_indices_val.data_ptr<long>();
+    int64_t* data_ptr = gather_indices_val.data_ptr<int64_t>();
     if (gather_indices_val.dim() == 0) {
       gather_value.push_back(data_ptr[0]);
     } else {

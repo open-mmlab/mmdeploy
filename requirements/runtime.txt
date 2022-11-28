@@ -1,3 +1,4 @@
+grpcio
 h5py
 matplotlib
 multiprocess

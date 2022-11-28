@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -64,7 +64,7 @@ def process_model_config(model_cfg: mmcv.Config,
         transforms = cfg.data.test.pipeline[1]['transforms']
         for trans in transforms:
             trans_type = trans['type']
-            if trans_type == 'Pad':
+            if trans_type == 'Pad' and 'size_divisor' in trans:
                 trans['size_divisor'] = 1
 
     cfg.data.test.pipeline = replace_ImageToTensor(cfg.data.test.pipeline)
@@ -150,19 +150,24 @@ class RotatedDetection(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for rotated object detection.
 
         Args:
             imgs (str | np.ndarray): Input image(s), accepted data type are
             `str`, `np.ndarray`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
+        from mmdet.datasets.pipelines import Compose
+
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')
@@ -172,13 +177,12 @@ class RotatedDetection(BaseTask):
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        from mmdet.datasets.pipelines import Compose
         test_pipeline = Compose(cfg.data.test.pipeline)
 
         data_list = []
         for img in imgs:
             # prepare data
-            if isinstance(imgs[0], np.ndarray):
+            if isinstance(img, np.ndarray):
                 # directly add img
                 data = dict(img=img)
             else:
@@ -190,32 +194,17 @@ class RotatedDetection(BaseTask):
             # get tensor from list to stack for batch mode (rotated detection)
             data_list.append(data)
 
-        if isinstance(data_list[0]['img'], list) and len(data_list) > 1:
-            raise Exception('aug test does not support '
-                            f'inference with batch size '
-                            f'{len(data_list)}')
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
-
-        # process img_metas
-        if isinstance(data['img_metas'], list):
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-        else:
-            data['img_metas'] = data['img_metas'].data
-
-        if isinstance(data['img'], list):
-            data['img'] = [img.data for img in data['img']]
-            if isinstance(data['img'][0], list):
-                data['img'] = [img[0] for img in data['img']]
-        else:
-            data['img'] = data['img'].data
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
 
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model: nn.Module,
@@ -282,9 +271,10 @@ class RotatedDetection(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        if isinstance(input_data['img'], DataContainer):
-            return input_data['img'].data[0]
-        return input_data['img'][0]
+        img_data = input_data['img'][0]
+        if isinstance(img_data, DataContainer):
+            return img_data.data[0]
+        return img_data
 
     @staticmethod
     def evaluate_outputs(model_cfg,
@@ -294,7 +284,8 @@ class RotatedDetection(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -332,7 +323,10 @@ class RotatedDetection(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+            results = dataset.evaluate(outputs, **eval_kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+            logger.info(results)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

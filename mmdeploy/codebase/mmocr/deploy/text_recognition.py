@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -114,15 +114,18 @@ class TextRecognition(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for segmentor.
 
         Args:
             imgs (str | np.ndarray): Input image(s), accepted data type are
                 `str`, `np.ndarray`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -161,27 +164,19 @@ class TextRecognition(BaseTask):
                             f'inference with batch size '
                             f'{len(data_list)}')
 
-        data = collate(data_list, samples_per_gpu=len(imgs))
+        batch_data = collate(data_list, samples_per_gpu=len(imgs))
 
-        # process img_metas
-        if isinstance(data['img_metas'], list):
-            data['img_metas'] = [
-                img_metas.data[0] for img_metas in data['img_metas']
-            ]
-        else:
-            data['img_metas'] = data['img_metas'].data
-
-        if isinstance(data['img'], list):
-            data['img'] = [img.data for img in data['img']]
-            if isinstance(data['img'][0], list):
-                data['img'] = [img[0] for img in data['img']]
-        else:
-            data['img'] = data['img'].data
+        for k, v in batch_data.items():
+            # batch_size > 1
+            if isinstance(v, list) and isinstance(v[0], DataContainer):
+                batch_data[k] = v[0].data
+            if isinstance(v, DataContainer):
+                batch_data[k] = v.data[0]
 
         if self.device != 'cpu':
-            data = scatter(data, [self.device])[0]
+            batch_data = scatter(batch_data, [self.device])[0]
 
-        return data, data['img']
+        return batch_data, batch_data['img']
 
     def visualize(self,
                   model: nn.Module,
@@ -260,7 +255,8 @@ class TextRecognition(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -298,7 +294,10 @@ class TextRecognition(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+            results = dataset.evaluate(outputs, **eval_kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+            logger.info(results)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

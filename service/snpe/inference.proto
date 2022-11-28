@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "mmdeploy.snpe";
+option java_outer_classname = "SNPEWrapper";
+option objc_class_prefix = "SNPE";
+
+package mmdeploy;
+
+// The inference service definition.
+service Inference {
+
+  rpc Echo(Empty) returns (Reply) {}
+
+  // Init Model with model file
+  rpc Init(Model) returns (Reply) {}
+
+  // Get output names
+  rpc OutputNames(Empty) returns (Names) {}
+
+  // Inference with inputs
+  rpc Inference(TensorList) returns (Reply) {}
+
+  // Destroy handle
+  rpc Destroy(Empty) returns (Reply) {}
+}
+
+message Model {
+  optional string name = 1;
+  // bin
+  bytes weights = 2;
+  // config
+  enum Device {
+    CPU = 0;
+    GPU = 1;
+    DSP = 2;
+  }
+  optional Device device = 3;
+}
+
+// https://stackoverflow.com/questions/31768665/can-i-define-a-grpc-call-with-a-null-request-or-response
+message Empty {}
+
+message Tensor {
+  // name
+  string name = 1;
+
+  // datatype
+  optional string dtype = 2;
+
+  // data
+  bytes data = 3;
+
+  // shape
+  repeated int32 shape = 4;
+}
+
+message TensorList {
+  repeated Tensor data = 1;
+}
+
+message Reply {
+  int32 status = 1;
+  string info = 2;
+  repeated Tensor data =  3;
+}
+
+message Names {
+  repeated string names = 1;
+}

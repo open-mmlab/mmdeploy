@@ -3,6 +3,7 @@
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 
 #include "../../ir/subgraph_matcher.h"
+#include "common_subgraph_elimination.h"
 #include "torch/csrc/jit/ir/irparser.h"
 
 namespace mmdeploy {
@@ -64,7 +65,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     Node* shape = values_map[vmap["reshape_1_shape"]]->node();
     auto shape_val = shape->t(Symbol::attr("value"));
     if (shape_val.dim() != 1) return false;
-    if (shape_val.data_ptr<long>()[0] != -1) return false;
+    if (shape_val.data_ptr<int64_t>()[0] != -1) return false;
   }
 
   {
@@ -82,7 +83,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     Node* gather_inds = values_map[vmap["gather_inds_2"]]->node();
     auto inds_val = gather_inds->t(Symbol::attr("value"));
     if (inds_val.dim() != 0) return false;
-    if (inds_val.data_ptr<long>()[0] != 0) return false;
+    if (inds_val.data_ptr<int64_t>()[0] != 0) return false;
   }
 
   {
@@ -91,7 +92,7 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
     auto start_name = slice->inputs()[1]->debugName();
     auto start_val = params[start_name];
     if (start_val.dim() != 1) return false;
-    if (start_val.data_ptr<long>()[0] != 0) return false;
+    if (start_val.data_ptr<int64_t>()[0] != 0) return false;
   }
 
   // create new node
@@ -126,14 +127,16 @@ void FuseSelectAssign(Block* block, std::unordered_map<std::string, Tensor>& par
 
 void FuseSelectAssign(std::shared_ptr<Graph>& graph,
                       std::unordered_map<std::string, Tensor>& params) {
+  // cse before search
+  CommonSubgraphElimination(graph, params);
+
   std::string pattern_str = R"IR(
-      graph(%y, %z, %cmp_1, %cmp_2, %start, %axes):
+      graph(%y, %z, %cmp_1, %cmp_2, %start, %axes, %shape_2):
         %nz_1 = onnx::NonZero(%cmp_1)
         %trans_1 = onnx::Transpose(%nz_1)
         %gather_1 = onnx::GatherND(%z, %trans_1)
         %reshape_1_shape = onnx::Constant()
         %reshape_1 = onnx::Reshape(%gather_1, %reshape_1_shape)
-        %shape_2 = onnx::Shape(%y)
         %expand_2 = onnx::Expand(%cmp_2, %shape_2)
         %nz_2 = onnx::NonZero(%expand_2)
         %trans_2 = onnx::Transpose(%nz_2)

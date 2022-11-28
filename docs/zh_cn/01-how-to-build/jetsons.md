@@ -72,7 +72,7 @@ JetPack SDK 4+ 自带 python 3.6。我们强烈建议使用默认的 python 版�
 wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -O torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 # torchvision
-sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev -y
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-dev -y
 sudo rm -r torchvision
 git clone https://github.com/pytorch/vision torchvision
 cd torchvision
@@ -158,16 +158,18 @@ conda activate mmdeploy
 - 安装 ONNX
 
   ```shell
-  pip install onnx
+  # 以下方式二选一
+  python3 -m pip install onnx
+  conda install -c conda-forge onnx
   ```
 
-- 安装 h5py
+- 安装 h5py 和 pycuda
 
-  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据。
+  Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据；需要 pycuda 拷贝显存
 
   ```shell
   sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
-  pip install versioned-hdf5
+  pip install versioned-hdf5 pycuda
   ```
 
 ### 安装 SDK 的依赖项
@@ -207,7 +209,7 @@ export MMDEPLOY_DIR=$(pwd)
 
 由于一些算子采用的是 OpenMMLab 代码库中的实现，并不被 TenorRT 支持，
 因此我们需要自定义 TensorRT 插件，例如 `roi_align`， `scatternd` 等。
-你可以从[这里](../../en/ops/tensorrt.md)找到完整的自定义插件列表。
+你可以从[这里](../06-custom-ops/tensorrt.md)找到完整的自定义插件列表。
 
 ```shell
 # 编译 TensorRT 自定义算子
@@ -227,13 +229,14 @@ pip install -v -e .
 
 如果你不需要使用 MMDeploy C/C++ Inference SDK 则可以跳过本步骤。
 
-1. 编译 SDK Libraries
+1. 编译 SDK Libraries 和 Demos
 
    ```shell
    mkdir -p build && cd build
    cmake .. \
        -DMMDEPLOY_BUILD_SDK=ON \
        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+       -DMMDEPLOY_BUILD_EXAMPLES=ON \
        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
        -DMMDEPLOY_TARGET_BACKENDS="trt" \
        -DMMDEPLOY_CODEBASES=all \
@@ -241,16 +244,7 @@ pip install -v -e .
    make -j$(nproc) && make install
    ```
 
-2. 编译 SDK demos
-
-   ```shell
-   cd ${MMDEPLOY_DIR}/build/install/example
-   mkdir -p build && cd build
-   cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-   make -j$(nproc)
-   ```
-
-3. 运行 demo
+2. 运行 demo
 
    以目标检测为例:
 

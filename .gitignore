@@ -152,3 +152,15 @@ bin/
 mmdeploy/backend/ncnn/onnx2ncnn
 
 /mmdeploy-*
+
+# ascend
+fusion_result.json
+
+# snpe
+grpc-cpp-plugin
+service/snpe/grpc_cpp_plugin
+
+# elena-code
+csrc/mmdeploy/preprocess/elena/json
+csrc/mmdeploy/preprocess/elena/cpu_kernel/*
+csrc/mmdeploy/preprocess/elena/cuda_kernel/*

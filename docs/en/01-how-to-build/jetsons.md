@@ -82,7 +82,7 @@ wget https://nvidia.box.com/shared/static/fjtbno0vpo676a25cgvuqc1wty0fkkg6.whl -
 pip3 install torch-1.10.0-cp36-cp36m-linux_aarch64.whl
 
 # torchvision
-sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-base libopenmpi-dev -y
+sudo apt-get install libjpeg-dev zlib1g-dev libpython3-dev libavcodec-dev libavformat-dev libswscale-dev libopenblas-base libopenmpi-dev  libopenblas-dev -y
 git clone --branch v0.11.1 https://github.com/pytorch/vision torchvision
 cd torchvision
 export BUILD_VERSION=0.11.1
@@ -175,16 +175,18 @@ It takes about 1 hour 40 minutes to install MMCV on a Jetson Nano. So, please be
 #### Install ONNX
 
 ```shell
+# Execute one of the following commands
 pip install onnx
+conda install -c conda-forge onnx
 ```
 
-#### Install h5py
+#### Install h5py and pycuda
 
-Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization.
+Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization and needs `pycuda` to copy device memory.
 
 ```shell
 sudo apt-get install -y pkg-config libhdf5-100 libhdf5-dev
-pip install versioned-hdf5
+pip install versioned-hdf5 pycuda
 ```
 
 ```{note}
@@ -229,7 +231,7 @@ export MMDEPLOY_DIR=$(pwd)
 ### Install Model Converter
 
 Since some operators adopted by OpenMMLab codebases are not supported by TensorRT, we build the custom TensorRT plugins to make it up, such as `roi_align`, `scatternd`, etc.
-You can find a full list of custom plugins from [here](../ops/tensorrt.md).
+You can find a full list of custom plugins from [here](../06-custom-ops/tensorrt.md).
 
 ```shell
 # build TensorRT custom operators
@@ -251,13 +253,14 @@ It takes about 5 minutes to install model converter on a Jetson Nano. So, please
 
 ### Install C/C++ Inference SDK
 
-1. Build SDK Libraries
+Build SDK Libraries and its demo as below:
 
 ```shell
 mkdir -p build && cd build
 cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="trt" \
     -DMMDEPLOY_CODEBASES=all \
@@ -267,15 +270,6 @@ make -j$(nproc) && make install
 
 ```{note}
 It takes about 9 minutes to build SDK libraries on a Jetson Nano. So, please be patient until the installation is complete.
-```
-
-2. Build SDK demos
-
-```shell
-cd ${MMDEPLOY_DIR}/build/install/example
-mkdir -p build && cd build
-cmake .. -DMMDeploy_DIR=${MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy
-make -j$(nproc)
 ```
 
 ### Run a Demo

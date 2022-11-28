@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import warnings
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -89,7 +89,11 @@ class SuperResolution(BaseTask):
         """
         from .super_resolution_model import build_super_resolution_model
         model = build_super_resolution_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
         return model
 
     def init_pytorch_model(self,
@@ -113,13 +117,16 @@ class SuperResolution(BaseTask):
     def create_input(self,
                      imgs: Union[str, np.ndarray],
                      input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for editing processor.
 
         Args:
             imgs (str | np.ndarray): Input image(s).
-            input_shape (Sequence[int] | None): A list of two integer in
-             (width, height) format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -150,10 +157,10 @@ class SuperResolution(BaseTask):
 
         data = collate(data_arr, samples_per_gpu=len(imgs))
 
-        data['img'] = data['lq']
-
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
+
+        data['img'] = data['lq']
 
         return data, data['img']
 
@@ -250,6 +257,7 @@ class SuperResolution(BaseTask):
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
                          log_file: Optional[str] = None,
+                         json_file: Optional[str] = None,
                          **kwargs) -> None:
         """Evaluation function implemented in mmedit.
 
@@ -280,6 +288,8 @@ class SuperResolution(BaseTask):
         stats = dataset.evaluate(outputs)
         for stat in stats:
             logger.info('Eval-{}: {}'.format(stat, stats[stat]))
+        if json_file is not None:
+            mmcv.dump(stats, json_file, indent=4)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.

@@ -552,3 +552,134 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     assert rewrite_outputs is not None
+
+
+def get_roi_trans_roi_head_model():
+    """Oriented RPN Head Config."""
+    angle_version = 'le90'
+
+    num_stages = 2
+    stage_loss_weights = [1, 1]
+    version = angle_version
+    bbox_roi_extractor = [
+        dict(
+            type='SingleRoIExtractor',
+            roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
+            out_channels=64,
+            featmap_strides=[4, 8, 16, 32]),
+        dict(
+            type='RotatedSingleRoIExtractor',
+            roi_layer=dict(
+                type='RoIAlignRotated',
+                out_size=7,
+                sample_num=2,
+                clockwise=True),
+            out_channels=64,
+            featmap_strides=[4, 8, 16, 32]),
+    ]
+
+    bbox_head = [
+        dict(
+            type='RotatedShared2FCBBoxHead',
+            in_channels=64,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=15,
+            bbox_coder=dict(
+                type='DeltaXYWHAHBBoxCoder',
+                angle_range=angle_version,
+                norm_factor=2,
+                edge_swap=True,
+                target_means=[0., 0., 0., 0., 0.],
+                target_stds=[0.1, 0.1, 0.2, 0.2, 1]),
+            reg_class_agnostic=True,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
+        dict(
+            type='RotatedShared2FCBBoxHead',
+            in_channels=64,
+            fc_out_channels=1024,
+            roi_feat_size=7,
+            num_classes=15,
+            bbox_coder=dict(
+                type='DeltaXYWHAOBBoxCoder',
+                angle_range=angle_version,
+                norm_factor=None,
+                edge_swap=True,
+                proj_xy=True,
+                target_means=[0., 0., 0., 0., 0.],
+                target_stds=[0.05, 0.05, 0.1, 0.1, 0.5]),
+            reg_class_agnostic=False,
+            loss_cls=dict(
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
+    ]
+    test_cfg = mmcv.Config(
+        dict(
+            nms_pre=2000,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(iou_thr=0.1),
+            max_per_img=2000))
+
+    args = [num_stages, stage_loss_weights, bbox_roi_extractor, bbox_head]
+    kwargs = {'version': version, 'test_cfg': test_cfg}
+
+    from mmrotate.models.roi_heads import RoITransRoIHead
+    model = RoITransRoIHead(*args, **kwargs).eval()
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
+    check_backend(backend_type)
+
+    roi_head = get_roi_trans_roi_head_model()
+    roi_head.cpu()
+
+    seed_everything(1234)
+    x = [
+        torch.rand((1, 64, 32, 32)),
+        torch.rand((1, 64, 16, 16)),
+        torch.rand((1, 64, 8, 8)),
+        torch.rand((1, 64, 4, 4)),
+    ]
+    proposals = torch.tensor([[[58.8285, 52.1405, 188.2484, 141.5644, 0.5]]])
+    labels = torch.tensor([[[0.]]])
+    s = 256
+    img_metas = [{
+        'img_shape': torch.tensor([s, s]),
+        'ori_shape': torch.tensor([s, s]),
+        'scale_factor': torch.tensor([1, 1, 1, 1])
+    }]
+
+    model_inputs = {
+        'x': x,
+    }
+
+    output_names = ['det_bboxes', 'det_labels']
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmrotate',
+                task='RotatedDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.1,
+                    pre_top_k=2000,
+                    keep_top_k=2000))))
+
+    wrapped_model = WrapModel(
+        roi_head,
+        'simple_test',
+        proposal_list=[proposals, labels],
+        img_metas=img_metas)
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None

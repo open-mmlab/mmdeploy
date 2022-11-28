@@ -9,7 +9,10 @@ from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
-import_codebase(Codebase.MMCLS)
+try:
+    import_codebase(Codebase.MMCLS)
+except ImportError:
+    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 input = torch.rand(1)
 
@@ -248,3 +251,42 @@ def test_gap__forward(backend_type: Backend, inputs: list):
             rewrite_output = rewrite_output.cpu().numpy()
         assert np.allclose(
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
+
+
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_shift_windows_msa_cls(backend_type: Backend):
+    check_backend(backend_type)
+    from mmcls.models.utils import ShiftWindowMSA
+    model = ShiftWindowMSA(96, 3, 7)
+    model.cuda().eval()
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=backend_type.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            query=dict(
+                                min_shape=[1, 60800, 96],
+                                opt_shape=[1, 60800, 96],
+                                max_shape=[1, 60800, 96])))
+                ]),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    query = torch.randn([1, 60800, 96]).cuda()
+    hw_shape = (torch.tensor(200), torch.tensor(304))
+
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'query': query, 'hw_shape': hw_shape}
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)

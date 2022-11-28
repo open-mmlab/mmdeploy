@@ -181,9 +181,9 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list[str]: Text label result of each image.
         """
-        results = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])
-        results = [dict(text=text, score=score) for text, score in results]
+        text, score = self.wrapper.invoke(
+            img[0].contiguous().detach().cpu().numpy())
+        results = [dict(text=text, score=score)]
         return results
 
 

@@ -11,13 +11,12 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/core/utils/scope_counter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 
 using std::string;
 using std::vector;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 struct NetModule::Impl {
   using Input = std::map<std::string, Tensor>;
@@ -28,19 +27,24 @@ struct NetModule::Impl {
     auto init = [&]() -> Result<void> {
       auto name = args["name"].get<std::string>();
       auto& context = args["context"];
+      if (context.contains("scope")) {
+        is_profiling_ = true;
+      }
       auto model = context["model"].get<Model>();
       OUTCOME_TRY(auto config, model.GetModelConfig(name));
       device_ = context.value("device", Device{"cpu"});
       stream_ = context.value("stream", Stream::GetDefault(device_));
-      auto creator = Registry<Net>::Get().GetCreator(config.backend);
+      auto creator = gRegistry<Net>().Get(config.backend);
       if (!creator) {
-        MMDEPLOY_ERROR("Net backend not found: {}", config.backend);
+        MMDEPLOY_ERROR("Net backend not found: {}, available backends: {}", config.backend,
+                       gRegistry<Net>().List());
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
       net_cfg["context"].update({{"device", device_}, {"stream", stream_}});
       net_ = creator->Create(net_cfg);
       if (!net_) {
+        MMDEPLOY_ERROR("Failed to create Net backend: {}, config: {}", config.backend, net_cfg);
         return Status(eFail);
       }
       OUTCOME_TRY(InitializeInputTensors(args));
@@ -175,6 +179,9 @@ struct NetModule::Impl {
         output[0].emplace(name, std::move(tmp));
       }
     }
+    if (is_profiling_) {
+      OUTCOME_TRY(stream_.Wait());
+    }
 
     return output;
   }
@@ -188,6 +195,7 @@ struct NetModule::Impl {
   std::map<std::string, std::string> input_mapping_;
   // outer scope to model output names
   std::map<std::string, std::string> output_mapping_;
+  bool is_profiling_{false};
 };
 
 NetModule::~NetModule() = default;
@@ -225,15 +233,7 @@ Result<Value> NetModule::operator()(const Value& input) {
   }
 }
 
-class NetModuleCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "Net"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Module> Create(const Value& value) override {
-    return CreateTask(NetModule{value});
-  }
-};
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Net, 0),
+                               [](const Value& config) { return CreateTask(NetModule{config}); });
 
-REGISTER_MODULE(Module, NetModuleCreator);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

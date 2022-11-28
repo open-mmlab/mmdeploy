@@ -22,7 +22,7 @@ jlong Java_mmdeploy_Classifier_create(JNIEnv *env, jobject, jstring modelPath, j
 }
 
 void Java_mmdeploy_Classifier_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Classifier_destroy");
+  MMDEPLOY_DEBUG("Java_mmdeploy_Classifier_destroy");
   mmdeploy_classifier_destroy((mmdeploy_classifier_t)handle);
 }
 

@@ -43,6 +43,7 @@ class End2EndModel(BaseBackendModel):
         device: str,
         deploy_cfg: Union[str, mmcv.Config] = None,
         model_cfg: Union[str, mmcv.Config] = None,
+        **kwargs,
     ):
         super(End2EndModel, self).__init__(deploy_cfg=deploy_cfg)
         model_cfg, deploy_cfg = load_config(model_cfg, deploy_cfg)
@@ -50,10 +51,13 @@ class End2EndModel(BaseBackendModel):
         self.show_score = False
         self.bbox_head = build_head(model_cfg.model.bbox_head)
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str):
+                      device: str, **kwargs):
         """Initialize the wrapper of backends.
 
         Args:
@@ -69,7 +73,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: Sequence[torch.Tensor],
                 img_metas: Sequence[Sequence[dict]], *args, **kwargs) -> list:
@@ -164,7 +169,7 @@ class SDKEnd2EndModel(End2EndModel):
             list: A list contains predictions.
         """
         boundaries = self.wrapper.invoke(
-            [img[0].contiguous().detach().cpu().numpy()])[0]
+            img[0].contiguous().detach().cpu().numpy())
         boundaries = [list(x) for x in boundaries]
         return [
             dict(

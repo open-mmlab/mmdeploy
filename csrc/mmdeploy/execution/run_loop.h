@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <mutex>
 
+#include "concepts.h"
 #include "utility.h"
 
 namespace mmdeploy {
@@ -53,8 +54,12 @@ class RunLoop {
 
  public:
   class _Scheduler {
-    class _ScheduleTask {
+    struct _ScheduleTask {
+      using value_types = std::tuple<>;
+
+     private:
       friend _Scheduler;
+
       template <typename Receiver>
       friend __impl::operation_t<Receiver> tag_invoke(connect_t, const _ScheduleTask& self,
                                                       Receiver&& receiver) {
@@ -64,13 +69,21 @@ class RunLoop {
 
      public:
       explicit _ScheduleTask(RunLoop* loop) noexcept : loop_(loop) {}
-      using value_types = std::tuple<>;
+
+      friend _Scheduler tag_invoke(get_completion_scheduler_t, const _ScheduleTask& self);
     };
     friend RunLoop;
+
+    friend _Scheduler tag_invoke(get_completion_scheduler_t, const _ScheduleTask& self) {
+      return RunLoop::_Scheduler{self.loop_};
+    }
+
     explicit _Scheduler(RunLoop* loop) noexcept : loop_(loop) {}
 
    public:
     bool operator==(const _Scheduler& other) const noexcept { return loop_ == other.loop_; }
+
+    _Scheduler(const _Scheduler& other) = default;
 
    private:
     friend _ScheduleTask tag_invoke(schedule_t, const _Scheduler& self) {

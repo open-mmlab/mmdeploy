@@ -12,7 +12,7 @@
 
 using nlohmann::json;
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class ZipModelImpl : public ModelImpl {
  public:
@@ -34,10 +34,10 @@ class ZipModelImpl : public ModelImpl {
     int ret = 0;
     zip_ = zip_open(model_path.c_str(), 0, &ret);
     if (ret != 0) {
-      MMDEPLOY_INFO("open zip file {} failed, ret {}", model_path.c_str(), ret);
+      MMDEPLOY_INFO("Failed to open zip file {}, ret {}", model_path.c_str(), ret);
       return Status(eInvalidArgument);
     }
-    MMDEPLOY_INFO("open sdk model file {} successfully", model_path.c_str());
+    MMDEPLOY_INFO("Open model file {} successfully", model_path.c_str());
     return InitZip();
   }
 
@@ -103,7 +103,7 @@ class ZipModelImpl : public ModelImpl {
  private:
   Result<void> InitZip() {
     int files = zip_get_num_files(zip_);
-    MMDEPLOY_INFO("there are {} files in sdk model file", files);
+    MMDEPLOY_INFO("There are {} files in the model", files);
     if (files == 0) {
       return Status(eFail);
     }
@@ -132,15 +132,7 @@ class ZipModelImpl : public ModelImpl {
   std::map<std::string, int> file_index_;
 };
 
-class ZipModelImplRegister {
- public:
-  ZipModelImplRegister() {
-    (void)ModelRegistry::Get().Register("ZipModel", []() -> std::unique_ptr<ModelImpl> {
-      return std::make_unique<ZipModelImpl>();
-    });
-  }
-};
+MMDEPLOY_REGISTER_FACTORY_FUNC(ModelImpl, (ZipModel, 0),
+                               [] { return std::make_unique<ZipModelImpl>(); });
 
-static ZipModelImplRegister folder_model_register;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

@@ -92,6 +92,8 @@ class ORTWrapper(BaseWrapper):
         for name in self._output_names:
             self.io_binding.bind_output(name)
         # run session to get outputs
+        if self.device_type == 'cuda':
+            torch.cuda.synchronize()
         self.__ort_execute(self.io_binding)
         output_list = self.io_binding.copy_outputs_to_cpu()
         outputs = {}
@@ -100,7 +102,7 @@ class ORTWrapper(BaseWrapper):
 
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.ONNXRUNTIME.value)
     def __ort_execute(self, io_binding: ort.IOBinding):
         """Run inference with ONNXRuntime session.
 

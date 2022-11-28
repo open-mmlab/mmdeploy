@@ -2,68 +2,60 @@
 
 #include "detector.h"
 
+#include <deque>
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/apis/c/mmdeploy/common_internal.h"
+#include "mmdeploy/apis/c/mmdeploy/model.h"
+#include "mmdeploy/apis/c/mmdeploy/pipeline.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/model.h"
+#include "mmdeploy/core/mpl/structure.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
-#include "model.h"
-#include "pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
 
 namespace {
 
-Value& config_template() {
+Value config_template(Model model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"image"}},
-        {"output", {"det"}},
-        {
-          "tasks",{
-            {
-              {"name", "mmdetection"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"image"}},
-              {"output", {"det"}}
-            }
-          }
-        }
-      }
-    }
+  return {
+    {"name", "detector"},
+    {"type", "Inference"},
+    {"params", {{"model", std::move(model)}}},
+    {"input", {"image"}},
+    {"output", {"dets"}}
   };
   // clang-format on
-  return v;
 }
 
-int mmdeploy_detector_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
-                                  mmdeploy_exec_info_t exec_info, mmdeploy_detector_t* detector) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
-                                  (mmdeploy_pipeline_t*)detector);
-}
+using ResultType = mmdeploy::Structure<mmdeploy_detection_t,                       //
+                                       std::vector<int>,                           //
+                                       std::deque<mmdeploy_instance_mask_t>,       //
+                                       std::vector<mmdeploy::framework::Buffer>>;  //
 
 }  // namespace
 
 int mmdeploy_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
                              mmdeploy_detector_t* detector) {
-  return mmdeploy_detector_create_impl(model, device_name, device_id, nullptr, detector);
+  mmdeploy_context_t context{};
+  auto ec = mmdeploy_context_create_by_device(device_name, device_id, &context);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_detector_create_v2(model, context, detector);
+  mmdeploy_context_destroy(context);
+  return ec;
 }
 
-int mmdeploy_detector_create_v2(mmdeploy_model_t model, const char* device_name, int device_id,
-                                mmdeploy_exec_info_t exec_info, mmdeploy_detector_t* detector) {
-  return mmdeploy_detector_create_impl(model, device_name, device_id, exec_info, detector);
+int mmdeploy_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
+                                mmdeploy_detector_t* detector) {
+  auto config = config_template(*Cast(model));
+  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)detector);
 }
 
 int mmdeploy_detector_create_by_path(const char* model_path, const char* device_name, int device_id,
@@ -73,7 +65,7 @@ int mmdeploy_detector_create_by_path(const char* model_path, const char* device_
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_detector_create_impl(model, device_name, device_id, nullptr, detector);
+  auto ec = mmdeploy_detector_create(model, device_name, device_id, detector);
   mmdeploy_model_destroy(model);
   return ec;
 }
@@ -116,31 +108,22 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
   }
   try {
     Value& value = Cast(output)->front();
-    auto detector_outputs = from_value<vector<mmdet::DetectorOutput>>(value);
+    auto detector_outputs = from_value<vector<mmdet::Detections>>(value);
 
-    vector<int> _result_count;
-    _result_count.reserve(detector_outputs.size());
-    for (const auto& det_output : detector_outputs) {
-      _result_count.push_back((int)det_output.detections.size());
+    vector<int> _result_count(detector_outputs.size());
+    size_t total = 0;
+    for (size_t i = 0; i < detector_outputs.size(); ++i) {
+      _result_count[i] = static_cast<int>(detector_outputs[i].size());
+      total += detector_outputs[i].size();
     }
-    auto total = std::accumulate(_result_count.begin(), _result_count.end(), 0);
 
-    std::unique_ptr<int[]> result_count_data(new int[_result_count.size()]{});
-    auto result_count_ptr = result_count_data.get();
-    std::copy(_result_count.begin(), _result_count.end(), result_count_data.get());
+    ResultType r({total, 1, 1, 1});
+    auto [result_data, result_count_vec, masks, buffers] = r.pointers();
 
-    auto deleter = [&](mmdeploy_detection_t* p) {
-      mmdeploy_detector_release_result(p, result_count_ptr, (int)detector_outputs.size());
-    };
-    std::unique_ptr<mmdeploy_detection_t[], decltype(deleter)> result_data(
-        new mmdeploy_detection_t[total]{}, deleter);
-    // ownership transferred to result_data
-    result_count_data.release();
-
-    auto result_ptr = result_data.get();
+    auto result_ptr = result_data;
 
     for (const auto& det_output : detector_outputs) {
-      for (const auto& detection : det_output.detections) {
+      for (const auto& detection : det_output) {
         result_ptr->label_id = detection.label_id;
         result_ptr->score = detection.score;
         const auto& bbox = detection.bbox;
@@ -148,18 +131,20 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
         auto mask_byte_size = detection.mask.byte_size();
         if (mask_byte_size) {
           auto& mask = detection.mask;
-          result_ptr->mask = new mmdeploy_instance_mask_t{};
-          result_ptr->mask->data = new char[mask_byte_size];
+          result_ptr->mask = &masks->emplace_back();
+          buffers->push_back(mask.buffer());
+          result_ptr->mask->data = mask.data<char>();
           result_ptr->mask->width = mask.width();
           result_ptr->mask->height = mask.height();
-          std::copy(mask.data<char>(), mask.data<char>() + mask_byte_size, result_ptr->mask->data);
         }
         ++result_ptr;
       }
     }
 
-    *result_count = result_count_ptr;
-    *results = result_data.release();
+    *result_count_vec = std::move(_result_count);
+    *result_count = result_count_vec->data();
+    *results = result_data;
+    r.release();
 
     return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
@@ -172,17 +157,8 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
 
 void mmdeploy_detector_release_result(mmdeploy_detection_t* results, const int* result_count,
                                       int count) {
-  auto result_ptr = results;
-  for (int i = 0; i < count; ++i) {
-    for (int j = 0; j < result_count[i]; ++j, ++result_ptr) {
-      if (result_ptr->mask) {
-        delete[] result_ptr->mask->data;
-        delete result_ptr->mask;
-      }
-    }
-  }
-  delete[] results;
-  delete[] result_count;
+  auto num_dets = std::accumulate(result_count, result_count + count, 0);
+  ResultType deleter({static_cast<size_t>(num_dets), 1, 1, 1}, results);
 }
 
 void mmdeploy_detector_destroy(mmdeploy_detector_t detector) {

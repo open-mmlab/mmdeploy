@@ -12,13 +12,10 @@
       - [Build Model Converter](#build-model-converter)
         - [Build Custom Ops](#build-custom-ops)
         - [Install Model Converter](#install-model-converter)
-      - [Build SDK](#build-sdk)
-      - [Build Demo](#build-demo)
+      - [Build SDK and Demos](#build-sdk-and-demos)
     - [Note](#note)
 
 ______________________________________________________________________
-
-Currently, MMDeploy only provides build-from-source method for windows platform. Prebuilt package will be released in the future.
 
 ## Build From Source
 
@@ -97,16 +94,15 @@ You can skip this chapter if you are only interested in the model converter.
   <tr>
     <td>pplcv </td>
     <td>A high-performance image processing library of openPPL.<br>
-  <b>It is optional which only be needed if <code>cuda</code> platform is required.
-  Now, MMDeploy supports v0.6.2 and has to use <code>git clone</code> to download it.</b><br>
+  <b>It is optional which only be needed if <code>cuda</code> platform is required.</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ../..
@@ -203,79 +199,7 @@ cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
 ```
 
-#### Build Options Spec
-
-<table class="docutils">
-<thead>
-  <tr>
-    <th>NAME</th>
-    <th>VALUE</th>
-    <th>DEFAULT</th>
-    <th>REMARK</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>switch to build MMDeploy SDK python package</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_TEST</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Switch to build MMDeploy SDK unittest cases</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_DEVICES</td>
-    <td>{"cpu", "cuda"}</td>
-    <td>cpu</td>
-    <td>Enable target device. You can enable more by
-   passing a semicolon separated list of device names to <code>MMDEPLOY_TARGET_DEVICES</code> variable, e.g. <code>-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"</code> </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino"}</td>
-    <td>N/A</td>
-    <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
-    After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
-    1. <b>trt</b>: TensorRT. <code>TENSORRT_DIR</code> and <code>CUDNN_DIR</code> are needed.
-<pre><code>
--DTENSORRT_DIR=$env:TENSORRT_DIR
--DCUDNN_DIR=$env:CUDNN_DIR
-</code></pre>
-    2. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
-<pre><code>-DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR</code></pre>
-    3. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed. MMDeploy hasn't verified it yet.
-    4. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed. MMDeploy hasn't verified it yet.
-    5. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed. MMDeploy hasn't verified it yet.
-   </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>all</td>
-    <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>Switch to build shared library or static library of MMDeploy SDK</td>
-  </tr>
-</tbody>
-</table>
-
 #### Build Model Converter
-
-##### Build Custom Ops
 
 If one of inference engines among ONNXRuntime, TensorRT and ncnn is selected, you have to build the corresponding custom ops.
 
@@ -303,7 +227,9 @@ cmake --install . --config Release
 
   TODO
 
-##### Install Model Converter
+Please check [cmake build option](cmake_option.md).
+
+#### Install Model Converter
 
 ```powershell
 cd $env:MMDEPLOY_DIR
@@ -316,7 +242,7 @@ pip install -e .
   To use optional dependencies, install them manually with `pip install -r requirements/optional.txt` or specify desired extras when calling `pip` (e.g. `pip install -e .[optional]`).
   Valid keys for the extras field are: `all`, `tests`, `build`, `optional`.
 
-#### Build SDK
+#### Build SDK and Demos
 
 MMDeploy provides two recipes as shown below for building SDK with ONNXRuntime and TensorRT as inference engines respectively.
 You can also activate other engines after the model.
@@ -329,9 +255,10 @@ You can also activate other engines after the model.
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
+      -DMMDEPLOY_BUILD_EXAMPLES=ON `
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
-      -DMMDEPLOY_CODEBASES="all" `
       -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 
   cmake --build . --config Release -- /m
@@ -346,9 +273,10 @@ You can also activate other engines after the model.
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
     -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_BUILD_EXAMPLES=ON `
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
     -DMMDEPLOY_TARGET_BACKENDS="trt" `
-    -DMMDEPLOY_CODEBASES="all" `
     -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
     -DTENSORRT_DIR="$env:TENSORRT_DIR" `
     -DCUDNN_DIR="$env:CUDNN_DIR"
@@ -356,20 +284,6 @@ You can also activate other engines after the model.
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
-
-#### Build Demo
-
-```PowerShell
-cd $env:MMDEPLOY_DIR\build\install\example
-mkdir build -ErrorAction SilentlyContinue
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
-
-cmake --build . --config Release -- /m
-
-$env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
-```
 
 ### Note
 

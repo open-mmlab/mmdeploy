@@ -4,7 +4,7 @@
   <div align="center">
     <b><font size="5">OpenMMLab website</font></b>
     <sup>
-      <a href="https://openmmlab.com">
+        <a href="https://openmmlab.com">
         <i><font size="4">HOT</font></i>
       </a>
     </sup>
@@ -50,37 +50,63 @@ The currently supported codebases and models are as follows, and more will be in
 - [mmpose](docs/en/04-supported-codebases/mmpose.md)
 - [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)
 - [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
+- [mmaction2](docs/en/04-supported-codebases/mmaction2.md)
 
 ### Multiple inference backends are available
 
-Models can be exported and run in the following backends, and more will be compatible
+The supported Device-Platform-InferenceBackend matrix is presented as following, and more will be compatible.
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | LibTorch | more                                           |
-| ------------ | -------- | ------ | ---- | -------- | -------- | ---------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | ✔️       | [benchmark](docs/en/03-benchmark/benchmark.md) |
+The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
+
+| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
+| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
 ### Efficient and scalable C/C++ SDK Framework
 
 All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
-## Get Started
+## [Documentation](https://mmdeploy.readthedocs.io/en/latest/)
 
-Please read [getting_started.md](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
+Please read [getting_started](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
 
 - [Build](docs/en/01-how-to-build/build_from_source.md)
   - [Build from Docker](docs/en/01-how-to-build/build_from_docker.md)
+  - [Build from Script](docs/en/01-how-to-build/build_from_script.md)
   - [Build for Linux](docs/en/01-how-to-build/linux-x86_64.md)
+  - [Build for macOS](docs/en/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
+  - [Cross Build for aarch64](docs/en/01-how-to-build/cross_build_ncnn_aarch64.md)
 - User Guide
   - [How to convert model](docs/en/02-how-to-run/convert_model.md)
   - [How to write config](docs/en/02-how-to-run/write_config.md)
-  - [How to evaluate deployed models](docs/en/02-how-to-run/how_to_evaluate_a_model.md)
-  - [How to measure performance of deployed models](docs/en/02-how-to-run/how_to_measure_performance_of_models.md)
+  - [How to profile model](docs/en/02-how-to-run/profile_model.md)
+  - [How to quantize model](docs/en/02-how-to-run/quantize_model.md)
+  - [Useful tools](docs/en/02-how-to-run/useful_tools.md)
 - Developer Guide
-  - [How to support new models](docs/en/06-developer-guide/support_new_model.md)
-  - [How to support new backends](docs/en/06-developer-guide/support_new_backend.md)
+  - [Architecture](docs/en/07-developer-guide/architecture.md)
+  - [How to support new models](docs/en/07-developer-guide/support_new_model.md)
+  - [How to support new backends](docs/en/07-developer-guide/support_new_backend.md)
+  - [How to partition model](docs/en/07-developer-guide/partition_model.md)
+  - [How to test rewritten model](docs/en/07-developer-guide/test_rewritten_models.md)
+  - [How to test backend ops](docs/en/07-developer-guide/add_backend_ops_unittest.md)
+  - [How to do regression test](docs/en/07-developer-guide/regression_test.md)
+- Custom Backend Ops
+  - [ncnn](docs/en/06-custom-ops/ncnn.md)
+  - [onnxruntime](docs/en/06-custom-ops/onnxruntime.md)
+  - [tensorrt](docs/en/06-custom-ops/tensorrt.md)
 - [FAQ](docs/en/faq.md)
 - [Contributing](.github/CONTRIBUTING.md)
 
@@ -124,6 +150,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO series toolbox and benchmark
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab rotated object detection toolbox and benchmark.
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab semantic segmentation toolbox and benchmark.
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab text detection, recognition, and understanding toolbox.

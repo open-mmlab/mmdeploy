@@ -3,6 +3,7 @@
 #include "mmdeploy/core/status_code.h"
 
 #include "mmdeploy/core/logger.h"
+#include "mmdeploy/core/utils/source_location.h"
 
 namespace mmdeploy {
 
@@ -21,7 +22,11 @@ string_ref Status::message() const {
   std::string ret;
   try {
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
+#if MMDEPLOY_HAS_SOURCE_LOCATION
     ret = fmt::format("{} ({}) @ {}:{}", to_string(ec), (int32_t)ec, file, line);
+#else
+    ret = fmt::format("{} ({})", to_string(ec), (int32_t)ec);
+#endif
 #elif MMDEPLOY_STATUS_USE_STACKTRACE
     ret = fmt::format("{} ({}), stacktrace:\n{}", to_string(ec), (int32_t)ec, st.to_string());
 #else

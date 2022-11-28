@@ -166,7 +166,7 @@ class TRTWrapper(BaseWrapper):
 
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.TENSORRT.value)
     def __trt_execute(self, bindings: Sequence[int]):
         """Run inference with TensorRT.
 

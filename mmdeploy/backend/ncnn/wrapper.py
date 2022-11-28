@@ -102,6 +102,7 @@ class NCNNWrapper(BaseWrapper):
                 data = input_tensor[batch_id].contiguous()
                 data = data.detach().cpu().numpy()
                 input_mat = ncnn.Mat(data)
+                input_mat = input_mat.clone()
                 ex.input(name, input_mat)
 
             # get outputs
@@ -125,7 +126,7 @@ class NCNNWrapper(BaseWrapper):
 
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.NCNN.value)
     def __ncnn_execute(self, extractor: ncnn.Extractor,
                        output_names: Sequence[str]) -> Dict[str, ncnn.Mat]:
         """Run inference with ncnn.

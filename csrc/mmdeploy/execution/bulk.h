@@ -36,7 +36,7 @@ struct _Receiver<Receiver, Shape, Func>::type {
 
   template <class... As>
   friend void tag_invoke(set_value_t, type&& self, As&&... as) noexcept {
-    MMDEPLOY_WARN("fallback Bulk implementation");
+    MMDEPLOY_DEBUG("fallback Bulk implementation");
     for (Shape i = 0; i < self.shape_; ++i) {
       self.func_(i, as...);
     }

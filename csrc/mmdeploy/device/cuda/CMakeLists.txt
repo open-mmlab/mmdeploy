@@ -2,9 +2,7 @@
 
 project(mmdeploy_cuda_device)
 
-set(SRCS
-        cuda_device.cpp
-        cuda_builtin_kernels.cu)
+set(SRCS cuda_device.cpp)
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDA_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CUDA_LIBRARIES} cuda)

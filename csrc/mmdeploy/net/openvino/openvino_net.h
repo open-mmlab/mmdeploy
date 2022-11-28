@@ -6,7 +6,7 @@
 #include "inference_engine.hpp"
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class OpenVINONet : public Net {
  public:
@@ -31,6 +31,6 @@ class OpenVINONet : public Net {
   Stream stream_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_OPENVINO_OPENVINO_NET_H_

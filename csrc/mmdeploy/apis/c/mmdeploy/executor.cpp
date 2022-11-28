@@ -13,14 +13,15 @@ namespace {
 
 mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Value()) {
   try {
-    auto creator = Registry<SchedulerType>::Get().GetCreator(type);
+    auto creator = gRegistry<SchedulerType>().Get(type);
     if (!creator) {
-      MMDEPLOY_ERROR("creator for {} not found.", type);
+      MMDEPLOY_ERROR("Creator for {} not found. Available schedulers: {}", type,
+                     gRegistry<SchedulerType>().List());
       return nullptr;
     }
     return Cast(new SchedulerType(creator->Create(config)));
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("failed to create {}, error: {}", type, e.what());
+    MMDEPLOY_ERROR("failed to create Scheduler: {} ({}), config: {}", type, e.what(), config);
     return nullptr;
   }
 }

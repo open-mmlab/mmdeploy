@@ -5,7 +5,7 @@
 
 #include "mmdeploy/core/device.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 using std::shared_ptr;
 
@@ -181,6 +181,6 @@ inline PlatformImpl* GetPlatformImpl(const Device& device) {
   return gPlatformRegistry().GetPlatformImpl(device);
 }
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif

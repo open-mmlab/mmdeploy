@@ -8,6 +8,7 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/mpl/structure.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "pipeline.h"
@@ -17,46 +18,32 @@ using namespace mmdeploy;
 
 namespace {
 
-Value& config_template() {
+Value config_template(const Model& model) {
   // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"img"}},
-        {"output", {"mask"}},
-        {
-          "tasks", {
-            {
-              {"name", "segmentation"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"img"}},
-              {"output", {"mask"}}
-            }
-          }
-        }
-      }
-    }
+  return {
+    {"name", "segmentor"},
+    {"type", "Inference"},
+    {"params", {{"model", model}}},
+    {"input", {"img"}},
+    {"output", {"mask"}}
   };
   // clang-format on
-  return v;
 }
 
-int mmdeploy_segmentor_create_impl(mmdeploy_model_t model, const char* device_name, int device_id,
-                                   mmdeploy_exec_info_t exec_info,
-                                   mmdeploy_segmentor_t* segmentor) {
-  auto config = config_template();
-  config["pipeline"]["tasks"][0]["params"]["model"] = *Cast(model);
-
-  return mmdeploy_pipeline_create(Cast(&config), device_name, device_id, exec_info,
-                                  (mmdeploy_pipeline_t*)segmentor);
-}
+using ResultType = mmdeploy::Structure<mmdeploy_segmentation_t, mmdeploy::framework::Buffer>;
 
 }  // namespace
 
 int mmdeploy_segmentor_create(mmdeploy_model_t model, const char* device_name, int device_id,
                               mmdeploy_segmentor_t* segmentor) {
-  return mmdeploy_segmentor_create_impl(model, device_name, device_id, nullptr, segmentor);
+  mmdeploy_context_t context{};
+  auto ec = mmdeploy_context_create_by_device(device_name, device_id, &context);
+  if (ec != MMDEPLOY_SUCCESS) {
+    return ec;
+  }
+  ec = mmdeploy_segmentor_create_v2(model, context, segmentor);
+  mmdeploy_context_destroy(context);
+  return ec;
 }
 
 int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device_name,
@@ -65,7 +52,7 @@ int mmdeploy_segmentor_create_by_path(const char* model_path, const char* device
   if (auto ec = mmdeploy_model_create_by_path(model_path, &model)) {
     return ec;
   }
-  auto ec = mmdeploy_segmentor_create_impl(model, device_name, device_id, nullptr, segmentor);
+  auto ec = mmdeploy_segmentor_create(model, device_name, device_id, segmentor);
   mmdeploy_model_destroy(model);
   return ec;
 }
@@ -87,23 +74,17 @@ int mmdeploy_segmentor_apply(mmdeploy_segmentor_t segmentor, const mmdeploy_mat_
 }
 
 void mmdeploy_segmentor_release_result(mmdeploy_segmentation_t* results, int count) {
-  if (results == nullptr) {
-    return;
-  }
-
-  for (auto i = 0; i < count; ++i) {
-    delete[] results[i].mask;
-  }
-  delete[] results;
+  ResultType deleter(static_cast<size_t>(count), results);
 }
 
 void mmdeploy_segmentor_destroy(mmdeploy_segmentor_t segmentor) {
   mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)segmentor);
 }
 
-int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, const char* device_name, int device_id,
-                                 mmdeploy_exec_info_t exec_info, mmdeploy_segmentor_t* segmentor) {
-  return mmdeploy_segmentor_create_impl(model, device_name, device_id, exec_info, segmentor);
+int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
+                                 mmdeploy_segmentor_t* segmentor) {
+  auto config = config_template(*Cast(model));
+  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)segmentor);
 }
 
 int mmdeploy_segmentor_create_input(const mmdeploy_mat_t* mats, int mat_count,
@@ -124,15 +105,13 @@ int mmdeploy_segmentor_apply_async(mmdeploy_segmentor_t segmentor, mmdeploy_send
 int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mmdeploy_segmentation_t** results) {
   try {
     const auto& value = Cast(output)->front();
-
     size_t image_count = value.size();
 
-    auto deleter = [&](mmdeploy_segmentation_t* p) {
-      mmdeploy_segmentor_release_result(p, static_cast<int>(image_count));
-    };
-    unique_ptr<mmdeploy_segmentation_t[], decltype(deleter)> _results(
-        new mmdeploy_segmentation_t[image_count]{}, deleter);
-    auto results_ptr = _results.get();
+    ResultType r(image_count);
+    auto [results_data, buffers] = r.pointers();
+
+    auto results_ptr = results_data;
+
     for (auto i = 0; i < image_count; ++i, ++results_ptr) {
       auto& output_item = value[i];
       MMDEPLOY_DEBUG("the {}-th item in output: {}", i, output_item);
@@ -141,13 +120,15 @@ int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mmdeploy_segmentation
       results_ptr->width = segmentor_output.width;
       results_ptr->classes = segmentor_output.classes;
       auto mask_size = results_ptr->height * results_ptr->width;
-      results_ptr->mask = new int[mask_size];
-      const auto& mask = segmentor_output.mask;
-      std::copy_n(mask.data<int>(), mask_size, results_ptr->mask);
+      auto& mask = segmentor_output.mask;
+      results_ptr->mask = mask.data<int>();
+      buffers[i] = mask.buffer();
     }
-    *results = _results.release();
-    return MMDEPLOY_SUCCESS;
 
+    *results = results_data;
+    r.release();
+
+    return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
     MMDEPLOY_ERROR("exception caught: {}", e.what());
   } catch (...) {

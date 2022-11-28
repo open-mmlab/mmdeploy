@@ -8,7 +8,8 @@ import onnx.utils
 from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.core.optimizers import (attribute_to_dict, create_extractor,
                                       get_new_name, parse_extractor_io_string,
-                                      remove_identity, rename_value)
+                                      remove_identity, remove_imports,
+                                      rename_value)
 from mmdeploy.utils import get_root_logger
 
 
@@ -197,6 +198,9 @@ def extract_partition(model: Union[str, onnx.ModelProto],
             for idx, dim in enumerate(output_node.type.tensor_type.shape.dim):
                 dim.dim_value = 0
                 dim.dim_param = f'dim_{idx}'
+
+    # remove mmdeploy domain if useless
+    remove_imports(extracted_model)
 
     # save extract_model if save_file is given
     if save_file is not None:

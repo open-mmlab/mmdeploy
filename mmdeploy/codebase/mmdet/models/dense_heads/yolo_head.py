@@ -2,9 +2,9 @@
 import numpy as np
 import torch
 
-from mmdeploy.codebase.mmdet import (get_post_processing_params,
-                                     multiclass_nms,
-                                     pad_with_value_if_necessary)
+from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
+                                            pad_with_value_if_necessary)
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import Backend, is_dynamic_shape
 
@@ -108,7 +108,8 @@ def yolov3_head__get_bboxes(ctx,
             batch_inds = torch.arange(
                 batch_size, device=device).unsqueeze(-1).long()
             # Avoid onnx2tensorrt issue in https://github.com/NVIDIA/TensorRT/issues/1134 # noqa: E501
-            transformed_inds = (bbox_pred.shape[1] * batch_inds + topk_inds)
+            transformed_inds = (
+                bbox_pred.shape[1] * batch_inds + topk_inds.long())
             bbox_pred = bbox_pred.reshape(-1, 4)[transformed_inds, :].reshape(
                 batch_size, -1, 4)
             cls_pred = cls_pred.reshape(
@@ -128,19 +129,6 @@ def yolov3_head__get_bboxes(ctx,
     batch_mlvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
     post_params = get_post_processing_params(ctx.cfg)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    confidence_threshold = cfg.get('conf_thr',
-                                   post_params.confidence_threshold)
-
-    # follow original pipeline of YOLOv3
-    if confidence_threshold > 0:
-        mask = batch_mlvl_conf_scores >= confidence_threshold
-        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
-            mask, batch_mlvl_conf_scores.new_zeros(1))
-    if score_threshold > 0:
-        mask = batch_mlvl_scores > score_threshold
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask, batch_mlvl_scores.new_zeros(1))
 
     batch_mlvl_conf_scores = batch_mlvl_conf_scores.unsqueeze(2)
     batch_mlvl_scores = batch_mlvl_scores * batch_mlvl_conf_scores

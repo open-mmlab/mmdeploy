@@ -5,15 +5,19 @@ import pytest
 import torch
 import torch.nn as nn
 from mmcv import ConfigDict
-from mmseg.models import BACKBONES, HEADS
-from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
-import_codebase(Codebase.MMSEG)
+try:
+    import_codebase(Codebase.MMSEG)
+except ImportError:
+    pytest.skip(f'{Codebase.MMSEG} is not installed.', allow_module_level=True)
+
+from mmseg.models import BACKBONES, HEADS
+from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
 
 @BACKBONES.register_module()
@@ -207,8 +211,7 @@ def test_aspphead_forward(backend):
         rewrite_outputs, model_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.parametrize('backend',
-                         [Backend.ONNXRUNTIME, Backend.OPENVINO, Backend.NCNN])
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_psphead_forward(backend):
     check_backend(backend)
     from mmseg.models.decode_heads import PSPHead

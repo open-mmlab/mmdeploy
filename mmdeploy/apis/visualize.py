@@ -16,7 +16,8 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
                     device: str,
                     backend: Optional[Backend] = None,
                     output_file: Optional[str] = None,
-                    show_result: bool = False):
+                    show_result: bool = False,
+                    **kwargs):
     """Run inference with PyTorch or backend model and show results.
 
     Examples:
@@ -63,17 +64,30 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
 
         if backend == Backend.PYTORCH:
             model = task_processor.init_pytorch_model(model[0])
+            model_inputs, _ = task_processor.create_input(img, input_shape)
         else:
-            model = task_processor.init_backend_model(model)
+            model = task_processor.init_backend_model(model, **kwargs)
+            model_inputs, _ = task_processor.create_input(
+                img, input_shape, task_processor.update_test_pipeline)
 
-    model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():
         result = task_processor.run_inference(model, model_inputs)[0]
 
-    task_processor.visualize(
-        image=img,
-        model=model,
-        result=result,
-        output_file=output_file,
-        window_name=backend.value,
-        show_result=show_result)
+    try:
+        # check headless
+        import tkinter
+        tkinter.Tk()
+
+        task_processor.visualize(
+            image=img,
+            model=model,
+            result=result,
+            output_file=output_file,
+            window_name=backend.value,
+            show_result=show_result)
+    except Exception as e:
+        from mmdeploy.utils import get_root_logger
+        logger = get_root_logger()
+        logger.warn(
+            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
+        )

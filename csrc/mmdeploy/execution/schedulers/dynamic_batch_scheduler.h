@@ -77,7 +77,7 @@ struct Context : context_base_t {
         delay_(scheduler_.timeout_),
         timer_(scheduler_.timer_) {}
 
-  ~Context() { MMDEPLOY_INFO("~Context()"); }
+  ~Context() { MMDEPLOY_DEBUG("~Context()"); }
 
   using _operation_t = operation_t<Sender, Scheduler, Receiver, Func>;
 
@@ -96,6 +96,7 @@ struct Context : context_base_t {
 
     friend std::ostream& operator<<(std::ostream& os, const Batch& batch) {
       os << fmt::format("(index={}, size={})", batch.index_, batch.size_);
+      return os;
     }
   };
 

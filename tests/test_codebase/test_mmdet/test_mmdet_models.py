@@ -12,10 +12,13 @@ import torch
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.config_utils import get_ir_config
-from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
-                                 get_rewrite_outputs)
+from mmdeploy.utils.test import (WrapModel, backend_checker, check_backend,
+                                 get_model_outputs, get_rewrite_outputs)
 
-import_codebase(Codebase.MMDET)
+try:
+    import_codebase(Codebase.MMDET)
+except ImportError:
+    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
 def seed_everything(seed=1029):
@@ -161,6 +164,70 @@ def get_reppoints_head_model():
     from mmdet.models.dense_heads import RepPointsHead
     model = RepPointsHead(num_classes=4, in_channels=1, test_cfg=test_cfg)
 
+    model.requires_grad_(False)
+    return model
+
+
+def get_detrhead_model():
+    """DETR head Config."""
+    from mmdet.models import build_head
+    model = build_head(
+        dict(
+            type='DETRHead',
+            num_classes=4,
+            in_channels=1,
+            transformer=dict(
+                type='Transformer',
+                encoder=dict(
+                    type='DetrTransformerEncoder',
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='BaseTransformerLayer',
+                        attn_cfgs=[
+                            dict(
+                                type='MultiheadAttention',
+                                embed_dims=4,
+                                num_heads=1,
+                                dropout=0.1)
+                        ],
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
+                decoder=dict(
+                    type='DetrTransformerDecoder',
+                    return_intermediate=True,
+                    num_layers=1,
+                    transformerlayers=dict(
+                        type='DetrTransformerDecoderLayer',
+                        attn_cfgs=dict(
+                            type='MultiheadAttention',
+                            embed_dims=4,
+                            num_heads=1,
+                            dropout=0.1),
+                        ffn_cfgs=dict(
+                            type='FFN',
+                            embed_dims=4,
+                            feedforward_channels=32,
+                            num_fcs=2,
+                            ffn_drop=0.,
+                            act_cfg=dict(type='ReLU', inplace=True),
+                        ),
+                        feedforward_channels=32,
+                        ffn_dropout=0.1,
+                        operation_order=('self_attn', 'norm', 'cross_attn',
+                                         'norm', 'ffn', 'norm')),
+                )),
+            positional_encoding=dict(
+                type='SinePositionalEncoding', num_feats=2, normalize=True),
+            test_cfg=dict(max_per_img=100)))
     model.requires_grad_(False)
     return model
 
@@ -569,6 +636,73 @@ def test_single_roi_extractor(backend_type: Backend):
         backend_output = backend_output.squeeze()
         assert np.allclose(
             model_output, backend_output, rtol=1e-03, atol=1e-05)
+
+
+def test_single_roi_extractor__ascend():
+    check_backend(Backend.ASCEND)
+
+    # create wrap function
+    from mmdeploy.utils.test import WrapFunction
+    single_roi_extractor = get_single_roi_extractor()
+    out_channels = single_roi_extractor.out_channels
+
+    def single_roi_extractor_func(feat0, feat1, feat2, feat3, rois):
+        return single_roi_extractor([feat0, feat1, feat2, feat3], rois)
+
+    single_roi_extractor_wrapper = WrapFunction(single_roi_extractor_func)
+
+    # generate data
+    seed_everything(1234)
+    feats = [
+        torch.rand((1, out_channels, 200, 336)),
+        torch.rand((1, out_channels, 100, 168)),
+        torch.rand((1, out_channels, 50, 84)),
+        torch.rand((1, out_channels, 25, 42)),
+    ]
+    seed_everything(5678)
+    rois = torch.tensor([[0.0000, 587.8285, 52.1405, 886.2484, 341.5644]])
+
+    # create config
+    input_names = ['feat0', 'feat1', 'feat2', 'feat3', 'rois']
+    output_names = ['roi_feat']
+    model_inputs = dict(zip(input_names, feats + [rois]))
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(
+                type=Backend.ASCEND.value,
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            feat0=feats[0].shape,
+                            feat1=feats[1].shape,
+                            feat2=feats[2].shape,
+                            feat3=feats[3].shape,
+                            rois=rois.shape))
+                ]),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+            )))
+
+    # get torch output
+    model_outputs = get_model_outputs(single_roi_extractor_wrapper, 'forward',
+                                      model_inputs)
+
+    # get backend output
+    backend_outputs, _ = get_rewrite_outputs(
+        wrapped_model=single_roi_extractor_wrapper,
+        model_inputs=model_inputs,
+        deploy_cfg=deploy_cfg)
+    if isinstance(backend_outputs, dict):
+        backend_outputs = backend_outputs.values()
+    for model_output, backend_output in zip(model_outputs[0], backend_outputs):
+        model_output = model_output.squeeze().cpu().numpy()
+        backend_output = backend_output.squeeze()
+        assert model_output.shape == backend_output.shape
 
 
 def get_cascade_roi_head(is_instance_seg=False):
@@ -1481,6 +1615,80 @@ def test_ssd_head_get_bboxes__ncnn(is_dynamic: bool):
     assert rewrite_outputs.shape[-1] == 6
 
 
+@backend_checker(Backend.RKNN)
+def test_base_dense_head_get_bboxes__rknn():
+    """Test get_bboxes rewrite of ssd head for rknn."""
+    ssd_head = get_ssd_head_model()
+    ssd_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['output']
+    input_names = []
+    for i in range(6):
+        input_names.append('cls_scores_' + str(i))
+        input_names.append('bbox_preds_' + str(i))
+    dynamic_axes = None
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=Backend.RKNN.value),
+            onnx_config=dict(
+                input_names=input_names,
+                output_names=output_names,
+                input_shape=None,
+                dynamic_axes=dynamic_axes),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                model_type='rknn',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=5000,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # For the ssd_head:
+    # the cls_score's size: (1, 30, 20, 20), (1, 30, 10, 10),
+    # (1, 30, 5, 5), (1, 30, 3, 3), (1, 30, 2, 2), (1, 30, 1, 1)
+    # the bboxes's size: (1, 24, 20, 20), (1, 24, 10, 10),
+    # (1, 24, 5, 5), (1, 24, 3, 3), (1, 24, 2, 2), (1, 24, 1, 1)
+    feat_shape = [20, 10, 5, 3, 2, 1]
+    num_prior = 6
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 30, feat_shape[i], feat_shape[i])
+        for i in range(num_prior)
+    ]
+    seed_everything(5678)
+    bboxes = [
+        torch.rand(1, 24, feat_shape[i], feat_shape[i])
+        for i in range(num_prior)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = [s, s]
+    wrapped_model = WrapModel(
+        ssd_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    # output should be of shape [1, N, 4]
+    assert rewrite_outputs[0].shape[-1] == 4
+
+
 @pytest.mark.parametrize('backend_type, ir_type', [(Backend.OPENVINO, 'onnx')])
 def test_reppoints_head_get_bboxes(backend_type: Backend, ir_type: str):
     """Test get_bboxes rewrite of base dense head."""
@@ -1660,6 +1868,138 @@ def test_shift_windows_msa(backend_type: Backend):
         run_with_backend=False)
 
 
+@pytest.mark.skipif(
+    reason='Only support GPU test', condition=not torch.cuda.is_available())
+@pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
+def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
+        backend_type: Backend):
+    check_backend(backend_type)
+    from mmdet.core.anchor import MlvlPointGenerator
+    model = MlvlPointGenerator([8, 16, 32])
+    output_names = ['output']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['query'],
+                output_names=output_names)))
+
+    featmap_size = torch.tensor([80, 80])
+    with_stride = True
+
+    wrapped_model = WrapModel(
+        model, 'single_level_grid_priors', with_stride=with_stride)
+    rewrite_inputs = {
+        'featmap_size': featmap_size,
+        'level_idx': torch.tensor(0)
+    }
+    _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.ONNXRUNTIME, 'onnx')])
+def test_detrhead_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_detrhead_model()
+
+>> >> >> > master
+dense_head.cpu().eval()
+s = 128
+img_metas = [{
+    'scale_factor': np.ones(4),
+    'pad_shape': (s, s, 3),
+    'img_shape': (s, s, 3)
+}]
+<< << << < guided_anchor
+output_names = ['dets', 'labels']
+
+deploy_cfg = mmcv.Config(
+    dict(
+        backend_config=dict(type=backend_type.value),
+        onnx_config=dict(output_names=output_names, input_shape=None),
+        codebase_config=dict(
+            type='mmdet',
+            task='ObjectDetection',
+            post_processing=dict(
+                score_threshold=0.05,
+                iou_threshold=0.5,
+                max_output_boxes_per_class=200,
+                pre_top_k=-1,
+                keep_top_k=100,
+                background_label_id=-1,
+            ))))
+
+# the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+# (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+# the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+# (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+seed_everything(1234)
+cls_score = [
+    torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+]
+seed_everything(5678)
+bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+seed_everything(9101)
+shape_preds = [
+    torch.rand(1, 2, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+]
+
+seed_everything(1213)
+loc_preds = [
+    torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+]
+
+# to get outputs of pytorch model
+model_inputs = {
+    'cls_scores': cls_score,
+    'bbox_preds': bboxes,
+    'shape_preds': shape_preds,
+    'loc_preds': loc_preds,
+    'img_metas': img_metas
+}
+model_outputs = get_model_outputs(dense_head, 'get_bboxes', model_inputs)
+
+# to get outputs of onnx model after rewrite
+img_metas[0]['img_shape'] = torch.Tensor([s, s])
+wrapped_model = WrapModel(
+    dense_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+rewrite_inputs = {
+    'cls_scores': cls_score,
+    'bbox_preds': bboxes,
+    'shape_preds': shape_preds,
+    'loc_preds': loc_preds,
+}
+rewrite_outputs, is_backend_output = get_rewrite_outputs(
+    wrapped_model=wrapped_model,
+    model_inputs=rewrite_inputs,
+    deploy_cfg=deploy_cfg)
+
+if is_backend_output:
+    if isinstance(rewrite_outputs, dict):
+        rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
+    for model_output, rewrite_output in zip(model_outputs[0],
+                                            rewrite_outputs):
+        model_output = model_output.squeeze().cpu().numpy()
+        rewrite_output = rewrite_output.squeeze()
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        assert np.allclose(
+            model_output[:rewrite_output.shape[0]],
+            rewrite_output,
+            rtol=1e-03,
+            atol=1e-05)
+else:
+    assert rewrite_outputs is not None
+
+
 def get_guided_anchor_head_model():
     """Reppoints Head Config."""
     test_cfg = mmcv.Config(
@@ -1685,90 +2025,24 @@ def test_guided_anchor_head_get_bboxes(backend_type: Backend, ir_type: str):
     """Test get_bboxes rewrite of base dense head."""
     check_backend(backend_type)
     dense_head = get_guided_anchor_head_model()
-    dense_head.cpu().eval()
-    s = 128
-    img_metas = [{
-        'scale_factor': np.ones(4),
-        'pad_shape': (s, s, 3),
-        'img_shape': (s, s, 3)
-    }]
-    output_names = ['dets', 'labels']
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
 
-    deploy_cfg = mmcv.Config(
-        dict(
-            backend_config=dict(type=backend_type.value),
-            onnx_config=dict(output_names=output_names, input_shape=None),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=200,
-                    pre_top_k=-1,
-                    keep_top_k=100,
-                    background_label_id=-1,
-                ))))
-
-    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
-    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
-    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
-    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
     seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
+    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
     seed_everything(5678)
-    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
-
-    seed_everything(9101)
-    shape_preds = [
-        torch.rand(1, 2, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-
-    seed_everything(1213)
-    loc_preds = [
-        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-
-    # to get outputs of pytorch model
-    model_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-        'shape_preds': shape_preds,
-        'loc_preds': loc_preds,
-        'img_metas': img_metas
-    }
-    model_outputs = get_model_outputs(dense_head, 'get_bboxes', model_inputs)
+    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
-    wrapped_model = WrapModel(
-        dense_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    wrapped_model = WrapModel(dense_head, 'get_bboxes', img_metas=img_metas)
     rewrite_inputs = {
-        'cls_scores': cls_score,
-        'bbox_preds': bboxes,
-        'shape_preds': shape_preds,
-        'loc_preds': loc_preds,
+        'all_cls_scores_list': cls_score,
+        'all_bbox_preds_list': bboxes,
     }
-    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+    rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
 
-    if is_backend_output:
-        if isinstance(rewrite_outputs, dict):
-            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
-        for model_output, rewrite_output in zip(model_outputs[0],
-                                                rewrite_outputs):
-            model_output = model_output.squeeze().cpu().numpy()
-            rewrite_output = rewrite_output.squeeze()
-            # hard code to make two tensors with the same shape
-            # rewrite and original codes applied different nms strategy
-            assert np.allclose(
-                model_output[:rewrite_output.shape[0]],
-                rewrite_output,
-                rtol=1e-03,
-                atol=1e-05)
-    else:
-        assert rewrite_outputs is not None
+    assert rewrite_outputs is not None

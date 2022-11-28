@@ -12,13 +12,10 @@
       - [编译安装 Model Converter](#编译安装-model-converter)
         - [编译自定义算子](#编译自定义算子)
         - [安装 Model Converter](#安装-model-converter)
-      - [编译 SDK](#编译-sdk)
-      - [编译 Demo](#编译-demo)
+      - [编译 SDK 和 Demos](#编译-sdk-和-demos)
     - [注意事项](#注意事项)
 
 ______________________________________________________________________
-
-目前，MMDeploy 在 Windows 平台下仅提供源码编译安装方式。未来会提供预编译包方式。
 
 ## 源码安装
 
@@ -94,15 +91,15 @@ pip install mmcv-full==1.4.0 -f https://download.openmmlab.com/mmcv/dist/$env:cu
   </tr>
   <tr>
     <td>pplcv </td>
-    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。而且，目前必须使用 v0.6.2，且需要使用 git clone 的方式下载源码并编译安装</b><br>
+    <td>pplcv 是 openPPL 开发的高性能图像处理库。 <b>此依赖项为可选项，只有在 cuda 平台下，才需安装。</b><br>
 <pre><code>
 git clone https://github.com/openppl-public/ppl.cv.git
 cd ppl.cv
-git checkout tags/v0.6.2 -b v0.6.2
+git checkout tags/v0.7.0 -b v0.7.0
 $env:PPLCV_DIR = "$pwd"
 mkdir pplcv-build
 cd pplcv-build
-cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DHPCC_USE_CUDA=ON -DHPCC_MSVC_MD=ON
+cmake .. -G "Visual Studio 16 2019" -T v142 -A x64 -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=install -DPPLCV_USE_CUDA=ON -DPPLCV_USE_MSVC_STATIC_RUNTIME=OFF
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ../..
@@ -196,80 +193,9 @@ cd \the\root\path\of\MMDeploy
 $env:MMDEPLOY_DIR="$pwd"
 ```
 
-#### 编译选项说明
+#### 编译 Model Converter
 
-<table class="docutils">
-<thead>
-  <tr>
-    <th>编译选项</th>
-    <th>取值范围</th>
-    <th>缺省值</th>
-    <th>说明</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK 编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_PYTHON_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK python package的编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_TEST</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>MMDeploy SDK 的单元测试程序编译开关</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_DEVICES</td>
-    <td>{"cpu", "cuda"}</td>
-    <td>cpu</td>
-    <td>设置目标设备。当有多个设备时，设备名称之间使用分号隔开。 比如，-DMMDEPLOY_TARGET_DEVICES="cpu;cuda"</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino"}</td>
-    <td>N/A</td>
-    <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
-    构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
-    1. <b>trt</b>: 表示 TensorRT。需要设置 <code>TENSORRT_DIR</code> 和 <code>CUDNN_DIR</code>。
-<pre><code>
--DTENSORRT_DIR=$env:TENSORRT_DIR
--DCUDNN_DIR=$env:CUDNN_DIR
-</code></pre>
-    2. <b>ort</b>: 表示 ONNXRuntime。需要设置 <code>ONNXRUNTIME_DIR</code>。
-<pre><code>-DONNXRUNTIME_DIR=$env:ONNXRUNTIME_DIR</code></pre>
-    3. <b>pplnn</b>: 表示 PPL.NN。需要设置 <code>pplnn_DIR</code>。<b>当前版本尚未验证</b> <br>
-    4. <b>ncnn</b>：表示 ncnn。需要设置 <code>ncnn_DIR</code>。<b>当前版本尚未验证</b> <br>
-    5. <b>openvino</b>: 表示 OpenVINO。需要设置 <code>InferenceEngine_DIR</code>。<b>当前版本尚未验证通过</b>
-   </td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
-    <td>all</td>
-    <td>用来设置SDK后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
-  </tr>
-  <tr>
-    <td>MMDEPLOY_SHARED_LIBS</td>
-    <td>{ON, OFF}</td>
-    <td>ON</td>
-    <td>动态库的编译开关。设置OFF时，编译静态库</td>
-  </tr>
-</tbody>
-</table>
-
-#### 编译安装 Model Converter
-
-##### 编译自定义算子
-
-如果您选择了ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
+如果您选择了 ONNXRuntime，TensorRT 和 ncnn 任一种推理后端，您需要编译对应的自定义算子库。
 
 - **ONNXRuntime** 自定义算子
 
@@ -295,7 +221,9 @@ cmake --install . --config Release
 
   TODO
 
-##### 安装 Model Converter
+参考 [cmake 选项说明](cmake_option.md)
+
+#### 安装 Model Converter
 
 ```powershell
 cd $env:MMDEPLOY_DIR
@@ -307,7 +235,7 @@ pip install -e .
 - 有些依赖项是可选的。运行 `pip install -e .` 将进行最小化依赖安装。 如果需安装其他可选依赖项，请执行`pip install -r requirements/optional.txt`，
   或者 `pip install -e .[optional]`。其中，`[optional]`可以替换为：`all`、`tests`、`build` 或 `optional`。
 
-#### 编译 SDK
+#### 编译 SDK 和 Demos
 
 下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，并结合前文 SDK 的编译选项说明，激活其他的推理引擎。
 
@@ -319,9 +247,10 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
       -DMMDEPLOY_BUILD_SDK=ON `
+      -DMMDEPLOY_BUILD_EXAMPLES=ON `
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
       -DMMDEPLOY_TARGET_DEVICES="cpu" `
       -DMMDEPLOY_TARGET_BACKENDS="ort" `
-      -DMMDEPLOY_CODEBASES="all" `
       -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR"
 
   cmake --build . --config Release -- /m
@@ -336,9 +265,10 @@ pip install -e .
   cd build
   cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
     -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_BUILD_EXAMPLES=ON `
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cuda" `
     -DMMDEPLOY_TARGET_BACKENDS="trt" `
-    -DMMDEPLOY_CODEBASES="all" `
     -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
     -DTENSORRT_DIR="$env:TENSORRT_DIR" `
     -DCUDNN_DIR="$env:CUDNN_DIR"
@@ -346,20 +276,6 @@ pip install -e .
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
-
-#### 编译 Demo
-
-```PowerShell
-cd $env:MMDEPLOY_DIR\build\install\example
-mkdir build -ErrorAction SilentlyContinue
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDeploy_DIR="$env:MMDEPLOY_DIR/build/install/lib/cmake/MMDeploy"
-
-cmake --build . --config Release -- /m
-
-$env:path = "$env:MMDEPLOY_DIR/build/install/bin;" + $env:path
-```
 
 ### 注意事项
 

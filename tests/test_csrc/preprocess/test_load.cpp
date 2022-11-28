@@ -12,6 +12,7 @@
 #include "test_utils.h"
 
 using namespace mmdeploy;
+using namespace framework;
 using namespace std;
 using namespace mmdeploy::test;
 
@@ -24,7 +25,7 @@ void TestLoad(const Value& cfg, const cv::Mat& mat, PixelFormat src_format,
     auto transform = CreateTransform(cfg, device, stream);
     REQUIRE(transform != nullptr);
 
-    auto ref_mat = mmdeploy::cpu::ColorTransfer(mat, src_format, dst_format);
+    auto ref_mat = mmdeploy::cpu::CvtColor(mat, src_format, dst_format);
 
     auto res = transform->Process({{"ori_img", cpu::CVMat2Mat(mat, PixelFormat(src_format))}});
     REQUIRE(!res.has_error());

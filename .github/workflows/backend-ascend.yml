@@ -1,0 +1,54 @@
+name: backend-ascend
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_sdk_demo:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        python-version: [3.7]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: update
+        run: sudo apt update
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt install libopencv-dev
+          pkg-config --libs opencv
+      - name: Install Ascend Toolkit
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/Ascend
+          wget https://ascend-repo.obs.cn-east-2.myhuaweicloud.com/CANN/CANN%205.1.RC2/Ascend-cann-toolkit_5.1.RC2_linux-x86_64.run
+          sh Ascend-cann-toolkit_5.1.RC2_linux-x86_64.run --install --install-path=$GITHUB_WORKSPACE/Ascend --quiet --chip=Ascend310 --blacklist=devtools
+      - name: Build SDK Demo with Ascend backend
+        run: |
+          mkdir -p build && pushd build
+          source $GITHUB_WORKSPACE/Ascend/ascend-toolkit/set_env.sh
+          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/Ascend/ascend-toolkit/latest/runtime/lib64/stub:$LD_LIBRARY_PATH
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7    -DMMDEPLOY_SHARED_LIBS=ON   -DMMDEPLOY_BUILD_SDK=ON       -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF  -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_BUILD_EXAMPLES=ON    -DMMDEPLOY_TARGET_BACKENDS=acl  -DMMDEPLOY_CODEBASES=all
+          make install -j4

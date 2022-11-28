@@ -5,3 +5,6 @@ include mmdeploy/backend/ncnn/*.pyd
 include mmdeploy/lib/*.so
 include mmdeploy/lib/*.dll
 include mmdeploy/lib/*.pyd
+include mmdeploy/backend/torchscript/*.so
+include mmdeploy/backend/torchscript/*.dll
+include mmdeploy/backend/torchscript/*.pyd

@@ -14,14 +14,10 @@ globals:
       eval_name: accuracy # test.py --metrics args
       metric_key: accuracy_top-1 # eval Dict key name
       tolerance: 1 # metric ±n%
-      task_name: Image Classification # metafile.Results.Task
-      dataset: ImageNet-1k # metafile.Results.Dataset
     Top 5 Accuracy:
       eval_name: accuracy
       metric_key: accuracy_top-5
       tolerance: 1 # metric ±n%
-      task_name: Image Classification
-      dataset: ImageNet-1k
   convert_image: &convert_image
     input_img: *img_snake
     test_img: *img_color_cat
@@ -33,8 +29,7 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    backend_test: *default_backend_test
-    sdk_config: *sdk_dynamic
+    backend_test: False
     deploy_config: configs/mmcls/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
@@ -213,3 +208,21 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_static_fp16_384x384
       - *pipeline_ncnn_static_fp32
+
+  - name: SwinTransformer
+    metafile: configs/swin_transformer/metafile.yml
+    model_configs:
+      - configs/swin_transformer/swin-tiny_16xb64_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
+
+  - name: EfficientNet
+    metafile: configs/efficientnet/metafile.yml
+    model_configs:
+      - configs/efficientnet/efficientnet-b0_8xb32_in1k.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - convert_image: *convert_image
+        deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py

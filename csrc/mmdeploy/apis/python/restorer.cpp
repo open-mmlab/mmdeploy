@@ -4,11 +4,11 @@
 
 #include "common.h"
 
-namespace mmdeploy {
+namespace mmdeploy::python {
 
 class PyRestorer {
  public:
-  PyRestorer(const char *model_path, const char *device_name, int device_id) {
+  PyRestorer(const char* model_path, const char* device_name, int device_id) {
     auto status = mmdeploy_restorer_create_by_path(model_path, device_name, device_id, &restorer_);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to create restorer");
@@ -19,46 +19,48 @@ class PyRestorer {
     restorer_ = {};
   }
 
-  std::vector<py::array_t<uint8_t>> Apply(const std::vector<PyImage> &imgs) {
+  std::vector<py::array> Apply(const std::vector<PyImage>& imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
-    for (const auto &img : imgs) {
+    for (const auto& img : imgs) {
       auto mat = GetMat(img);
       mats.push_back(mat);
     }
-    mmdeploy_mat_t *results{};
+    mmdeploy_mat_t* results{};
     auto status = mmdeploy_restorer_apply(restorer_, mats.data(), (int)mats.size(), &results);
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply restorer, code: " + std::to_string(status));
     }
-    auto output = std::vector<py::array_t<uint8_t>>{};
-    output.reserve(mats.size());
+    using Sptr = std::shared_ptr<mmdeploy_mat_t>;
+    Sptr holder(results, [n = mats.size()](auto p) { mmdeploy_restorer_release_result(p, n); });
+
+    std::vector<py::array> rets(mats.size());
     for (int i = 0; i < mats.size(); ++i) {
-      py::array_t<uint8_t> restored({results[i].height, results[i].width, results[i].channel});
-      memcpy(restored.mutable_data(), results[i].data, restored.nbytes());
-      output.push_back(std::move(restored));
+      rets[i] = {
+          {results[i].height, results[i].width, results[i].channel},       // shape
+          results[i].data,                                                 // data
+          py::capsule(new Sptr(holder),                                    // handle
+                      [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+      };
     }
-    mmdeploy_restorer_release_result(results, (int)mats.size());
-    return output;
+    return rets;
   }
 
  private:
   mmdeploy_restorer_t restorer_{};
 };
 
-static void register_python_restorer(py::module &m) {
+static PythonBindingRegisterer register_restorer{[](py::module& m) {
   py::class_<PyRestorer>(m, "Restorer")
-      .def(py::init([](const char *model_path, const char *device_name, int device_id) {
-        return std::make_unique<PyRestorer>(model_path, device_name, device_id);
-      }))
-      .def("__call__", &PyRestorer::Apply);
-}
+      .def(py::init([](const char* model_path, const char* device_name, int device_id) {
+             return std::make_unique<PyRestorer>(model_path, device_name, device_id);
+           }),
+           py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
+      .def("__call__",
+           [](PyRestorer* self, const PyImage& img) -> py::array {
+             return self->Apply(std::vector{img})[0];
+           })
+      .def("batch", &PyRestorer::Apply);
+}};
 
-class PythonRestorerRegisterer {
- public:
-  PythonRestorerRegisterer() { gPythonBindings().emplace("restorer", register_python_restorer); }
-};
-
-static PythonRestorerRegisterer python_restorer_registerer;
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::python

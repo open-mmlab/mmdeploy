@@ -126,10 +126,16 @@ function (mmdeploy_load_static NAME)
         target_link_libraries(${NAME} PRIVATE ${ARGN})
     else ()
         _mmdeploy_flatten_modules(_MODULE_LIST ${ARGN})
-        target_link_libraries(${NAME} PRIVATE
-                -Wl,--whole-archive
-                ${_MODULE_LIST}
-                -Wl,--no-whole-archive)
+        if (APPLE)
+            foreach (module IN LISTS _MODULE_LIST)
+                target_link_libraries(${NAME} PRIVATE -force_load ${module})
+            endforeach ()
+        else ()
+            target_link_libraries(${NAME} PRIVATE
+                    -Wl,--whole-archive
+                    ${_MODULE_LIST}
+                    -Wl,--no-whole-archive)
+        endif ()
     endif ()
 endfunction ()
 
@@ -158,6 +164,8 @@ function (mmdeploy_load_dynamic NAME)
 
         mmdeploy_add_module(${_LOADER_NAME} STATIC EXCLUDE ${_LOADER_PATH})
         mmdeploy_load_static(${NAME} ${_LOADER_NAME})
+    elseif (APPLE)
+        target_link_libraries(${NAME} PRIVATE ${_MODULE_LIST})
     else ()
         target_link_libraries(${NAME} PRIVATE
                 -Wl,--no-as-needed

@@ -4,13 +4,12 @@ from typing import Dict, Optional, Sequence
 import numpy as np
 import onnx
 import pyppl.common as pplcommon
-import pyppl.nn as pplnn
 import torch
 
 from mmdeploy.utils import Backend, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from .utils import register_engines
+from .utils import create_runtime, register_engines
 
 
 @BACKEND_WRAPPER.register_module(Backend.PPLNN.value)
@@ -51,17 +50,12 @@ class PPLNNWrapper(BaseWrapper):
         engines = register_engines(
             device_id,
             disable_avx512=False,
-            quick_select=False,
+            quick_select=algo_file is None,
             import_algo_file=algo_file)
-        runtime_builder = pplnn.OnnxRuntimeBuilderFactory.CreateFromFile(
-            onnx_file, engines)
-        assert runtime_builder is not None, 'Failed to create '\
-            'OnnxRuntimeBuilder.'
 
-        runtime = runtime_builder.CreateRuntime()
-        assert runtime is not None, 'Failed to create the instance of Runtime.'
-
+        runtime = create_runtime(onnx_file, engines)
         self.runtime = runtime
+
         self.inputs = {
             runtime.GetInputTensor(i).GetName(): runtime.GetInputTensor(i)
             for i in range(runtime.GetInputCount())
@@ -100,7 +94,7 @@ class PPLNNWrapper(BaseWrapper):
             outputs[name] = torch.from_numpy(outputs[name])
         return outputs
 
-    @TimeCounter.count_time()
+    @TimeCounter.count_time(Backend.PPLNN.value)
     def __pplnn_execute(self):
         """Run inference with PPLNN."""
         status = self.runtime.Run()

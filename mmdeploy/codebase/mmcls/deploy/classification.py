@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -8,20 +8,19 @@ import torch
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_root_logger
-from mmdeploy.utils.config_utils import get_input_shape
+from mmdeploy.utils import Task, get_input_shape, get_root_logger
 from .mmclassification import MMCLS_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
-                         imgs: Union[str, np.ndarray],
+                         imgs: Sequence[Union[str, np.ndarray]],
                          input_shape: Optional[Sequence[int]] = None):
     """Process the model config.
 
     Args:
         model_cfg (mmcv.Config): The model config.
-        imgs (str | np.ndarray): Input image(s), accepted data type are `str`,
-            `np.ndarray`.
+        imgs (Sequence[str | np.ndarray]): Input image(s), accepted
+            data type are `str`, `np.ndarray`.
         input_shape (list[int]): A list of two integer in (width, height)
             format specifying input shape. Default: None.
 
@@ -29,12 +28,13 @@ def process_model_config(model_cfg: mmcv.Config,
         mmcv.Config: the model config after processing.
     """
     cfg = model_cfg.deepcopy()
-    if isinstance(imgs, str):
+    if isinstance(imgs[0], str):
         if cfg.data.test.pipeline[0]['type'] != 'LoadImageFromFile':
             cfg.data.test.pipeline.insert(0, dict(type='LoadImageFromFile'))
     else:
         if cfg.data.test.pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.data.test.pipeline.pop(0)
+
     # check whether input_shape is valid
     if input_shape is not None:
         if 'crop_size' in cfg.data.test.pipeline[2]:
@@ -76,7 +76,11 @@ class Classification(BaseTask):
         from .classification_model import build_classification_model
 
         model = build_classification_model(
-            model_files, self.model_cfg, self.deploy_cfg, device=self.device)
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            **kwargs)
 
         return model.eval()
 
@@ -106,31 +110,41 @@ class Classification(BaseTask):
         return model.eval()
 
     def create_input(self,
-                     imgs: Union[str, np.ndarray],
-                     input_shape: Optional[Sequence[int]] = None) \
+                     imgs: Union[str, np.ndarray, Sequence],
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for classifier.
 
         Args:
-            imgs (Any): Input image(s), accepted data type are `str`,
-                `np.ndarray`, `torch.Tensor`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Default: None.
+            imgs (Union[str, np.ndarray, Sequence]): Input image(s),
+                accepted data type are `str`, `np.ndarray`, Sequence.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
         """
         from mmcls.datasets.pipelines import Compose
         from mmcv.parallel import collate, scatter
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        if isinstance(imgs, str):
-            data = dict(img_info=dict(filename=imgs), img_prefix=None)
-        else:
-            data = dict(img=imgs)
+        if isinstance(imgs, (str, np.ndarray)):
+            imgs = [imgs]
+        model_cfg = self.model_cfg
+        if pipeline_updater is not None:
+            model_cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+        cfg = process_model_config(model_cfg, imgs, input_shape)
+        data_list = []
         test_pipeline = Compose(cfg.data.test.pipeline)
-        data = test_pipeline(data)
-        data = collate([data], samples_per_gpu=1)
-        data['img'] = [data['img']]
+        for img in imgs:
+            if isinstance(img, str):
+                data = dict(img_info=dict(filename=img), img_prefix=None)
+            else:
+                data = dict(img=img)
+            data = test_pipeline(data)
+            data_list.append(data)
+        data = collate(data_list, samples_per_gpu=len(data_list))
         if self.device != 'cpu':
             data = scatter(data, [self.device])[0]
         return data, data['img']
@@ -214,7 +228,8 @@ class Classification(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None) -> None:
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None) -> None:
         """Perform post-processing to predictions of model.
 
         Args:
@@ -235,9 +250,11 @@ class Classification(BaseTask):
         """
         from mmcv.utils import get_logger
         logger = get_logger('test', log_file=log_file, log_level=logging.INFO)
-
         if metrics:
             results = dataset.evaluate(outputs, metrics, metric_options)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+
             for k, v in results.items():
                 logger.info(f'{k} : {v:.2f}')
         else:
@@ -268,7 +285,8 @@ class Classification(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        cfg = process_model_config(self.model_cfg, '', input_shape)
+        cfg = self.update_test_pipeline(self.deploy_cfg, self.model_cfg)
+        cfg = process_model_config(cfg, [''], input_shape)
         preprocess = cfg.data.test.pipeline
         return preprocess
 

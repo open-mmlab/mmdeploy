@@ -329,6 +329,20 @@ def get_common_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
     return model_params
 
 
+def get_quantization_config(deploy_cfg: Union[str, mmcv.Config]) -> Dict:
+    """Get quantization parameters from config.
+
+    Args:
+        deploy_cfg (str | mmcv.Config): The path or content of config.
+
+    Returns:
+        dict: A dict of quantization parameters for a model.
+    """
+    backend_config = deploy_cfg['backend_config']
+    model_params = backend_config.get('quantization_config', dict())
+    return model_params
+
+
 def get_model_inputs(deploy_cfg: Union[str, mmcv.Config]) -> List[Dict]:
     """Get model input parameters from config.
 
@@ -379,3 +393,40 @@ def get_dynamic_axes(
                 raise KeyError('No names were found to define dynamic axes.')
         dynamic_axes = dict(zip(axes_names, dynamic_axes))
     return dynamic_axes
+
+
+def get_normalization(model_cfg: Union[str, mmcv.Config]):
+    """Get the Normalize transform from model config.
+
+    Args:
+        model_cfg (mmcv.Config): The content of config.
+
+    Returns:
+        dict: The Normalize transform.
+    """
+    model_cfg = load_config(model_cfg)[0]
+    pipelines = model_cfg.data.test.pipeline
+    for i, pipeline in enumerate(pipelines):
+        if pipeline['type'] == 'MultiScaleFlipAug':
+            assert 'transforms' in pipeline
+            for trans in pipeline['transforms']:
+                if trans['type'] == 'Normalize':
+                    return trans
+        else:
+            if pipeline['type'] == 'Normalize':
+                return pipeline
+
+
+def get_rknn_quantization(deploy_cfg: mmcv.Config):
+    """Get the flag of `do_quantization` for rknn backend.
+
+    Args:
+        deploy_cfg (mmcv.Config): The content of config.
+
+    Returns:
+        bool: Do quantization or not.
+    """
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        return get_backend_config(
+            deploy_cfg)['quantization_config']['do_quantization']
+    return False

@@ -54,6 +54,10 @@ def parse_args():
         help='Image directory for quantize model.')
     parser.add_argument(
         '--quant', action='store_true', help='Quantize model to low bit.')
+    parser.add_argument(
+        '--uri',
+        default='192.168.1.1:60000',
+        help='Remote ipv4:port or ipv6:port for inference on edge device.')
     args = parser.parse_args()
     return args
 
@@ -94,7 +98,7 @@ def torch2ir(ir_type: IR):
 
 def main():
     args = parse_args()
-    set_start_method('spawn')
+    set_start_method('spawn', force=True)
     logger = get_root_logger()
     log_level = logging.getLevelName(args.log_level)
     logger.setLevel(log_level)
@@ -118,7 +122,12 @@ def main():
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
 
     if args.dump_info:
-        export2SDK(deploy_cfg, model_cfg, args.work_dir, pth=checkpoint_path)
+        export2SDK(
+            deploy_cfg,
+            model_cfg,
+            args.work_dir,
+            pth=checkpoint_path,
+            device=args.device)
 
     ret_value = mp.Value('d', 0, lock=False)
 
@@ -195,7 +204,7 @@ def main():
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
         PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2tensorrt])
+        PIPELINE_MANAGER.set_log_level(log_level, [onnx2tensorrt])
 
         backend_files = []
         for model_id, model_param, onnx_path in zip(
@@ -251,7 +260,7 @@ def main():
                     'ncnn quant table',
                     target=get_table,
                     args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
-                          quant_table, quant_image_dir),
+                          quant_table, quant_image_dir, args.device),
                     kwargs=dict(),
                     ret_value=ret_value)
 
@@ -265,6 +274,30 @@ def main():
                 backend_files += [quant_param, quant_bin]
             else:
                 backend_files += [model_param_path, model_bin_path]
+
+    elif backend == Backend.SNPE:
+        from mmdeploy.apis.snpe import is_available as is_available
+
+        if not is_available():
+            logger.error('snpe support is not available, please check \
+                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support \
+                    ubuntu18.04')
+            exit(1)
+
+        import mmdeploy.apis.snpe as snpe_api
+        from mmdeploy.apis.snpe import get_env_key, get_output_model_file
+
+        if get_env_key() not in os.environ:
+            os.environ[get_env_key()] = args.uri
+
+        PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
+
+        backend_files = []
+        for onnx_path in ir_files:
+            dlc_path = get_output_model_file(onnx_path, args.work_dir)
+            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
+            backend_files = [dlc_path]
 
     elif backend == Backend.OPENVINO:
         from mmdeploy.apis.openvino import \
@@ -298,7 +331,7 @@ def main():
         from mmdeploy.apis.pplnn import from_onnx
 
         pplnn_pipeline_funcs = [from_onnx]
-        PIPELINE_MANAGER.set_log_level(logging.INFO, pplnn_pipeline_funcs)
+        PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
 
         pplnn_files = []
         for onnx_path in ir_files:
@@ -318,47 +351,95 @@ def main():
             pplnn_files += [onnx_path, algo_file]
         backend_files = pplnn_files
 
+    elif backend == Backend.RKNN:
+        from mmdeploy.apis.rknn import is_available as rknn_is_available
+        assert rknn_is_available(
+        ), 'RKNN is not available, please install RKNN first.'
+
+        from mmdeploy.apis.rknn import onnx2rknn
+        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2rknn])
+        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2rknn])
+
+        backend_files = []
+        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
+            pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            output_path = osp.join(args.work_dir, pre_fix_name + '.rknn')
+            import tempfile
+            dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+            with open(dataset_file, 'w') as f:
+                f.writelines([osp.abspath(args.img)])
+            onnx2rknn(
+                onnx_path,
+                output_path,
+                deploy_cfg_path,
+                model_cfg_path,
+                dataset_file=dataset_file)
+
+            backend_files.append(output_path)
+    elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import from_onnx
+
+        ascend_pipeline_funcs = [from_onnx]
+        PIPELINE_MANAGER.set_log_level(log_level, ascend_pipeline_funcs)
+
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        om_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            om_path = osp.splitext(onnx_path)[0] + '.om'
+            from_onnx(onnx_path, args.work_dir, model_inputs[model_id])
+            om_files.append(om_path)
+        backend_files = om_files
+
+        if args.dump_info:
+            from mmdeploy.backend.ascend import update_sdk_pipeline
+            update_sdk_pipeline(args.work_dir)
+
+    elif backend == Backend.COREML:
+        from mmdeploy.apis.coreml import from_torchscript
+        coreml_pipeline_funcs = [from_torchscript]
+        PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
+
+        coreml_files = []
+        for model_id, torchscript_path in enumerate(ir_files):
+            torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
+            output_file_prefix = osp.join(args.work_dir, torchscript_name)
+
+            from_torchscript(model_id, torchscript_path, output_file_prefix,
+                             deploy_cfg, coreml_files)
+
+        backend_files = coreml_files
+
     if args.test_img is None:
         args.test_img = args.img
 
-    headless = False
-    # check headless or not for all platforms.
-    import tkinter
-    try:
-        tkinter.Tk()
-    except Exception:
-        headless = True
+    extra = dict(
+        backend=backend,
+        output_file=osp.join(args.work_dir, f'output_{backend.value}.jpg'),
+        show_result=args.show)
+    if backend == Backend.SNPE:
+        extra['uri'] = args.uri
 
-    # for headless installation.
-    if not headless:
-        # visualize model of the backend
-        create_process(
-            f'visualize {backend.value} model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, backend_files,
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=backend,
-                output_file=osp.join(args.work_dir,
-                                     f'output_{backend.value}.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
+    # get backend inference result, try render
+    create_process(
+        f'visualize {backend.value} model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, backend_files, args.test_img,
+              args.device),
+        kwargs=extra,
+        ret_value=ret_value)
 
-        # visualize pytorch model
-        create_process(
-            'visualize pytorch model',
-            target=visualize_model,
-            args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
-                  args.test_img, args.device),
-            kwargs=dict(
-                backend=Backend.PYTORCH,
-                output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
-                show_result=args.show),
-            ret_value=ret_value)
-    else:
-        logger.warning(
-            '\"visualize_model\" has been skipped may be because it\'s \
-            running on a headless device.')
+    # get pytorch model inference result, try visualize if possible
+    create_process(
+        'visualize pytorch model',
+        target=visualize_model,
+        args=(model_cfg_path, deploy_cfg_path, [checkpoint_path],
+              args.test_img, args.device),
+        kwargs=dict(
+            backend=Backend.PYTORCH,
+            output_file=osp.join(args.work_dir, 'output_pytorch.jpg'),
+            show_result=args.show),
+        ret_value=ret_value)
     logger.info('All process success.')
 
 

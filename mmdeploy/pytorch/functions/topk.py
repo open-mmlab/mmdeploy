@@ -18,7 +18,7 @@ def topk__dynamic(ctx,
                   sorted: bool = True):
     """Rewrite `topk` for default backend.
 
-    Cast k to tensor and makesure k is smaller than input.shape[dim].
+    Cast k to tensor and make sure k is smaller than input.shape[dim].
     """
 
     if dim is None:
@@ -28,7 +28,8 @@ def topk__dynamic(ctx,
         k = torch.tensor(k, device=input.device, dtype=torch.long)
     # Always keep topk op for dynamic input
     if isinstance(size, torch.Tensor):
-        size = size.to(input.device)
+        # size would be treated as cpu tensor, trick to avoid that.
+        size = k.new_zeros(()) + size
     k = torch.where(k < size, k, size)
     return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)
 
@@ -49,7 +50,8 @@ def topk__tensorrt(ctx,
     constant integer.
     """
     # https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#topKsetup
-    MAX_TOPK_K = 3840
+    from mmdeploy.utils.constants import TENSORRT_MAX_TOPK
+
     if dim is None:
         dim = int(input.ndim - 1)
     size = input.shape[dim]
@@ -57,11 +59,12 @@ def topk__tensorrt(ctx,
         k = size
     if not isinstance(k, int):
         k = int(k)
-    if k > MAX_TOPK_K:
+    if k > TENSORRT_MAX_TOPK:
         logger = get_root_logger()
         logger.warning(
-            f'Maximum K of TopK in TensorRT is {MAX_TOPK_K}, but given {k}.'
-            f' Note that k will be set to {MAX_TOPK_K}.')
-        k = MAX_TOPK_K
+            f'Maximum K of TopK in TensorRT is {TENSORRT_MAX_TOPK}, '
+            f'but given {k}. Note that k will be set '
+            f'to {TENSORRT_MAX_TOPK}.')
+        k = TENSORRT_MAX_TOPK
 
     return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)

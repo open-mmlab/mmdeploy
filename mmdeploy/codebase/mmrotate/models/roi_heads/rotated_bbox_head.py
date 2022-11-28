@@ -1,7 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 import torch.nn.functional as F
 
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmrotate.core.post_processing import \
     multiclass_nms_rotated
 from mmdeploy.core import FUNCTION_REWRITER
@@ -57,8 +58,16 @@ def rotated_bbox_head__get_bboxes(ctx,
     bboxes = self.bbox_coder.decode(
         rois[..., 1:], bbox_pred, max_shape=img_shape)
 
+    batch_size = scores.shape[0]
+    device = scores.device
     # ignore background class
     scores = scores[..., :self.num_classes]
+    if not self.reg_class_agnostic:
+        # only keep boxes with the max scores
+        max_inds = scores.reshape(-1, self.num_classes).argmax(1, keepdim=True)
+        bboxes = bboxes.reshape(-1, self.num_classes, 5)
+        dim0_inds = torch.arange(bboxes.shape[0], device=device).unsqueeze(-1)
+        bboxes = bboxes[dim0_inds, max_inds].reshape(batch_size, -1, 5)
 
     post_params = get_post_processing_params(ctx.cfg)
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)

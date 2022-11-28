@@ -42,7 +42,7 @@ docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
 构建 docker 镜像成功后，我们可以使用 `docker run` 启动 docker 服务。 GPU 镜像为例：
 
 ```
-docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
+docker run --gpus all -it mmdeploy:master-gpu
 ```
 
 ## 常见问答
@@ -51,7 +51,7 @@ docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 
    如 [这里](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754)所说，更新 GPU 的驱动到您的GPU能使用的最新版本。
 
-2. docker: Error response from daemon: could not select device driver "" with capabilities: \[\[gpu\]\].
+2. docker: Error response from daemon: could not select device driver "" with capabilities: \[gpu\].
 
    ```
    # Add the package repositories

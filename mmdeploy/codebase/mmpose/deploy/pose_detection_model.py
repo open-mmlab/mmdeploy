@@ -47,13 +47,16 @@ class End2EndModel(BaseBackendModel):
         self.deploy_cfg = deploy_cfg
         self.model_cfg = model_cfg
         self._init_wrapper(
-            backend=backend, backend_files=backend_files, device=device)
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
         # create base_head for decoding heatmap
         base_head = builder.build_head(model_cfg.model.keypoint_head)
         base_head.test_cfg = model_cfg.model.test_cfg
         self.base_head = base_head
 
-    def _init_wrapper(self, backend, backend_files, device):
+    def _init_wrapper(self, backend, backend_files, device, **kwargs):
         """Initialize backend wrapper.
 
         Args:
@@ -69,7 +72,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             input_names=[self.input_name],
             output_names=output_names,
-            deploy_cfg=self.deploy_cfg)
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
 
     def forward(self, img: torch.Tensor, img_metas: Sequence[Sequence[dict]],
                 *args, **kwargs):
@@ -214,8 +218,8 @@ class SDKEnd2EndModel(End2EndModel):
             image_paths.append(img_meta['image_file'])
             bbox_ids.append(img_meta['bbox_id'])
 
-        pred = self.wrapper.handle(
-            [img[0].contiguous().detach().cpu().numpy()], [sdk_boxes])[0]
+        pred = self.wrapper.handle(img[0].contiguous().detach().cpu().numpy(),
+                                   sdk_boxes)
 
         result = dict(
             preds=pred,
@@ -254,6 +258,7 @@ def build_pose_detection_model(model_files: Sequence[str],
         backend_files=model_files,
         device=device,
         model_cfg=model_cfg,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        **kwargs)
 
     return backend_pose_model

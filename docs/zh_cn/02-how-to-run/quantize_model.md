@@ -14,14 +14,9 @@
 
 以 ncnn backend 为例，完整的工作流如下：
 
-```{mermaid}
-flowchart TD;
-     torch模型-->非标准onnx;
-     非标准onnx-->ncnn-fp32;
-     非标准onnx-->量化表;
-     量化表-->ncnn-int8;
-     ncnn-fp32-->ncnn-int8;
-```
+<div align="center">
+  <img src="../_static/image/quant_model.png"/>
+</div>
 
 mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用后端工具把浮点模型转为定点。
 
@@ -34,7 +29,6 @@ mmdeploy 基于静态图（onnx）生成推理框架所需的量化表，再用�
 ```bash
 git clone https://github.com/openppl-public/ppq.git
 cd ppq
-git checkout edbecf4 # 需要一些特性和修复
 pip install -r requirements.txt
 python3 setup.py install
 ```
@@ -43,10 +37,14 @@ python3 setup.py install
 
 ```bash
 cd /path/to/mmdeploy
-export MODEL_PATH=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
-export MODEL_CONFIG=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
+export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
+export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
-python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/images
+# 找一些 imagenet 样例图
+git clone https://github.com/nihui/imagenet-sample-images --depth=1
+
+# 量化模型
+python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/imagenet-sample-images
 ...
 ```
 
@@ -68,4 +66,4 @@ python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MOD
   | ---- | ------ | ------ | -------- | ------ |
   | 用法 | QAT    | PTQ    | 测试精度 | PTQ    |
 
-**强烈建议**量化结束后，[按此文档](./profile_model.md)验证模型精度。[这里](../03-benchmark/quantization.md)是一些量化模型测试结果。
+**强烈建议**量化结束后，[按此文档](profile_model.md) 验证模型精度。[这里](../03-benchmark/quantization.md) 是一些量化模型测试结果。

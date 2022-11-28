@@ -9,6 +9,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/core CORE_TC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/preprocess TRANSFORM_TC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/net NET_TC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/model MODEL_TC)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/graph GRAPH_TC)
 
 set(DEVICE_TC)
 foreach (DEVICE IN LISTS MMDEPLOY_TARGET_DEVICES)
@@ -58,16 +59,22 @@ set(TC_SRCS
         ${MODEL_TC}
         ${NET_TC}
         ${DEVICE_TC}
-        ${CAPI_TC})
+        ${CAPI_TC}
+        ${GRAPH_TC})
 
 add_executable(mmdeploy_tests ${TC_SRCS})
 target_include_directories(mmdeploy_tests
         PRIVATE ${CMAKE_SOURCE_DIR}/third_party/catch2)
 target_include_directories(mmdeploy_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
+if (NOT (MMDEPLOY_SHARED_LIBS OR MSVC))
+    target_compile_options(mmdeploy_tests PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+endif ()
+
 mmdeploy_load_static(mmdeploy_tests MMDeployStaticModules)
 mmdeploy_load_dynamic(mmdeploy_tests MMDeployDynamicModules)
 target_link_libraries(mmdeploy_tests PRIVATE
-        MMDeployLibs
-        mmdeploy_transform
-        mmdeploy_opencv_utils)
+    MMDeployLibs
+    mmdeploy_transform
+    mmdeploy_operation
+    mmdeploy_opencv_utils)

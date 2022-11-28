@@ -4,7 +4,7 @@
 
 #include "mmdeploy/core/logger.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream) {
   if (src.device() == device) {
@@ -13,6 +13,13 @@ Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& 
 
   Mat dst{src.height(), src.width(), src.pixel_format(), src.type(), device};
   OUTCOME_TRY(stream.Copy(src.buffer(), dst.buffer(), dst.byte_size()));
+
+  // ! When the target device is different from stream's device (e.g. DtoH), insert a sync op as
+  //   computation on dst won't be synchronized with stream
+  if (device != stream.GetDevice()) {
+    OUTCOME_TRY(stream.Wait());
+  }
+
   return dst;
 }
 
@@ -26,17 +33,13 @@ Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device, St
 
   OUTCOME_TRY(stream.Copy(src.buffer(), dst.buffer(), src.byte_size()));
 
+  // ! When the target device is different from stream's device (e.g. DtoH), insert a sync op as
+  //   computation on dst won't be synchronized with stream
+  if (device != stream.GetDevice()) {
+    OUTCOME_TRY(stream.Wait());
+  }
+
   return dst;
 }
 
-SyncOnScopeExit::~SyncOnScopeExit() {
-  if (active_ && stream_) {
-    if (!stream_.Wait()) {
-      MMDEPLOY_ERROR("Implicit stream synchronization failed.");
-    } else {
-      MMDEPLOY_DEBUG("Implicit stream synchronization succeeded.");
-    }
-  }
-}
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

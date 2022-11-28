@@ -4,7 +4,7 @@ import logging
 
 from mmcv import Config
 
-from mmdeploy.utils import get_root_logger, load_config
+from mmdeploy.utils import Task, get_root_logger, get_task_type, load_config
 
 
 def get_table(onnx_path: str,
@@ -35,14 +35,24 @@ def get_table(onnx_path: str,
         dataloader = task_processor.build_dataloader(dataset, 1, 1)
 
     # get an available input shape randomly
+    task = get_task_type(deploy_cfg)
     for _, input_data in enumerate(dataloader):
-        if isinstance(input_data['img'], list):
-            input_shape = input_data['img'][0].shape
-            collate_fn = lambda x: x['img'][0].to(device)  # noqa: E731
+        if task != Task.SUPER_RESOLUTION:
+            if isinstance(input_data['img'], list):
+                input_shape = input_data['img'][0].shape
+                collate_fn = lambda x: x['img'][0].to(device)  # noqa: E731
+            else:
+                input_shape = input_data['img'].shape
+                collate_fn = lambda x: x['img'].to(device)  # noqa: E731
+            break
         else:
-            input_shape = input_data['img'].shape
-            collate_fn = lambda x: x['img'].to(device)  # noqa: E731
-        break
+            if isinstance(input_data['lq'], list):
+                input_shape = input_data['lq'][0].shape
+                collate_fn = lambda x: x['lq'][0].to(device)  # noqa: E731
+            else:
+                input_shape = input_data['lq'].shape
+                collate_fn = lambda x: x['lq'].to(device)  # noqa: E731
+            break
 
     from ppq import QuantizationSettingFactory, TargetPlatform
     from ppq.api import export_ppq_graph, quantize_onnx_model

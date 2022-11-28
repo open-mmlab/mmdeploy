@@ -21,7 +21,7 @@ jlong Java_mmdeploy_Restorer_create(JNIEnv *env, jobject, jstring modelPath, jst
 }
 
 void Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_INFO("Java_mmdeploy_Restorer_destroy");
+  MMDEPLOY_DEBUG("Java_mmdeploy_Restorer_destroy");
   mmdeploy_restorer_destroy((mmdeploy_restorer_t)handle);
 }
 

@@ -42,20 +42,32 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持超多 OpenMMLab 算法库
 
-- [mmcls](docs/en/04-supported-codebases/mmcls.md)
-- [mmdet](docs/en/04-supported-codebases/mmdet.md)
-- [mmseg](docs/en/04-supported-codebases/mmseg.md)
-- [mmedit](docs/en/04-supported-codebases/mmedit.md)
-- [mmocr](docs/en/04-supported-codebases/mmocr.md)
-- [mmpose](docs/en/04-supported-codebases/mmpose.md)
-- [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)
-- [mmrotate](docs/en/04-supported-codebases/mmrotate.md)
+- [mmcls](docs/zh_cn/04-supported-codebases/mmcls.md)
+- [mmdet](docs/zh_cn/04-supported-codebases/mmdet.md)
+- [mmseg](docs/zh_cn/04-supported-codebases/mmseg.md)
+- [mmedit](docs/zh_cn/04-supported-codebases/mmedit.md)
+- [mmocr](docs/zh_cn/04-supported-codebases/mmocr.md)
+- [mmpose](docs/zh_cn/04-supported-codebases/mmpose.md)
+- [mmdet3d](docs/zh_cn/04-supported-codebases/mmdet3d.md)
+- [mmrotate](docs/zh_cn/04-supported-codebases/mmrotate.md)
+- [mmaction2](docs/zh_cn/04-supported-codebases/mmaction2.md)
 
 ### 支持多种推理后端
 
-| ONNX Runtime | TensorRT | ppl.nn | ncnn | OpenVINO | more                                              |
-| ------------ | -------- | ------ | ---- | -------- | ------------------------------------------------- |
-| ✔️           | ✔️       | ✔️     | ✔️   | ✔️       | [benchmark](docs/zh_cn/03-benchmark/benchmark.md) |
+支持的设备平台和推理引擎如下表所示。benchmark请参考[这里](docs/zh_cn/03-benchmark/benchmark.md)
+
+| Device / Platform | Linux                                                           | Windows                                 | macOS    | Android          |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------- | -------- | ---------------- |
+| x86_64 CPU        | ✔️ONNX Runtime<br>✔️pplnn<br>✔️ncnn<br>✔️OpenVINO<br>✔️LibTorch | ✔️ONNX Runtime<br>✔️OpenVINO            | -        | -                |
+| ARM CPU           | ✔️ncnn                                                          | -                                       | -        | ✔️ncnn           |
+| RISC-V            | ✔️ncnn                                                          | -                                       | -        | -                |
+| NVIDIA GPU        | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn<br>✔️LibTorch           | ✔️ONNX Runtime<br>✔️TensorRT<br>✔️pplnn | -        | -                |
+| NVIDIA Jetson     | ✔️TensorRT                                                      | ✔️TensorRT                              | -        | -                |
+| Huawei ascend310  | ✔️CANN                                                          | -                                       | -        | -                |
+| Rockchip          | ✔️RKNN                                                          | -                                       | -        | -                |
+| Apple M1          | -                                                               | -                                       | ✔️CoreML | -                |
+| Adreno GPU        | -                                                               | -                                       | -        | ✔️ncnn<br>✔️SNPE |
+| Hexagon DSP       | -                                                               | -                                       | -        | ✔️SNPE           |
 
 ### SDK 可高度定制化
 
@@ -63,30 +75,47 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## [快速上手](docs/zh_cn/get_started.md)
+## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/latest/)
 
+- [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
+  - [一键式脚本安装](docs/zh_cn/01-how-to-build/build_from_script.md)
   - [Build from Docker](docs/zh_cn/01-how-to-build/build_from_docker.md)
   - [Build for Linux](docs/zh_cn/01-how-to-build/linux-x86_64.md)
+  - [Build for macOS](docs/zh_cn/01-how-to-build/macos-arm64.md)
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
-  - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [Build for Jetson](docs/zh_cn/01-how-to-build/jetsons.md)
+  - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
+  - [Cross Build for aarch64](docs/zh_cn/01-how-to-build/cross_build_ncnn_aarch64.md)
 - 使用
   - [把模型转换到推理 Backend](docs/zh_cn/02-how-to-run/convert_model.md)
   - [配置转换参数](docs/zh_cn/02-how-to-run/write_config.md)
   - [量化](docs/zh_cn/02-how-to-run/quantize_model.md)
   - [测试转换完成的模型](docs/zh_cn/02-how-to-run/profile_model.md)
+  - [工具集介绍](docs/zh_cn/02-how-to-run/useful_tools.md)
 - 开发指南
-  - [支持新模型](docs/zh_cn/04-developer-guide/support_new_model.md)
-  - [增加推理 Backend](docs/zh_cn/04-developer-guide/support_new_backend.md)
-  - [回归测试](docs/zh_cn/04-developer-guide/do_regression_test.md)
+  - [软件架构](docs/zh_cn/07-developer-guide/architecture.md)
+  - [支持新模型](docs/zh_cn/07-developer-guide/support_new_model.md)
+  - [增加推理 backend](docs/zh_cn/07-developer-guide/support_new_backend.md)
+  - [模型分块](docs/zh_cn/07-developer-guide/partition_model.md)
+  - [测试重写模型](docs/zh_cn/07-developer-guide/test_rewritten_models.md)
+  - [backend 算子测试](docs/zh_cn/07-developer-guide/add_backend_ops_unittest.md)
+  - [回归测试](docs/zh_cn/07-developer-guide/regression_test.md)
+- 各 backend 自定义算子列表
+  - [ncnn](docs/zh_cn/06-custom-ops/ncnn.md)
+  - [onnxruntime](docs/zh_cn/06-custom-ops/onnxruntime.md)
+  - [tensorrt](docs/zh_cn/06-custom-ops/tensorrt.md)
 - [FAQ](docs/zh_cn/faq.md)
 - [贡献者手册](.github/CONTRIBUTING.md)
 
 ## 新人解说
 
-- [01 术语解释、加载第一个模型](docs/zh_cn/05-tutorial/01_introduction_to_model_deployment.md)
-- [02 转成 onnx](docs/zh_cn/05-tutorial/02_challenges.md)
+- [01 术语解释、加载第一个模型](docs/zh_cn/tutorial/01_introduction_to_model_deployment.md)
+- [02 部署常见问题](docs/zh_cn/tutorial/02_challenges.md)
+- [03 torch转onnx](docs/zh_cn/tutorial/03_pytorch2onnx.md)
+- [04 让torch支持更多onnx算子](docs/zh_cn/tutorial/04_onnx_custom_op.md)
+- [05 调试onnx模型](docs/zh_cn/tutorial/05_onnx_model_editing.md)
 
 ## 基准与模型库
 
@@ -126,6 +155,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
+- [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO 系列工具箱和基准测试
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab 旋转框检测工具箱与测试基准
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包

@@ -6,6 +6,7 @@
 #include <string>
 
 #include "optimizer.h"
+#include "passes/onnx/common_subgraph_elimination.h"
 #include "passes/onnx/flatten_cls_head.h"
 #include "passes/onnx/fuse_select_assign.h"
 #include "passes/onnx/merge_shape_concate.h"
@@ -38,6 +39,8 @@ PYBIND11_MODULE(ts_optimizer, m) {
   onnx_module.def("_jit_pass_flatten_cls_head", FlattenClsHead, py::arg("graph"));
   onnx_module.def("_jit_pass_fuse_select_assign", FuseSelectAssign, py::arg("graph"),
                   py::arg("params"));
+  onnx_module.def("_jit_pass_common_subgraph_elimination", CommonSubgraphElimination,
+                  py::arg("graph"), py::arg("params"));
 }
 
 }  // namespace torch_jit

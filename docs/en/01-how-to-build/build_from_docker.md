@@ -42,7 +42,7 @@ docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
 After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
 
 ```
-docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
+docker run --gpus all -it mmdeploy:master-gpu
 ```
 
 ## FAQs
@@ -51,7 +51,7 @@ docker run --gpus all -it -p 8080:8081 mmdeploy:master-gpu
 
    As described [here](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754), update the GPU driver to the latest one for your GPU.
 
-2. docker: Error response from daemon: could not select device driver "" with capabilities: \[\[gpu\]\].
+2. docker: Error response from daemon: could not select device driver "" with capabilities: \[gpu\].
 
    ```
    # Add the package repositories

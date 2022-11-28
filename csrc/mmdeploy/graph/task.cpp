@@ -12,6 +12,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
     assert(v.is_array());
     // handle empty input
     if (v.front().empty()) {
+      profiler::ScopedCounter counter(scope_);
       return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
     }
     if (v.front().is_array() && !is_batched_) {
@@ -24,6 +25,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
             return Value{std::move(input), std::move(output)};
           })
           | Bulk(batch_size, [&](size_t index, Value& in_out) {
+            profiler::ScopedCounter counter(scope_);
             const auto& input = in_out[0];
             auto& output = in_out[1];
             output[index] = module_->Process(input[index]).value();
@@ -33,51 +35,74 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_,
-                          [&](const Value& u) { return module_->Process(u).value(); });
+      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_, [&](const Value& u) {
+        profiler::ScopedCounter counter(scope_);
+        return module_->Process(u).value();
+      });
     }
   });
 }
 
-Result<unique_ptr<Task>> TaskParser::Parse(const Value& config) {
+TaskBuilder::TaskBuilder(Value config) : Builder(std::move(config)) {}
+
+namespace {
+
+inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
+  auto type = config["module"].get<std::string>();
+  auto creator = gRegistry<Module>().Get(type);
+  if (!creator) {
+    MMDEPLOY_ERROR("failed to find module creator: {}", type);
+    return Status(eEntryNotFound);
+  }
+  auto inst = creator->Create(config);
+  if (!Check(inst)) {
+    MMDEPLOY_ERROR("failed to create module: {}", type);
+    return Status(eFail);
+  }
+  return std::move(inst);
+}
+
+}  // namespace
+
+Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
-    OUTCOME_TRY(NodeParser::Parse(config, *task));
-    OUTCOME_TRY(task->module_, CreateFromRegistry<Module>(config, "module"));
-    bool sched_set = false;
-    if (config["context"].contains("executor")) {
-      auto& exec_info = config["context"]["executor"];
-      for (auto it = exec_info.begin(); it != exec_info.end(); ++it) {
-        if (it.key() == task->name()) {
-          task->sched_ = it->get<TypeErasedScheduler<Value>>();
-          sched_set = true;
-          MMDEPLOY_INFO("scheduler configured for task {}", task->name());
-          break;
-        }
+    if (auto scope = Maybe{config_} / "context" / "scope" / identity<profiler::Scope*>{}) {
+      auto module_name = config_.value<std::string>("module", "");
+      auto name = config_.value<std::string>("name", "");
+      string scope_name = (name != "") ? name : module_name;
+      task->scope_ = (*scope)->CreateScope(scope_name);
+      config_["context"]["scope"] = task->scope_;
+      if (module_name == "Transform") {
+        task->scope_ = nullptr;
       }
     }
-    if (!sched_set) {
+
+    OUTCOME_TRY(task->module_, CreateModule(config_));
+
+    if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
+      if (auto sched = Maybe{config_} / "context" / "scheduler" / *name /
+                       identity<TypeErasedScheduler<Value>>{}) {
+        task->sched_ = std::move(*sched);
+      }
+    }
+
+    if (!task->sched_) {
       task->sched_ =
           TypeErasedScheduler<Value>{std::make_shared<TypeErasedScheduler<Value>::Impl>()};
     }
-    task->is_batched_ = config.value("is_batched", false);
-    task->is_thread_safe_ = config.value("is_thread_safe", false);
+
+    task->is_batched_ = config_.value("is_batched", false);
+    task->is_thread_safe_ = config_.value("is_thread_safe", false);
     return std::move(task);
   } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("error parsing config: {}", config);
+    MMDEPLOY_ERROR("error parsing config: {}", config_);
     return nullptr;
   }
 }
 
-class TaskCreator : public Creator<Node> {
- public:
-  const char* GetName() const override { return "Task"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Node> Create(const Value& value) override {
-    return TaskParser::Parse(value).value();
-  }
-};
-
-REGISTER_MODULE(Node, TaskCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Task, 0), [](const Value& config) {
+  return std::make_unique<TaskBuilder>(config);
+});
 
 }  // namespace mmdeploy::graph

@@ -5,6 +5,9 @@ project(mmdeploy_mmocr_cpu_impl CXX)
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
     add_library(${PROJECT_NAME} OBJECT dbnet.cpp panet.cpp psenet.cpp)
     set_target_properties(${PROJECT_NAME} PROPERTIES POSITION_INDEPENDENT_CODE 1)
+    if (NOT (MMDEPLOY_SHARED_LIBS OR MSVC))
+        target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
+    endif ()
     target_link_libraries(${PROJECT_NAME} PRIVATE
             mmdeploy_opencv_utils
             mmdeploy::core)

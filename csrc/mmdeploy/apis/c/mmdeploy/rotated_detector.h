@@ -86,11 +86,10 @@ MMDEPLOY_API void mmdeploy_rotated_detector_destroy(mmdeploy_rotated_detector_t 
 
 /**
  * @brief Same as \ref mmdeploy_detector_create, but allows to control execution context of tasks
- * via exec_info
+ * via context
  */
 MMDEPLOY_API int mmdeploy_rotated_detector_create_v2(mmdeploy_model_t model,
-                                                     const char* device_name, int device_id,
-                                                     mmdeploy_exec_info_t exec_info,
+                                                     mmdeploy_context_t context,
                                                      mmdeploy_rotated_detector_t* detector);
 
 /**

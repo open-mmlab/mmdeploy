@@ -3,6 +3,7 @@ repos:
     rev: 4.0.1
     hooks:
       - id: flake8
+        args: ["--exclude=*/client/inference_pb2.py,*/client/inference_pb2_grpc.py"]
   - repo: https://github.com/PyCQA/isort
     rev: 5.10.1
     hooks:
