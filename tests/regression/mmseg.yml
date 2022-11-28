@@ -12,9 +12,8 @@ globals:
     mIoU: # named after metafile.Results.Metrics
       eval_name: mIoU # test.py --metrics args
       metric_key: mIoU # eval OrderedDict key name
-      tolerance: 5 # metric ±n%
-      task_name: Semantic Segmentation # metafile.Results.Task
-      dataset: [Cityscapes, ADE20K] # metafile.Results.Dataset
+      tolerance: 1 # metric ±n%
+      multi_value: 100
   convert_image: &convert_image
     input_img: *img_leftImg8bit
     test_img: *img_loveda_0
@@ -195,7 +194,6 @@ models:
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_pplnn_dynamic_fp32
-      - *pipeline_openvino_dynamic_fp32
 
   - name: ANN
     metafile: configs/ann/ann.yml
@@ -380,4 +378,3 @@ models:
       - *pipeline_trt_static_fp32_512x512
       - *pipeline_openvino_static_fp32_512x512
       - *pipeline_ncnn_static_fp32
-      - *pipeline_ts_fp32

@@ -47,13 +47,14 @@ class LinearClsHead : public MMClassification {
  private:
   Value GetLabels(const Tensor& scores, int class_num) const {
     auto scores_data = scores.data<float>();
+    auto topk = std::min(topk_, class_num);
     Labels output;
-    output.reserve(topk_);
+    output.reserve(topk);
     std::vector<int> idx(class_num);
     iota(begin(idx), end(idx), 0);
-    partial_sort(begin(idx), begin(idx) + topk_, end(idx),
+    partial_sort(begin(idx), begin(idx) + topk, end(idx),
                  [&](int i, int j) { return scores_data[i] > scores_data[j]; });
-    for (int i = 0; i < topk_; ++i) {
+    for (int i = 0; i < topk; ++i) {
       auto label = Label{idx[i], scores_data[idx[i]]};
       MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
       output.push_back(label);
@@ -67,7 +68,7 @@ class LinearClsHead : public MMClassification {
   int topk_{1};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMClassification, LinearClsHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMClassification, LinearClsHead);
 
 class CropBox {
  public:
@@ -91,12 +92,7 @@ class CropBox {
   }
 };
 
-class CropBoxCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "CropBox"; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(CropBox{}); }
-};
-
-REGISTER_MODULE(Module, CropBoxCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (CropBox, 0),
+                               [](const Value&) { return CreateTask(CropBox{}); });
 
 }  // namespace mmdeploy::mmcls

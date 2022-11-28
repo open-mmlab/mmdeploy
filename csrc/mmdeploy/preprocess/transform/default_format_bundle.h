@@ -42,7 +42,8 @@ class MMDEPLOY_API DefaultFormatBundle : public Transform {
   std::unique_ptr<DefaultFormatBundleImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(DefaultFormatBundleImpl);
+MMDEPLOY_DECLARE_REGISTRY(DefaultFormatBundleImpl,
+                          std::unique_ptr<DefaultFormatBundleImpl>(const Value& config));
 
 }  // namespace mmdeploy
 

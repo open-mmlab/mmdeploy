@@ -170,6 +170,7 @@ class TRTBatchedBEVNMSop(torch.autograd.Function):
                 background_label_id: int = -1,
                 return_index: bool = True):
         """Forward of batched nms.
+
         Args:
             ctx (Context): The context with meta information.
             boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].

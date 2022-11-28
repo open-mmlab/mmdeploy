@@ -19,7 +19,7 @@ class PyRestorer {
     restorer_ = {};
   }
 
-  std::vector<py::array_t<uint8_t>> Apply(const std::vector<PyImage>& imgs) {
+  std::vector<py::array> Apply(const std::vector<PyImage>& imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto& img : imgs) {
@@ -31,15 +31,19 @@ class PyRestorer {
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply restorer, code: " + std::to_string(status));
     }
-    auto output = std::vector<py::array_t<uint8_t>>{};
-    output.reserve(mats.size());
+    using Sptr = std::shared_ptr<mmdeploy_mat_t>;
+    Sptr holder(results, [n = mats.size()](auto p) { mmdeploy_restorer_release_result(p, n); });
+
+    std::vector<py::array> rets(mats.size());
     for (int i = 0; i < mats.size(); ++i) {
-      py::array_t<uint8_t> restored({results[i].height, results[i].width, results[i].channel});
-      memcpy(restored.mutable_data(), results[i].data, restored.nbytes());
-      output.push_back(std::move(restored));
+      rets[i] = {
+          {results[i].height, results[i].width, results[i].channel},       // shape
+          results[i].data,                                                 // data
+          py::capsule(new Sptr(holder),                                    // handle
+                      [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+      };
     }
-    mmdeploy_restorer_release_result(results, (int)mats.size());
-    return output;
+    return rets;
   }
 
  private:

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -7,8 +7,7 @@ import torch
 from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
-from mmdeploy.utils import Task
-from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
+from mmdeploy.utils import Task, get_input_shape
 from ...base import BaseTask
 from .mmdetection import MMDET_TASK
 
@@ -45,7 +44,10 @@ def process_model_config(model_cfg: mmcv.Config,
             if trans_type == 'Resize' and len(input_shape) != 1:
                 trans['keep_ratio'] = False
             elif trans_type == 'Pad':
-                if 'size_divisor' in trans:
+                if trans.get('pad_to_square', False):
+                    # pad_to_square is mutually exclusive with size and divisor
+                    pass
+                elif 'size_divisor' in trans:
                     trans['size_divisor'] = 1
                 else:
                     trans['size'] = tuple(input_shape)
@@ -103,15 +105,18 @@ class ObjectDetection(BaseTask):
 
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Sequence[int] = None) \
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None, **kwargs) \
             -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
 
         Args:
             imgs (str|np.ndarray): Input image(s), accpeted data type are
                 `str`, `np.ndarray`.
-            input_shape (list[int]): A list of two integer in (width, height)
-                format specifying input shape. Defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input.
@@ -120,19 +125,11 @@ class ObjectDetection(BaseTask):
         from mmdet.datasets.pipelines import Compose
         if isinstance(imgs, (str, np.ndarray)):
             imgs = [imgs]
-        dynamic_flag = is_dynamic_shape(self.deploy_cfg)
-        cfg = process_model_config(self.model_cfg, imgs, input_shape)
-        # Drop pad_to_square when static shape. Because static shape should
-        # ensure the shape before input image.
-        if not dynamic_flag:
-            transform = cfg.data.test.pipeline[1]
-            if 'transforms' in transform:
-                transform_list = transform['transforms']
-                for i, step in enumerate(transform_list):
-                    if step['type'] == 'Pad' and 'pad_to_square' in step \
-                       and step['pad_to_square']:
-                        transform_list.pop(i)
-                        break
+        model_cfg = self.model_cfg
+        if pipeline_updater is not None:
+            model_cfg = pipeline_updater(self.deploy_cfg, model_cfg)
+        cfg = process_model_config(model_cfg, imgs, input_shape)
+
         test_pipeline = Compose(cfg.data.test.pipeline)
         data_list = []
         for img in imgs:
@@ -244,7 +241,8 @@ class ObjectDetection(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         """Perform post-processing to predictions of model.
 
         Args:
@@ -282,7 +280,10 @@ class ObjectDetection(BaseTask):
             ]:
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            logger.info(dataset.evaluate(outputs, **eval_kwargs))
+            results = dataset.evaluate(outputs, **eval_kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+            logger.info(results)
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
@@ -291,7 +292,8 @@ class ObjectDetection(BaseTask):
             dict: Composed of the preprocess information.
         """
         input_shape = get_input_shape(self.deploy_cfg)
-        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        cfg = self.update_test_pipeline(self.deploy_cfg, self.model_cfg)
+        model_cfg = process_model_config(cfg, [''], input_shape)
         preprocess = model_cfg.data.test.pipeline
         return preprocess
 

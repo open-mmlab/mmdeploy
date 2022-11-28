@@ -5,8 +5,7 @@
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/preprocess/transform/image2tensor.h"
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::cuda {
 
 template <typename T>
 void Transpose(const T* src, int height, int width, int channels, T* dst, cudaStream_t stream);
@@ -46,16 +45,6 @@ class ImageToTensorImpl final : public ::mmdeploy::ImageToTensorImpl {
   }
 };
 
-class ImageToTensorImplCreator : public Creator<::mmdeploy::ImageToTensorImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& cfg) override { return std::make_unique<ImageToTensorImpl>(cfg); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ImageToTensorImpl, (cuda, 0), ImageToTensorImpl);
 
-}  // namespace cuda
-}  // namespace mmdeploy
-
-using ::mmdeploy::ImageToTensorImpl;
-using ::mmdeploy::cuda::ImageToTensorImplCreator;
-REGISTER_MODULE(ImageToTensorImpl, ImageToTensorImplCreator);
+}  // namespace mmdeploy::cuda

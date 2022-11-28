@@ -57,7 +57,7 @@ Result<Value> CollectImpl::Process(const Value &input) {
 }
 
 Collect::Collect(const Value &args, int version) : Transform(args) {
-  auto impl_creator = Registry<CollectImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<CollectImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Collect' is not supported on '{}' platform", specified_platform_);
     throw_exception(eEntryNotFound);
@@ -67,19 +67,9 @@ Collect::Collect(const Value &args, int version) : Transform(args) {
 
 Result<Value> Collect::Process(const Value &input) { return impl_->Process(input); }
 
-class CollectCreator : public Creator<Transform> {
- public:
-  const char *GetName() const override { return "Collect"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value &args) override {
-    return std::make_unique<Collect>(args, version_);
-  }
-
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, CollectCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Collect, 0), [](const Value &config) {
+  return std::make_unique<Collect>(config, 0);
+});
 
 MMDEPLOY_DEFINE_REGISTRY(CollectImpl);
 

@@ -106,7 +106,7 @@ codebase_config = dict(type='mmcls', task='Classification')
 
 ## 3. 如何编写推理框架配置
 
-推理框架配置主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/onnxruntime.md)， [TensorRT](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/tensorrt.md)， [ncnn](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/ncnn.md)， [PPLNN](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/backends/pplnn.md)。
+推理框架配置主要用于指定模型运行在哪个推理框架，并提供模型在推理框架运行时所需的信息，具体参考 [ONNX Runtime](../05-supported-backends/onnxruntime.md)， [TensorRT](../05-supported-backends/tensorrt.md)， [ncnn](../05-supported-backends/ncnn.md)， [PPLNN](../05-supported-backends/pplnn.md)。
 
 - `type`: 模型推理框架, 包括 `onnxruntime`， `ncnn`， `pplnn`， `tensorrt`， `openvino`。
 
