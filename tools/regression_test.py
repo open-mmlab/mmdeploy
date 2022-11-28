@@ -314,6 +314,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             for ds in configured_dataset:
                 if ds in _metrics:
                     pytorch_metric.update(_metrics[ds])
+                if ds == dataset:
+                    pytorch_metric.update(_metrics)
         else:
             pytorch_metric.update(_metrics)
         task_name = metafile_metric['Task']
