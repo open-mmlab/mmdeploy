@@ -32,7 +32,7 @@ const auto config_json = R"(
       "type": "Task",
       "module": "ProcessBboxes",
       "input": ["dets", "data", "state"],
-      "output": "rois"
+      "output": ["rois", "track_ids"]
     },
     {
       "input": "*rois",
@@ -45,7 +45,7 @@ const auto config_json = R"(
       "type": "Task",
       "module": "TrackPose",
       "scheduler": "pool",
-      "input": ["keypoints", "state"],
+      "input": ["keypoints", "track_ids", "state"],
       "output": "targets"
     }
   ]
@@ -106,27 +106,31 @@ struct TrackInfo {
 
 MMDEPLOY_REGISTER_TYPE_ID(TrackInfo, 0xcfe87980aa895d3a);  // randomly generated type id
 
-Value::Array GetObjectsByTracking(Value& state, int img_h, int img_w) {
+std::tuple<Value::Array, Value::Array> GetObjectsByTracking(Value& state, int img_h, int img_w) {
   Value::Array objs;
+  Value::Array ids;
   auto& track_info = state["track_info"].get_ref<TrackInfo&>();
   for (auto& track : track_info.tracks) {
     auto bbox = keypoints_to_bbox(track.keypoints.back(), track.scores.back(),
                                   static_cast<float>(img_h), static_cast<float>(img_w));
     if (bbox) {
       objs.push_back({{"bbox", to_value(*bbox)}});
+      ids.push_back(track.track_id);
     }
   }
-  return objs;
+  return {std::move(objs), std::move(ids)};
 }
 
-Value ProcessBboxes(const Value& detections, const Value& data, Value state) {
+std::tuple<Value, Value> ProcessBboxes(const Value& detections, const Value& data, Value state) {
   assert(state.is_pointer());
   Value::Array bboxes;
+  Value::Array track_ids;
   if (detections.is_array()) {  // has detections
     auto& dets = detections.array();
     for (const auto& det : dets) {
       if (det["label_id"].get<int>() == 0 && det["score"].get<float>() >= .3f) {
         bboxes.push_back(det);
+        track_ids.push_back(-1);
       }
     }
     MMDEPLOY_INFO("bboxes by detection: {}", bboxes.size());
@@ -134,7 +138,7 @@ Value ProcessBboxes(const Value& detections, const Value& data, Value state) {
   } else {  // no detections, use tracked results
     auto img_h = state["img_shape"][0].get<int>();
     auto img_w = state["img_shape"][1].get<int>();
-    bboxes = GetObjectsByTracking(state, img_h, img_w);
+    std::tie(bboxes, track_ids) = GetObjectsByTracking(state, img_h, img_w);
     MMDEPLOY_INFO("GetObjectsByTracking: {}", bboxes.size());
   }
   // attach bboxes to image data
@@ -145,7 +149,7 @@ Value ProcessBboxes(const Value& detections, const Value& data, Value state) {
     bbox = Value::Object{
         {"ori_img", img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
   };
-  return bboxes;
+  return {std::move(bboxes), std::move(track_ids)};
 }
 REGISTER_SIMPLE_MODULE(ProcessBboxes, ProcessBboxes);
 
@@ -219,8 +223,9 @@ std::vector<std::tuple<int, int, float>> GreedyAssignment(const std::vector<floa
 }
 
 void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
-               std::vector<std::vector<float>>& scores, TrackInfo& track_info, int img_h, int img_w,
-               float iou_thr, int min_keypoints, int n_history) {
+               std::vector<std::vector<float>>& scores, const std::vector<int64_t>& track_ids,
+               TrackInfo& track_info, int img_h, int img_w, float iou_thr, int min_keypoints,
+               int n_history) {
   auto& tracks = track_info.tracks;
 
   std::vector<Track> new_tracks;
@@ -245,7 +250,9 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
   std::vector<float> similarities(n_rows * n_cols);
   for (size_t i = 0; i < n_rows; ++i) {
     for (size_t j = 0; j < n_cols; ++j) {
-      similarities[i * n_cols + j] = ComputeIoU(bboxes[i], tracks[j].bboxes.back());
+      if (track_ids[i] == -1 || track_ids[i] == tracks[j].track_id) {
+        similarities[i * n_cols + j] = ComputeIoU(bboxes[i], tracks[j].bboxes.back());
+      }
     }
   }
 
@@ -274,26 +281,37 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
   tracks = std::move(new_tracks);
 }
 
-Value TrackPose(const Value& result, Value state) {
+Value TrackPose(const Value& result, const Value& track_indices, Value state) {
   assert(state.is_pointer());
   assert(result.is_array());
   std::vector<std::vector<cv::Point2f>> keypoints;
   std::vector<std::vector<float>> scores;
+  std::vector<float> avg_scores;
   for (auto& output : result.array()) {
     auto& k = keypoints.emplace_back();
     auto& s = scores.emplace_back();
+    auto avg = 0.f;
     for (auto& kpt : output["key_points"].array()) {
       k.push_back(cv::Point2f{kpt["bbox"][0].get<float>(), kpt["bbox"][1].get<float>()});
       s.push_back(kpt["score"].get<float>());
+      avg += s.back();
     }
+    avg /= s.size();
+    avg_scores.push_back(avg);
   }
+  MMDEPLOY_ERROR("avg scores: {}", avg_scores);
   auto& track_info = state["track_info"].get_ref<TrackInfo&>();
   auto img_h = state["img_shape"][0].get<int>();
   auto img_w = state["img_shape"][1].get<int>();
   auto iou_thr = state["iou_thr"].get<float>();
   auto min_keypoints = state["min_keypoints"].get<int>();
   auto n_history = state["n_history"].get<int>();
-  TrackStep(keypoints, scores, track_info, img_h, img_w, iou_thr, min_keypoints, n_history);
+
+  std::vector<int64_t> track_ids;
+  from_value(track_indices, track_ids);
+
+  TrackStep(keypoints, scores, track_ids, track_info, img_h, img_w, iou_thr, min_keypoints,
+            n_history);
 
   Value::Array targets;
   for (const auto& track : track_info.tracks) {
@@ -382,8 +400,8 @@ void Visualize(cv::Mat& frame, const Value& result) {
       cv::line(frame, p_u, p_v, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
     }
   }
-  cv::imshow("", frame);
-  cv::waitKey(1);
+  static int frame_id = 0;
+  cv::imwrite(fmt::format("pose_{}.jpg", frame_id++), frame);
 }
 
 int main(int argc, char* argv[]) {
