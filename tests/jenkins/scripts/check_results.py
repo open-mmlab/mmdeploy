@@ -20,6 +20,11 @@ def main():
     args = parse_args()
     regression_dir = args.regression_dir
     assert osp.exists(regression_dir)
+    host_log_path = osp.join(regression_dir, 'log_path.txt')
+    assert osp.exists(host_log_path)
+    with open(host_log_path, 'r') as f:
+        host_log = f.read().strip()
+        url_prefix = host_log.replace('/data2/regression_log', args.url_prefix)
     codebase_dirs = glob.glob(osp.join(regression_dir, 'mm*'))
     codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
     test_stats_path = osp.join(regression_dir, 'stats_report.xlsx')
@@ -61,7 +66,6 @@ def main():
                     model_failed_with_backend.add(s)
                 model_failed_str = ' || '.join(list(model_failed_with_backend))
                 stats.append([version, num_failed, model_failed_str])
-                url_prefix = tv_dir.replace(regression_dir, args.url_prefix)
 
                 def add_url(row):
                     url = '-'
@@ -73,7 +77,9 @@ def main():
                             if '.' in osp.split(url)[1]:
                                 url = osp.split(url)[0]
                         else:
-                            url = url_prefix
+                            url = osp.join(url_prefix, codebase_name, tv,
+                                           codebase_name, row['Model'].lower(),
+                                           row['Backend'])
                     return url
 
                 report_failed['LOG_URL'] = report_failed.apply(add_url, axis=1)
