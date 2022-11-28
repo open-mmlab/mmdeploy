@@ -60,7 +60,7 @@ def main():
     used_addr = set()
     event_start = {}
     now = 0
-    t_min = 0
+    first_id = None
 
     for event in events:
         words = event.split()
@@ -70,8 +70,12 @@ def main():
         used_id.add(id)
         kind, index, ts = map(int, words[1:])
 
-        if now == 0:
-            t_min = ts
+        if first_id is None:
+            first_id = id
+
+        if id == first_id and kind == 0 and n_active[id] == 0:
+            now = ts
+
         key = (id, index)
         delta = ts - now
         now = ts
@@ -96,8 +100,8 @@ def main():
         ['name', 'occupy', 'usage', 'n_call', 't_mean', 't_50%', 't_90%'])
 
     for id in sorted(list(used_id)):
-        occupy = t_occupy[id] / (now - t_min)
-        usage = t_usage[id] / (now - t_min)
+        occupy = t_occupy[id] / (t_occupy[first_id])
+        usage = t_usage[id] / (t_occupy[first_id])
         times = sorted(t_time[id])
         t_mean = np.mean(times) / 1000
         t_50 = times[int(len(times) * 0.5)] / 1000
