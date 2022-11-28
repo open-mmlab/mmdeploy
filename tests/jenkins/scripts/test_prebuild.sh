@@ -29,6 +29,7 @@ container_name=openmmlab${repo_version}-prebuild-$(date +%Y%m%d%H%M)
 container_id=$(
     docker run \
         --gpus all \
+        --ipc=host \
         -itd \
         -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \

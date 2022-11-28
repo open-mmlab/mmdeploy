@@ -25,6 +25,7 @@ container_name=build-${time_snap}
 container_id=$(
     docker run -itd \
         --gpus all \
+        --ipc=host \
         -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
         --name ${container_name} \
         ${docker_image} /bin/bash

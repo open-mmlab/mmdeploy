@@ -41,6 +41,7 @@ for codebase in ${codebase_list[@]}; do
         container_name=openmmlab${repo_version}-convert-${codebase}-${time_snap}
         container_id=$(
             docker run -itd \
+                --ipc=host \
                 --gpus all \
                 -v /data2/checkpoints/:/root/workspace/mmdeploy_checkpoints \
                 -v /data2/benchmark/mmyolo-deps/:/root/workspace/mmyolo-deps \

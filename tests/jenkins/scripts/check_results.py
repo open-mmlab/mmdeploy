@@ -61,8 +61,7 @@ def main():
                     model_failed_with_backend.add(s)
                 model_failed_str = ' || '.join(list(model_failed_with_backend))
                 stats.append([version, num_failed, model_failed_str])
-                url_prefix = tv_dir.replace('/data2/regression_log',
-                                            args.url_prefix)
+                url_prefix = tv_dir.replace(regression_dir, args.url_prefix)
 
                 def add_url(row):
                     url = '-'

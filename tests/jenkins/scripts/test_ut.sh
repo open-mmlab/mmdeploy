@@ -31,6 +31,7 @@ for codebase in ${codebase_list[@]}; do
     container_id=$(
         docker run -itd \
             --gpus all \
+            --ipc=host \
             -v ${log_dir}:/root/workspace/ut_log \
             -v ~/mmdeploy/tests/jenkins:/root/workspace/jenkins\
             --name ${container_name} \
