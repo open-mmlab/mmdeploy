@@ -1,5 +1,7 @@
 
 
+#include <numeric>
+
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/common.hpp"
@@ -95,6 +97,7 @@ std::optional<std::array<float, 4>> keypoints_to_bbox(const std::vector<cv::Poin
 struct Track {
   std::vector<std::vector<cv::Point2f>> keypoints;
   std::vector<std::vector<float>> scores;
+  std::vector<float> avg_scores;
   std::vector<std::array<float, 4>> bboxes;
   int64_t track_id{-1};
 };
@@ -133,13 +136,13 @@ std::tuple<Value, Value> ProcessBboxes(const Value& detections, const Value& dat
         track_ids.push_back(-1);
       }
     }
-    MMDEPLOY_INFO("bboxes by detection: {}", bboxes.size());
+    MMDEPLOY_DEBUG("bboxes by detection: {}", bboxes.size());
     state["bboxes"] = bboxes;
   } else {  // no detections, use tracked results
     auto img_h = state["img_shape"][0].get<int>();
     auto img_w = state["img_shape"][1].get<int>();
     std::tie(bboxes, track_ids) = GetObjectsByTracking(state, img_h, img_w);
-    MMDEPLOY_INFO("GetObjectsByTracking: {}", bboxes.size());
+    MMDEPLOY_DEBUG("GetObjectsByTracking: {}", bboxes.size());
   }
   // attach bboxes to image data
   for (auto& bbox : bboxes) {
@@ -175,18 +178,46 @@ float ComputeIoU(const std::array<float, 4>& a, const std::array<float, 4>& b) {
 
 void UpdateTrack(Track& track, std::vector<cv::Point2f>& keypoints, std::vector<float>& score,
                  const std::array<float, 4>& bbox, int n_history) {
+  auto avg_score = std::accumulate(score.begin(), score.end(), 0.f) / score.size();
   if (track.scores.size() == n_history) {
     std::rotate(track.keypoints.begin(), track.keypoints.begin() + 1, track.keypoints.end());
     std::rotate(track.scores.begin(), track.scores.begin() + 1, track.scores.end());
     std::rotate(track.bboxes.begin(), track.bboxes.begin() + 1, track.bboxes.end());
+    std::rotate(track.avg_scores.begin(), track.avg_scores.begin() + 1, track.avg_scores.end());
     track.keypoints.back() = std::move(keypoints);
     track.scores.back() = std::move(score);
     track.bboxes.back() = bbox;
+    track.avg_scores.back() = avg_score;
   } else {
     track.keypoints.push_back(std::move(keypoints));
     track.scores.push_back(std::move(score));
     track.bboxes.push_back(bbox);
+    track.avg_scores.push_back(avg_score);
   }
+}
+
+std::vector<int> SuppressNonMaximum(const std::vector<float>& scores,
+                                    const std::vector<std::array<float, 4>>& bboxes, float thresh) {
+  std::vector<int> indices(scores.size());
+  std::iota(indices.begin(), indices.end(), 0);
+  // stable sort, useful when the scores are equal
+  std::sort(indices.begin(), indices.end(),
+            [&](int i, int j) { return scores[i] != scores[j] ? scores[i] > scores[j] : i < j; });
+  std::vector<int> keep;
+  keep.reserve(scores.size());
+  std::vector<int> tmp;
+  tmp.reserve(scores.size());
+  while (!indices.empty()) {
+    keep.push_back(indices[0]);
+    for (size_t i = 1; i < indices.size(); ++i) {
+      if (ComputeIoU(bboxes[indices[0]], bboxes[indices[i]]) < thresh) {
+        tmp.push_back(indices[i]);
+      }
+    }
+    indices.swap(tmp);
+    tmp.clear();
+  }
+  return keep;
 }
 
 std::vector<std::tuple<int, int, float>> GreedyAssignment(const std::vector<float>& scores,
@@ -237,6 +268,7 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
   std::vector<int> indices;
   indices.reserve(keypoints.size());
 
+  // keypoints to bboxes
   for (size_t i = 0; i < keypoints.size(); ++i) {
     if (auto bbox = keypoints_to_bbox(keypoints[i], scores[i], img_h, img_w, 1.f, 0.f)) {
       bboxes.push_back(*bbox);
@@ -247,6 +279,7 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
   const auto n_rows = static_cast<int>(bboxes.size());
   const auto n_cols = static_cast<int>(tracks.size());
 
+  // generate similarity matrix
   std::vector<float> similarities(n_rows * n_cols);
   for (size_t i = 0; i < n_rows; ++i) {
     for (size_t j = 0; j < n_cols; ++j) {
@@ -258,6 +291,7 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
 
   const auto assignment = GreedyAssignment(similarities, n_rows, n_cols, iou_thr);
 
+  // update assigned tracks
   std::vector<int> used(n_rows);
   for (auto [i, j, _] : assignment) {
     auto k = indices[i];
@@ -266,8 +300,10 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
     used[i] = true;
   }
 
+  // generating new tracks
   for (size_t i = 0; i < used.size(); ++i) {
-    if (used[i] == 0) {
+    // only newly detected bboxes are allowed to form new tracks
+    if (used[i] == 0 && track_ids[i] == -1) {
       auto k = indices[i];
       auto count = std::count_if(scores[k].begin(), scores[k].end(), [](auto x) { return x > 0; });
       if (count >= min_keypoints) {
@@ -278,7 +314,18 @@ void TrackStep(std::vector<std::vector<cv::Point2f>>& keypoints,
     }
   }
 
-  tracks = std::move(new_tracks);
+  // suppress overlapped tracks
+  std::vector<float> track_scores;
+  std::vector<std::array<float, 4>> track_bboxes;
+  for (const auto& track : new_tracks) {
+    track_scores.push_back(std::accumulate(track.avg_scores.begin(), track.avg_scores.end(), 0.f));
+    track_bboxes.push_back(track.bboxes.back());
+  }
+  auto keep_idxs = SuppressNonMaximum(track_scores, track_bboxes, .3f);
+  tracks.clear();
+  for (const auto& idx : keep_idxs) {
+    tracks.push_back(std::move(new_tracks[idx]));
+  }
 }
 
 Value TrackPose(const Value& result, const Value& track_indices, Value state) {
@@ -286,7 +333,6 @@ Value TrackPose(const Value& result, const Value& track_indices, Value state) {
   assert(result.is_array());
   std::vector<std::vector<cv::Point2f>> keypoints;
   std::vector<std::vector<float>> scores;
-  std::vector<float> avg_scores;
   for (auto& output : result.array()) {
     auto& k = keypoints.emplace_back();
     auto& s = scores.emplace_back();
@@ -294,12 +340,8 @@ Value TrackPose(const Value& result, const Value& track_indices, Value state) {
     for (auto& kpt : output["key_points"].array()) {
       k.push_back(cv::Point2f{kpt["bbox"][0].get<float>(), kpt["bbox"][1].get<float>()});
       s.push_back(kpt["score"].get<float>());
-      avg += s.back();
     }
-    avg /= s.size();
-    avg_scores.push_back(avg);
   }
-  MMDEPLOY_ERROR("avg scores: {}", avg_scores);
   auto& track_info = state["track_info"].get_ref<TrackInfo&>();
   auto img_h = state["img_shape"][0].get<int>();
   auto img_w = state["img_shape"][1].get<int>();
@@ -360,7 +402,7 @@ class PoseTracker {
     if (use_detector < 0) {
       use_detector = frame_id % 10 == 0;
       if (use_detector) {
-        MMDEPLOY_WARN("use detector");
+        MMDEPLOY_DEBUG("use detector");
       }
     }
     state["frame_id"] = frame_id + 1;
