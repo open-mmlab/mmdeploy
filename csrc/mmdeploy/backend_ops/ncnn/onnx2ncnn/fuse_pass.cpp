@@ -1,6 +1,34 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 #include "fuse_pass.h"
 
+void fuse_identity(onnx::GraphProto* mutable_graph,
+                   std::map<std::string, onnx::TensorProto>& weights,
+                   std::map<std::string, int>& node_reference, std::set<std::string>& blob_names,
+                   int& reduced_node_count) {
+  // fuse
+  // identity -->  op
+  // to
+  // noop_reducencnn --> op
+  const int node_count = mutable_graph->node_size();
+  for (int i = 0; i < node_count; ++i) {
+    onnx::NodeProto* node = mutable_graph->mutable_node(i);
+    for (int j = 0; j < node->input_size(); ++j) {
+      std::string output_name = node->input(j);
+      onnx::NodeProto* last_node = find_node_by_output_name(mutable_graph, output_name);
+      if (last_node && last_node->op_type() == "Identity") {
+        node->set_input(j, last_node->input(0));
+        node_reference[last_node->output(0)] -= 1;
+        node_reference[last_node->input(0)] += 1;
+        if (node_reference[last_node->output(0)] == 0) {
+          last_node->set_op_type("noop_reducedncnn");
+          node_reference[last_node->input(0)] -= 1;
+          reduced_node_count += 1;
+        }
+      }
+    }
+  }
+}
+
 void fuse_rewrite_gather(onnx::GraphProto* mutable_graph,
                          std::map<std::string, onnx::TensorProto>& weights,
                          std::map<std::string, int>& node_reference,
