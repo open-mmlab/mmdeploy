@@ -3,4 +3,4 @@ _base_ = [
     '../../_base_/backends/onnxruntime.py'
 ]
 
-codebase_config = dict(post_processing=dict(export_postprocess_mask=False))
+codebase_config = dict(post_processing=dict(export_postprocess_mask=True))

@@ -17,6 +17,9 @@ def solohead__predict_by_feat__default(ctx, self,
                                        mlvl_cls_scores: List[Tensor],
                                        batch_img_metas: List[Dict], **kwargs):
     """Rewrite `predict_by_feat` of `SOLOHead` for default backend."""
+    # only support batch_size ==1
+    assert mlvl_mask_preds[0].size(0) == 1, 'Solo only support batch size = 1'
+    assert mlvl_cls_scores[0].size(0) == 1, 'Solo only support batch size = 1'
 
     batch_size = mlvl_cls_scores[0].size(0)
     cfg = self.test_cfg
@@ -35,15 +38,22 @@ def solohead__predict_by_feat__default(ctx, self,
     batch_mlvl_mask_preds = torch.cat(mlvl_mask_preds, dim=1)
     featmap_size = batch_mlvl_mask_preds.size()[-2:]
     batch_mlvl_cls_scores, cls_labels = torch.max(batch_mlvl_cls_scores, -1)
-    score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
-    batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
-        score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
+    # topk fliter
+    batch_mlvl_cls_scores, cls_indices = torch.topk(
+        batch_mlvl_cls_scores.view(-1), cfg.nms_pre)
+    batch_mlvl_mask_preds = batch_mlvl_mask_preds[0, cls_indices, ...]
+    cls_labels = cls_labels[0, cls_indices, ...]
+    strides = strides[cls_indices]
+    # no topk
+    # score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
+    # batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
+    #     score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
 
     cls_labels = cls_labels.view(-1)
 
     mask_preds = batch_mlvl_mask_preds.view(-1, featmap_size[0],
                                             featmap_size[1])
-    masks = (mask_preds > cfg.mask_thr).int()
+    masks = (mask_preds > cfg.mask_thr)
     sum_masks = masks.sum((1, 2))
     keep = sum_masks > strides
     cls_scores = batch_mlvl_cls_scores.where(
@@ -75,16 +85,18 @@ def solohead__predict_by_feat__default(ctx, self,
         upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
         mask_preds = F.interpolate(
             mask_preds, size=upsampled_size, mode='bilinear')
+        bboxes = scores.new_zeros(batch_size, scores.shape[-1], 4)
+    else:
+
+        bboxes = scores.new_zeros(batch_size, scores.shape[-1], 2)
+        # full screen box so we can postprocess mask outside the model
+        bboxes = torch.cat([
+            bboxes,
+            bboxes.new_full((*bboxes.shape[:2], 1), w),
+            bboxes.new_full((*bboxes.shape[:2], 1), h)
+        ],
+                           dim=-1)
 
     labels = labels.reshape(batch_size, -1)
-    bboxes = scores.new_zeros(scores.shape[-1], 2).view(batch_size, -1, 2)
-    # full screen box so we can postprocess mask outside the model
-    bboxes = torch.cat([
-        bboxes,
-        bboxes.new_full((*bboxes.shape[:2], 1), w),
-        bboxes.new_full((*bboxes.shape[:2], 1), h)
-    ],
-                       dim=-1)
-
     dets = torch.cat([bboxes, scores.reshape(batch_size, -1, 1)], dim=-1)
     return dets, labels, mask_preds
