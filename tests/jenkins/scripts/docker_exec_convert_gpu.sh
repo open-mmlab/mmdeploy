@@ -94,7 +94,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
 
     if [ $TORCH_VERSION == "1.8.0" ]; then
         # fix torchscript issue of no libnvrtc-builtins.so.11.1
-        export torch_lib_dir=$(python -m pip show torch | grep Location | awk '{print $2}')
+        export torch_lib_dir="$(python -m pip show torch | grep Location | awk '{print $2}')/torch"
         cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
     fi
     # need to build for each env

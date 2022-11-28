@@ -61,9 +61,11 @@ python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/lin
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-*-linux_x86_64.whl
 
-python tools/check_env.py 2>&1 | tee /root/workspace/log/check_env_onnxruntime.log
-python tools/regression_test.py --codebase mmdet --models ssd --backends onnxruntime --performance \
-    --device cpu 2>&1 | tee /root/workspace/log/test_prebuild_onnxruntime.log
+test_log_dir=/root/workspace/log/test_prebuild_onnxruntime
+mkdir -p $test_log_dir
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends onnxruntime --performance \
+    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/test_prebuild.log
 
 # must forcely uninstall
 pip uninstall mmdeploy mmdeploy_python -y
@@ -72,8 +74,10 @@ pip uninstall mmdeploy mmdeploy_python -y
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-*-linux_x86_64.whl
 pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 
-python tools/check_env.py 2>&1 | tee /root/workspace/log/check_env_tensorrt.log
-python tools/regression_test.py --codebase mmdet --models ssd --backends tensorrt --performance \
-    --device cuda:0 2>&1 | tee /root/workspace/log/test_prebuild_tensorrt.log
+test_log_dir=/root/workspace/log/test_prebuild_tensorrt
+mkdir -p $test_log_dir
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends tensorrt --performance \
+    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/test_prebuild.log
 
 echo "end_time-$(date +%Y%m%d%H%M)"
