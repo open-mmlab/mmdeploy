@@ -1,152 +1,330 @@
-from typing import Any
+# Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Dict, List
 
 import torch
-import torch.nn.functional as F
-from torch import Tensor
-
-from mmengine.structures import InstanceData
-from mmdet.utils import OptConfigType
 from mmdet.models.layers import mask_matrix_nms
+from mmdet.utils import OptConfigType
+from torch import Tensor
+from torch.nn import functional as F
 
-from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-
-
-def tensor_tail_pad(tensor_var: torch.Tensor, 
-                    pad_value: Any =0, 
-                    pad_num: int =1,
-                    dim: int =0) -> torch.Tensor :
-    if dim == 0:
-        tensor_tail = tensor_var.new_full((pad_num, *tensor_var.shape[1:]), 
-                                          pad_value)
-    else:
-        raise NotImplementedError
-    
-    return torch.cat((tensor_var, tensor_tail), dim=dim)
+from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.SOLOHead._predict_by_feat_single')
-def solo_head___predict_by_feat_single(ctx,
-                                       self,
-                                       cls_scores: Tensor,
-                                       mask_preds: Tensor,
-                                       img_meta: dict,
-                                       cfg: OptConfigType = None) -> InstanceData:
-    """Transform a single image's features extracted from the head into
-    mask results.
+    'mmdet.models.dense_heads.SOLOHead.predict_by_feat', backend='openvino')
+def solohead__predict_by_feat__openvino(ctx,
+                                        self,
+                                        mlvl_mask_preds: List[Tensor],
+                                        mlvl_cls_scores: List[Tensor],
+                                        batch_img_metas: List[Dict],
+                                        cfg: OptConfigType = None,
+                                        **kwargs):
+    """Rewrite `predict_by_feat` of `SOLOHead` for openvino backend."""
 
-    Args:
-        cls_scores (Tensor): Classification score of all points
-            in single image, has shape (num_points, num_classes).
-        mask_preds (Tensor): Mask prediction of all points in
-            single image, has shape (num_points, feat_h, feat_w).
-        img_meta (dict): Meta information of corresponding image.
-        cfg (dict, optional): Config used in test phase.
-            Defaults to None.
+    def tensor_tail_pad(tensor_var: torch.Tensor,
+                        pad_value: Any = 0,
+                        pad_num: Any = 1) -> torch.Tensor:
+        tensor_tail = tensor_var.new_full((pad_num, *tensor_var.shape[1:]),
+                                          pad_value)
 
-    Returns:
-        :obj:`InstanceData`: Processed results of single image.
-            it usually contains following keys.
+        return torch.cat((tensor_var, tensor_tail), 0)
 
-            - scores (Tensor): Classification scores, has shape
-                (num_instance,).
-            - labels (Tensor): Has shape (num_instances,).
-            - masks (Tensor): Processed mask results, has
-                shape (num_instances, h, w).
-    """
+    cfg = self.test_cfg
+    mlvl_cls_scores = [
+        item.permute(0, 2, 3, 1).view(item.size(0), -1, self.cls_out_channels)
+        for item in mlvl_cls_scores
+    ]
 
-    cfg = self.test_cfg if cfg is None else cfg
-    assert len(cls_scores) == len(mask_preds)
+    lvl_strides = [
+        torch.ones_like(mlvl_cls_scores[lvl][0, :, 0]) * self.strides[lvl]
+        for lvl in range(len(mlvl_cls_scores))
+    ]
+    lvl_strides = torch.cat(lvl_strides, 0)
+    assert len(mlvl_mask_preds) == len(mlvl_cls_scores)
+    batch_mlvl_cls_scores = torch.cat(mlvl_cls_scores, dim=1)
+    batch_mlvl_mask_preds = torch.cat(mlvl_mask_preds, dim=1)
+    featmap_size = batch_mlvl_mask_preds.size()[-2:]
 
-    score_mask = (cls_scores > cfg.score_thr)
-    cls_scores = cls_scores[score_mask]
-    cls_scores = tensor_tail_pad(cls_scores)
+    batch_dets, batch_labels, batch_masks = [], [], []
+    for cls_scores, mask_preds, img_meta in zip(batch_mlvl_cls_scores,
+                                                batch_mlvl_mask_preds,
+                                                batch_img_metas):
+        assert len(cls_scores) == len(mask_preds)
 
-    inds = score_mask.nonzero()
-    cls_labels = inds[:, 1]
-    cls_labels = tensor_tail_pad(cls_labels)
+        score_mask = (cls_scores > cfg.score_thr)
+        cls_scores = cls_scores[score_mask]
 
-    # Filter the mask mask with an area is smaller than
-    # stride of corresponding feature level
-    lvl_interval = cls_labels.new_tensor(self.num_grids).pow(2).cumsum(0)
-    strides = cls_scores.new_ones(lvl_interval[-1])
-    strides[:lvl_interval[0]] *= self.strides[0]
-    for lvl in range(1, self.num_levels):
-        strides[lvl_interval[lvl -
-                                1]:lvl_interval[lvl]] *= self.strides[lvl]
-    strides = strides[inds[:, 0]]
-    strides = tensor_tail_pad(strides)
-    mask_preds = mask_preds[inds[:, 0]]
-    mask_preds = tensor_tail_pad(mask_preds)
+        inds = score_mask.nonzero()
+        cls_labels = inds[:, 1]
 
-    masks = mask_preds > cfg.mask_thr
-    sum_masks = masks.sum((1, 2)).float()
-    keep = sum_masks > strides
+        # Filter the mask mask with an area is smaller than
+        strides = lvl_strides[inds[:, 0]]
+        mask_preds = mask_preds[inds[:, 0]]
 
-    masks = masks[keep]
-    mask_preds = mask_preds[keep]
-    sum_masks = sum_masks[keep]
-    cls_scores = cls_scores[keep]
-    cls_labels = cls_labels[keep]
-
-    masks = tensor_tail_pad(masks)
-    mask_preds = tensor_tail_pad(mask_preds)
-    sum_masks = tensor_tail_pad(sum_masks, 1e-6)
-    cls_scores = tensor_tail_pad(cls_scores)
-    cls_labels = tensor_tail_pad(cls_labels)
-
-    # maskness.
-    mask_scores = (mask_preds * masks).sum((1, 2)) / sum_masks
-    cls_scores *= mask_scores
-
-    scores, labels, _, keep_inds = mask_matrix_nms(
-        masks,
-        cls_labels,
-        cls_scores,
-        mask_area=sum_masks,
-        nms_pre=cfg.nms_pre,
-        max_num=cfg.max_per_img,
-        kernel=cfg.kernel,
-        sigma=cfg.sigma,
-        filter_thr=cfg.filter_thr)
-    scores = tensor_tail_pad(scores)
-    labels = tensor_tail_pad(labels)
-    
-    mask_preds = mask_preds[keep_inds]
-    mask_preds = tensor_tail_pad(mask_preds)
-
-    mmdet_params = get_post_processing_params(ctx.cfg)
-    export_postprocess_mask = mmdet_params.get('export_postprocess_mask', True)
-    export_for_old_openvino_api = mmdet_params.get('export_for_old_openvino_api', True)
-
-    if export_for_old_openvino_api and cfg.max_per_img > 0:
-        max_per_img = cfg.max_per_img + 1
-        keep_len = mask_preds.shape[0]
-        _mask_preds = mask_preds.new_zeros((max_per_img, *mask_preds.shape[1:])) 
-        _labels = labels.new_zeros((max_per_img, ))
-        _scores = scores.new_zeros((max_per_img, ))
-        _mask_preds[:keep_len, :, :] = mask_preds
-        _labels[:keep_len] = labels
-        _scores[:keep_len] = scores
-        mask_preds = _mask_preds
-        labels = _labels
-        scores = _scores
-
-    if export_postprocess_mask:
-        h, w = img_meta['img_shape'][:2]
-        mask_preds = F.interpolate(
-            mask_preds.unsqueeze(0), size=(h, w),
-            mode='bilinear')
-        mask_preds = mask_preds[0]
         masks = mask_preds > cfg.mask_thr
+        sum_masks = masks.sum((1, 2)).float()
+        keep = sum_masks > strides
 
-    results = InstanceData()
-    results.masks = mask_preds
-    results.labels = labels
-    results.scores = scores
-    # create an empty bbox in InstanceData to avoid bugs when
-    # calculating metrics.
-    results.bboxes = results.scores.new_zeros(scores.size(0), 4)
+        masks = masks[keep]
+        mask_preds = mask_preds[keep]
+        sum_masks = sum_masks[keep]
+        cls_scores = cls_scores[keep]
+        cls_labels = cls_labels[keep]
 
-    return results
+        # pad for zero-dim
+        masks = tensor_tail_pad(masks)
+        mask_preds = tensor_tail_pad(mask_preds)
+        sum_masks = tensor_tail_pad(sum_masks, pad_value=1e-6)
+        cls_scores = tensor_tail_pad(cls_scores)
+        cls_labels = tensor_tail_pad(cls_labels)
+
+        # maskness.
+        mask_scores = (mask_preds * masks).sum((1, 2)) / sum_masks
+        cls_scores *= mask_scores
+
+        scores, labels, _, keep_inds = mask_matrix_nms(
+            masks,
+            cls_labels,
+            cls_scores,
+            mask_area=sum_masks,
+            nms_pre=cfg.nms_pre,
+            max_num=cfg.max_per_img,
+            kernel=cfg.kernel,
+            sigma=cfg.sigma,
+            filter_thr=cfg.filter_thr)
+
+        mask_preds = mask_preds[keep_inds]
+
+        mmdet_params = get_post_processing_params(ctx.cfg)
+        export_postprocess_mask = mmdet_params.get('export_postprocess_mask',
+                                                   True)
+        export_for_old_openvino_api = mmdet_params.get(
+            'export_for_old_openvino_api', True)
+
+        if export_for_old_openvino_api and cfg.max_per_img > 0:
+            # set fixed malloc space
+            max_per_img = cfg.max_per_img
+            keep_len = mask_preds.size(0)
+            _mask_preds = mask_preds.new_zeros(
+                (max_per_img, *mask_preds.shape[1:]))
+            _labels = cls_labels.new_zeros((max_per_img, ))
+            _scores = cls_scores.new_zeros((max_per_img, ))
+
+            # set dynamic preds to fixed malloc space
+            _mask_preds[:keep_len, :, :] = mask_preds
+            _labels[:keep_len] = labels
+            _scores[:keep_len] = scores
+
+            # change value name
+            mask_preds = _mask_preds
+            labels = _labels
+            scores = _scores
+        elif export_for_old_openvino_api and cfg.max_per_img <= 0:
+            raise TypeError
+        else:
+            # openvino 2.0api can deal dynamic output, and here is for 1 batch
+            scores = tensor_tail_pad(scores)
+            labels = tensor_tail_pad(labels)
+            mask_preds = tensor_tail_pad(mask_preds)
+
+        h, w = img_meta['img_shape'][:2]
+        if export_postprocess_mask:
+            upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
+            mask_preds = F.interpolate(
+                mask_preds.unsqueeze(0), size=upsampled_size,
+                mode='bilinear').squeeze(0)
+
+        # add full image bbox
+        bboxes = scores.new_zeros(scores.size(0), 2)
+        bboxes = torch.cat([
+            bboxes,
+            bboxes.new_full((bboxes.size(0), 1), w),
+            bboxes.new_full((bboxes.size(0), 1), h)
+        ],
+                           dim=1)
+        dets = torch.cat((bboxes, scores[:, None]), dim=1)
+
+        # add batch list
+        batch_dets.append(dets)
+        batch_labels.append(labels)
+        batch_masks.append(mask_preds)
+
+    batch_dets = torch.stack(batch_dets, 0)
+    batch_labels = torch.stack(batch_labels, 0)
+    batch_masks = torch.stack(batch_masks, 0)
+
+    return batch_dets, batch_labels, batch_masks
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.dense_heads.DecoupledSOLOHead.predict_by_feat',
+    backend='openvino')
+def predict_by_feat(ctx,
+                    self,
+                    mlvl_mask_preds_x: List[Tensor],
+                    mlvl_mask_preds_y: List[Tensor],
+                    mlvl_cls_scores: List[Tensor],
+                    batch_img_metas: List[dict],
+                    cfg: OptConfigType = None,
+                    **kwargs):
+    """Rewrite `predict_by_feat` of `DecoupledSOLOHead` for openvino
+    backend."""
+
+    def tensor_tail_pad(tensor_var: torch.Tensor,
+                        pad_value: Any = 0,
+                        pad_num: Any = 1) -> torch.Tensor:
+        tensor_tail = tensor_var.new_full((pad_num, *tensor_var.shape[1:]),
+                                          pad_value)
+
+        return torch.cat((tensor_var, tensor_tail), 0)
+
+    cfg = self.test_cfg
+    mlvl_cls_scores = [
+        item.permute(0, 2, 3, 1).view(item.size(0), -1, self.cls_out_channels)
+        for item in mlvl_cls_scores
+    ]
+    batch_mlvl_cls_scores = torch.cat(mlvl_cls_scores, dim=1)
+    batch_mlvl_mask_preds_x = torch.cat(mlvl_mask_preds_x, dim=1)
+    batch_mlvl_mask_preds_y = torch.cat(mlvl_mask_preds_y, dim=1)
+    featmap_size = batch_mlvl_mask_preds_x.size()[-2:]
+
+    lvl_interval = mlvl_cls_scores[0].new_tensor(
+        self.num_grids, dtype=torch.int32).pow(2).cumsum(0)
+    num_lvl_points = lvl_interval[-1]
+
+    lvl_start_index = lvl_interval.new_ones(num_lvl_points)
+    lvl_num_grids = lvl_interval.new_ones(num_lvl_points)
+    lvl_seg_size = lvl_interval.new_tensor(self.num_grids).cumsum(0)
+    lvl_mask_start_index = lvl_interval.new_ones(num_lvl_points)
+    lvl_strides = lvl_interval.new_ones(num_lvl_points)
+
+    lvl_start_index[:lvl_interval[0]] *= 0
+    lvl_mask_start_index[:lvl_interval[0]] *= 0
+    lvl_num_grids[:lvl_interval[0]] *= self.num_grids[0]
+    lvl_strides[:lvl_interval[0]] *= self.strides[0]
+
+    for lvl in range(1, self.num_levels):
+        lvl_start_index[lvl_interval[lvl - 1]:lvl_interval[lvl]] *= \
+            lvl_interval[lvl - 1]
+        lvl_mask_start_index[lvl_interval[lvl - 1]:lvl_interval[lvl]] *= \
+            lvl_seg_size[lvl - 1]
+        lvl_num_grids[lvl_interval[lvl - 1]:lvl_interval[lvl]] *= \
+            self.num_grids[lvl]
+        lvl_strides[lvl_interval[lvl - 1]:lvl_interval[lvl]] *= \
+            self.strides[lvl]
+
+    batch_dets, batch_labels, batch_masks = [], [], []
+    for cls_scores, mask_preds_x, mask_preds_y, img_meta in zip(
+            batch_mlvl_cls_scores, batch_mlvl_mask_preds_x,
+            batch_mlvl_mask_preds_y, batch_img_metas):
+
+        score_mask = (cls_scores > cfg.score_thr)
+        cls_scores = cls_scores[score_mask]
+
+        inds = score_mask.nonzero()
+        cls_labels = inds[:, 1]
+
+        start_index = lvl_start_index[inds[:, 0]]
+        mask_start_index = lvl_mask_start_index[inds[:, 0]]
+        num_grids = lvl_num_grids[inds[:, 0]]
+        strides = lvl_strides[inds[:, 0]]
+
+        y_lvl_offset = (inds[:, 0] - start_index) // num_grids
+        x_lvl_offset = (inds[:, 0] - start_index) % num_grids
+        y_inds = mask_start_index + y_lvl_offset
+        x_inds = mask_start_index + x_lvl_offset
+
+        mask_preds = mask_preds_x[x_inds, ...] * mask_preds_y[y_inds, ...]
+
+        masks = mask_preds > cfg.mask_thr
+        sum_masks = masks.sum((1, 2)).float()
+        keep = sum_masks > strides
+
+        masks = masks[keep]
+        mask_preds = mask_preds[keep]
+        sum_masks = sum_masks[keep]
+        cls_scores = cls_scores[keep]
+        cls_labels = cls_labels[keep]
+
+        # pad for zero-dim
+        masks = tensor_tail_pad(masks)
+        mask_preds = tensor_tail_pad(mask_preds)
+        sum_masks = tensor_tail_pad(sum_masks, pad_value=1e-6)
+        cls_scores = tensor_tail_pad(cls_scores)
+        cls_labels = tensor_tail_pad(cls_labels)
+
+        # maskness.
+        mask_scores = (mask_preds * masks).sum((1, 2)) / sum_masks
+        cls_scores *= mask_scores
+
+        scores, labels, _, keep_inds = mask_matrix_nms(
+            masks,
+            cls_labels,
+            cls_scores,
+            mask_area=sum_masks,
+            nms_pre=cfg.nms_pre,
+            max_num=cfg.max_per_img,
+            kernel=cfg.kernel,
+            sigma=cfg.sigma,
+            filter_thr=cfg.filter_thr)
+
+        mask_preds = mask_preds[keep_inds]
+
+        mmdet_params = get_post_processing_params(ctx.cfg)
+        export_postprocess_mask = mmdet_params.get('export_postprocess_mask',
+                                                   True)
+        export_for_old_openvino_api = mmdet_params.get(
+            'export_for_old_openvino_api', True)
+
+        if export_for_old_openvino_api and cfg.max_per_img > 0:
+            # set fixed malloc space
+            max_per_img = cfg.max_per_img
+            keep_len = mask_preds.size(0)
+            _mask_preds = mask_preds.new_zeros(
+                (max_per_img, *mask_preds.shape[1:]))
+            _labels = cls_labels.new_zeros((max_per_img, ))
+            _scores = cls_scores.new_zeros((max_per_img, ))
+            # set dynamic preds to fixed malloc space
+            _mask_preds[:keep_len, :, :] = mask_preds
+            _labels[:keep_len] = labels
+            _scores[:keep_len] = scores
+            # change value name
+            mask_preds = _mask_preds
+            labels = _labels
+            scores = _scores
+        elif export_for_old_openvino_api and cfg.max_per_img <= 0:
+            raise NotImplementedError
+        else:
+            # openvino 2.0api can deal dynamic output, and here is for 1 batch
+            scores = tensor_tail_pad(scores)
+            labels = tensor_tail_pad(labels)
+            mask_preds = tensor_tail_pad(mask_preds)
+
+        h, w = img_meta['img_shape'][:2]
+        if export_postprocess_mask:
+            upsampled_size = (featmap_size[0] * 4, featmap_size[1] * 4)
+            mask_preds = F.interpolate(
+                mask_preds.unsqueeze(0), size=upsampled_size,
+                mode='bilinear').squeeze(0)
+
+        # add full image bbox
+        bboxes = scores.new_zeros(scores.size(0), 2)
+        bboxes = torch.cat([
+            bboxes,
+            bboxes.new_full((bboxes.size(0), 1), w),
+            bboxes.new_full((bboxes.size(0), 1), h)
+        ],
+                           dim=1)
+        dets = torch.cat((bboxes, scores[:, None]), dim=1)
+
+        # add batch list
+        batch_dets.append(dets)
+        batch_labels.append(labels)
+        batch_masks.append(mask_preds)
+
+    batch_dets = torch.stack(batch_dets, 0)
+    batch_labels = torch.stack(batch_labels, 0)
+    batch_masks = torch.stack(batch_masks, 0)
+
+    return batch_dets, batch_labels, batch_masks

@@ -1,29 +1,21 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
 
-def triu_onnx(x: torch.Tensor, diagonal=0) -> torch.Tensor:
-    l = x.shape[0]
-    arange = torch.arange(l, device=x.device)
-    mask = arange.expand(l, l)
-    arange = arange.unsqueeze(-1)
-    if diagonal:
-        arange = arange + diagonal
-    mask = mask >= arange
-    return x.masked_fill(mask==0, 0)
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.layers.matrix_nms.mask_matrix_nms')
 def mask_matrix_nms__onnx(ctx,
-                    masks,
-                    labels,
-                    scores,
-                    filter_thr=-1,
-                    nms_pre=-1,
-                    max_num=-1,
-                    kernel='gaussian',
-                    sigma=2.0,
-                    mask_area=None):
+                          masks,
+                          labels,
+                          scores,
+                          filter_thr=-1,
+                          nms_pre=-1,
+                          max_num=-1,
+                          kernel='gaussian',
+                          sigma=2.0,
+                          mask_area=None):
     """Matrix NMS for multi-class masks.
 
     Args:
@@ -71,20 +63,22 @@ def mask_matrix_nms__onnx(ctx,
     mask_area = mask_area[sort_inds]
     labels = labels[sort_inds]
 
-    num_masks = labels.shape[0]
+    num_masks = labels.size(0)
     flatten_masks = masks.reshape(num_masks, -1).float()
     # inter.
     inter_matrix = torch.mm(flatten_masks, flatten_masks.transpose(1, 0))
     expanded_mask_area = mask_area.expand(num_masks, num_masks)
     # Upper triangle iou matrix.
-    iou_matrix = triu_onnx((inter_matrix /
-                  (expanded_mask_area + expanded_mask_area.transpose(1, 0) -
-                   inter_matrix)), diagonal=1)
+    iou_matrix = torch.triu(
+        (inter_matrix / (expanded_mask_area +
+                         expanded_mask_area.transpose(1, 0) - inter_matrix)),
+        diagonal=1)
     # label_specific matrix.
     expanded_labels = labels.expand(num_masks, num_masks)
     # Upper triangle label matrix.
-    label_matrix = (expanded_labels == expanded_labels.transpose(1, 0)).type(iou_matrix.dtype)
-    label_matrix = triu_onnx(label_matrix, diagonal=1)
+    label_matrix = (expanded_labels == expanded_labels.transpose(1, 0)).type(
+        iou_matrix.dtype)
+    label_matrix = torch.triu(label_matrix, diagonal=1)
 
     # IoU compensation
     compensate_iou, _ = (iou_matrix * label_matrix).max(0)
