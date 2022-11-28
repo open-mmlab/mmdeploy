@@ -5,6 +5,6 @@
     /// </summary>
     internal static partial class NativeMethods
     {
-        public const string DllExtern = "mmdeploy_extern";
+        public const string DllExtern = "mmdeploy";
     }
 }

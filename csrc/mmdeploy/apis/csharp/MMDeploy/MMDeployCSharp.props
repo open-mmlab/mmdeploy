@@ -3,8 +3,8 @@
 		<MMDeployNativeDlls>$(MSBuildThisFileDirectory)..\..\runtimes</MMDeployNativeDlls>
 	</PropertyGroup>
 	<ItemGroup Condition="$(TargetFrameworkVersion.StartsWith('v4')) Or $(TargetFramework.StartsWith('net4'))">
-		<Content Include="$(MMDeployNativeDlls)\win-x64\native\mmdeploy_extern.dll">
-			<Link>mmdeploy_extern.dll</Link>
+		<Content Include="$(MMDeployNativeDlls)\win-x64\native\mmdeploy.dll">
+			<Link>mmdeploy.dll</Link>
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>

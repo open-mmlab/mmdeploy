@@ -4,7 +4,7 @@
     <TargetFrameworks>netcoreapp3.1;net48;</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
-    <AssemblyName>MMDeploy</AssemblyName>
+    <AssemblyName>MMDeployCSharp</AssemblyName>
     <RootNamespace>MMDeploy</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Deterministic>true</Deterministic>
@@ -20,12 +20,12 @@
     <Content Include="$(MMDeployNativeDlls)\build\bin\Release\mmdeploy.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
-      <PackagePath>runtimes\win-x64\native\mmdeploy_extern.dll</PackagePath>
+      <PackagePath>runtimes\win-x64\native\mmdeploy.dll</PackagePath>
     </Content>
-    <Content Include="MMDeploy.props">
+    <Content Include="MMDeployCSharp.props">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Pack>true</Pack>
-      <PackagePath>build\net48\MMDeploy.props</PackagePath>
+      <PackagePath>build\net48\MMDeployCSharp.props</PackagePath>
     </Content>
   </ItemGroup>
 
