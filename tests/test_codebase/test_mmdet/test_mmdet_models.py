@@ -1658,3 +1658,117 @@ def test_shift_windows_msa(backend_type: Backend):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
+
+
+def get_guided_anchor_head_model():
+    """Reppoints Head Config."""
+    test_cfg = mmcv.Config(
+        dict(
+            nms_pre=1000,
+            nms_post=1000,
+            min_bbox_size=0,
+            score_thr=0.05,
+            conf_thr=0.005,
+            nms=dict(type='nms', iou_threshold=0.45),
+            max_per_img=100))
+
+    from mmdet.models.dense_heads import GuidedAnchorHead
+    model = GuidedAnchorHead(num_classes=1, in_channels=1, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.TENSORRT, 'tensorrt')])
+def test_guided_anchor_head_get_bboxes(backend_type: Backend, ir_type: str):
+    """Test get_bboxes rewrite of base dense head."""
+    check_backend(backend_type)
+    dense_head = get_guided_anchor_head_model()
+    dense_head.cpu().eval()
+    s = 128
+    img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['dets', 'labels']
+
+    deploy_cfg = mmcv.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
+
+    # the cls_score's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2).
+    # the bboxes's size: (1, 4, 32, 32), (1, 4, 16, 16),
+    # (1, 4, 8, 8), (1, 4, 4, 4), (1, 4, 2, 2)
+    seed_everything(1234)
+    cls_score = [
+        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+    seed_everything(5678)
+    bboxes = [torch.rand(1, 4, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+
+    seed_everything(9101)
+    shape_preds = [
+        torch.rand(1, 2, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+
+    seed_everything(1213)
+    loc_preds = [
+        torch.rand(1, 1, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
+    ]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'shape_preds': shape_preds,
+        'loc_preds': loc_preds,
+        'img_metas': img_metas
+    }
+    model_outputs = get_model_outputs(dense_head, 'get_bboxes', model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    img_metas[0]['img_shape'] = torch.Tensor([s, s])
+    wrapped_model = WrapModel(
+        dense_head, 'get_bboxes', img_metas=img_metas, with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_score,
+        'bbox_preds': bboxes,
+        'shape_preds': shape_preds,
+        'loc_preds': loc_preds,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        if isinstance(rewrite_outputs, dict):
+            rewrite_outputs = convert_to_list(rewrite_outputs, output_names)
+        for model_output, rewrite_output in zip(model_outputs[0],
+                                                rewrite_outputs):
+            model_output = model_output.squeeze().cpu().numpy()
+            rewrite_output = rewrite_output.squeeze()
+            # hard code to make two tensors with the same shape
+            # rewrite and original codes applied different nms strategy
+            assert np.allclose(
+                model_output[:rewrite_output.shape[0]],
+                rewrite_output,
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
