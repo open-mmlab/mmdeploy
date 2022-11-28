@@ -33,7 +33,7 @@ build_ocv() {
   fi
   cd opencv/platforms/linux/cross_build_aarch64
   rm -rf CMakeCache.txt
-  cmake ../../.. -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
+  cmake ../../.. -DBUILD_TIFF=ON -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
   good_nproc
   jobs=$?
   make -j${jobs}

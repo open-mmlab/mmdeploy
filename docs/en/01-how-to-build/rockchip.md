@@ -138,30 +138,12 @@ label: 65, score: 0.95
 
 ## Troubleshooting
 
-- Quantization fails.
-
-  Empirically, RKNN require the inputs not normalized if `do_quantization` is set to `True`. Please modify the settings of `Normalize` in the `model_cfg` from
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-  ```
-
-  to
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
-  ```
-
-  Besides, the `mean_values` and `std_values` of deploy_cfg should be replaced with original normalization settings of `model_cfg`. Let `mean_values=[[103.53, 116.28, 123.675]]` and `std_values=[[57.375, 57.12, 58.395]]`.
-
 - MMDet models.
 
   YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py):
 
   ```python
-  # yolov3, yolox
+  # yolov3, yolox for rknn-toolkit and rknn-toolkit2
   partition_config = dict(
       type='rknn',  # the partition policy name
       apply_marks=True,  # should always be set to True
@@ -169,7 +151,8 @@ label: 65, score: 0.95
           dict(
               save_file='model.onnx',  # name to save the partitioned onnx
               start=['detector_forward:input'],  # [mark_name:input, ...]
-              end=['yolo_head:input'])  # [mark_name:output, ...]
+              end=['yolo_head:input'],  # [mark_name:output, ...]
+              output_names=[f'pred_maps.{i}' for i in range(3)]) # output names
       ])
   ```
 
@@ -184,7 +167,9 @@ label: 65, score: 0.95
           dict(
               save_file='model.onnx',
               start='detector_forward:input',
-              end=['BaseDenseHead:output'])
+              end=['BaseDenseHead:output'],
+              output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
+              [f'BaseDenseHead.loc.{i}' for i in range(5)])
       ])
   ```
 

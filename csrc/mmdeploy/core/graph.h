@@ -11,9 +11,7 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/execution/schedulers/registry.h"
 
-namespace mmdeploy {
-
-namespace graph {
+namespace mmdeploy::graph {
 
 using std::pair;
 using std::string;
@@ -68,10 +66,8 @@ class MMDEPLOY_API Builder {
 
 MMDEPLOY_API Result<std::vector<std::string>> ParseStringArray(const Value& value);
 
-}  // namespace graph
+MMDEPLOY_DECLARE_REGISTRY(Builder, std::unique_ptr<Builder>(const Value& config));
 
-MMDEPLOY_DECLARE_REGISTRY(graph::Builder);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::graph
 
 #endif  // MMDEPLOY_SRC_EXPERIMENTAL_PIPELINE_IR_H_

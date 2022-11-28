@@ -105,7 +105,7 @@ python tools/deploy.py \
 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)
 
 ```python
-# yolov3, yolox
+# yolov3, yolox for rknn-toolkit and rknn-toolkit2
 partition_config = dict(
   type='rknn',  # the partition policy name
   apply_marks=True,  # should always be set to True
@@ -113,7 +113,8 @@ partition_config = dict(
       dict(
           save_file='model.onnx',  # name to save the partitioned onnx
           start=['detector_forward:input'],  # [mark_name:input, ...]
-          end=['yolo_head:input'])  # [mark_name:output, ...]
+          end=['yolo_head:input'],  # [mark_name:output, ...]
+          output_names=[f'pred_maps.{i}' for i in range(3)]) # output names
   ])
 ```
 
@@ -143,7 +144,9 @@ partition_config = dict(
         dict(
             save_file='model.onnx',
             start='detector_forward:input',
-            end=['BaseDenseHead:output'])
+            end=['BaseDenseHead:output'],
+            output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
+            [f'BaseDenseHead.loc.{i}' for i in range(5)])
     ])
 ```
 
@@ -168,35 +171,13 @@ backend_config = dict(
 
 ### 问题说明
 
-- 量化失败.
-
-  经验来说, 如果 `do_quantization` 被设置为 `True`，RKNN 需要的输入没有被归一化过。请修改 `Normalize` 在 `model_cfg` 的设置，如将
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-  ```
-
-  改为
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
-  ```
-
-  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[103.53, 116.28, 123.675]]`, `std_values=[[57.375, 57.12, 58.395]]`。
-
 - SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
 
 ## 模型推理
 
 ### Host 交叉编译
 
-mmdeploy 提供 2 种交叉编译方式：
-
-1. 执行编译脚本（推荐）
-
-在 Ubuntu 主机上，执行如下命令：
+若 host 是 Ubuntu 18.04 及以上版本，推荐脚本编译：
 
 ```shell
 bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
@@ -204,7 +185,7 @@ bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
 
 命令中的参数 model 表示瑞芯微芯片的型号，目前支持 rv1126，rk3588。
 
-2. 手动配置环境并编译
+以下是对脚本中编译过程的说明。
 
 如下表所示，瑞芯微提供了 2 套 RKNN API 工具包，对应于不同的芯片型号。而每套 RKNN API 工具包又分别对应不同的 gcc 交叉编译工具。
 
@@ -215,27 +196,41 @@ bash tools/scripts/ubuntu_cross_build_rknn.sh <model>
 
 以支持的 rv1126 和 rk3588 为例，mmdeploy 在 ubuntu18.04 上的交叉编译过程如下：
 
-- rv11126
+- **rv11126**
 
-````shell
-# 1. 下载 RKNN API 包
+1. 下载 RKNN API 包
+
+```shell
 git clone https://github.com/rockchip-linux/rknpu
 export RKNPU_DIR=$(pwd)/rknpu
+```
 
-# 2. 准备 gcc 交叉编译工具
+2. 准备 gcc 交叉编译工具
+
+```shell
 sudo apt-get update
-sudo apt-get install gcc-7-arm-linux-gnueabihf
-sudo apt-get install g++-7-arm-linux-gnueabihf
+sudo apt-get install gcc-arm-linux-gnueabihf
+sudo apt-get install g++-arm-linux-gnueabihf
+```
 
-# 3. 下载 OpenCV
-## 在rknpu2中，有opencv-linux-armhf库。路径是 rknpu2/examples/3rdparty/opencv/opencv-linux-armhf
-git clone https://github.com/rockchip-linux/rknpu2
-export RKNPU2_DIR=$(pwd)/rknpu2
+3. 源码安装 OpenCV
 
-# 3. 编译 mmdeploy SDK
+```shell
+git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
+cd opencv
+mkdir -p build_arm_gnueabi && cd build_arm_gnueabi
+cmake .. -DCMAKE_INSTALL_PREFIX=install \
+    -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
+    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+make -j $(nproc) && make install
+export OpenCV_ARM_INSTALL_DIR=$(pwd)/install
+```
+
+4. 编译 mmdeploy SDK
+
 ```shell
 cd /path/to/mmdeploy
-mkdir -p build && rm -rf build/CM* && cd build
+mkdir -p build && cd build
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
 -DMMDEPLOY_BUILD_SDK=ON \
@@ -243,25 +238,45 @@ cmake .. \
 -DMMDEPLOY_BUILD_EXAMPLES=ON \
 -DMMDEPLOY_TARGET_BACKENDS="rknn" \
 -DRKNPU_DEVICE_DIR=${RKNPU_DIR}/rknn/rknn_api/librknn_api \
--DOpenCV_DIR=${RKNPU2_DIR}/examples/3rdparty/opencv/opencv-linux-armhf/share/OpenCV
+-DOpenCV_DIR=${OpenCV_ARM_INSTALL_DIR}/lib/cmake/opencv4
 make -j$(nproc) && make install
-````
+```
 
-- rk3588
+- **rk3588**
+
+1. 下载 RKNN API 包
 
 ```shell
-# 1. 下载 RKNN API 包
 git clone https://github.com/rockchip-linux/rknpu2
 export RKNPU2_DEVICE_DIR=$(pwd)/rknpu2/runtime/RK3588
+```
 
-# 2. 准备 gcc 交叉编译工具
+2. 准备 gcc 交叉编译工具
+
+```shell
 git clone https://github.com/Caesar-github/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
 export RKNN_TOOL_CHAIN=$(pwd)/gcc-buildroot-9.3.0-2020.03-x86_64_aarch64-rockchip-linux-gnu
 export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
+```
 
-# 3. 编译 mmdeploy SDK
+3. 下载 opencv 预编译包
+
+```shell
+git clone https://github.com/opencv/opencv --depth=1 --branch=4.6.0 --recursive
+cd opencv
+mkdir -p build_aarch64 && cd build_aarch64
+cmake .. -DCMAKE_INSTALL_PREFIX=install
+    -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
+    -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
+make -j $(nproc) && make install
+export OpenCV_AARCH64_INSTALL_DIR=$(pwd)/install
+```
+
+4. 编译 mmdeploy SDK
+
+```shell
 cd /path/to/mmdeploy
-mkdir -p build && rm -rf build/CM* && cd build
+mkdir -p build && cd build
 export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
@@ -269,7 +284,7 @@ cmake \
     -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
-    -DOpenCV_DIR=${RKNPU2_DEVICE_DIR}/../../examples/3rdparty/opencv/opencv-linux-aarch64/share/OpenCV
+    -DOpenCV_DIR=${OpenCV_AARCH64_INSTALL_DIR}/lib/cmake/opencv4
 make -j $(nproc) && make install
 ```
 

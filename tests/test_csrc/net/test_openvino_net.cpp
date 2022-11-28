@@ -20,7 +20,7 @@ TEST_CASE("test openvino net", "[.openvino_net][resource]") {
   REQUIRE(model);
 
   auto backend("openvino");
-  auto creator = Registry<Net>::Get().GetCreator(backend);
+  auto creator = gRegistry<Net>().Get(backend);
   REQUIRE(creator);
 
   Device device{"cpu"};

@@ -40,13 +40,13 @@ class MMDEPLOY_API Transform : public Module {
   template <typename T>
   [[deprecated]] std::unique_ptr<T> Instantiate(const char* transform_type, const Value& args,
                                                 int version = 0) {
-    std::unique_ptr<T> impl(nullptr);
-    auto impl_creator = Registry<T>::Get().GetCreator(specified_platform_, version);
+    std::unique_ptr<T> impl;
+    auto impl_creator = gRegistry<T>().Get(specified_platform_, version);
     if (nullptr == impl_creator) {
       MMDEPLOY_WARN("Cannot find {} implementation on platform {}", transform_type,
                     specified_platform_);
       for (auto& name : candidate_platforms_) {
-        impl_creator = Registry<T>::Get().GetCreator(name);
+        impl_creator = gRegistry<T>().Get(name);
         if (impl_creator) {
           MMDEPLOY_INFO("Fallback {} implementation to platform {}", transform_type, name);
           break;
@@ -73,8 +73,12 @@ void SetTransformData(Value& dst, Key&& key, Val val) {
   dst["__data__"].push_back(std::move(val));
 }
 
-MMDEPLOY_DECLARE_REGISTRY(Transform);
+MMDEPLOY_DECLARE_REGISTRY(Transform, std::unique_ptr<Transform>(const Value& config));
 
 }  // namespace mmdeploy
+
+#define MMDEPLOY_REGISTER_TRANSFORM_IMPL(base_type, desc, impl_type) \
+  MMDEPLOY_REGISTER_FACTORY_FUNC(                                    \
+      base_type, desc, [](const Value& config) { return std::make_unique<impl_type>(config); });
 
 #endif  // MMDEPLOY_TRANSFORM_H

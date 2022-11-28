@@ -144,25 +144,6 @@ class SDKEnd2EndModel(End2EndModel):
         return pred[np.argsort(pred[:, 0])][np.newaxis, :, 1]
 
 
-@__BACKEND_MODEL.register_module('rknn')
-class RKNNEnd2EndModel(End2EndModel):
-    """RKNN inference class, converts RKNN output to mmcls format."""
-
-    def forward_test(self, imgs: torch.Tensor, *args, **kwargs) -> \
-            List[np.ndarray]:
-        """The interface for forward test.
-
-        Args:
-            imgs (torch.Tensor): Input image(s) in [N x C x H x W] format.
-
-        Returns:
-            List[np.ndarray]: A list of classification prediction.
-        """
-        outputs = self.wrapper({self.input_name: imgs})
-        outputs = [out.numpy() for out in outputs]
-        return outputs
-
-
 def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
     """Get class name from config.
 

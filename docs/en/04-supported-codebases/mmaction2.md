@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### Install mmaction2
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmaction2#installation) to install mmocr.
+Please follow the [installation guide](https://github.com/open-mmlab/mmaction2#installation) to install mmaction2.
 
 ### Install mmdeploy
 
@@ -50,9 +50,9 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/master/tools/deploy.py) to convert mmocr models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/master/tools/deploy.py) to convert mmaction2 models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
 
-When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/master/configs/mmaction) of all supported backends for mmocr, under which the config file path follows the pattern:
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/master/configs/mmaction) of all supported backends for mmaction2, under which the config file path follows the pattern:
 
 ```
 {task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -108,7 +108,7 @@ in which,
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
 - \***.json**: the necessary information for mmdeploy SDK
 
-The whole package **mmdeploy_models/mmocr/dbnet/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
+The whole package **mmdeploy_models/mmaction/tsn/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
 ## Model Inference
 
@@ -125,7 +125,7 @@ import torch
 deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
 model_cfg = 'tsn_r50_1x1x3_100e_kinetics400_rgb.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
+backend_model = ['./mmdeploy_models/mmaction/tsn/ort/end2end.onnx']
 image = 'tests/data/arm_wrestling.mp4'
 
 # read deploy_cfg and model_cfg

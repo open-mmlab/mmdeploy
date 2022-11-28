@@ -8,8 +8,8 @@ The fixed-point model has many advantages over the fp32 model:
 - Benefit from the smaller model, the Cache hit rate is improved and inference would be faster
 - Chips tend to have corresponding fixed-point acceleration instructions which are faster and less energy consumed (int8 on a common CPU requires only about 10% of energy)
 
-The size of the installation package and the heat generation are the key indicators of the mobile terminal evaluation APP;
-On the server side, quantization means that you can maintain the same QPS and improve model precision in exchange for improved accuracy.
+APK file size and heat generation are key indicators while evaluating mobile APP;
+On server side, quantization means that you can increase model size in exchange for precision and keep the same QPS.
 
 ## Post training quantization scheme
 
@@ -21,7 +21,7 @@ Taking ncnn backend as an example, the complete workflow is as follows:
 
 mmdeploy generates quantization table based on static graph (onnx) and uses backend tools to convert fp32 model to fixed point.
 
-Currently mmdeploy support ncnn with PTQ.
+mmdeploy currently support ncnn with PTQ.
 
 ## How to convert model
 
@@ -38,10 +38,15 @@ Back in mmdeploy, enable quantization with the option 'tools/deploy.py --quant'.
 
 ```bash
 cd /path/to/mmdeploy
-export MODEL_PATH=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
-export MODEL_CONFIG=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
-python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/images
+export MODEL_CONFIG=/home/rg/konghuanjun/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+
+# get some imagenet sample images
+git clone https://github.com/nihui/imagenet-sample-images --depth=1
+
+# quantize
+python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/imagenet-sample-images
 ...
 ```
 
@@ -56,7 +61,7 @@ Description
 
 Calibration set is used to calculate quantization layer parameters. Some DFQ (Data Free Quantization) methods do not even require a dataset.
 
-- Create a new folder, just put in the picture (no directory structure required, no negative example required, no filename format required)
+- Create a folder, just put in some images (no directory structure, no negative example, no special filename format)
 - The image needs to be the data comes from real scenario otherwise the accuracy would be drop
 - You can not quantize model with test dataset
   | Type  | Train dataset | Validation dataset | Test dataset  | Calibration dataset |

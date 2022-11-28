@@ -33,15 +33,15 @@ class TestVoxelDetectionModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'scores': torch.rand(1, 18, 32, 32),
-            'bbox_preds': torch.rand(1, 42, 32, 32),
-            'dir_scores': torch.rand(1, 12, 32, 32)
+            'bboxes': torch.rand(1, 50, 7),
+            'scores': torch.rand(1, 50),
+            'labels': torch.rand(1, 50)
         }
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = mmcv.Config({
             'onnx_config': {
                 'input_names': ['voxels', 'num_points', 'coors'],
-                'output_names': ['scores', 'bbox_preds', 'dir_scores'],
+                'output_names': ['bboxes', 'scores', 'labels'],
                 'opset_version': 11
             },
             'backend_config': {

@@ -75,7 +75,7 @@ Result<Value> ThreeCropImpl::Process(const Value& input) {
 }
 
 ThreeCrop::ThreeCrop(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<ThreeCropImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<ThreeCropImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'ThreeCrop' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
@@ -83,19 +83,10 @@ ThreeCrop::ThreeCrop(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class ThreeCropCreator : public Creator<Transform> {
- public:
-  const char* GetName(void) const override { return "ThreeCrop"; }
-  int GetVersion(void) const override { return version_; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<ThreeCrop>(args, version_);
-  }
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ThreeCrop, 0), [](const Value& config) {
+  return std::make_unique<ThreeCrop>(config, 0);
+});
 
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, ThreeCropCreator);
 MMDEPLOY_DEFINE_REGISTRY(ThreeCropImpl);
 
 }  // namespace mmdeploy

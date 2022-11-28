@@ -111,7 +111,7 @@ Result<Value> PadImpl::Process(const Value& input) {
 }
 
 Pad::Pad(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<PadImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<PadImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Pad' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Pad' is not supported on specified platform");
@@ -119,17 +119,9 @@ Pad::Pad(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class PadCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "Pad"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override { return make_unique<Pad>(args, version_); }
-
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, PadCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Pad, 0), [](const Value& config) {
+  return std::make_unique<Pad>(config, 0);
+});
 
 MMDEPLOY_DEFINE_REGISTRY(PadImpl);
 
