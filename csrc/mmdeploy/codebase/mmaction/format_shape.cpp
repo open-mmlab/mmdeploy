@@ -23,7 +23,7 @@ Result<void> FormatShape::Apply(Value& data) {
     MMDEPLOY_ERROR("input of format shape should be array");
     return Status(eInvalidArgument);
   }
-  if (!(data[0].contains("img") || data[0].contains("img"))) {
+  if (!(data[0].contains("imgs") || data[0].contains("img"))) {
     MMDEPLOY_ERROR("input should contains imgs or img");
     return Status(eInvalidArgument);
   }
