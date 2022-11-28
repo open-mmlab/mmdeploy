@@ -10,8 +10,11 @@ import pandas as pd
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Regression Test')
-    parser.add_argument('regression_dir')
-    parser.add_argument('--url-prefix', default='http://10.1.52.36:8989')
+    parser.add_argument('url_prefix')
+    parser.add_argument('--host-log-path', default=None)
+    parser.add_argument(
+        '--regression-dir',
+        default='/root/workspace/mmdeploy_regression_working_dir')
     args = parser.parse_args()
     return args
 
@@ -20,11 +23,13 @@ def main():
     args = parse_args()
     regression_dir = args.regression_dir
     assert osp.exists(regression_dir)
-    host_log_path = osp.join(regression_dir, 'log_path.txt')
-    assert osp.exists(host_log_path)
-    with open(host_log_path, 'r') as f:
-        host_log = f.read().strip()
-        url_prefix = host_log.replace('/data2/regression_log', args.url_prefix)
+    regression_dir = osp.abspath(osp.expanduser(regression_dir))
+    host_log_path = regression_dir
+    if args.host_log_path is not None:
+        host_log_path = args.host_log_path
+    root_url_prefix = host_log_path.replace('/data2/regression_log',
+                                            args.url_prefix)
+
     codebase_dirs = glob.glob(osp.join(regression_dir, 'mm*'))
     codebase_dirs = [d for d in codebase_dirs if os.path.isdir(d)]
     test_stats_path = osp.join(regression_dir, 'stats_report.xlsx')
@@ -66,20 +71,16 @@ def main():
                     model_failed_with_backend.add(s)
                 model_failed_str = ' || '.join(list(model_failed_with_backend))
                 stats.append([version, num_failed, model_failed_str])
+                url_prefix = osp.join(root_url_prefix, codebase_name, tv)
 
                 def add_url(row):
                     url = '-'
                     if str(row[test_pass_key]) == 'False':
                         ckpt = row['Checkpoint']
-                        if '${WORK_DIR}' in ckpt:
-                            url = osp.split(ckpt)[0].replace(
-                                '${WORK_DIR}', url_prefix)
-                            if '.' in osp.split(url)[1]:
-                                url = osp.split(url)[0]
-                        else:
-                            url = osp.join(url_prefix, codebase_name, tv,
-                                           codebase_name, row['Model'].lower(),
-                                           row['Backend'])
+                        url = ckpt.replace('${WORK_DIR}', url_prefix)
+                        parent, filename = osp.split(url)
+                        if '.' in filename:
+                            url = parent
                     return url
 
                 report_failed['LOG_URL'] = report_failed.apply(add_url, axis=1)

@@ -24,7 +24,10 @@ time_snap=$(date +%Y%m%d%H%M)
 log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
 mkdir -p -m 777 ${log_dir}
 chmod 777 ${log_dir}/../
-echo ${log_dir} > $log_dir/log_path.txt
+
+# let container know the host log path and url prefix
+echo ${log_dir} > $log_dir/log_path.cfg
+cp /data2/regression_log/host.cfg $log_dir/
 
 ## make & init mutex
 trap "exec 1000>&-; exec 1000<&-;exit 0" 2

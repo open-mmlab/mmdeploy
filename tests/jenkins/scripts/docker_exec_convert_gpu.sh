@@ -34,9 +34,11 @@ function getFullName() {
 
 ## prepare for mmdeploy test
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
+export REGRESSION_DIR=/root/workspace/mmdeploy_regression_working_dir
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 ln -s /root/workspace/jenkins mmdeploy/tests
-
+export URL_PREFIX=$(cat ${REGRESSION_DIR}/host.cfg)
+export HOST_LOG_PATH=$(cat ${REGRESSION_DIR}/log_path.cfg)
 
 export codebase=$1
 getFullName $codebase
@@ -136,7 +138,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         mim install $(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
     fi
     ## start regression
-    log_dir=/root/workspace/mmdeploy_regression_working_dir/${codebase}/torch${TORCH_VERSION}
+    log_dir=${REGRESSION_DIR}/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
     mkdir -p ${log_dir}
     # log env
@@ -150,7 +152,11 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         --backends $EXEC_BACKENDS \
         ${exec_performance} 2>&1 | tee ${log_path}
     # get stats results
-    python ${MMDEPLOY_DIR}/tests/jenkins/scripts/check_results.py /root/workspace/mmdeploy_regression_working_dir
+    python ${MMDEPLOY_DIR}/tests/jenkins/scripts/check_results.py \
+        ${URL_PREFIX} \
+        --host-log-path ${HOST_LOG_PATH} \
+        --regression-dir ${REGRESSION_DIR}
+
 done
 
 echo "end_time-$(date +%Y%m%d%H%M)"
