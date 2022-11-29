@@ -37,51 +37,51 @@ pipeline {
             defaultValue: true,
         )
         string(
-            name: 'docker_image'
+            name: 'docker_image',
             defaultValue: 'mmdeploy-ci-ubuntu-20.04-cu113'
         )
         string(
-            name: 'codebase_list'
+            name: 'codebase_list',
             defaultValue: 'mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction'
         )
         string(
-            name: 'exec_performance'
+            name: 'exec_performance',
             defaultValue: 'y'
         )
         string(
-            name: 'exec_torch_versions'
+            name: 'exec_torch_versions',
             defaultValue: '1.10.0'
         )
         string(
-            name: 'exec_models'
+            name: 'exec_models',
             defaultValue: 'all'
         )
         string(
-            name: 'exec_backends'
+            name: 'exec_backends',
             defaultValue: 'onnxruntime tensorrt ncnn torchscript openvino'
         )
         string(
-            name: 'max_job_nums'
+            name: 'max_job_nums',
             defaultValue: '3'
         )
         string(
-            name: 'repo_url'
+            name: 'repo_url',
             defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
         )
         string(
-            name: 'mmdeploy_branch'
+            name: 'mmdeploy_branch',
             defaultValue: 'master'
         )
         string(
-            name: 'repo_version'
+            name: 'repo_version',
             defaultValue: 'v1.0'
         )
         string(
-            name: 'tensorrt_version'
+            name: 'tensorrt_version',
             defaultValue: '8.2.5.1'
         )
         string(
-            name: 'requirement'
+            name: 'requirement',
             defaultValue: 'requirementV1.0.json'
         )
     }
