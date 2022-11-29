@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.backend.rknn import device_available, is_available
+from mmdeploy.backend.rknn import is_available
 
-__all__ = ['is_available', 'device_available']
+__all__ = ['is_available']
 
 if is_available():
     from mmdeploy.backend.rknn.onnx2rknn import onnx2rknn as _onnx2rknn
