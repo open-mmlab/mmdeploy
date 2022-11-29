@@ -21,6 +21,7 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
+cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
 
 # install tensorrt
 export TENSORRT_DIR=/root/workspace/TensorRT-8.2.3.0

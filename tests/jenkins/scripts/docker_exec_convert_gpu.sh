@@ -36,7 +36,8 @@ function getFullName() {
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export REGRESSION_DIR=/root/workspace/mmdeploy_regression_working_dir
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
-ln -s /root/workspace/jenkins mmdeploy/tests
+cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+
 export URL_PREFIX=$(cat ${REGRESSION_DIR}/host.cfg)
 export HOST_LOG_PATH=$(cat ${REGRESSION_DIR}/log_path.cfg)
 

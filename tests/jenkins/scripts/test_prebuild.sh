@@ -43,7 +43,7 @@ container_id=$(
         -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
         -v ${prebuild_log}:/root/workspace/prebuild-mmdeploy \
-        -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
+        -v ~/mmdeploy/tests/jenkins:/root/workspace/jenkins \
         --name ${container_name} \
         ${docker_image} /bin/bash
 )
