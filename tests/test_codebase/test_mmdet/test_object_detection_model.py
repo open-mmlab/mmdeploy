@@ -457,7 +457,9 @@ def test_build_object_detection_model(partition_type):
                 type='mmdet', post_processing=post_processing)))
     if partition_type:
         deploy_cfg.partition_config = dict(
-            apply_marks=True, type=partition_type)
+            apply_marks=True,
+            type=partition_type,
+            partition_cfg=[dict(output_names=[])])
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
