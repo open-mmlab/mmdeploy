@@ -70,8 +70,7 @@ MMDEPLOY_API cv::Mat Transpose(const cv::Mat& src);
  * @param dst_format
  * @return
  */
-MMDEPLOY_API cv::Mat ColorTransfer(const cv::Mat& src, PixelFormat src_format,
-                                   PixelFormat dst_format);
+MMDEPLOY_API cv::Mat CvtColor(const cv::Mat& src, PixelFormat src_format, PixelFormat dst_format);
 
 /**
  *
@@ -94,7 +93,7 @@ MMDEPLOY_API cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int 
  * @param src2 the other input image
  * @return bool true means the images are the same
  */
-MMDEPLOY_API bool Compare(const cv::Mat& src1, const cv::Mat& src2);
+MMDEPLOY_API bool Compare(const cv::Mat& src1, const cv::Mat& src2, float threshold = .5f);
 
 }  // namespace cpu
 

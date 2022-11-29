@@ -2,45 +2,38 @@
 
 #include <vector>
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/transform/resize.h"
 #include "mmdeploy/preprocess/transform/transform.h"
-#include "opencv2/imgproc.hpp"
-#include "opencv_utils.h"
 
 using namespace std;
 
-namespace mmdeploy {
+namespace mmdeploy::mmpose {
 
-class TopDownGetBboxCenterScaleImpl : public TransformImpl {
+class TopDownGetBboxCenterScale : public transform::Transform {
  public:
-  TopDownGetBboxCenterScaleImpl(const Value& args) : TransformImpl(args) {
+  explicit TopDownGetBboxCenterScale(const Value& args) {
     padding_ = args.value("padding", 1.25);
     assert(args.contains("image_size"));
     from_value(args["image_size"], image_size_);
   }
 
-  ~TopDownGetBboxCenterScaleImpl() override = default;
+  ~TopDownGetBboxCenterScale() override = default;
 
-  Result<Value> Process(const Value& input) override {
-    Value output = input;
-
+  Result<void> Apply(Value& data) override {
     vector<float> bbox;
-    from_value(input["bbox"], bbox);
+    from_value(data["bbox"], bbox);
 
     vector<float> c;  // center
     vector<float> s;  // scale
 
     Box2cs(bbox, c, s, padding_, pixel_std_);
-    output["center"] = to_value(c);
-    output["scale"] = to_value(s);
+    data["center"] = to_value(c);
+    data["scale"] = to_value(s);
 
-    return output;
+    return success();
   }
 
   void Box2cs(vector<float>& box, vector<float>& center, vector<float>& scale, float padding,
@@ -68,32 +61,6 @@ class TopDownGetBboxCenterScaleImpl : public TransformImpl {
   vector<int> image_size_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(TopDownGetBboxCenterScaleImpl,
-                           std::unique_ptr<TopDownGetBboxCenterScaleImpl>(const Value& config));
+MMDEPLOY_REGISTER_TRANSFORM(TopDownGetBboxCenterScale);
 
-MMDEPLOY_DEFINE_REGISTRY(TopDownGetBboxCenterScaleImpl);
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(TopDownGetBboxCenterScaleImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<TopDownGetBboxCenterScaleImpl>(config);
-});
-
-class TopDownGetBboxCenterScale : public Transform {
- public:
-  explicit TopDownGetBboxCenterScale(const Value& args) : Transform(args) {
-    auto impl_creator = gRegistry<TopDownGetBboxCenterScaleImpl>().Get("cpu");
-    impl_ = impl_creator->Create(args);
-  }
-  ~TopDownGetBboxCenterScale() override = default;
-
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
-
- private:
-  std::unique_ptr<TopDownGetBboxCenterScaleImpl> impl_;
-  static const std::string name_;
-};
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (TopDownGetBboxCenterScale, 0), [](const Value& config) {
-  return std::make_unique<TopDownGetBboxCenterScale>(config);
-});
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmpose

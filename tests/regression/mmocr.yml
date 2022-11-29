@@ -16,6 +16,7 @@ globals:
       metric_key: 0_word_acc_ignore_case
       tolerance: 1.0 # metric
       multi_value: 100
+      dataset: IIIT5K
   convert_image_det: &convert_image_det
     input_img: *img_densetext_det
     test_img: *img_demo_text_det

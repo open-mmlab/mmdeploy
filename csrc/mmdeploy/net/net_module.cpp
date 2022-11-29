@@ -11,7 +11,6 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/core/utils/scope_counter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 
 using std::string;

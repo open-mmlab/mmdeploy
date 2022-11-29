@@ -6,33 +6,33 @@ namespace mmdeploy::framework {
 
 Mat::Mat(int h, int w, PixelFormat format, DataType type, Device device, Allocator allocator)
     : format_(format), type_(type), width_(w), height_(h) {
-  int bytes_per_pixel = 0;
+  int bits_per_pixel = 0;
   switch (format) {
     case PixelFormat::kGRAYSCALE:
       channel_ = 1;
-      bytes_per_pixel = 8;
+      bits_per_pixel = 8;
       break;
     case PixelFormat::kNV12:  // fall through
     case PixelFormat::kNV21:
       channel_ = 1;
-      bytes_per_pixel = 12;
+      bits_per_pixel = 12;
       assert(w % 2 == 0);
       break;
     case PixelFormat::kBGR:  // fall through
     case PixelFormat::kRGB:
       channel_ = 3;
-      bytes_per_pixel = 24;
+      bits_per_pixel = 24;
       break;
     case PixelFormat::kBGRA:
       channel_ = 4;
-      bytes_per_pixel = 32;
+      bits_per_pixel = 32;
       break;
     default:
       throw_exception(eNotSupported);
   }
 
   size_ = height_ * width_ * channel_;
-  bytes_ = height_ * width_ * bytes_per_pixel / 8;
+  bytes_ = height_ * width_ * bits_per_pixel / 8;
 
   switch (type) {
     case DataType::kFLOAT:
