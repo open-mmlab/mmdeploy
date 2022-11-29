@@ -136,13 +136,12 @@ pipeline {
                     }
                 }
             }
-            stage('Tear Down') {
-                agent { label params.EXEC_NODE }
-                steps {
-                    sh "rm -f tests/jenkins/conf/tmp.config"
-                }
+        }
+        stage('Tear Down') {
+            agent { label params.EXEC_NODE }
+            steps {
+                sh "rm -f tests/jenkins/conf/tmp.config"
             }
         }
-
     }
 }
