@@ -5,7 +5,7 @@ pipeline {
             name: 'CONFIG',
             choices : [
                 'default.config',
-                'default_2080.config'
+                'default_2080.config',
                 'openmmlabv1_quicktest.config',
                 'openmmlabv1_quicktest.config',
                 'openmmlabv2_quicktest.config',
