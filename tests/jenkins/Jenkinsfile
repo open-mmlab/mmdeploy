@@ -22,7 +22,7 @@ pipeline {
         )
         booleanParam(
             name: 'EXEC_BUILD',
-            defaultValue: true,`
+            defaultValue: true,
         )
         booleanParam(
             name: 'EXEC_PREBUILD',
