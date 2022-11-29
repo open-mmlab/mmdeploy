@@ -18,7 +18,7 @@ MMDEPLOY_API cv::Mat Tensor2CVMat(const framework::Tensor& tensor);
 MMDEPLOY_API framework::Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
 MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
 
-Result<int> GetInterpolationMethod(const std::string_view& method);
+MMDEPLOY_API Result<int> GetInterpolationMethod(const std::string_view& method);
 
 /**
  * @brief resize an image to specified size
