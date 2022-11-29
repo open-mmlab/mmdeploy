@@ -54,7 +54,16 @@ Value get_divergent_output(Value::Array& rs, const vector<int>& ps) {
 }  // namespace
 
 Sender<Value> Cond::Process(Sender<Value> input) {
-  return LetValue(std::move(input), [this](Value& _input) -> Sender<Value> {
+  auto index = std::make_shared<profiler::Index>();
+  if (scope_) {
+    *index = scope_->next_.fetch_add(1, std::memory_order_relaxed);
+    input = Then(std::move(input), [this, index](Value v) mutable {
+      scope_->Add(profiler::Event::kStart, *index, profiler::Clock::now());
+      return std::move(v);
+    });
+  }
+
+  Sender<Value> output = LetValue(std::move(input), [this](Value& _input) -> Sender<Value> {
     assert(_input.is_array());
     auto& as = _input.array();
     auto ps = get_predicates(as.front().array());
@@ -75,6 +84,14 @@ Sender<Value> Cond::Process(Sender<Value> input) {
              });
     }
   });
+
+  if (scope_) {
+    output = Then(std::move(output), [this, index](Value v) {
+      scope_->Add(profiler::Event::kEnd, *index, profiler::Clock::now());
+      return std::move(v);
+    });
+  }
+  return output;
 }
 
 CondBuilder::CondBuilder(Value config) : Builder(std::move(config)) {}
@@ -97,6 +114,12 @@ Result<unique_ptr<Node>> CondBuilder::BuildImpl() {
     }
     if (config_.contains("context")) {
       update(body_config["context"].object(), config_["context"].object(), 2);
+      if (config_["context"].contains("scope")) {
+        auto scope = config_["context"]["scope"].get<profiler::Scope*>();
+        auto name = config_.value("name", std::string("Cond"));
+        cond->scope_ = scope->CreateScope(name);
+        body_config["context"]["scope"] = cond->scope_;
+      }
     }
 
     if (auto builder = Builder::CreateFromConfig(body_config).value()) {

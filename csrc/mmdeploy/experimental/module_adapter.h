@@ -63,12 +63,12 @@ Result<Value> Invoke(Ret (*f)(Args...), const Value& args) {
 }
 
 // member function pointer
-template <typename Ret, typename C, typename... Args>
-Result<Value> Invoke(Ret (C::*f)(Args...) const, C* inst, const Value& args) {
+template <typename Ret, typename C0, typename C1, typename... Args>
+Result<Value> Invoke(Ret (C0::*f)(Args...) const, C1* inst, const Value& args) {
   return InvokeImpl<Ret, Args...>::apply(f, args, inst);
 }
-template <typename Ret, typename C, typename... Args>
-Result<Value> Invoke(Ret (C::*f)(Args...), C* inst, const Value& args) {
+template <typename Ret, typename C0, typename C1, typename... Args>
+Result<Value> Invoke(Ret (C0::*f)(Args...), C1* inst, const Value& args) {
   return InvokeImpl<Ret, Args...>::apply(f, args, inst);
 }
 

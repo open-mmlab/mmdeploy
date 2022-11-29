@@ -1,94 +1,98 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "compose.h"
-
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-void SaveIntermediates(Value& value, Value::Array& intermediates) {
-  if (value.is_array()) {
-    for (auto& inner : value) {
-      if (auto it = inner.find("__data__"); it != inner.end()) {
-        std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-        it->array().clear();
+class Compose : public Transform {
+ public:
+  explicit Compose(const Value& args) {
+    assert(args.contains("context"));
+
+    Value context;
+    context = args["context"];
+    context["device"].get_to(device_);
+    context["stream"].get_to(stream_);
+
+    if (auto parent = context.value<profiler::Scope*>("scope", nullptr)) {
+      scope_ = parent->CreateScope("Compose");
+      context["scope"] = scope_;
+    }
+
+    auto transforms = args["transforms"].array();
+    operation::Context ctx(device_, stream_);
+
+    EnableTransformFusion(args, transforms);
+
+    for (auto cfg : transforms) {
+      cfg["context"] = context;
+      auto type = cfg.value("type", std::string{});
+      MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, cfg);
+      auto creator = gRegistry<Transform>().Get(type);
+      if (!creator) {
+        MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
+                       gRegistry<Transform>().List());
+        throw_exception(eEntryNotFound);
+      }
+      auto transform = creator->Create(cfg);
+      if (!transform) {
+        MMDEPLOY_ERROR("Failed to create transform: {}, config: {}", type, cfg);
+        throw_exception(eFail);
+      }
+      transforms_.push_back(std::move(transform));
+      if (scope_) {
+        transform_scopes_.push_back(scope_->CreateScope(type));
       }
     }
-  } else if (value.is_object()) {
-    if (auto it = value.find("__data__"); it != value.end()) {
-      std::move(it->begin(), it->end(), std::back_inserter(intermediates));
-      it->array().clear();
-    }
   }
-}
 
-Compose::Compose(const Value& args, int version) : Transform(args) {
-  assert(args.contains("context"));
-
-  Value context;
-  context = args["context"];
-  context["stream"].get_to(stream_);
-  bool fuse_transform = args.value("fuse_transform", false);
-  if (fuse_transform) {
-    std::string sha256 = args.value("sha256", std::string(""));
-    context["fuse_transform"] = true;
-    context["sha256"] = sha256;
-  }
-  if (context.contains("scope")) {
-    auto scope = context["scope"].get<profiler::Scope*>();
-    scope_ = scope->CreateScope("Compose");
-  }
-  for (auto cfg : args["transforms"]) {
-    cfg["context"] = context;
-    auto type = cfg.value("type", std::string{});
-    MMDEPLOY_DEBUG("creating transform: {} with cfg: {}", type, mmdeploy::to_json(cfg).dump(2));
-    auto creator = gRegistry<Transform>().Get(type, version);
-    if (!creator) {
-      MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                     gRegistry<Transform>().List());
-      throw_exception(eEntryNotFound);
+  Result<void> Apply(Value& data) override {
+    profiler::ScopedCounter counter(scope_);
+    operation::Context context(device_, stream_);
+    if (!hash_code_.empty()) {
+      context.set_use_dummy(true);
     }
-    if (scope_) {
-      auto scope = scope_->CreateScope(type);
-      if (type == "Lift") {
-        cfg["context"]["scope"] = scope;
-        transform_scopes_.push_back(nullptr);
-      } else {
-        transform_scopes_.push_back(scope);
+    for (size_t i = 0; i < transforms_.size(); ++i) {
+      std::optional<profiler::ScopedCounter> child_counter;
+      if (scope_) {
+        child_counter.emplace(transform_scopes_[i]);
       }
-    } else {
-      transform_scopes_.push_back(nullptr);
+      OUTCOME_TRY(transforms_[i]->Apply(data));
+      if (scope_) {
+        OUTCOME_TRY(stream_.Wait());
+      }
     }
-    auto transform = creator->Create(cfg);
-    if (!transform) {
-      MMDEPLOY_ERROR("Failed to create transform: {}, config: {}", type, cfg);
-      throw_exception(eFail);
-    }
-    transforms_.push_back(std::move(transform));
+    return success();
   }
-}
 
-Result<Value> Compose::Process(const Value& input) {
-  Value output = input;
-  Value::Array intermediates;
-  int idx = 0;
-  for (auto& transform : transforms_) {
-    profiler::ScopedCounter counter(transform_scopes_[idx++]);
-    OUTCOME_TRY(auto t, transform->Process(output));
-    SaveIntermediates(t, intermediates);
-    output = std::move(t);
-    if (transform_scopes_[idx - 1]) {
-      OUTCOME_TRY(stream_.Wait());
+ private:
+  void EnableTransformFusion(const Value& args, Value::Array& transforms) {
+    if (args.value("fuse_transform", false)) {
+      hash_code_ = args.value("sha256", hash_code_);
+      if (!hash_code_.empty()) {
+        operation::gContext().set_use_dummy(true);
+        auto it = transforms.begin();
+        for (; it != transforms.end(); ++it) {
+          if (it->value<std::string>("type", {}) == "Collect") {
+            break;
+          }
+        }
+        transforms.insert(it, Value::Object{{"type", "Fused"}, {"hash_code", hash_code_}});
+      }
     }
   }
-  OUTCOME_TRY(stream_.Wait());
-  return std::move(output);
-}
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Compose, 0), [](const Value& config) {
-  return std::make_unique<Compose>(config, 0);
-});
+  std::vector<std::unique_ptr<Transform>> transforms_;
+  Device device_;
+  Stream stream_;
+  std::vector<profiler::Scope*> transform_scopes_;
+  profiler::Scope* scope_{};
+  std::string hash_code_;
+};
 
-}  // namespace mmdeploy
+MMDEPLOY_REGISTER_TRANSFORM(Compose);
+
+}  // namespace mmdeploy::transform

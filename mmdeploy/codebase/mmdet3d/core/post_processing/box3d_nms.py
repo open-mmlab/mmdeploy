@@ -163,8 +163,8 @@ def _box3d_multiclass_nms(
                             dir_scores, attr_scores)
 
 
-# @FUNCTION_REWRITER.register_rewriter(
-#     func_name='mmdet3d.core.post_processing.box3d_multiclass_nms')
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet3d.core.post_processing.box3d_multiclass_nms')
 def box3d_multiclass_nms(*args, **kwargs):
     """Wrapper function for `_box3d_multiclass_nms`."""
     return mmdeploy.codebase.mmdet3d.core.post_processing.box3d_nms.\

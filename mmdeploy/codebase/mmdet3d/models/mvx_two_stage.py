@@ -102,5 +102,6 @@ def mvxtwostagedetector__simple_test_pts(ctx,
     Returns:
         List: Result of model.
     """
-    bbox_preds, scores, dir_scores = self.pts_bbox_head(x)
-    return bbox_preds, scores, dir_scores
+    outs = self.pts_bbox_head(x)
+    outs = self.pts_bbox_head.get_bboxes(*outs, img_metas, rescale=rescale)
+    return outs

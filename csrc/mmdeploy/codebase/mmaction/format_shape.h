@@ -7,31 +7,34 @@
 #include <vector>
 
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/operation/managed.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::mmaction {
 
-class FormatShapeImpl : public TransformImpl {
+class FormatShapeOp : public operation::Operation {
  public:
-  explicit FormatShapeImpl(const Value& args);
-  ~FormatShapeImpl() override = default;
+  explicit FormatShapeOp(std::string input_format) : input_format_(std::move(input_format)){};
 
-  Result<Value> Process(const Value& input) override;
-
- protected:
-  virtual Result<Tensor> Format(const std::vector<Tensor>& tensors, int clip_len,
-                                int num_clips) = 0;
+  virtual Result<void> apply(const std::vector<Tensor>& inputs, Tensor& output, int clip_len,
+                             int num_clips) = 0;
 
  protected:
-  struct format_shape_arg_t {
-    std::string input_format;
-  };
-  using ArgType = struct format_shape_arg_t;
-  ArgType arg_;
+  std::string input_format_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(FormatShapeImpl, std::unique_ptr<FormatShapeImpl>(const Value& config));
+class FormatShape : public Transform {
+ public:
+  explicit FormatShape(const Value& args);
 
-}  // namespace mmdeploy
+  Result<void> Apply(Value& data) override;
+
+ private:
+  operation::Managed<FormatShapeOp> format_;
+};
+
+MMDEPLOY_DECLARE_REGISTRY(FormatShapeOp, std::unique_ptr<FormatShapeOp>(std::string input_format));
+
+}  // namespace mmdeploy::mmaction
 
 #endif

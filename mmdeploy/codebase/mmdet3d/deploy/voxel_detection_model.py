@@ -7,9 +7,8 @@ from mmcv.utils import Registry
 from torch.nn import functional as F
 
 from mmdeploy.codebase.base import BaseBackendModel
-from mmdeploy.core import RewriterContext
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_root_logger, load_config)
+                            load_config)
 
 
 def __build_backend_voxel_model(cls_name: str, registry: Registry, *args,
@@ -83,7 +82,7 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             list: A list contains predictions.
         """
-        result_list = []
+        results = []
         for i in range(len(img_metas)):
             voxels, num_points, coors = VoxelDetectionModel.voxelize(
                 self.model_cfg, points[i])
@@ -93,12 +92,15 @@ class VoxelDetectionModel(BaseBackendModel):
                 'coors': coors
             }
             outputs = self.wrapper(input_dict)
-            result = VoxelDetectionModel.post_process(self.model_cfg,
-                                                      self.deploy_cfg, outputs,
-                                                      img_metas[i],
-                                                      self.device)[0]
-            result_list.append(result)
-        return result_list
+            outputs = self.wrapper.output_to_list(outputs)
+            outputs = [x.squeeze(0) for x in outputs]
+            bbox_dim = outputs[0].shape[-1]
+            outputs[0] = img_metas[0][0]['box_type_3d'](outputs[0], bbox_dim)
+            from mmdet3d.core import bbox3d2result
+
+            result = bbox3d2result(*outputs)
+            results.append(result)
+        return results
 
     def show_result(self,
                     data: Dict,
@@ -170,66 +172,6 @@ class VoxelDetectionModel(BaseBackendModel):
             coors_batch.append(coor_pad)
         coors_batch = torch.cat(coors_batch, dim=0)
         return voxels, num_points, coors_batch
-
-    @staticmethod
-    def post_process(model_cfg: Union[str, mmcv.Config],
-                     deploy_cfg: Union[str, mmcv.Config],
-                     outs: Dict,
-                     img_metas: Dict,
-                     device: str,
-                     rescale=False):
-        """model post process.
-
-        Args:
-            model_cfg (str | mmcv.Config): The model config.
-            deploy_cfg (str|mmcv.Config): Deployment config file or loaded
-            Config object.
-            outs (Dict): Output of model's head.
-            img_metas(Dict): Meta info for pcd.
-            device (str): A string specifying device type.
-            rescale (list[torch.Tensor]): whether th rescale bbox.
-        Returns:
-            list: A list contains predictions, include bboxes, scores, labels.
-        """
-        from mmdet3d.core import bbox3d2result
-        from mmdet3d.models.builder import build_head
-        model_cfg = load_config(model_cfg)[0]
-        deploy_cfg = load_config(deploy_cfg)[0]
-        if 'bbox_head' in model_cfg.model.keys():
-            head_cfg = dict(**model_cfg.model['bbox_head'])
-        elif 'pts_bbox_head' in model_cfg.model.keys():
-            head_cfg = dict(**model_cfg.model['pts_bbox_head'])
-        else:
-            raise NotImplementedError('Not supported model.')
-        head_cfg['train_cfg'] = None
-        head_cfg['test_cfg'] = model_cfg.model['test_cfg']\
-            if 'pts' not in model_cfg.model['test_cfg'].keys()\
-            else model_cfg.model['test_cfg']['pts']
-        head = build_head(head_cfg)
-        if device == 'cpu':
-            logger = get_root_logger()
-            logger.warning(
-                'Don\'t suggest using CPU device. Post process can\'t support.'
-            )
-            if torch.cuda.is_available():
-                device = 'cuda'
-            else:
-                raise NotImplementedError(
-                    'Post process don\'t support device=cpu')
-        cls_scores = [outs['scores'].to(device)]
-        bbox_preds = [outs['bbox_preds'].to(device)]
-        dir_scores = [outs['dir_scores'].to(device)]
-        with RewriterContext(
-                cfg=deploy_cfg,
-                backend=deploy_cfg.backend_config.type,
-                opset=deploy_cfg.onnx_config.opset_version):
-            bbox_list = head.get_bboxes(
-                cls_scores, bbox_preds, dir_scores, img_metas, rescale=False)
-            bbox_results = [
-                bbox3d2result(bboxes, scores, labels)
-                for bboxes, scores, labels in bbox_list
-            ]
-        return bbox_results
 
 
 def build_voxel_detection_model(model_files: Sequence[str],
