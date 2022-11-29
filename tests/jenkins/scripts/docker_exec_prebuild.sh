@@ -40,50 +40,59 @@ git clone --depth 1 --branch $mmdet_branch https://github.com/open-mmlab/mmdetec
 cd ${MMDEPLOY_DIR}
 
 for PYTHON_VERSION in 3.6 3.7 3.8 3.9; do
-    conda create -n python${PYTHON_VERSION} python=${PYTHON_VERSION}
-    conda activate python${PYTHON_VERSION}
+    conda create -n mmdeploy-${PYTHON_VERSION} python=${PYTHON_VERSION} -y
+    conda activate mmdeploy-${PYTHON_VERSION}
     pip install pyyaml
     pip install -r requirements/build.txt
-    python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml .
-    prebuilt_path=/root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION}
-    mkdir -p ${prebuilt_path}
-    mv mmdeploy-*-onnxruntime* ${prebuilt_path}
-    mv mmdeploy-*-tensorrt* ${prebuilt_path}
+
 done
 
+conda create -n mmdeploy-3.6
+export PREBUILD_DIR=/root/workspace/prebuild-mmdeploy
+
+python tools/package_tools/mmdeploy_builder.py \
+  tools/package_tools/configs/linux_x64.yaml . \
+  2>&1 | tee $PREBUILD_DIR/prebuild.log
+
+export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
+export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
+
+tar -cvf ${PREBUILD_DIR}/${onnxruntime_dirname}.tar.gz ${onnxruntime_dirname}
+tar -cvf ${PREBUILD_DIR}/${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
+
+mv ${onnxruntime_dirname} ${tensorrt_dirname} ${PREBUILD_DIR}/
+
+# test prebuilt package
 conda activate torch1.10.0
+export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
+
+pip install ${TENSORRT_DIR}/python/tensorrt-*-cp${PYTHON_VERSION}-none-linux_x86_64.whl
 pip install openmim
 mim install $mmdet_version
 pip install -r requirements/tests.txt
-pip install -r requirements/runtime.txt
-pip install -r requirements/build.txt
 
-export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
-export MMDEPLOY_VERSION=$(cat mmdeploy/version.py | grep "__version__ = " | awk '{split($0,a,"= "); print a[2]}' | sed "s/'//g")
-cp /root/workspace/prebuild-mmdeploy/python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}/* /root/workspace/mmdeploy
-python ./tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml . >/root/workspace/log/build.log
 
 # test onnxruntime
-pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
-pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-onnxruntime${ONNXRUNTIME_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-*-linux_x86_64.whl
+pip install ${PREBUILD_DIR}/${onnxruntime_dirname}/dist/mmdeploy-*-linux_x86_64.whl
+pip install ${PREBUILD_DIR}/${onnxruntime_dirname}/sdk/python/mmdeploy_python-*-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 
-test_log_dir=/root/workspace/log/test_prebuild_onnxruntime
+test_log_dir=${PREBUILD_DIR}/test_prebuild_onnxruntime
 mkdir -p $test_log_dir
 python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends onnxruntime --performance \
-    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/test_prebuild.log
+    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
 
 # must forcely uninstall
 pip uninstall mmdeploy mmdeploy_python -y
 
 # test tensorrt
-pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/dist/mmdeploy-${MMDEPLOY_VERSION}-*-linux_x86_64.whl
-pip install mmdeploy-${MMDEPLOY_VERSION}-linux-x86_64-cuda${CUDA_VERSION}-tensorrt${TENSORRT_VERSION}/sdk/python/mmdeploy_python-${MMDEPLOY_VERSION}-cp${PYTHON_VERSION}-*-linux_x86_64.whl
+pip install ${PREBUILD_DIR}/${tensorrt_dirname}/dist/mmdeploy-*-linux_x86_64.whl
+pip install ${PREBUILD_DIR}/${tensorrt_dirname}/sdk/python/mmdeploy_python-*-cp${PYTHON_VERSION}-*-linux_x86_64.whl
 
-test_log_dir=/root/workspace/log/test_prebuild_tensorrt
+test_log_dir=${PREBUILD_DIR}/test_prebuild_tensorrt
 mkdir -p $test_log_dir
 python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends tensorrt --performance \
-    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/test_prebuild.log
+    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
 
 echo "end_time-$(date +%Y%m%d%H%M)"
