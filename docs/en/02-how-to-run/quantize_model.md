@@ -21,7 +21,7 @@ Taking ncnn backend as an example, the complete workflow is as follows:
 
 mmdeploy generates quantization table based on static graph (onnx) and uses backend tools to convert fp32 model to fixed point.
 
-mmdeploy currently support ncnn with PTQ.
+mmdeploy currently supports ncnn with PTQ.
 
 ## How to convert model
 
