@@ -16,11 +16,14 @@ repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 ## make
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
+time_start=$(date +%s)
 
-prebuilt_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
-mkdir -p -m 777 ${prebuilt_dir}
-chmod 777 ${prebuilt_dir}/../
-log_file=$prebuilt_dir/exec_prebuild.log
+prebuild_archive_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
+prebuild_log=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
+mkdir -p -m 777 ${prebuild_log} ${prebuild_archive_dir}
+chmod 777 ${prebuild_log}/.. ${prebuild_archive_dir}/..
+
+log_file=$prebuild_log/exec_prebuild.log
 
 # decide tensorrt version
 # install tensorrt
@@ -39,7 +42,7 @@ container_id=$(
         -v ${tensorrt_dir}:/root/workspace/TensorRT-8.2.3.0 \
         -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
-        -v ${prebuilt_dir}:/root/workspace/prebuild-mmdeploy \
+        -v ${prebuild_log}:/root/workspace/prebuild-mmdeploy \
         -v ~/mmdeploy/tests/jenkins/scripts:/root/workspace/mmdeploy_script \
         --name ${container_name} \
         ${docker_image} /bin/bash
@@ -49,4 +52,9 @@ nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdepl
  /root/workspace/mmdeploy_script/docker_exec_prebuild.sh ${repo_version}" > ${log_file} 2>&1 &
 wait
 docker stop $container_id
+cp -R $prebuild_log/* $prebuild_archive_dir/
 cat ${log_file}
+echo "end_time-$(date +%Y%m%d%H%M)"
+time_end=$(date +%s)
+take=$(( time_end - time_start ))
+echo Time taken to execute commands is ${take} seconds.
