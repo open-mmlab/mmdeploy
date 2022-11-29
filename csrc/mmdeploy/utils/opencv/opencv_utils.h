@@ -18,6 +18,8 @@ MMDEPLOY_API cv::Mat Tensor2CVMat(const framework::Tensor& tensor);
 MMDEPLOY_API framework::Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
 MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
 
+Result<int> GetInterpolationMethod(const std::string_view& method);
+
 /**
  * @brief resize an image to specified size
  *
@@ -28,6 +30,9 @@ MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
  */
 MMDEPLOY_API cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                             const std::string& interpolation);
+
+MMDEPLOY_API cv::Mat WarpAffine(const cv::Mat& src, const cv::Mat& affine_matrix, int dst_height,
+                                int dst_width, int interpolation);
 
 /**
  * @brief crop an image

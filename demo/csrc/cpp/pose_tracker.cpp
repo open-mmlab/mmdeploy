@@ -17,9 +17,17 @@
 const auto config_json = R"(
 {
   "type": "Pipeline",
-  "input": ["data", "use_det", "state"],
+  "input": ["img", "use_det", "state"],
   "output": "targets",
   "tasks": [
+    {
+      "type": "Task",
+      "module": "Transform",
+      "name": "preload",
+      "input": "img",
+      "output": "data",
+      "transforms": [ { "type": "LoadImageFromFile" } ]
+    },
     {
       "type": "Cond",
       "input": ["use_det", "data"],
@@ -146,11 +154,13 @@ std::tuple<Value, Value> ProcessBboxes(const Value& detections, const Value& dat
   }
   // attach bboxes to image data
   for (auto& bbox : bboxes) {
-    auto img = data["ori_img"].get<framework::Mat>();
     auto box = from_value<std::array<float, 4>>(bbox["bbox"]);
     cv::Rect rect(cv::Rect2f(cv::Point2f(box[0], box[1]), cv::Point2f(box[2], box[3])));
     bbox = Value::Object{
-        {"ori_img", img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
+        {"img", data["img"]},                                 // img
+        {"bbox", {rect.x, rect.y, rect.width, rect.height}},  // bbox
+        {"rotation", 0.f}                                     // rotation
+    };
   };
   return {std::move(bboxes), std::move(track_ids)};
 }
@@ -474,7 +484,7 @@ int main(int argc, char* argv[]) {
     auto t1 = std::chrono::high_resolution_clock::now();
     dt += t1 - t0;
     ++frame_id;
-    Visualize(frame, result);
+    // Visualize(frame, result);
   }
 
   MMDEPLOY_INFO("frames: {}, time {} ms", frame_id, dt.count());
