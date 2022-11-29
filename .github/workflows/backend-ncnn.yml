@@ -2,11 +2,19 @@ name: backend-ncnn
 
 on:
   push:
+    branches:
+      - main
+      - master
+      - dev-1.x
     paths-ignore:
       - "demo/**"
       - "tools/**"
 
   pull_request:
+    branches:
+      - main
+      - master
+      - dev-1.x
     paths-ignore:
       - "demo/**"
       - "tools/**"
