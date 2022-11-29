@@ -85,13 +85,23 @@ pipeline {
 
     stages {
         stage('Regression') {
-            // stage('Set Config') {
-            //     agent { label 'deploy_linux' }
-            //     steps {
-            //         sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp${RANDOM}.config"
-            //         sh ""
-            //     }
-            // }
+            stage('Set Config') {
+                agent { label 'deploy_linux' }
+                steps {
+                    sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/repo_url=.*/repo_url=${params.repo_url}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' tests/jenkins/conf/tmp.config"
+                    sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' tests/jenkins/conf/tmp.config"
+                }
+            }
             parallel {
                 stage('Build') {
                     agent { label params.EXEC_NODE }
@@ -99,7 +109,7 @@ pipeline {
                         expression { return params.EXEC_BUILD }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_build.sh '${params.CONFIG}'"
+                        sh "tests/jenkins/scripts/test_build.sh 'tmp.config'"
                     }
                 }
 
@@ -109,7 +119,7 @@ pipeline {
                         expression { return params.EXEC_CONVERT }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_convert.sh '${params.CONFIG}'"
+                        sh "tests/jenkins/scripts/test_convert.sh 'tmp.config'"
                     }
                 }
 
@@ -119,7 +129,7 @@ pipeline {
                         expression { return params.EXEC_PREBUILD }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_prebuild.sh '${params.CONFIG}'"
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
                     }
                 }
 
@@ -129,7 +139,7 @@ pipeline {
                         expression { return params.EXEC_UNITTEST }
                     }
                     steps {
-                        sh "tests/jenkins/scripts/test_ut.sh '${params.CONFIG}'"
+                        sh "tests/jenkins/scripts/test_ut.sh 'tmp.config'"
                     }
                 }
             }
