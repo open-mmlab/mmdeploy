@@ -39,7 +39,7 @@ fi
 git clone --depth 1 --branch $mmdet_branch https://github.com/open-mmlab/mmdetection.git
 
 cd ${MMDEPLOY_DIR}
-
+conda deactivate
 for PYTHON_VERSION in 3.6 3.7 3.8 3.9; do
     conda create -n mmdeploy-${PYTHON_VERSION} python=${PYTHON_VERSION} -y
     conda activate mmdeploy-${PYTHON_VERSION}
@@ -48,7 +48,8 @@ for PYTHON_VERSION in 3.6 3.7 3.8 3.9; do
 
 done
 
-conda create -n mmdeploy-3.6
+conda deactivate
+conda activate mmdeploy-3.6
 export PREBUILD_DIR=/root/workspace/prebuild-mmdeploy
 
 python tools/package_tools/mmdeploy_builder.py \
@@ -64,6 +65,7 @@ tar -cvf ${PREBUILD_DIR}/${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
 mv ${onnxruntime_dirname} ${tensorrt_dirname} ${PREBUILD_DIR}/
 
 # test prebuilt package
+conda deactivate
 conda activate torch1.10.0
 export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
 
