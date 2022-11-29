@@ -49,7 +49,7 @@ container_id=$(
 )
 echo "container_id=${container_id}"
 nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
- /root/workspace/jenkins/script/docker_exec_prebuild.sh ${repo_version}" > ${log_file} 2>&1 &
+ /root/workspace/jenkins/scripts/docker_exec_prebuild.sh ${repo_version}" > ${log_file} 2>&1 &
 wait
 docker stop $container_id
 cp -R $prebuild_log/* $prebuild_archive_dir/
