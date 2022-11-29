@@ -19,7 +19,7 @@ pipeline {
                 'deploy_linux_3090',
                 'deploy_linux_2080'
             ],
-            description: 'select config'
+            description: 'select exec_node'
         )
         booleanParam(
             name: 'EXEC_BUILD',
