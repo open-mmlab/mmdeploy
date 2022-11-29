@@ -1,5 +1,6 @@
 #!/bin/bash
 repo_version=${1:-v1.0}
+
 ## keep container alive
 nohup sleep infinity >sleep.log 2>&1 &
 
@@ -20,6 +21,11 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
+
+# install tensorrt
+export TENSORRT_DIR=/root/workspace/TensorRT-8.2.3.0
+export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:${LD_LIBRARY_PATH}
+export TENSORRT_VERSION=8.2.3.0
 
 cd /root/workspace
 mmdet_version=mmdet

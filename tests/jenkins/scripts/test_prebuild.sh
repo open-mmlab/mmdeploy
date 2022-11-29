@@ -22,7 +22,12 @@ chmod 777 ${log_dir}/../
 prebuilt_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
 mkdir -p -m 777 ${prebuilt_dir}
 chmod 777 ${prebuilt_dir}/../
-
+# decide tensorrt version
+# install tensorrt
+tensorrt_dir=/data2/shared/nvidia-packages/TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2/TensorRT-8.2.3.0
+if [ $docker_image == "mmdeploy-ci-ubuntu-18.04-cu102" ]; then
+  tensorrt_dir=/data2/shared/nvidia-packages/TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-10.2.cudnn8.2/TensorRT-8.2.3.0
+fi
 container_name=convert-${codebase}-${time_snap}
 
 container_name=openmmlab${repo_version}-prebuild-$(date +%Y%m%d%H%M)
@@ -31,6 +36,7 @@ container_id=$(
         --gpus all \
         --ipc=host \
         -itd \
+        -v ${tensorrt_dir}:/root/workspace/TensorRT-8.2.3.0 \
         -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
         -v ${prebuilt_dir}:/root/workspace/prebuild-mmdeploy \
