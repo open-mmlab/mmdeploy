@@ -1,10 +1,11 @@
 pipeline {
-    agent { label 'deploy_linux' }
+    agent { label 'deploy_linux_3090' }
     parameters {
         choice(
             name: 'CONFIG',
             choices : [
                 'default.config',
+                'default_2080.config'
                 'openmmlabv1_quicktest.config',
                 'openmmlabv1_quicktest.config',
                 'openmmlabv2_quicktest.config',
