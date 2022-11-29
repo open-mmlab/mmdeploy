@@ -43,7 +43,7 @@ build_ocv() {
 
 build_ncnn() {
   if [ ! -e "ncnn" ];then
-    git clone https://github.com/tencent/ncnn --branch 20220729 --depth=1
+    git clone https://github.com/tencent/ncnn --branch 20221128 --depth=1
   fi
   if [ ! -e "ncnn/build_aarch64" ];then
     mkdir -p ncnn/build_aarch64
