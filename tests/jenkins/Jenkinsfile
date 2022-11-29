@@ -1,14 +1,28 @@
 pipeline {
     agent { label 'deploy_linux' }
     parameters {
-        string(
+        choice(
             name: 'CONFIG',
-            defaultValue: 'default.config',
+            choices : [
+                'default.config',
+                'openmmlabv1_quicktest.config',
+                'openmmlabv1_quicktest.config',
+                'openmmlabv2_quicktest.config',
+                'win_default.config'
+            ],
+            description: 'select config'
+        )
+        choice(
+            name: 'EXEC_NODE',
+            choices: [
+                'deploy_linux_3090',
+                'deploy_linux_2080'
+            ],
             description: 'select config'
         )
         booleanParam(
             name: 'EXEC_BUILD',
-            defaultValue: true,
+            defaultValue: true,`
         )
         booleanParam(
             name: 'EXEC_PREBUILD',
@@ -22,14 +36,68 @@ pipeline {
             name: 'EXEC_UNITTEST',
             defaultValue: true,
         )
-
+        string(
+            name: 'docker_image'
+            defaultValue: 'mmdeploy-ci-ubuntu-20.04-cu113'
+        )
+        string(
+            name: 'codebase_list'
+            defaultValue: 'mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction'
+        )
+        string(
+            name: 'exec_performance'
+            defaultValue: 'y'
+        )
+        string(
+            name: 'exec_torch_versions'
+            defaultValue: '1.10.0'
+        )
+        string(
+            name: 'exec_models'
+            defaultValue: 'all'
+        )
+        string(
+            name: 'exec_backends'
+            defaultValue: 'onnxruntime tensorrt ncnn torchscript openvino'
+        )
+        string(
+            name: 'max_job_nums'
+            defaultValue: '3'
+        )
+        string(
+            name: 'repo_url'
+            defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
+        )
+        string(
+            name: 'mmdeploy_branch'
+            defaultValue: 'master'
+        )
+        string(
+            name: 'repo_version'
+            defaultValue: 'v1.0'
+        )
+        string(
+            name: 'tensorrt_version'
+            defaultValue: '8.2.5.1'
+        )
+        string(
+            name: 'requirement'
+            defaultValue: 'requirementV1.0.json'
+        )
     }
 
     stages {
         stage('Regression') {
+            // stage('Set Config') {
+            //     agent { label 'deploy_linux' }
+            //     steps {
+            //         sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp${RANDOM}.config"
+            //         sh ""
+            //     }
+            // }
             parallel {
                 stage('Build') {
-                    agent { label 'deploy_linux' }
+                    agent { label params.EXEC_NODE }
                     when {
                         expression { return params.EXEC_BUILD }
                     }
@@ -39,7 +107,7 @@ pipeline {
                 }
 
                 stage('Convert') {
-                    agent { label 'deploy_linux' }
+                    agent { label params.EXEC_NODE }
                     when {
                         expression { return params.EXEC_CONVERT }
                     }
@@ -49,7 +117,7 @@ pipeline {
                 }
 
                 stage('Prebuild') {
-                    agent { label 'deploy_linux' }
+                    agent { label params.EXEC_NODE }
                     when {
                         expression { return params.EXEC_PREBUILD }
                     }
@@ -59,7 +127,7 @@ pipeline {
                 }
 
                 stage('Unittest') {
-                    agent { label 'deploy_linux' }
+                    agent { label params.EXEC_NODE }
                     when {
                         expression { return params.EXEC_UNITTEST }
                     }
@@ -68,6 +136,12 @@ pipeline {
                     }
                 }
             }
+            stage('Tear Down') [
+                agent { label params.EXEC_NODE }
+                steps {
+                    sh "rm -f tests/jenkins/conf/tmp.config"
+                }
+            ]
         }
 
     }
