@@ -20,7 +20,7 @@ globals:
     test_img: *video
   backend_test: &default_backend_test True
   sdk:
-    sdk_dynamic: &sdk_dynamic ""
+    sdk_dynamic: &sdk_dynamic configs/mmaction/video-recognition/video-recognition_sdk.py
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
