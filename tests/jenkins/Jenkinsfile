@@ -38,10 +38,6 @@ pipeline {
             defaultValue: true,
         )
         string(
-            name: 'docker_image',
-            defaultValue: 'mmdeploy-ci-ubuntu-20.04-cu113'
-        )
-        string(
             name: 'codebase_list',
             defaultValue: 'mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction'
         )
