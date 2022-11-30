@@ -12,7 +12,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
 def base_classifier__forward(
-        ctx,
         self,
         batch_inputs: Tensor,
         data_samples: Optional[List[BaseDataElement]] = None,

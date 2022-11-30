@@ -4,7 +4,8 @@ from typing import Any, Callable, Dict, Optional, Sequence
 
 import torch
 
-from mmdeploy.core.rewriters import FUNCTION_REWRITER
+from mmdeploy.core.rewriters import (FUNCTION_REWRITER,
+                                     FunctionContextContextCaller)
 from mmdeploy.utils import IR, cfg_apply_marks, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()
@@ -62,8 +63,10 @@ class Mark(torch.autograd.Function):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
-def mark_symbolic(rewriter, g, x, *args):
+def mark_symbolic(g, x, *args):
     """Rewrite symbolic of mark op."""
+    rewriter = FunctionContextContextCaller.get_instance(
+        'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
     if cfg_apply_marks(rewriter.cfg):
         return rewriter.origin_func(g, x, *args)
     return x
@@ -71,9 +74,11 @@ def mark_symbolic(rewriter, g, x, *args):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.forward')
-def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
-                    id, attrs) -> torch.Tensor:
+def forward_of_mark(ctx, x, dtype, shape, func, func_id, type, name, id,
+                    attrs) -> torch.Tensor:
     """Rewrite forward of mark op."""
+    rewriter = FunctionContextContextCaller.get_instance(
+        'mmdeploy.core.optimizers.function_marker.Mark.forward')
     deploy_cfg = rewriter.cfg
     # save calib data
     apply_marks = cfg_apply_marks(deploy_cfg)

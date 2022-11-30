@@ -9,8 +9,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmdet.models.task_modules.coders.delta_xywh_bbox_coder.'
     'DeltaXYWHBBoxCoder.decode',
     backend='default')
-def deltaxywhbboxcoder__decode(ctx,
-                               self,
+def deltaxywhbboxcoder__decode(self,
                                bboxes,
                                pred_bboxes,
                                max_shape=None,
@@ -51,8 +50,7 @@ def deltaxywhbboxcoder__decode(ctx,
     func_name='mmdet.models.task_modules.coders'
     '.delta_xywh_bbox_coder.delta2bbox',
     backend='default')
-def delta2bbox(ctx,
-               rois,
+def delta2bbox(rois,
                deltas,
                means=(0., 0., 0., 0.),
                stds=(1., 1., 1., 1.),
@@ -143,8 +141,7 @@ def delta2bbox(ctx,
     func_name='mmdet.models.task_modules.coders.'
     'delta_xywh_bbox_coder.delta2bbox',
     backend='ncnn')
-def delta2bbox__ncnn(ctx,
-                     rois,
+def delta2bbox__ncnn(rois,
                      deltas,
                      means=(0., 0., 0., 0.),
                      stds=(1., 1., 1., 1.),

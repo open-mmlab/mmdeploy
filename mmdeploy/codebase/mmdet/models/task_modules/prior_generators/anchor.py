@@ -4,7 +4,7 @@ from typing import Tuple
 import torch
 from torch.onnx import symbolic_helper
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 
 
 class GridPriorsTRTOp(torch.autograd.Function):
@@ -70,7 +70,6 @@ grid_priors_trt = GridPriorsTRTOp.apply
     'AnchorGenerator.single_level_grid_priors',
     backend='tensorrt')
 def anchorgenerator__single_level_grid_priors__trt(
-        ctx,
         self,
         featmap_size: Tuple[int],
         level_idx: int,
@@ -91,6 +90,10 @@ def anchorgenerator__single_level_grid_priors__trt(
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
     """
+    ctx = FunctionContextContextCaller.get_instance(
+        'mmdet.models.task_modules.prior_generators.'
+        'AnchorGenerator.single_level_grid_priors')
+
     feat_h, feat_w = featmap_size
     if isinstance(feat_h, int) and isinstance(feat_w, int):
         return ctx.origin_func(self, featmap_size, level_idx, dtype,

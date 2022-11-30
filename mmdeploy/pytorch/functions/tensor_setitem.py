@@ -4,12 +4,14 @@ from typing import Sequence
 import torch
 from packaging.version import parse
 
-from mmdeploy.core import FUNCTION_REWRITER, SYMBOLIC_REWRITER
+from mmdeploy.core import (FUNCTION_REWRITER, SYMBOLIC_REWRITER,
+                           FunctionContextContextCaller)
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.__setitem__')
-def tensor__setitem__default(ctx, self, key, value):
+def tensor__setitem__default(self, key, value):
     """Rewrite `setitem` to ease the index put."""
+    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.__setitem__')
 
     # only support torch>=1.9.0
     if parse(torch.__version__) < parse('1.9.0'):

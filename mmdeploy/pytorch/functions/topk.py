@@ -3,15 +3,14 @@ from typing import Optional
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 from mmdeploy.utils import get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.topk', backend='default')
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='default')
-def topk__dynamic(ctx,
-                  input: torch.Tensor,
+def topk__dynamic(input: torch.Tensor,
                   k: int,
                   dim: Optional[int] = None,
                   largest: bool = True,
@@ -20,7 +19,7 @@ def topk__dynamic(ctx,
 
     Cast k to tensor and makesure k is smaller than input.shape[dim].
     """
-
+    ctx = FunctionContextContextCaller.get_instance('torch.topk')
     if dim is None:
         dim = int(input.ndim - 1)
     size = input.shape[dim]

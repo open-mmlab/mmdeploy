@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 
 
 class GemmOp(torch.autograd.Function):
@@ -30,7 +30,6 @@ class GemmOp(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.linear', backend='ncnn')
 def linear__ncnn(
-    ctx,
     input: torch.Tensor,
     weight: torch.Tensor,
     bias: Optional[Union[torch.Tensor, torch.NoneType]] = None,
@@ -41,6 +40,10 @@ def linear__ncnn(
     add extra reshape and transpose to support linear operation of different
     input shape.
     """
+
+    ctx = FunctionContextContextCaller.get_instance(
+        'torch.nn.functional.linear')
+
     origin_func = ctx.origin_func
     dim = input.dim()
 

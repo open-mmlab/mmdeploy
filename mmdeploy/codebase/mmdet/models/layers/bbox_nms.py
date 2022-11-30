@@ -2,7 +2,7 @@
 import torch
 from torch import Tensor
 
-from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller, mark
 from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
 from mmdeploy.utils import IR, is_dynamic_batch
 from mmdeploy.utils.constants import Backend
@@ -166,8 +166,7 @@ def _multiclass_nms_single(boxes: Tensor,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms')
-def multiclass_nms__default(ctx,
-                            boxes: Tensor,
+def multiclass_nms__default(boxes: Tensor,
                             scores: Tensor,
                             max_output_boxes_per_class: int = 1000,
                             iou_threshold: float = 0.5,
@@ -199,6 +198,8 @@ def multiclass_nms__default(ctx,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
             and `labels` of shape [N, num_det].
     """
+    ctx = FunctionContextContextCaller.get_instance(
+        'mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms')
     deploy_cfg = ctx.cfg
     batch_size = boxes.size(0)
     if not is_dynamic_batch(deploy_cfg) and batch_size == 1:
@@ -224,8 +225,7 @@ def multiclass_nms__default(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms',
     backend='tensorrt')
-def multiclass_nms_static(ctx,
-                          boxes: Tensor,
+def multiclass_nms_static(boxes: Tensor,
                           scores: Tensor,
                           max_output_boxes_per_class: int = 1000,
                           iou_threshold: float = 0.5,
@@ -279,8 +279,7 @@ def multiclass_nms(*args, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms',
     backend=Backend.COREML.value)
-def multiclass_nms__coreml(ctx,
-                           boxes: Tensor,
+def multiclass_nms__coreml(boxes: Tensor,
                            scores: Tensor,
                            max_output_boxes_per_class: int = 1000,
                            iou_threshold: float = 0.5,
@@ -340,8 +339,7 @@ def multiclass_nms__coreml(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.models.layers.bbox_nms._multiclass_nms',
     ir=IR.TORCHSCRIPT)
-def multiclass_nms__torchscript(ctx,
-                                boxes: Tensor,
+def multiclass_nms__torchscript(boxes: Tensor,
                                 scores: Tensor,
                                 max_output_boxes_per_class: int = 1000,
                                 iou_threshold: float = 0.5,
@@ -441,8 +439,7 @@ class AscendBatchNMSOp(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.core.post_processing._multiclass_nms',
     backend='ascend')
-def multiclass_nms__ascend(ctx,
-                           boxes: Tensor,
+def multiclass_nms__ascend(boxes: Tensor,
                            scores: Tensor,
                            max_output_boxes_per_class: int = 1000,
                            iou_threshold: float = 0.5,
