@@ -21,7 +21,7 @@
 
 ______________________________________________________________________
 
-This tutorial takes `mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1.zip` and `mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip` as examples to show how to use the prebuilt packages.
+This tutorial takes `mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1.zip` and `mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip` as examples to show how to use the prebuilt packages.
 
 The directory structure of the prebuilt package is as follows, where the `dist` folder is about model converter, and the `sdk` folder is related to model inference.
 
@@ -80,9 +80,9 @@ In order to use `ONNX Runtime` backend, you should also do the following steps.
 5. Install `mmdeploy` (Model Converter) and `mmdeploy_python` (SDK Python API).
 
    ```bash
-   # download mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1.zip
-   pip install .\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.10.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.10.0-cp38-none-win_amd64.whl
+   # download mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1.zip
+   pip install .\mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.11.0-py38-none-win_amd64.whl
+   pip install .\mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.11.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
@@ -107,9 +107,9 @@ In order to use `TensorRT` backend, you should also do the following steps.
 5. Install `mmdeploy` (Model Converter) and `mmdeploy_python` (SDK Python API).
 
    ```bash
-   # download mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
-   pip install .\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.10.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.10.0-cp38-none-win_amd64.whl
+   # download mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
+   pip install .\mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.11.0-py38-none-win_amd64.whl
+   pip install .\mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.11.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
@@ -138,7 +138,7 @@ After preparation work, the structure of the current working directory should be
 
 ```
 ..
-|-- mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -186,7 +186,7 @@ After installation of mmdeploy-tensorrt prebuilt package, the structure of the c
 
 ```
 ..
-|-- mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -249,8 +249,8 @@ The structure of current working directory：
 
 ```
 .
-|-- mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-|-- mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -311,7 +311,7 @@ The following describes how to use the SDK's C API for inference
 
 1. Build examples
 
-   Under `mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\example` directory
+   Under `mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\sdk\example` directory
 
    ```
    // Path should be modified according to the actual location
@@ -319,7 +319,7 @@ The following describes how to use the SDK's C API for inference
    cd build
    cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
-     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
+     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\sdk\lib\cmake\MMDeploy `
      -DONNXRUNTIME_DIR=C:\Deps\onnxruntime\onnxruntime-win-gpu-x64-1.8.1
 
    cmake --build . --config Release
@@ -329,7 +329,7 @@ The following describes how to use the SDK's C API for inference
 
    :point_right: The purpose is to make the exe find the relevant dll
 
-   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\sdk\bin`) to the `PATH`.
+   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\sdk\bin`) to the `PATH`.
 
    If choose to copy the dynamic libraries, copy the dll in the bin directory to the same level directory of the just compiled exe (build/Release).
 
@@ -337,7 +337,7 @@ The following describes how to use the SDK's C API for inference
 
    It is recommended to use `CMD` here.
 
-   Under `mmdeploy-0.10.0-windows-amd64-onnxruntime1.8.1\\sdk\\example\\build\\Release` directory：
+   Under `mmdeploy-0.11.0-windows-amd64-onnxruntime1.8.1\\sdk\\example\\build\\Release` directory：
 
    ```
    .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmclassification\demo\demo.JPEG
@@ -347,7 +347,7 @@ The following describes how to use the SDK's C API for inference
 
 1. Build examples
 
-   Under `mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example` directory
+   Under `mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example` directory
 
    ```
    // Path should be modified according to the actual location
@@ -355,7 +355,7 @@ The following describes how to use the SDK's C API for inference
    cd build
    cmake ..\cpp -A x64 -T v142 `
      -DOpenCV_DIR=C:\Deps\opencv\build\x64\vc15\lib `
-     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
+     -DMMDeploy_DIR=C:\workspace\mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8 2.3.0\sdk\lib\cmake\MMDeploy `
      -DTENSORRT_DIR=C:\Deps\tensorrt\TensorRT-8.2.3.0 `
      -DCUDNN_DIR=C:\Deps\cudnn\8.2.1
    cmake --build . --config Release
@@ -365,7 +365,7 @@ The following describes how to use the SDK's C API for inference
 
    :point_right: The purpose is to make the exe find the relevant dll
 
-   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`) to the `PATH`.
+   If choose to add environment variables, add the runtime libraries path of `mmdeploy` (`mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\bin`) to the `PATH`.
 
    If choose to copy the dynamic libraries, copy the dll in the bin directory to the same level directory of the just compiled exe (build/Release).
 
@@ -373,7 +373,7 @@ The following describes how to use the SDK's C API for inference
 
    It is recommended to use `CMD` here.
 
-   Under `mmdeploy-0.10.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example\\build\\Release` directory
+   Under `mmdeploy-0.11.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\sdk\\example\\build\\Release` directory
 
    ```
    .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmclassification\demo\demo.JPEG
