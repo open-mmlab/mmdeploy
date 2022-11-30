@@ -108,7 +108,7 @@ int mmdeploy_video_decoder_info(mmdeploy_video_decoder_t decoder, mmdeploy_video
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  MMDEPLOY_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 void mmdeploy_video_decoder_destroy(mmdeploy_video_decoder_t decoder) {
@@ -132,7 +132,7 @@ int mmdeploy_video_decoder_read(mmdeploy_video_decoder_t decoder, mmdeploy_mat_t
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  MMDEPLOY_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 int mmdeploy_video_decoder_grab(mmdeploy_video_decoder_t decoder) {
@@ -147,7 +147,7 @@ int mmdeploy_video_decoder_grab(mmdeploy_video_decoder_t decoder) {
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  MMDEPLOY_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 int mmdeploy_video_decoder_retrieve(mmdeploy_video_decoder_t decoder, mmdeploy_mat_t** dev_results,
@@ -165,7 +165,7 @@ int mmdeploy_video_decoder_retrieve(mmdeploy_video_decoder_t decoder, mmdeploy_m
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  MMDEPLOY_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 void mmdeploy_video_decoder_release_result(mmdeploy_mat_t* results, int count) {
