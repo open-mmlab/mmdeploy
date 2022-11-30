@@ -85,7 +85,7 @@ pipeline {
 
     stages {
         stage('Set Config') {
-            agent { label 'deploy_linux' }
+            agent { label params.EXEC_NODE }
             steps {
                 sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp.config"
                 sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' tests/jenkins/conf/tmp.config"
