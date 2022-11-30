@@ -21,6 +21,7 @@ set(COMMON_LIST
         model
         executor
         image_decoder
+        video_decoder
         pipeline)
 
 set(TASK_LIST ${MMDEPLOY_TASKS})
