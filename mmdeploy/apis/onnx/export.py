@@ -111,26 +111,74 @@ def export(model: torch.nn.Module,
     if 'onnx_custom_passes' not in context_info:
         onnx_custom_passes = optimize_onnx if optimize else None
         context_info['onnx_custom_passes'] = onnx_custom_passes
+
     with RewriterContext(**context_info), torch.no_grad():
+
+        if 'quantizer' in deploy_cfg:
+            from mmrazor.registry import MODELS
+            quantizer = MODELS.build(deploy_cfg.quantizer)
+            patched_model = quantizer.prepare_for_mmdeploy(patched_model, args)
+
         # patch input_metas
         if input_metas is not None:
             assert isinstance(
                 input_metas, dict
             ), f'Expect input_metas type is dict, get {type(input_metas)}.'
-            model_forward = model.forward
-            model.forward = partial(model.forward, **input_metas)
+            model_forward = patched_model.forward
 
-        torch.onnx.export(
-            patched_model,
-            args,
-            output_path,
-            export_params=True,
-            input_names=input_names,
-            output_names=output_names,
-            opset_version=opset_version,
-            dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=keep_initializers_as_inputs,
-            verbose=verbose)
+            # input_metas['data_samples'] = None
+
+            def wrap_forward(forward):
+
+                def wrapper(*arg, **kwargs):
+                    return forward(*arg, **kwargs)
+
+                return wrapper
+
+            patched_model.forward = wrap_forward(patched_model.forward)
+            patched_model.forward = partial(patched_model.forward,
+                                            **input_metas)
+
+        if 'quantizer' in deploy_cfg:
+
+            from torch.onnx import CheckerError
+            symbolic_output_path = output_path.replace('.onnx',
+                                                       '_symbolic.onnx')
+            try:
+                torch.onnx.export(
+                    patched_model,
+                    args,
+                    symbolic_output_path,
+                    export_params=True,
+                    input_names=input_names,
+                    output_names=output_names,
+                    opset_version=opset_version,
+                    dynamic_axes=dynamic_axes,
+                    keep_initializers_as_inputs=keep_initializers_as_inputs,
+                    verbose=verbose)
+
+            except CheckerError:
+                pass
+
+            from mmdeploy.core import OpenVinoQuantizeExportor
+
+            exporter = OpenVinoQuantizeExportor(symbolic_output_path,
+                                                output_path)
+            exporter.export()
+
+        else:
+
+            torch.onnx.export(
+                patched_model,
+                args,
+                output_path,
+                export_params=True,
+                input_names=input_names,
+                output_names=output_names,
+                opset_version=opset_version,
+                dynamic_axes=dynamic_axes,
+                keep_initializers_as_inputs=keep_initializers_as_inputs,
+                verbose=verbose)
 
         if input_metas is not None:
-            model.forward = model_forward
+            patched_model.forward = model_forward
