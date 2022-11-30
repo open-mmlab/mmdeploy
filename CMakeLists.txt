@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 1.0.0rc0)
+project(MMDeploy VERSION 0.10.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
