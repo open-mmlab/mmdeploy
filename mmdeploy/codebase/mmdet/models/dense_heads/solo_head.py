@@ -38,16 +38,11 @@ def solohead__predict_by_feat__default(ctx, self,
     batch_mlvl_mask_preds = torch.cat(mlvl_mask_preds, dim=1)
     featmap_size = batch_mlvl_mask_preds.size()[-2:]
     batch_mlvl_cls_scores, cls_labels = torch.max(batch_mlvl_cls_scores, -1)
-    # topk fliter
-    batch_mlvl_cls_scores, cls_indices = torch.topk(
-        batch_mlvl_cls_scores.view(-1), cfg.nms_pre)
-    batch_mlvl_mask_preds = batch_mlvl_mask_preds[0, cls_indices, ...]
-    cls_labels = cls_labels[0, cls_indices, ...]
-    strides = strides[cls_indices]
+
     # no topk
-    # score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
-    # batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
-    #     score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
+    score_mask = (batch_mlvl_cls_scores > cfg.score_thr)
+    batch_mlvl_cls_scores = batch_mlvl_cls_scores.where(
+        score_mask, batch_mlvl_cls_scores.new_zeros(1)).view(-1)
 
     cls_labels = cls_labels.view(-1)
 
