@@ -19,7 +19,7 @@ def ga_rpn_head__get_bboxes(ctx,
                             cfg=None,
                             rescale=None,
                             **kwargs):
-    """Rewrite `get_bboxes` of `RPNHead` for default backend.
+    """Rewrite `get_bboxes` of `GARPNHead` for default backend.
 
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
