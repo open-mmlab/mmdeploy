@@ -38,7 +38,7 @@
 
 ```bash
 # install pytoch & mmcv
-conda install pytorch==1.9.0 torchvision==1.0.0rc0 -c pytorch
+conda install pytorch==1.9.0 0.10.0 -c pytorch
 pip install -U openmim
 mim install "mmcv>=2.0.0rc1"
 ```
