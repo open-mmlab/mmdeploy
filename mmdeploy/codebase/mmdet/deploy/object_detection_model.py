@@ -16,8 +16,8 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_ir_config, get_partition_config, load_config,
-                            get_quantization_config)
+                            get_ir_config, get_partition_config,
+                            get_quantization_config, load_config)
 
 # Use registry to store models with different partition methods
 # If a model doesn't need to partition, we don't need this registry
