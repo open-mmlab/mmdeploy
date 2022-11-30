@@ -79,7 +79,7 @@ MMDEPLOY_API int mmdeploy_video_decoder_read(mmdeploy_video_decoder_t decoder,
 MMDEPLOY_API int mmdeploy_video_decoder_grab(mmdeploy_video_decoder_t decoder);
 
 /**
- *  @brief Retrieve last grabed frame
+ *  @brief Retrieve last grabbed frame
  *  @param[in] decoder decoder handle
  *  @param[out] dev_results decode results with data on cuda
  *  @param[out] host_results decode results with data on cpu
