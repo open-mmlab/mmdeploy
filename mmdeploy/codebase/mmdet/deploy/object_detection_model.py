@@ -16,7 +16,8 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_ir_config, get_partition_config, load_config)
+                            get_ir_config, get_partition_config, load_config,
+                            get_quantization_config)
 
 # Use registry to store models with different partition methods
 # If a model doesn't need to partition, we don't need this registry
@@ -680,7 +681,7 @@ class RKNNModel(End2EndModel):
     def __init__(self, backend: Backend, backend_files: Sequence[str],
                  device: str, model_cfg: Union[str, Config],
                  deploy_cfg: Union[str, Config], **kwargs):
-        assert backend == Backend.RKNN, f'only supported ncnn, but give \
+        assert backend == Backend.RKNN, f'only supported rknn, but give \
             {backend.value}'
 
         super(RKNNModel, self).__init__(backend, backend_files, device,
@@ -688,6 +689,8 @@ class RKNNModel(End2EndModel):
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
+        self.batch_size = get_quantization_config(deploy_cfg).get(
+            'rknn_batch_size', -1)
 
     def _init_wrapper(self, backend, backend_files, device):
         """Initialize backend wrapper.
@@ -799,6 +802,10 @@ class RKNNModel(End2EndModel):
             list[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
+        if self.batch_size > len(data_samples):
+            pad_len = self.batch_size - len(data_samples)
+            data_samples = data_samples + [data_samples[0]] * pad_len
+            inputs = torch.cat([inputs] + [inputs[:1, ...]] * pad_len, 0)
         outputs = self.wrapper({self.input_name: inputs})
         outputs = [i for i in outputs.values()]
         ret = self._get_bboxes(outputs, [i.metainfo for i in data_samples])

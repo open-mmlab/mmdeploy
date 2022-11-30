@@ -70,12 +70,16 @@ def onnx2rknn(onnx_model: str,
 
     dataset_cfg = quantization_cfg.get('dataset', None)
     do_quantization = quantization_cfg.get('do_quantization', False)
+    rknn_batch_size = quantization_cfg.get('rknn_batch_size', -1)
     if dataset_cfg is None and dataset_file is None:
         do_quantization = False
         logger.warning('no dataset passed in, quantization is skipped')
     if dataset_cfg is not None:
         dataset_file = dataset_cfg
-    ret = rknn.build(do_quantization=do_quantization, dataset=dataset_file)
+    ret = rknn.build(
+        do_quantization=do_quantization,
+        dataset=dataset_file,
+        rknn_batch_size=rknn_batch_size)
     if ret != 0:
         logger.error('Build model failed!')
         exit(ret)
