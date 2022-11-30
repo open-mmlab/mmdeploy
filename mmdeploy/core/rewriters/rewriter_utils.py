@@ -5,6 +5,8 @@ from abc import ABCMeta, abstractmethod
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from mmengine.utils import ManagerMixin
+
 import mmdeploy
 from mmdeploy.utils.constants import IR, Backend
 
@@ -372,10 +374,39 @@ class ContextCaller:
 
         # Rewrite function should not call a member function, so we use a
         # wrapper to generate a Callable object.
+        # @wraps(self.func)
         def wrapper(*args, **kwargs):
             # Add a new argument (context message) to function
             # Because "self.func" is a function but not a member function,
             # we should pass self as the first argument
             return self.func(self, *args, **kwargs)
+
+        return wrapper
+
+
+class FunctionContextContextCaller(ManagerMixin):
+
+    def __init__(self, name: str = '', **kwargs):
+        super().__init__(name, **kwargs)
+
+    def register_orgin_func(self, origin_func):
+        self.origin_func = origin_func
+
+    def register_cfg(self, cfg):
+        self.cfg = cfg
+
+    def register_extra_kwargs(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+    def get_wrapped_caller(self, func):
+        # Rewrite function should not call a member function, so we use a
+        # wrapper to generate a Callable object.
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # Add a new argument (context message) to function
+            # Because "self.func" is a function but not a member function,
+            # we should pass self as the first argument
+            return func(*args, **kwargs)
 
         return wrapper

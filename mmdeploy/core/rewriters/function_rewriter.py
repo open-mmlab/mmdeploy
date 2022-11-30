@@ -3,8 +3,8 @@ from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
 
 from mmdeploy.utils import IR, Backend, get_root_logger
-from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
-                             import_function)
+from .rewriter_utils import (Checker, FunctionContextContextCaller,
+                             RewriterRegistry, import_function)
 
 
 def _replace_all_obj(obj: Any,
@@ -183,14 +183,21 @@ class FunctionRewriter:
                 rewrite_function = record_dict['_object']
                 extra_kwargs = kwargs.copy()
                 extra_kwargs.update(record_dict)
-                context_caller = ContextCaller(
-                    rewrite_function, origin_func, cfg,
-                    **extra_kwargs).get_wrapped_caller()
+
+                context_caller = FunctionContextContextCaller.get_instance(
+                    function_path)
+                context_caller.register_orgin_func(origin_func)
+                context_caller.register_cfg(cfg)
+                context_caller.register_extra_kwargs(**extra_kwargs)
+
+                # context_caller = ContextCaller(
+                #     rewrite_function, origin_func, cfg,
+                #     **extra_kwargs).get_wrapped_caller()
 
                 # Cache new the function to avoid homonymic bug
                 new_functions.append(
-                    dict(func_path=function_path, origin_func=context_caller))
-
+                    dict(
+                        func_path=function_path, origin_func=rewrite_function))
         for func_dict in new_functions:
             function_path = func_dict['func_path']
             new_function = func_dict['origin_func']
