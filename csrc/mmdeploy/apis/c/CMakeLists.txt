@@ -42,6 +42,10 @@ target_link_libraries(mmdeploy_executor PUBLIC
         mmdeploy_execution mmdeploy_common)
 target_link_libraries(mmdeploy_pipeline PUBLIC
         mmdeploy_executor mmdeploy_model mmdeploy_common)
+target_link_libraries(mmdeploy_image_decoder PUBLIC
+        mmdeploy_decoder)
+target_link_libraries(mmdeploy_video_decoder PUBLIC
+        mmdeploy_decoder)
 
 foreach (TASK ${TASK_LIST})
     set(TARGET_NAME mmdeploy_${TASK})
