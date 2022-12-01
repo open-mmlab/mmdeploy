@@ -27,7 +27,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I:** Install precompiled package
 
-> **TODO**. MMDeploy hasn't released based on dev-1.x branch.
+> **TODO**. MMDeploy hasn't released based on 1.x branch.
 
 **Method II:** Build using scripts
 
@@ -35,7 +35,7 @@ If your target platform is **Ubuntu 18.04 or later version**, we encourage you t
 [scripts](../01-how-to-build/build_from_script.md). For example, the following commands install mmdeploy as well as inference engine - `ONNX Runtime`.
 
 ```shell
-git clone --recursive -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+git clone --recursive -b 1.x https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
@@ -48,7 +48,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
 The command below shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 

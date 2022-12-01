@@ -223,7 +223,7 @@ It takes about 15 minutes to install ppl.cv on a Jetson Nano. So, please be pati
 ## Install MMDeploy
 
 ```shell
-git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b 1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
