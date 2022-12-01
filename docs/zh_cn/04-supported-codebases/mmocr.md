@@ -22,7 +22,7 @@ ______________________________________________________________________
 
 ### 安装 mmocr
 
-请参考[官网安装指南](https://mmocr.readthedocs.io/en/1.x/get_started/install.html).
+请参考[官网安装指南](https://mmocr.readthedocs.io/en/dev-1.x/get_started/install.html).
 
 ### 安装 mmdeploy
 
