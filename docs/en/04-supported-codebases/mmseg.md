@@ -54,7 +54,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmseg models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) to convert mmseg models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
 The command below shows an example about converting `unet` model to onnx model that can be inferred by ONNX Runtime.
 
@@ -76,7 +76,7 @@ python tools/deploy.py \
     --dump-info
 ```
 
-It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmseg) of all supported backends for mmsegmentation. The config filename pattern is:
+It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmseg) of all supported backends for mmsegmentation. The config filename pattern is:
 
 ```
 segmentation_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -87,7 +87,7 @@ segmentation_{backend}-{precision}_{static | dynamic}_{shape}.py
 - **{static | dynamic}:** static shape or dynamic shape
 - **{shape}:** input shape or shape range of a model
 
-Therefore, in the above example, you can also convert `unet` to other backend models by changing the deployment config file `segmentation_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmseg), e.g., converting to tensorrt-fp16 model by `segmentation_tensorrt-fp16_dynamic-512x1024-2048x2048.py`.
+Therefore, in the above example, you can also convert `unet` to other backend models by changing the deployment config file `segmentation_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmseg), e.g., converting to tensorrt-fp16 model by `segmentation_tensorrt-fp16_dynamic-512x1024-2048x2048.py`.
 
 ```{tip}
 When converting mmseg models to tensorrt models, --device should be set to "cuda"
@@ -184,7 +184,7 @@ img = img.astype(np.uint8)
 cv2.imwrite('output_segmentation.png', img)
 ```
 
-Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo).
 
 ## Supported models
 

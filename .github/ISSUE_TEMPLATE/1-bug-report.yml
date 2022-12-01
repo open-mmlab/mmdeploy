@@ -9,7 +9,7 @@ body:
     label: Checklist
     options:
     - label: I have searched related issues but cannot get the expected help.
-    - label: 2. I have read the [FAQ documentation](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/faq.md) but cannot get the expected help.
+    - label: 2. I have read the [FAQ documentation](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/faq.md) but cannot get the expected help.
     - label: 3. The bug has not been fixed in the latest version.
 - type: textarea
   attributes:

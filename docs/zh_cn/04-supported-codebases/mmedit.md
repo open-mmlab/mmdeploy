@@ -52,7 +52,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) 把 mmedit 模型一键式转换为推理后端模型。
 该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/docs/zh_cn/02-how-to-run/convert_model.md#使用方法).
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmedit)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmedit)。
 文件的命名模式是：
 
 ```
@@ -185,7 +185,7 @@ cv2.imwrite('output_restorer.bmp', result)
 ```
 
 除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
-你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo)学习其他语言接口的使用方法。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo)学习其他语言接口的使用方法。
 
 ## 模型支持列表
 
@@ -194,8 +194,8 @@ cv2.imwrite('output_restorer.bmp', result)
 | [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)    | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)   | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
 | [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |

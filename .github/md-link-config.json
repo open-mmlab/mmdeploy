@@ -1,7 +1,11 @@
 {
   "ignorePatterns": [
+
     {
-      "pattern": "^https://developer.nvidia.com//"
+      "pattern": "^https://developer.nvidia.com/"
+    },
+    {
+      "pattern": "^https://docs.openvino.ai/"
     },
     {
       "pattern": "^https://developer.android.com/"

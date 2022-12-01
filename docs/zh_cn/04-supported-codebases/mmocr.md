@@ -52,9 +52,9 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ## 模型转换
 
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/tools/deploy.py) 把 mmocr 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmocr)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmocr)。
 文件的命名模式是：
 
 ```
@@ -232,7 +232,7 @@ print(texts)
 ```
 
 除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
-你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo)学习其他语言接口的使用方法。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo)学习其他语言接口的使用方法。
 
 ## 模型支持列表
 

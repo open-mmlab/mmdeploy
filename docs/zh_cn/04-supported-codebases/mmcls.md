@@ -71,7 +71,7 @@ python tools/deploy.py \
     --dump-info
 ```
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/configs/mmcls)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmcls)。
 文件的命名模式是：
 
 ```
@@ -173,7 +173,7 @@ for label_id, score in result:
 ```
 
 除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
-你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo)学习其他语言接口的使用方法。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo)学习其他语言接口的使用方法。
 
 ## 模型支持列表
 

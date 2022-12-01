@@ -1,6 +1,6 @@
 # 第二章：解决模型部署中的难题
 
-在[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/chapter_01_introduction_to_model_deployment.html)中，我们部署了一个简单的超分辨率模型，一切都十分顺利。但是，上一个模型还有一些缺陷——图片的放大倍数固定是 4，我们无法让图片放大任意的倍数。现在，我们来尝试部署一个支持动态放大倍数的模型，体验一下在模型部署中可能会碰到的困难。
+在[第一章](https://mmdeploy.readthedocs.io/zh_CN/dev-1.x/tutorial/01_introduction_to_model_deployment.html)中，我们部署了一个简单的超分辨率模型，一切都十分顺利。但是，上一个模型还有一些缺陷——图片的放大倍数固定是 4，我们无法让图片放大任意的倍数。现在，我们来尝试部署一个支持动态放大倍数的模型，体验一下在模型部署中可能会碰到的困难。
 
 ## 模型部署中常见的难题
 
@@ -10,7 +10,7 @@
 - 新算子的实现。深度学习技术日新月异，提出新算子的速度往往快于 ONNX 维护者支持的速度。为了部署最新的模型，部署工程师往往需要自己在 ONNX 和推理引擎中支持新算子。
 - 中间表示与推理引擎的兼容问题。由于各推理引擎的实现不同，对 ONNX 难以形成统一的支持。为了确保模型在不同的推理引擎中有同样的运行效果，部署工程师往往得为某个推理引擎定制模型代码，这为模型部署引入了许多工作量。
 
-我们会在后续教程详细讲述解决这些问题的方法。如果对前文中 ONNX、推理引擎、中间表示、算子等名词感觉陌生，不用担心，可以阅读[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/chapter_01_introduction_to_model_deployment.html)，了解有关概念。
+我们会在后续教程详细讲述解决这些问题的方法。如果对前文中 ONNX、推理引擎、中间表示、算子等名词感觉陌生，不用担心，可以阅读[第一章](https://mmdeploy.readthedocs.io/zh_CN/dev-1.x/tutorial/01_introduction_to_model_deployment.html)，了解有关概念。
 
 现在，让我们对原来的 SRCNN 模型做一些小的修改，体验一下模型动态化对模型部署造成的困难，并学习解决该问题的一种方法。
 
@@ -38,7 +38,7 @@ def init_torch_model():
 
 现在，假设我们要做一个超分辨率的应用。我们的用户希望图片的放大倍数能够自由设置。而我们交给用户的，只有一个 .onnx 文件和运行超分辨率模型的应用程序。我们在不修改 .onnx 文件的前提下改变放大倍数。
 
-因此，我们必须修改原来的模型，令模型的放大倍数变成推理时的输入。在[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/chapter_01_introduction_to_model_deployment.html)中的 Python 脚本的基础上，我们做一些修改，得到这样的脚本：
+因此，我们必须修改原来的模型，令模型的放大倍数变成推理时的输入。在[第一章](https://mmdeploy.readthedocs.io/zh_CN/dev-1.x/tutorial/01_introduction_to_model_deployment.html)中的 Python 脚本的基础上，我们做一些修改，得到这样的脚本：
 
 ```python
 import torch
@@ -75,7 +75,7 @@ def init_torch_model():
     torch_model = SuperResolutionNet()
 
     # Please read the code about downloading 'srcnn.pth' and 'face.png' in
-    # https://mmdeploy.readthedocs.io/zh_CN/latest/tutorials/chapter_01_introduction_to_model_deployment.html#pytorch
+    # https://mmdeploy.readthedocs.io/zh_CN/dev-1.x/tutorial/01_introduction_to_model_deployment.html#pytorch
     state_dict = torch.load('srcnn.pth')['state_dict']
 
     # Adapt the checkpoint
