@@ -46,11 +46,11 @@ class BackendUtilsRegistry:
             enum_name = name.upper()
 
         def wrap_utils(cls):
-            from aenum import extend_enum
 
             from mmdeploy.utils import Backend
 
             if not hasattr(Backend, enum_name):
+                from aenum import extend_enum
                 extend_enum(Backend, enum_name, name)
 
             if name in self._backend_utils:
