@@ -4,12 +4,14 @@ pipeline {
         choice(
             name: 'CONFIG',
             choices : [
-                'default.config',
-                'default_2080.config',
-                'openmmlabv1_quicktest.config',
-                'openmmlabv1_quicktest.config',
-                'openmmlabv2_quicktest.config',
-                'win_default.config'
+                'Linux-3090_cuda-113_dev-1.x_full-test.config',
+                'Linux-3090_cuda-113_dev-1.x_quick-test.config',
+                'Linux-3090_cuda-113_master_full-test.config',
+                'Linux-3090_cuda-113_master_quick-test.config',
+                'Linux-2080_cuda-102_dev-1.x_full-test.config',
+                'Linux-2080_cuda-102_master_full-test.config',
+                'Linux-2080_cuda-111_dev-1.x_full-test.config',
+                'Linux-2080_cuda-111_master_full-test.config',
             ],
             description: 'select config'
         )
