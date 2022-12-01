@@ -2260,3 +2260,96 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
         run_with_backend=False)
 
     assert rewrite_outputs is not None
+
+
+def get_solo_head_model():
+    test_cfg = Config(
+        dict(
+            nms_pre=500,
+            score_thr=0.1,
+            mask_thr=0.5,
+            filter_thr=0.05,
+            kernel='gaussian',  # gaussian/linear
+            sigma=2.0,
+            max_per_img=100))
+    from mmdet.models.dense_heads import SOLOHead
+    model = SOLOHead(4, 32, feat_channels=32, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.OPENVINO])
+def test_solo_head_predict_by_feat(backend_type: Backend):
+    """Test predict_by_feat rewrite of solo head."""
+    check_backend(backend_type)
+    solo_head = get_solo_head_model()
+    s = 800
+    solo_head.cpu().eval()
+    batch_img_metas = [{'img_shape': (s, s, 3), 'ori_shape': (s, s, 3)}]
+
+    output_names = ['dets', 'labels', 'masks']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                    export_postprocess_mask=True))))
+    seed_everything(1234)
+    num_grids = [40, 36, 24, 16, 12]
+    mask_preds = [
+        torch.rand(1, num_grid**2, s // 4, s // 4) for num_grid in num_grids
+    ]
+    seed_everything(5678)
+    cls_scores = [
+        torch.rand(1, solo_head.num_classes, num_grid, num_grid)
+        for num_grid in num_grids
+    ]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'mlvl_mask_preds': mask_preds,
+        'mlvl_cls_scores': cls_scores,
+        'batch_img_metas': batch_img_metas,
+    }
+    model_outputs = get_model_outputs(solo_head, 'predict_by_feat',
+                                      model_inputs)
+
+    wrapped_model = WrapModel(
+        solo_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
+    rewrite_inputs = {
+        'mlvl_mask_preds': mask_preds,
+        'mlvl_cls_scores': cls_scores,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
