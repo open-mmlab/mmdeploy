@@ -59,8 +59,8 @@ python tools/package_tools/mmdeploy_builder.py \
 export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
 export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
 
-tar -cvf ${PREBUILD_DIR}/${onnxruntime_dirname}.tar.gz ${onnxruntime_dirname}
-tar -cvf ${PREBUILD_DIR}/${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
+tar -czvf ${PREBUILD_DIR}/${onnxruntime_dirname}.tar.gz ${onnxruntime_dirname}
+tar -czvf ${PREBUILD_DIR}/${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
 
 mv ${onnxruntime_dirname} ${tensorrt_dirname} ${PREBUILD_DIR}/
 
