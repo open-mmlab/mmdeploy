@@ -2,6 +2,8 @@
 
 import importlib
 
+from .backend_utils import CoreMLUtils
+
 
 def is_available():
     """Check whether coremltools is installed.
@@ -12,7 +14,7 @@ def is_available():
     return importlib.util.find_spec('coremltools') is not None
 
 
-__all__ = []
+__all__ = ['CoreMLUtils']
 
 if is_available():
     from . import ops

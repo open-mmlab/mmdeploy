@@ -3,6 +3,8 @@ import importlib
 import re
 import subprocess
 
+from .backend_utils import RKNNUtils
+
 
 def is_available():
     """Check whether rknn is installed.
@@ -24,7 +26,7 @@ def device_available():
     return match is not None
 
 
-__all__ = []
+__all__ = ['RKNNUtils']
 
 if is_available():
     from .wrapper import RKNNWrapper

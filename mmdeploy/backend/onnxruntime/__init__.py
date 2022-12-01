@@ -2,6 +2,7 @@
 import importlib
 import os.path as osp
 
+from .backend_utils import ONNXRuntimeUtils
 from .init_plugins import get_ops_path
 
 
@@ -25,10 +26,12 @@ def is_custom_ops_available():
     return osp.exists(onnxruntime_op_path)
 
 
+__all__ = ['ONNXRuntimeUtils']
+
 if is_available():
     try:
         # import wrapper if pytorch is available
         from .wrapper import ORTWrapper
-        __all__ = ['ORTWrapper']
+        __all__ += ['ORTWrapper']
     except Exception:
         pass

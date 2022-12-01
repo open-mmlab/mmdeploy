@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
+from .backend_utils import AscendUtils
 from .utils import update_sdk_pipeline
 
 
@@ -13,7 +14,7 @@ def is_available():
     return importlib.util.find_spec('acl') is not None
 
 
-__all__ = ['update_sdk_pipeline']
+__all__ = ['update_sdk_pipeline', 'AscendUtils']
 
 if is_available():
     from .wrapper import AscendWrapper, Error

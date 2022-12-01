@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
+from .backend_utils import PPLNNUtils
+
 
 def is_available():
     """Check whether pplnn is installed.
@@ -11,7 +13,7 @@ def is_available():
     return importlib.util.find_spec('pyppl') is not None
 
 
-__all__ = []
+__all__ = ['PPLNNUtils']
 
 if is_available():
     from .utils import register_engines

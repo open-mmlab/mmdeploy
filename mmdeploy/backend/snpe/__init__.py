@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
+from .backend_utils import SNPEUtils
 from .init_plugins import get_onnx2dlc_path
 from .onnx2dlc import from_onnx
 
@@ -18,7 +19,7 @@ def is_available():
     return osp.exists(onnx2dlc)
 
 
-__all__ = ['from_onnx']
+__all__ = ['from_onnx', 'SNPEUtils']
 
 if is_available():
     try:

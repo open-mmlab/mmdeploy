@@ -2,6 +2,7 @@
 import importlib
 import os.path as osp
 
+from .backend_utils import NCNNUtils
 from .init_plugins import get_onnx2ncnn_path, get_ops_path
 from .onnx2ncnn import from_onnx
 
@@ -32,7 +33,7 @@ def is_custom_ops_available():
     return has_pyncnn_ext and osp.exists(ncnn_ops_path)
 
 
-__all__ = ['from_onnx']
+__all__ = ['NCNNUtils', 'from_onnx']
 
 if is_available():
     try:
