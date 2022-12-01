@@ -11,7 +11,7 @@ pipeline {
                 'Linux-2080_cuda-102_dev-1.x_full-test.config',
                 'Linux-2080_cuda-102_master_full-test.config',
                 'Linux-2080_cuda-111_dev-1.x_full-test.config',
-                'Linux-2080_cuda-111_master_full-test.config',
+                'Linux-2080_cuda-111_master_full-test.config'
             ],
             description: 'select config'
         )
@@ -40,12 +40,23 @@ pipeline {
             defaultValue: true,
         )
         string(
+            name: 'repo_url',
+            defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
+        )
+        string(
+            name: 'mmdeploy_branch',
+            defaultValue: 'master'
+        )
+        string(
             name: 'codebase_list',
             defaultValue: 'mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction'
         )
-        string(
+        choice(
             name: 'exec_performance',
-            defaultValue: 'y'
+            choices: [
+                'y',
+                'n'
+            ]
         )
         string(
             name: 'exec_torch_versions',
@@ -63,25 +74,25 @@ pipeline {
             name: 'max_job_nums',
             defaultValue: '3'
         )
-        string(
-            name: 'repo_url',
-            defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
-        )
-        string(
-            name: 'mmdeploy_branch',
-            defaultValue: 'master'
-        )
+
         string(
             name: 'repo_version',
             defaultValue: 'v1.0'
         )
-        string(
+        choice(
             name: 'tensorrt_version',
-            defaultValue: '8.2.5.1'
+            choices: [
+                '8.2.5.1',
+                '8.4.1.5',
+                '8.2.3.0'
+            ]
         )
-        string(
+        choice(
             name: 'requirement',
-            defaultValue: 'requirementV1.0.json'
+            choices: [
+                'requirementV1.0.json',
+                'requirementV2.0.json'
+            ]
         )
     }
 
