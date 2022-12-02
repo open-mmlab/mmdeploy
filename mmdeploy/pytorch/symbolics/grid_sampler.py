@@ -50,11 +50,12 @@ def grid_sampler_ppl(g,
 
 
 @SYMBOLIC_REWRITER.register_symbolic('grid_sampler', is_pytorch=True)
-def grid_sampler__default(ctx, *args):
+def grid_sampler__default(*args):
     """Register default symbolic function for `grid_sampler`.
 
     Add support to grid_sample to ONNX.
     """
+    ctx = SYMBOLIC_REWRITER.get_context()
     backend = get_backend(ctx.cfg)
     if backend == Backend.PPLNN:
         return grid_sampler_ppl(*args)

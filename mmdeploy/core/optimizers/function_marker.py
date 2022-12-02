@@ -62,18 +62,20 @@ class Mark(torch.autograd.Function):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.symbolic')
-def mark_symbolic(rewriter, g, x, *args):
+def mark_symbolic(g, x, *args):
     """Rewrite symbolic of mark op."""
-    if cfg_apply_marks(rewriter.cfg):
-        return rewriter.origin_func(g, x, *args)
+    ctx = FUNCTION_REWRITER.get_context()
+    if cfg_apply_marks(ctx.cfg):
+        return ctx.origin_func(g, x, *args)
     return x
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.Mark.forward')
-def forward_of_mark(rewriter, ctx, x, dtype, shape, func, func_id, type, name,
-                    id, attrs) -> torch.Tensor:
+def forward_of_mark(ctx, x, dtype, shape, func, func_id, type, name, id,
+                    attrs) -> torch.Tensor:
     """Rewrite forward of mark op."""
+    rewriter = FUNCTION_REWRITER.get_context()
     deploy_cfg = rewriter.cfg
     # save calib data
     apply_marks = cfg_apply_marks(deploy_cfg)
@@ -182,7 +184,7 @@ def mark_tensors(xs: Any, func: str, func_id: int, io_type: str, ctx: Any,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.core.optimizers.function_marker.mark_tensors', ir=IR.TORCHSCRIPT)
-def remove_mark__torchscript(ctx, xs: Any, *args, **kwargs):
+def remove_mark__torchscript(xs: Any, *args, **kwargs):
     """Disable all marks for TorchScript backend.
 
     As the Node `mark` is not able to be traced, we just return original input

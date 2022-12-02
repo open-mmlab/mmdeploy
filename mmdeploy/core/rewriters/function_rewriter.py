@@ -4,7 +4,8 @@ from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
 
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
-                             import_function)
+                             copy_function, get_frame_qual_name,
+                             get_func_qual_name, import_function)
 
 
 def _replace_all_obj(obj: Any,
@@ -114,6 +115,7 @@ class FunctionRewriter:
 
     def __init__(self):
         self._registry = RewriterRegistry()
+        self._func_contexts = {}
 
     def register_rewriter(
             self,
@@ -140,6 +142,7 @@ class FunctionRewriter:
 
     def enter(self, cfg: Dict = dict(), env: Dict = dict(), **kwargs):
         """The implementation of function rewrite."""
+        self._func_contexts = {}
         # Get current records
         functions_records = self._registry.get_records(env)
 
@@ -181,15 +184,20 @@ class FunctionRewriter:
 
                 # Create context_caller
                 rewrite_function = record_dict['_object']
+                rewrite_function = copy_function(rewrite_function)
                 extra_kwargs = kwargs.copy()
                 extra_kwargs.update(record_dict)
-                context_caller = ContextCaller(
-                    rewrite_function, origin_func, cfg,
-                    **extra_kwargs).get_wrapped_caller()
+                context_caller = ContextCaller(rewrite_function, origin_func,
+                                               cfg, **extra_kwargs)
+
+                qualname = get_func_qual_name(rewrite_function)
+                self._func_contexts[qualname] = context_caller
+                self._func_contexts[function_path] = context_caller
 
                 # Cache new the function to avoid homonymic bug
                 new_functions.append(
-                    dict(func_path=function_path, origin_func=context_caller))
+                    dict(
+                        func_path=function_path, origin_func=rewrite_function))
 
         for func_dict in new_functions:
             function_path = func_dict['func_path']
@@ -205,3 +213,21 @@ class FunctionRewriter:
             _set_func(func_path, func)
         for func_path in self._additional_functions:
             _del_func(func_path)
+
+        self._func_contexts = {}
+
+    def get_context(self, key: Optional[str] = None) -> ContextCaller:
+        """Get the context of rewriter.
+
+        Args:
+            key: key to the context.
+
+        Returns:
+            ContextCaller: context of function
+        """
+        if key is None:
+            key = get_frame_qual_name(2)
+        ctx = self._func_contexts.get(key, None)
+        if ctx is None:
+            get_root_logger().warning(f'Can not found context of {key}')
+        return ctx

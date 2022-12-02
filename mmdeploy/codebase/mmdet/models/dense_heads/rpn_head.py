@@ -16,8 +16,7 @@ from mmdeploy.utils import Backend, is_dynamic_shape
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.rpn_head.'
     'RPNHead.predict_by_feat')
-def rpn_head__predict_by_feat(ctx,
-                              self,
+def rpn_head__predict_by_feat(self,
                               cls_scores: List[Tensor],
                               bbox_preds: List[Tensor],
                               score_factors: Optional[List[Tensor]] = None,
@@ -61,6 +60,7 @@ def rpn_head__predict_by_feat(ctx,
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
     img_metas = batch_img_metas
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
@@ -163,8 +163,7 @@ def rpn_head__predict_by_feat(ctx,
 # TODO: Fix for 1.x
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.RPNHead.get_bboxes', backend=Backend.NCNN.value)
-def rpn_head__get_bboxes__ncnn(ctx,
-                               self,
+def rpn_head__get_bboxes__ncnn(self,
                                cls_scores,
                                bbox_preds,
                                img_metas,
@@ -201,6 +200,7 @@ def rpn_head__get_bboxes__ncnn(ctx,
         Else:
             tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg)

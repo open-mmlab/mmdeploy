@@ -15,8 +15,7 @@ from mmdeploy.utils import Backend
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.yolox_head.'
     'YOLOXHead.predict_by_feat')
-def yolox_head__predict_by_feat(ctx,
-                                self,
+def yolox_head__predict_by_feat(self,
                                 cls_scores: List[Tensor],
                                 bbox_preds: List[Tensor],
                                 objectnesses: Optional[List[Tensor]],
@@ -57,6 +56,8 @@ def yolox_head__predict_by_feat(ctx,
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
     """
+    ctx = FUNCTION_REWRITER.get_context()
+
     # mark pred_maps
     @mark('yolo_head', inputs=['cls_scores', 'bbox_preds', 'objectnesses'])
     def __mark_pred_maps(cls_scores, bbox_preds, objectnesses):
@@ -118,7 +119,6 @@ def yolox_head__predict_by_feat(ctx,
     'YOLOXHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def yolox_head__predict_by_feat__ncnn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -162,6 +162,7 @@ def yolox_head__predict_by_feat__ncnn(
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
     from mmdeploy.utils import get_root_logger
     from mmdeploy.utils.config_utils import is_dynamic_shape

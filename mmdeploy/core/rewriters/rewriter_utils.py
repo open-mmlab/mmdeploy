@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import functools
 import inspect
+import types
 import warnings
 from abc import ABCMeta, abstractmethod
 from functools import wraps
@@ -379,3 +381,44 @@ class ContextCaller:
             return self.func(self, *args, **kwargs)
 
         return wrapper
+
+
+def get_func_qual_name(func: Callable) -> str:
+    """get function name."""
+    assert isinstance(func, Callable), f'{func} is not a Callable object.'
+    _func_name = None
+    if hasattr(func, '__qualname__'):
+        _func_name = f'{func.__module__}.{func.__qualname__}'
+    elif hasattr(func, '__class__'):
+        _func_name = func.__class__
+    else:
+        _func_name = str(func)
+    return _func_name
+
+
+def get_frame_qual_name(top: int = 1) -> str:
+    """get frame name."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
+
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    module_name = inspect.getmodule(func).__name__
+
+    return f'{module_name}.{func_name}'
+
+
+def copy_function(f: types.FunctionType):
+    """Copy the function."""
+    g = types.FunctionType(
+        f.__code__,
+        f.__globals__,
+        name=f.__name__,
+        argdefs=f.__defaults__,
+        closure=f.__closure__)
+    g = functools.update_wrapper(g, f)
+    g.__kwdefaults__ = f.__kwdefaults__
+    return g

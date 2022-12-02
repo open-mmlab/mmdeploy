@@ -27,8 +27,7 @@ def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.single_stage.SingleStageDetector.forward')
-def single_stage_detector__forward(ctx,
-                                   self,
+def single_stage_detector__forward(self,
                                    batch_inputs: torch.Tensor,
                                    data_samples: OptSampleList = None,
                                    mode: str = 'tensor',
@@ -53,6 +52,7 @@ def single_stage_detector__forward(ctx,
             - labels (Tensor): Labels of bboxes, has a shape
                 (num_instances, ).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     data_samples = copy.deepcopy(data_samples)
     if data_samples is None:
         data_samples = [DetDataSample()]

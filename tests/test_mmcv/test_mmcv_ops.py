@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 import tempfile
 
 import onnx
 import pytest
 import torch
 
+from mmdeploy.apis.onnx import export
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import WrapFunction, check_backend
@@ -36,16 +38,15 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
     wrapped_model = WrapFunction(wrapped_function).eval()
     result = wrapped_model(boxes, scores)
     assert result is not None
-    onnx_file_path = tempfile.NamedTemporaryFile().name
-    with RewriterContext({}, opset=11), torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file_path,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            output_names=['result'],
-            opset_version=11)
+    onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    onnx_file_prefix = osp.splitext(onnx_file_path)[0]
+    export(
+        wrapped_model, (boxes, scores),
+        onnx_file_prefix,
+        keep_initializers_as_inputs=False,
+        input_names=['boxes', 'scores'],
+        output_names=['result'],
+        opset_version=11)
     model = onnx.load(onnx_file_path)
     assert model.graph.node[3].op_type == 'NonMaxSuppression'
 

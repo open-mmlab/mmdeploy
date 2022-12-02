@@ -5,7 +5,7 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 
 
 @SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
-def squeeze__default(ctx, g, self, dim=None):
+def squeeze__default(g, self, dim=None):
     """Register default symbolic function for `squeeze`.
 
     squeeze might be exported with IF node in ONNX, which is not supported in

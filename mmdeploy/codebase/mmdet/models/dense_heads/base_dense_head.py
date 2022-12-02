@@ -23,7 +23,6 @@ from mmdeploy.utils import Backend, is_dynamic_shape
     func_name='mmdet.models.dense_heads.base_dense_head.'
     'BaseDenseHead.predict_by_feat')
 def base_dense_head__predict_by_feat(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -65,6 +64,7 @@ def base_dense_head__predict_by_feat(
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
@@ -195,7 +195,6 @@ def base_dense_head__predict_by_feat(
     'BaseDenseHead.predict_by_feat',
     backend=Backend.RKNN.value)
 def base_dense_head__predict_by_feat__rknn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -237,6 +236,8 @@ def base_dense_head__predict_by_feat__rknn(
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
+
     # mark nodes for partition
     @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
     def __mark_dense_head(cls_scores, bbox_preds):
@@ -321,7 +322,6 @@ def base_dense_head__predict_by_feat__rknn(
     'BaseDenseHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def base_dense_head__predict_by_feat__ncnn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -360,6 +360,7 @@ def base_dense_head__predict_by_feat__ncnn(
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg), 'base_dense_head for ncnn\

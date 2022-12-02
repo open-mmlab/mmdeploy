@@ -6,7 +6,7 @@ from mmdeploy.utils import Backend
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcv.cnn.bricks.transformer.PatchEmbed.forward',
     backend=Backend.NCNN.value)
-def patch_embed__forward__ncnn(ctx, self, x):
+def patch_embed__forward__ncnn(self, x):
     """Rewrite `forward` of PatchEmbed for ncnn backend.
 
     Args:

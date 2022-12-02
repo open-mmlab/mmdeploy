@@ -9,7 +9,7 @@ from mmdeploy.utils import Backend
     func_name=  # noqa: E251
     'mmcls.models.backbones.vision_transformer.VisionTransformer.forward',
     backend=Backend.NCNN.value)
-def visiontransformer__forward__ncnn(ctx, self, x):
+def visiontransformer__forward__ncnn(self, x):
     """Rewrite `forward` of VisionTransformer for ncnn backend.
 
     The chunk in original VisionTransformer.forward will convert

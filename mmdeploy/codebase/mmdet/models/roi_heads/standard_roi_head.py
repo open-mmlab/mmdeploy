@@ -10,8 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.standard_roi_head.StandardRoIHead.predict_bbox')
-def standard_roi_head__predict_bbox(ctx,
-                                    self,
+def standard_roi_head__predict_bbox(self,
                                     x: Tuple[Tensor],
                                     batch_img_metas: List[dict],
                                     rpn_results_list: List[Tensor],
@@ -71,8 +70,7 @@ def standard_roi_head__predict_bbox(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.standard_roi_head.StandardRoIHead.predict_mask')
-def standard_roi_head__predict_mask(ctx,
-                                    self,
+def standard_roi_head__predict_mask(self,
                                     x: Tuple[Tensor],
                                     batch_img_metas: List[dict],
                                     results_list: List[Tensor],

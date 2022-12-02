@@ -16,11 +16,7 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.bbox_heads.convfc_bbox_head.ConvFCBBoxHead.forward'
 )
-@mark(
-    'bbox_head_forward',
-    inputs=['bbox_feats'],
-    outputs=['cls_score', 'bbox_pred'])
-def bbox_head__forward(ctx, self, x):
+def bbox_head__forward(self, x):
     """Rewrite `forward` for default backend.
 
     This function uses the specific `forward` function for the BBoxHead
@@ -36,13 +32,21 @@ def bbox_head__forward(ctx, self, x):
         has shape (N, num_det, num_cls) and the bbox_pred has shape
         (N, num_det, 4).
     """
-    return ctx.origin_func(self, x)
+    ctx = FUNCTION_REWRITER.get_context()
+
+    @mark(
+        'bbox_head_forward',
+        inputs=['bbox_feats'],
+        outputs=['cls_score', 'bbox_pred'])
+    def __forward(self, x):
+        return ctx.origin_func(self, x)
+
+    return __forward(self, x)
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.bbox_heads.bbox_head.BBoxHead.predict_by_feat')
-def bbox_head__predict_by_feat(ctx,
-                               self,
+def bbox_head__predict_by_feat(self,
                                rois: Tuple[Tensor],
                                cls_scores: Tuple[Tensor],
                                bbox_preds: Tuple[Tensor],
@@ -74,6 +78,7 @@ def bbox_head__predict_by_feat(ctx,
             - labels (Tensor): Labels of bboxes, has a shape
                 (num_instances, ).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert rois.ndim == 3, 'Only support export two stage ' \
                            'model to ONNX ' \
                            'with batch dimension. '
