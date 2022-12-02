@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from collections import defaultdict
 from typing import Callable, Dict, List, Optional, Sequence, Union
 
 import torch
@@ -7,8 +8,8 @@ from torch.onnx.symbolic_helper import parse_args
 
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
-                             copy_function, eval_with_import,
-                             get_frame_qual_name, get_func_qual_name)
+                             copy_function, eval_with_import, get_frame_func,
+                             get_func_qual_name)
 
 
 class SymbolicRewriter:
@@ -35,7 +36,7 @@ class SymbolicRewriter:
 
     def __init__(self) -> None:
         self._registry = RewriterRegistry()
-        self._func_contexts = {}
+        self._func_contexts = defaultdict(list)
 
     def register_symbolic(self,
                           func_name: str,
@@ -78,7 +79,7 @@ class SymbolicRewriter:
               **kwargs):
         """The implementation of symbolic register."""
         # clear context
-        self._func_contexts = {}
+        self._func_contexts.clear()
 
         # Get current records
         symbolic_records = self._registry.get_records(env)
@@ -98,8 +99,8 @@ class SymbolicRewriter:
 
             # register context
             qualname = get_func_qual_name(symbolic_function)
-            self._func_contexts[qualname] = context_caller
-            self._func_contexts[function_name] = context_caller
+            self._func_contexts[qualname].append(context_caller)
+            self._func_contexts[function_name].append(context_caller)
 
             if arg_descriptors is not None and len(arg_descriptors) > 0:
                 symbolic_function = parse_args(*arg_descriptors)(
@@ -146,7 +147,7 @@ class SymbolicRewriter:
     def exit(self):
         """The implementation of symbolic unregister."""
         # clear context
-        self._func_contexts = {}
+        self._func_contexts.clear()
 
         # Unregister pytorch op
         if hasattr(torch.onnx, 'unregister_custom_op_symbolic'):
@@ -175,9 +176,23 @@ class SymbolicRewriter:
         Returns:
             ContextCaller: context of function
         """
+        func = None
         if key is None:
-            key = get_frame_qual_name(2)
-        ctx = self._func_contexts.get(key, None)
+            func = get_frame_func(2)
+            key = get_func_qual_name(func)
+
+        # get all contexts
+        ctxs = self._func_contexts.get(key, [])
+
+        if func is None:
+            assert len(ctxs) == 1
+            return ctxs[0]
+
+        ctx = None
+        for tmp_ctx in ctxs:
+            if tmp_ctx.func == func:
+                ctx = tmp_ctx
+
         if ctx is None:
             get_root_logger().warning(f'Can not found context of {key}')
         return ctx

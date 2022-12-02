@@ -396,6 +396,19 @@ def get_func_qual_name(func: Callable) -> str:
     return _func_name
 
 
+def get_frame_func(top: int = 1) -> Callable:
+    """get func of frame."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
+
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    return func
+
+
 def get_frame_qual_name(top: int = 1) -> str:
     """get frame name."""
     frameinfo = inspect.stack()[top]
@@ -413,12 +426,16 @@ def get_frame_qual_name(top: int = 1) -> str:
 
 def copy_function(f: types.FunctionType):
     """Copy the function."""
+    # copy the global so we can get different func for different origin
+    glb = f.__globals__.copy()
+    name = f.__name__
     g = types.FunctionType(
         f.__code__,
-        f.__globals__,
-        name=f.__name__,
+        glb,
+        name=name,
         argdefs=f.__defaults__,
         closure=f.__closure__)
     g = functools.update_wrapper(g, f)
     g.__kwdefaults__ = f.__kwdefaults__
+    glb[name] = g
     return g

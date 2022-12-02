@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from collections import defaultdict
 from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
 
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
-                             copy_function, get_frame_qual_name,
-                             get_func_qual_name, import_function)
+                             copy_function, get_frame_func, get_func_qual_name,
+                             import_function)
 
 
 def _replace_all_obj(obj: Any,
@@ -115,7 +116,7 @@ class FunctionRewriter:
 
     def __init__(self):
         self._registry = RewriterRegistry()
-        self._func_contexts = {}
+        self._func_contexts = defaultdict(list)
 
     def register_rewriter(
             self,
@@ -142,7 +143,7 @@ class FunctionRewriter:
 
     def enter(self, cfg: Dict = dict(), env: Dict = dict(), **kwargs):
         """The implementation of function rewrite."""
-        self._func_contexts = {}
+        self._func_contexts.clear()
         # Get current records
         functions_records = self._registry.get_records(env)
 
@@ -191,8 +192,8 @@ class FunctionRewriter:
                                                cfg, **extra_kwargs)
 
                 qualname = get_func_qual_name(rewrite_function)
-                self._func_contexts[qualname] = context_caller
-                self._func_contexts[function_path] = context_caller
+                self._func_contexts[qualname].append(context_caller)
+                self._func_contexts[function_path].append(context_caller)
 
                 # Cache new the function to avoid homonymic bug
                 new_functions.append(
@@ -214,7 +215,7 @@ class FunctionRewriter:
         for func_path in self._additional_functions:
             _del_func(func_path)
 
-        self._func_contexts = {}
+        self._func_contexts.clear()
 
     def get_context(self, key: Optional[str] = None) -> ContextCaller:
         """Get the context of rewriter.
@@ -225,9 +226,23 @@ class FunctionRewriter:
         Returns:
             ContextCaller: context of function
         """
+        func = None
         if key is None:
-            key = get_frame_qual_name(2)
-        ctx = self._func_contexts.get(key, None)
+            func = get_frame_func(2)
+            key = get_func_qual_name(func)
+
+        # get all contexts
+        ctxs = self._func_contexts.get(key, [])
+
+        if func is None:
+            assert len(ctxs) == 1
+            return ctxs[0]
+
+        ctx = None
+        for tmp_ctx in ctxs:
+            if tmp_ctx.func == func:
+                ctx = tmp_ctx
+
         if ctx is None:
             get_root_logger().warning(f'Can not found context of {key}')
         return ctx
