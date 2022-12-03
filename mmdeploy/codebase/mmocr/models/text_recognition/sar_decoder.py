@@ -15,7 +15,6 @@ from mmdeploy.core import FUNCTION_REWRITER, MODULE_REWRITER
     '._2d_attention',
     backend='default')
 def parallel_sar_decoder__2d_attention(
-        ctx,
         self,
         decoder_input: torch.Tensor,
         feat: torch.Tensor,
@@ -85,8 +84,7 @@ def parallel_sar_decoder__2d_attention(
     func_name='mmocr.models.textrecog.decoders.SequentialSARDecoder'
     '._2d_attention',
     backend='default')
-def sequential_sar_decoder__2d_attention(ctx,
-                                         self,
+def sequential_sar_decoder__2d_attention(self,
                                          y_prev,
                                          feat,
                                          holistic_feat,
@@ -151,7 +149,6 @@ def sequential_sar_decoder__2d_attention(ctx,
     '.forward_test',
     backend='default')
 def sequential_sar_decoder__forward_test(
-        ctx,
         self,
         feat: torch.Tensor,
         out_enc: torch.Tensor,
