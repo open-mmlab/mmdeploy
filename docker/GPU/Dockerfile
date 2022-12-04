@@ -35,6 +35,28 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
+### change the pip & conda source for installing packages
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+    then \
+        /opt/conda/bin/pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple; \
+        /opt/conda/bin/conda config --set show_channel_urls yes; \
+        /opt/conda/bin/conda config --add default_channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2; \
+        /opt/conda/bin/conda config --add default_channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r; \
+        /opt/conda/bin/conda config --add default_channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main; \
+        echo "custom_channels:" >> ~/.condarc; \
+        echo "  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  pytorch-lts: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        echo "  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud" >> ~/.condarc; \
+        /opt/conda/bin/conda clean -i; \
+        echo "pip & conda using tsinghua source" ; \
+    else \
+        echo "Keep pip & conda the download source unchanged" ; \
+    fi
+
 ### install pytorch openmim
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch -c conda-forge -y \
     && /opt/conda/bin/pip install --no-cache-dir openmim
