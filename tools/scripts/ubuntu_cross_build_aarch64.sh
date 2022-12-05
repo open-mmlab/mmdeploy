@@ -33,7 +33,7 @@ build_ocv() {
   fi
   cd opencv/platforms/linux/cross_build_aarch64
   rm -rf CMakeCache.txt
-  cmake ../../.. -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
+  cmake ../../.. -DBUILD_TIFF=ON -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
   good_nproc
   jobs=$?
   make -j${jobs}
@@ -43,7 +43,7 @@ build_ocv() {
 
 build_ncnn() {
   if [ ! -e "ncnn" ];then
-    git clone https://github.com/tencent/ncnn --branch 20220729 --depth=1
+    git clone https://github.com/tencent/ncnn --branch 20221128 --depth=1
   fi
   if [ ! -e "ncnn/build_aarch64" ];then
     mkdir -p ncnn/build_aarch64

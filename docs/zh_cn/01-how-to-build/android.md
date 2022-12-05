@@ -98,7 +98,7 @@ make -j$(nproc) install
     <tr>
   <td>OpenJDK </td>
   <td>编译Java API之前需要先准备OpenJDK开发环境</br>
-  请参考 <a href='https://github.com/open-mmlab/mmdeploy/blob/1.x/csrc/mmdeploy/apis/java/README.md'> Java API 编译 </a> 进行构建.
+  请参考 <a href='https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/csrc/mmdeploy/apis/java/README.md'> Java API 编译 </a> 进行构建.
   </td>
   </tr>
 </tbody>
