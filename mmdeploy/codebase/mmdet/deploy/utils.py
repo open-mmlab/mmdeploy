@@ -165,7 +165,6 @@ def __pad_with_value_if_necessary(x: Tensor,
     'mmdeploy.codebase.mmdet.deploy.utils.__pad_with_value_if_necessary',
     backend=Backend.TENSORRT.value)
 def __pad_with_value_if_necessary__tensorrt(
-        ctx,
         x: Tensor,
         pad_dim: int,
         pad_size: int,

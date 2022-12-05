@@ -906,13 +906,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
-    from mmengine.structures import InstanceData
-    data_sample = DetDataSample()
-    img_meta = dict(img_shape=(800, 1216, 3))
-    gt_instances = InstanceData(metainfo=img_meta)
-    gt_instances.bboxes = torch.rand((5, 4))
-    gt_instances.labels = torch.rand((5, ))
-    data_sample.gt_instances = gt_instances
+    data_sample = DetDataSample(metainfo=dict(img_shape=(800, 1216, 3)))
     rewrite_inputs = {'batch_inputs': img}
     wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
