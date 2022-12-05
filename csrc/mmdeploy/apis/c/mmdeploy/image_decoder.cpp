@@ -129,7 +129,7 @@ int mmdeploy_image_decoder_apply(mmdeploy_image_decoder_t decoder, const char** 
   } catch (...) {
     MMDEPLOY_ERROR("unknown exception caught");
   }
-  MMDEPLOY_E_FAIL;
+  return MMDEPLOY_E_FAIL;
 }
 
 void mmdeploy_image_decoder_release_result(mmdeploy_mat_t* results, int count) {

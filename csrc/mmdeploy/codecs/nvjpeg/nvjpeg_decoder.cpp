@@ -3,6 +3,8 @@
 #include <cuda_runtime.h>
 #include <nvjpeg.h>
 
+#include <unordered_map>
+
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codecs/decoder.h"
@@ -11,11 +13,23 @@
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/mat.h"
 
-void check_nvjpeg(int err, int line, const char* file, bool exit) {
+void check_nvjpeg(nvjpegStatus_t err, int line, const char* file, bool exit) {
+  static std::unordered_map<nvjpegStatus_t, const char*> code2str = {
+      {NVJPEG_STATUS_SUCCESS, "NVJPEG_STATUS_SUCCESS"},
+      {NVJPEG_STATUS_NOT_INITIALIZED, "NVJPEG_STATUS_NOT_INITIALIZED"},
+      {NVJPEG_STATUS_INVALID_PARAMETER, "NVJPEG_STATUS_INVALID_PARAMETER"},
+      {NVJPEG_STATUS_BAD_JPEG, "NVJPEG_STATUS_BAD_JPEG"},
+      {NVJPEG_STATUS_JPEG_NOT_SUPPORTED, "NVJPEG_STATUS_JPEG_NOT_SUPPORTED"},
+      {NVJPEG_STATUS_ALLOCATOR_FAILURE, "NVJPEG_STATUS_ALLOCATOR_FAILURE"},
+      {NVJPEG_STATUS_EXECUTION_FAILED, "NVJPEG_STATUS_EXECUTION_FAILED"},
+      {NVJPEG_STATUS_ARCH_MISMATCH, "NVJPEG_STATUS_ARCH_MISMATCH"},
+      {NVJPEG_STATUS_INTERNAL_ERROR, "NVJPEG_STATUS_INTERNAL_ERROR"},
+      {NVJPEG_STATUS_IMPLEMENTATION_NOT_SUPPORTED, "NVJPEG_STATUS_IMPLEMENTATION_NOT_SUPPORTED"}};
+
   if (err != 0) {
-    MMDEPLOY_ERROR("NVJPEG failure: '#{}' at {} {}", err, line, file);
+    MMDEPLOY_ERROR("NVJPEG failure: '{}' @ {}:{}", code2str[err], file, line);
     if (exit) {
-      throw std::runtime_error("NVJPEG failure");
+      mmdeploy::throw_exception(mmdeploy::eFail);
     }
   }
 }
@@ -115,8 +129,7 @@ struct ImageDecoder::Impl {
 
   Result<void> Init(const Value& cfg) {
     device_ = cfg["device"].get<Device>();
-    auto stream = Stream::GetDefault(device_);
-    stream_ = GetNative<cudaStream_t>(stream);
+    cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking);
     auto device_id = device_.device_id();
     nvjpegDevAllocator_t dev_allocator = {GeDevtMalloc(device_id), GetDevFree(device_id)};
     hw_decode_available_ = true;
@@ -152,6 +165,7 @@ struct ImageDecoder::Impl {
     CHECK_NVJPEG_NT(nvjpegBufferDeviceDestroy(device_buffer_));
     CHECK_NVJPEG_NT(nvjpegDecodeParamsDestroy(decode_params_));
     CHECK_NVJPEG_NT(nvjpegDestroy(handle_));  // destroy last
+    cudaStreamDestroy(stream_);
   }
 
   Result<void> Prepare(const std::vector<const char*>& raw_data, const std::vector<int>& length,
@@ -214,6 +228,8 @@ struct ImageDecoder::Impl {
       return Status(eInvalidArgument);
     }
 
+    auto stream = Stream(device_, stream_);
+
     std::vector<const unsigned char*> batched_data;
     std::vector<size_t> batched_len;
     std::vector<nvjpegImage_t> batched_nv_images;
@@ -248,7 +264,7 @@ struct ImageDecoder::Impl {
             nvjpegStateAttachPinnedBuffer(decoupled_state_, pinned_buffers_[buffer_index]));
         CHECK_NVJPEG(nvjpegDecodeJpegHost(handle_, decoder_, decoupled_state_, decode_params_,
                                           jpeg_streams_[buffer_index]));
-        CHECK_NVJPEG(cudaStreamSynchronize(stream_));
+        OUTCOME_TRY(stream.Wait());
 
         CHECK_NVJPEG(nvjpegDecodeJpegTransferToDevice(handle_, decoder_, decoupled_state_,
                                                       jpeg_streams_[buffer_index], stream_));
@@ -258,6 +274,7 @@ struct ImageDecoder::Impl {
       }
     }
 
+    OUTCOME_TRY(stream.Wait());
     return to_value(mats);
   }
 
