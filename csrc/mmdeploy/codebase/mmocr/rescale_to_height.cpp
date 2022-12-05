@@ -112,18 +112,14 @@ class RescaleToHeightImpl : public Module {
   Stream stream_;
 };
 
-class RescaleToHeightImplCreator : public Creator<RescaleToHeightImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<RescaleToHeightImpl>(args);
-  }
-};
+MMDEPLOY_CREATOR_SIGNATURE(RescaleToHeightImpl,
+                           std::unique_ptr<RescaleToHeightImpl>(const Value& config));
 
 MMDEPLOY_DEFINE_REGISTRY(RescaleToHeightImpl);
 
-REGISTER_MODULE(RescaleToHeightImpl, RescaleToHeightImplCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(RescaleToHeightImpl, (cpu, 0), [](const Value& config) {
+  return std::make_unique<RescaleToHeightImpl>(config);
+});
 
 class RescaleToHeight : public Transform {
  public:
@@ -139,5 +135,8 @@ class RescaleToHeight : public Transform {
   static const std::string name_;
 };
 
-DECLARE_AND_REGISTER_MODULE(Transform, RescaleToHeight, 1);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ResizeOCR, 0), [](const Value& config) {
+  return std::make_unique<RescaleToHeight>(config);
+});
+
 }  // namespace mmdeploy

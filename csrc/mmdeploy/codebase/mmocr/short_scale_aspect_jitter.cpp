@@ -27,14 +27,16 @@ class ShortScaleAspectJitterImpl : public Module {
       ratio_range_[0] = args["ratio_range"][0].get<float>();
       ratio_range_[1] = args["ratio_range"][1].get<float>();
     } else {
-      throw std::invalid_argument("'ratio_range' should be a float array of size 2");
+      MMDEPLOY_ERROR("'ratio_range' should be a float array of size 2");
+      throw_exception(eInvalidArgument);
     }
 
     if (args["aspect_ratio_range"].is_array() && args["aspect_ratio_range"].size() == 2) {
       aspect_ratio_range_[0] = args["aspect_ratio_range"][0].get<float>();
       aspect_ratio_range_[1] = args["aspect_ratio_range"][1].get<float>();
     } else {
-      throw std::invalid_argument("'aspect_ratio_range' should be a float array of size 2");
+      MMDEPLOY_ERROR("'aspect_ratio_range' should be a float array of size 2");
+      throw_exception(eInvalidArgument);
     }
     scale_divisor_ = args.contains("scale_divisor") && args["scale_divisor"].is_number_integer()
                          ? args["scale_divisor"].get<int>()
@@ -120,18 +122,13 @@ class ShortScaleAspectJitterImpl : public Module {
   Stream stream_;
 };
 
-class ShortScaleAspectJitterImplCreator : public Creator<ShortScaleAspectJitterImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<ShortScaleAspectJitterImpl>(args);
-  }
-};
-
+MMDEPLOY_CREATOR_SIGNATURE(ShortScaleAspectJitterImpl,
+                           std::unique_ptr<ShortScaleAspectJitterImpl>(const Value& config));
 MMDEPLOY_DEFINE_REGISTRY(ShortScaleAspectJitterImpl);
 
-REGISTER_MODULE(ShortScaleAspectJitterImpl, ShortScaleAspectJitterImplCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(ShortScaleAspectJitterImpl, (cpu, 0), [](const Value& config) {
+  return std::make_unique<ShortScaleAspectJitterImpl>(config);
+});
 
 class ShortScaleAspectJitter : public Transform {
  public:
@@ -147,5 +144,8 @@ class ShortScaleAspectJitter : public Transform {
   static const std::string name_;
 };
 
-DECLARE_AND_REGISTER_MODULE(Transform, ShortScaleAspectJitter, 1);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ShortScaleAspectJitter, 0), [](const Value& config) {
+  return std::make_unique<ShortScaleAspectJitter>(config);
+});
+
 }  // namespace mmdeploy
