@@ -14,7 +14,7 @@ from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 from .tracer import add_transform_tag, get_transform_static
 
 
-def get_mmdpeloy_version() -> str:
+def get_mmdeploy_version() -> str:
     """Return the version of MMDeploy."""
     import mmdeploy
     version = mmdeploy.__version__
@@ -349,7 +349,7 @@ def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config, work_dir: str,
     cls_name = task_map[task]['cls_name']
     _, customs = get_model_name_customs(
         deploy_cfg, model_cfg, work_dir=work_dir, device=device)
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     models = get_models(deploy_cfg, model_cfg, work_dir, device)
     return dict(version=version, task=cls_name, models=models, customs=customs)
 
@@ -400,7 +400,7 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         dict: Composed of version, codebase, codebase_config, onnx_config,
             backend_config and calib_config.
     """
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     codebase = get_task(deploy_cfg)
     codebase['pth'] = pth
     codebase['config'] = model_cfg.filename
