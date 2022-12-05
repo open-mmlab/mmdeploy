@@ -218,12 +218,15 @@ def mark(func_name: Optional[str] = None,
         >>> from mmdeploy.core import FUNCTION_REWRITER, mark
         >>> @FUNCTION_REWRITER.register_rewriter(
         >>>     func_name='mmdet.models.roi_heads.ConvFCBBoxHead.forward')
-        >>> @mark(
-        >>>     'bbox_head_forward',
-        >>>     inputs=['bbox_feats'],
-        >>>     outputs=['cls_score', 'bbox_pred'])
-        >>> def forward_of_bbox_head(ctx, self, x):
-        >>>     return ctx.origin_func(self, x)
+        >>> def forward_of_bbox_head(self, x):
+        >>>     ctx = FUNCTION_REWRITER.get_context()
+        >>>     @mark(
+        >>>         'bbox_head_forward',
+        >>>         inputs=['bbox_feats'],
+        >>>         outputs=['cls_score', 'bbox_pred'])
+        >>>     def _impl():
+        >>>         return ctx.origin_func(self, x)
+        >>>     return _impl()
     """
     MARK_FUNCTION_COUNT[func_name] = 0
 

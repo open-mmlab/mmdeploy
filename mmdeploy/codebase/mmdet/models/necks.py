@@ -35,6 +35,6 @@ def l2norm__forward__tensorrt(self, x):
     except Exception:
         logger.warning('Can not get TensorRT version.')
     if trt_version_major >= 8:
-        return l2norm__forward__default(ctx, self, x)
+        return l2norm__forward__default(self, x)
     else:
         return ctx.origin_func(self, x)

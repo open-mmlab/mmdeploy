@@ -104,7 +104,8 @@ class FunctionRewriter:
     Examples:
         >>> @FUNCTION_REWRITER.register_rewriter(
         >>>     func_name='torch.Tensor.size', backend='ncnn')
-        >>> def size_of_tensor_static(ctx, self, *args):
+        >>> def size_of_tensor_static(self, *args):
+        >>>     ctx = FUNCTION_REWRITER.get_context()
         >>>     ret = ctx.origin_func(self, *args)
         >>>     if isinstance(ret, torch.Tensor):
         >>>         ret = int(ret)

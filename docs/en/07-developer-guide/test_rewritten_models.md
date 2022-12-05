@@ -18,7 +18,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 # Custom rewritten function
 @FUNCTION_REWRITER.register_rewriter(
     'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
-def forward_of_base_classifier(ctx, self, img, *args, **kwargs):
+def forward_of_base_classifier(self, img, *args, **kwargs):
     """Rewrite `forward` for default backend."""
     return self.simple_test(img, {})
 ```
@@ -63,7 +63,8 @@ In the first example, the output is generated in Python. Sometimes we may make b
 # Custom rewritten function
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def base_segmentor__forward(ctx, self, img, img_metas=None, **kwargs):
+def base_segmentor__forward(self, img, img_metas=None, **kwargs):
+    ctx = FUNCTION_REWRITER.get_context()
     if img_metas is None:
         img_metas = {}
     assert isinstance(img_metas, dict)

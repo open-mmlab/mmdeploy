@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
-from mmcv.ops import nms
 from torch import Tensor
 from torch.onnx import symbolic_helper as sym_help
 
@@ -33,6 +32,7 @@ class ONNXNMSop(torch.autograd.Function):
             (num_selected_indices, 3) with each row of
             [batch_index, class_index, box_index].
         """
+        from mmcv.ops import nms
         batch_size, num_class, _ = scores.shape
 
         score_threshold = float(score_threshold)

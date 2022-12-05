@@ -344,8 +344,9 @@ class ContextCaller:
 
     Example:
         >>> @FUNCTION_REWRITER.register_rewriter(func_name='torch.add')
-        >>> def func(ctx, x, y):
+        >>> def func(x, y):
         >>>     # ctx is an instance of ContextCaller
+        >>>     ctx = FUNCTION_REWRITER.get_context()
         >>>     print(ctx.cfg)
         >>>     return x + y
     """

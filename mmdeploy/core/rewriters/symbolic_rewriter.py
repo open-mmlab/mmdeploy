@@ -23,7 +23,7 @@ class SymbolicRewriter:
     Examples:
         >>> @SYMBOLIC_REWRITER.register_symbolic('squeeze', \
         >>> is_pytorch=True)
-        >>> def squeeze_default(ctx, g, self, dim=None):
+        >>> def squeeze_default(g, self, dim=None):
         >>>     if dim is None:
         >>>         dims = []
         >>>         for i, size in enumerate(self.type().sizes()):
