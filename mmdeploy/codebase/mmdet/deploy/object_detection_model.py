@@ -256,9 +256,6 @@ class End2EndModel(BaseBackendModel):
                     masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0), size=(ori_h, ori_w))
                     masks = masks.squeeze(0)
-                # avoid zero dim miss matching
-                if masks.shape[0] == 0:
-                    masks = masks.new_zeros((0, ori_h, ori_w))
                 if masks.dtype != bool:
                     masks = masks >= 0.5
                 # aligned with mmdet to easily convert to numpy
