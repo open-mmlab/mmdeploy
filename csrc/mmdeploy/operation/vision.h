@@ -84,6 +84,15 @@ class WarpAffine : public Operation {
 };
 MMDEPLOY_DECLARE_REGISTRY(WarpAffine, unique_ptr<WarpAffine>(const string_view& interp));
 
+class CropResizePad : public Operation {
+ public:
+  virtual Result<void> apply(const Tensor& src, const std::vector<int>& crop_rect,
+                             const std::vector<int>& target_size, const std::vector<int>& pad_rect,
+                             Tensor& dst) = 0;
+};
+
+MMDEPLOY_DECLARE_REGISTRY(CropResizePad, unique_ptr<CropResizePad>());
+
 }  // namespace mmdeploy::operation
 
 #endif  // MMDEPLOY_CSRC_MMDEPLOY_PREPROCESS_OPERATION_RESIZE_H_
