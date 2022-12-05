@@ -25,11 +25,11 @@ def gv_ratio_roi_head__simple_test_bboxes(ctx,
             Default: False.
 
     Returns:
-        tuple[list[Tensor], list[Tensor]]: The first list contains \
-            the boxes of the corresponding image in a batch, each \
-            tensor has the shape (num_boxes, 6) and last dimension \
-            6 represent (x, y, w, h, theta, score). Each Tensor \
-            in the second list is the labels with shape (num_boxes, ). \
+        tuple[list[Tensor], list[Tensor]]: The first list contains
+            the boxes of the corresponding image in a batch, each
+            tensor has the shape (num_boxes, 6) and last dimension
+            6 represent (x, y, w, h, theta, score). Each Tensor
+            in the second list is the labels with shape (num_boxes, ).
             The length of both lists should be equal to batch_size.
     """
 

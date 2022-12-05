@@ -300,8 +300,8 @@ class Classification(BaseTask):
         if 'topk' not in postprocess:
             topk = (1, )
             logger = get_root_logger()
-            logger.warning('no topk in postprocess config, using default \
-                 topk value.')
+            logger.warning('no topk in postprocess config, using default'
+                           'topk value.')
         else:
             topk = postprocess.topk
         postprocess.topk = max(topk)

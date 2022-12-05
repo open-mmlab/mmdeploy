@@ -44,11 +44,11 @@ class ORTWrapper(BaseWrapper):
         logger = get_root_logger()
         if osp.exists(ort_custom_op_path):
             session_options.register_custom_ops_library(ort_custom_op_path)
-            logger.info(f'Successfully loaded onnxruntime custom ops from \
-            {ort_custom_op_path}')
+            logger.info('Successfully loaded onnxruntime custom ops from '
+                        f'{ort_custom_op_path}')
         else:
-            logger.warning(f'The library of onnxruntime custom ops does \
-            not exist: {ort_custom_op_path}')
+            logger.warning('The library of onnxruntime custom ops does '
+                           f'not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
         providers = ['CPUExecutionProvider'] \
             if device == 'cpu' else \

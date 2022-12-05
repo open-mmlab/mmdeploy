@@ -34,6 +34,6 @@ def load_tensorrt_plugin() -> bool:
         logger.info(f'Successfully loaded tensorrt plugins from {lib_path}')
         success = True
     else:
-        logger.warning(f'Could not load the library of tensorrt plugins. \
-            Because the file does not exist: {lib_path}')
+        logger.warning(f'Could not load the library of tensorrt plugins.'
+                       f'Because the file does not exist: {lib_path}')
     return success

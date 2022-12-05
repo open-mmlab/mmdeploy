@@ -84,8 +84,8 @@ class TRTWrapper(BaseWrapper):
             self.engine = load(engine)
 
         if not isinstance(self.engine, trt.ICudaEngine):
-            raise TypeError(f'`engine` should be str or trt.ICudaEngine, \
-                but given: {type(self.engine)}')
+            raise TypeError('`engine` should be str or trt.ICudaEngine,'
+                            f'but given: {type(self.engine)}')
 
         self._register_state_dict_hook(TRTWrapper.__on_state_dict)
         self.context = self.engine.create_execution_context()

@@ -80,7 +80,7 @@ def yolov3_head__get_bboxes(ctx,
         pred_map = pred_map.permute(0, 2, 3,
                                     1).reshape(batch_size, -1, self.num_attrib)
         # Inplace operation like
-        # ```pred_map[..., :2] = \torch.sigmoid(pred_map[..., :2])```
+        # ```pred_map[..., :2] = torch.sigmoid(pred_map[..., :2])```
         # would create constant tensor when exporting to onnx
         pred_map_conf = torch.sigmoid(pred_map[..., :2])
         pred_map_rest = pred_map[..., 2:]
