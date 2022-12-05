@@ -82,6 +82,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [RotatedRetinaNet](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_retinanet/README.md) | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [Oriented RCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn/README.md)        | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex/README.md)      | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |
+| [SOLO](https://github.com/open-mmlab/mmrotate/tree/3.x/configs/solo)[\*](#note)                         | RotatedDetection |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 
 ### Note
 
@@ -91,3 +92,4 @@ The table below lists the models that are guaranteed to be exportable to other b
 - YOLOX: YOLOX with ncnn only supports static shape.
 - Swin Transformer: For TensorRT, only version 8.4+ is supported.
 - SAR: Chinese text recognition model is not supported as the protobuf size of ONNX is limited.
+- SOLO: For OpenVINO, we recommend you to use min shape deploy config just like 300x300 rather than 800x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_openvino_dynamic-300x300.py.
