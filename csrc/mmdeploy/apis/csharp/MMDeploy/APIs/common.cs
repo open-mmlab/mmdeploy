@@ -53,6 +53,7 @@ namespace MMDeploy
         public int Channel;
         public PixelFormat Format;
         public DataType Type;
+        public void* Device;
     }
 
     /// <summary>

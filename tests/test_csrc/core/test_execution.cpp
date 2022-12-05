@@ -145,7 +145,7 @@ TEST_CASE("test simple type erase", "[execution]") { G(); }
 
 void TestFunc(const char* sched_name) {
   //  MMDEPLOY_INFO("testing with scheduler: {}", sched_name);
-  auto creator = Registry<TypeErasedScheduler<Value>>::Get().GetCreator(sched_name);
+  auto creator = gRegistry<TypeErasedScheduler<Value>>().Get(sched_name);
   REQUIRE(creator);
   auto sched = creator->Create({});
   SECTION("Schedule") { (void)SyncWait(Schedule(sched)); }

@@ -4,15 +4,17 @@ from typing import Optional, Union
 import mmcv
 from rknn.api import RKNN
 
-from mmdeploy.utils import (get_common_config, get_onnx_config,
+from mmdeploy.utils import (get_backend_config, get_common_config,
+                            get_normalization, get_onnx_config,
                             get_partition_config, get_quantization_config,
-                            get_root_logger, load_config)
-from mmdeploy.utils.config_utils import get_backend_config
+                            get_rknn_quantization, get_root_logger,
+                            load_config)
 
 
 def onnx2rknn(onnx_model: str,
               output_path: str,
               deploy_cfg: Union[str, mmcv.Config],
+              model_cfg: Union[str, mmcv.Config],
               dataset_file: Optional[str] = None,
               **kwargs):
     """Convert ONNX to RKNN.
@@ -40,6 +42,14 @@ def onnx2rknn(onnx_model: str,
     output_names = onnx_params.get('output_names', None)
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
+    # update norm value
+    if get_rknn_quantization(deploy_cfg) is True:
+        transform = get_normalization(model_cfg)
+        common_params.update(
+            dict(
+                mean_values=[transform['mean']],
+                std_values=[transform['std']]))
+
     # update output_names for partition models
     if get_partition_config(deploy_cfg) is not None:
         import onnx
@@ -62,7 +72,7 @@ def onnx2rknn(onnx_model: str,
     if dataset_cfg is None and dataset_file is None:
         do_quantization = False
         logger.warning('no dataset passed in, quantization is skipped')
-    if dataset_file is None:
+    if dataset_cfg is not None:
         dataset_file = dataset_cfg
     ret = rknn.build(do_quantization=do_quantization, dataset=dataset_file)
     if ret != 0:

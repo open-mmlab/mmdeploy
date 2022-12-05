@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -8,7 +8,8 @@ import torch
 from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
-                            get_codebase_config, get_root_logger)
+                            get_codebase_config, get_rknn_quantization,
+                            get_root_logger)
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -139,18 +140,49 @@ class BaseTask(metaclass=ABCMeta):
         return self.codebase_class.single_gpu_test(model, data_loader, show,
                                                    out_dir, **kwargs)
 
+    @staticmethod
+    def update_test_pipeline(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config):
+        """Update preprocess pipeline.
+
+        Args:
+            model_cfg (str | mmcv.Config): Model config file.
+            deploy_cfg (str | mmcv.Config): Deployment config file.
+
+        Returns:
+            cfg (mmcv.Config): Updated model_cfg.
+        """
+        cfg = model_cfg.deepcopy()
+        if get_rknn_quantization(deploy_cfg):
+            pipelines = cfg.data.test.pipeline
+            for i, pipeline in enumerate(pipelines):
+                if pipeline['type'] == 'MultiScaleFlipAug':
+                    assert 'transforms' in pipeline
+                    for trans in pipeline['transforms']:
+                        if trans['type'] == 'Normalize':
+                            trans['mean'] = [0, 0, 0]
+                            trans['std'] = [1, 1, 1]
+                else:
+                    if pipeline['type'] == 'Normalize':
+                        pipeline['mean'] = [0, 0, 0]
+                        pipeline['std'] = [1, 1, 1]
+            cfg.data.test.pipeline = pipelines
+        return cfg
+
     @abstractmethod
     def create_input(self,
                      imgs: Union[str, np.ndarray, Sequence],
-                     input_shape: Sequence[int] = None,
+                     input_shape: Optional[Sequence[int]] = None,
+                     pipeline_updater: Optional[Callable] = None,
                      **kwargs) -> Tuple[Dict, torch.Tensor]:
         """Create input for model.
 
         Args:
             imgs (str | np.ndarray | Sequence): Input image(s),
                 accepted data types are `str`, `np.ndarray`.
-            input_shape (list[int]): Input shape of image in (width, height)
-                format, defaults to `None`.
+            input_shape (Sequence[int] | None): Input shape of image in
+                (width, height) format, defaults to `None`.
+            pipeline_updater (function | None): A function to get a new
+                pipeline.
 
         Returns:
             tuple: (data, img), meta information for the input image and input

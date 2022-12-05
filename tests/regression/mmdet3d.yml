@@ -10,14 +10,10 @@ globals:
       eval_name: bbox # test.py --metrics args
       metric_key: bbox_mAP # eval OrderedDict key name
       tolerance: 1 # metric ±n%
-      task_name: 3D Object Detection # metafile.Results.Task
-      dataset: KITTI # metafile.Results.Dataset
     mAP:
       eval_name: bbox
       metric_key: bbox_mAP
       tolerance: 1 # metric ±n%
-      task_name: 3D Object Detection
-      dataset: nuScenes
     NDS:
       eval_name: bbox
       metric_key: bbox_mAP

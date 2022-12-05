@@ -40,15 +40,16 @@ set(SRCS
         utils/device_utils.cpp
         utils/formatter.cpp
         utils/stacktrace.cpp
+        profiler.cpp
         )
 
 mmdeploy_add_library(${PROJECT_NAME} ${SRCS})
-
 
 target_include_directories(${PROJECT_NAME}
         PUBLIC
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/concurrentqueue>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )

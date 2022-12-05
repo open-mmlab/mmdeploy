@@ -2,6 +2,7 @@
 import os
 import sys
 import time
+from pathlib import Path
 
 from ubuntu_utils import cmd_result, ensure_base_env, get_job
 
@@ -59,7 +60,7 @@ def install_pyncnn(dep_dir):
     # git clone
     if not os.path.exists('ncnn'):
         os.system(
-            'git clone --depth 1 --branch 20220729  https://github.com/tencent/ncnn && cd ncnn'  # noqa: E501
+            'git clone --depth 1 --branch 20221128 https://github.com/tencent/ncnn && cd ncnn'  # noqa: E501
         )
 
     ncnn_dir = os.path.join(dep_dir, 'ncnn')
@@ -175,7 +176,7 @@ def main():
     if install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir) != 0:
         return -1
 
-    if os.path.exists('~/mmdeploy.env'):
+    if os.path.exists(Path('~/mmdeploy.env').expanduser()):
         print('Please source ~/mmdeploy.env to setup your env !')
         os.system('cat ~/mmdeploy.env')
 

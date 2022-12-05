@@ -54,6 +54,13 @@ Platform::Platform(int platform_id) {
   }
 }
 
+const char* GetPlatformName(PlatformId id) {
+  if (auto impl = gPlatformRegistry().GetPlatformImpl(id); impl) {
+    return impl->GetPlatformName();
+  }
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 /// Buffer
 

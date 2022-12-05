@@ -54,12 +54,8 @@ const auto config_json = R"(
 
 namespace mmdeploy {
 
-#define REGISTER_SIMPLE_MODULE(name, fn)                                             \
-  class name##_Creator : public ::mmdeploy::Creator<Module> {                        \
-    const char* GetName() const override { return #name; }                           \
-    std::unique_ptr<Module> Create(const Value&) override { return CreateTask(fn); } \
-  };                                                                                 \
-  REGISTER_MODULE(Module, name##_Creator)
+#define REGISTER_SIMPLE_MODULE(name, fn) \
+  MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (name, 0), [](const Value&) { return CreateTask(fn); });
 
 std::optional<std::array<float, 4>> keypoints_to_bbox(const std::vector<cv::Point2f>& keypoints,
                                                       const std::vector<float>& scores, float img_h,
@@ -387,7 +383,7 @@ void Visualize(cv::Mat& frame, const Value& result) {
     }
   }
   cv::imshow("", frame);
-  cv::waitKey(10);
+  cv::waitKey(1);
 }
 
 int main(int argc, char* argv[]) {
@@ -397,10 +393,8 @@ int main(int argc, char* argv[]) {
   const auto video_path = argv[4];
   Device device(device_name);
   Context context(device);
-  auto pool = Scheduler::ThreadPool(4);
-  auto infer = Scheduler::Thread();
-  context.Add("pool", pool);
-  context.Add("infer", infer);
+  Profiler profiler("pose_tracker.perf");
+  context.Add(profiler);
   PoseTracker tracker(Model(det_model_path), Model(pose_model_path), context);
   auto state = tracker.CreateState();
 

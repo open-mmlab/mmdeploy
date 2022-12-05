@@ -162,7 +162,9 @@ class RKNNModel(End2EndModel):
             List[np.ndarray]: A list of segmentation map.
         """
         outputs = self.wrapper({self.input_name: imgs})
-        outputs = [output.argmax(dim=1, keepdim=True) for output in outputs]
+        outputs = [
+            output.argmax(dim=1, keepdim=True) for output in outputs.values()
+        ]
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
 

@@ -28,6 +28,7 @@ class DirectoryModelImpl : public ModelImpl {
     auto _path = root_ / fs::path(file_path);
     std::ifstream ifs(_path, std::ios::binary | std::ios::in);
     if (!ifs.is_open()) {
+      MMDEPLOY_ERROR("read file {} failed", _path.string());
       return Status(eFail);
     }
     ifs.seekg(0, std::ios::end);
@@ -54,15 +55,7 @@ class DirectoryModelImpl : public ModelImpl {
   fs::path root_;
 };
 
-class DirectoryModelRegister {
- public:
-  DirectoryModelRegister() {
-    (void)ModelRegistry::Get().Register("DirectoryModel", []() -> std::unique_ptr<ModelImpl> {
-      return std::make_unique<DirectoryModelImpl>();
-    });
-  }
-};
-
-static DirectoryModelRegister directory_model_register;
+MMDEPLOY_REGISTER_FACTORY_FUNC(ModelImpl, (DirectoryModel, 0),
+                               [] { return std::make_unique<DirectoryModelImpl>(); });
 
 }  // namespace mmdeploy::framework

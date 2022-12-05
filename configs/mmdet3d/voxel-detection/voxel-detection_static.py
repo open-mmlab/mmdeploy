@@ -3,4 +3,4 @@ codebase_config = dict(
     type='mmdet3d', task='VoxelDetection', model_type='end2end')
 onnx_config = dict(
     input_names=['voxels', 'num_points', 'coors'],
-    output_names=['scores', 'bbox_preds', 'dir_scores'])
+    output_names=['bboxes', 'scores', 'labels'])
