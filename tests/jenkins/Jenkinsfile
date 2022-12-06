@@ -75,10 +75,10 @@ pipeline {
             defaultValue: '3'
         )
 
-        string(
-            name: 'repo_version',
-            defaultValue: 'v1.0'
-        )
+        // string(
+        //     name: 'repo_version',
+        //     defaultValue: 'v1.0'
+        // )
         choice(
             name: 'tensorrt_version',
             choices: [
