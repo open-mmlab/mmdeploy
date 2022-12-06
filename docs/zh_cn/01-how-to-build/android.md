@@ -77,10 +77,10 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
   <tr>
     <td>ncnn </td>
     <td>ncnn 是支持 android 平台的高效神经网络推理计算框架</br>
-  <b> 目前, MMDeploy 支持 ncnn 的 20220721 版本, 且必须使用<code>git clone</code> 下载源码的方式安装。请到 <a href='https://github.com/Tencent/ncnn/releases'> 这里 </a> 查询 ncnn 支持的 android ABI。</b><br>
+  <b> 目前, MMDeploy 支持 ncnn 的 20221128 版本, 且必须使用<code>git clone</code> 下载源码的方式安装。请到 <a href='https://github.com/Tencent/ncnn/releases'> 这里 </a> 查询 ncnn 支持的 android ABI。</b><br>
 
 <pre><code>
-git clone -b 20220721 https://github.com/Tencent/ncnn.git
+git clone -b 20221128 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
 export NCNN_DIR=${PWD}

@@ -79,7 +79,7 @@ mim download mmaction2 --config tsn_r50_1x1x3_100e_kinetics400_rgb --dest .
 
 # convert mmaction2 model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-    configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py \
+    configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py \
     tsn_r50_1x1x3_100e_kinetics400_rgb.py \
     tsn_r50_256p_1x1x3_100e_kinetics400_rgb_20200725-22592236.pth \
     tests/data/arm_wrestling.mp4 \
@@ -122,7 +122,7 @@ from mmdeploy.utils import get_input_shape, load_config
 import numpy as np
 import torch
 
-deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
+deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py'
 model_cfg = 'tsn_r50_1x1x3_100e_kinetics400_rgb.py'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmaction/tsn/ort/end2end.onnx']

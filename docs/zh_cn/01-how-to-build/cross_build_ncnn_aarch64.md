@@ -64,7 +64,7 @@ ls -alh /tmp/ocv-aarch64
 c) 交叉编译 ncnn 安装到 tmp 目录
 
 ```bash
-git clone https://github.com/tencent/ncnn --branch 20220729 --depth=1
+git clone https://github.com/tencent/ncnn --branch 20221128 --depth=1
 mkdir build && cd build
 cmake .. \
   -DCMAKE_TOOLCHAIN_FILE=../toolchains/aarch64-linux-gnu.toolchain.cmake \
