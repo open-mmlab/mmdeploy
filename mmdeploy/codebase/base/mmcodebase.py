@@ -47,7 +47,8 @@ class MMCodebase(metaclass=ABCMeta):
                 type=task.value,
                 model_cfg=model_cfg,
                 deploy_cfg=deploy_cfg,
-                device=device))
+                device=device,
+                _scope_='mmdeploy'))
 
     @classmethod
     def register_deploy_modules(cls):
@@ -83,4 +84,4 @@ def get_codebase_class(codebase: Codebase) -> MMCodebase:
         logger.warn(f'Import mmdeploy.codebase.{codebase.value}.deploy failed'
                     'Please check whether the module is the custom module.'
                     f'{e}')
-    return CODEBASE.build({'type': codebase.value})
+    return CODEBASE.build({'type': codebase.value, '_scope_': 'mmdeploy'})
