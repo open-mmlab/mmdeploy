@@ -356,8 +356,8 @@ def base_dense_head__get_bboxes__ncnn(ctx,
     """
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
-    assert not is_dynamic_shape(deploy_cfg), 'base_dense_head for ncnn\
-        only supports static shape.'
+    assert not is_dynamic_shape(deploy_cfg), 'base_dense_head for ncnn' \
+        'only supports static shape.'
 
     if score_factors is None:
         # e.g. Retina, FreeAnchor, Foveabox, etc.
@@ -367,8 +367,8 @@ def base_dense_head__get_bboxes__ncnn(ctx,
         with_score_factors = True
         assert len(cls_scores) == len(score_factors)
     batch_size = cls_scores[0].shape[0]
-    assert batch_size == 1, f'ncnn deployment requires batch size 1, \
-        got {batch_size}.'
+    assert batch_size == 1, 'ncnn deployment requires batch size 1,' \
+        f'got {batch_size}.'
 
     num_levels = len(cls_scores)
     if with_score_factors:
@@ -384,13 +384,15 @@ def base_dense_head__get_bboxes__ncnn(ctx,
             vars = torch.tensor([normalizer, normalizer, 1, 1],
                                 dtype=torch.float32)
         else:
-            assert len(normalizer) == 4, f'normalizer of tblr must be 4,\
-                got {len(normalizer)}'
+            assert len(normalizer) == 4, 'normalizer of tblr must be 4,' \
+                f' got {len(normalizer)}'
 
-            assert (normalizer[0] == normalizer[1] and normalizer[2]
-                    == normalizer[3]), 'normalizer between top \
-                        and bottom, left and right must be the same value, or \
-                        we can not transform it to delta_xywh format.'
+            assert (
+                normalizer[0] == normalizer[1]
+                and normalizer[2] == normalizer[3]
+            ), 'normalizer between top and bottom,' \
+                'left and right must be the same value, or' \
+                'we can not transform it to delta_xywh format.'
 
             vars = torch.tensor([normalizer[0], normalizer[2], 1, 1],
                                 dtype=torch.float32)

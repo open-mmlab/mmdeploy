@@ -583,8 +583,8 @@ class NCNNEnd2EndModel(End2EndModel):
                  device: str, class_names: Sequence[str],
                  model_cfg: Union[str, mmcv.Config],
                  deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        assert backend == Backend.NCNN, f'only supported ncnn, but give \
-            {backend.value}'
+        assert backend == Backend.NCNN, 'only supported ncnn, but give' \
+            f'{backend.value}'
 
         super(NCNNEnd2EndModel,
               self).__init__(backend, backend_files, device, class_names,
@@ -669,8 +669,8 @@ class RKNNModel(End2EndModel):
                  device: str, class_names: Sequence[str],
                  model_cfg: Union[str, mmcv.Config],
                  deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        assert backend == Backend.RKNN, f'only supported RKNN, but give \
-            {backend.value}'
+        assert backend == Backend.RKNN, 'only supported RKNN, but give' \
+            f'{backend.value}'
 
         super(RKNNModel, self).__init__(backend, backend_files, device,
                                         class_names, deploy_cfg, **kwargs)

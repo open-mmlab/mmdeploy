@@ -68,8 +68,8 @@ def onnx2tensorrt(work_dir: str,
     if not isinstance(input_shapes, Dict):
         input_shapes = dict(zip(input_names, input_shapes))
 
-    assert device.startswith('cuda'), f'TensorRT requires cuda device, \
-        but given: {device}'
+    assert device.startswith('cuda'), 'TensorRT requires cuda device,' \
+        f'but given: {device}'
 
     device_id = parse_device_id(device)
     assert save_file.endswith(

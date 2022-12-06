@@ -30,7 +30,7 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         >>> img = 'demo.jpg'
         >>> device = 'cpu'
         >>> visualize_model(model_cfg, deploy_cfg, model, \
-            img, device, show_result=True)
+        >>>    img, device, show_result=True)
 
     Args:
         model_cfg (str | mmcv.Config): Model config file or Config object.
@@ -59,8 +59,8 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
 
     if isinstance(model, (list, tuple)):
         assert len(model) > 0, 'Model should have at least one element.'
-        assert all([isinstance(m, str) for m in model]), 'All elements in the \
-            list should be str'
+        assert all([isinstance(m, str) for m in model]), \
+            'All elements in the list should be str'
 
         if backend == Backend.PYTORCH:
             model = task_processor.init_pytorch_model(model[0])
