@@ -8,6 +8,7 @@ from mmdeploy.utils import Backend
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 from .init_plugins import load_tensorrt_plugin
+from .torch_allocator import TorchAllocator
 from .utils import load
 
 
@@ -76,12 +77,14 @@ class TRTWrapper(BaseWrapper):
 
     def __init__(self,
                  engine: Union[str, trt.ICudaEngine],
-                 output_names: Optional[Sequence[str]] = None):
+                 output_names: Optional[Sequence[str]] = None,
+                 device_id: int = 0):
         super().__init__(output_names)
         load_tensorrt_plugin()
         self.engine = engine
+        self.allocator = TorchAllocator(device_id)
         if isinstance(self.engine, str):
-            self.engine = load(engine)
+            self.engine = load(engine, self.allocator)
 
         if not isinstance(self.engine, trt.ICudaEngine):
             raise TypeError(f'`engine` should be str or trt.ICudaEngine, \
@@ -89,6 +92,9 @@ class TRTWrapper(BaseWrapper):
 
         self._register_state_dict_hook(TRTWrapper.__on_state_dict)
         self.context = self.engine.create_execution_context()
+
+        if hasattr(self.context, 'temporary_allocator'):
+            self.context.temporary_allocator = self.allocator
 
         self.__load_io_names()
 
