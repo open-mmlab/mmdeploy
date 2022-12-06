@@ -40,7 +40,7 @@ class MMDEPLOY_API PrepareImage : public Transform {
   std::unique_ptr<PrepareImageImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(PrepareImageImpl);
+MMDEPLOY_DECLARE_REGISTRY(PrepareImageImpl, std::unique_ptr<PrepareImageImpl>(const Value& config));
 
 }  // namespace mmdeploy
 

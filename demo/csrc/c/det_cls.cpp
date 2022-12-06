@@ -70,13 +70,8 @@ class CropBox {
   }
 };
 
-class CropBoxCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "CropBox"; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(CropBox{}); }
-};
-
-REGISTER_MODULE(Module, CropBoxCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (CropBox, 0),
+                               [](const Value&) { return CreateTask(CropBox{}); });
 
 int main() {
   auto config = from_json<Value>(config_json);

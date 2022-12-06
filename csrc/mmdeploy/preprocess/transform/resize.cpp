@@ -123,7 +123,7 @@ Result<Value> ResizeImpl::Process(const Value& input) {
 }
 
 Resize::Resize(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<ResizeImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<ResizeImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'Resize' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'Resize' is not supported on specified platform");
@@ -131,17 +131,9 @@ Resize::Resize(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class ResizeCreator : public Creator<Transform> {
- public:
-  const char* GetName() const override { return "Resize"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override { return make_unique<Resize>(args, version_); }
-
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, ResizeCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Resize, 0), [](const Value& config) {
+  return std::make_unique<Resize>(config, 0);
+});
 
 MMDEPLOY_DEFINE_REGISTRY(ResizeImpl);
 

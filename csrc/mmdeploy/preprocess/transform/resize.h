@@ -43,7 +43,7 @@ class MMDEPLOY_API Resize : public Transform {
   static const std::string name_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(ResizeImpl);
+MMDEPLOY_DECLARE_REGISTRY(ResizeImpl, std::unique_ptr<ResizeImpl>(const Value& config));
 
 }  // namespace mmdeploy
 #endif  // MMDEPLOY_RESIZE_H

@@ -111,14 +111,8 @@ Result<unique_ptr<Node>> CondBuilder::BuildImpl() {
   return Status(eFail);
 }
 
-class CondCreator : public Creator<Builder> {
- public:
-  const char* GetName() const override { return "Cond"; }
-  unique_ptr<Builder> Create(const Value& config) override {
-    return std::make_unique<CondBuilder>(config);
-  }
-};
-
-REGISTER_MODULE(Builder, CondCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Cond, 0), [](const Value& config) {
+  return std::make_unique<CondBuilder>(config);
+})
 
 }  // namespace mmdeploy::graph
