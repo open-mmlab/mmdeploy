@@ -44,6 +44,15 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
+### change the pip source for installing packages
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+    then \
+        /opt/conda/bin/pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple; \
+        echo "pip using tsinghua source" ; \
+    else \
+        echo "Keep pip the download source unchanged" ; \
+    fi
+
 ### pytorch mmcv onnxruntime and openvino
 RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
     && /opt/conda/bin/pip install --no-cache-dir openmim
