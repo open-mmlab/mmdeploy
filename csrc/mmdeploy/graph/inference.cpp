@@ -5,6 +5,7 @@
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/model.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/graph/common.h"
 
 namespace mmdeploy::graph {
@@ -33,6 +34,11 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
   context["model"] = std::move(model);
 
   auto pipeline_config = from_json<Value>(json);
+  if (context.contains("scope")) {
+    auto name = config_.value("name", config_["type"].get<std::string>());
+    auto scope = context["scope"].get_ref<profiler::Scope*&>()->CreateScope(name);
+    context["scope"] = scope;
+  }
   pipeline_config["context"] = context;
 
   MMDEPLOY_INFO("{}", pipeline_config);

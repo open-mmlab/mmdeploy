@@ -3,6 +3,7 @@
 #include "common_internal.h"
 #include "executor_internal.h"
 #include "mmdeploy/core/mat.h"
+#include "mmdeploy/core/profiler.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
   if (!value) {
@@ -72,6 +73,19 @@ int mmdeploy_device_create(const char* device_name, int device_id, mmdeploy_devi
 
 void mmdeploy_device_destroy(mmdeploy_device_t device) { delete (Device*)device; }
 
+int mmdeploy_profiler_create(const char* path, mmdeploy_profiler_t* profiler) {
+  *profiler = (mmdeploy_profiler_t) new profiler::Profiler(path);
+  return MMDEPLOY_SUCCESS;
+}
+
+void mmdeploy_profiler_destroy(mmdeploy_profiler_t profiler) {
+  if (profiler) {
+    auto p = (profiler::Profiler*)profiler;
+    p->Release();
+    delete p;
+  }
+}
+
 int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t type, const char* name,
                          const void* object) {
   auto& ctx = *Cast(context);
@@ -88,6 +102,12 @@ int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t typ
     case MMDEPLOY_TYPE_MODEL:
       ctx["model"][name] = *Cast((const mmdeploy_model_t)object);
       break;
+    case MMDEPLOY_TYPE_PROFILER: {
+      const auto& profiler = *(profiler::Profiler*)object;
+      profiler::Scope* root(profiler.scope());
+      ctx["scope"] = root;
+      break;
+    }
     default:
       return MMDEPLOY_E_NOT_SUPPORTED;
   }
