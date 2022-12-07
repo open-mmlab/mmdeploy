@@ -178,8 +178,8 @@ def get_classes_from_config(model_cfg: Union[str, mmcv.Config]):
 
     if class_names is None:
         logger = get_root_logger()
-        logger.warning(f'Use generated class names, because \
-            it failed to parse CLASSES from config: {data_cfg}')
+        logger.warning(f'Use generated class names, because '
+                       f'it failed to parse CLASSES from config: {data_cfg}')
         num_classes = model_cfg.model.head.num_classes
         class_names = [str(i) for i in range(num_classes)]
     return class_names

@@ -19,8 +19,7 @@ class SymbolicRewriter:
     recover after exiting the RewriteContext.
 
     Examples:
-        >>> @SYMBOLIC_REWRITER.register_symbolic('squeeze', \
-        >>> is_pytorch=True)
+        >>> @SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
         >>> def squeeze_default(ctx, g, self, dim=None):
         >>>     if dim is None:
         >>>         dims = []
@@ -49,9 +48,9 @@ class SymbolicRewriter:
         Args:
             func_name (str): The function name/path to override the symbolic.
             backend (str): The rewriter will be activated on which backend.
-            is_pytorch (bool): Enable this flag if func_name is the name of \
+            is_pytorch (bool): Enable this flag if func_name is the name of
                 a pytorch builtin function.
-            arg_descriptors (Sequence[str]): The argument descriptors of the \
+            arg_descriptors (Sequence[str]): The argument descriptors of the
                 symbol.
             ir (IR): The rewriter will be activated on which IR.
             extra_checkers (Checker | List[Checker] | None): Other requirements

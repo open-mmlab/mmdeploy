@@ -34,8 +34,8 @@ def parse_args():
         help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
-        help='dataset config path used to calibrate in int8 mode. If not \
-            specified, it will use "val" dataset in model config instead.',
+        help=('dataset config path used to calibrate in int8 mode. If not '
+              'specified, it will use "val" dataset in model config instead.'),
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
@@ -198,9 +198,9 @@ def main():
         assert len(model_params) == len(ir_files)
 
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
-        assert trt_is_available(
-        ), 'TensorRT is not available,' \
-            + ' please install TensorRT and build TensorRT custom ops first.'
+        assert trt_is_available(), (
+            'TensorRT is not available,'
+            ' please install TensorRT and build TensorRT custom ops first.')
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
         PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
@@ -229,9 +229,9 @@ def main():
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
         if not is_available_ncnn():
-            logger.error('ncnn support is not available, please make sure \
-                1) `mmdeploy_onnx2ncnn` existed in `PATH` \
-                2) python import ncnn success')
+            logger.error('ncnn support is not available, please make sure:\n'
+                         '1) `mmdeploy_onnx2ncnn` existed in `PATH`\n'
+                         '2) python import ncnn success')
             exit(1)
 
         import mmdeploy.apis.ncnn as ncnn_api
@@ -279,9 +279,10 @@ def main():
         from mmdeploy.apis.snpe import is_available as is_available
 
         if not is_available():
-            logger.error('snpe support is not available, please check \
-                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support \
-                    ubuntu18.04')
+            logger.error('snpe support is not available, please check\n'
+                         '1) `snpe-onnx-to-dlc` existed in `PATH`\n'
+                         '2) snpe only support\n'
+                         'ubuntu18.04')
             exit(1)
 
         import mmdeploy.apis.snpe as snpe_api
