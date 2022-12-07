@@ -9,7 +9,7 @@ from torch.onnx.symbolic_helper import parse_args
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
                              copy_function, eval_with_import, get_frame_func,
-                             get_func_qual_name)
+                             get_func_qualname)
 
 
 class SymbolicRewriter:
@@ -98,7 +98,7 @@ class SymbolicRewriter:
                                            **extra_kwargs)
 
             # register context
-            qualname = get_func_qual_name(symbolic_function)
+            qualname = get_func_qualname(symbolic_function)
             self._func_contexts[qualname].append(context_caller)
             self._func_contexts[function_name].append(context_caller)
 
@@ -179,7 +179,7 @@ class SymbolicRewriter:
         func = None
         if key is None:
             func = get_frame_func(2)
-            key = get_func_qual_name(func)
+            key = get_func_qualname(func)
 
         # get all contexts
         ctxs = self._func_contexts.get(key, [])

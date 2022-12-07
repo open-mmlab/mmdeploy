@@ -5,7 +5,7 @@ from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
 
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
-                             copy_function, get_frame_func, get_func_qual_name,
+                             copy_function, get_frame_func, get_func_qualname,
                              import_function)
 
 
@@ -192,7 +192,7 @@ class FunctionRewriter:
                 context_caller = ContextCaller(rewrite_function, origin_func,
                                                cfg, **extra_kwargs)
 
-                qualname = get_func_qual_name(rewrite_function)
+                qualname = get_func_qualname(rewrite_function)
                 self._func_contexts[qualname].append(context_caller)
                 self._func_contexts[function_path].append(context_caller)
 
@@ -230,7 +230,7 @@ class FunctionRewriter:
         func = None
         if key is None:
             func = get_frame_func(2)
-            key = get_func_qual_name(func)
+            key = get_func_qualname(func)
 
         # get all contexts
         ctxs = self._func_contexts.get(key, [])
