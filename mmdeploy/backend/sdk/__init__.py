@@ -4,7 +4,7 @@ import os
 import sys
 
 from mmdeploy.utils import get_file_path
-from .backend_utils import SDKUtils
+from .backend_manager import SDKManager
 
 _is_available = False
 
@@ -29,7 +29,7 @@ def is_available() -> bool:
     return _is_available
 
 
-__all__ = ['SDKUtils']
+__all__ = ['SDKManager']
 
 if is_available():
 

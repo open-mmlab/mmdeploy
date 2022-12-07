@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('snpe')
-class SNPEUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('coreml')
+class CoreMLManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',
@@ -25,9 +25,5 @@ class SNPEUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        from .wrapper import SNPEWrapper
-        uri = None
-        if 'uri' in kwargs:
-            uri = kwargs['uri']
-        return SNPEWrapper(
-            dlc_file=backend_files[0], uri=uri, output_names=output_names)
+        from .wrapper import CoreMLWrapper
+        return CoreMLWrapper(model_file=backend_files[0])

@@ -2,7 +2,7 @@
 
 import importlib
 
-from .backend_utils import CoreMLUtils
+from .backend_manager import CoreMLManager
 
 
 def is_available():
@@ -14,7 +14,7 @@ def is_available():
     return importlib.util.find_spec('coremltools') is not None
 
 
-__all__ = ['CoreMLUtils']
+__all__ = ['CoreMLManager']
 
 if is_available():
     from . import ops

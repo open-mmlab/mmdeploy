@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('ascend')
-class AscendUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('ascend')
+class AscendManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',

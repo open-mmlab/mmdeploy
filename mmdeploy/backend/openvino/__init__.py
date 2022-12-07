@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
-from .backend_utils import OpenVINOUtils
+from .backend_manager import OpenVINOManager
 
 
 def is_available() -> bool:
@@ -13,7 +13,7 @@ def is_available() -> bool:
     return importlib.util.find_spec('openvino') is not None
 
 
-__all__ = ['OpenVINOUtils']
+__all__ = ['OpenVINOManager']
 
 if is_available():
     from .onnx2openvino import get_output_model_file

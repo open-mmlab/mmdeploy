@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('onnxruntime')
-class ONNXRuntimeUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('snpe')
+class SNPEManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',
@@ -25,9 +25,9 @@ class ONNXRuntimeUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-
-        from .wrapper import ORTWrapper
-        return ORTWrapper(
-            onnx_file=backend_files[0],
-            device=device,
-            output_names=output_names)
+        from .wrapper import SNPEWrapper
+        uri = None
+        if 'uri' in kwargs:
+            uri = kwargs['uri']
+        return SNPEWrapper(
+            dlc_file=backend_files[0], uri=uri, output_names=output_names)

@@ -1,12 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('torchscript')
-class TorchScriptUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('onnxruntime')
+class ONNXRuntimeManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',
@@ -26,8 +25,9 @@ class TorchScriptUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        from .wrapper import TorchscriptWrapper
-        return TorchscriptWrapper(
-            model=backend_files[0],
-            input_names=input_names,
+
+        from .wrapper import ORTWrapper
+        return ORTWrapper(
+            onnx_file=backend_files[0],
+            device=device,
             output_names=output_names)

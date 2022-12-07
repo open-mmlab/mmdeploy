@@ -1,11 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from mmdeploy.utils import get_common_config
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('coreml')
-class CoreMLUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('rknn')
+class RKNNManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',
@@ -25,5 +26,10 @@ class CoreMLUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        from .wrapper import CoreMLWrapper
-        return CoreMLWrapper(model_file=backend_files[0])
+
+        from .wrapper import RKNNWrapper
+        common_config = get_common_config(deploy_cfg)
+        return RKNNWrapper(
+            model=backend_files[0],
+            common_config=common_config,
+            output_names=output_names)

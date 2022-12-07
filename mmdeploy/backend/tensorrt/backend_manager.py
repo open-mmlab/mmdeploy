@@ -2,14 +2,14 @@
 
 from typing import Any, Optional, Sequence
 
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('openvino')
-class OpenVINOUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('tensorrt')
+class TensorRTManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
-                      device: str = 'cpu',
+                      device: str = 'cuda',
                       input_names: Optional[Sequence[str]] = None,
                       output_names: Optional[Sequence[str]] = None,
                       deploy_cfg: Optional[Any] = None,
@@ -26,6 +26,6 @@ class OpenVINOUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        from .wrapper import OpenVINOWrapper
-        return OpenVINOWrapper(
-            ir_model_file=backend_files[0], output_names=output_names)
+
+        from .wrapper import TRTWrapper
+        return TRTWrapper(engine=backend_files[0], output_names=output_names)

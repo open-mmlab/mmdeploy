@@ -214,8 +214,8 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
    **Example:**
 
    ```Python
-        @BACKEND_UTILS.register('onnxruntime')
-        class ONNXRuntimeUtils(BaseBackendUtils):
+        @BACKEND_MANAGERS.register('onnxruntime')
+        class ONNXRuntimeUtils(BaseBackendManager):
 
             def build_wrapper(backend_files: Sequence[str],
                               device: str = 'cpu',

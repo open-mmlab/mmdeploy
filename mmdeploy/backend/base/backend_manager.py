@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractstaticmethod
 from typing import Any, Optional, Sequence
 
 
-class BaseBackendUtils(metaclass=ABCMeta):
+class BaseBackendManager(metaclass=ABCMeta):
     """Abstract interface of backend utils."""
 
     @abstractstaticmethod
@@ -28,7 +28,7 @@ class BaseBackendUtils(metaclass=ABCMeta):
         """
 
 
-class BackendUtilsRegistry:
+class BackendManagerRegistry:
     """backend utils manager."""
 
     def __init__(self):
@@ -65,14 +65,14 @@ class BackendUtilsRegistry:
 
         return wrap_utils
 
-    def find_utils(self, name: str) -> BaseBackendUtils:
+    def find_utils(self, name: str) -> BaseBackendManager:
         """Find the backend utils with name.
 
         Args:
             name (str): backend name.
 
         Returns:
-            BaseBackendUtils: backend utils of the given backend.
+            BaseBackendManager: backend utils of the given backend.
         """
         # try import backend if backend is in `mmdeploy.backend`
         try:
@@ -82,4 +82,4 @@ class BackendUtilsRegistry:
         return self._backend_utils.get(name, None)
 
 
-BACKEND_UTILS = BackendUtilsRegistry()
+BACKEND_MANAGERS = BackendManagerRegistry()

@@ -2,7 +2,7 @@
 import importlib
 import os.path as osp
 
-from .backend_utils import ONNXRuntimeUtils
+from .backend_manager import ONNXRuntimeManager
 from .init_plugins import get_ops_path
 
 
@@ -26,7 +26,7 @@ def is_custom_ops_available():
     return osp.exists(onnxruntime_op_path)
 
 
-__all__ = ['ONNXRuntimeUtils']
+__all__ = ['ONNXRuntimeManager']
 
 if is_available():
     try:

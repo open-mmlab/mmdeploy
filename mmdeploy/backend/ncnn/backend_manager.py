@@ -2,12 +2,12 @@
 
 from typing import Any, Optional, Sequence
 
-from mmdeploy.utils import SDK_TASK_MAP, get_task_type
-from ..base import BACKEND_UTILS, BaseBackendUtils
+from mmdeploy.utils import get_backend_config
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
-@BACKEND_UTILS.register('sdk')
-class SDKUtils(BaseBackendUtils):
+@BACKEND_MANAGERS.register('ncnn')
+class NCNNManager(BaseBackendManager):
 
     def build_wrapper(backend_files: Sequence[str],
                       device: str = 'cpu',
@@ -27,9 +27,17 @@ class SDKUtils(BaseBackendUtils):
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        assert deploy_cfg is not None, \
-            'Building SDKWrapper requires deploy_cfg'
-        from mmdeploy.backend.sdk import SDKWrapper
-        task_name = SDK_TASK_MAP[get_task_type(deploy_cfg)]['cls_name']
-        return SDKWrapper(
-            model_file=backend_files[0], task_name=task_name, device=device)
+        from .wrapper import NCNNWrapper
+
+        # For unittest deploy_config will not pass into _build_wrapper
+        # function.
+        if deploy_cfg:
+            backend_config = get_backend_config(deploy_cfg)
+            use_vulkan = backend_config.get('use_vulkan', False)
+        else:
+            use_vulkan = False
+        return NCNNWrapper(
+            param_file=backend_files[0],
+            bin_file=backend_files[1],
+            output_names=output_names,
+            use_vulkan=use_vulkan)

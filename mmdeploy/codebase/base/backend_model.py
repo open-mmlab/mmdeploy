@@ -54,9 +54,9 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 names from the model.
             deploy_cfg: Deployment config file.
         """
-        from mmdeploy.backend.base import BACKEND_UTILS
+        from mmdeploy.backend.base import BACKEND_MANAGERS
 
-        backend_utils = BACKEND_UTILS.find_utils(backend.value)
+        backend_utils = BACKEND_MANAGERS.find_utils(backend.value)
         if backend_utils is None:
             raise NotImplementedError(
                 f'Unsupported backend type: {backend.value}')
