@@ -8,6 +8,7 @@
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/operator.h"
+#include "mmdeploy/core/profiler.h"
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/execution/schedulers/registry.h"
 #include "mmdeploy/execution/when_all_value.h"
@@ -34,6 +35,7 @@ class StaticRouter : public Node {
   vector<int> use_count_;
   vector<vector<Coords>> input_coords_;
   vector<Coords> ret_coords_;
+  profiler::Scope* scope_{nullptr};
 };
 
 class StaticRouterBuilder {
