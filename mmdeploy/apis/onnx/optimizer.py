@@ -30,3 +30,10 @@ def jit_pass_onnx_deduplicate_initializers__disable(ctx, graph, param_dict,
     disable for TensorRT.
     """
     return param_dict
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'torch._C._jit_pass_onnx_autograd_function_process')
+def jit_pass_onnx_autograd_function_process__disable(ctx, graph):
+    """Disable process autograph function."""
+    return

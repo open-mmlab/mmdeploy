@@ -3,18 +3,6 @@ dataset_type = 'DOTADataset'
 data_root = 'tests/test_codebase/test_mmrotate/data/'
 ann_file = 'dota_sample/'
 file_client_args = dict(backend='disk')
-train_pipeline = [
-    dict(
-        type='mmdet.LoadImageFromFile', file_client_args=dict(backend='disk')),
-    dict(type='mmdet.LoadAnnotations', with_bbox=True, box_type='qbox'),
-    dict(type='ConvertBoxType', box_type_mapping=dict(gt_bboxes='rbox')),
-    dict(type='mmdet.Resize', scale=(1024, 1024), keep_ratio=True),
-    dict(
-        type='mmdet.RandomFlip',
-        prob=0.75,
-        direction=['horizontal', 'vertical', 'diagonal']),
-    dict(type='mmdet.PackDetInputs')
-]
 val_pipeline = [
     dict(
         type='mmdet.LoadImageFromFile', file_client_args=dict(backend='disk')),
@@ -35,35 +23,6 @@ test_pipeline = [
         meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
                    'scale_factor'))
 ]
-train_dataloader = dict(
-    batch_size=2,
-    num_workers=2,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
-    batch_sampler=None,
-    dataset=dict(
-        type='DOTADataset',
-        data_root=data_root,
-        ann_file=ann_file,
-        data_prefix=dict(img_path='trainval/images/'),
-        img_shape=(1024, 1024),
-        filter_cfg=dict(filter_empty_gt=True),
-        pipeline=[
-            dict(
-                type='mmdet.LoadImageFromFile',
-                file_client_args=dict(backend='disk')),
-            dict(
-                type='mmdet.LoadAnnotations', with_bbox=True, box_type='qbox'),
-            dict(
-                type='ConvertBoxType',
-                box_type_mapping=dict(gt_bboxes='rbox')),
-            dict(type='mmdet.Resize', scale=(1024, 1024), keep_ratio=True),
-            dict(
-                type='mmdet.RandomFlip',
-                prob=0.75,
-                direction=['horizontal', 'vertical', 'diagonal']),
-            dict(type='mmdet.PackDetInputs')
-        ]))
 val_dataloader = dict(
     batch_size=1,
     num_workers=2,
@@ -120,52 +79,12 @@ test_dataloader = dict(
                 meta_keys=('img_id', 'img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ]))
-val_evaluator = dict(type='DOTAMetric', metric='mAP')
-test_evaluator = dict(type='DOTAMetric', metric='mAP')
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=12, val_interval=1)
-val_cfg = dict(type='ValLoop')
-test_cfg = dict(type='TestLoop')
-param_scheduler = [
-    dict(
-        type='LinearLR',
-        start_factor=0.3333333333333333,
-        by_epoch=False,
-        begin=0,
-        end=500),
-    dict(
-        type='MultiStepLR',
-        begin=0,
-        end=12,
-        by_epoch=True,
-        milestones=[8, 11],
-        gamma=0.1)
-]
-optim_wrapper = dict(
-    type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.0025, momentum=0.9, weight_decay=0.0001),
-    clip_grad=dict(max_norm=35, norm_type=2))
 default_scope = 'mmrotate'
-default_hooks = dict(
-    timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=50),
-    param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=1),
-    sampler_seed=dict(type='DistSamplerSeedHook'),
-    visualization=dict(type='mmdet.DetVisualizationHook'))
-env_cfg = dict(
-    cudnn_benchmark=False,
-    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
-    dist_cfg=dict(backend='nccl'))
 vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
     type='RotLocalVisualizer',
     vis_backends=[dict(type='LocalVisBackend')],
     name='visualizer')
-log_processor = dict(type='LogProcessor', window_size=50, by_epoch=True)
-log_level = 'INFO'
-load_from = None
-resume = False
-angle_version = 'le135'
 model = dict(
     type='mmdet.RetinaNet',
     data_preprocessor=dict(
