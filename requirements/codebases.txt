@@ -1,7 +1,7 @@
 mmcls>=1.0.0rc2
 mmdet>=3.0.0rc4
 mmdet3d>=1.1.0rc2
-mmedit[all]>=1.0.0rc4
+mmedit[all] @ git+https://github.com/open-mmlab/mmediting.git@1.x
 mmocr>=1.0.0rc4
 mmpose>=1.0.0rc0
 mmsegmentation>=1.0.0rc0
