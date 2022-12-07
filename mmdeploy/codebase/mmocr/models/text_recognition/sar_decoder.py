@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 
 import torch
 import torch.nn.functional as F
-from mmocr.utils.typing import TextRecogDataSample
+from mmocr.utils.typing_utils import TextRecogDataSample
 from torch import nn
 
 from mmdeploy.core import FUNCTION_REWRITER, MODULE_REWRITER
