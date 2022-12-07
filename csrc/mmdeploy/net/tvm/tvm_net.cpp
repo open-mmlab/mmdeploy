@@ -11,6 +11,7 @@
 
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/filesystem.h"
+#include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/utils/dlpack/dlpack_utils.h"
 
 namespace mmdeploy::framework {
@@ -267,25 +268,15 @@ Result<void> TVMNet::Forward() {
   return success();
 }
 
-class TVMNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "tvm"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    try {
-      auto p = std::make_unique<TVMNet>();
-      if (auto r = p->Init(args)) {
-        return p;
-      } else {
-        MMDEPLOY_ERROR("error creating TVMNet: {}", r.error().message().c_str());
-        return nullptr;
-      }
-    } catch (const std::exception& e) {
-      MMDEPLOY_ERROR("unhandled exception when creating TVMNet: {}", e.what());
-      return nullptr;
-    }
+static std::unique_ptr<Net> Create(const Value& args) {
+  auto p = std::make_unique<TVMNet>();
+  if (auto status = p->Init(args)) {
+    return p;
+  } else {
+    MMDEPLOY_ERROR("Failed to created TVMNet with config: {}", args);
   }
-};
+  return nullptr;
+}
 
-REGISTER_MODULE(Net, TVMNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (tvm, 0), Create);
 }  // namespace mmdeploy::framework
