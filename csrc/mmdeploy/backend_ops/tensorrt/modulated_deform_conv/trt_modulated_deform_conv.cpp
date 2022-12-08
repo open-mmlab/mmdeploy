@@ -49,16 +49,55 @@ nvinfer1::IPluginV2DynamicExt *ModulatedDeformableConvPluginDynamic::clone() con
   return plugin;
 }
 
+static const nvinfer1::IDimensionExpr *get_hw(const nvinfer1::IDimensionExpr *input,
+                                              const nvinfer1::IDimensionExpr *weight,
+                                              const nvinfer1::IDimensionExpr *stride,
+                                              const nvinfer1::IDimensionExpr *pad,
+                                              const nvinfer1::IDimensionExpr *dilation,
+                                              nvinfer1::IExprBuilder &exprBuilder) {
+  using DimOp = nvinfer1::DimensionOperation;
+  auto expr_1 = exprBuilder.constant(1);
+
+  // d*(w-1)+1
+  auto kernel_0 = exprBuilder.operation(DimOp::kSUB, *weight, *expr_1);
+  auto kernel_1 = exprBuilder.operation(DimOp::kPROD, *dilation, *kernel_0);
+  auto kernel = exprBuilder.operation(DimOp::kSUM, *kernel_1, *expr_1);
+
+  // (1+2*p-k)//stride -1
+  auto out_0 = exprBuilder.operation(DimOp::kSUM, *pad, *pad);
+  auto out_1 = exprBuilder.operation(DimOp::kSUM, *input, *out_0);
+  auto out_2 = exprBuilder.operation(DimOp::kSUB, *out_1, *kernel);
+  auto out_3 = exprBuilder.operation(DimOp::kFLOOR_DIV, *out_2, *stride);
+  auto out = exprBuilder.operation(DimOp::kSUM, *out_3, *expr_1);
+
+  return out;
+}
+
 nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
     int outputIndex, const nvinfer1::DimsExprs *inputs, int nbInputs,
     nvinfer1::IExprBuilder &exprBuilder) TRT_NOEXCEPT {
+  using DimOp = nvinfer1::DimensionOperation;
+  auto weight_dim = inputs[3].d;
   nvinfer1::DimsExprs ret;
   ret.nbDims = 4;
   ret.d[0] = inputs[0].d[0];
   ret.d[1] = inputs[3].d[0];
 
-  ret.d[2] = inputs[1].d[2];
-  ret.d[3] = inputs[1].d[3];
+  auto input_h = inputs[0].d[2];
+  auto input_w = inputs[0].d[3];
+  auto weight_h = weight_dim[2];
+  auto weight_w = weight_dim[3];
+  auto dilation_w = exprBuilder.constant(mDilation.d[0]);
+  auto dilation_h = exprBuilder.constant(mDilation.d[1]);
+  auto pad_w = exprBuilder.constant(mPadding.d[0]);
+  auto pad_h = exprBuilder.constant(mPadding.d[1]);
+  auto stride_w = exprBuilder.constant(mStride.d[0]);
+  auto stride_h = exprBuilder.constant(mStride.d[1]);
+  auto expr_1 = exprBuilder.constant(1);
+  auto expr_2 = exprBuilder.constant(2);
+
+  ret.d[2] = get_hw(input_h, weight_h, stride_h, pad_h, dilation_h, exprBuilder);
+  ret.d[3] = get_hw(input_w, weight_w, stride_w, pad_w, dilation_w, exprBuilder);
 
   return ret;
 }
