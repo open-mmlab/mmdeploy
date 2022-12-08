@@ -218,7 +218,9 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
         @BACKEND_MANAGERS.register('onnxruntime')
         class ONNXRuntimeUtils(BaseBackendManager):
 
-            def build_wrapper(backend_files: Sequence[str],
+            @classmethod
+            def build_wrapper(cls,
+                              backend_files: Sequence[str],
                               device: str = 'cpu',
                               input_names: Optional[Sequence[str]] = None,
                               output_names: Optional[Sequence[str]] = None,

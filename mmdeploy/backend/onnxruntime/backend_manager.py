@@ -7,7 +7,9 @@ from ..base import BACKEND_MANAGERS, BaseBackendManager
 @BACKEND_MANAGERS.register('onnxruntime')
 class ONNXRuntimeManager(BaseBackendManager):
 
-    def build_wrapper(backend_files: Sequence[str],
+    @classmethod
+    def build_wrapper(cls,
+                      backend_files: Sequence[str],
                       device: str = 'cpu',
                       input_names: Optional[Sequence[str]] = None,
                       output_names: Optional[Sequence[str]] = None,
