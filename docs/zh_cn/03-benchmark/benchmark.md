@@ -633,6 +633,7 @@ GPU: ncnn, TensorRT, PPLNN
     <th align="center" colspan="3">TensorRT</th>
     <th align="center">PPLNN</th>
     <th align="center">Ascend</th>
+    <th algin="center">OpenVINO</th>
   </tr>
 </thead>
 <tbody>
@@ -649,6 +650,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">int8</td>
     <td align="center">fp16</td>
     <td align="center">fp32</td>
+    <td align="center">fp32</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOV3</a></td>
@@ -663,6 +665,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">33.5</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd/ssd300_coco.py">SSD</a></td>
@@ -674,6 +677,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">25.5</td>
     <td align="center">25.5</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -691,6 +695,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">36.3</td>
     <td align="center">36.5</td>
     <td align="center">36.4</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
@@ -702,6 +707,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">36.6</td>
     <td align="center">36.5</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -719,6 +725,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">37.2</td>
     <td align="center">37.4</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet/centernet_r18_8xb16-crop512-140e_coco.py">CenterNet</a></td>
@@ -730,6 +737,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">26.0</td>
     <td align="center">26.0</td>
     <td align="center">25.8</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -747,6 +755,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">29.3</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
@@ -761,6 +770,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">37.1</td>
     <td align="center">37.3</td>
     <td align="center">37.2</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/atss/atss_r50_fpn_1x_coco.py">ATSS</a></td>
@@ -772,6 +782,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">39.4</td>
     <td align="center">39.4</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -789,6 +800,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">40.4</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/gfl/gfl_r50_fpn_1x_coco.py">GFL</a></td>
@@ -800,6 +812,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">40.2</td>
     <td align="center">40.2</td>
     <td align="center">40.0</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -817,6 +830,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/detr/detr_r50_8x2_150e_coco.py">DETR</a></td>
@@ -828,6 +842,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">40.1</td>
     <td align="center">40.1</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -844,6 +860,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">38.0</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center">mask AP</td>
@@ -852,6 +869,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">33.7</td>
     <td align="center">33.7</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -869,6 +887,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center">mask AP</td>
@@ -880,6 +899,22 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo">SOLO</a></td>
+    <td align="center" rowspan="2">Instance Segmentation</td>
+    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center">mask AP</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">35.4</td>
   </tr>
 </tbody>
 </table>

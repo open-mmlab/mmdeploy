@@ -22,6 +22,7 @@
 | [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)                       | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
 | [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                       | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
+| [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)                                 | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)                        | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
@@ -82,7 +83,6 @@
 | [RotatedRetinaNet](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_retinanet/README.md) | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [Oriented RCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn/README.md)        | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex/README.md)      | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |
-| [SOLO](https://github.com/open-mmlab/mmrotate/tree/3.x/configs/solo)[\*](#note)                         | RotatedDetection |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 
 ## Note
 
@@ -92,4 +92,3 @@
 - YOLOX: YOLOX with ncnn only supports static shape.
 - Swin Transformer: For TensorRT, only version 8.4+ is supported.
 - SAR: Chinese text recognition model is not supported as the protobuf size of ONNX is limited.
-- SOLO: For OpenVINO, we recommend you to use min shape deploy config just like 300x300 rather than 800x1344, for example $MMDEPLOY_DIR/configs/mmdet/detection/detection_openvino_dynamic-300x300.py.

@@ -2284,7 +2284,7 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
     """Test predict_by_feat rewrite of solo head."""
     check_backend(backend_type)
     solo_head = get_solo_head_model()
-    s = 800
+    s = 128
     solo_head.cpu().eval()
     batch_img_metas = [{'img_shape': (s, s, 3), 'ori_shape': (s, s, 3)}]
 
@@ -2305,7 +2305,7 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
                     background_label_id=-1,
                     export_postprocess_mask=True))))
     seed_everything(1234)
-    num_grids = [40, 36, 24, 16, 12]
+    num_grids = [24, 20, 16, 12, 8]
     mask_preds = [
         torch.rand(1, num_grid**2, s // 4, s // 4) for num_grid in num_grids
     ]

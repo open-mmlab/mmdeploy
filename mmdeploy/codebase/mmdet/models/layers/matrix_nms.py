@@ -46,49 +46,39 @@ def mask_matrix_nms__onnx(ctx,
                 the remaining mask in the input mask, has shape (n,).
     """
     assert len(labels) == len(masks) == len(scores)
-    if mask_area is None:
-        mask_area = masks.sum((1, 2)).float()
-    else:
-        assert len(masks) == len(mask_area)
-
+    assert len(masks) == len(mask_area)
     # sort and keep top nms_pre
-    scores, sort_inds = torch.sort(scores, descending=True)
+    nms_pre = max(0, nms_pre)
+    if nms_pre <= 0:
+        nms_pre = scores.shape[0]
+    scores, sort_inds = torch.topk(scores, nms_pre)
 
     keep_inds = sort_inds
-    if nms_pre > 0:
-        sort_inds = sort_inds[:nms_pre]
-        keep_inds = keep_inds[:nms_pre]
-        scores = scores[:nms_pre]
     masks = masks[sort_inds]
     mask_area = mask_area[sort_inds]
     labels = labels[sort_inds]
-
     num_masks = labels.size(0)
     flatten_masks = masks.reshape(num_masks, -1).float()
     # inter.
     inter_matrix = torch.mm(flatten_masks, flatten_masks.transpose(1, 0))
-    expanded_mask_area = mask_area.expand(num_masks, num_masks)
-    # Upper triangle iou matrix.
-    iou_matrix = torch.triu(
-        (inter_matrix / (expanded_mask_area +
-                         expanded_mask_area.transpose(1, 0) - inter_matrix)),
-        diagonal=1)
-    # label_specific matrix.
-    expanded_labels = labels.expand(num_masks, num_masks)
-    # Upper triangle label matrix.
-    label_matrix = (expanded_labels == expanded_labels.transpose(1, 0)).type(
-        iou_matrix.dtype)
-    label_matrix = torch.triu(label_matrix, diagonal=1)
+    expanded_mask_area = mask_area.unsqueeze(1)
+    total_area = expanded_mask_area + expanded_mask_area.transpose(
+        1, 0) - inter_matrix
+    total_mask = total_area > 0
+    total_area = total_area.where(total_mask, total_area.new_ones(1))
+    iou_matrix = (inter_matrix / total_area).triu(diagonal=1)
+    expanded_labels = labels.unsqueeze(1)
+    label_matrix = expanded_labels == expanded_labels.transpose(1, 0)
 
-    # IoU compensation
-    compensate_iou, _ = (iou_matrix * label_matrix).max(0)
+    # iou decay
+    decay_iou = iou_matrix.where(label_matrix, iou_matrix.new_zeros(1))
+
+    # iou compensation
+    compensate_iou, _ = decay_iou.max(0)
     compensate_iou = compensate_iou.expand(num_masks,
                                            num_masks).transpose(1, 0)
 
-    # IoU decay
-    decay_iou = iou_matrix * label_matrix
-
-    # Calculate the decay_coefficient
+    # calculate the decay_coefficient
     if kernel == 'gaussian':
         decay_matrix = torch.exp(-1 * sigma * (decay_iou**2))
         compensate_matrix = torch.exp(-1 * sigma * (compensate_iou**2))
@@ -102,20 +92,12 @@ def mask_matrix_nms__onnx(ctx,
     # update the score.
     scores = scores * decay_coefficient
 
-    if filter_thr > 0:
-        keep = scores >= filter_thr
-        keep_inds = keep_inds[keep]
-        masks = masks[keep]
-        scores = scores[keep]
-        labels = labels[keep]
+    keep = scores >= filter_thr
+    scores = scores.where(keep, scores.new_zeros(1))
 
     # sort and keep top max_num
-    scores, sort_inds = torch.sort(scores, descending=True)
+    scores, sort_inds = torch.topk(scores, max(max_num, 0))
     keep_inds = keep_inds[sort_inds]
-    if max_num > 0:
-        sort_inds = sort_inds[:max_num]
-        keep_inds = keep_inds[:max_num]
-        scores = scores[:max_num]
     masks = masks[sort_inds]
     labels = labels[sort_inds]
 
