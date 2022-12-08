@@ -13,7 +13,7 @@
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 mmdeploy::DataType IPUNet::ipu_type_convert(const popef::DataType& ipu_type) {
   mmdeploy::DataType mtype;
@@ -202,21 +202,32 @@ Result<void> IPUNet::Forward() {
   return success();
 }
 
-class IPUNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "ipu"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    auto p = std::make_unique<IPUNet>();
-    if (auto r = p->Init(args)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("error creating IPUNet: {}", r.error().message().c_str());
-      return nullptr;
-    }
-  }
-};
+// class IPUNetCreator : public Creator<Net> {
+//  public:
+//   const char* GetName() const override { return "ipu"; }
+//   int GetVersion() const override { return 0; }
+//   std::unique_ptr<Net> Create(const Value& args) override {
+//     auto p = std::make_unique<IPUNet>();
+//     if (auto r = p->Init(args)) {
+//       return p;
+//     } else {
+//       MMDEPLOY_ERROR("error creating IPUNet: {}", r.error().message().c_str());
+//       return nullptr;
+//     }
+//   }
+// };
 
-REGISTER_MODULE(Net, IPUNetCreator);
+// REGISTER_MODULE(Net, IPUNetCreator);
+static std::unique_ptr<Net> Create(const Value& args) {
+  auto p = std::make_unique<IPUNet>();
+  if (auto r = p->Init(args)) {
+    return p;
+  } else {
+    MMDEPLOY_ERROR("error creating IPUnet: {}", r.error().message().c_str());
+    return nullptr;
+  }
+}
+
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (ipu, 0), Create);
 
 }  // namespace mmdeploy

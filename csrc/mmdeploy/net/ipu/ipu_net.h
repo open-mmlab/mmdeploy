@@ -14,7 +14,7 @@
 #include "mmdeploy/core/net.h"
 #include "utils.hpp"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
 class IPUNet : public Net {
  public:

@@ -70,7 +70,7 @@ Creator<void>* Registry<void>::GetCreator(const std::string_view& name, int vers
 Span<Creator<void>*> Registry<void>::Creators() {
   assert(impl_);
   return impl_->Creators();
-
+}
 }  // namespace _registry
 
 }  // namespace mmdeploy

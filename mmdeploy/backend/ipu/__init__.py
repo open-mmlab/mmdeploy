@@ -11,7 +11,6 @@ def is_available():
     try:
         import popart
         device = popart.DeviceManager.acquireAvailableDevice()
-        import popconverter
 
         return True
     except Exception as e:
