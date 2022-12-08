@@ -27,6 +27,15 @@ jobs:
         run: |
           python .github/scripts/check_index_rst.py docs/en/index.rst
           python .github/scripts/check_index_rst.py docs/zh_cn/index.rst
+      - name: Check markdown link
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          use-verbose-mode: 'yes'
+#          check-modified-files-only: 'yes'
+          config-file: '.github/md-link-config.json'
+          folder-path: 'docs/en, docs/zh_cn'
+          file-path: './README.md, ./LICENSE, ./README_zh-CN.md'
       - name: Check doc link
         run: |
           python .github/scripts/doc_link_checker.py --target docs/zh_cn

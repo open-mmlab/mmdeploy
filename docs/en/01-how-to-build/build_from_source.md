@@ -26,7 +26,7 @@ Note:
 - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
 
   ```shell
-  git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git --recursive
+  git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git --recursive
   ```
 
 ## Build
