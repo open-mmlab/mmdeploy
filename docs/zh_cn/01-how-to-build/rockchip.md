@@ -102,7 +102,7 @@ python tools/deploy.py \
 
 - YOLOV3 & YOLOX
 
-将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)
+将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)
 
 ```python
 # yolov3, yolox
@@ -132,7 +132,7 @@ python tools/deploy.py \
 
 - RetinaNet & SSD & FSAF with rknn-toolkit2
 
-将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static.py)。使用 rknn-toolkit 的用户则不用。
+将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)。使用 rknn-toolkit 的用户则不用。
 
 ```python
 # retinanet, ssd

@@ -44,7 +44,7 @@ python -c "import tensorrt;print(tensorrt.__version__)"
 
 ### Jetson
 
-对于 Jetson 平台，我们有非常详细的安装环境配置教程，可参考 [MMDeploy 安装文档](https://github.com/open-mmlab/mmdeploy/blob/master/docs/zh_cn/01-how-to-build/jetsons.md)。需要注意的是，在 Jetson 上配置的 CUDA 版本 TensorRT 版本与 JetPack 强相关的，我们选择适配硬件的版本即可。配置好环境后，通过 `python -c "import tensorrt;print(tensorrt.__version__)"` 查看TensorRT版本是否正确。
+对于 Jetson 平台，我们有非常详细的安装环境配置教程，可参考 [MMDeploy 安装文档](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/zh_cn/01-how-to-build/jetsons.md)。需要注意的是，在 Jetson 上配置的 CUDA 版本 TensorRT 版本与 JetPack 强相关的，我们选择适配硬件的版本即可。配置好环境后，通过 `python -c "import tensorrt;print(tensorrt.__version__)"` 查看TensorRT版本是否正确。
 
 ## 模型构建
 

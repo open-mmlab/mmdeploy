@@ -158,7 +158,7 @@ label: 65, score: 0.95
 
 - MMDet models.
 
-  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static-320x320.py):
+  YOLOV3 & YOLOX: you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py):
 
   ```python
   # yolov3, yolox
@@ -173,7 +173,7 @@ label: 65, score: 0.95
       ])
   ```
 
-  RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_rknn_static-320x320.py). Users with rknn-toolkit can directly use default config.
+  RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py). Users with rknn-toolkit can directly use default config.
 
   ```python
   # retinanet, ssd
