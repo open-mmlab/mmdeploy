@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
+from packaging import version
 from torch import Tensor
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -88,7 +89,9 @@ def _multiclass_nms(boxes: Tensor,
     shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
     4).
     """
-    max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
+    if version.parse(torch.__version__) < version.parse('1.13.0'):
+        max_output_boxes_per_class = torch.LongTensor(
+            [max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
     batch_size = scores.shape[0]
@@ -122,7 +125,9 @@ def _multiclass_nms_single(boxes: Tensor,
 
     Single batch nms could be optimized.
     """
-    max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
+    if version.parse(torch.__version__) < version.parse('1.13.0'):
+        max_output_boxes_per_class = torch.LongTensor(
+            [max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
 
