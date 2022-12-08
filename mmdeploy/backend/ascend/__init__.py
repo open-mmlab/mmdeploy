@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
-from .backend_utils import AscendManager
+from .backend_manager import AscendManager
 from .utils import update_sdk_pipeline
 
 

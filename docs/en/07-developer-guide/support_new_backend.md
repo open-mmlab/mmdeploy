@@ -209,7 +209,7 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. Create a backend utils class which derive from `BackendUtils`, implement its `build_wrapper` static method.
+4. Create a backend manager class which derive from `BackendManager`, implement its `build_wrapper` static method.
 
    **Example:**
 

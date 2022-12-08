@@ -56,12 +56,12 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
         """
         from mmdeploy.backend.base import BACKEND_MANAGERS
 
-        backend_utils = BACKEND_MANAGERS.find_utils(backend.value)
-        if backend_utils is None:
+        backend_mgr = BACKEND_MANAGERS.find(backend.value)
+        if backend_mgr is None:
             raise NotImplementedError(
                 f'Unsupported backend type: {backend.value}')
-        return backend_utils.build_wrapper(backend_files, device, input_names,
-                                           output_names, deploy_cfg, **kwargs)
+        return backend_mgr.build_wrapper(backend_files, device, input_names,
+                                         output_names, deploy_cfg, **kwargs)
 
     def destroy(self):
         if hasattr(self, 'wrapper') and hasattr(self.wrapper, 'destroy'):

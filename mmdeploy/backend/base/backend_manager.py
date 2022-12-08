@@ -1,11 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-from abc import ABCMeta, abstractstaticmethod
+from abc import ABC, abstractstaticmethod
 from typing import Any, Optional, Sequence
 
 
-class BaseBackendManager(metaclass=ABCMeta):
-    """Abstract interface of backend utils."""
+class BaseBackendManager(ABC):
+    """Abstract interface of backend manager."""
 
     @abstractstaticmethod
     def build_wrapper(backend_files: Sequence[str],
@@ -29,57 +29,60 @@ class BaseBackendManager(metaclass=ABCMeta):
 
 
 class BackendManagerRegistry:
-    """backend utils manager."""
+    """backend manager registry."""
 
     def __init__(self):
-        self._backend_utils = {}
+        self._module_dict = {}
 
     def register(self, name: str, enum_name: Optional[str] = None):
-        """register backend utils.
+        """register backend manager.
 
         Args:
             name (str): name of the backend
             enum_name (Optional[str], optional): enum name of the backend.
                 if not given, the upper case of name would be used.
         """
+        from mmdeploy.utils import get_root_logger
+        logger = get_root_logger()
+
         if enum_name is None:
             enum_name = name.upper()
 
-        def wrap_utils(cls):
+        def wrap_manager(cls):
 
             from mmdeploy.utils import Backend
 
             if not hasattr(Backend, enum_name):
                 from aenum import extend_enum
                 extend_enum(Backend, enum_name, name)
+                logger.info(f'Registry new backend: {enum_name} = {name}.')
 
-            if name in self._backend_utils:
-                from mmdeploy.utils import get_root_logger
-                logger = get_root_logger()
+            if name in self._module_dict:
                 logger.info(
-                    f'Backend utils of `{name}` has already been registered.')
+                    f'Backend manager of `{name}` has already been registered.'
+                )
 
-            self._backend_utils[name] = cls
+            self._module_dict[name] = cls
 
             return cls
 
-        return wrap_utils
+        return wrap_manager
 
-    def find_utils(self, name: str) -> BaseBackendManager:
-        """Find the backend utils with name.
+    def find(self, name: str) -> BaseBackendManager:
+        """Find the backend manager with name.
 
         Args:
             name (str): backend name.
 
         Returns:
-            BaseBackendManager: backend utils of the given backend.
+            BaseBackendManager: backend manager of the given backend.
         """
         # try import backend if backend is in `mmdeploy.backend`
         try:
             importlib.import_module('mmdeploy.backend.' + name)
         except Exception:
             pass
-        return self._backend_utils.get(name, None)
+        return self._module_dict.get(name, None)
 
 
 BACKEND_MANAGERS = BackendManagerRegistry()
