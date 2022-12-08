@@ -98,6 +98,8 @@ Result<Value> LetterResizeImpl::Process(const Value& input) {
     } else {
       dst_img = src_img;
     }
+    // TODO update when mmyolo match the scale sequence with mmcv
+    ratios = {ratios[1], ratios[0]};  // mmcv scale factor is (w, h)
     if (output.contains("scale_factor")) {
       output["scale_factor"] = {output["scale_factor"][0].get<float>() * ratios[0],
                                 output["scale_factor"][1].get<float>() * ratios[1],
