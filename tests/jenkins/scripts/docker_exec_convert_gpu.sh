@@ -45,12 +45,7 @@ export codebase=$1
 getFullName $codebase
 export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$2
 
-# deal with mmyolo special
-if [ ${codebase} == "mmyolo" ]; then
-  export yolo_dep=/root/workspace/mmyolo-deps
-  ln -s $yolo_dep/mmyolo-configs ${MMDEPLOY_DIR}/configs/mmyolo
-  cp $yolo_dep/mmyolo.yml ${MMDEPLOY_DIR}/tests/regression/mmyolo.yml
-fi
+
 
 ## parameters
 export exec_performance=$(grep exec_performance ${CONFIG} | sed 's/exec_performance=//')
@@ -72,6 +67,12 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 branch=$(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep branch | awk -F ':' '{print $2}')
 git clone --branch ${branch} --depth 1 https://github.com/open-mmlab/${codebase_fullname}.git
+export CODEBASE_ROOT_DIR=/root/workspace/${codebase_fullname}
+# deal with mmyolo special
+if [ ${codebase} == "mmyolo" ]; then
+  ln -sf ${CODEBASE_ROOT_DIR}/configs/deploy ${MMDEPLOY_DIR}/configs/mmyolo
+  ln -sf ${CODEBASE_ROOT_DIR}/tests/regression/mmyolo.yml ${MMDEPLOY_DIR}/tests/regression/mmyolo.yml
+fi
 
 ## init tensorrt
 if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
