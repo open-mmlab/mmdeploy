@@ -755,6 +755,14 @@ class RKNNModel(End2EndModel):
                 batch_img_metas=metainfos,
                 cfg=self.model_cfg._cfg_dict.model.test_cfg,
                 rescale=True)
+        elif head_cfg.type == 'RTMDetSepBNHead':
+            divisor = round(len(outputs) / 2)
+            ret = head.predict_by_feat(
+                outputs[:divisor],
+                outputs[divisor:],
+                batch_img_metas=metainfos,
+                cfg=self.model_cfg._cfg_dict.model.test_cfg,
+                rescale=True)
         elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
             partition_cfgs = get_partition_config(self.deploy_cfg)
             if partition_cfgs is None:  # bbox decoding done in rknn model

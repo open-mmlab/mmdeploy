@@ -7,8 +7,8 @@ from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
-from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.mmcv.ops import multiclass_nms
+from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
+from mmdeploy.core import FUNCTION_REWRITER, mark
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -51,6 +51,12 @@ def rtmdet_head__predict_by_feat(self,
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
     """
+
+    @mark('rtmdet_head', inputs=['cls_scores', 'bbox_preds'])
+    def __mark_pred_maps(cls_scores, bbox_preds):
+        return cls_scores, bbox_preds
+
+    cls_scores, bbox_preds = __mark_pred_maps(cls_scores, bbox_preds)
     ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     device = cls_scores[0].device
