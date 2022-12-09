@@ -86,7 +86,7 @@ commands:
             python -m mim install -r requirements/codebases.txt
             python -m pip install -r requirements/tests.txt
             python -m pip install -r requirements/runtime.txt
-            python -m pip install -U numpy
+            python -m pip install -U numpy clip
             cd ..
   perform_model_converter_ut:
     steps:
