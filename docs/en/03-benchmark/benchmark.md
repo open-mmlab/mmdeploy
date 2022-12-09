@@ -911,6 +911,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center" rowspan="2">Instance Segmentation</td>
     <td align="center" rowspan="2">COCO2017</td>
     <td align="center">mask AP</td>
+    <td align="center">33.1</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -918,8 +919,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
-    <td align="center">-</td>
-    <td align="center">35.4</td>
+    <td align="center">32.7</td>
   </tr>
 </tbody>
 </table>

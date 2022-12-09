@@ -9,6 +9,7 @@ from . import getattribute  # noqa: F401,F403
 from . import group_norm  # noqa: F401,F403
 from . import interpolate  # noqa: F401,F403
 from . import linear  # noqa: F401,F403
+from . import linspace  # noqa: F401,F403
 from . import masked_fill  # noqa: F401,F403
 from . import mod  # noqa: F401,F403
 from . import multi_head_attention_forward  # noqa: F401,F403
