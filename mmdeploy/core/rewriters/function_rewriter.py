@@ -1,7 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import types
 from collections import defaultdict
 from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
+
+from torch.fx._symbolic_trace import _wrapped_fns_to_patch
 
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
@@ -94,6 +97,24 @@ def _del_func(path: str):
             continue
 
 
+def _fx_wrap_copied_fn(func: types.FunctionType,
+                       copied_func: types.FunctionType):
+    """If a function is wrapped by torch.fx.wrap, its copy also needs to be
+    wrapped by torch.fx.wrap."""
+    if not hasattr(func, '__globals__'):
+        return
+
+    wrapped_fns_globals = [item[0] for item in _wrapped_fns_to_patch]
+    wrapped_fns_names = [item[1] for item in _wrapped_fns_to_patch]
+
+    # check if wrapped by torch.fx.wrap
+    if func.__globals__ in wrapped_fns_globals:
+        idx = wrapped_fns_globals.index(func.__globals__)
+        fn_name = wrapped_fns_names[idx]
+        # a hacky way to wrap the func in copied func
+        _wrapped_fns_to_patch.append((copied_func.__globals__, fn_name))
+
+
 class FunctionRewriter:
     """A function rewriter which maintains rewritten functions.
 
@@ -147,6 +168,8 @@ class FunctionRewriter:
         self._func_contexts.clear()
         # Get current records
         functions_records = self._registry.get_records(env)
+        # Get current fx wrapped func nums
+        self._ori_fx_wrap_num = len(_wrapped_fns_to_patch)
 
         self._origin_functions = list()
         self._additional_functions = list()
@@ -186,11 +209,16 @@ class FunctionRewriter:
 
                 # Create context_caller
                 rewrite_function = record_dict['_object']
+                # The func before and after copy has different globals
                 rewrite_function = copy_function(rewrite_function)
                 extra_kwargs = kwargs.copy()
                 extra_kwargs.update(record_dict)
                 context_caller = ContextCaller(rewrite_function, origin_func,
                                                cfg, **extra_kwargs)
+                # If there is a function wrapped by torch.fx.wrap in
+                # rewrite_function's globals, we need to wrap the same name
+                # function in copied function's globals.
+                _fx_wrap_copied_fn(record_dict['_object'], context_caller.func)
 
                 qualname = get_func_qualname(rewrite_function)
                 self._func_contexts[qualname].append(context_caller)
@@ -209,6 +237,11 @@ class FunctionRewriter:
 
     def exit(self):
         """Recover the function rewrite."""
+        # Restore _wrapped_fns_to_patch
+        cur_fx_wrap_num = len(_wrapped_fns_to_patch)
+        for _ in range(cur_fx_wrap_num - self._ori_fx_wrap_num):
+            _wrapped_fns_to_patch.pop(-1)
+
         for func_dict in self._origin_functions:
             func_path = func_dict['func_path']
             func = func_dict['origin_func']
