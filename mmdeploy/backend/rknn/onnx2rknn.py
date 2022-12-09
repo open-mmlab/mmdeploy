@@ -11,6 +11,17 @@ from mmdeploy.utils import (get_common_config, get_normalization,
 from mmdeploy.utils.config_utils import get_backend_config
 
 
+def rknn_package_info():
+    """Get the rknn package information."""
+    import pkg_resources
+    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit', None)
+    toolkit = pkg_resources.working_set.by_key.get('rknn-toolkit2', toolkit)
+    if toolkit is None:
+        return dict(name=None, version=None)
+    else:
+        return dict(name=toolkit.project_name, version=toolkit.version)
+
+
 def onnx2rknn(onnx_model: str,
               output_path: str,
               deploy_cfg: Union[str, mmengine.Config],
@@ -69,17 +80,14 @@ def onnx2rknn(onnx_model: str,
         exit(ret)
 
     dataset_cfg = quantization_cfg.get('dataset', None)
-    do_quantization = quantization_cfg.get('do_quantization', False)
-    rknn_batch_size = quantization_cfg.get('rknn_batch_size', -1)
-    if dataset_cfg is None and dataset_file is None:
-        do_quantization = False
-        logger.warning('no dataset passed in, quantization is skipped')
-    if dataset_cfg is not None:
-        dataset_file = dataset_cfg
-    ret = rknn.build(
-        do_quantization=do_quantization,
-        dataset=dataset_file,
-        rknn_batch_size=rknn_batch_size)
+    if dataset_cfg is None:
+        quantization_cfg.update(dict(dataset=dataset_file))
+        if dataset_file is None:
+            quantization_cfg.update(dict(do_quantization=False))
+            logger.warning('no dataset passed in, quantization is skipped')
+    if rknn_package_info()['name'] == 'rknn-toolikit':
+        quantization_cfg.pop('pre_compile', None)
+    ret = rknn.build(**quantization_cfg)
     if ret != 0:
         logger.error('Build model failed!')
         exit(ret)
