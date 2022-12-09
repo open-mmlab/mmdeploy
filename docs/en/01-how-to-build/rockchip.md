@@ -174,3 +174,8 @@ label: 65, score: 0.95
   ```
 
 - SDK only supports int8 rknn model, which require `do_quantization=True` when converting models.
+
+- Latency problem.
+
+  For devices running RKNPU like rv1126, please set `pre_compile=True` in `quantization_config` when converting models.
+  Or the latency may not suit your need.

@@ -85,7 +85,7 @@ def onnx2rknn(onnx_model: str,
         if dataset_file is None:
             quantization_cfg.update(dict(do_quantization=False))
             logger.warning('no dataset passed in, quantization is skipped')
-    if rknn_package_info()['name'] == 'rknn-toolikit':
+    if rknn_package_info()['name'] == 'rknn-toolkit2':
         quantization_cfg.pop('pre_compile', None)
     ret = rknn.build(**quantization_cfg)
     if ret != 0:

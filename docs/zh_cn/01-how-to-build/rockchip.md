@@ -175,6 +175,7 @@ backend_config = dict(
 ### 问题说明
 
 - SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
+- 模型速度问题：如果使用的设备运行的是 RKNPU，比如 rv1126 设备，请记得在 `quantization_config` 中设置 `pre_compile=True`。
 
 ## 模型推理
 
