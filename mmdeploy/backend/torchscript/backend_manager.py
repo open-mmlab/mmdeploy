@@ -8,6 +8,7 @@ from ..base import BACKEND_MANAGERS, BaseBackendManager
 @BACKEND_MANAGERS.register('torchscript')
 class TorchScriptManager(BaseBackendManager):
 
+    @classmethod
     def build_wrapper(cls,
                       backend_files: Sequence[str],
                       device: str = 'cpu',
