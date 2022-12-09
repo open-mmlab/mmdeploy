@@ -33,5 +33,9 @@ class OrtOpsRegistry {
   static char __domain_##domain##name[] = #domain; \
   static OrtOpsRegistry<__domain_##domain##name, name> ort_ops_registry_##domain##name {}
 
+inline size_t getAlignedSize(size_t origin_size, size_t aligned_number = 16) {
+  return size_t((origin_size + aligned_number - 1) / aligned_number) * aligned_number;
+}
+
 }  // namespace mmdeploy
 #endif  // ORT_MMCV_UTILS_H

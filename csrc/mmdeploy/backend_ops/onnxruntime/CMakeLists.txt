@@ -2,6 +2,7 @@
 
 project(mmdeploy_onnxruntime_ops)
 
+include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
 
 # add plugin source
@@ -12,6 +13,9 @@ target_compile_options(${PROJECT_NAME}_obj PRIVATE
         $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
 mmdeploy_export(${PROJECT_NAME}_obj)
+
+target_include_directories(${PROJECT_NAME}_obj
+        PRIVATE ${CUDA_TOOLKIT_ROOT_DIR}/include)
 
 target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${ONNXRUNTIME_DIR}/include>
