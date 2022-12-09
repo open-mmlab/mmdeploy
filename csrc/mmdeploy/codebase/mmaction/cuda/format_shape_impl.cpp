@@ -17,62 +17,7 @@ class FormatShapeImpl : public FormatShapeOp {
   explicit FormatShapeImpl(std::string input_format) : FormatShapeOp(std::move(input_format)) {}
 
  protected:
-  Result<void> apply(const std::vector<Tensor>& inputs, Tensor& output, int clip_len,
-                     int num_clips) override {
-    auto N = static_cast<int64_t>(inputs.size());
-    auto H = inputs[0].shape(1);
-    auto W = inputs[0].shape(2);
-    auto C = inputs[0].shape(3);
-
-    auto t0 = std::chrono::high_resolution_clock::now();
-    TensorDesc desc = {device_, DataType::kFLOAT, {N, H, W, C}};
-    Tensor imgs(desc);
-    int offset = 0;
-    int n_item = H * W * C;
-    int copy_size = n_item * sizeof(float);
-    for (int i = 0; i < N; i++) {
-      auto src_buffer = inputs[i].buffer();
-      auto dst_buffer = imgs.buffer();
-      OUTCOME_TRY(stream().Copy(src_buffer, dst_buffer, copy_size, 0, offset));
-      offset += copy_size;
-    }
-
-    // Tensor dst;
-    if (input_format_ == "NCHW") {
-      OUTCOME_TRY(output, FormatNCHW(imgs, clip_len, num_clips));
-    }
-    if (input_format_ == "NCTHW") {
-      OUTCOME_TRY(output, FormatNCTHW(imgs, clip_len, num_clips));
-    }
-    TensorShape expand_dim = output.shape();
-    expand_dim.insert(expand_dim.begin(), 1);
-    output.Reshape(expand_dim);
-
-    return success();
-  }
-
-  Result<Tensor> FormatNCHW(Tensor& src, int clip_len, int num_clips) {
-    auto N = src.shape(0);
-    auto H = src.shape(1);
-    auto W = src.shape(2);
-    auto C = src.shape(3);
-    return Transpose(src, {N, H, W, C}, {0, 3, 1, 2});
-  };
-
-  Result<Tensor> FormatNCTHW(Tensor& src, int clip_len, int num_clips) {
-    auto N = src.shape(0);
-    auto H = src.shape(1);
-    auto W = src.shape(2);
-    auto C = src.shape(3);
-    int L = clip_len;
-    if (N % L != 0) {
-      return Status(eInvalidArgument);
-    }
-    int M = N / L;
-    src.Reshape({M, L, H, W, C});
-
-    return Transpose(src, {M, L, H, W, C}, {0, 4, 1, 2, 3});
-  };
+  const Device& GetDevice() { return device(); }
 
   Result<Tensor> Transpose(Tensor& src, const TensorShape& src_dims,
                            const std::vector<int>& permutation) {
