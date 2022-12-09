@@ -14,6 +14,7 @@ FormatShape::FormatShape(const Value& args) {
   if (input_format != "NCHW" && input_format != "NCTHW") {
     throw std::domain_error("'input_format' should be 'NCHW' or 'NCTHW'");
   }
+  format_ = operation::Managed<mmdeploy::mmaction::FormatShapeOp>::Create(input_format);
 }
 
 Result<void> FormatShape::Apply(Value& data) {
@@ -50,6 +51,7 @@ Result<void> FormatShape::Apply(Value& data) {
   }
 
   Tensor dst;
+  data = Value{};
   OUTCOME_TRY(format_.Apply(images, dst, clip_len, num_clips));
   data["img"] = std::move(dst);
 
