@@ -9,6 +9,10 @@ else
     exit 1
 fi
 
+echo "config==================="
+echo $config
+echo "========================="
+
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
 exec_performance=$(grep exec_performance ${config} | sed 's/exec_performance=//')

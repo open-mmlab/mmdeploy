@@ -10,9 +10,12 @@ else
     exit 1
 fi
 
+echo "config==================="
+echo $config
+echo "========================="
+
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 codebase_list=($(grep codebase_list ${config} | sed 's/codebase_list=//'))
-
 max_job_nums=$(grep max_job_nums ${config} | sed 's/max_job_nums=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')

@@ -329,7 +329,6 @@ def main():
             'PPLNN is not available, please install PPLNN first.'
 
         from mmdeploy.apis.pplnn import from_onnx
-
         pplnn_pipeline_funcs = [from_onnx]
         PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
 

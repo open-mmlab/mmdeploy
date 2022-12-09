@@ -9,6 +9,10 @@ else
     exit 1
 fi
 
+echo "config==================="
+echo $config
+echo "========================="
+
 docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
