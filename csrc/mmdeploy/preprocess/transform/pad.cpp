@@ -34,11 +34,11 @@ PadImpl::PadImpl(const Value& args) : TransformImpl(args) {
   } else {
     arg_.pad_val = 0.0f;
   }
-  if (args.contains("logical_or_val")) {
-    // logical_or mode support.
-    arg_.logical_or_val = args["logical_or_val"].get<int>();
-    arg_.add_pix_val = args.value("add_pix_val", 0);
-  }
+
+  // logical_or mode support.
+  arg_.logical_or_val = args.value("logical_or_val", 0);
+  arg_.add_pix_val = args.value("add_pix_val", 0);
+
   arg_.pad_to_square = args.value("pad_to_square", false);
   arg_.padding_mode = args.value("padding_mode", std::string("constant"));
   arg_.orientation_agnostic = args.value("orientation_agnostic", false);
