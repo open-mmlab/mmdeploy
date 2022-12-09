@@ -3,16 +3,8 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
-
-try:
-    import_codebase(Codebase.MMPOSE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
-
 from .utils import generate_mmpose_deploy_config  # noqa: E402
 from .utils import generate_mmpose_task_processor  # noqa: E402
 

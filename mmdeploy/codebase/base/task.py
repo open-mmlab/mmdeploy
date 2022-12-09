@@ -29,31 +29,18 @@ class BaseTask(metaclass=ABCMeta):
             ``experiment_name``. Defaults to ``None``.
     """
 
-    def __init__(self,
-                 model_cfg: Config,
-                 deploy_cfg: Config,
-                 device: str,
-                 experiment_name: str = 'BaseTask'):
+    def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
 
         self.model_cfg = model_cfg
         self.deploy_cfg = deploy_cfg
         self.device = device
 
         self.codebase = get_codebase(deploy_cfg)
-        self.experiment_name = experiment_name
 
         # init scope
         from .. import import_codebase
         custom_module_list = get_codebase_external_module(deploy_cfg)
         import_codebase(self.codebase, custom_module_list)
-
-        from mmengine.registry import DefaultScope
-        if not DefaultScope.check_instance_created(self.experiment_name):
-            self.scope = DefaultScope.get_instance(
-                self.experiment_name,
-                scope_name=self.model_cfg.get('default_scope'))
-        else:
-            self.scope = DefaultScope.get_instance(self.experiment_name)
 
         # lazy build visualizer
         self.visualizer = self.model_cfg.get('visualizer', None)

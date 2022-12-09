@@ -1,16 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List
+from typing import List, Union
 
 from mmdeploy.utils import Codebase
 from .base import BaseTask, MMCodebase, get_codebase_class
 
-extra_dependent_library = {
-    Codebase.MMOCR: ['mmdet'],
-    Codebase.MMROTATE: ['mmdet']
-}
 
-
-def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
+def import_codebase(codebase_type: Union[str, Codebase],
+                    custom_module_list: List = []):
     """Import a codebase package in `mmdeploy.codebase`
 
     The function will check if all dependent libraries are installed.
@@ -22,9 +18,11 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
         codebase (Codebase): The codebase to import.
     """
     import importlib
-    codebase_name = codebase_type.value
-    dependent_library = [codebase_name] + \
-        extra_dependent_library.get(codebase_type, [])
+    if isinstance(codebase_type, Codebase):
+        codebase_name = codebase_type.value
+    else:
+        codebase_name = codebase_type
+    dependent_library = [codebase_name]
     for lib in dependent_library + custom_module_list:
         if not importlib.util.find_spec(lib):
             raise ImportError(f'{lib} has not been installed. '
@@ -32,7 +30,7 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     if len(custom_module_list) > 0:
         for custom_module in custom_module_list:
             importlib.import_module(f'{custom_module}')
-    codebase = get_codebase_class(codebase_type)
+    codebase = get_codebase_class(codebase_name)
     codebase.register_all_modules()
 
 

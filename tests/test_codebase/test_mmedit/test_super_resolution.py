@@ -11,16 +11,9 @@ from torch.utils.data.dataset import Dataset
 
 import mmdeploy.apis.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
-from mmdeploy.utils import Codebase, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper, WrapFunction
-
-try:
-    import_codebase(Codebase.MMEDIT)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
 
 model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
 model_cfg = load_config(model_cfg)[0]

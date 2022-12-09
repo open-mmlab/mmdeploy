@@ -7,15 +7,8 @@ from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
-
-try:
-    import_codebase(Codebase.MMACTION)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmaction/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]

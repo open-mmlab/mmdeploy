@@ -1,22 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import numpy as np
-import pytest
 import torch
 from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 64
 NUM_CLASS = 1000
-
-try:
-    import_codebase(Codebase.MMCLS)
-except ImportError:
-    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)

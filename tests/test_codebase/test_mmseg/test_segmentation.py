@@ -9,15 +9,8 @@ import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
-
-try:
-    import_codebase(Codebase.MMSEG)
-except ImportError:
-    pytest.skip(f'{Codebase.MMSEG} is not installed.', allow_module_level=True)
-
 from .utils import generate_datasample  # noqa: E402
 from .utils import generate_mmseg_deploy_config  # noqa: E402
 

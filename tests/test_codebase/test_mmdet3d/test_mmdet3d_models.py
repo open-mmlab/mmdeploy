@@ -5,15 +5,9 @@ import pytest
 import torch
 
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
-try:
-    import_codebase(Codebase.MMDET3D)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
 model_cfg = load_config(
     'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
 

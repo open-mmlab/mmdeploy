@@ -4,14 +4,8 @@ import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, load_config
+from mmdeploy.utils import Backend, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
-
-try:
-    import_codebase(Codebase.MMOCR)
-except ImportError:
-    pytest.skip(f'{Codebase.MMOCR} is not installed.', allow_module_level=True)
 
 IMAGE_SIZE = 32
 

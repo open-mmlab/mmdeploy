@@ -1,21 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-import pytest
 import torch
 from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, load_config
+from mmdeploy.utils import Backend, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 224
-
-try:
-    import_codebase(Codebase.MMACTION)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
