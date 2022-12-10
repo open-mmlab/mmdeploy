@@ -41,6 +41,7 @@ class Codebase(AdvancedEnum):
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
     MMACTION = 'mmaction'
+    MMYOLO = 'mmyolo'
 
 
 class IR(AdvancedEnum):

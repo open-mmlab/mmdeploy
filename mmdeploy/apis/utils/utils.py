@@ -38,7 +38,8 @@ def build_task_processor(model_cfg: mmengine.Config,
     """
     check_backend_device(deploy_cfg=deploy_cfg, device=device)
     codebase_name = get_codebase(deploy_cfg, return_enum=False)
-    custom_module_list = get_codebase_external_module(deploy_cfg)
+    custom_module_list = deploy_cfg.get('custom_imports', [])
+    custom_module_list += get_codebase_external_module(deploy_cfg)
     import_codebase(codebase_name, custom_module_list)
     codebase = get_codebase_class(codebase_name)
     return codebase.build_task_processor(model_cfg, deploy_cfg, device)
@@ -60,7 +61,8 @@ def get_predefined_partition_cfg(deploy_cfg: mmengine.Config,
         dict: A dictionary of partition config.
     """
     codebase_name = get_codebase(deploy_cfg, return_enum=False)
-    custom_module_list = get_codebase_external_module(deploy_cfg)
+    custom_module_list = deploy_cfg.get('custom_imports', [])
+    custom_module_list += get_codebase_external_module(deploy_cfg)
     import_codebase(codebase_name, custom_module_list)
     task = get_task_type(deploy_cfg)
     codebase = get_codebase_class(codebase_name)

@@ -3,16 +3,15 @@ from abc import ABCMeta
 from typing import Dict, Optional, Union
 
 from mmengine import Config
-from mmengine.registry import Registry
 
 from mmdeploy.utils import Codebase, Task, get_task_type
-from .task import BaseTask
+from .task import BaseTask, TaskRegistry
 
 
 class BaseCodebase(metaclass=ABCMeta):
     """Wrap the apis of OpenMMLab Codebase."""
 
-    task_registry: Registry = None
+    task_registry: TaskRegistry = None
 
     def __init__(self) -> None:
         pass
@@ -65,7 +64,7 @@ MMCodebase = BaseCodebase
 
 
 class CodebaseRegistry:
-    """Codebase registry registry."""
+    """Codebase registry."""
 
     def __init__(self):
         self._module_dict = {}
@@ -76,7 +75,7 @@ class CodebaseRegistry:
         return self._module_dict
 
     def register_module(self, name: str, enum_name: Optional[str] = None):
-        """register Codebase registry.
+        """register Codebase.
 
         Args:
             name (str): name of the codebase

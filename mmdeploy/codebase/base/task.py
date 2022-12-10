@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
                             get_codebase_config, get_root_logger)
-from mmdeploy.utils.config_utils import get_codebase_external_module
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -36,11 +35,6 @@ class BaseTask(metaclass=ABCMeta):
         self.device = device
 
         self.codebase = get_codebase(deploy_cfg)
-
-        # init scope
-        from .. import import_codebase
-        custom_module_list = get_codebase_external_module(deploy_cfg)
-        import_codebase(self.codebase, custom_module_list)
 
         # lazy build visualizer
         self.visualizer = self.model_cfg.get('visualizer', None)
@@ -368,3 +362,75 @@ class BaseTask(metaclass=ABCMeta):
                             f'but got: {from_mmrazor}')
 
         return from_mmrazor
+
+
+class TaskRegistry:
+    """Task registry."""
+
+    def __init__(self, name):
+        self.name = name
+        self._module_dict = {}
+
+    @property
+    def module_dict(self):
+        """get the module dict."""
+        return self._module_dict
+
+    def register_module(self, name: str, enum_name: Optional[str] = None):
+        """register task.
+
+        Args:
+            name (str): name of the task.
+            enum_name (Optional[str], optional): enum name of the task.
+                if not given, the upper case of name would be used.
+        """
+        from mmdeploy.utils import get_root_logger
+        logger = get_root_logger()
+
+        if enum_name is None:
+            enum_name = name.upper()
+
+        def _wrap(cls):
+            from mmdeploy.utils import Task
+
+            if not hasattr(Task, enum_name):
+                from aenum import extend_enum
+                extend_enum(Task, enum_name, name)
+                logger.info(f'Registry new task: {enum_name} = {name}.')
+
+            if name in self._module_dict:
+                logger.info(f'Task registry of `{name}`'
+                            ' has already been registered.')
+
+            self._module_dict[name] = cls
+
+            return cls
+
+        return _wrap
+
+    def find(self, name: str):
+        """Find the Task registry with name.
+
+        Args:
+            name (str): codebase name.
+        Returns:
+            type: task registry of the given name.
+        """
+        return self._module_dict.get(name, None)
+
+    def build(self, cfg: Dict, **kwargs):
+        """build module.
+
+        Args:
+            cfg (Dict): The config of the module
+
+        Returns:
+            BaseTask: The output codebase instance.
+        """
+        assert 'type' in cfg, 'Can not get build, type not provided.'
+        module_type = cfg['type']
+        module_class = self.find(module_type)
+        params = cfg.copy()
+        params.pop('type')
+        params.update(kwargs)
+        return module_class(**params)

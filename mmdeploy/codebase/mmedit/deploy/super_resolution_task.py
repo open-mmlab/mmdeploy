@@ -118,7 +118,7 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMEDIT_TASK.register_module(Task.SUPER_RESOLUTION.value)
-class SuperResolution(BaseTask):
+class SuperResolutionTask(BaseTask):
     """BaseTask class of super resolution task.
 
     Args:
@@ -129,7 +129,8 @@ class SuperResolution(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
-        super(SuperResolution, self).__init__(model_cfg, deploy_cfg, device)
+        super(SuperResolutionTask, self).__init__(model_cfg, deploy_cfg,
+                                                  device)
 
     def build_backend_model(self,
                             model_files: Sequence[str] = None,

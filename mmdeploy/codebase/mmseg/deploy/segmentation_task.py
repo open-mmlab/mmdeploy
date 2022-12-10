@@ -10,9 +10,9 @@ import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
 
 
@@ -119,7 +119,7 @@ class MMSegmentation(MMCodebase):
 
 
 @MMSEG_TASK.register_module(Task.SEGMENTATION.value)
-class Segmentation(BaseTask):
+class SegmentationTask(BaseTask):
     """Segmentation task class.
 
     Args:
@@ -131,7 +131,7 @@ class Segmentation(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
-        super(Segmentation, self).__init__(model_cfg, deploy_cfg, device)
+        super(SegmentationTask, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
                             model_files: Optional[str] = None,

@@ -7,9 +7,9 @@ import torch
 from mmengine import Config
 from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
                                          is_dynamic_shape)
@@ -115,7 +115,7 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMDET_TASK.register_module(Task.OBJECT_DETECTION.value)
-class ObjectDetection(BaseTask):
+class ObjectDetectionTask(BaseTask):
     """Object Detection task.
 
     Args:

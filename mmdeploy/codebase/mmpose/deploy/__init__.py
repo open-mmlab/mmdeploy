@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .pose_detection import MMPose, PoseDetection
+from .pose_detection_task import MMPose, PoseDetectionTask
 
-__all__ = ['PoseDetection', 'MMPose']
+__all__ = ['PoseDetectionTask', 'MMPose']

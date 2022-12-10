@@ -8,9 +8,9 @@ import numpy as np
 import torch
 from mmengine import Config
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase, Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
 
@@ -110,7 +110,7 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMCLS_TASK.register_module(Task.CLASSIFICATION.value)
-class Classification(BaseTask):
+class ClassificationTask(BaseTask):
     """Classification task class.
 
     Args:
@@ -121,7 +121,7 @@ class Classification(BaseTask):
     """
 
     def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
-        super(Classification, self).__init__(model_cfg, deploy_cfg, device)
+        super(ClassificationTask, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_data_preprocessor(self):
         """Build data preprocessor.

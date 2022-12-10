@@ -10,9 +10,9 @@ import mmengine
 import numpy as np
 import torch
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
 
 
@@ -132,7 +132,7 @@ class MMPose(MMCodebase):
 
 
 @MMPOSE_TASK.register_module(Task.POSE_DETECTION.value)
-class PoseDetection(BaseTask):
+class PoseDetectionTask(BaseTask):
     """Pose detection task class.
 
     Args:

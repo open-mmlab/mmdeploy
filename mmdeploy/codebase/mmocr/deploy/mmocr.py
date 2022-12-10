@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine.registry import Registry
-
 from mmdeploy.codebase.base import CODEBASE, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase
 
 MMOCR_TASK = Registry('mmocr_tasks')
@@ -24,7 +23,8 @@ class MMOCR(MMCodebase):
         from mmocr.utils.setup_env import \
             register_all_modules as register_all_modules_mmocr
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection import MMDetection
+        from mmdeploy.codebase.mmdet.deploy.object_detection_task import \
+            MMDetection
         cls.register_deploy_modules()
         MMDetection.register_deploy_modules()
         register_all_modules_mmocr(True)

@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import importlib
 import logging
 import os
 import os.path as osp
@@ -58,6 +59,11 @@ def parse_args():
         '--uri',
         default='192.168.1.1:60000',
         help='Remote ipv4:port or ipv6:port for inference on edge device.')
+    parser.add_argument(
+        '--custom-imports',
+        default=[],
+        nargs='+',
+        help='Import custom modules.')
     args = parser.parse_args()
     return args
 
@@ -102,6 +108,12 @@ def main():
     logger = get_root_logger()
     log_level = logging.getLevelName(args.log_level)
     logger.setLevel(log_level)
+
+    # import custom libs
+    custom_imports = args.custom_imports
+    for module in custom_imports:
+        logger.info(f'import module: {module}')
+        importlib.import_module(module)
 
     pipeline_funcs = [
         torch2onnx, torch2torchscript, extract_model, create_calib_input_data

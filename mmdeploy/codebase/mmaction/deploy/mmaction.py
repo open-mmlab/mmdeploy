@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmengine.registry import Registry
-
 from mmdeploy.codebase.base import CODEBASE, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase
 
 MMACTION_TASK = Registry('mmaction_tasks')

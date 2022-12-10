@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .segmentation import Segmentation
+from .segmentation_task import SegmentationTask
 
-__all__ = ['Segmentation']
+__all__ = ['SegmentationTask']

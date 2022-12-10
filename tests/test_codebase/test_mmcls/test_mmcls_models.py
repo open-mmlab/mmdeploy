@@ -4,9 +4,8 @@ import pytest
 import torch
 from mmengine import Config
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 input = torch.rand(1)
@@ -149,7 +148,6 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
     from mmcls.structures import ClsDataSample
 
     from mmdeploy.core import patch_model
-    import_codebase(Codebase.MMCLS)
     check_backend(backend_type, True)
     model = get_vit_model()
     model.eval()
