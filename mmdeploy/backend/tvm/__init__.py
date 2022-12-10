@@ -2,6 +2,8 @@
 import importlib
 import sys
 
+from .backend_manager import TVMManager
+
 
 def is_available() -> bool:
     """Check whether tvm package is installed.
@@ -31,7 +33,7 @@ if is_available():
     from .quantize import HDF5Dataset
     from .tuner import build_tvm_tuner
 
-    __all__ = ['from_onnx', 'build_tvm_tuner', 'HDF5Dataset']
+    __all__ = ['from_onnx', 'build_tvm_tuner', 'HDF5Dataset', 'TVMManager']
 
     try:
         # import wrapper if pytorch is available

@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 
+from .backend_manager import OpenVINOManager
+
 
 def is_available() -> bool:
     """Checking if OpenVINO is installed.
@@ -11,10 +13,12 @@ def is_available() -> bool:
     return importlib.util.find_spec('openvino') is not None
 
 
+__all__ = ['OpenVINOManager']
+
 if is_available():
     from .onnx2openvino import get_output_model_file
     from .utils import ModelOptimizerOptions
     from .wrapper import OpenVINOWrapper
-    __all__ = [
+    __all__ += [
         'OpenVINOWrapper', 'get_output_model_file', 'ModelOptimizerOptions'
     ]

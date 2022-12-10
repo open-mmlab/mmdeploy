@@ -210,22 +210,27 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. 为新封装装器添加默认初始化方法 `mmdeploy/codebase/base/backend_model.py`
+4. 从 `BackendManager` 派生接口类，实现 `build_wrapper` 静态方法
 
    **例子**
 
    ```Python
-       @staticmethod
-       def _build_wrapper(backend: Backend,
-                          backend_files: Sequence[str],
-                          device: str,
-                          output_names: Optional[Sequence[str]] = None):
-           if backend == Backend.ONNXRUNTIME:
-               from mmdeploy.backend.onnxruntime import ORTWrapper
-               return ORTWrapper(
-                   onnx_file=backend_files[0],
-                   device=device,
-                   output_names=output_names)
+        @BACKEND_MANAGERS.register('onnxruntime')
+        class ONNXRuntimeUtils(BaseBackendManager):
+
+            @classmethod
+            def build_wrapper(cls,
+                              backend_files: Sequence[str],
+                              device: str = 'cpu',
+                              input_names: Optional[Sequence[str]] = None,
+                              output_names: Optional[Sequence[str]] = None,
+                              deploy_cfg: Optional[Any] = None,
+                              **kwargs):
+                from .wrapper import ORTWrapper
+                return ORTWrapper(
+                    onnx_file=backend_files[0],
+                    device=device,
+                    output_names=output_names)
    ```
 
 5. 为新后端引擎代码添加相关注释和单元测试 :).

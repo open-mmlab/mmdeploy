@@ -25,7 +25,7 @@ find_path(
 find_library(
     TVM_LIBRARY_PATH tvm_runtime
     HINTS ${TVM_DIR}
-    PATH_SUFFIXES build lib build/Release build/Debug)
+    PATH_SUFFIXES build lib build/${CMAKE_BUILD_TYPE})
 if (NOT (TVM_INCLUDE_DIR AND DMLC_CORE_INCLUDE_DIR AND DLPACK_INCLUDE_DIR AND TVM_LIBRARY_PATH))
     message(FATAL_ERROR "Couldn't find tvm in TVM_DIR: "
         "${TVM_DIR}, please check if the path is correct.")

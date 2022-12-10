@@ -3,8 +3,6 @@ import torch
 from torch import Tensor
 from torch.onnx import symbolic_helper as sym_help
 
-from mmdeploy.core import SYMBOLIC_REWRITER
-
 
 class ONNXNMSop(torch.autograd.Function):
     """Create onnx::NonMaxSuppression op.
@@ -78,57 +76,24 @@ class ONNXNMSop(torch.autograd.Function):
         Returns:
             NonMaxSuppression op for onnx.
         """
-        return g.op(
-            'NonMaxSuppression',
-            boxes,
-            scores,
-            max_output_boxes_per_class,
-            iou_threshold,
-            score_threshold,
-            outputs=1)
 
+        if not sym_help._is_value(max_output_boxes_per_class):
+            max_output_boxes_per_class = g.op(
+                'Constant',
+                value_t=torch.tensor(
+                    max_output_boxes_per_class, dtype=torch.long))
 
-@SYMBOLIC_REWRITER.register_symbolic(
-    'mmdeploy.mmcv.ops.ONNXNMSop', backend='default')
-def nms_dynamic(ctx, g, boxes: Tensor, scores: Tensor,
-                max_output_boxes_per_class: int, iou_threshold: float,
-                score_threshold: float):
-    """Rewrite symbolic function for default backend.
+        if not sym_help._is_value(iou_threshold):
+            iou_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([iou_threshold], dtype=torch.float))
 
-    Support max_output_boxes_per_class, iou_threshold, score_threshold of
-    constant Tensor, which is aligned with ONNX's nms op.
-
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        g (Graph): The traced onnx graph.
-        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
-        scores (Tensor): The detection scores of shape
-            [N, num_boxes, num_classes].
-        max_output_boxes_per_class (int): Maximum number of output
-            boxes per class of nms.
-        iou_threshold (float): IOU threshold of nms.
-        score_threshold (float): score threshold of nms.
-
-    Returns:
-        NonMaxSuppression op for onnx.
-    """
-
-    if not sym_help._is_value(max_output_boxes_per_class):
-        max_output_boxes_per_class = g.op(
-            'Constant',
-            value_t=torch.tensor(max_output_boxes_per_class, dtype=torch.long))
-
-    if not sym_help._is_value(iou_threshold):
-        iou_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([iou_threshold], dtype=torch.float))
-
-    if not sym_help._is_value(score_threshold):
-        score_threshold = g.op(
-            'Constant',
-            value_t=torch.tensor([score_threshold], dtype=torch.float))
-    return g.op('NonMaxSuppression', boxes, scores, max_output_boxes_per_class,
-                iou_threshold, score_threshold)
+        if not sym_help._is_value(score_threshold):
+            score_threshold = g.op(
+                'Constant',
+                value_t=torch.tensor([score_threshold], dtype=torch.float))
+        return g.op('NonMaxSuppression', boxes, scores,
+                    max_output_boxes_per_class, iou_threshold, score_threshold)
 
 
 class TRTBatchedNMSop(torch.autograd.Function):
