@@ -388,7 +388,10 @@ class TaskRegistry:
         logger = get_root_logger()
 
         if enum_name is None:
-            enum_name = name.upper()
+            import re
+            splited_name = re.findall('[A-Z][^A-Z]*', name)
+            enum_name = '_'.join(splited_name)
+            enum_name = enum_name.upper()
 
         def _wrap(cls):
             from mmdeploy.utils import Task
