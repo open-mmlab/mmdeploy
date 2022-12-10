@@ -184,19 +184,18 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(const OrtApi& api,
                                            const OrtKernelInfo *info)
     : api_(api), ort_(api_), info_(info) {
   std::vector<int64_t> stride =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "stride");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "strides");
   stride_height_ = stride[0];
   stride_width_ = stride[1];
   std::vector<int64_t> padding =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "padding");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "pads");
   padding_height_ = padding[0];
   padding_width_ = padding[1];
   std::vector<int64_t> dilation =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "dilation");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "dilations");
   dilation_height_ = dilation[0];
   dilation_width_ = dilation[1];
-  deformable_group_ =
-      ort_.KernelInfoGetAttribute<int64_t>(info, "deform_groups");
+  deformable_group_ = ort_.KernelInfoGetAttribute<int64_t>(info, "deformable_groups");
   group_ = ort_.KernelInfoGetAttribute<int64_t>(info, "groups");
 
   // create allocator
@@ -265,5 +264,8 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
       dilation_width, columns, out_ptr);
 }
 
-REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVDeformConvOp);
+static char __openvino[] = "org.openvinotoolkit";
+static OrtOpsRegistry<__openvino, MMCVDeformConvOp> ort_ops_registry_openvino {};
+
+//REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVDeformConvOp);
 }  // namespace mmdeploy

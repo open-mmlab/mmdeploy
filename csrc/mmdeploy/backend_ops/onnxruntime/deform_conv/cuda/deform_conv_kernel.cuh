@@ -65,7 +65,7 @@
 
 #include <cuda_fp16.h>
 
-#include "common_cuda_helper.cuh"
+#include "common_cuda_helper.hpp"
 
 template <typename scalar_t>
 __device__ __forceinline__ scalar_t deformable_im2col_bilinear(const scalar_t* __restrict__ input,

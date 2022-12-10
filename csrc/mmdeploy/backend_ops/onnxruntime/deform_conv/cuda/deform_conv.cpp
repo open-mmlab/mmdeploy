@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <cuda_runtime.h>
+#include <cuda_fp16.h>
 
 #include "ort_utils.h"
 #include "deform_conv.h"
@@ -14,19 +15,19 @@ MMCVDeformConvCUDAKernel::MMCVDeformConvCUDAKernel(const OrtApi& api,
                                            const OrtKernelInfo *info)
     : api_(api), ort_(api_), info_(info) {
   std::vector<int64_t> stride =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "stride");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "strides");
   stride_height_ = stride[0];
   stride_width_ = stride[1];
   std::vector<int64_t> padding =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "padding");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "pads");
   padding_height_ = padding[0];
   padding_width_ = padding[1];
   std::vector<int64_t> dilation =
-      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "dilation");
+      ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "dilations");
   dilation_height_ = dilation[0];
   dilation_width_ = dilation[1];
   deformable_group_ =
-      ort_.KernelInfoGetAttribute<int64_t>(info, "deform_groups");
+      ort_.KernelInfoGetAttribute<int64_t>(info, "deformable_groups");
   group_ = ort_.KernelInfoGetAttribute<int64_t>(info, "groups");
 
   // create allocator
@@ -75,7 +76,7 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   // get input data type
   auto data_type = ort_.GetTensorElementType(ort_.GetTensorTypeAndShape(input));
 
-  int64_t sizeof_dtype = (data_type == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16)? sizeof(Ort::Float16_t): sizeof(float);
+  int64_t sizeof_dtype = (data_type == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16)? sizeof(__half): sizeof(float);
 
   // get output memory
   int64_t output_height = floor((in_height + 2 * padding_height -
@@ -108,7 +109,7 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   // allocate workspace
   long workspace_size = col_size + out_size;
 
-  float* workspace;
+  void* workspace;
   cudaMalloc(&workspace, workspace_size);
   cudaMemset(workspace, 0, workspace_size);
 
@@ -122,20 +123,22 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
                          dilation_width, group, deformable_group, im2col_step, m_cublas_handle, stream);
       break;
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
-      deform_conv<Ort::Float16_t>((Ort::Float16_t *)input, (Ort::Float16_t *)filter, (Ort::Float16_t *)offset, 
-                        (Ort::Float16_t *)output_ptr, workspace, batch_size,
-                        in_channels, in_height, in_width, out_channels, kernel_width, kernel_height, stride_height,
-                        stride_width, padding_height, padding_width, dilation_height, dilation_width,
-                        group, deformable_group, im2col_step, m_cublas_handle, stream);
+      deform_conv<__half>((__half *)input, (__half *)filter, (__half *)offset, (__half *)output_ptr,workspace,
+                         batch_size, in_channels, in_height, in_width, out_channels, kernel_width, kernel_height,
+                         stride_height, stride_width, padding_height, padding_width, dilation_height,
+                         dilation_width, group, deformable_group, im2col_step, m_cublas_handle, stream);
       break;
     default:
-      cudaFree(&workspace);
+      cudaFree(workspace);
       ORT_CXX_API_THROW("invalid tensor datatype in deform_conv::CUDAKernel::Compute", ORT_FAIL);
       return;
   }
 
-  cudaFree(&workspace);
+  cudaFree(workspace);
 }
 
-REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVDeformConvCUDAOp);
+static char __openvino_cuda[] = "org.openvinotoolkit";
+static OrtOpsRegistry<__openvino_cuda, MMCVDeformConvCUDAOp> ort_ops_registry_cuda_openvino {};
+
+//REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVDeformConvCUDAOp);
 }  // namespace mmdeploy

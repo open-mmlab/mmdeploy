@@ -1,12 +1,27 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+if (MSVC)
+    #Always enable exception handling, even for Windows ARM
+    string(APPEND CMAKE_CXX_FLAGS " /EHsc")
+    string(APPEND CMAKE_C_FLAGS " /EHsc")
+
+    # AVX2
+    string(APPEND CMAKE_CXX_FLAGS " /arch:AVX2")
+    string(APPEND CMAKE_C_FLAGS " /arch:AVX2")
+else()
+    # AVX2
+    string(APPEND CMAKE_CXX_FLAGS " -mavx2")
+    string(APPEND CMAKE_C_FLAGS " -mavx2")
+endif()
+
 project(mmdeploy_onnxruntime_ops)
 
 include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
 
 # add plugin source
-file(GLOB_RECURSE ORT_OPS_SRCS *.cpp)
+
+file(GLOB_RECURSE ORT_OPS_SRCS *.cpp *.cu)
 add_library(${PROJECT_NAME}_obj OBJECT "${ORT_OPS_SRCS}")
 target_compile_definitions(${PROJECT_NAME}_obj PRIVATE -DMMDEPLOY_API_EXPORTS=1)
 target_compile_options(${PROJECT_NAME}_obj PRIVATE
@@ -22,7 +37,7 @@ target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../common>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
-target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
+target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)

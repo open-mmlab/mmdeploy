@@ -63,7 +63,7 @@
 // modified from
 // https://github.com/chengdazhi/Deformable-Convolution-V2-PyTorch/blob/mmdetection/mmdet/ops/dcn/src/deform_conv_cuda_kernel.cu
 
-#include "common_cuda_helper.cuh"
+#include "common_cuda_helper.hpp"
 #include "deform_conv_kernel.cuh"
 #include "deform_conv_kernel.hpp"
 #include "ort_utils.h"
