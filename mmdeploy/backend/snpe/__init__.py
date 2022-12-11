@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 
+from .backend_manager import SNPEManager
 from .init_plugins import get_onnx2dlc_path
 from .onnx2dlc import from_onnx
 
@@ -18,8 +19,7 @@ def is_available():
     return osp.exists(onnx2dlc)
 
 
-__all__ = ['from_onnx']
-
+__all__ = ['from_onnx', 'SNPEManager']
 if is_available():
     try:
         from .wrapper import SNPEWrapper
