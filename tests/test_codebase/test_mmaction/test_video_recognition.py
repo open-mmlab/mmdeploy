@@ -26,10 +26,16 @@ deploy_cfg = Config(
             output_names=['output'])))
 
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (224, 224)
 num_classes = 400
 video = 'tests/test_codebase/test_mmaction/data/video/demo.mp4'
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.fixture
