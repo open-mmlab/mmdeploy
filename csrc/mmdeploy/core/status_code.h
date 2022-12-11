@@ -168,7 +168,9 @@ using Error = SYSTEM_ERROR2_NAMESPACE::errored_status_code<StatusDomain>;
 using Exception = SYSTEM_ERROR2_NAMESPACE::status_error<StatusDomain>;
 
 template <typename T>
-using Result = OUTCOME_V2_NAMESPACE::experimental::status_result<T, Error>;
+struct Result : OUTCOME_V2_NAMESPACE::experimental::status_result<T, Error> {
+  using OUTCOME_V2_NAMESPACE::experimental::status_result<T, Error>::status_result;
+};
 
 #if MMDEPLOY_STATUS_USE_SOURCE_LOCATION
 [[noreturn]] inline void throw_exception(ErrorCode ec,
@@ -186,7 +188,13 @@ using Result = OUTCOME_V2_NAMESPACE::experimental::status_result<T, Error>;
 #endif
 
 template <typename T>
-inline constexpr bool is_result_v = OUTCOME_V2_NAMESPACE::is_basic_result_v<T>;
+struct is_result : std::false_type {};
+
+template <typename T>
+struct is_result<Result<T>> : std::true_type {};
+
+template <typename T>
+inline constexpr bool is_result_v = is_result<T>::value;
 
 }  // namespace mmdeploy
 

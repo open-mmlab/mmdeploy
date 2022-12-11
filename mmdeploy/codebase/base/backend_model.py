@@ -5,8 +5,7 @@ from typing import Optional, Sequence, Union
 import mmcv
 import torch
 
-from mmdeploy.utils import (SDK_TASK_MAP, Backend, get_backend_config,
-                            get_common_config, get_ir_config, get_task_type)
+from mmdeploy.utils import Backend, get_ir_config
 
 
 class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
@@ -55,82 +54,14 @@ class BaseBackendModel(torch.nn.Module, metaclass=ABCMeta):
                 names from the model.
             deploy_cfg: Deployment config file.
         """
-        if backend == Backend.ONNXRUNTIME:
-            from mmdeploy.backend.onnxruntime import ORTWrapper
-            return ORTWrapper(
-                onnx_file=backend_files[0],
-                device=device,
-                output_names=output_names)
-        elif backend == Backend.TENSORRT:
-            from mmdeploy.backend.tensorrt import TRTWrapper
-            return TRTWrapper(
-                engine=backend_files[0], output_names=output_names)
-        elif backend == Backend.PPLNN:
-            from mmdeploy.backend.pplnn import PPLNNWrapper
-            return PPLNNWrapper(
-                onnx_file=backend_files[0],
-                algo_file=backend_files[1] if len(backend_files) > 1 else None,
-                device=device,
-                output_names=output_names)
-        elif backend == Backend.NCNN:
-            from mmdeploy.backend.ncnn import NCNNWrapper
+        from mmdeploy.backend.base import BACKEND_MANAGERS
 
-            # For unittest deploy_config will not pass into _build_wrapper
-            # function.
-            if deploy_cfg:
-                backend_config = get_backend_config(deploy_cfg)
-                use_vulkan = backend_config.get('use_vulkan', False)
-            else:
-                use_vulkan = False
-            return NCNNWrapper(
-                param_file=backend_files[0],
-                bin_file=backend_files[1],
-                output_names=output_names,
-                use_vulkan=use_vulkan)
-        elif backend == Backend.OPENVINO:
-            from mmdeploy.backend.openvino import OpenVINOWrapper
-            return OpenVINOWrapper(
-                ir_model_file=backend_files[0], output_names=output_names)
-        elif backend == Backend.SDK:
-            assert deploy_cfg is not None, \
-                'Building SDKWrapper requires deploy_cfg'
-            from mmdeploy.backend.sdk import SDKWrapper
-            task_name = SDK_TASK_MAP[get_task_type(deploy_cfg)]['cls_name']
-            return SDKWrapper(
-                model_file=backend_files[0],
-                task_name=task_name,
-                device=device)
-        elif backend == Backend.TORCHSCRIPT:
-            from mmdeploy.backend.torchscript import TorchscriptWrapper
-            return TorchscriptWrapper(
-                model=backend_files[0],
-                input_names=input_names,
-                output_names=output_names)
-        elif backend == Backend.RKNN:
-            from mmdeploy.backend.rknn import RKNNWrapper
-            common_config = get_common_config(deploy_cfg)
-            return RKNNWrapper(
-                model=backend_files[0],
-                common_config=common_config,
-                output_names=output_names)
-        elif backend == Backend.ASCEND:
-            from mmdeploy.backend.ascend import AscendWrapper
-            return AscendWrapper(model=backend_files[0], device=device)
-        elif backend == Backend.SNPE:
-            from mmdeploy.backend.snpe import SNPEWrapper
-            uri = None
-            if 'uri' in kwargs:
-                uri = kwargs['uri']
-            return SNPEWrapper(
-                dlc_file=backend_files[0], uri=uri, output_names=output_names)
-        elif backend == Backend.COREML:
-            from mmdeploy.backend.coreml import CoreMLWrapper
-            return CoreMLWrapper(model_file=backend_files[0])
-        elif backend == Backend.IPU:
-            from mmdeploy.backend.ipu import IPUWrapper
-            return IPUWrapper(popef_file=backend_files[0])
-        else:
-            raise NotImplementedError(f'Unknown backend type: {backend.value}')
+        backend_mgr = BACKEND_MANAGERS.find(backend.value)
+        if backend_mgr is None:
+            raise NotImplementedError(
+                f'Unsupported backend type: {backend.value}')
+        return backend_mgr.build_wrapper(backend_files, device, input_names,
+                                         output_names, deploy_cfg, **kwargs)
 
     def destroy(self):
         if hasattr(self, 'wrapper') and hasattr(self.wrapper, 'destroy'):

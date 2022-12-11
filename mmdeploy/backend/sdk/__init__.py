@@ -4,6 +4,7 @@ import os
 import sys
 
 from mmdeploy.utils import get_file_path
+from .backend_manager import SDKManager
 
 _is_available = False
 
@@ -28,10 +29,12 @@ def is_available() -> bool:
     return _is_available
 
 
+__all__ = ['SDKManager']
+
 if is_available():
 
     try:
         from .wrapper import SDKWrapper
-        __all__ = ['SDKWrapper']
+        __all__ += ['SDKWrapper']
     except Exception:
         pass

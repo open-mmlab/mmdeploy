@@ -209,23 +209,27 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. Add a default initialization method for the new wrapper in `mmdeploy/codebase/base/backend_model.py`
+4. Create a backend manager class which derive from `BackendManager`, implement its `build_wrapper` static method.
 
    **Example:**
 
    ```Python
-       @staticmethod
-       def _build_wrapper(backend: Backend,
-                          backend_files: Sequence[str],
-                          device: str,
-                          input_names: Optional[Sequence[str]] = None,
-                          output_names: Optional[Sequence[str]] = None):
-           if backend == Backend.ONNXRUNTIME:
-               from mmdeploy.backend.onnxruntime import ORTWrapper
-               return ORTWrapper(
-                   onnx_file=backend_files[0],
-                   device=device,
-                   output_names=output_names)
+        @BACKEND_MANAGERS.register('onnxruntime')
+        class ONNXRuntimeUtils(BaseBackendManager):
+
+            @classmethod
+            def build_wrapper(cls,
+                              backend_files: Sequence[str],
+                              device: str = 'cpu',
+                              input_names: Optional[Sequence[str]] = None,
+                              output_names: Optional[Sequence[str]] = None,
+                              deploy_cfg: Optional[Any] = None,
+                              **kwargs):
+                from .wrapper import ORTWrapper
+                return ORTWrapper(
+                    onnx_file=backend_files[0],
+                    device=device,
+                    output_names=output_names)
    ```
 
 5. Add docstring and unit tests for new code :).

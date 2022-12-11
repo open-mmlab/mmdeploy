@@ -109,8 +109,9 @@ void deformable_conv2d_ref_fp32(const float *src, const float *offset, const flo
   }
 }
 
-MMCVModulatedDeformConvKernel::MMCVModulatedDeformConvKernel(OrtApi api, const OrtKernelInfo *info)
-    : api_(api), ort_(api_), info_(info) {
+MMCVModulatedDeformConvKernel::MMCVModulatedDeformConvKernel(const OrtApi &api,
+                                                             const OrtKernelInfo *info)
+    : ort_(api), info_(info) {
   std::vector<int64_t> stride = ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "stride");
   stride_height_ = stride[0];
   stride_width_ = stride[1];

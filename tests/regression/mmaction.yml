@@ -1,0 +1,56 @@
+globals:
+  codebase_dir: ../mmaction2
+  checkpoint_force_download: False
+  images:
+    video: &video ../mmaction2/demo/demo.mp4
+
+  metric_info: &metric_info
+    Top 1 Accuracy:
+      eval_name: top_k_accuracy
+      metric_key: top1_acc
+      tolerance: 1
+      multi_value: 100
+    Top 5 Accuracy:
+      eval_name: top_k_accuracy
+      metric_key: top5_acc
+      tolerance: 1
+      multi_value: 100
+  convert_image: &convert_image
+    input_img: *video
+    test_img: *video
+  backend_test: &default_backend_test True
+  sdk:
+    sdk_dynamic: &sdk_dynamic configs/mmaction/video-recognition/video-recognition_sdk.py
+
+onnxruntime:
+  pipeline_ort_static_fp32: &pipeline_ort_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py
+    backend_test: *default_backend_test
+
+tensorrt:
+  pipeline_trt_2d_static_fp32: &pipeline_trt_2d_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_2d_tensorrt_static-224x224.py
+    backend_test: *default_backend_test
+  pipeline_trt_3d_static_fp32: &pipeline_trt_3d_static_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_3d_tensorrt_static-256x256.py
+    backend_test: *default_backend_test
+
+models:
+  - name: TSN
+    metafile: configs/recognition/tsn/metafile.yml
+    model_configs:
+      - configs/recognition/tsn/tsn_r50_video_1x1x8_100e_kinetics400_rgb.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_2d_static_fp32
+
+  - name: SlowFast
+    metafile: configs/recognition/slowfast/metafile.yml
+    model_configs:
+      - configs/recognition/slowfast/slowfast_r50_video_4x16x1_256e_kinetics400_rgb.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_trt_3d_static_fp32

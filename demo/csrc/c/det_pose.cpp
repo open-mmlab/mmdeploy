@@ -23,7 +23,7 @@ const auto config_json = R"(
       "type": "Inference",
       "input": "img",
       "output": "dets",
-      "params": { "model": "../_detection_tmp_model" }
+      "params": { "model": "TBD" }
     },
     {
       "type": "Task",
@@ -45,7 +45,7 @@ const auto config_json = R"(
           "type": "Inference",
           "input": "imgs_with_bboxes",
           "output": "keypoints",
-          "params": { "model": "../posedet_tmp_model" }
+          "params": { "model": "TBD" }
         }
       ],
       "output": "*keypoints"
@@ -73,28 +73,36 @@ class AddBboxField {
 MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (AddBboxField, 0),
                                [](const Value&) { return CreateTask(AddBboxField{}); });
 
-class FilterBbox {
- public:
-  Result<Value> operator()(const Value& dets) {
-    Value::Array rets;
-    for (const auto& det : dets) {
-      if (det["label_id"].get<int>() == 0 && det["score"].get<float>() >= 0.3) {
-        rets.push_back(det);
-      }
+Result<Value> FilterBbox(const Value& dets) {
+  Value::Array rets;
+  for (const auto& det : dets) {
+    if (det["label_id"].get<int>() == 0 && det["score"].get<float>() >= 0.3) {
+      rets.push_back(det);
     }
-    return rets;
   }
-};
+  return rets;
+}
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (FilterBbox, 0),
-                               [](const Value&) { return CreateTask(FilterBbox{}); });
+                               [](const Value&) { return CreateTask(FilterBbox); });
 
 static std::vector<std::pair<int, int>> skeleton{
     {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12}, {5, 6}, {5, 7}, {6, 8},
     {7, 9},   {8, 10},  {1, 2},   {0, 1},   {0, 2},   {1, 3},  {2, 4},  {3, 5}, {4, 6}};
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc != 5) {
+    MMDEPLOY_INFO("usage: det_pose device det_model pose_model image");
+    return 0;
+  }
+  const auto device_name = argv[1];
+  const auto det_model_path = argv[2];
+  const auto pose_model_path = argv[3];
+  const auto image_path = argv[4];
+
   auto config = from_json<Value>(config_json);
+  config["tasks"][0]["params"]["model"] = det_model_path;
+  config["tasks"][2]["tasks"][1]["params"]["model"] = pose_model_path;
 
   mmdeploy_context_t context{};
   mmdeploy_context_create(&context);
@@ -105,17 +113,24 @@ int main() {
   mmdeploy_context_add(context, MMDEPLOY_TYPE_SCHEDULER, "net", single_thread);
   mmdeploy_context_add(context, MMDEPLOY_TYPE_SCHEDULER, "postprocess", thread_pool);
 
+  mmdeploy_device_t device{};
+  mmdeploy_device_create(device_name, 0, &device);
+  mmdeploy_context_add(context, MMDEPLOY_TYPE_DEVICE, nullptr, device);
+
   mmdeploy_pipeline_t pipeline{};
   if (auto ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, context, &pipeline)) {
     MMDEPLOY_ERROR("failed to create pipeline: {}", ec);
     return -1;
   }
 
-  cv::Mat mat = cv::imread("../ezgif-5-6ec14aca55.jpg");
+  cv::Mat mat = cv::imread(image_path);
+  if (!mat.data) {
+    MMDEPLOY_ERROR("invalid image path: {}", image_path);
+  }
   framework::Mat img(mat.rows, mat.cols, PixelFormat::kBGR, DataType::kINT8, mat.data,
                      framework::Device(0));
 
-  Value input = Value::Array{Value::Array{Value::Object{{"ori_img", img}}}};
+  Value input{{{{"ori_img", img}}}};
 
   mmdeploy_value_t tmp{};
   mmdeploy_pipeline_apply(pipeline, (mmdeploy_value_t)&input, &tmp);
@@ -125,15 +140,15 @@ int main() {
   mmdeploy_detector_get_result(tmp, &dets, &det_count);
 
   auto output = std::move(*(Value*)tmp);
+  mmdeploy_value_destroy(tmp);
+
+  // result of second output
+  auto& pose = output[1];
 
   mmdeploy_pose_detection_t* kps{};
-  Value pose;
-  pose.push_back(output[1]);
   mmdeploy_pose_detector_get_result((mmdeploy_value_t)&pose, &kps);
 
   MMDEPLOY_INFO("{}", *det_count);
-
-  mmdeploy_value_destroy(tmp);
 
   for (int i = 0; i < *det_count; ++i) {
     if (dets[i].label_id != 0 || dets[i].score < 0.3) {
@@ -155,6 +170,8 @@ int main() {
       cv::line(mat, p_u, p_v, cv::Scalar(0, 255, 255), 1, cv::LINE_AA);
     }
   }
+
+  mmdeploy_pose_detector_release_result(kps, pose.size());
 
   cv::imwrite("output_det_pose.jpg", mat);
 

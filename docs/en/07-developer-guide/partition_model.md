@@ -66,7 +66,8 @@ partition_config = dict(
         dict(
             save_file='yolov3.onnx', # filename to save the partitioned onnx model
             start=['detector_forward:input'], # [mark_name:input/output, ...]
-            end=['yolo_head:input'])  # [mark_name:input/output, ...]
+            end=['yolo_head:input'],  # [mark_name:input/output, ...]
+            output_names=[f'pred_maps.{i}' for i in range(3)]) # output names
     ])
 
 ```

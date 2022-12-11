@@ -118,11 +118,11 @@ Take the latest precompiled package as example, you can install it as follows:
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.10.0/mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.10.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.10.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.11.0/mmdeploy-0.11.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-0.11.0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-0.11.0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-0.11.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.11.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -139,11 +139,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.10.0/mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.10.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.10.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.11.0/mmdeploy-0.11.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-0.11.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-0.11.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-0.11.0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-0.11.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
@@ -232,7 +232,7 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-cd mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-0.11.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # run python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo

@@ -74,7 +74,11 @@ Result<void> OrtNet::Init(const Value& args) {
   };
 
   for (int i = 0; i < n_inputs; ++i) {
+#if ORT_API_VERSION >= 13
+    auto input_name = session_.GetInputNameAllocated(i, allocator).release();
+#else
     auto input_name = session_.GetInputName(i, allocator);
+#endif
     auto type_info = session_.GetInputTypeInfo(i);
     auto shape = to_shape(type_info);
     MMDEPLOY_DEBUG("input {}, shape = {}", i, shape);
@@ -88,7 +92,11 @@ Result<void> OrtNet::Init(const Value& args) {
   auto n_outputs = session_.GetOutputCount();
 
   for (int i = 0; i < n_outputs; ++i) {
+#if ORT_API_VERSION >= 13
+    auto output_name = session_.GetOutputNameAllocated(i, allocator).release();
+#else
     auto output_name = session_.GetOutputName(i, allocator);
+#endif
     auto type_info = session_.GetOutputTypeInfo(i);
     auto shape = to_shape(type_info);
     MMDEPLOY_DEBUG("output {}, shape = {}", i, shape);

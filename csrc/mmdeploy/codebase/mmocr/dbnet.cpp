@@ -11,7 +11,9 @@
 #include "mmdeploy/experimental/module_adapter.h"
 #include "mmocr.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy {
+
+namespace mmocr {
 
 using std::string;
 using std::vector;
@@ -137,4 +139,6 @@ MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
 
 MMDEPLOY_DEFINE_REGISTRY(DbHeadImpl);
 
-}  // namespace mmdeploy::mmocr
+}  // namespace mmocr
+
+}  // namespace mmdeploy

@@ -95,6 +95,8 @@ class VoxelDetection(BaseTask):
             score_thr (float): The score threshold to display the bbox.
                 Defaults to 0.3.
         """
+        if output_file.endswith('.jpg'):
+            output_file = output_file.split('.')[0]
         from mmdet3d.apis import show_result_meshlab
         data = VoxelDetection.read_pcd_file(image, self.model_cfg, self.device)
         show_result_meshlab(
@@ -178,7 +180,8 @@ class VoxelDetection(BaseTask):
                          out: Optional[str] = None,
                          metric_options: Optional[dict] = None,
                          format_only: bool = False,
-                         log_file: Optional[str] = None):
+                         log_file: Optional[str] = None,
+                         json_file: Optional[str] = None):
         if out:
             logger = get_root_logger()
             logger.info(f'\nwriting results to {out}')
@@ -196,7 +199,10 @@ class VoxelDetection(BaseTask):
                 eval_kwargs.pop(key, None)
                 eval_kwargs.pop(key, None)
             eval_kwargs.update(dict(metric=metrics, **kwargs))
-            dataset.evaluate(outputs, **eval_kwargs)
+            results = dataset.evaluate(outputs, **eval_kwargs)
+            if json_file is not None:
+                mmcv.dump(results, json_file, indent=4)
+            logger.info(results)
 
     def get_model_name(self) -> str:
         """Get the model name.
