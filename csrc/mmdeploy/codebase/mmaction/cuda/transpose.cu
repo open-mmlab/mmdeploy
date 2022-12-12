@@ -9,7 +9,9 @@ template <typename T>
 __global__ void transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides,
                           int ndim, int total) {
   int u = blockIdx.x * blockDim.x + threadIdx.x;
-  if (u >= total) return;
+  if (u >= total) {
+    return;
+  }
 
   int remaining = u;
   int v = 0;
