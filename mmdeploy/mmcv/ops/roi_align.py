@@ -56,17 +56,17 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
             aligned_i=aligned)
     else:
         from torch.onnx.symbolic_opset9 import _cast_Long
-        from torch.onnx.symbolic_opset11 import add, select, squeeze
+        from torch.onnx.symbolic_opset11 import add, select
         batch_indices = _cast_Long(
             g,
-            squeeze(
-                g,
+            g.op(
+                'Squeeze',
                 select(
                     g, rois, 1,
                     g.op(
                         'Constant',
-                        value_t=torch.tensor([0], dtype=torch.long))), 1),
-            False)
+                        value_t=torch.tensor([0], dtype=torch.long))),
+                axes_i=[1]), False)
         rois = select(
             g, rois, 1,
             g.op(

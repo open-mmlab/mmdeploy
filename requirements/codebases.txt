@@ -4,4 +4,5 @@ mmdet3d>=1.1.0rc2
 mmedit>=1.0.0rc2
 mmocr>=1.0.0rc4
 mmpose>=1.0.0rc0
+mmrotate @git+https://github.com/open-mmlab/mmrotate.git@dev-1.x
 mmsegmentation>=1.0.0rc0
