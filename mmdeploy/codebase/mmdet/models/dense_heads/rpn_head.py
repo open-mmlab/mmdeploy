@@ -8,8 +8,8 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet.deploy import (gather_topk,
                                             get_post_processing_params,
                                             pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -99,7 +99,8 @@ def rpn_head__predict_by_feat(ctx,
             # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
             scores = cls_score.softmax(-1)[..., 0]
         scores = scores.reshape(batch_size, -1, 1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        dim = self.bbox_coder.encode_size
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
 
         # use static anchor if input shape is static
         if not is_dynamic_flag:
@@ -150,10 +151,12 @@ def rpn_head__predict_by_feat(ctx,
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     # only one class in rpn
     max_output_boxes_per_class = keep_top_k
+    nms_type = cfg.nms.get('type')
     return multiclass_nms(
         batch_mlvl_bboxes,
         batch_mlvl_scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,
@@ -238,7 +241,8 @@ def rpn_head__get_bboxes__ncnn(ctx,
             # to v2.4 we keep BG label as 0 and FG label as 1 in rpn head.
             scores = cls_score.softmax(-1)[..., 0]
         scores = scores.reshape(batch_size, -1, 1)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        dim = self.bbox_coder.encode_size
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
         anchors = anchors.expand_as(bbox_pred).data
 
         if pre_topk > 0:
@@ -272,10 +276,12 @@ def rpn_head__get_bboxes__ncnn(ctx,
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     # only one class in rpn
     max_output_boxes_per_class = keep_top_k
+    nms_type = cfg.nms.get('type')
     return multiclass_nms(
         batch_mlvl_bboxes,
         batch_mlvl_scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,

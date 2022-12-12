@@ -159,6 +159,7 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
     transforms = task_processor.get_preprocess()
+
     if get_backend(deploy_cfg) == Backend.RKNN:
         del transforms[-2]
         for transform in transforms:

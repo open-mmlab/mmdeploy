@@ -13,7 +13,7 @@ import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
-from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
+from mmdeploy.utils.test import SwitchBackendWrapper
 
 try:
     import_codebase(Codebase.MMROTATE)
@@ -55,9 +55,9 @@ def init_task_processor():
 
 
 def test_build_pytorch_model():
-    from mmrotate.models import RotatedBaseDetector
+    from mmdet.models import BaseDetector
     model = task_processor.build_pytorch_model(None)
-    assert isinstance(model, RotatedBaseDetector)
+    assert isinstance(model, BaseDetector)
 
 
 @pytest.fixture
@@ -67,7 +67,7 @@ def backend_model():
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(outputs={
         'dets': torch.rand(1, 10, 6),
-        'labels': torch.rand(1, 10)
+        'labels': torch.randint(1, 10, (1, 10))
     })
 
     yield task_processor.build_backend_model([''])
@@ -90,22 +90,12 @@ def test_create_input(device):
     task_processor.device = original_device
 
 
-def test_run_inference(backend_model):
-    torch_model = task_processor.build_pytorch_model(None)
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    torch_results = task_processor.run_inference(torch_model, input_dict)
-    backend_results = task_processor.run_inference(backend_model, input_dict)
-    assert torch_results is not None
-    assert backend_results is not None
-    assert len(torch_results[0]) == len(backend_results[0])
-
-
 def test_visualize(backend_model):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
-    results = task_processor.run_inference(backend_model, input_dict)
+    results = backend_model.test_step(input_dict)[0]
     with TemporaryDirectory() as dir:
         filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
+        task_processor.visualize(img, results, filename, 'window')
         assert os.path.exists(filename)
 
 
@@ -116,37 +106,8 @@ def test_get_partition_cfg():
 
 def test_build_dataset_and_dataloader():
     dataset = task_processor.build_dataset(
-        dataset_cfg=model_cfg, dataset_type='test')
+        dataset_cfg=model_cfg.test_dataloader.dataset)
     assert isinstance(dataset, Dataset), 'Failed to build dataset'
-    dataloader = task_processor.build_dataloader(dataset, 1, 1)
+    dataloader_cfg = task_processor.model_cfg.test_dataloader
+    dataloader = task_processor.build_dataloader(dataloader_cfg)
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
-
-
-def test_single_gpu_test_and_evaluate():
-
-    class DummyDataset(Dataset):
-
-        def __getitem__(self, index):
-            return 0
-
-        def __len__(self):
-            return 0
-
-        def evaluate(self, *args, **kwargs):
-            return 0
-
-        def format_results(self, *args, **kwargs):
-            return 0
-
-    dataset = DummyDataset()
-    # Prepare dataloader
-    dataloader = DataLoader(dataset)
-
-    # Prepare dummy model
-    model = DummyModel(outputs=[torch.rand([1, 10, 6]), torch.rand([1, 10])])
-    # Run test
-    outputs = task_processor.single_gpu_test(model, dataloader)
-    assert isinstance(outputs, list)
-    output_file = NamedTemporaryFile(suffix='.pkl').name
-    task_processor.evaluate_outputs(
-        model_cfg, outputs, dataset, 'bbox', out=output_file, format_only=True)
