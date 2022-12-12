@@ -10,8 +10,9 @@ def is_available():
 
     try:
         import popart
+        print('popart imported')
         device = popart.DeviceManager.acquireAvailableDevice()
-
+        print('ipu device checked')
         return True
     except Exception as e:
         print('IPU environment is not set')

@@ -1,3 +1,3 @@
-from mmdeploy.backend.snpe import is_available
+from mmdeploy.backend.ipu import is_available, onnx_to_popef
 
-__all__ = ['is_available']
+__all__ = ['is_available', 'onnx_to_popef']
