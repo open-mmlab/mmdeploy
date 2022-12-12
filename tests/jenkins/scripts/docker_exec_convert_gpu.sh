@@ -125,6 +125,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v .
+    pip install clip
 
 
     if [[ $codebase == "mmdet3d" ]] && [[ $branch == "dev-1.x" ]]; then
@@ -146,6 +147,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     # log env
     python tools/check_env.py 2>&1 | tee ${log_dir}/check_env.log
     # ignore pplnn as it's too slow
+
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
