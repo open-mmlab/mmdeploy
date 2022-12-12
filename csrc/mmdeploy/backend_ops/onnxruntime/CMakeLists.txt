@@ -1,5 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
+  set(CMAKE_CUDA_ARCHITECTURES "OFF")
+endif()
+
 if (MSVC)
     #Always enable exception handling, even for Windows ARM
     string(APPEND CMAKE_CXX_FLAGS " /EHsc")
@@ -37,7 +41,7 @@ target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../common>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
-target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas)
+target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas cudnn)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)

@@ -34,7 +34,7 @@ MMCVDeformConvCUDAKernel::MMCVDeformConvCUDAKernel(const OrtApi& api,
   allocator_ = Ort::AllocatorWithDefaultOptions();
 
   // create cublas handle
-  cublasStatus_t stat = cublasCreate(&m_cublas_handle);
+  cublasStatus_t stat = cublasCreate(&cublas_handle_);
   if (stat != CUBLAS_STATUS_SUCCESS) {
     ORT_CXX_API_THROW("CUBLAS initialization failed", ORT_FAIL);
   }
@@ -49,6 +49,7 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   const int64_t dilation_width = dilation_width_;
   const int64_t deformable_group = deformable_group_;
   const int64_t group = group_;
+  const cublasHandle_t cublas_handle = cublas_handle_;
 
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
   const float *input_data =
@@ -78,15 +79,8 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
 
   int64_t sizeof_dtype = (data_type == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16)? sizeof(__half): sizeof(float);
 
-  // get output memory
-  int64_t output_height = floor((in_height + 2 * padding_height -
-                              dilation_height * (kernel_height - 1) - 1) /
-                                 stride_height +
-                             1);
-  int64_t output_width = floor(
-      (in_width + 2 * padding_width - dilation_width * (kernel_width - 1) - 1) /
-          stride_width +
-      1);
+  int64_t output_height = in_height;
+  int64_t output_width = in_width;
 
   std::vector<int64_t> output_dims = {batch_size, out_channels, output_height,
                                       output_width};
@@ -94,7 +88,6 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   OrtValue *output = ort_.KernelContext_GetOutput(
       context, 0, output_dims.data(), output_dims.size());
   float *output_ptr = ort_.GetTensorMutableData<float>(output);
-
 
   // adopted from trt_deform_conv.cpp -- DeformableConvPluginDynamic::getWorkspaceSize
   int im2col_step = std::min(int64_t(32), batch_size);
@@ -110,23 +103,26 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   long workspace_size = col_size + out_size;
 
   void* workspace;
-  cudaMalloc(&workspace, workspace_size);
+  auto status = cudaMalloc(&workspace, workspace_size);
+  if (status != cudaSuccess) {
+    ORT_CXX_API_THROW("cuda malloc error in deform_conv::CUDAKernel::Compute", ORT_FAIL);
+  }
   cudaMemset(workspace, 0, workspace_size);
 
   auto stream = reinterpret_cast<cudaStream_t>(ort_.KernelContext_GetGPUComputeStream(context));
 
   switch (data_type) {
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
-      deform_conv<float>((float *)input, (float *)filter, (float *)offset, (float *)output_ptr, workspace,
+      deform_conv<float>((float *)input_data, (float *)filter_data, (float *)offset_data, (float *)output_ptr, workspace,
                          batch_size, in_channels, in_height, in_width, out_channels, kernel_width, kernel_height,
                          stride_height, stride_width, padding_height, padding_width, dilation_height,
-                         dilation_width, group, deformable_group, im2col_step, m_cublas_handle, stream);
+                         dilation_width, group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
-      deform_conv<__half>((__half *)input, (__half *)filter, (__half *)offset, (__half *)output_ptr,workspace,
+      deform_conv<__half>((__half *)input_data, (__half *)filter_data, (__half *)offset_data, (__half *)output_ptr, workspace,
                          batch_size, in_channels, in_height, in_width, out_channels, kernel_width, kernel_height,
                          stride_height, stride_width, padding_height, padding_width, dilation_height,
-                         dilation_width, group, deformable_group, im2col_step, m_cublas_handle, stream);
+                         dilation_width, group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     default:
       cudaFree(workspace);

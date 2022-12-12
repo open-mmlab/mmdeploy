@@ -34,7 +34,7 @@ struct MMCVDeformConvOp
     return new MMCVDeformConvKernel(api, info);
   }
 
-  const char *GetName() const { return "CPUDeformableConv2D"; };
+  const char *GetName() const { return "DeformableConv2D"; };
 
   size_t GetInputTypeCount() const { return 3; };
   ONNXTensorElementDataType GetInputType(size_t /*index*/) const {

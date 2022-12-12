@@ -20,7 +20,7 @@ struct MMCVDeformConvCUDAKernel {
   const OrtKernelInfo *info_;
   Ort::AllocatorWithDefaultOptions allocator_;
 
-  cublasHandle_t m_cublas_handle;  // TODO:: release the cublas handle?
+  cublasHandle_t cublas_handle_ = nullptr;  // TODO:: release the cublas handle?
 
   int64_t stride_height_;
   int64_t stride_width_;
