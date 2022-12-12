@@ -110,17 +110,17 @@ RUN /opt/conda/bin/pip install openvino-dev
 ### install opencv
 RUN /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION}
 
-### install ppl.nn
-RUN git clone --depth 1 --branch v${PPLNN_VERSION} --recursive https://github.com/openppl-public/ppl.nn.git &&\
-    cd ppl.nn &&\
-    ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON -DPPLNN_ENABLE_PYTHON_API=ON -DPYTHON3_INCLUDE_DIRS=/opt/conda/include/python3.7 && \
-    cd ./python/package && \
-    ./build.sh && \
-    cd /tmp/pyppl-package/dist && \
-    /opt/conda/bin/pip install pyppl*.whl
-ENV PPLNN_DIR=/root/workspace/ppl.nn
-ENV pplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
-ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
+# ### install ppl.nn
+# RUN git clone --depth 1 --branch v${PPLNN_VERSION} --recursive https://github.com/openppl-public/ppl.nn.git &&\
+#     cd ppl.nn &&\
+#     ./build.sh -DPPLNN_USE_X86_64=ON -DPPLNN_USE_CUDA=ON -DPPLNN_ENABLE_PYTHON_API=ON -DPYTHON3_INCLUDE_DIRS=/opt/conda/include/python3.7 && \
+#     cd ./python/package && \
+#     ./build.sh && \
+#     cd /tmp/pyppl-package/dist && \
+#     /opt/conda/bin/pip install pyppl*.whl
+# ENV PPLNN_DIR=/root/workspace/ppl.nn
+# ENV pplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
+# ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 
 ### build ncnn
