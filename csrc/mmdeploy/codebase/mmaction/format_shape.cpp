@@ -12,7 +12,8 @@ namespace mmdeploy::mmaction {
 FormatShape::FormatShape(const Value& args) {
   auto input_format = args.value("input_format", std::string(""));
   if (input_format != "NCHW" && input_format != "NCTHW") {
-    throw std::domain_error("'input_format' should be 'NCHW' or 'NCTHW'");
+    MMDEPLOY_ERROR("'input_format' should be 'NCHW' or 'NCTHW'");
+    throw_exception(eInvalidArgument);
   }
   format_ = operation::Managed<mmdeploy::mmaction::FormatShapeOp>::Create(input_format);
 }
