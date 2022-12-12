@@ -3,14 +3,15 @@
 #include <stdint.h>
 #include <stdio.h>
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::mmaction::cuda {
 
 template <typename T>
 __global__ void transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides,
                           int ndim, int total) {
   int u = blockIdx.x * blockDim.x + threadIdx.x;
-  if (u >= total) return;
+  if (u >= total) {
+    return;
+  }
 
   int remaining = u;
   int v = 0;
@@ -34,5 +35,4 @@ void Transpose(const T* src, const int* src_strides, T* dst, const int* dst_stri
 template void Transpose<float>(const float* src, const int* src_strides, float* dst,
                                const int* dst_strides, int ndim, int total, cudaStream_t stream);
 
-}  // namespace cuda
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction::cuda
