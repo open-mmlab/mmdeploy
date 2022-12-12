@@ -4,12 +4,21 @@ from collections import defaultdict
 from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
 
-from torch.fx._symbolic_trace import _wrapped_fns_to_patch
-
 from mmdeploy.utils import IR, Backend, get_root_logger
 from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
                              copy_function, get_frame_func, get_func_qualname,
                              import_function)
+
+try:
+    try:
+        # torch>=1.10.0
+        from torch.fx._symbolic_trace import _wrapped_fns_to_patch
+    except ImportError:
+        # 1.10.0>torch>=1.8.0
+        from torch.fx.symbolic_trace import _wrapped_fns_to_patch
+except ImportError:
+    # torch<1.8.0
+    _wrapped_fns_to_patch = []
 
 
 def _replace_all_obj(obj: Any,
