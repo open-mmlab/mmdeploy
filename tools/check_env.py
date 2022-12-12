@@ -21,6 +21,7 @@ def check_backend():
     ort_version = backend_versions['onnxruntime']
     trt_version = backend_versions['tensorrt']
     ncnn_version = backend_versions['ncnn']
+    tvm_version = backend_versions['tvm']
 
     import mmdeploy.apis.onnxruntime as ort_apis
     logger = get_root_logger()
@@ -34,6 +35,8 @@ def check_backend():
     import mmdeploy.apis.ncnn as ncnn_apis
     logger.info(f'ncnn: {ncnn_version}\tops_is_avaliable : '
                 f'{ncnn_apis.is_custom_ops_available()}')
+
+    logger.info(f'tvm: {tvm_version}')
 
     import mmdeploy.apis.pplnn as pplnn_apis
     logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')

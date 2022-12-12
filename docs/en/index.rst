@@ -35,6 +35,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    03-benchmark/supported_models.md
    03-benchmark/benchmark.md
    03-benchmark/benchmark_edge.md
+   03-benchmark/benchmark_tvm.md
    03-benchmark/quantization.md
 
 .. toctree::

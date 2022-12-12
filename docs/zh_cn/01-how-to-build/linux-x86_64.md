@@ -8,10 +8,8 @@
       - [安装 MMDeploy SDK 依赖](#安装-mmdeploy-sdk-依赖)
       - [安装推理引擎](#安装推理引擎)
     - [编译 MMDeploy](#编译-mmdeploy)
-      - [编译选项说明](#编译选项说明)
-      - [编译安装 Model Converter](#编译安装-model-converter)
-        - [编译自定义算子](#编译自定义算子)
-        - [安装 Model Converter](#安装-model-converter)
+      - [编译 Model Converter](#编译-model-converter)
+      - [安装 Model Converter](#安装-model-converter)
       - [编译 SDK 和 Demos](#编译-sdk-和-demos)
 
 ______________________________________________________________________
@@ -243,6 +241,18 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
     2. 配置环境
    <pre><code>
 export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td>TVM</td>
+    <td>TVM</td>
+    <td>
+    1. 按照 <a href="https://tvm.apache.org/docs/install/from_source.html">官方指引</a>安装 TVM.<br>
+    2. 配置环境
+   <pre><code>
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TVM_HOME}/build
+export PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
    </code></pre>
     </td>
   </tr>
