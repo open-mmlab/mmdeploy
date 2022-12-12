@@ -9,7 +9,7 @@ namespace mmdeploy::transform {
 class Lift : public Transform {
  public:
   explicit Lift(const Value& args) {
-    const char* type = "compose";
+    const char* type = "Compose";
     if (auto creator = gRegistry<Transform>().Get(type)) {
       compose_ = creator->Create(args);
     } else {
