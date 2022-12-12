@@ -1295,7 +1295,7 @@ int main(int argc, char** argv) {
       }
       int axis = get_node_attr_i(node, "axis", 1) - 1;
       if (axis < 0) {
-        fprintf(stderr, "Unsupported Gather axis: %d\n %s", axis + 1, node.name().c_str());
+        fprintf(stderr, "Unsupported Gather axis: %d\n", axis + 1);
       }
       fprintf(pp, " 0=%d", axis);
     } else if (op == "Gelu") {
