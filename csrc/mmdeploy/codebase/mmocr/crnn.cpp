@@ -156,6 +156,6 @@ class CTCConvertor : public MMOCR {
   vector<string> idx2char_;
 };
 
-REGISTER_CODEBASE_COMPONENT(MMOCR, CTCConvertor);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, CTCConvertor);
 
 }  // namespace mmdeploy::mmocr

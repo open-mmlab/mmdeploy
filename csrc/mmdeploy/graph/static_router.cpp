@@ -97,13 +97,33 @@ StaticRouter::State::State(vector<int> use_count, Sender<Value> args)
 }
 
 Sender<Value> StaticRouter::Process(Sender<Value> args) {
+  auto index = std::make_shared<profiler::Index>();
+  auto start = std::make_shared<bool>(false);
+  if (scope_) {
+    *index = scope_->next_.fetch_add(1, std::memory_order_relaxed);
+    args = Then(std::move(args), [this, index, start](Value v) mutable {
+      if (*start == false) {
+        scope_->Add(profiler::Event::kStart, *index, profiler::Clock::now());
+        *start = true;
+      }
+      return std::move(v);
+    });
+  }
+
   State state(use_count_, std::move(args));
   for (size_t i = 0; i < nodes_.size(); ++i) {
     auto input = state.Collect(input_coords_[i]);
     auto output = nodes_[i]->Process(std::move(input));
     state.Write(static_cast<int>(i), std::move(output));
   }
-  return state.Collect(ret_coords_);
+  auto output = state.Collect(ret_coords_);
+  if (scope_) {
+    output = Then(std::move(output), [this, index](Value v) {
+      scope_->Add(profiler::Event::kEnd, *index, profiler::Clock::now());
+      return std::move(v);
+    });
+  }
+  return output;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -112,6 +132,11 @@ Sender<Value> StaticRouter::Process(Sender<Value> args) {
 Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config) {
   try {
     auto pipeline = std::make_unique<StaticRouter>();
+    if (config.contains("context") && config["context"].contains("scope")) {
+      auto name = config.value("name", std::string("Pipeline"));
+      auto scope = config["context"]["scope"].get<profiler::Scope*>();
+      pipeline->scope_ = scope->CreateScope(name);
+    }
 
     const auto& task_configs = config["tasks"];
     auto size = task_configs.size();
@@ -139,6 +164,9 @@ Result<unique_ptr<StaticRouter>> StaticRouterBuilder::Build(const Value& config)
       }
       if (config.contains("context")) {
         update(task_config["context"].object(), config["context"].object(), 2);
+        if (pipeline->scope_) {
+          task_config["context"]["scope"] = pipeline->scope_;
+        }
       }
 
       OUTCOME_TRY(auto builder, Builder::CreateFromConfig(task_config));

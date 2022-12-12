@@ -242,21 +242,16 @@ Result<void> SNPENet::Forward() {
   return success();
 }
 
-class SNPENetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "snpe"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    auto p = std::make_unique<SNPENet>();
-    if (auto r = p->Init(args)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("error creating SNPENet: {}", r.error().message().c_str());
-      return nullptr;
-    }
+static std::unique_ptr<Net> Create(const Value& args) {
+  auto p = std::make_unique<SNPENet>();
+  if (auto r = p->Init(args)) {
+    return p;
+  } else {
+    MMDEPLOY_ERROR("error creating SNPENet: {}", r.error().message().c_str());
+    return nullptr;
   }
-};
+}
 
-REGISTER_MODULE(Net, SNPENetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (snpe, 0), Create);
 
 }  // namespace mmdeploy::framework

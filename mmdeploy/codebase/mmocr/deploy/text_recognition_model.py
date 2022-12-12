@@ -5,7 +5,7 @@ import mmengine
 import torch
 from mmengine.registry import Registry
 from mmengine.structures import LabelData
-from mmocr.utils.typing import RecSampleList
+from mmocr.utils.typing_utils import RecSampleList
 
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,

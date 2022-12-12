@@ -7,8 +7,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::cuda {
 
 template <typename T, int channels>
 void Crop(const T* src, int src_w, T* dst, int dst_h, int dst_w, int offset_h, int offset_w,
@@ -67,19 +66,6 @@ class CenterCropImpl : public ::mmdeploy::CenterCropImpl {
   }
 };
 
-class CenterCropImplCreator : public Creator<::mmdeploy::CenterCropImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<CenterCropImpl>(args); }
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CenterCropImpl, (cuda, 0), CenterCropImpl);
 
- private:
-  int version_{1};
-};
-
-}  // namespace cuda
-}  // namespace mmdeploy
-
-using ::mmdeploy::CenterCropImpl;
-using ::mmdeploy::cuda::CenterCropImplCreator;
-REGISTER_MODULE(CenterCropImpl, CenterCropImplCreator);
+}  // namespace mmdeploy::cuda

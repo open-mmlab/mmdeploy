@@ -3,55 +3,98 @@
 #ifndef MMDEPLOY_REGISTRY_H
 #define MMDEPLOY_REGISTRY_H
 
-#include <iostream>
-#include <map>
+#include <functional>
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "macro.h"
-#include "value.h"
+#include "mmdeploy/core/macro.h"
+#include "mmdeploy/core/mpl/span.h"
 
 namespace mmdeploy {
 
-namespace detail {
-
-template <typename EntryType, typename = void>
-struct get_return_type {
-  using type = std::unique_ptr<EntryType>;
+template <typename T>
+struct basic_type {
+  using type = T;
 };
 
-template <typename EntryType>
-struct get_return_type<EntryType, std::void_t<typename EntryType::type>> {
-  using type = typename EntryType::type;
+template <typename Iterator>
+class iterator_range {
+ public:
+  explicit iterator_range(Iterator first, Iterator last) : first_(first), last_(last) {}
+  explicit iterator_range(std::pair<Iterator, Iterator> range)
+      : iterator_range(range.first, range.second) {}
+
+  auto begin() noexcept { return first_; }
+  auto end() noexcept { return last_; }
+
+ private:
+  Iterator first_;
+  Iterator last_;
 };
 
-template <typename EntryType>
-using get_return_type_t = typename get_return_type<EntryType>::type;
+namespace _registry {
 
-}  // namespace detail
+using std::optional;
+using std::string_view;
 
-template <class EntryType>
+template <typename T, typename = void>
+struct _get_signature {
+  static_assert(!std::is_same_v<T, T>, "tag T is not associated with a signature");
+};
+
+template <typename T>
+using get_signature_t = decltype(get_signature(basic_type<T>{}));
+
+template <typename T>
+struct _get_signature<T, std::void_t<get_signature_t<T>>> {
+  using type = typename get_signature_t<T>::type;
+};
+
+template <typename T>
+using GetSignature = typename _get_signature<T>::type;
+
+template <typename Tag>
 class Creator;
 
 template <>
-class Creator<void> {
+class MMDEPLOY_API Creator<void> {
  public:
   virtual ~Creator() = default;
-  virtual const char* GetName() const = 0;
-  virtual int GetVersion() const { return 0; }
+  virtual string_view name() const noexcept = 0;
+  virtual int version() const noexcept { return 0; }
 };
 
-template <typename EntryType>
-class Creator : public Creator<void> {
+template <typename Ret, typename... Args>
+class MMDEPLOY_API Creator<Ret(Args...)> : public Creator<void> {
  public:
-  using ReturnType = detail::get_return_type_t<EntryType>;
-
- public:
-  virtual ReturnType Create(const Value& args) = 0;
+  virtual Ret Create(Args... args) = 0;
 };
 
-template <class EntryType>
+template <typename Tag>
+class SimpleCreator;
+
+template <typename Ret, typename... Args>
+class SimpleCreator<Ret(Args...)> : public Creator<Ret(Args...)> {
+ public:
+  using FunctionType = std::function<Ret(Args...)>;
+
+  SimpleCreator(const string_view& name, int version, FunctionType func)
+      : name_(name), version_(version), func_(std::move(func)) {}
+
+  string_view name() const noexcept override { return name_; }
+  int version() const noexcept override { return version_; }
+  Ret Create(Args... args) override { return func_(args...); }
+
+ private:
+  std::string name_;
+  int version_;
+  FunctionType func_;
+};
+
+template <typename Tag>
 class Registry;
 
 template <>
@@ -63,67 +106,123 @@ class MMDEPLOY_API Registry<void> {
 
   bool AddCreator(Creator<void>& creator);
 
-  Creator<void>* GetCreator(const std::string& type, int version = 0);
+  Creator<void>* GetCreator(const string_view& name, int version);
 
-  std::vector<std::string> List();
+  Span<Creator<void>*> Creators();
 
  private:
-  std::multimap<std::string, Creator<void>*> entries_;
+  struct Impl;
+  std::unique_ptr<Impl> impl_;
 };
 
-template <class EntryType>
+template <typename Signature>
+struct _result_of;
+
+template <typename R, typename... As>
+struct _result_of<R(As...)> {
+  using type = R;
+};
+
+template <typename Tag>
 class Registry : public Registry<void> {
  public:
-  bool AddCreator(Creator<EntryType>& creator) { return Registry<void>::AddCreator(creator); }
+  using Signature = GetSignature<Tag>;
+  using CreatorType = Creator<Signature>;
 
-  Creator<EntryType>* GetCreator(const std::string& type, int version = 0) {
-    auto creator = Registry<void>::GetCreator(type, version);
-    return static_cast<Creator<EntryType>*>(creator);
+  bool Add(CreatorType& creator) & { return AddCreator(creator); }
+
+  CreatorType* Get(const string_view& name, int version) & {
+    return static_cast<CreatorType*>(GetCreator(name, version));
   }
 
-  static Registry& Get();
+  CreatorType* Get(const string_view& name) & { return Get(name, -1); }
 
- private:
-  Registry() = default;
+  template <typename... Args>
+  auto Create(const std::pair<string_view, int>& desc,
+              Args&&... args) & -> optional<typename _result_of<Signature>::type> {
+    if (auto creator = Get(desc.first, desc.second); creator) {
+      return creator->Create((Args &&) args...);
+    } else {
+      return std::nullopt;
+    }
+  }
+
+  template <typename... Args>
+  auto Create(const string_view& name, Args&&... args) & {
+    return Create(std::pair{name, -1}, (Args &&) args...);
+  }
+
+  Span<CreatorType*> Creators() & {
+    auto creators = Registry<void>::Creators();
+    return {reinterpret_cast<CreatorType**>(creators.data()), creators.size()};
+  }
+
+  auto List() & {
+    std::vector<std::pair<string_view, int>> list;
+    for (const auto& creator : Creators()) {
+      list.emplace_back(creator->name(), creator->version());
+    }
+    return list;
+  }
 };
 
-template <typename EntryType, typename CreatorType>
+template <typename Tag>
+auto gRegistry() -> decltype((get_registry(basic_type<Tag>{}))) {
+  return get_registry(basic_type<Tag>{});
+}
+
+template <typename F>
 class Registerer {
  public:
-  Registerer() { Registry<EntryType>::Get().AddCreator(inst_); }
+  explicit Registerer(F f) : func_(std::move(f)) { func_(); }
 
  private:
-  CreatorType inst_;
+  F func_;
 };
+
+}  // namespace _registry
+
+using _registry::gRegistry;
+using _registry::Registerer;
+using _registry::Registry;
+
+template <typename Tag>
+using Creator = _registry::Creator<_registry::GetSignature<Tag>>;
+
+template <typename Tag>
+using SimpleCreator = _registry::SimpleCreator<_registry::GetSignature<Tag>>;
 
 }  // namespace mmdeploy
 
-#define MMDEPLOY_DECLARE_REGISTRY(EntryType) \
-  template <>                                \
-  Registry<EntryType>& Registry<EntryType>::Get();
+// Specify creator signature for tag
+#define MMDEPLOY_CREATOR_SIGNATURE(tag, signature) \
+  ::mmdeploy::basic_type<signature> get_signature(::mmdeploy::basic_type<tag>);
 
-#define MMDEPLOY_DEFINE_REGISTRY(EntryType)                         \
-  template <>                                                       \
-  MMDEPLOY_EXPORT Registry<EntryType>& Registry<EntryType>::Get() { \
-    static Registry v;                                              \
-    return v;                                                       \
+#define MMDEPLOY_DECLARE_REGISTRY(tag, signature) \
+  MMDEPLOY_CREATOR_SIGNATURE(tag, signature)      \
+  MMDEPLOY_API ::mmdeploy::Registry<tag>& get_registry(::mmdeploy::basic_type<tag>);
+
+#define MMDEPLOY_DECLARE_REGISTRY_EXPAND(tag, signature)        \
+  MMDEPLOY_CREATOR_SIGNATURE(tag, MMDEPLOY_PP_EXPAND signature) \
+  MMDEPLOY_API ::mmdeploy::Registry<tag>& get_registry(::mmdeploy::basic_type<tag>);
+
+#define MMDEPLOY_DEFINE_REGISTRY(tag)                                    \
+  ::mmdeploy::Registry<tag>& get_registry(::mmdeploy::basic_type<tag>) { \
+    static ::mmdeploy::Registry<tag> instance{};                         \
+    return instance;                                                     \
   }
 
-#define REGISTER_MODULE(EntryType, CreatorType) \
-  static ::mmdeploy::Registerer<EntryType, CreatorType> g_register_##EntryType##_##CreatorType{};
+#define MMDEPLOY_REGISTER_CREATOR(tag, creator_type)                    \
+  static ::mmdeploy::Registerer MMDEPLOY_ANONYMOUS_VARIABLE(register_){ \
+      [creator = creator_type{}]() mutable { ::mmdeploy::gRegistry<tag>().Add(creator); }};
 
-#define DECLARE_AND_REGISTER_MODULE(base_type, module_name, version)   \
-  class module_name##Creator : public ::mmdeploy::Creator<base_type> { \
-   public:                                                             \
-    module_name##Creator() = default;                                  \
-    ~module_name##Creator() = default;                                 \
-    const char* GetName() const override { return #module_name; }      \
-    int GetVersion() const override { return version; }                \
-                                                                       \
-    std::unique_ptr<base_type> Create(const Value& value) override {   \
-      return std::make_unique<module_name>(value);                     \
-    }                                                                  \
-  };                                                                   \
-  REGISTER_MODULE(base_type, module_name##Creator);
+#define MMDEPLOY_CREATOR_DESC(name, version) #name, version
+
+#define MMDEPLOY_REGISTER_FACTORY_FUNC(tag, creator_desc, func)                                  \
+  static ::mmdeploy::Registerer MMDEPLOY_ANONYMOUS_VARIABLE(register_){                          \
+      [creator =                                                                                 \
+           ::mmdeploy::SimpleCreator<tag>(MMDEPLOY_CREATOR_DESC creator_desc, func)]() mutable { \
+        ::mmdeploy::gRegistry<tag>().Add(creator);                                               \
+      }};
 
 #endif  // MMDEPLOY_REGISTRY_H

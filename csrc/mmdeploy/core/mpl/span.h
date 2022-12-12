@@ -68,7 +68,6 @@ class Span {
   template <std::size_t N>
   constexpr Span(element_type (&arr)[N]) noexcept : data_(std::data(arr)), size_(N) {}
 
-  template <std::size_t N>
   constexpr Span(const Span& other) noexcept : data_(std::data(other)), size_(std::size(other)) {}
 
   constexpr iterator begin() const noexcept { return data_; }

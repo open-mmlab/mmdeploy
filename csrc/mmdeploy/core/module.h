@@ -16,7 +16,7 @@ class MMDEPLOY_API Module {
   virtual Result<Value> Process(const Value& args) = 0;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(Module);
+MMDEPLOY_DECLARE_REGISTRY(Module, std::unique_ptr<Module>(const Value& config));
 
 }  // namespace mmdeploy
 
