@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
+import logging
 from abc import ABCMeta
 from typing import Any, Optional, Sequence
 
@@ -28,7 +29,31 @@ class BaseBackendManager(metaclass=ABCMeta):
                 to None.
         """
         raise NotImplementedError(
-            f'build_wrapper has not been implemented for {cls}')
+            f'build_wrapper has not been implemented for `{cls.__name__}`')
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            deploy_cfg (Any): The deploy config.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        raise NotImplementedError(
+            f'to_backend has not been implemented for `{cls.__name__}`')
 
 
 class BackendManagerRegistry:
@@ -89,3 +114,18 @@ class BackendManagerRegistry:
 
 
 BACKEND_MANAGERS = BackendManagerRegistry()
+
+
+def get_backend_manager(name: str) -> BaseBackendManager:
+    """Get backend manager.
+
+    Args:
+        name (str): name of the backend.
+
+    Returns:
+        BaseBackendManager: The backend manager of given name
+    """
+    from enum import Enum
+    if isinstance(name, Enum):
+        name = name.value
+    return BACKEND_MANAGERS.find(name)

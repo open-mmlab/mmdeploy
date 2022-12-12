@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 from typing import Any, Optional, Sequence
 
 from ..base import BACKEND_MANAGERS, BaseBackendManager
@@ -29,3 +30,38 @@ class AscendManager(BaseBackendManager):
         """
         from .wrapper import AscendWrapper
         return AscendWrapper(model=backend_files[0], device=device)
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = 20,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            deploy_cfg (Any): The deploy config.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        from mmdeploy.utils import get_model_inputs
+        from .onnx2ascend import from_onnx
+
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        om_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            om_path = osp.splitext(onnx_path)[0] + '.om'
+            from_onnx(onnx_path, work_dir, model_inputs[model_id])
+            om_files.append(om_path)
+        backend_files = om_files
+
+        return backend_files

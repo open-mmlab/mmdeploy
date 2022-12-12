@@ -33,3 +33,26 @@ class ONNXRuntimeManager(BaseBackendManager):
             onnx_file=backend_files[0],
             device=device,
             output_names=output_names)
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = 20,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            deploy_cfg (Any): The deploy config.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        return ir_files

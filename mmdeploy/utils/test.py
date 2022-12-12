@@ -455,6 +455,7 @@ def get_backend_outputs(ir_file_path: str,
             If the backend specified in 'deploy_cfg' is not available,
             then None will be returned.
     """
+    from mmdeploy.apis.utils import to_backend
     backend = get_backend(deploy_cfg)
     flatten_model_inputs = get_flatten_inputs(model_inputs)
     ir_config = get_ir_config(deploy_cfg)
@@ -465,109 +466,32 @@ def get_backend_outputs(ir_file_path: str,
             k for k, v in flatten_model_inputs.items() if k != 'ctx'
         ]
 
-    # prepare backend model and input features
+    work_dir = tempfile.TemporaryDirectory().name
+    device = 'cpu'
+
+    # TODO: Try to wrap these code into backend manager
+    if backend != Backend.TORCHSCRIPT:
+        model_inputs = flatten_model_inputs
     if backend == Backend.TENSORRT:
-        # convert to engine
-        import mmdeploy.apis.tensorrt as trt_apis
-        if not (trt_apis.is_available()
-                and trt_apis.is_custom_ops_available()):
-            return None
-        trt_file_path = tempfile.NamedTemporaryFile(suffix='.engine').name
-        trt_apis.onnx2tensorrt(
-            '',
-            trt_file_path,
-            0,
-            deploy_cfg=deploy_cfg,
-            onnx_model=ir_file_path)
-        backend_files = [trt_file_path]
-        for k, v in model_inputs.items():
-            model_inputs[k] = model_inputs[k].cuda()
-
-        backend_feats = model_inputs
-        device = 'cuda:0'
-    elif backend == Backend.ONNXRUNTIME:
-        import mmdeploy.apis.onnxruntime as ort_apis
-        if not (ort_apis.is_available()
-                and ort_apis.is_custom_ops_available()):
-            return None
-        feature_list = []
-        backend_feats = {}
-        for k, item in model_inputs.items():
-            if type(item) is torch.Tensor:
-                feature_list.append(item)
-            elif type(item) is tuple or list:
-                for i in item:
-                    assert type(i) is torch.Tensor, 'model_inputs contains '
-                    'nested sequence of torch.Tensor'
-                    feature_list.append(i)
-            else:
-                raise TypeError('values of model_inputs are expected to be '
-                                'torch.Tensor or its sequence, '
-                                f'but got {type(model_inputs)}')
-
-        # for onnx file generated with list[torch.Tensor] input,
-        # the input dict keys are just numbers if not specified
-        for i in range(len(feature_list)):
-            if i < len(input_names):
-                backend_feats[input_names[i]] = feature_list[i]
-            else:
-                backend_feats[str(i)] = feature_list[i]
-        backend_files = [ir_file_path]
-        device = 'cpu'
-    elif backend == Backend.NCNN:
-        import mmdeploy.apis.ncnn as ncnn_apis
-        if not (ncnn_apis.is_available()
-                and ncnn_apis.is_custom_ops_available()):
-            return None
-        param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
-        ncnn_files_prefix = osp.splitext(ir_file_path)[0]
-        ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
-        backend_files = [param_path, bin_path]
-        backend_feats = flatten_model_inputs
-        device = 'cpu'
-
+        device = 'cuda'
+        model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
     elif backend == Backend.OPENVINO:
-        import mmdeploy.apis.openvino as openvino_apis
-        if not openvino_apis.is_available():
-            return None
-        from mmdeploy.apis.openvino import get_mo_options_from_cfg
-        openvino_work_dir = tempfile.TemporaryDirectory().name
-        openvino_file_path = openvino_apis.get_output_model_file(
-            ir_file_path, openvino_work_dir)
         input_info = {
             name: value.shape
             for name, value in flatten_model_inputs.items()
         }
-        mo_options = get_mo_options_from_cfg(deploy_cfg)
-        openvino_apis.from_onnx(ir_file_path, openvino_work_dir, input_info,
-                                output_names, mo_options)
-        backend_files = [openvino_file_path]
-        backend_feats = flatten_model_inputs
-        device = 'cpu'
+        deploy_cfg['backend_config']['model_inputs'] = [
+            dict(opt_shapes=input_info)
+        ]
+    backend_files = to_backend(
+        backend.value, [ir_file_path],
+        deploy_cfg=deploy_cfg,
+        work_dir=work_dir,
+        device=device)
+    backend_feats = model_inputs
 
-    elif backend == Backend.DEFAULT:
-        return None
-    elif backend == Backend.TORCHSCRIPT:
-        backend_files = [ir_file_path]
-        device = 'cpu'
+    if backend == Backend.TORCHSCRIPT:
         backend_feats = [v for _, v in model_inputs.items()]
-    elif backend == Backend.ASCEND:
-        # Ascend model conversion
-        import mmdeploy.apis.ascend as ascend_apis
-        from mmdeploy.utils import get_model_inputs
-        if not ascend_apis.is_available():
-            return None
-        work_dir = osp.split(ir_file_path)[0]
-        # convert model
-        convert_args = get_model_inputs(deploy_cfg)
-        ascend_apis.from_onnx(ir_file_path, work_dir, convert_args[0])
-        om_file_name = osp.splitext(osp.split(ir_file_path)[1])[0]
-        backend_files = [osp.join(work_dir, om_file_name + '.om')]
-        backend_feats = flatten_model_inputs
-        device = 'cpu'
-    else:
-        raise NotImplementedError(
-            f'Unimplemented backend type: {backend.value}')
 
     from mmdeploy.codebase.base import BaseBackendModel
     backend_model = BaseBackendModel._build_wrapper(

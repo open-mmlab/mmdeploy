@@ -1,9 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Any, Sequence
+
 import mmcv
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
 from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
                             parse_device_id)
+from ..core import PIPELINE_MANAGER
 
 
 def check_backend_device(deploy_cfg: mmcv.Config, device: str):
@@ -62,3 +65,36 @@ def get_predefined_partition_cfg(deploy_cfg: mmcv.Config, partition_type: str):
     codebase = get_codebase_class(codebase_type)
     task_processor_class = codebase.get_task_class(task)
     return task_processor_class.get_partition_cfg(partition_type)
+
+
+@PIPELINE_MANAGER.register_pipeline()
+def to_backend(backend_name: str,
+               ir_files: Sequence[str],
+               deploy_cfg: Any,
+               work_dir: str,
+               log_level: int = 20,
+               device: str = 'cpu',
+               **kwargs) -> Sequence[str]:
+    """Convert intermediate representation to given backend.
+
+    Args:
+        backend_name (str): The name of the backend.
+        ir_files (Sequence[str]): The intermediate representation files.
+        deploy_cfg (Any): The deploy config.
+        work_dir (str): The work directory, backend files and logs should
+            be save in this directory.
+        log_level (int, optional): The log level. Defaults to logging.INFO.
+        device (str, optional): The device type. Defaults to 'cpu'.
+
+    Returns:
+        Seqeuence[str]: Backend files.
+    """
+    from mmdeploy.backend.base import get_backend_manager
+    backend_mgr = get_backend_manager(backend_name)
+    return backend_mgr.to_backend(
+        ir_files=ir_files,
+        deploy_cfg=deploy_cfg,
+        work_dir=work_dir,
+        log_level=log_level,
+        device=device,
+        **kwargs)

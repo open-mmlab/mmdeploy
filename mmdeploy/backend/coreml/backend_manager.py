@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 from typing import Any, Optional, Sequence
 
 from ..base import BACKEND_MANAGERS, BaseBackendManager
@@ -29,3 +30,36 @@ class CoreMLManager(BaseBackendManager):
         """
         from .wrapper import CoreMLWrapper
         return CoreMLWrapper(model_file=backend_files[0])
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = 20,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            deploy_cfg (Any): The deploy config.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        from .torchscript2coreml import from_torchscript
+
+        coreml_files = []
+        for model_id, torchscript_path in enumerate(ir_files):
+            torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
+            output_file_prefix = osp.join(work_dir, torchscript_name)
+
+            from_torchscript(model_id, torchscript_path, output_file_prefix,
+                             deploy_cfg, coreml_files)
+
+        return coreml_files

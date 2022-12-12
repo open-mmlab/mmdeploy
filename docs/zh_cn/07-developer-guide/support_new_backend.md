@@ -106,21 +106,20 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
    ```
 
-5. 在 `mmdeploy/apis` 中创建新后端库并声明对应 APIs
+   从 BackendManager 派生类，实现 `to_backend` 类方法。
 
    **例子**
 
    ```Python
-   # mmdeploy/apis/ncnn/__init__.py
-
-   from mmdeploy.backend.ncnn import is_available
-
-   __all__ = ['is_available']
-
-   if is_available():
-       from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
-                                                    get_output_model_file)
-       __all__ += ['onnx2ncnn', 'get_output_model_file']
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        return ir_files
    ```
 
    然后根据需要使用这些 APIs 为 `tools/deploy.py` 添加相关转换代码
@@ -151,9 +150,9 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
    # ...
    ```
 
-6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
+5. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
 
-7. 为新后端引擎代码添加相关注释和单元测试:).
+6. 为新后端引擎代码添加相关注释和单元测试:).
 
 ## 支持后端推理
 
