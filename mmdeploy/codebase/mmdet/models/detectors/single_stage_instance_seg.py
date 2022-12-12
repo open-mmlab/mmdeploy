@@ -3,7 +3,6 @@ import copy
 
 import torch
 from mmdet.structures import DetDataSample, SampleList
-from mmengine.structures import InstanceData
 from mmdet.structures.det_data_sample import OptSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -11,7 +10,9 @@ from mmdeploy.utils import is_dynamic_shape
 
 
 @mark(
-    'instance_segmentor_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
+    'instance_segmentor_forward',
+    inputs=['input'],
+    outputs=['dets', 'labels', 'masks'])
 def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
     """Rewrite and adding mark for `forward`.
 
@@ -25,13 +26,15 @@ def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.single_stage_instance_seg.SingleStageInstanceSegmentor.forward')
-def single_stage_instance_segmentor__forward(ctx,
-                                   self,
-                                   batch_inputs: torch.Tensor,
-                                   data_samples: OptSampleList = None,
-                                   mode: str = 'tensor',
-                                   **kwargs) -> SampleList:
+    'mmdet.models.detectors.single_stage_instance_seg.'
+    'SingleStageInstanceSegmentor.forward')
+def single_stage_instance_segmentor__forward(
+        ctx,
+        self,
+        batch_inputs: torch.Tensor,
+        data_samples: OptSampleList = None,
+        mode: str = 'tensor',
+        **kwargs) -> SampleList:
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input and return

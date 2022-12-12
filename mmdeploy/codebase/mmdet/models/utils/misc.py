@@ -1,8 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import torch
 from torch.types import Number
-from typing import Optional
+
 from mmdeploy.core import FUNCTION_REWRITER
+
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.linspace')
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.linspace')

@@ -1,2 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import misc
+from .misc import linspace__onnx
+
+__all__ = ['linspace__onnx']

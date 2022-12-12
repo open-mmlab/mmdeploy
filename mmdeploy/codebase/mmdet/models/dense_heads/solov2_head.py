@@ -1,9 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Dict, List
+
 import torch
-from typing import Any, List, Dict
+import torch.nn.functional as F
 from mmdet.models.layers.matrix_nms import mask_matrix_nms
 from torch import Tensor
-import torch.nn.functional as F
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
@@ -11,14 +12,15 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.solov2_head.'
-    'SOLOV2Head.predict_by_feat', backend='openvino')
+    'SOLOV2Head.predict_by_feat',
+    backend='openvino')
 def solohead__predict_by_feat__openvino(ctx, self,
-                                       mlvl_kernel_preds: List[Tensor],
-                                       mlvl_cls_scores: List[Tensor],
-                                       mask_feats:Tensor,
-                                       batch_img_metas: List[Dict], **kwargs):
-    """Transform a batch of output features extracted from the head into
-    mask results.
+                                        mlvl_kernel_preds: List[Tensor],
+                                        mlvl_cls_scores: List[Tensor],
+                                        mask_feats: Tensor,
+                                        batch_img_metas: List[Dict], **kwargs):
+    """Transform a batch of output features extracted from the head into mask
+    results.
 
     Args:
         mlvl_kernel_preds (list[Tensor]): Multi-level dynamic kernel
@@ -57,9 +59,11 @@ def solohead__predict_by_feat__openvino(ctx, self,
         local_max = F.max_pool2d(cls_scores, 2, stride=1, padding=1)
         keep_mask = local_max[:, :, :-1, :-1] == cls_scores
         cls_scores = cls_scores * keep_mask
-        mlvl_cls_scores[lvl] = cls_scores.permute(0, 2, 3, 1).view(batch_size, -1, self.cls_out_channels)
-        mlvl_kernel_preds[lvl] = kernel_preds.permute(0, 2, 3, 1).view(batch_size, -1, self.kernel_out_channels)
-    
+        mlvl_cls_scores[lvl] = cls_scores.permute(0, 2, 3, 1).view(
+            batch_size, -1, self.cls_out_channels)
+        mlvl_kernel_preds[lvl] = kernel_preds.permute(0, 2, 3, 1).view(
+            batch_size, -1, self.kernel_out_channels)
+
     # Rewrite strides to avoid set_items.
     mlvl_strides = [
         torch.ones_like(mlvl_cls_scores[lvl][0, :, 0]) * self.strides[lvl]
@@ -69,7 +73,7 @@ def solohead__predict_by_feat__openvino(ctx, self,
     assert len(mlvl_kernel_preds) == len(mlvl_cls_scores)
     batch_mlvl_cls_scores = torch.cat(mlvl_cls_scores, dim=1)
     batch_mlvl_kernel_preds = torch.cat(mlvl_kernel_preds, dim=1)
-    
+
     featmap_size = mask_feats.size()[-2:]
     h, w = batch_img_metas[0]['img_shape'][:2]
     batch_mlvl_cls_scores, cls_labels = torch.max(batch_mlvl_cls_scores, -1)
@@ -85,7 +89,8 @@ def solohead__predict_by_feat__openvino(ctx, self,
     kernel_preds = batch_mlvl_kernel_preds[0].unsqueeze(2).unsqueeze(3)
     mask_preds = F.conv2d(
         mask_feats, kernel_preds, stride=1).squeeze(0).sigmoid()
-    aligned_score_mask = score_mask[0].unsqueeze(1).unsqueeze(2).expand(mask_preds.shape)
+    aligned_score_mask = score_mask[0].unsqueeze(1).unsqueeze(2).expand(
+        mask_preds.shape)
     mask_preds = mask_preds.where(aligned_score_mask, mask_preds.new_zeros(1))
 
     # mask.
@@ -117,7 +122,7 @@ def solohead__predict_by_feat__openvino(ctx, self,
     export_postprocess_mask = post_params.get('export_postprocess_mask', True)
     if export_postprocess_mask:
         upsampled_size = (featmap_size[0] * self.mask_stride,
-                            featmap_size[1] * self.mask_stride)
+                          featmap_size[1] * self.mask_stride)
         mask_preds = F.interpolate(
             mask_preds, size=upsampled_size, mode='bilinear')
         bboxes = scores.new_zeros(batch_size, scores.shape[-1], 4)

@@ -63,7 +63,7 @@ def mask_matrix_nms__onnx(ctx,
         1, 0) - inter_matrix
     total_mask = total_area > 0
     total_area = total_area.where(total_mask, total_area.new_ones(1))
-    iou_matrix = torch.triu(inter_matrix / total_area,diagonal=1)
+    iou_matrix = torch.triu(inter_matrix / total_area, diagonal=1)
     expanded_labels = labels.unsqueeze(1)
     label_matrix = expanded_labels == expanded_labels.transpose(1, 0)
 
