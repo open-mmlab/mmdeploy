@@ -6,6 +6,7 @@ from mmdet.models.dense_heads import PAAHead
 from mmdet.models.task_modules.coders import (DeltaXYWHBBoxCoder,
                                               DistancePointBBoxCoder,
                                               TBLRBBoxCoder)
+from mmdet.structures.bbox import BaseBoxes, get_box_tensor
 from mmdet.structures.bbox.transforms import distance2bbox
 from mmengine import ConfigDict
 from torch import Tensor
@@ -13,9 +14,9 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet.deploy import (gather_topk,
                                             get_post_processing_params,
                                             pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.codebase.mmdet.ops import ncnn_detection_output_forward
 from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
@@ -72,6 +73,11 @@ def base_dense_head__predict_by_feat(
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
     mlvl_priors = self.prior_generator.grid_priors(
         featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
+
+    # anchor could be subclass of BaseBoxes in mmrotate
+    prior_type = type(mlvl_priors[0])
+    mlvl_priors = [get_box_tensor(priors) for priors in mlvl_priors]
+
     mlvl_priors = [priors.unsqueeze(0) for priors in mlvl_priors]
 
     mlvl_cls_scores = [cls_scores[i].detach() for i in range(num_levels)]
@@ -113,7 +119,8 @@ def base_dense_head__predict_by_feat(
                                                   1).reshape(batch_size,
                                                              -1).sigmoid()
             score_factors = score_factors.unsqueeze(2)
-        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, 4)
+        dim = self.bbox_coder.encode_size
+        bbox_pred = bbox_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, dim)
         if not is_dynamic_flag:
             priors = priors.data
 
@@ -159,8 +166,15 @@ def base_dense_head__predict_by_feat(
     batch_mlvl_bboxes_pred = torch.cat(mlvl_valid_bboxes, dim=1)
     batch_scores = torch.cat(mlvl_valid_scores, dim=1)
     batch_priors = torch.cat(mlvl_valid_priors, dim=1)
+
+    if issubclass(prior_type, BaseBoxes):
+        batch_priors = prior_type(batch_priors, clone=False)
+
     batch_bboxes = self.bbox_coder.decode(
         batch_priors, batch_mlvl_bboxes_pred, max_shape=img_shape)
+
+    batch_bboxes = get_box_tensor(batch_bboxes)
+
     if with_score_factors:
         batch_score_factors = torch.cat(mlvl_score_factors, dim=1)
     if not self.use_sigmoid_cls:
@@ -180,10 +194,12 @@ def base_dense_head__predict_by_feat(
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    nms_type = cfg.nms.get('type')
     return multiclass_nms(
         batch_bboxes,
         batch_scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,

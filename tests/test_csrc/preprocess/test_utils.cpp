@@ -6,10 +6,10 @@ using namespace std;
 namespace mmdeploy::test {
 unique_ptr<Transform> CreateTransform(const Value& cfg, Device device, Stream stream) {
   auto op_type = cfg.value<string>("type", "");
-  auto op_version = cfg.value<int>("version", 1);
+  auto op_version = cfg.value<int>("version", -1);
 
   try {
-    auto creator = Registry<Transform>::Get().GetCreator(op_type, op_version);
+    auto creator = gRegistry<Transform>().Get(op_type, op_version);
     if (creator == nullptr) {
       return nullptr;
     }

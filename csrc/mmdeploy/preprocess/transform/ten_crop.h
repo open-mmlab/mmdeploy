@@ -43,7 +43,8 @@ class MMDEPLOY_API TenCrop : public Transform {
   std::unique_ptr<TenCropImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(TenCropImpl);
+MMDEPLOY_DECLARE_REGISTRY(TenCropImpl, std::unique_ptr<TenCropImpl>(const Value& config));
+
 }  // namespace mmdeploy
 
 #endif

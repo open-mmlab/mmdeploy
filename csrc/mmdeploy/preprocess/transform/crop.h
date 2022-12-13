@@ -42,7 +42,7 @@ class MMDEPLOY_API CenterCrop : public Transform {
   std::unique_ptr<CenterCropImpl> impl_;
 };
 
-MMDEPLOY_DECLARE_REGISTRY(CenterCropImpl);
+MMDEPLOY_DECLARE_REGISTRY(CenterCropImpl, std::unique_ptr<CenterCropImpl>(const Value& config));
 
 }  // namespace mmdeploy
 

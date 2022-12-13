@@ -23,16 +23,7 @@ class ThreeCropImpl : public ::mmdeploy::ThreeCropImpl {
   }
 };
 
-class ThreeCropImplCreator : public Creator<::mmdeploy::ThreeCropImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<ThreeCropImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ThreeCropImpl, (cpu, 0), ThreeCropImpl);
 
 }  // namespace cpu
 }  // namespace mmdeploy
-
-using ::mmdeploy::ThreeCropImpl;
-using ::mmdeploy::cpu::ThreeCropImplCreator;
-REGISTER_MODULE(ThreeCropImpl, ThreeCropImplCreator);

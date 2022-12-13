@@ -7,8 +7,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::cuda {
 
 class ResizeImpl final : public ::mmdeploy::ResizeImpl {
  public:
@@ -81,15 +80,6 @@ class ResizeImpl final : public ::mmdeploy::ResizeImpl {
   }
 };
 
-class ResizeImplCreator : public Creator<::mmdeploy::ResizeImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<ResizeImpl>(args); }
-};
-}  // namespace cuda
-}  // namespace mmdeploy
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::ResizeImpl, (cuda, 0), ResizeImpl);
 
-using ::mmdeploy::ResizeImpl;
-using ::mmdeploy::cuda::ResizeImplCreator;
-REGISTER_MODULE(ResizeImpl, ResizeImplCreator);
+}  // namespace mmdeploy::cuda

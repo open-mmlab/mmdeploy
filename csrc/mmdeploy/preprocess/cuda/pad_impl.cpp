@@ -8,8 +8,7 @@
 using namespace std;
 using namespace ppl::cv::cuda;
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::cuda {
 
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
@@ -94,17 +93,6 @@ class PadImpl : public ::mmdeploy::PadImpl {
   ppl::cv::BorderType padding_mode_;
 };
 
-class PadCreator : public Creator<::mmdeploy::PadImpl> {
- public:
-  const char* GetName() const override { return "cuda"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<PadImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PadImpl, (cuda, 0), PadImpl);
 
-}  // namespace cuda
-}  // namespace mmdeploy
-
-using ::mmdeploy::PadImpl;
-using mmdeploy::cuda::PadCreator;
-
-REGISTER_MODULE(PadImpl, PadCreator);
+}  // namespace mmdeploy::cuda

@@ -55,7 +55,7 @@ ______________________________________________________________________
 2. 克隆mmdeploy仓库
 
    ```bash
-   git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+   git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git
    ```
 
    :point_right: 这里主要为了使用configs文件，所以没有加`--recursive`来下载submodule，也不需要编译`mmdeploy`

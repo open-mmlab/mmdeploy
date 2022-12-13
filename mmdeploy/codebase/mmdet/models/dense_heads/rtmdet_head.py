@@ -7,8 +7,8 @@ from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import multiclass_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -92,6 +92,13 @@ def rtmdet_head__predict_by_feat(self,
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
 
-    return multiclass_nms(bboxes, scores, max_output_boxes_per_class,
-                          iou_threshold, score_threshold, pre_top_k,
-                          keep_top_k)
+    nms_type = cfg.nms.get('type')
+    return multiclass_nms(
+        bboxes,
+        scores,
+        max_output_boxes_per_class,
+        nms_type=nms_type,
+        iou_threshold=iou_threshold,
+        score_threshold=score_threshold,
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k)

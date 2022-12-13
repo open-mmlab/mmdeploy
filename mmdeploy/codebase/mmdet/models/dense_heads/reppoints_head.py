@@ -9,8 +9,8 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet.deploy import (gather_topk,
                                             get_post_processing_params,
                                             pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -180,10 +180,12 @@ def reppoints_head__predict_by_feat(
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    nms_type = cfg.nms.get('type')
     return multiclass_nms(
         batch_bboxes,
         batch_scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,

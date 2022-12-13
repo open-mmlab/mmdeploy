@@ -2,8 +2,7 @@
 
 #include "mmdeploy/preprocess/transform/collect.h"
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::cpu {
 
 class CollectImpl : public ::mmdeploy::CollectImpl {
  public:
@@ -11,18 +10,6 @@ class CollectImpl : public ::mmdeploy::CollectImpl {
   ~CollectImpl() = default;
 };
 
-class CollectImplCreator : public Creator<::mmdeploy::CollectImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  std::unique_ptr<::mmdeploy::CollectImpl> Create(const Value& args) override {
-    return std::make_unique<CollectImpl>(args);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::CollectImpl, (cpu, 0), CollectImpl);
 
-}  // namespace cpu
-}  // namespace mmdeploy
-
-using mmdeploy::CollectImpl;
-using mmdeploy::cpu::CollectImplCreator;
-REGISTER_MODULE(CollectImpl, CollectImplCreator);
+}  // namespace mmdeploy::cpu

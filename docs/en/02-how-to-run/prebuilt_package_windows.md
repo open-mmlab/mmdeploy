@@ -47,7 +47,7 @@ In order to use the prebuilt package, you need to install some third-party depen
 2. Clone the mmdeploy repository
 
    ```bash
-   git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+   git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git
    ```
 
    :point_right: The main purpose here is to use the configs, so there is no need to compile `mmdeploy`.

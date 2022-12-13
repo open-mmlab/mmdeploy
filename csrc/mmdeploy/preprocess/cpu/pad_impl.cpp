@@ -6,8 +6,7 @@
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::cpu {
 
 class PadImpl : public ::mmdeploy::PadImpl {
  public:
@@ -38,16 +37,6 @@ class PadImpl : public ::mmdeploy::PadImpl {
   int border_type_;
 };
 
-class PadImplCreator : public Creator<::mmdeploy::PadImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<PadImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::PadImpl, (cpu, 0), PadImpl);
 
-}  // namespace cpu
-}  // namespace mmdeploy
-
-using mmdeploy::PadImpl;
-using mmdeploy::cpu::PadImplCreator;
-REGISTER_MODULE(PadImpl, PadImplCreator);
+}  // namespace mmdeploy::cpu

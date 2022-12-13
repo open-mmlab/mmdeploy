@@ -11,7 +11,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv_utils.h"
 
-namespace mmdeploy {
+namespace mmdeploy::mmocr {
 
 // Warp rotated rect
 class WarpBbox {
@@ -64,12 +64,7 @@ class WarpBbox {
   }
 };
 
-class WarpBboxCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "WarpBbox"; }
-  std::unique_ptr<Module> Create(const Value& value) override { return CreateTask(WarpBbox{}); }
-};
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (WarpBbox, 0),
+                               [](const Value&) { return CreateTask(WarpBbox{}); });
 
-REGISTER_MODULE(Module, WarpBboxCreator);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmocr

@@ -38,15 +38,16 @@ def standard_roi_head__predict_bbox(self,
                 (num_instances, ).
     """
     rois = rpn_results_list[0]
+    rois_dims = rois.shape[-1]
     batch_index = torch.arange(
         rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
             rois.size(0), rois.size(1), 1)
-    rois = torch.cat([batch_index, rois[..., :4]], dim=-1)
+    rois = torch.cat([batch_index, rois[..., :rois_dims - 1]], dim=-1)
     batch_size = rois.shape[0]
     num_proposals_per_img = rois.shape[1]
 
     # Eliminate the batch dimension
-    rois = rois.view(-1, 5)
+    rois = rois.view(-1, rois_dims)
     bbox_results = self._bbox_forward(x, rois)
     cls_scores = bbox_results['cls_score']
     bbox_preds = bbox_results['bbox_pred']
