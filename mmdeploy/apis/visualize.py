@@ -59,9 +59,6 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
 
     if isinstance(model, (list, tuple)):
         assert len(model) > 0, 'Model should have at least one element.'
-        assert all([isinstance(m, str) for m in model]), 'All elements in the \
-            list should be str'
-
         if backend == Backend.PYTORCH:
             model = task_processor.build_pytorch_model(model[0])
         else:

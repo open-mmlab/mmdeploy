@@ -35,6 +35,7 @@
    03-benchmark/supported_models.md
    03-benchmark/benchmark.md
    03-benchmark/benchmark_edge.md
+   03-benchmark/benchmark_tvm.md
    03-benchmark/quantization.md
 
 .. toctree::
@@ -62,6 +63,7 @@
    05-supported-backends/snpe.md
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
+   05-supported-backends/tvm.md
 
 .. toctree::
    :maxdepth: 1
