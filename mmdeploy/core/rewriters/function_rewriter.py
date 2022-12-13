@@ -1,10 +1,24 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import types
+from collections import defaultdict
 from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
 
 from mmdeploy.utils import IR, Backend, get_root_logger
-from .rewriter_utils import (Checker, FunctionContextContextCaller,
-                             RewriterRegistry, import_function)
+from .rewriter_utils import (Checker, ContextCaller, RewriterRegistry,
+                             copy_function, get_frame_func, get_func_qualname,
+                             import_function)
+
+try:
+    try:
+        # torch>=1.10.0
+        from torch.fx._symbolic_trace import _wrapped_fns_to_patch
+    except ImportError:
+        # 1.10.0>torch>=1.8.0
+        from torch.fx.symbolic_trace import _wrapped_fns_to_patch
+except ImportError:
+    # torch<1.8.0
+    _wrapped_fns_to_patch = []
 
 
 def _replace_all_obj(obj: Any,
@@ -92,6 +106,24 @@ def _del_func(path: str):
             continue
 
 
+def _fx_wrap_copied_fn(func: types.FunctionType,
+                       copied_func: types.FunctionType):
+    """If a function is wrapped by torch.fx.wrap, its copy also needs to be
+    wrapped by torch.fx.wrap."""
+    if not hasattr(func, '__globals__'):
+        return
+
+    wrapped_fns_globals = [item[0] for item in _wrapped_fns_to_patch]
+    wrapped_fns_names = [item[1] for item in _wrapped_fns_to_patch]
+
+    # check if wrapped by torch.fx.wrap
+    if func.__globals__ in wrapped_fns_globals:
+        idx = wrapped_fns_globals.index(func.__globals__)
+        fn_name = wrapped_fns_names[idx]
+        # a hacky way to wrap the func in copied func
+        _wrapped_fns_to_patch.append((copied_func.__globals__, fn_name))
+
+
 class FunctionRewriter:
     """A function rewriter which maintains rewritten functions.
 
@@ -102,7 +134,8 @@ class FunctionRewriter:
     Examples:
         >>> @FUNCTION_REWRITER.register_rewriter(
         >>>     func_name='torch.Tensor.size', backend='ncnn')
-        >>> def size_of_tensor_static(ctx, self, *args):
+        >>> def size_of_tensor_static(self, *args):
+        >>>     ctx = FUNCTION_REWRITER.get_context()
         >>>     ret = ctx.origin_func(self, *args)
         >>>     if isinstance(ret, torch.Tensor):
         >>>         ret = int(ret)
@@ -114,6 +147,7 @@ class FunctionRewriter:
 
     def __init__(self):
         self._registry = RewriterRegistry()
+        self._func_contexts = defaultdict(list)
 
     def register_rewriter(
             self,
@@ -140,8 +174,11 @@ class FunctionRewriter:
 
     def enter(self, cfg: Dict = dict(), env: Dict = dict(), **kwargs):
         """The implementation of function rewrite."""
+        self._func_contexts.clear()
         # Get current records
         functions_records = self._registry.get_records(env)
+        # Get current fx wrapped func nums
+        self._ori_fx_wrap_num = len(_wrapped_fns_to_patch)
 
         self._origin_functions = list()
         self._additional_functions = list()
@@ -181,23 +218,26 @@ class FunctionRewriter:
 
                 # Create context_caller
                 rewrite_function = record_dict['_object']
+                # The func before and after copy has different globals
+                rewrite_function = copy_function(rewrite_function)
                 extra_kwargs = kwargs.copy()
                 extra_kwargs.update(record_dict)
+                context_caller = ContextCaller(rewrite_function, origin_func,
+                                               cfg, **extra_kwargs)
+                # If there is a function wrapped by torch.fx.wrap in
+                # rewrite_function's globals, we need to wrap the same name
+                # function in copied function's globals.
+                _fx_wrap_copied_fn(record_dict['_object'], context_caller.func)
 
-                context_caller = FunctionContextContextCaller.get_instance(
-                    function_path)
-                context_caller.register_orgin_func(origin_func)
-                context_caller.register_cfg(cfg)
-                context_caller.register_extra_kwargs(**extra_kwargs)
-
-                # context_caller = ContextCaller(
-                #     rewrite_function, origin_func, cfg,
-                #     **extra_kwargs).get_wrapped_caller()
+                qualname = get_func_qualname(rewrite_function)
+                self._func_contexts[qualname].append(context_caller)
+                self._func_contexts[function_path].append(context_caller)
 
                 # Cache new the function to avoid homonymic bug
                 new_functions.append(
                     dict(
                         func_path=function_path, origin_func=rewrite_function))
+
         for func_dict in new_functions:
             function_path = func_dict['func_path']
             new_function = func_dict['origin_func']
@@ -206,9 +246,46 @@ class FunctionRewriter:
 
     def exit(self):
         """Recover the function rewrite."""
+        # Restore _wrapped_fns_to_patch
+        cur_fx_wrap_num = len(_wrapped_fns_to_patch)
+        for _ in range(cur_fx_wrap_num - self._ori_fx_wrap_num):
+            _wrapped_fns_to_patch.pop(-1)
+
         for func_dict in self._origin_functions:
             func_path = func_dict['func_path']
             func = func_dict['origin_func']
             _set_func(func_path, func)
         for func_path in self._additional_functions:
             _del_func(func_path)
+
+        self._func_contexts.clear()
+
+    def get_context(self, key: Optional[str] = None) -> ContextCaller:
+        """Get the context of rewriter.
+
+        Args:
+            key: key to the context.
+
+        Returns:
+            ContextCaller: context of function
+        """
+        func = None
+        if key is None:
+            func = get_frame_func(2)
+            key = get_func_qualname(func)
+
+        # get all contexts
+        ctxs = self._func_contexts.get(key, [])
+
+        if func is None:
+            assert len(ctxs) == 1
+            return ctxs[0]
+
+        ctx = None
+        for tmp_ctx in ctxs:
+            if tmp_ctx.func == func:
+                ctx = tmp_ctx
+
+        if ctx is None:
+            get_root_logger().warning(f'Can not found context of {key}')
+        return ctx

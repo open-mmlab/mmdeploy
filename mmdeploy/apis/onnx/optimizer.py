@@ -10,9 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 @FUNCTION_REWRITER.register_rewriter('torch.onnx.utils._model_to_graph')
 def model_to_graph__custom_optimizer(*args, **kwargs):
     """Rewriter of _model_to_graph, add custom passes."""
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.onnx.utils._model_to_graph')
-
+    ctx = FUNCTION_REWRITER.get_context()
     graph, params_dict, torch_out = ctx.origin_func(*args, **kwargs)
 
     custom_passes = getattr(ctx, 'onnx_custom_passes', None)
@@ -29,10 +27,16 @@ def model_to_graph__custom_optimizer(*args, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     'torch._C._jit_pass_onnx_deduplicate_initializers', backend='tensorrt')
-def jit_pass_onnx_deduplicate_initializers__disable(ctx, graph, param_dict,
-                                                    arg2):
+def jit_pass_onnx_deduplicate_initializers__disable(graph, param_dict, arg2):
     """This pass will disable TensorRT topk export.
 
     disable for TensorRT.
     """
     return param_dict
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'torch._C._jit_pass_onnx_autograd_function_process')
+def jit_pass_onnx_autograd_function_process__disable(graph):
+    """Disable process autograph function."""
+    return

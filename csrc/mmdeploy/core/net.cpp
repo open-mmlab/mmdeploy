@@ -4,8 +4,8 @@
 
 #include "registry.h"
 
-namespace mmdeploy {
+namespace mmdeploy::framework {
 
-MMDEPLOY_DEFINE_REGISTRY(framework::Net);
+MMDEPLOY_DEFINE_REGISTRY(Net);
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework

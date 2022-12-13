@@ -7,14 +7,13 @@ from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import multiclass_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.fovea_head.FoveaHead.predict_by_feat')
-def fovea_head__predict_by_feat(ctx,
-                                self,
+def fovea_head__predict_by_feat(self,
                                 cls_scores: List[Tensor],
                                 bbox_preds: List[Tensor],
                                 score_factors: Optional[List[Tensor]] = None,
@@ -49,6 +48,7 @@ def fovea_head__predict_by_feat(ctx,
             `dets` of shape [N, num_det, 5] and `labels` of shape
             [N, num_det].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     cfg = self.test_cfg if cfg is None else cfg
     num_levels = len(cls_scores)
@@ -96,7 +96,13 @@ def fovea_head__predict_by_feat(ctx,
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     nms_pre = cfg.get('deploy_nms_pre', -1)
-    det_results = multiclass_nms(det_bboxes, det_scores,
-                                 max_output_boxes_per_class, iou_threshold,
-                                 score_threshold, nms_pre, cfg.max_per_img)
-    return det_results
+    nms_type = cfg.nms.get('type')
+    return multiclass_nms(
+        det_bboxes,
+        det_scores,
+        max_output_boxes_per_class,
+        nms_type=nms_type,
+        iou_threshold=iou_threshold,
+        score_threshold=score_threshold,
+        pre_top_k=nms_pre,
+        keep_top_k=cfg.max_per_img)

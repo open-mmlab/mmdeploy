@@ -40,10 +40,7 @@ def linear__ncnn(
     add extra reshape and transpose to support linear operation of different
     input shape.
     """
-
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.linear')
-
+    ctx = FUNCTION_REWRITER.get_context()
     origin_func = ctx.origin_func
     dim = input.dim()
 

@@ -9,8 +9,7 @@
 #include "mmdeploy/core/tensor.h"
 #include "opencv2/core.hpp"
 
-namespace mmdeploy {
-namespace mmocr {
+namespace mmdeploy::mmocr {
 
 class DbHeadImpl {
  public:
@@ -26,10 +25,8 @@ class DbHeadImpl {
   Stream stream_;
 };
 
-}  // namespace mmocr
+MMDEPLOY_DECLARE_REGISTRY(DbHeadImpl, std::unique_ptr<DbHeadImpl>());
 
-MMDEPLOY_DECLARE_REGISTRY(mmocr::DbHeadImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmocr
 
 #endif  // MMDEPLOY_CSRC_CODEBASE_MMOCR_DBNET_H_

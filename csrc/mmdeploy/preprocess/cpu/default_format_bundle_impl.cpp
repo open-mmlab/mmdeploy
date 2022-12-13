@@ -4,8 +4,7 @@
 #include "mmdeploy/preprocess/transform/default_format_bundle.h"
 #include "opencv_utils.h"
 
-namespace mmdeploy {
-namespace cpu {
+namespace mmdeploy::cpu {
 
 class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
  public:
@@ -47,18 +46,7 @@ class DefaultFormatBundleImpl : public ::mmdeploy::DefaultFormatBundleImpl {
   }
 };
 
-class DefaultFormatBundleImplCreator : public Creator<::mmdeploy::DefaultFormatBundleImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<DefaultFormatBundleImpl>(args);
-  }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::DefaultFormatBundleImpl, (cpu, 0),
+                                 DefaultFormatBundleImpl);
 
-}  // namespace cpu
-}  // namespace mmdeploy
-
-using mmdeploy::DefaultFormatBundleImpl;
-using mmdeploy::cpu::DefaultFormatBundleImplCreator;
-REGISTER_MODULE(DefaultFormatBundleImpl, DefaultFormatBundleImplCreator);
+}  // namespace mmdeploy::cpu

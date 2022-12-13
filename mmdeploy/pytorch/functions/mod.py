@@ -15,9 +15,7 @@ def mod__tensorrt(input: torch.Tensor, other: Union[torch.Tensor,
                                                     torch.NumberType], *args,
                   **kwargs) -> torch.Tensor:
     """Rewrite `mod` when exporting model to ONNX for TensorRT backend."""
-
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.__mod__')
-
+    ctx = FUNCTION_REWRITER.get_context()
     if version.parse(torch.__version__) > version.parse('1.10.0'):
         return input - (input // other) * other
     return ctx.origin_func(input, other, *args, **kwargs)

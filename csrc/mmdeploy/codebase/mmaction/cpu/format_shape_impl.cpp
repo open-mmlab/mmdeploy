@@ -123,16 +123,7 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
   constexpr static Device kHost{0, 0};
 };
 
-class FormatShapeImplCreator : public Creator<::mmdeploy::FormatShapeImpl> {
- public:
-  const char* GetName() const override { return "cpu"; }
-  int GetVersion() const override { return 1; }
-  ReturnType Create(const Value& args) override { return make_unique<FormatShapeImpl>(args); }
-};
+MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::FormatShapeImpl, (cpu, 0), FormatShapeImpl);
 
 }  // namespace cpu
 }  // namespace mmdeploy
-
-using ::mmdeploy::FormatShapeImpl;
-using ::mmdeploy::cpu::FormatShapeImplCreator;
-REGISTER_MODULE(FormatShapeImpl, FormatShapeImplCreator);

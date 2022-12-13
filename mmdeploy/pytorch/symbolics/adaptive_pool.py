@@ -7,7 +7,7 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 # from torch import fake_quantize_per_channel_affine
 @SYMBOLIC_REWRITER.register_symbolic(
     'adaptive_avg_pool2d', is_pytorch=True, backend='ncnn')
-def adaptive_avg_pool2d__ncnn(ctx, g, x, output_size):
+def adaptive_avg_pool2d__ncnn(g, x, output_size):
     """Register ncnn symbolic function for `adaptive_avg_pool2d`.
 
     Align symbolic of adaptive_avg_pool2d in ncnn.

@@ -118,17 +118,10 @@ class Classification(BaseTask):
         deploy_cfg (Config): Deployment config file or loaded Config
             object.
         device (str): A string represents device type.
-        experiment_name (str, optional): The experiment name used to create
-            runner. Defaults to 'Classification'.
     """
 
-    def __init__(self,
-                 model_cfg: Config,
-                 deploy_cfg: Config,
-                 device: str,
-                 experiment_name: str = 'Classification'):
-        super(Classification, self).__init__(model_cfg, deploy_cfg, device,
-                                             experiment_name)
+    def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
+        super(Classification, self).__init__(model_cfg, deploy_cfg, device)
 
     def build_data_preprocessor(self):
         """Build data preprocessor.

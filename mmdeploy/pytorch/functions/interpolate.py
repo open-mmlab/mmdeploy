@@ -23,8 +23,8 @@ def interpolate__ncnn(input: torch.Tensor,
     ncnn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.interpolate')
+    ctx = FUNCTION_REWRITER.get_context()
+
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [
@@ -55,9 +55,7 @@ def interpolate__rknn(input: torch.Tensor,
     rknn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.interpolate')
-
+    ctx = FUNCTION_REWRITER.get_context()
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [(s_out / s_in)
@@ -88,9 +86,7 @@ def interpolate__tensorrt(
     recompute_scale_factor: Optional[bool] = None,
 ):
     """Register default symbolic function for `interpolate`."""
-
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.interpolate')
+    ctx = FUNCTION_REWRITER.get_context()
 
     class BicubicInterpolate(Function):
 

@@ -11,7 +11,7 @@ def expand__ncnn(self, *sizes) -> torch.Tensor:
 
     Do not expand on batch dim for tensor with ndim >= 3
     """
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.expand')
+    ctx = FUNCTION_REWRITER.get_context()
     if self.ndim < 3 or sizes[0] not in [1, -1]:
         return ctx.origin_func(*sizes)
     return self

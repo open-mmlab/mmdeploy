@@ -66,7 +66,7 @@ Result<Value> PrepareImageImpl::Process(const Value& input) {
 }
 
 PrepareImage::PrepareImage(const Value& args, int version) : Transform(args) {
-  auto impl_creator = Registry<PrepareImageImpl>::Get().GetCreator(specified_platform_, version);
+  auto impl_creator = gRegistry<PrepareImageImpl>().Get(specified_platform_, version);
   if (nullptr == impl_creator) {
     MMDEPLOY_ERROR("'PrepareImage' is not supported on '{}' platform", specified_platform_);
     throw std::domain_error("'PrepareImage' is not supported on specified platform");
@@ -74,22 +74,9 @@ PrepareImage::PrepareImage(const Value& args, int version) : Transform(args) {
   impl_ = impl_creator->Create(args);
 }
 
-class PrepareImageCreator : public Creator<Transform> {
- public:
-  PrepareImageCreator() = default;
-  ~PrepareImageCreator() = default;
-
-  const char* GetName() const override { return "LoadImageFromFile"; }
-  int GetVersion() const override { return version_; }
-  std::unique_ptr<Transform> Create(const Value& value) override {
-    return std::make_unique<PrepareImage>(value, version_);
-  }
-
- private:
-  int version_{1};
-};
-
-REGISTER_MODULE(Transform, PrepareImageCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (LoadImageFromFile, 0), [](const Value& config) {
+  return std::make_unique<PrepareImage>(config, 0);
+});
 
 MMDEPLOY_DEFINE_REGISTRY(PrepareImageImpl);
 

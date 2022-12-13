@@ -7,8 +7,8 @@ from mmdeploy.utils import get_root_logger
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.decode_heads.point_head.PointHead.get_points_test',
     backend='tensorrt')
-def point_head__get_points_test__tensorrt(ctx, self, seg_logits,
-                                          uncertainty_func, cfg):
+def point_head__get_points_test__tensorrt(self, seg_logits, uncertainty_func,
+                                          cfg):
     """Sample points for testing.
 
     1. set `num_points` no greater than TENSORRT_MAX_TOPK for tensorrt backend
@@ -26,6 +26,7 @@ def point_head__get_points_test__tensorrt(ctx, self, seg_logits,
             2) that contains [0, 1] x [0, 1] normalized coordinates of the
             most uncertain points from the ``height x width`` grid .
     """
+    ctx = FUNCTION_REWRITER.get_context()
     from mmdeploy.utils.constants import TENSORRT_MAX_TOPK
 
     if cfg.subdivision_num_points > TENSORRT_MAX_TOPK:

@@ -13,6 +13,13 @@ class GridPriorsTRTOp(torch.autograd.Function):
     def forward(ctx, base_anchors, feat_h, feat_w, stride_h: int,
                 stride_w: int):
         """Generate grid priors by base anchors."""
+
+        # torch>=1.13 has runtime error
+        # when using torch.arange in autograd function
+        output = getattr(GridPriorsTRTOp, 'output', None)
+        if output is not None:
+            return output
+
         device = base_anchors.device
         dtype = base_anchors.dtype
         shift_x = torch.arange(0, feat_w, device=device).to(dtype) * stride_w
@@ -41,8 +48,8 @@ class GridPriorsTRTOp(torch.autograd.Function):
                  stride_w: int):
         """Map ops to onnx symbolics."""
         # zero_h and zero_w is used to provide shape to GridPriorsTRT
-        feat_h = symbolic_helper._unsqueeze_helper(g, feat_h, [0])
-        feat_w = symbolic_helper._unsqueeze_helper(g, feat_w, [0])
+        feat_h = g.op('Unsqueeze', feat_h, axes_i=[0])
+        feat_w = g.op('Unsqueeze', feat_w, axes_i=[0])
         zero_h = g.op(
             'ConstantOfShape',
             feat_h,
@@ -90,14 +97,22 @@ def anchorgenerator__single_level_grid_priors__trt(
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
     """
-    ctx = FunctionContextContextCaller.get_instance(
-        'mmdet.models.task_modules.prior_generators.'
-        'AnchorGenerator.single_level_grid_priors')
-
+    ctx = FUNCTION_REWRITER.get_context()
+    from mmdet.models.task_modules.prior_generators import AnchorGenerator
+    if type(self) != AnchorGenerator:
+        # only use custom node on default generator.
+        return ctx.origin_func(
+            self,
+            featmap_size=featmap_size,
+            level_idx=level_idx,
+            dtype=dtype,
+            device=device)
     feat_h, feat_w = featmap_size
+    output = ctx.origin_func(self, featmap_size, level_idx, dtype, device).data
     if isinstance(feat_h, int) and isinstance(feat_w, int):
-        return ctx.origin_func(self, featmap_size, level_idx, dtype,
-                               device).data
+        return output
     base_anchors = self.base_anchors[level_idx].to(device).to(dtype)
     stride_w, stride_h = self.strides[level_idx]
+
+    GridPriorsTRTOp.output = output
     return grid_priors_trt(base_anchors, feat_h, feat_w, stride_h, stride_w)

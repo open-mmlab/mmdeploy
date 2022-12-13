@@ -11,7 +11,7 @@ from mmdeploy.core import (FUNCTION_REWRITER, SYMBOLIC_REWRITER,
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.__setitem__')
 def tensor__setitem__default(self, key, value):
     """Rewrite `setitem` to ease the index put."""
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.__setitem__')
+    ctx = FUNCTION_REWRITER.get_context()
 
     # only support torch>=1.9.0
     if parse(torch.__version__) < parse('1.9.0'):
@@ -78,5 +78,5 @@ def tensor__setitem__default(self, key, value):
 if parse(torch.__version__) >= parse('1.12.0'):
 
     @SYMBOLIC_REWRITER.register_symbolic('copy', is_pytorch=True)
-    def copy__default(ctx, g, x, y, non_blocking):
+    def copy__default(g, x, y, non_blocking):
         return x

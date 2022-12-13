@@ -11,9 +11,7 @@ from mmdeploy.utils import Backend, get_root_logger, is_dynamic_shape
     func_name='torch.nn.functional.adaptive_avg_pool2d')
 def adaptive_avg_pool2d__default(input, output_size):
     """Rewrite `adaptive_avg_pool2d` for default backend."""
-
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.adaptive_avg_pool2d')
+    ctx = FUNCTION_REWRITER.get_context()
     output_size = _pair(output_size)
     if int(output_size[0]) == int(output_size[1]) == 1:
         out = ctx.origin_func(input, output_size)
@@ -43,6 +41,7 @@ def adaptive_avg_pool2d__default(input, output_size):
     func_name='torch.nn.functional.adaptive_avg_pool2d',
     backend=Backend.TORCHSCRIPT.value)
 def adaptive_avg_pool2d__ncnn(input, output_size):
+    ctx = FUNCTION_REWRITER.get_context()
     """Rewrite `adaptive_avg_pool2d` for ncnn and torchscript backend."""
     ctx = FunctionContextContextCaller.get_instance(
         'torch.nn.functional.adaptive_avg_pool2d')

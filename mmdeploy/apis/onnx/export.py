@@ -25,7 +25,6 @@ def export(model: torch.nn.Module,
            dynamic_axes: Optional[Dict] = None,
            verbose: bool = False,
            keep_initializers_as_inputs: Optional[bool] = None,
-           patch_metas: Dict = {},
            optimize: bool = False):
     """Export a PyTorch model into ONNX format. This is a wrap of
     `torch.onnx.export` with some enhancement.
@@ -67,7 +66,6 @@ def export(model: torch.nn.Module,
         verbose (bool): Enable verbose model on `torch.onnx.export`.
         keep_initializers_as_inputs (bool): Whether we should add inputs for
             each initializer.
-        patch_meta (Dict): The information used to patch the model.
         optimize (bool): Perform optimize on model.
     """
     output_path = output_path_prefix + '.onnx'
@@ -181,4 +179,4 @@ def export(model: torch.nn.Module,
                 verbose=verbose)
 
         if input_metas is not None:
-            patched_model.forward = model_forward
+            patched_patched_model.forward = model_forward

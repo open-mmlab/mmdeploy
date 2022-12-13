@@ -14,7 +14,7 @@ from torch import Tensor, nn
 from mmdeploy.backend.base import get_backend_file_count
 from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_partition_config, load_config)
 
@@ -222,8 +222,10 @@ class End2EndModel(BaseBackendModel):
             elif 'border' in img_metas[i]:
                 pad_key = 'border'
             if pad_key is not None:
-                x_off = img_metas[i][pad_key][2]
-                y_off = img_metas[i][pad_key][0]
+                scale_factor = img_metas[i].get('scale_factor',
+                                                np.array([1., 1.]))
+                x_off = img_metas[i][pad_key][2] / scale_factor[1]
+                y_off = img_metas[i][pad_key][0] / scale_factor[0]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)

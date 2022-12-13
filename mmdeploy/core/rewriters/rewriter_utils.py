@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import functools
 import inspect
+import types
 import warnings
 from abc import ABCMeta, abstractmethod
 from functools import wraps
@@ -344,8 +346,9 @@ class ContextCaller:
 
     Example:
         >>> @FUNCTION_REWRITER.register_rewriter(func_name='torch.add')
-        >>> def func(ctx, x, y):
+        >>> def func(x, y):
         >>>     # ctx is an instance of ContextCaller
+        >>>     ctx = FUNCTION_REWRITER.get_context()
         >>>     print(ctx.cfg)
         >>>     return x + y
     """
@@ -384,29 +387,59 @@ class ContextCaller:
         return wrapper
 
 
-class FunctionContextContextCaller(ManagerMixin):
+def get_func_qualname(func: Callable) -> str:
+    """get function name."""
+    assert isinstance(func, Callable), f'{func} is not a Callable object.'
+    _func_name = None
+    if hasattr(func, '__qualname__'):
+        _func_name = f'{func.__module__}.{func.__qualname__}'
+    elif hasattr(func, '__class__'):
+        _func_name = func.__class__
+    else:
+        _func_name = str(func)
+    return _func_name
 
-    def __init__(self, name: str = '', **kwargs):
-        super().__init__(name, **kwargs)
 
-    def register_orgin_func(self, origin_func):
-        self.origin_func = origin_func
+def get_frame_func(top: int = 1) -> Callable:
+    """get func of frame."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
 
-    def register_cfg(self, cfg):
-        self.cfg = cfg
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    return func
 
-    def register_extra_kwargs(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
 
-    def get_wrapped_caller(self, func):
-        # Rewrite function should not call a member function, so we use a
-        # wrapper to generate a Callable object.
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Add a new argument (context message) to function
-            # Because "self.func" is a function but not a member function,
-            # we should pass self as the first argument
-            return func(*args, **kwargs)
+def get_frame_qualname(top: int = 1) -> str:
+    """get frame name."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
 
-        return wrapper
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    module_name = inspect.getmodule(func).__name__
+
+    return f'{module_name}.{func_name}'
+
+
+def copy_function(f: types.FunctionType):
+    """Copy the function."""
+    # copy the global so we can get different func for different origin
+    glb = f.__globals__.copy()
+    name = f.__name__
+    g = types.FunctionType(
+        f.__code__,
+        glb,
+        name=name,
+        argdefs=f.__defaults__,
+        closure=f.__closure__)
+    g = functools.update_wrapper(g, f)
+    g.__kwdefaults__ = f.__kwdefaults__
+    glb[name] = g
+    return g

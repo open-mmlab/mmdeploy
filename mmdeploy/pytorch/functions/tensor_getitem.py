@@ -13,8 +13,7 @@ def tensor__getitem__ascend(self, key) -> torch.Tensor:
 
     Ascend does not support negative select
     """
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.__getitem__')
-
+    ctx = FUNCTION_REWRITER.get_context()
     if not isinstance(key, (tuple, list)):
         if isinstance(key, int) and key < 0:
             key = self.dim() + key

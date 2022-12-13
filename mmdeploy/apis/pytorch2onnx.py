@@ -67,7 +67,6 @@ def torch2onnx(img: Any,
     if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
     data_samples = data['data_samples']
-    patch_metas = {'data_samples': data_samples}
     input_metas = {'data_samples': data_samples, 'mode': 'predict'}
 
     # export to onnx
@@ -107,5 +106,4 @@ def torch2onnx(img: Any,
             dynamic_axes=dynamic_axes,
             verbose=verbose,
             keep_initializers_as_inputs=keep_initializers_as_inputs,
-            patch_metas=patch_metas,
             optimize=optimize)

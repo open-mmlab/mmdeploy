@@ -13,8 +13,8 @@ namespace mmdeploy {
 #define MAX(a, b) (((a) < (b)) ? (b) : (a))
 #define CLIP_COORDINATES(in, out, clip_limit) out = MIN((clip_limit - 1), MAX(in, 0))
 
-GridSampleKernel::GridSampleKernel(OrtApi api, const OrtKernelInfo *info)
-    : api_(api), ort_(api_), info_(info) {
+GridSampleKernel::GridSampleKernel(const OrtApi &api, const OrtKernelInfo *info)
+    : ort_(api), info_(info) {
   align_corners_ = ort_.KernelInfoGetAttribute<int64_t>(info, "align_corners");
   interpolation_mode_ = ort_.KernelInfoGetAttribute<int64_t>(info, "interpolation_mode");
   padding_mode_ = ort_.KernelInfoGetAttribute<int64_t>(info, "padding_mode");

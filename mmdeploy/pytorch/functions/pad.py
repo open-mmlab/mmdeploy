@@ -26,9 +26,7 @@ def _prepare_onnx_paddings__tensorrt(g, input, pad):
             ..., dim_m_begin, dim_m_end,
             where m is in range [0, n].
     """
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.onnx.symbolic_opset11._prepare_onnx_paddings')
-
+    ctx = FUNCTION_REWRITER.get_context()
     torch_version = version_parse(torch.__version__)
     if torch_version.major == 1 and torch_version.minor < 10:
         return ctx.origin_func(g, input, pad)

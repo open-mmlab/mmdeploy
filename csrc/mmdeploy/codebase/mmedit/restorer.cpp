@@ -53,6 +53,6 @@ class TensorToImg : public MMEdit {
   static constexpr const Device kHOST{0, 0};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMEdit, TensorToImg);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMEdit, TensorToImg);
 
 }  // namespace mmdeploy::mmedit

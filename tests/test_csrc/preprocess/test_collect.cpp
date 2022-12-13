@@ -13,7 +13,7 @@ TEST_CASE("test collect constructor", "[collect]") {
   Value cfg = {{"context", {{"device", device}, {"stream", stream}}}};
 
   std::string transform_type{"Collect"};
-  auto creator = Registry<Transform>::Get().GetCreator(transform_type, 1);
+  auto creator = gRegistry<Transform>().Get(transform_type);
   REQUIRE(creator != nullptr);
 
   REQUIRE_THROWS(creator->Create(cfg));
@@ -63,7 +63,7 @@ TEST_CASE("test collect", "[collect]") {
     args["meta_keys"].push_back(meta_key);
   }
 
-  auto creator = Registry<Transform>::Get().GetCreator(transform_type, 1);
+  auto creator = gRegistry<Transform>().Get(transform_type);
   REQUIRE(creator != nullptr);
   auto module = creator->Create(args);
   REQUIRE(module != nullptr);

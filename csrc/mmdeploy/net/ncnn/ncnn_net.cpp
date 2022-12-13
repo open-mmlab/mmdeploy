@@ -133,21 +133,16 @@ Result<void> NCNNNet::Forward() {
   return success();
 }
 
-class NCNNNetCreator : public Creator<Net> {
- public:
-  const char* GetName() const override { return "ncnn"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Net> Create(const Value& args) override {
-    auto p = std::make_unique<NCNNNet>();
-    if (auto r = p->Init(args)) {
-      return p;
-    } else {
-      MMDEPLOY_ERROR("error creating NCNNNet: {}", r.error().message().c_str());
-      return nullptr;
-    }
+static std::unique_ptr<Net> Create(const Value& args) {
+  auto p = std::make_unique<NCNNNet>();
+  if (auto r = p->Init(args)) {
+    return p;
+  } else {
+    MMDEPLOY_ERROR("error creating NCNNNet: {}", r.error().message().c_str());
+    return nullptr;
   }
-};
+}
 
-REGISTER_MODULE(Net, NCNNNetCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (ncnn, 0), Create);
 
 }  // namespace mmdeploy::framework

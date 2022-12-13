@@ -12,7 +12,8 @@ def tensor__size__ncnn(self, *args):
     ONNX Shape node is not supported in ncnn. This function return integer
     instead of Torch.Size to avoid ONNX Shape node.
     """
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.size')
+    ctx = FUNCTION_REWRITER.get_context()
+
     ret = ctx.origin_func(self, *args)
     if isinstance(ret, torch.Tensor):
         ret = int(ret)
@@ -26,11 +27,12 @@ def tensor__size__ncnn(self, *args):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.size', backend='ascend')
-def tensor__size__ascend(ctx, self, *args):
+def tensor__size__ascend(self, *args):
     """Rewrite `size` for ascens backend.
 
     Support negative index.
     """
+    ctx = FUNCTION_REWRITER.get_context()
 
     if len(args) != 0:
         index = args[0]

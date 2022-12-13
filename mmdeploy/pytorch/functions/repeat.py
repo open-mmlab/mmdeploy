@@ -15,7 +15,8 @@ def tensor__repeat__tensorrt(input: torch.Tensor, *size: Union[torch.Size,
     Some layers in TensorRT can not be applied on batch axis. add extra axis
     before operation and remove it afterward.
     """
-    ctx = FunctionContextContextCaller.get_instance('torch.Tensor.repeat')
+    ctx = FUNCTION_REWRITER.get_context()
+
     origin_func = ctx.origin_func
     if input.dim() == 1 and len(size) == 1:
         return origin_func(input.unsqueeze(0), *([1] + list(size))).squeeze(0)
