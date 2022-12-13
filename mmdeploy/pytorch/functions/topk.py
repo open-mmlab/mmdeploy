@@ -3,7 +3,7 @@ from typing import Optional
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import get_root_logger
 
 

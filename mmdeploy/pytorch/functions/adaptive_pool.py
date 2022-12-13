@@ -3,7 +3,7 @@
 import torch.nn.functional as F
 from torch.nn.modules.utils import _pair
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_root_logger, is_dynamic_shape
 
 
@@ -43,6 +43,4 @@ def adaptive_avg_pool2d__default(input, output_size):
 def adaptive_avg_pool2d__ncnn(input, output_size):
     ctx = FUNCTION_REWRITER.get_context()
     """Rewrite `adaptive_avg_pool2d` for ncnn and torchscript backend."""
-    ctx = FunctionContextContextCaller.get_instance(
-        'torch.nn.functional.adaptive_avg_pool2d')
     return ctx.origin_func(input, output_size)

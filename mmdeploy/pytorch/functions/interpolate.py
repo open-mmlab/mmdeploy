@@ -4,7 +4,7 @@ from typing import Optional, Tuple, Union
 import torch
 from torch.autograd import Function
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils import Backend, get_root_logger
 
 

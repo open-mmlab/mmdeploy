@@ -3,7 +3,7 @@ from typing import Optional, Union
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 
 
 class GemmOp(torch.autograd.Function):

@@ -4,7 +4,7 @@ from typing import Union
 import torch
 from packaging import version
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.utils.constants import Backend
 
 

@@ -4,9 +4,7 @@ from typing import Sequence
 import torch
 from packaging.version import parse
 
-from mmdeploy.core import (FUNCTION_REWRITER, SYMBOLIC_REWRITER,
-                           FunctionContextContextCaller)
-
+from mmdeploy.core import (FUNCTION_REWRITER, SYMBOLIC_REWRITER)
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.__setitem__')
 def tensor__setitem__default(self, key, value):

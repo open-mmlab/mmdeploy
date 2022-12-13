@@ -4,8 +4,7 @@ from typing import Any, Callable, Dict, Optional, Sequence
 
 import torch
 
-from mmdeploy.core.rewriters import (FUNCTION_REWRITER,
-                                     FunctionContextContextCaller)
+from mmdeploy.core.rewriters import (FUNCTION_REWRITER,)
 from mmdeploy.utils import IR, cfg_apply_marks, get_partition_config
 
 MARK_FUNCTION_COUNT = dict()

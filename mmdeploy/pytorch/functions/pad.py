@@ -3,7 +3,7 @@ import torch
 import torch.onnx.symbolic_helper as sym_help
 from packaging.version import parse as version_parse
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 
 
 # modified from

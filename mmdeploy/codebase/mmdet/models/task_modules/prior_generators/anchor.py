@@ -4,7 +4,7 @@ from typing import Tuple
 import torch
 from torch.onnx import symbolic_helper
 
-from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
+from mmdeploy.core import FUNCTION_REWRITER
 
 
 class GridPriorsTRTOp(torch.autograd.Function):

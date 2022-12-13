@@ -179,4 +179,4 @@ def export(model: torch.nn.Module,
                 verbose=verbose)
 
         if input_metas is not None:
-            patched_patched_model.forward = model_forward
+            patched_model.forward = model_forward
