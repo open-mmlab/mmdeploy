@@ -52,4 +52,4 @@ mmseg 是一个基于 PyTorch 的开源对象分割工具箱，也是 [OpenMMLab
 
 - 对于仅支持静态形状的模型，应使用静态形状的部署配置文件，例如 `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`
 
-- 对于喜欢部署模型生成概率特征图的用户，将 `codebase_config = dict(do_argmax=False)` 放在部署配置中就足够了。
+- 对于喜欢部署模型生成概率特征图的用户，将 `codebase_config = dict(with_argmax=False)` 放在部署配置中就足够了。

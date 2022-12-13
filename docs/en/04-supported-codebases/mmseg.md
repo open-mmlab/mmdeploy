@@ -52,4 +52,4 @@ Please refer to [get_started.md](https://github.com/open-mmlab/mmsegmentation/bl
 
 - For models only supporting static shape, you should use the deployment config file of static shape such as `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`.
 
-- For users prefer deployed models generate probability feature map, put `codebase_config = dict(do_argmax=False)` in deploy configs.
+- For users prefer deployed models generate probability feature map, put `codebase_config = dict(with_argmax=False)` in deploy configs.

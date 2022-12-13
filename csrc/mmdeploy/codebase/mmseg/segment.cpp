@@ -18,7 +18,8 @@ class ResizeMask : public MMSegmentation {
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
-      if (cfg["params"].contains("do_argmax")) do_argmax_ = cfg["params"]["do_argmax"].get<bool>();
+      if (cfg["params"].contains("with_argmax"))
+        with_argmax_ = cfg["params"]["with_argmax"].get<bool>();
       little_endian_ = IsLittleEndian();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
@@ -36,8 +37,8 @@ class ResizeMask : public MMSegmentation {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}", mask.shape());
       return Status(eNotSupported);
     }
-    if ((mask.shape(1) != 1) && do_argmax_) {
-      MMDEPLOY_ERROR("probability feat map with shape: {} requires `do_argmax_=false`",
+    if ((mask.shape(1) != 1) && with_argmax_) {
+      MMDEPLOY_ERROR("probability feat map with shape: {} requires `with_argmax_=false`",
                      mask.shape());
       return Status(eNotSupported);
     }
@@ -50,7 +51,7 @@ class ResizeMask : public MMSegmentation {
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
     OUTCOME_TRY(stream_.Wait());
 
-    if (!do_argmax_ && mask.shape(1) > 1 && mask.shape(1) == classes_ &&
+    if (!with_argmax_ && mask.shape(1) > 1 && mask.shape(1) == classes_ &&
         host_tensor.data_type() == DataType::kFLOAT) {
       int stride = height * width;
       Tensor mask_out = TensorDesc{Device("cpu"),
@@ -114,7 +115,7 @@ class ResizeMask : public MMSegmentation {
 
  protected:
   int classes_{};
-  bool do_argmax_{true};
+  bool with_argmax_{true};
   bool little_endian_;
 };
 
