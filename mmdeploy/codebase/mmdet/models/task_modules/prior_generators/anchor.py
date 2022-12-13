@@ -77,7 +77,6 @@ grid_priors_trt = GridPriorsTRTOp.apply
     'AnchorGenerator.single_level_grid_priors',
     backend='tensorrt')
 def anchorgenerator__single_level_grid_priors__trt(
-        ctx,
         self,
         featmap_size: Tuple[int],
         level_idx: int,
@@ -98,6 +97,7 @@ def anchorgenerator__single_level_grid_priors__trt(
         Returns:
             torch.Tensor: Anchors in the overall feature maps.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     from mmdet.models.task_modules.prior_generators import AnchorGenerator
     if type(self) != AnchorGenerator:
         # only use custom node on default generator.

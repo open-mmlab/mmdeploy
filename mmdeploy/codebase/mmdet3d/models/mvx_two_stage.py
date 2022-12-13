@@ -7,8 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.extract_img_feat'  # noqa: E501
 )
-def mvxtwostagedetector__extract_img_feat(ctx, self,
-                                          img: torch.Tensor) -> dict:
+def mvxtwostagedetector__extract_img_feat(self, img: torch.Tensor) -> dict:
     """Extract features of images."""
     if self.with_img_backbone and img is not None:
         if img.dim() == 5 and img.size(0) == 1:
@@ -26,8 +25,7 @@ def mvxtwostagedetector__extract_img_feat(ctx, self,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.extract_feat')
-def mvxtwostagedetector__extract_feat(ctx, self,
-                                      batch_inputs_dict: dict) -> tuple:
+def mvxtwostagedetector__extract_feat(self, batch_inputs_dict: dict) -> tuple:
     """Rewrite this func to remove voxelize op.
 
     Args:
@@ -47,7 +45,7 @@ def mvxtwostagedetector__extract_feat(ctx, self,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.forward')
-def mvxtwostagedetector__forward(ctx, self, inputs: list, **kwargs):
+def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
     """Rewrite this func to remove voxelize op.
 
     Args:

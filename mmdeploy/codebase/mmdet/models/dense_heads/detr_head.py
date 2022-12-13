@@ -10,7 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.DETRHead.forward_single')
-def detrhead__forward_single__default(ctx, self, x, img_metas):
+def detrhead__forward_single__default(self, x, img_metas):
     """forward_single of DETRHead.
 
     Ease the mask computation
@@ -35,8 +35,7 @@ def detrhead__forward_single__default(ctx, self, x, img_metas):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.DETRHead.predict_by_feat')
-def detrhead__predict_by_feat__default(ctx,
-                                       self,
+def detrhead__predict_by_feat__default(self,
                                        all_cls_scores_list: List[Tensor],
                                        all_bbox_preds_list: List[Tensor],
                                        batch_img_metas: List[dict],

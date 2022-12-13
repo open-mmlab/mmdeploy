@@ -7,8 +7,7 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.BaseSegmentor.forward')
-def base_segmentor__forward(ctx,
-                            self,
+def base_segmentor__forward(self,
                             inputs,
                             data_samples=None,
                             mode='predict',
@@ -27,6 +26,7 @@ def base_segmentor__forward(ctx,
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     if data_samples is None:
         data_samples = [SegDataSample()]
 

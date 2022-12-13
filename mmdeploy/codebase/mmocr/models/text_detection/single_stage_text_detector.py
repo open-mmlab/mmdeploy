@@ -10,7 +10,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.SingleStageTextDetector.forward')
 def single_stage_text_detector__forward(
-        ctx,
         self,
         batch_inputs: torch.Tensor,
         data_samples: TextDetDataSample = None,

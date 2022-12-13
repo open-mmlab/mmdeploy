@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.EncoderDecoderRecognizer.forward')
-def encoder_decoder_recognizer__forward(ctx, self, batch_inputs: torch.Tensor,
+def encoder_decoder_recognizer__forward(self, batch_inputs: torch.Tensor,
                                         data_samples: TextRecogDataSample,
                                         **kwargs) -> TextRecogDataSample:
     """Rewrite `forward` of EncoderDecoderRecognizer for default backend.
