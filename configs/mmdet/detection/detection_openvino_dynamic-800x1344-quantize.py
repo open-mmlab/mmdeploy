@@ -3,7 +3,6 @@ _base_ = ['../_base_/base_openvino_dynamic-800x1344.py']
 # TODO save in mmrazor's checkpoint
 quantizer = dict(
     type='mmrazor.OpenvinoQuantizer',
-    is_qat=False,
     skipped_methods=[
         'mmdet.models.dense_heads.base_dense_head'
         '.BaseDenseHead.predict_by_feat',
