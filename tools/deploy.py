@@ -414,10 +414,16 @@ def main():
         from mmdeploy.apis.ipu import onnx_to_popef
         popef_files = []
         for model_id, onnx_path in enumerate(ir_files):
-            popef_path = onnx_path.replace('.onnx', '.popef')
-            ipu_config = ir_config['ipu_config']
-            onnx_to_popef(onnx_path, popef_path, ipu_config)
-            popoef_files.append(popef_path)
+            model_name = onnx_path.split('/')[-1][:-5]
+            ipu_config = deploy_cfg.get('backend_config', {})
+            print('ipu config keys ', ipu_config.keys())
+            output_dir = ipu_config['output_dir']
+            model_dir = os.path.join(output_dir, model_name)
+            if not os.path.exists(model_dir):
+                os.mkdir(model_dir)
+            ipu_config['output_dir'] = model_dir
+            onnx_to_popef(onnx_path, ipu_config)
+            popef_files.append(os.path.join(model_dir, 'executable.popef'))
         backend_files = popef_files
 
     if args.test_img is None:
