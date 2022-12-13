@@ -8,7 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.FPNC.forward', backend='tensorrt')
-def fpnc__forward__tensorrt(ctx, self, inputs, **kwargs):
+def fpnc__forward__tensorrt(self, inputs, **kwargs):
     """Rewrite `forward` of FPNC for tensorrt backend.
 
     Rewrite this function to replace nearest upsampling with bilinear

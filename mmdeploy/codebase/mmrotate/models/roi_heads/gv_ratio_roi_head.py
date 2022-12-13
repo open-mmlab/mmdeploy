@@ -11,8 +11,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.models.roi_heads.gv_ratio_roi_head'
     '.GVRatioRoIHead.predict_bbox')
-def gv_ratio_roi_head__predict_bbox(ctx,
-                                    self,
+def gv_ratio_roi_head__predict_bbox(self,
                                     x: Tuple[Tensor],
                                     batch_img_metas: List[dict],
                                     rpn_results_list: InstanceList,

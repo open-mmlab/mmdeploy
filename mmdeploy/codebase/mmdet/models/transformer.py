@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.utils.transformer.PatchMerging.forward',
     backend='tensorrt')
-def patch_merging__forward__tensorrt(ctx, self, x, input_size):
+def patch_merging__forward__tensorrt(self, x, input_size):
     """Rewrite forward function of PatchMerging class for TensorRT. In original
     implementation, mmdet applies nn.unfold to accelerate the inference.
     However, the onnx graph of it can not be parsed correctly by TensorRT. In

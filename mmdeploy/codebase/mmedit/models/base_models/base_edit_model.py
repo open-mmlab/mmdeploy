@@ -10,7 +10,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmedit.models.base_models.BaseEditModel.forward', backend='default')
 def base_edit_model__forward(
-        ctx,
         self,
         batch_inputs: Tensor,
         data_samples: Optional[List[BaseDataElement]] = None,

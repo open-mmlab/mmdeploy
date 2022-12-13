@@ -11,7 +11,7 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 # is not visible in mmcv.
 @SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.roi_align_rotated.__self__', backend='default')
-def roi_align_rotated_default(ctx, g, input: Tensor, rois: Tensor,
+def roi_align_rotated_default(g, input: Tensor, rois: Tensor,
                               output_size: List[int], spatial_scale: float,
                               sampling_ratio: int, aligned: bool,
                               clockwise: bool):

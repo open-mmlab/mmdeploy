@@ -13,7 +13,7 @@ from mmdeploy.utils import Backend
     func_name='torch.Tensor.flatten', backend=Backend.COREML.value)
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.flatten', backend=Backend.COREML.value)
-def flatten__coreml(ctx, input, start_dim=0, end_dim=-1) -> torch.Tensor:
+def flatten__coreml(input, start_dim=0, end_dim=-1) -> torch.Tensor:
     """Rewrite `flatten` for coreml backend.
 
     Use reshape instead of flatten

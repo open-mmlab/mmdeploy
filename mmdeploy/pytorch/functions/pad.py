@@ -11,7 +11,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.onnx.symbolic_opset11._prepare_onnx_paddings',
     backend='tensorrt')
-def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
+def _prepare_onnx_paddings__tensorrt(g, input, pad):
     """Rewrite `_prepare_onnx_paddings` for TensorRT backend.
 
     For codes like `x = torch.nn.ZeroPad2d((0, a, 0, b))(x)`, where a and b are
@@ -26,6 +26,7 @@ def _prepare_onnx_paddings__tensorrt(ctx, g, input, pad):
             ..., dim_m_begin, dim_m_end,
             where m is in range [0, n].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     torch_version = version_parse(torch.__version__)
     if torch_version.major == 1 and torch_version.minor < 10:
         return ctx.origin_func(g, input, pad)

@@ -7,11 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.middle_encoders.pillar_scatter.'
     'PointPillarsScatter.forward_batch', )
-def pointpillarsscatter__forward(ctx,
-                                 self,
-                                 voxel_features,
-                                 coors,
-                                 batch_size=1):
+def pointpillarsscatter__forward(self, voxel_features, coors, batch_size=1):
     """Scatter features of single sample.
 
     Args:

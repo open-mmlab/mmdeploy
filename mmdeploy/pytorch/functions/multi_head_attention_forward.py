@@ -46,7 +46,6 @@ class ScaledDotProductAttentionTRT(torch.autograd.Function):
     func_name='torch.nn.functional._scaled_dot_product_attention',
     backend=Backend.TENSORRT.value)
 def _scaled_dot_product_attention__tensorrt(
-    ctx,
     q: Tensor,
     k: Tensor,
     v: Tensor,
