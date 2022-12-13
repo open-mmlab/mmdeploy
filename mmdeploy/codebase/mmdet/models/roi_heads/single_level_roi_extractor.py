@@ -268,8 +268,8 @@ class SingleRoIExtractorOpenVINO(Function):
     @staticmethod
     def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
         """Symbolic function for creating onnx op."""
-        from torch.onnx.symbolic_helper import _slice_helper
-        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        from torch.onnx.symbolic_opset10 import _slice
+        rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
         domain = 'org.openvinotoolkit'
         op_name = 'ExperimentalDetectronROIFeatureExtractor'
         roi_feats = g.op(

@@ -1,11 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os.path as osp
-from tempfile import NamedTemporaryFile
-
-import numpy as np
-import pytest
 import torch
 from mmengine import Config
+from mmengine.structures import BaseDataElement
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.utils import Backend, load_config
@@ -34,49 +30,26 @@ class TestEnd2EndModel:
             {'onnx_config': {
                 'output_names': ['dets', 'labels']
             }})
-        model_cfg_path = 'tests/test_codebase/test_mmrotate/data/model.py'
-        model_cfg = load_config(model_cfg_path)[0]
 
         from mmdeploy.codebase.mmrotate.deploy.rotated_detection_model import \
             End2EndModel
         cls.end2end_model = End2EndModel(
-            Backend.ONNXRUNTIME, [''], ['' for i in range(15)],
-            device='cpu',
-            deploy_cfg=deploy_cfg,
-            model_cfg=model_cfg)
+            Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
 
     @classmethod
     def teardown_class(cls):
         cls.wrapper.recover()
 
-    @pytest.mark.parametrize(
-        'ori_shape',
-        [[IMAGE_SIZE, IMAGE_SIZE, 3], [2 * IMAGE_SIZE, 2 * IMAGE_SIZE, 3]])
-    def test_forward(self, ori_shape):
-        imgs = [torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)]
-        img_metas = [[{
-            'ori_shape': ori_shape,
-            'img_shape': [IMAGE_SIZE, IMAGE_SIZE, 3],
-            'scale_factor': [1., 1., 1., 1.],
-            'filename': ''
-        }]]
+    def test_forward(self):
+        imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
+        img_metas = [
+            BaseDataElement(metainfo={
+                'img_shape': [IMAGE_SIZE, IMAGE_SIZE],
+                'scale_factor': [1, 1]
+            })
+        ]
         results = self.end2end_model.forward(imgs, img_metas)
-        assert results is not None, 'failed to get output using '\
-            'End2EndModel'
-
-    def test_forward_test(self):
-        imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
-        results = self.end2end_model.forward_test(imgs)
-        assert isinstance(results[0], torch.Tensor)
-
-    def test_show_result(self):
-        input_img = np.zeros([IMAGE_SIZE, IMAGE_SIZE, 3])
-        img_path = NamedTemporaryFile(suffix='.jpg').name
-
-        result = torch.rand(1, 10, 6)
-        self.end2end_model.show_result(
-            input_img, result, '', show=False, out_file=img_path)
-        assert osp.exists(img_path)
+        assert results is not None, 'failed to get output using End2EndModel'
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -86,7 +59,7 @@ def test_build_rotated_detection_model():
     deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
-            onnx_config=dict(output_names=['dets', 'labels']),
+            ir_config=dict(type='onnx', output_names=['dets', 'labels']),
             codebase_config=dict(type='mmrotate')))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
@@ -97,6 +70,5 @@ def test_build_rotated_detection_model():
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
         from mmdeploy.codebase.mmrotate.deploy.rotated_detection_model import (
             End2EndModel, build_rotated_detection_model)
-        segmentor = build_rotated_detection_model([''], model_cfg, deploy_cfg,
-                                                  'cpu')
+        segmentor = build_rotated_detection_model([''], deploy_cfg, 'cpu')
         assert isinstance(segmentor, End2EndModel)
