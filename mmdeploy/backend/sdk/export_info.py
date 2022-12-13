@@ -99,7 +99,7 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         pplnn=lambda file: re.sub(r'\.[a-z]+', '.json', file),
         openvino=lambda file: re.sub(r'\.[a-z]+', '.bin', file),
         ncnn=lambda file: re.sub(r'\.[a-z]+', '.bin', file))
-    if backend != Backend.TVM:
+    if backend != Backend.TVM.value:
         net = backend_net.get(backend, lambda x: x)(ir_name)
         weights = backend_weights.get(backend, lambda x: weights)(ir_name)
     else:
