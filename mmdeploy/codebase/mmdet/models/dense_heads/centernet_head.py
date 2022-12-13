@@ -9,7 +9,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.centernet_head.CenterNetHead.predict_by_feat')
 def centernet_head__predict_by_feat__default(
-        ctx,
         self,
         center_heatmap_preds: List[Tensor],
         wh_preds: List[Tensor],

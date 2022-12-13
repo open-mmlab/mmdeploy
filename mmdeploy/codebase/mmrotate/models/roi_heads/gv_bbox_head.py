@@ -15,8 +15,7 @@ from mmdeploy.mmcv.ops import multiclass_nms
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.models.roi_heads.bbox_heads.GVBBoxHead.predict_by_feat')
-def gv_bbox_head__predict_by_feat(ctx,
-                                  self,
+def gv_bbox_head__predict_by_feat(self,
                                   rois: Tuple[Tensor],
                                   cls_scores: Tuple[Tensor],
                                   bbox_preds: Tuple[Tensor],
@@ -60,6 +59,7 @@ def gv_bbox_head__predict_by_feat(ctx,
     assert rois.ndim == 3, 'Only support export two stage ' \
                            'model to ONNX ' \
                            'with batch dimension. '
+    ctx = FUNCTION_REWRITER.get_context()
 
     img_shape = batch_img_metas[0]['img_shape']
     if self.custom_cls_channels:

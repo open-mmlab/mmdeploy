@@ -3,15 +3,14 @@ from typing import Optional
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 from mmdeploy.utils import get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.topk', backend='default')
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='default')
-def topk__dynamic(ctx,
-                  input: torch.Tensor,
+def topk__dynamic(input: torch.Tensor,
                   k: int,
                   dim: Optional[int] = None,
                   largest: bool = True,
@@ -20,6 +19,7 @@ def topk__dynamic(ctx,
 
     Cast k to tensor and makesure k is smaller than input.shape[dim].
     """
+    ctx = FUNCTION_REWRITER.get_context()
 
     if dim is None:
         dim = int(input.ndim - 1)
@@ -37,8 +37,7 @@ def topk__dynamic(ctx,
     func_name='torch.topk', backend='tensorrt')
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.topk', backend='tensorrt')
-def topk__tensorrt(ctx,
-                   input: torch.Tensor,
+def topk__tensorrt(input: torch.Tensor,
                    k: int,
                    dim: Optional[int] = None,
                    largest: bool = True,
@@ -48,6 +47,7 @@ def topk__tensorrt(ctx,
     TensorRT does not support topk with dynamic k. This function cast k to
     constant integer.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     # https://docs.nvidia.com/deeplearning/tensorrt/developer-guide/index.html#topKsetup
     from mmdeploy.utils.constants import TENSORRT_MAX_TOPK
 

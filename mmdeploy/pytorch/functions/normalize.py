@@ -7,8 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.normalize', backend='ncnn')
-def normalize__ncnn(ctx,
-                    input: torch.Tensor,
+def normalize__ncnn(input: torch.Tensor,
                     p: int = 2,
                     dim: int = 1,
                     eps: float = 1e-12,
@@ -18,6 +17,7 @@ def normalize__ncnn(ctx,
 
     Make sure L2 norm on channel dim and be exported to ncnn correctly.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     if dim < 0:
         dim += input.ndim
     assert dim != 0, 'Should not normalize on batch index'

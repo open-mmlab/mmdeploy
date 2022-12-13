@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward')
-def shufflenetv2_backbone__forward__default(ctx, self, x):
+def shufflenetv2_backbone__forward__default(self, x):
     """Rewrite `forward` of InvertedResidual used in shufflenet_v2.
 
     The chunk in original InvertedResidual.forward will convert to dynamic

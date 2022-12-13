@@ -9,7 +9,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.group_norm', backend='ncnn')
 def group_norm__ncnn(
-    ctx,
     input: torch.Tensor,
     num_groups: int,
     weight: Union[torch.Tensor, torch.NoneType] = None,

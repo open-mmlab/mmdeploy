@@ -3,16 +3,17 @@ from typing import Iterable
 
 import torch
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.__getitem__', backend='ascend')
-def tensor__getitem__ascend(ctx, self, key) -> torch.Tensor:
+def tensor__getitem__ascend(self, key) -> torch.Tensor:
     """Rewrite `getitem` for ascend backend.
 
     Ascend does not support negative select
     """
+    ctx = FUNCTION_REWRITER.get_context()
     if not isinstance(key, (tuple, list)):
         if isinstance(key, int) and key < 0:
             key = self.dim() + key

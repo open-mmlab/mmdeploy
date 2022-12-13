@@ -24,7 +24,6 @@ from mmdeploy.utils import Backend, is_dynamic_shape
     func_name='mmdet.models.dense_heads.base_dense_head.'
     'BaseDenseHead.predict_by_feat')
 def base_dense_head__predict_by_feat(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -66,10 +65,10 @@ def base_dense_head__predict_by_feat(
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
-
     featmap_sizes = [featmap.size()[-2:] for featmap in cls_scores]
     mlvl_priors = self.prior_generator.grid_priors(
         featmap_sizes, dtype=bbox_preds[0].dtype, device=bbox_preds[0].device)
@@ -103,7 +102,6 @@ def base_dense_head__predict_by_feat(
     mlvl_valid_bboxes = []
     mlvl_valid_scores = []
     mlvl_valid_priors = []
-
     for cls_score, bbox_pred, score_factors, priors in zip(
             mlvl_cls_scores, mlvl_bbox_preds, mlvl_score_factor, mlvl_priors):
         assert cls_score.size()[-2:] == bbox_pred.size()[-2:]
@@ -187,7 +185,6 @@ def base_dense_head__predict_by_feat(
 
     if not with_nms:
         return batch_bboxes, batch_scores
-
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
@@ -211,7 +208,6 @@ def base_dense_head__predict_by_feat(
     'BaseDenseHead.predict_by_feat',
     backend=Backend.RKNN.value)
 def base_dense_head__predict_by_feat__rknn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -253,6 +249,8 @@ def base_dense_head__predict_by_feat__rknn(
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
+
     # mark nodes for partition
     @mark('BaseDenseHead', outputs=['BaseDenseHead.cls', 'BaseDenseHead.loc'])
     def __mark_dense_head(cls_scores, bbox_preds):
@@ -337,7 +335,6 @@ def base_dense_head__predict_by_feat__rknn(
     'BaseDenseHead.predict_by_feat',
     backend=Backend.NCNN.value)
 def base_dense_head__predict_by_feat__ncnn(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -376,6 +373,7 @@ def base_dense_head__predict_by_feat__ncnn(
     Returns:
         output__ncnn (Tensor): outputs, shape is [N, num_det, 6].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
     assert not is_dynamic_shape(deploy_cfg), 'base_dense_head for ncnn\

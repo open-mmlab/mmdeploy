@@ -9,8 +9,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.Base3DDetector.forward'  # noqa: E501
 )
-def basedetector__forward(ctx,
-                          self,
+def basedetector__forward(self,
                           inputs: list,
                           data_samples=None,
                           **kwargs) -> Tuple[List[torch.Tensor]]:

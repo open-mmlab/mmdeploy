@@ -14,8 +14,7 @@ from mmdeploy.mmcv.ops import multiclass_nms
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.rtmdet_head.'
     'RTMDetHead.predict_by_feat')
-def rtmdet_head__predict_by_feat(ctx,
-                                 self,
+def rtmdet_head__predict_by_feat(self,
                                  cls_scores: List[Tensor],
                                  bbox_preds: List[Tensor],
                                  batch_img_metas: Optional[List[dict]] = None,
@@ -52,6 +51,7 @@ def rtmdet_head__predict_by_feat(ctx,
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     device = cls_scores[0].device
     cfg = self.test_cfg if cfg is None else cfg

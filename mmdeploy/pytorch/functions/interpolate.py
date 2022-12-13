@@ -4,14 +4,13 @@ from typing import Optional, Tuple, Union
 import torch
 from torch.autograd import Function
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, FunctionContextContextCaller
 from mmdeploy.utils import Backend, get_root_logger
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.interpolate', backend='ncnn')
-def interpolate__ncnn(ctx,
-                      input: torch.Tensor,
+def interpolate__ncnn(input: torch.Tensor,
                       size: Optional[Union[int, Tuple[int], Tuple[int, int],
                                            Tuple[int, int, int]]] = None,
                       scale_factor: Optional[Union[float,
@@ -24,6 +23,7 @@ def interpolate__ncnn(ctx,
     ncnn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
+    ctx = FUNCTION_REWRITER.get_context()
 
     input_size = input.shape
     if scale_factor is None:
@@ -42,8 +42,7 @@ def interpolate__ncnn(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional.interpolate', backend='rknn')
-def interpolate__rknn(ctx,
-                      input: torch.Tensor,
+def interpolate__rknn(input: torch.Tensor,
                       size: Optional[Union[int, Tuple[int], Tuple[int, int],
                                            Tuple[int, int, int]]] = None,
                       scale_factor: Optional[Union[float,
@@ -56,6 +55,7 @@ def interpolate__rknn(ctx,
     rknn require `size` should be constant in ONNX Node. We use `scale_factor`
     instead of `size` to avoid dynamic size.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     input_size = input.shape
     if scale_factor is None:
         scale_factor = [(s_out / s_in)
@@ -77,7 +77,6 @@ def interpolate__rknn(ctx,
     is_pytorch=True,
     backend=Backend.TENSORRT.value)
 def interpolate__tensorrt(
-    ctx,
     input: torch.Tensor,
     size: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int,
                                                                  int]]] = None,
@@ -87,6 +86,7 @@ def interpolate__tensorrt(
     recompute_scale_factor: Optional[bool] = None,
 ):
     """Register default symbolic function for `interpolate`."""
+    ctx = FUNCTION_REWRITER.get_context()
 
     class BicubicInterpolate(Function):
 

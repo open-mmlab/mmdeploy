@@ -17,8 +17,7 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.models.dense_heads.OrientedRPNHead.predict_by_feat')
-def rpn_head__predict_by_feat(ctx,
-                              self,
+def rpn_head__predict_by_feat(self,
                               cls_scores: List[Tensor],
                               bbox_preds: List[Tensor],
                               score_factors: Optional[List[Tensor]] = None,
@@ -62,6 +61,7 @@ def rpn_head__predict_by_feat(ctx,
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
     img_metas = batch_img_metas
     assert len(cls_scores) == len(bbox_preds)
     deploy_cfg = ctx.cfg
