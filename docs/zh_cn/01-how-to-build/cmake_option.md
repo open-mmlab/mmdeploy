@@ -104,7 +104,7 @@
 
 <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "coreml"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "coreml", "tvm"}</td>
     <td>N/A</td>
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
@@ -121,6 +121,7 @@
     6. <b>torchscript</b>: 表示 TorchScript。目前仅模型转换支持 torchscript 格式，SDK 尚未支持。<br>
     7. <b>snpe</b>: 表示 qcom snpe。需要环境变量设置 SNPE_ROOT。<br>
     8. <b>coreml</b>: 表示 Core ML。目前在进行模型转换时需要设置 <code>Torch_DIR</code>。 <br>
+    9. <b>tvm</b>: 表示 TVM。需要设置 <code>TVM_DIR</code>。<br>
    </td>
   </tr>
 

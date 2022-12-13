@@ -14,6 +14,7 @@ namespace mmdeploy {
 namespace framework {
 
 using TensorShape = std::vector<int64_t>;
+
 struct TensorDesc {
   Device device;
   DataType data_type{DataType::kFLOAT};

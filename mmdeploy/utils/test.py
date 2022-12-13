@@ -51,6 +51,8 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
         from mmdeploy.apis.rknn import is_available
     elif backend == Backend.ASCEND:
         from mmdeploy.apis.ascend import is_available
+    elif backend == Backend.TVM:
+        from mmdeploy.apis.tvm import is_available
     else:
         warnings.warn('The backend checker is not available')
         return
@@ -110,6 +112,10 @@ def check_backend(backend: Backend, require_plugin: bool = False):
         from mmdeploy.backend.rknn import device_available as is_available
     elif backend == Backend.ASCEND:
         from mmdeploy.backend.ascend import is_available
+    elif backend == Backend.TVM:
+        from mmdeploy.backend.tvm import is_available
+    elif backend == Backend.COREML:
+        from mmdeploy.backend.coreml import is_available
     else:
         warnings.warn('The backend checker is not available')
         return

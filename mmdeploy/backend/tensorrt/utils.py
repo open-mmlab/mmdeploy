@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import sys
-from typing import Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import onnx
 import tensorrt as trt
@@ -24,17 +24,20 @@ def save(engine: trt.ICudaEngine, path: str) -> None:
         f.write(bytearray(engine.serialize()))
 
 
-def load(path: str) -> trt.ICudaEngine:
+def load(path: str, allocator: Optional[Any] = None) -> trt.ICudaEngine:
     """Deserialize TensorRT engine from disk.
 
     Args:
         path (str): The disk path to read the engine.
+        allocator (Any): gpu allocator
 
     Returns:
         tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
     """
     load_tensorrt_plugin()
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
+        if allocator is not None:
+            runtime.gpu_allocator = allocator
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
         trt.init_libnvinfer_plugins(logger, namespace='')
@@ -149,6 +152,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
+
+    # TODO: use TorchAllocator as builder.gpu_allocator
+
     EXPLICIT_BATCH = 1 << (int)(
         trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
     network = builder.create_network(EXPLICIT_BATCH)
