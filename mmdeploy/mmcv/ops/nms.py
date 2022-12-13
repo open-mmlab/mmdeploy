@@ -479,7 +479,7 @@ def multiclass_nms_static(ctx,
     'multiclass_nms',
     inputs=['boxes', 'scores'],
     outputs=['dets', 'labels', 'index'])
-def multiclass_nms(*args, nms_type, **kwargs):
+def multiclass_nms(*args, nms_type='nms', **kwargs):
     """Apis for multiclass nms."""
     if nms_type == 'nms':
         return _multiclass_nms(*args, **kwargs)
