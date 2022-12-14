@@ -40,18 +40,19 @@ def test_symbolic_rewriter():
 
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
-    def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
-        assert hasattr(symbolic_wrapper, 'cfg')
+    def symbolic_testfunc_default(g, x, val):
+        ctx = SYMBOLIC_REWRITER.get_context('mmdeploy.TestFunc')
+        assert hasattr(ctx, 'cfg')
         return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'mmdeploy.TestFunc', backend='tensorrt')
-    def symbolic_testfunc_tensorrt(symbolic_wrapper, g, x, val):
+    def symbolic_testfunc_tensorrt(g, x, val):
         return g.op('mmdeploy::symbolic_testfunc_tensorrt', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
-    def symbolic_cummax(symbolic_wrapper, g, input, dim):
+    def symbolic_cummax(g, input, dim):
         return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
@@ -103,12 +104,12 @@ def test_unregister():
     test_func = mmdeploy.TestFunc.apply
 
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
-    def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
+    def symbolic_testfunc_default(g, x, val):
         return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     @SYMBOLIC_REWRITER.register_symbolic(
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
-    def symbolic_cummax(symbolic_wrapper, g, input, dim):
+    def symbolic_cummax(g, input, dim):
         return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
@@ -137,7 +138,7 @@ def test_unregister():
     assert nodes[0].op_type == 'cummax_default'
     assert nodes[0].domain == 'mmdeploy'
 
-    with pytest.raises(RuntimeError):
+    with pytest.raises((ValueError, RuntimeError)):
         torch.onnx.export(model, x, output_file, opset_version=11)
 
     model = TestModel2().eval()
@@ -159,7 +160,7 @@ def test_register_empty_symbolic():
     symbolic_rewriter = SymbolicRewriter()
 
     @symbolic_rewriter.register_symbolic('mmdeploy.EmptyFunction')
-    def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
+    def symbolic_testfunc_default(g, x, val):
         return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
 
     symbolic_rewriter.enter()

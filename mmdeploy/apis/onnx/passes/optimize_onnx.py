@@ -18,6 +18,6 @@ def optimize_onnx(ctx, graph, params_dict, torch_out):
         logger.warning(
             'Can not optimize model, please build torchscipt extension.\n'
             'More details: '
-            'https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/experimental/onnx_optimizer.md'  # noqa
+            'https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/experimental/onnx_optimizer.md'  # noqa
         )
     return graph, params_dict, torch_out

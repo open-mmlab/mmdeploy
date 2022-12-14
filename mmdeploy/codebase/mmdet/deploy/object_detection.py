@@ -122,16 +122,11 @@ class ObjectDetection(BaseTask):
         model_cfg (Config): The config of the model in mmdet.
         deploy_cfg (Config): The config of deployment.
         device (str): Device name.
-        experiment_name (str, optional): The experiment name used to create
-            runner. Defaults to 'ObjectDetection'.
     """
 
-    def __init__(self,
-                 model_cfg: Config,
-                 deploy_cfg: Config,
-                 device: str,
-                 experiment_name: str = 'ObjectDetection') -> None:
-        super().__init__(model_cfg, deploy_cfg, device, experiment_name)
+    def __init__(self, model_cfg: Config, deploy_cfg: Config,
+                 device: str) -> None:
+        super().__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
                             model_files: Optional[str] = None,
@@ -247,6 +242,16 @@ class ObjectDetection(BaseTask):
             'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
             'valid_ratio'
         ]
+        # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
+        for i, transform in enumerate(pipeline):
+            if transform['type'] == 'RandomCenterCropPad':
+                if transform['test_pad_mode'][0] == 'logical_or':
+                    extra_pad = dict(
+                        type='Pad',
+                        logical_or_val=transform['test_pad_mode'][1],
+                        add_pix_val=transform['test_pad_add_pix'],
+                    )
+                    pipeline[i] = extra_pad
         transforms = [
             item for item in pipeline if 'Random' not in item['type']
             and 'Annotation' not in item['type']
@@ -262,6 +267,7 @@ class ObjectDetection(BaseTask):
                 transforms[i]['size'] = transforms[i].pop('scale')
 
         data_preprocessor = model_cfg.model.data_preprocessor
+
         transforms.insert(-1, dict(type='DefaultFormatBundle'))
         transforms.insert(
             -2,

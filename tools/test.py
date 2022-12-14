@@ -144,8 +144,9 @@ def main():
                 log_interval=args.log_interval,
                 with_sync=with_sync,
                 file=args.log2file,
-                batch_size=test_dataloader['batch_size']):
+                batch_size=args.batch_size):
             runner.test()
+
     else:
         runner.test()
     # only effective when the backend requires explicit clean-up (e.g. Ascend)

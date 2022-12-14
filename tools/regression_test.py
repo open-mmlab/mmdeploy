@@ -38,7 +38,8 @@ def parse_args():
         help='test performance if it set')
     parser.add_argument(
         '--backends', nargs='+', help='test specific backend(s)')
-    parser.add_argument('--models', nargs='+', help='test specific model(s)')
+    parser.add_argument(
+        '--models', nargs='+', default=['all'], help='test specific model(s)')
     parser.add_argument(
         '--work-dir',
         type=str,
@@ -233,20 +234,16 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
         checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
     else:
-        if Path(checkpoint).exists():
-            # To invoice the path which is 'A.a B.b' when test sdk.
-            checkpoint = Path(checkpoint).absolute().resolve()
-        elif backend_name == 'ncnn':
-            # ncnn have 2 backend file but only need xxx.param
-            checkpoint = checkpoint.split('.param')[0] + '.param'
+        parent_dir, filename = os.path.split(checkpoint)
+        parent_dir = os.path.abspath(parent_dir)
         work_dir = report_txt_path.parent.absolute().resolve()
-        checkpoint = str(checkpoint).replace(str(work_dir), '${WORK_DIR}')
+        parent_dir = parent_dir.replace(str(work_dir), '${WORK_DIR}')
+        checkpoint = os.path.join(parent_dir, filename)
 
     # save to tmp file
     tmp_str = f'{model_name},{model_config},{task_name},{checkpoint},' \
               f'{dataset},{backend_name},{deploy_config},' \
-              f'{static_or_dynamic},{precision_type},{conversion_result},' \
-              f'{fps},'
+              f'{static_or_dynamic},{precision_type},{conversion_result},'
 
     # save to report
     report_dict.get('Model').append(model_name)
@@ -308,22 +305,25 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     pytorch_metric = dict()
     using_dataset = set()
     using_task = set()
+    datasets = []
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
         pytorch_metric.update(metafile_metric['Metrics'])
         dataset = metafile_metric['Dataset']
         task_name = metafile_metric['Task']
-        if task_name not in using_task:
-            using_task.add(task_name)
-        if dataset not in using_dataset:
-            using_dataset.add(dataset)
+        datasets.append(dataset)
+        using_task.add(task_name)
+        using_dataset.add(dataset)
 
     dataset_type = '|'.join(list(using_dataset))
     task_type = '|'.join(list(using_task))
     metric_list = []
-    for metric in test_yaml_metric_info:
+    for metric, metric_info in test_yaml_metric_info.items():
         value = '-'
         if metric in pytorch_metric:
+            if 'dataset' in metric_info:
+                idx = datasets.index(metric_info['dataset'])
+                pytorch_metric.update(metafile_metric_info[idx]['Metrics'])
             value = pytorch_metric[metric]
         metric_list.append({metric: value})
     valid_pytorch_metric = {
@@ -484,6 +484,14 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     ]
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
+    # to stop Dataloader OOM in docker CI
+    if codebase_name not in ['mmedit', 'mmocr', 'mmcls']:
+        cfg_options = 'test_dataloader.num_workers=0 ' \
+                      'test_dataloader.persistent_workers=False ' \
+                      'val_dataloader.num_workers=0 ' \
+                      'val_dataloader.persistent_workers=False '
+        cmd_lines.append(f'--cfg-options {cfg_options}')
+
     # Test backend
     return_code = run_cmd(cmd_lines, log_path)
     fps, backend_metric, test_pass = get_fps_metric(return_code,
@@ -736,12 +744,14 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
     logger.info(f'Got convert_result = {convert_result}')
 
     if isinstance(backend_file_name, list):
+        report_checkpoint = backend_output_path.joinpath(backend_file_name[0])
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
             backend_path = backend_output_path.joinpath(backend_file)
             backend_path = str(backend_path.absolute().resolve())
             convert_checkpoint_path += f'{str(backend_path)} '
     else:
+        report_checkpoint = backend_output_path.joinpath(backend_file_name)
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
     # Test the model
@@ -802,10 +812,6 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         metric_list = [{metric: '-'} for metric in metric_info]
         fps = '-'
         test_pass = convert_result
-        if convert_result:
-            report_checkpoint = convert_checkpoint_path
-        else:
-            report_checkpoint = 'x'
         dataset_type = metafile_dataset['dataset']
         task_name = metafile_dataset['task']
         # update the report
@@ -814,7 +820,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             model_name=model_name,
             model_config=str(model_cfg_path),
             task_name=task_name,
-            checkpoint=report_checkpoint,
+            checkpoint=str(report_checkpoint),
             dataset=dataset_type,
             backend_name=backend_name,
             deploy_config=str(deploy_cfg_path),
@@ -888,11 +894,8 @@ def main():
     assert isinstance(backend_list, list)
     logger.info(f'Regression test backend list = {backend_list}')
 
-    if args.models is None:
-        logger.info('Regression test for all models in test yaml.')
-    else:
-        args.models = tuple([_filter_string(s) for s in args.models])
-        logger.info(f'Regression test models list = {args.models}')
+    args.models = [_filter_string(s) for s in args.models]
+    logger.info(f'Regression test models list = {args.models}')
 
     assert ' ' not in args.work_dir, \
         f'No empty space included in {args.work_dir}'
@@ -958,7 +961,7 @@ def main():
                                f'skipping {model_name_origin}...')
                 continue
 
-            if args.models is not None and model_name_new not in args.models:
+            if args.models != ['all'] and model_name_new not in args.models:
                 logger.info(
                     f'Test specific model mode, skip {model_name_origin}...')
                 continue

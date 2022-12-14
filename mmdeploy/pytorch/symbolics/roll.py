@@ -28,6 +28,6 @@ def roll(g, self, shifts, dims):
 
 
 @SYMBOLIC_REWRITER.register_symbolic('roll', is_pytorch=True)
-def roll_default(ctx, g, self, shifts, dims):
+def roll_default(g, self, shifts, dims):
     """Support export roll to ONNX with PyTorch version 1.10-."""
     return roll(g, self, shifts, dims)

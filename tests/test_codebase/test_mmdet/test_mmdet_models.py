@@ -25,106 +25,6 @@ except ImportError:
     pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 
-@backend_checker(Backend.TENSORRT)
-def test_multiclass_nms_static():
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
-    deploy_cfg = Config(
-        dict(
-            onnx_config=dict(output_names=None, input_shape=None),
-            backend_config=dict(
-                type='tensorrt',
-                common_config=dict(
-                    fp16_mode=False, max_workspace_size=1 << 20),
-                model_inputs=[
-                    dict(
-                        input_shapes=dict(
-                            boxes=dict(
-                                min_shape=[1, 5, 4],
-                                opt_shape=[1, 5, 4],
-                                max_shape=[1, 5, 4]),
-                            scores=dict(
-                                min_shape=[1, 5, 8],
-                                opt_shape=[1, 5, 8],
-                                max_shape=[1, 5, 8])))
-                ]),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=20,
-                    pre_top_k=-1,
-                    keep_top_k=10,
-                    background_label_id=-1,
-                ))))
-
-    boxes = torch.rand(1, 5, 4).cuda()
-    scores = torch.rand(1, 5, 8).cuda()
-    max_output_boxes_per_class = 20
-    keep_top_k = 5
-    wrapped_func = WrapFunction(
-        multiclass_nms,
-        max_output_boxes_per_class=max_output_boxes_per_class,
-        keep_top_k=keep_top_k)
-    rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_func,
-        model_inputs={
-            'boxes': boxes,
-            'scores': scores
-        },
-        deploy_cfg=deploy_cfg)
-
-    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
-        'outputs: {}'.format(rewrite_outputs)
-
-
-@backend_checker(Backend.ASCEND)
-def test_multiclass_nms__ascend():
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
-    deploy_cfg = Config(
-        dict(
-            onnx_config=dict(
-                input_names=['boxes', 'scores'],
-                output_names=['dets', 'labels'],
-                input_shape=None),
-            backend_config=dict(
-                type='ascend',
-                model_inputs=[
-                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
-                ]),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection',
-                post_processing=dict(
-                    score_threshold=0.05,
-                    iou_threshold=0.5,
-                    max_output_boxes_per_class=20,
-                    pre_top_k=-1,
-                    keep_top_k=10,
-                    background_label_id=-1,
-                ))))
-
-    boxes = torch.rand(1, 5, 4)
-    scores = torch.rand(1, 5, 8)
-    max_output_boxes_per_class = 20
-    keep_top_k = 10
-    wrapped_func = WrapFunction(
-        multiclass_nms,
-        max_output_boxes_per_class=max_output_boxes_per_class,
-        keep_top_k=keep_top_k)
-    rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_func,
-        model_inputs={
-            'boxes': boxes,
-            'scores': scores
-        },
-        deploy_cfg=deploy_cfg)
-
-    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
-        'outputs: {}'.format(rewrite_outputs)
-
-
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('add_ctr_clamp', [True, False])
 @pytest.mark.parametrize('clip_border,max_shape',
@@ -246,7 +146,7 @@ def test__distancepointbboxcoder__decode(backend_type: Backend):
 def test_multiclass_nms_with_keep_top_k(pre_top_k):
     backend_type = 'onnxruntime'
 
-    from mmdeploy.codebase.mmdet.models.layers.bbox_nms import multiclass_nms
+    from mmdeploy.mmcv.ops import multiclass_nms
     max_output_boxes_per_class = 20
     keep_top_k = 15
     deploy_cfg = Config(
@@ -288,6 +188,7 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
 
     wrapped_func = WrapFunction(
         multiclass_nms,
+        nms_type='nms',
         max_output_boxes_per_class=max_output_boxes_per_class,
         keep_top_k=keep_top_k)
 
@@ -906,13 +807,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
-    from mmengine.structures import InstanceData
-    data_sample = DetDataSample()
-    img_meta = dict(img_shape=(800, 1216, 3))
-    gt_instances = InstanceData(metainfo=img_meta)
-    gt_instances.bboxes = torch.rand((5, 4))
-    gt_instances.labels = torch.rand((5, ))
-    data_sample.gt_instances = gt_instances
+    data_sample = DetDataSample(metainfo=dict(img_shape=(800, 1216, 3)))
     rewrite_inputs = {'batch_inputs': img}
     wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
@@ -1480,6 +1375,111 @@ def test_yolov3_head_predict_by_feat_ncnn():
         assert rewrite_outputs[0].shape[-1] == 6
     else:
         assert rewrite_outputs.shape[-1] == 6
+
+
+def get_centernet_head_model():
+    """CenterNet Head Config."""
+    test_cfg = Config(dict(topk=100, local_maximum_kernel=3, max_per_img=100))
+
+    from mmdet.models.dense_heads import CenterNetHead
+    model = CenterNetHead(8, 8, 4, test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_centernet_head_predict_by_feat(backend_type: Backend):
+    """Test predict_by_feat rewrite of CenterNetHead."""
+    check_backend(backend_type)
+    centernet_head = get_centernet_head_model()
+    centernet_head.cpu().eval()
+    s = 128
+    batch_img_metas = [{
+        'border':
+        np.array([11., 99., 11., 99.], dtype=np.float32),
+        'img_shape': (s, s),
+        'batch_input_shape': (s, s)
+    }]
+
+    output_names = ['dets', 'labels']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+    seed_everything(1234)
+    center_heatmap_preds = [
+        torch.rand(1, centernet_head.num_classes, s // 4, s // 4)
+    ]
+    seed_everything(5678)
+    wh_preds = [torch.rand(1, 2, s // 4, s // 4)]
+    seed_everything(9101)
+    offset_preds = [torch.rand(1, 2, s // 4, s // 4)]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'center_heatmap_preds': center_heatmap_preds,
+        'wh_preds': wh_preds,
+        'offset_preds': offset_preds,
+        'batch_img_metas': batch_img_metas,
+        'with_nms': False
+    }
+    model_outputs = get_model_outputs(centernet_head, 'predict_by_feat',
+                                      model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        centernet_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
+    rewrite_inputs = {
+        'center_heatmap_preds': center_heatmap_preds,
+        'wh_preds': wh_preds,
+        'offset_preds': offset_preds,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            border = batch_img_metas[i]['border']
+
+            rewrite_outputs[0][i, :, 0] -= border[2]
+            rewrite_outputs[0][i, :, 1] -= border[0]
+            rewrite_outputs[0][i, :, 2] -= border[2]
+            rewrite_outputs[0][i, :, 3] -= border[0]
+            assert np.allclose(
+                model_outputs[i].bboxes[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 4],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
 
 
 def get_yolox_head_model():

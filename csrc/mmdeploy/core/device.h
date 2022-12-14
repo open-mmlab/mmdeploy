@@ -133,9 +133,7 @@ class MMDEPLOY_API Platform {
   std::shared_ptr<PlatformImpl> impl_;
 };
 
-Platform GetPlatform(int platform_id);
-
-Platform GetPlatform(const char* platform_name);
+MMDEPLOY_API const char* GetPlatformName(PlatformId id);
 
 class MMDEPLOY_API Stream {
  public:

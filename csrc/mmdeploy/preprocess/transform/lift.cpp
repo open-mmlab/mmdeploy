@@ -1,42 +1,35 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/preprocess/transform/lift.h"
-
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
-Lift::Lift(const Value& args, int version) : Transform(args) {
-  std::string type = "Compose";
-  auto creator = Registry<Transform>::Get().GetCreator(type, version);
-  if (!creator) {
-    MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                   Registry<Transform>::Get().List());
-    throw_exception(eEntryNotFound);
-  }
-  compose_ = creator->Create(args);
-}
+namespace mmdeploy::transform {
 
-Result<Value> Lift::Process(const Value& input) {
-  Value output;
-  for (int i = 0; i < input.size(); i++) {
-    Value single = input[i];
-    OUTCOME_TRY(auto t, compose_->Process(single));
-    output.push_back(std::move(t));
-  }
-  return std::move(output);
-}
-
-class LiftCreator : public Creator<Transform> {
+class Lift : public Transform {
  public:
-  const char* GetName() const override { return "Lift"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override { return std::make_unique<Lift>(args, version_); }
+  explicit Lift(const Value& args) {
+    const char* type = "Compose";
+    if (auto creator = gRegistry<Transform>().Get(type)) {
+      compose_ = creator->Create(args);
+    } else {
+      MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
+                     gRegistry<Transform>().List());
+      throw_exception(eEntryNotFound);
+    }
+  }
+
+  Result<void> Apply(Value& data) override {
+    for (auto& item : data.array()) {
+      OUTCOME_TRY(compose_->Apply(item));
+    }
+    return success();
+  }
 
  private:
-  int version_{1};
+  std::unique_ptr<Transform> compose_;
 };
 
-REGISTER_MODULE(Transform, LiftCreator);
-}  // namespace mmdeploy
+MMDEPLOY_REGISTER_TRANSFORM(Lift);
+
+}  // namespace mmdeploy::transform

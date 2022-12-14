@@ -7,7 +7,7 @@ from mmdeploy.utils import Backend, get_root_logger
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.necks.ssd_neck.L2Norm.forward')
-def l2norm__forward__default(ctx, self, x):
+def l2norm__forward__default(self, x):
     """Default rewriter for l2norm.
 
     Implement with functinoal.normalize .
@@ -19,11 +19,12 @@ def l2norm__forward__default(ctx, self, x):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.necks.ssd_neck.L2Norm.forward',
     backend=Backend.TENSORRT.value)
-def l2norm__forward__tensorrt(ctx, self, x):
+def l2norm__forward__tensorrt(self, x):
     """rewrite `l2norm` for TensorRT.
 
     TensorRT7 does not support dynamic clamp, which is used in normalize.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     logger = get_root_logger()
     trt_version_major = 8
     try:
@@ -34,6 +35,6 @@ def l2norm__forward__tensorrt(ctx, self, x):
     except Exception:
         logger.warning('Can not get TensorRT version.')
     if trt_version_major >= 8:
-        return l2norm__forward__default(ctx, self, x)
+        return l2norm__forward__default(self, x)
     else:
         return ctx.origin_func(self, x)

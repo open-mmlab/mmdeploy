@@ -50,6 +50,9 @@ def check_backend():
     import mmdeploy.apis.coreml as coreml_apis
     logger.info(f'coreml_is_available: {coreml_apis.is_available()}')
 
+    import mmdeploy.apis.rknn as rknn_apis
+    logger.info(f'rknn_is_avaliable: {rknn_apis.is_available()}')
+
 
 def check_codebase():
     codebase_versions = get_codebase_version()

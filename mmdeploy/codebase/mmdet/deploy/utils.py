@@ -76,7 +76,7 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
     func_name='mmdeploy.codebase.mmdet.deploy.utils.clip_bboxes',
     backend='tensorrt',
     extra_checkers=LibVersionChecker('tensorrt', min_version='8'))
-def clip_bboxes__trt8(ctx, x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
+def clip_bboxes__trt8(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
                       max_shape: Union[Tensor, Sequence[int]]):
     """Clip bboxes for onnx. From TensorRT 8 we can do the operators on the
     tensors directly.
@@ -165,7 +165,6 @@ def __pad_with_value_if_necessary(x: Tensor,
     'mmdeploy.codebase.mmdet.deploy.utils.__pad_with_value_if_necessary',
     backend=Backend.TENSORRT.value)
 def __pad_with_value_if_necessary__tensorrt(
-        ctx,
         x: Tensor,
         pad_dim: int,
         pad_size: int,
@@ -223,12 +222,12 @@ class TRTGatherTopk(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
     backend=Backend.TENSORRT.value)
-def __gather_topk__trt(ctx,
-                       *inputs: Sequence[torch.Tensor],
+def __gather_topk__trt(*inputs: Sequence[torch.Tensor],
                        inds: torch.Tensor,
                        batch_size: int,
                        is_batched: bool = True) -> Tuple[torch.Tensor]:
     """TensorRT gather_topk."""
+    ctx = FUNCTION_REWRITER.get_context()
     _ = ctx
     if is_batched:
         index_shape = inds.shape
@@ -253,8 +252,7 @@ def __gather_topk__trt(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
     backend=Backend.COREML.value)
-def __gather_topk__nonbatch(ctx,
-                            *inputs: Sequence[torch.Tensor],
+def __gather_topk__nonbatch(*inputs: Sequence[torch.Tensor],
                             inds: torch.Tensor,
                             batch_size: int,
                             is_batched: bool = True) -> Tuple[torch.Tensor]:

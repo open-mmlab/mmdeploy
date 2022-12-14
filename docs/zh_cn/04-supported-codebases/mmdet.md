@@ -49,7 +49,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ## 模型转换
 
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/tools/deploy.py) 把 mmdet 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
 以下，我们将演示如何把 `Faster R-CNN` 转换为 onnx 模型。
 
@@ -209,6 +209,7 @@ cv2.imwrite('output_detection.png', img)
 |             [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)             |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
 |       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)       |   ObjectDetection    |      N      |    Y     |  N   |   ?   |    Y     |
 |            [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)            |   ObjectDetection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection   |      Y      |    Y     |  N   |   ?   |    ?     |
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | InstanceSegmentation |      Y      |    N     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | InstanceSegmentation |      Y      |    Y     |  N   |   N   |    N     |

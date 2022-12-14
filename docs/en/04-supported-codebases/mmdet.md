@@ -48,7 +48,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](../02-how-to-run/convert_model.md).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) to convert mmdet models to the specified backend models. Its detailed usage can be learned from [here](../02-how-to-run/convert_model.md).
 
 The command below shows an example about converting `Faster R-CNN` model to onnx model that can be inferred by ONNX Runtime.
 
@@ -206,6 +206,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 |             [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)             |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
 |       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)       |   Object Detection    |      N      |    Y     |  N   |   ?   |    Y     |
 |            [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)            |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection    |      Y      |    Y     |  N   |   ?   |    ?     |
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | Instance Segmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |

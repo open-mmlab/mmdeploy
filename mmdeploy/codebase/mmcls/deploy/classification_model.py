@@ -25,9 +25,10 @@ class End2EndModel(BaseBackendModel):
         backend_files (Sequence[str]): Paths to all required backend files(e.g.
             '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
         device (str): A string represents device type.
-        class_names (Sequence[str]): A list of string specifying class names.
         deploy_cfg (str | Config): Deployment config file or loaded Config
             object.
+        data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
     """
 
     def __init__(self,
@@ -66,13 +67,13 @@ class End2EndModel(BaseBackendModel):
         """Run forward inference.
 
         Args:
-            img (List[torch.Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
 
         Returns:
-            list: A list contains predictions.
+            Any: Model output.
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
@@ -107,8 +108,10 @@ class SDKEnd2EndModel(End2EndModel):
         """Run forward inference.
 
         Args:
-            img (List[torch.Tensor]): A list contains input image(s)
-                in [C x H x W] format.
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
             *args: Other arguments.
             **kwargs: Other key-pair arguments.
 
@@ -144,10 +147,11 @@ class RKNNEnd2EndModel(End2EndModel):
             inputs (Tensor): Inputs with shape (N, C, H, W).
             data_samples (List[:obj:`DetDataSample`]): The Data
                 Samples. It usually includes information such as
-                `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
+                `gt_label`, `pred_label`, `scores` and `logits`.
+            mode (str, optional): forward mode, only support `predict`.
 
         Returns:
-            list: A list contains predictions.
+            Any: Model output.
         """
         assert mode == 'predict', \
             'Backend model only support mode==predict,' f' but get {mode}'
@@ -181,8 +185,9 @@ def build_classification_model(
         deploy_cfg (str | Config): Input deployment config file or
             Config object.
         device (str):  Device to input model.
-        data_preprocessor (BaseDataPreprocessor | Config): The data
-            preprocessor of the model.
+        data_preprocessor (BaseDataPreprocessor): The data preprocessor
+                of the model. Default to `None`.
+        **kwargs: Other key-pair arguments.
 
     Returns:
         BaseBackendModel: Classifier for a configured backend.

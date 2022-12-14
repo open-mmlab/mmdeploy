@@ -57,8 +57,7 @@ class MultiHeadAttentionop(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcv.cnn.bricks.transformer.MultiheadAttention.forward',
     backend=Backend.NCNN.value)
-def multiheadattention__forward__ncnn(ctx,
-                                      self,
+def multiheadattention__forward__ncnn(self,
                                       query,
                                       key=None,
                                       value=None,

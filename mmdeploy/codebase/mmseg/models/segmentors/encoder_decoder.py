@@ -5,7 +5,7 @@ from mmdeploy.utils.constants import Backend
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.EncoderDecoder.predict')
-def encoder_decoder__predict(ctx, self, inputs, data_samples, **kwargs):
+def encoder_decoder__predict(self, inputs, data_samples, **kwargs):
     """Rewrite `predict` for default backend.
 
     1. only support mode=`whole` inference
@@ -32,7 +32,7 @@ def encoder_decoder__predict(ctx, self, inputs, data_samples, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.EncoderDecoder.predict',
     backend=Backend.RKNN.value)
-def encoder_decoder__predict__rknn(ctx, self, inputs, data_samples, **kwargs):
+def encoder_decoder__predict__rknn(self, inputs, data_samples, **kwargs):
     """Rewrite `predict` for RKNN backend.
 
     Early return to avoid argmax operator.

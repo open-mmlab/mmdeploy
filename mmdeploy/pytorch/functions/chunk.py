@@ -7,7 +7,7 @@ from mmdeploy.utils import IR
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.chunk', backend='ncnn')
-def chunk__ncnn(ctx, self, num_chunks: int, dim: int = 0) -> torch.Tensor:
+def chunk__ncnn(self, num_chunks: int, dim: int = 0) -> torch.Tensor:
     """Rewrite `chunk` for NCNN backend.
 
     Chunk in ncnn are not supported, so it should be rewritten.
@@ -36,10 +36,7 @@ def chunk__ncnn(ctx, self, num_chunks: int, dim: int = 0) -> torch.Tensor:
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.Tensor.chunk', ir=IR.TORCHSCRIPT)
-def chunk__torchscript(ctx,
-                       self,
-                       num_chunks: int,
-                       dim: int = 0) -> torch.Tensor:
+def chunk__torchscript(self, num_chunks: int, dim: int = 0) -> torch.Tensor:
     """Rewrite `chunk` for Torchscript.
 
     Replace chunk op with split op

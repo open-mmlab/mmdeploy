@@ -13,11 +13,12 @@ from mmdeploy.utils import Backend
     func_name='torch.Tensor.clamp', backend=Backend.COREML.value)
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.clamp', backend=Backend.COREML.value)
-def clip__coreml(ctx, input, min=None, max=None, **kwargs) -> torch.Tensor:
+def clip__coreml(input, min=None, max=None, **kwargs) -> torch.Tensor:
     """Rewrite `clip` for coreml backend.
 
     Cast data type.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     if min is not None and not isinstance(min, torch.Tensor):
         min = input.new_tensor(min)
 

@@ -129,6 +129,10 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
 
   float w_offset = 0.f;
   float h_offset = 0.f;
+  if (prep_res.contains("border")) {
+    w_offset = -prep_res["border"][1].get<int>();
+    h_offset = -prep_res["border"][0].get<int>();
+  }
   int ori_width = prep_res["ori_shape"][2].get<int>();
   int ori_height = prep_res["ori_shape"][1].get<int>();
 
@@ -176,6 +180,6 @@ std::array<float, 4> ResizeBBox::MapToOriginImage(float left, float top, float r
   return {left, top, right, bottom};
 }
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
 
 }  // namespace mmdeploy::mmdet

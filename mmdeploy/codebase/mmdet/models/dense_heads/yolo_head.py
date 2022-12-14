@@ -3,21 +3,19 @@ from typing import Sequence
 
 import numpy as np
 import torch
-from mmdet.utils.typing import OptConfigType
+from mmdet.utils import OptConfigType
 from torch import Tensor
 
-from mmdeploy.codebase.mmdet.deploy import (get_post_processing_params,
-                                            pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
+from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.yolo_head.'
     'YOLOV3Head.predict_by_feat')
-def yolov3_head__predict_by_feat(ctx,
-                                 self,
+def yolov3_head__predict_by_feat(self,
                                  pred_maps: Sequence[Tensor],
                                  cfg: OptConfigType = None,
                                  rescale: bool = False,
@@ -48,6 +46,7 @@ def yolov3_head__predict_by_feat(ctx,
         Else:
             tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
 
     # mark pred_maps
@@ -113,30 +112,8 @@ def yolov3_head__predict_by_feat(ctx,
     batch_mlvl_conf_scores = torch.cat(multi_lvl_conf_scores, dim=1)
 
     post_params = get_post_processing_params(deploy_cfg)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    confidence_threshold = cfg.get('conf_thr',
-                                   post_params.confidence_threshold)
-
-    # follow original pipeline of YOLOv3
-    if confidence_threshold > 0:
-        mask = batch_mlvl_conf_scores >= confidence_threshold
-        batch_mlvl_conf_scores = batch_mlvl_conf_scores.where(
-            mask, batch_mlvl_conf_scores.new_zeros(1))
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask.unsqueeze(-1), batch_mlvl_scores.new_zeros(1))
-
-    if score_threshold > 0:
-        mask = batch_mlvl_scores > score_threshold
-        batch_mlvl_scores = batch_mlvl_scores.where(
-            mask, batch_mlvl_scores.new_zeros(1))
 
     if pre_topk > 0:
-        batch_mlvl_bboxes = pad_with_value_if_necessary(
-            batch_mlvl_bboxes, 1, pre_topk)
-        batch_mlvl_conf_scores = pad_with_value_if_necessary(
-            batch_mlvl_conf_scores, 1, pre_topk, 0.)
-        batch_mlvl_scores = pad_with_value_if_necessary(
-            batch_mlvl_scores, 1, pre_topk, 0.)
         _, topk_inds = conf_pred.topk(pre_topk)
         batch_inds = torch.arange(
             batch_size, device=device).unsqueeze(-1).long()
@@ -160,10 +137,12 @@ def yolov3_head__predict_by_feat(ctx,
         # keep aligned with original pipeline, improve
         # mAP by 1% for YOLOv3 in ONNX
         score_threshold = 0
+        nms_type = cfg.nms.get('type')
         return multiclass_nms(
             batch_mlvl_bboxes,
             batch_mlvl_scores,
             max_output_boxes_per_class,
+            nms_type=nms_type,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,
@@ -175,8 +154,7 @@ def yolov3_head__predict_by_feat(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.YOLOV3Head.predict_by_feat',
     backend=Backend.NCNN.value)
-def yolov3_head__predict_by_feat__ncnn(ctx,
-                                       self,
+def yolov3_head__predict_by_feat__ncnn(self,
                                        pred_maps,
                                        with_nms=True,
                                        cfg=None,
@@ -209,6 +187,7 @@ def yolov3_head__predict_by_feat__ncnn(ctx,
             fore-ground class label in Yolov3DetectionOutput starts
             from `1`. x1, y1, x2, y2 are normalized in range(0,1).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     num_levels = len(pred_maps)
     cfg = self.test_cfg if cfg is None else cfg
     post_params = get_post_processing_params(ctx.cfg)

@@ -2,6 +2,7 @@
 from typing import List, Tuple
 
 import torch
+from mmdet.structures.bbox import get_box_tensor
 from mmdet.utils import ConfigType
 from torch import Tensor
 
@@ -10,8 +11,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.cascade_roi_head.CascadeRoIHead.predict_bbox')
-def cascade_roi_head__predict_bbox(ctx,
-                                   self,
+def cascade_roi_head__predict_bbox(self,
                                    x: Tuple[Tensor],
                                    batch_img_metas: List[dict],
                                    rpn_results_list: List[Tensor],
@@ -39,15 +39,16 @@ def cascade_roi_head__predict_bbox(ctx,
                 (num_instances, ).
     """
     rois = rpn_results_list[0]
+    rois_dims = rois.shape[-1]
     batch_index = torch.arange(
         rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
             rois.size(0), rois.size(1), 1)
-    rois = torch.cat([batch_index, rois[..., :4]], dim=-1)
+    rois = torch.cat([batch_index, rois[..., :rois_dims - 1]], dim=-1)
     batch_size = rois.shape[0]
     num_proposals_per_img = rois.shape[1]
 
     # Eliminate the batch dimension
-    rois = rois.view(-1, 5)
+    rois = rois.view(-1, rois_dims)
     ms_scores = []
     max_shape = batch_img_metas[0]['img_shape']
     for i in range(self.num_stages):
@@ -59,17 +60,18 @@ def cascade_roi_head__predict_bbox(ctx,
         rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
         cls_score = cls_score.reshape(batch_size, num_proposals_per_img,
                                       cls_score.size(-1))
-        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
+        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, -1)
         ms_scores.append(cls_score)
         if i < self.num_stages - 1:
             assert self.bbox_head[i].reg_class_agnostic
             new_rois = self.bbox_head[i].bbox_coder.decode(
                 rois[..., 1:], bbox_pred, max_shape=max_shape)
+            new_rois = get_box_tensor(new_rois)
             rois = new_rois.reshape(-1, new_rois.shape[-1])
             # Add dummy batch index
             rois = torch.cat([rois.new_zeros(rois.shape[0], 1), rois], dim=-1)
     cls_scores = sum(ms_scores) / float(len(ms_scores))
-    bbox_preds = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
+    bbox_preds = bbox_pred.reshape(batch_size, num_proposals_per_img, -1)
     rois = rois.reshape(batch_size, num_proposals_per_img, -1)
     result_list = self.bbox_head[-1].predict_by_feat(
         rois=rois,
@@ -83,8 +85,7 @@ def cascade_roi_head__predict_bbox(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.cascade_roi_head.CascadeRoIHead.predict_mask')
-def cascade_roi_head__predict_mask(ctx,
-                                   self,
+def cascade_roi_head__predict_mask(self,
                                    x: Tuple[Tensor],
                                    batch_img_metas: List[dict],
                                    results_list: List[Tensor],
