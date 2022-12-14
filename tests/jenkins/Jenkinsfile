@@ -111,7 +111,7 @@ pipeline {
                 sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
                 // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
                 sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
             }
         }
         stage('Regression') {
@@ -133,6 +133,15 @@ pipeline {
                     }
                     steps {
                         sh "tests/jenkins/scripts/test_convert.sh 'tmp.config'"
+                    }
+
+                    post {
+                        always {
+                            dir("mmcv") {
+                                archiveArtifacts artifacts: 'dist/*.whl', onlyIfSuccessful: false, allowEmptyArchive: true
+                            }
+                            cleanWs()
+                        }
                     }
                 }
 
