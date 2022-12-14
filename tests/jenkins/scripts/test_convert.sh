@@ -29,7 +29,7 @@ mkdir -p -m 777 ${log_dir}
 chmod 777 ${log_dir}/../
 
 ## get log_url
-host_ip=$(ip addr | awk '/^[0-9]+: / {}; /inet.*global/ {print gensub(/(.*)\/(.*)/, "\\1", "g", $2)}' | grep 10.)
+host_ip=$(ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"|grep 10)
 log_url=$(host_ip):8989/${log_dir}
 
 # let container know the host log path and url prefix
