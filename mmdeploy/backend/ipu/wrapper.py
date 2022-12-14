@@ -14,6 +14,7 @@ from datetime import timedelta
 import numpy as np
 import model_runtime
 import popef
+import time
 
 
 @BACKEND_WRAPPER.register_module(Backend.IPU.value)
@@ -74,6 +75,7 @@ class IPUWrapper(BaseWrapper):
         #     self.input_view[input_desc.name] = input_tensor
 
     def forward(self, inputs):
+        start = time.time()
         input_view = model_runtime.InputMemoryView()
         # print('input desc ', self.input_descriptions)
         for input_desc in self.input_descriptions:
@@ -95,6 +97,7 @@ class IPUWrapper(BaseWrapper):
         #     self.input_view[key].data = inputs[key]
         result = self.runner.executeAsync(input_view)
         result.wait()
+        print('forward time ', time.time()-start)
         output_descriptions = self.runner.getExecuteOutputs()
         # print('output desc ', output_descriptions)
 

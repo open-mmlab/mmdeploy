@@ -144,7 +144,6 @@ class TimeCounter:
             name (str): The name registered with `count_time`.
         """
         from prettytable import PrettyTable
-
         assert name in cls.names
         stats = cls.names[name]
         execute_time = stats['execute_time']
