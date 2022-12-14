@@ -37,7 +37,7 @@ container_id=$(
 echo "container_id=${container_id} --name ${container_name}"
 
 nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-/root/workspace/mmdeploy_script/docker_exec_build.sh" >${log_dir}/build.log 2>&1 &
+/root/workspace/mmdeploy_script/docker_exec_build.sh" >${log_dir}/build.txt 2>&1 &
 
 wait
 docker stop $container_id

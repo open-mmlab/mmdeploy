@@ -27,7 +27,11 @@ prebuild_log=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
 mkdir -p -m 777 ${prebuild_log} ${prebuild_archive_dir}
 chmod 777 ${prebuild_log}/.. ${prebuild_archive_dir}/..
 
-log_file=$prebuild_log/exec_prebuild.log
+log_file=$prebuild_log/exec_prebuild.txt
+
+## get log_url
+host_ip=$(ip addr | awk '/^[0-9]+: / {}; /inet.*global/ {print gensub(/(.*)\/(.*)/, "\\1", "g", $2)}' | grep 10.)
+log_url=${host_ip}:8989/${prebuild_log/\/data2\/regression_log\//}
 
 # decide tensorrt version
 # install tensorrt
@@ -57,7 +61,9 @@ nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdepl
 wait
 docker stop $container_id
 cp -R $prebuild_log/* $prebuild_archive_dir/
-cat ${log_file}
+
+echo "查看日志: ${log_file}"
+
 echo "end_time-$(date +%Y%m%d%H%M)"
 time_end=$(date +%s)
 take=$(( time_end - time_start ))

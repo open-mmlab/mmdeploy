@@ -44,7 +44,7 @@ for codebase in ${codebase_list[@]}; do
     echo "container_id=${container_id}"
     nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} && \
     cp -R /root/workspace/jenkins/ mmdeploy/tests/ && \
-    /root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_ut.sh ${codebase} ${REQUIREMENT}" >${log_dir}/${codebase}.log 2>&1 &
+    /root/workspace/mmdeploy/tests/jenkins/scripts/docker_exec_ut.sh ${codebase} ${REQUIREMENT}" >${log_dir}/${codebase}.txt 2>&1 &
 done
 wait
 

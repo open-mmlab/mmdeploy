@@ -140,6 +140,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         ## install requirements from conf
         mim install $(cat ${REQUIRE_JSON} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
     fi
+
     ## start regression
     log_dir=${REGRESSION_DIR}/${codebase}/torch${TORCH_VERSION}
     log_path=${log_dir}/convert.log
@@ -148,6 +149,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     python tools/check_env.py 2>&1 | tee ${log_dir}/check_env.log
     # ignore pplnn as it's too slow
 
+    start_regression=$(date +%s)
     python ./tools/regression_test.py \
         --codebase ${codebase} \
         --work-dir ${log_dir} \
@@ -155,6 +157,8 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         --models $EXEC_MODELS \
         --backends $EXEC_BACKENDS \
         ${exec_performance} 2>&1 | tee ${log_path}
+    end_regression=$(date +%s)
+    regression_time_${codebase}=$(( end_regression - start_regression ))
     # get stats results
     python ${MMDEPLOY_DIR}/tests/jenkins/scripts/check_results.py \
         ${URL_PREFIX} \

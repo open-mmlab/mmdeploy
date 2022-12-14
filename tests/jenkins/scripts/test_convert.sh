@@ -22,11 +22,13 @@ repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
 repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 
 ## make log_dir
-date_snap=$(date +%Y%m%d)
-time_snap=$(date +%Y%m%d%H%M)
-log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
+ 
 mkdir -p -m 777 ${log_dir}
 chmod 777 ${log_dir}/../
+
+## get log_url
+host_ip=$(ip addr | awk '/^[0-9]+: / {}; /inet.*global/ {print gensub(/(.*)\/(.*)/, "\\1", "g", $2)}' | grep 10.)
+log_url=${host_ip}:8989/${log_dir/\/data2\/regression_log\//}
 
 # let container know the host log path and url prefix
 echo ${log_dir} > $log_dir/log_path.cfg
@@ -59,11 +61,14 @@ for codebase in ${codebase_list[@]}; do
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}.log 2>&1 &
+        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}.txt 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"
-        cat ${log_dir}/${codebase}.log
+        # cat ${log_dir}/${codebase}.log
+        echo "查看日志: ${log_url}/${codebase}.txt"
+        echo "查看任务运行结果: ${log_url}/${codebase}/"
+
         echo >&1000
     } &
 done
