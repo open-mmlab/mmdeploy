@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 repo_version=${1:-v1.0}
 
 ## keep container alive
@@ -24,9 +27,8 @@ ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
 cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
 
 # install tensorrt
-export TENSORRT_DIR=/root/workspace/TensorRT-8.2.3.0
-export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:${LD_LIBRARY_PATH}
-export TENSORRT_VERSION=8.2.3.0
+export TENSORRT_DIR=/root/workspace/TensorRT
+export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 cd /root/workspace
 mmdet_version=mmdet
@@ -70,7 +72,7 @@ conda activate torch1.10.0
 export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
 
 pip install ${TENSORRT_DIR}/python/tensorrt-*-cp${PYTHON_VERSION}-none-linux_x86_64.whl
-pip install openmim
+pip install -U openmim
 mim install $mmdet_version
 pip install -r requirements/tests.txt
 

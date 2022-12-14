@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+
+start=$(date +%s)
 ## keep container alive
 nohup sleep infinity >sleep.log 2>&1 &
 
@@ -19,20 +22,31 @@ unset __conda_setup
 echo "start_time-$(date +%Y%m%d%H%M)"
 
 ## parameters
-export codebase=$1
-export REQUIREMENT=$2
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-export REQ_DIR=${MMDEPLOY_DIR}/tests/jenkins/conf/${REQUIREMENT}
+cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
 
-for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
+export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$1
+echo "Using config $CONFIG"
+export TENSORRT_DIR=/root/workspace/TensorRT
+export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+
+## parameters
+export EXEC_TORCH_VERSIONS=$(grep exec_torch_versions ${CONFIG} | sed 's/exec_torch_versions=//')
+export REPO_VERSION=$(grep repo_version ${CONFIG} | sed 's/repo_version=//')
+
+for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     conda activate torch${TORCH_VERSION}
+    export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
+    pip install ${TENSORRT_DIR}/python/tensorrt-*-cp${PYTHON_VERSION}-none-linux_x86_64.whl
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
+
     if [ $TORCH_VERSION == "1.8.0" ]; then
         # fix torchscript issue of no libnvrtc-builtins.so.11.1
-        export torch_lib_dir=$(python -m pip show torch | grep Location | awk '{print $2}')
+        export torch_lib_dir="$(python -m pip show torch | grep Location | awk '{print $2}')/torch"
         cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
     fi
+
     # need to build for each env
     # TODO add openvino
     mkdir -p $MMDEPLOY_DIR/build && cd $MMDEPLOY_DIR/build
@@ -42,7 +56,7 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
         -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON \
         -DMMDEPLOY_COVERAGE=ON \
         -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_ZIP_MODEL=ON \
-        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
+        -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn;torchscript" \
         -DMMDEPLOY_SHARED_LIBS=OFF \
         -DTENSORRT_DIR=${TENSORRT_DIR} \
         -DCUDNN_DIR=${CUDNN_DIR} \
@@ -60,22 +74,31 @@ for TORCH_VERSION in 1.8.0 1.9.0 1.10.0 1.11.0 1.12.0; do
     ./bin/mmdeploy_tests
     lcov --capture --directory . --output-file coverage.info
     ls -lah coverage.info
-    cp coverage.info $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_sdk_ut_converage.info
+    cp coverage.info $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_sdk_ut_converage.info
 
     cd $MMDEPLOY_DIR
-    pip install openmim
+    export mmcv_full="mmcv>=2.0.0rc0"
+    if [ $REPO_VERSION == "v1" ]; then
+        mmcv_full="mmcv-full==1.4.2"
+    fi
+    pip install -U openmim clip
+    mim install ${mmcv_full}
+    pip install -r requirements/codebases.txt
     pip install -r requirements/tests.txt
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v .
 
-    ## install requirements from conf
-    mim install $(cat ${REQ_DIR} | xargs | sed 's/\s//g' | awk -F ${codebase}: '{print $2}' | awk -F '}' '{print $1}' | sed 's/,/\n/g' | grep -v branch | awk -F ':' '{print $2}')
-
     ## start python tests
     coverage run --branch --source mmdeploy -m pytest -rsE tests
     coverage xml
     coverage report -m
-    cp coverage.xml $MMDEPLOY_DIR/../ut_log/${TORCH_VERSION}_converter_converage.xml
+    cp coverage.xml $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_converter_converage.xml
+
 done
+
 echo "end_time-$(date +%Y%m%d%H%M)"
+echo "end_time-$(date +%Y%m%d%H%M)"
+end=$(date +%s)
+take=$(( end - start ))
+echo Time taken to execute commands is ${take} seconds.

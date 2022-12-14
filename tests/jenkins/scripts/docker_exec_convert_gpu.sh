@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 start=$(date +%s)
 ## keep container alive
 nohup sleep infinity >sleep.log 2>&1 &
@@ -38,6 +41,10 @@ export REGRESSION_DIR=/root/workspace/mmdeploy_regression_working_dir
 ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
 cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
 
+# install tensorrt
+export TENSORRT_DIR=/root/workspace/TensorRT
+export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+
 export URL_PREFIX=$(cat ${REGRESSION_DIR}/host.cfg)
 export HOST_LOG_PATH=$(cat ${REGRESSION_DIR}/log_path.cfg)
 
@@ -52,7 +59,6 @@ export exec_performance=$(grep exec_performance ${CONFIG} | sed 's/exec_performa
 export EXEC_MODELS=$(grep exec_models ${CONFIG} | sed 's/exec_models=//')
 export EXEC_BACKENDS=$(grep exec_backends ${CONFIG} | sed 's/exec_backends=//')
 export EXEC_TORCH_VERSIONS=$(grep exec_torch_versions ${CONFIG} | sed 's/exec_torch_versions=//')
-export TENSORRT_VERSION=$(grep tensorrt_version ${CONFIG} | sed 's/tensorrt_version=//')
 export REQUIRE_JSON=${MMDEPLOY_DIR}/tests/jenkins/conf/$(grep requirement ${CONFIG} | sed 's/requirement=//')
 
 if [[ "${exec_performance}" == "y" ]]; then
@@ -74,32 +80,22 @@ if [ ${codebase} == "mmyolo" ]; then
   ln -sf ${CODEBASE_ROOT_DIR}/tests/regression/mmyolo.yml ${MMDEPLOY_DIR}/tests/regression/mmyolo.yml
 fi
 
-## init tensorrt
-if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
-    TENSORRT_DIR=/root/workspace/TensorRT-${TENSORRT_VERSION}
-    LD_LIBRARY_PATH=${LD_LIBRARY_PATH/8.2.5.1/${TENSORRT_VERSION}}
-    cp -r cudnn-8.4.1.50/include/cudnn* /usr/local/cuda-11.3/include/
-    cp -r cudnn-8.4.1.50/lib/libcudnn* /usr/local/cuda-11.3/lib64/
-else
-    # fix mmocr pt1.12 cudnn version mismatch
-    cudnn_dir=/root/workspace/mmdeploy_benchmark/cudnn-linux-x86_64-8.3.2.44_cuda11.5-archive
-    cp -r $cudnn_dir/include/cudnn* /usr/local/cuda-11.3/include/
-    cp -r $cudnn_dir/lib/libcudnn* /usr/local/cuda-11.3/lib64/
-fi
-
-
 for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     conda activate torch${TORCH_VERSION}
-    if [[ "$TENSORRT_VERSION" = '8.4.1.5' ]]; then
-        pip install /root/workspace/TensorRT-8.4.1.5/python/tensorrt-8.4.1.5-cp38-none-linux_x86_64.whl
-    fi
+    export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
+    pip install ${TENSORRT_DIR}/python/tensorrt-*-cp${PYTHON_VERSION}-none-linux_x86_64.whl
     # export libtorch cmake dir, ran example: /opt/conda/envs/torch1.11.0/lib/python3.8/site-packages/torch/share/cmake/Torch
     export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
 
     if [ $TORCH_VERSION == "1.8.0" ]; then
         # fix torchscript issue of no libnvrtc-builtins.so.11.1
         export torch_lib_dir="$(python -m pip show torch | grep Location | awk '{print $2}')/torch"
-        cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
+        export target_file=${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
+        if [ -f ${target_file} ]; then
+            echo "File exits: ${target_file}"
+        else
+            cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${target_file}
+        fi
     fi
     # need to build for each env
     mkdir -p $MMDEPLOY_DIR/build && cd $MMDEPLOY_DIR/build
@@ -120,12 +116,11 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     make -j $(nproc)
     make install && cd $MMDEPLOY_DIR
 
-    pip install openmim xlsxwriter
+    pip install openmim xlsxwriter clip
     pip install -r requirements/tests.txt
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v .
-    pip install clip
 
 
     if [[ $codebase == "mmdet3d" ]] && [[ $branch == "dev-1.x" ]]; then

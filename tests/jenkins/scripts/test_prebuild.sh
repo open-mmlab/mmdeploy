@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 ## parameters
 config="${HOME}/mmdeploy/tests/jenkins/conf/${1:-default.config}"
 if [ -f "$config" ]; then
@@ -17,6 +19,9 @@ docker_image=$(grep docker_image ${config} | sed 's/docker_image=//')
 mmdeploy_branch=$(grep mmdeploy_branch ${config} | sed 's/mmdeploy_branch=//')
 repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
 repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
+cuda_version=$(echo $docker_image | awk '{split($0,a,"-"); print a[5]}')
+tensorrt_version=$(grep tensorrt_version ${config} | sed 's/tensorrt_version=//')
+
 ## make
 date_snap=$(date +%Y%m%d)
 time_snap=$(date +%Y%m%d%H%M)
@@ -35,10 +40,14 @@ log_url=${host_ip}:8989/${prebuild_log/\/data2\/regression_log\//}
 
 # decide tensorrt version
 # install tensorrt
-tensorrt_dir=/data2/shared/nvidia-packages/TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-11.4.cudnn8.2/TensorRT-8.2.3.0
-if [ $docker_image == "mmdeploy-ci-ubuntu-18.04-cu102" ]; then
-  tensorrt_dir=/data2/shared/nvidia-packages/TensorRT-8.2.3.0.Linux.x86_64-gnu.cuda-10.2.cudnn8.2/TensorRT-8.2.3.0
+trt_dir=/data2/shared/nvidia-packages/TensorRT-${tensorrt_version}-${cuda_version}
+if [ -d "$trt_dir" ]; then
+    echo "TensorRT directory $trt_dir"
+else
+    echo "$trt_dir not exist."
+    exit 1
 fi
+
 container_name=convert-${codebase}-${time_snap}
 
 container_name=openmmlab${repo_version}-prebuild-$(date +%Y%m%d%H%M)
@@ -47,11 +56,11 @@ container_id=$(
         --gpus all \
         --ipc=host \
         -itd \
-        -v ${tensorrt_dir}:/root/workspace/TensorRT-8.2.3.0 \
+        -v ${trt_dir}:/root/workspace/TensorRT \
         -v /data2/checkpoints:/root/workspace/mmdeploy_checkpoints \
         -v /data2/benchmark:/root/workspace/mmdeploy_benchmark \
         -v ${prebuild_log}:/root/workspace/prebuild-mmdeploy \
-        -v ~/mmdeploy/tests/jenkins:/root/workspace/jenkins \
+        -v ${HOME}/mmdeploy/tests/jenkins:/root/workspace/jenkins \
         --name ${container_name} \
         ${docker_image} /bin/bash
 )
