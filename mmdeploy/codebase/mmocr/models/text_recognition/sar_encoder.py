@@ -12,7 +12,6 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmocr.models.textrecog.encoders.SAREncoder.forward',
     backend='default')
 def sar_encoder__forward(
-        ctx,
         self,
         feat: torch.Tensor,
         data_samples: Optional[Sequence[TextRecogDataSample]] = None):

@@ -7,16 +7,15 @@ from mmdet.utils import OptConfigType
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER, mark
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import Backend, is_dynamic_shape
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.yolo_head.'
     'YOLOV3Head.predict_by_feat')
-def yolov3_head__predict_by_feat(ctx,
-                                 self,
+def yolov3_head__predict_by_feat(self,
                                  pred_maps: Sequence[Tensor],
                                  cfg: OptConfigType = None,
                                  rescale: bool = False,
@@ -47,6 +46,7 @@ def yolov3_head__predict_by_feat(ctx,
         Else:
             tuple[Tensor, Tensor]: batch_mlvl_bboxes, batch_mlvl_scores
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
 
     # mark pred_maps
@@ -137,10 +137,12 @@ def yolov3_head__predict_by_feat(ctx,
         # keep aligned with original pipeline, improve
         # mAP by 1% for YOLOv3 in ONNX
         score_threshold = 0
+        nms_type = cfg.nms.get('type')
         return multiclass_nms(
             batch_mlvl_bboxes,
             batch_mlvl_scores,
             max_output_boxes_per_class,
+            nms_type=nms_type,
             iou_threshold=iou_threshold,
             score_threshold=score_threshold,
             pre_top_k=pre_top_k,
@@ -152,8 +154,7 @@ def yolov3_head__predict_by_feat(ctx,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.YOLOV3Head.predict_by_feat',
     backend=Backend.NCNN.value)
-def yolov3_head__predict_by_feat__ncnn(ctx,
-                                       self,
+def yolov3_head__predict_by_feat__ncnn(self,
                                        pred_maps,
                                        with_nms=True,
                                        cfg=None,
@@ -186,6 +187,7 @@ def yolov3_head__predict_by_feat__ncnn(ctx,
             fore-ground class label in Yolov3DetectionOutput starts
             from `1`. x1, y1, x2, y2 are normalized in range(0,1).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     num_levels = len(pred_maps)
     cfg = self.test_cfg if cfg is None else cfg
     post_params = get_post_processing_params(ctx.cfg)

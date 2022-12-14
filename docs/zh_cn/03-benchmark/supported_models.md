@@ -62,8 +62,8 @@
 | [Segmenter](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segmenter) [\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
 | [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)                                 | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)                               | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)                        | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srresnet_srgan)                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                          | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                       | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan)                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)                                   | MMEditing        |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
 | [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |

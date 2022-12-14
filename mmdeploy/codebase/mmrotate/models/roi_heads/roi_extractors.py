@@ -66,8 +66,7 @@ class MultiLevelRotatedRoiAlign(Function):
     backend='tensorrt')
 @mark(
     'rotated_roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def rotated_single_roi_extractor__forward__tensorrt(ctx,
-                                                    self,
+def rotated_single_roi_extractor__forward__tensorrt(self,
                                                     feats,
                                                     rois,
                                                     roi_scale_factor=None):

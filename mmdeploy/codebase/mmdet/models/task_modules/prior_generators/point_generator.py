@@ -10,7 +10,6 @@ from mmdeploy.utils.constants import Backend
     '.single_level_grid_priors',
     backend=Backend.TENSORRT.value)
 def mlvl_point_generator__single_level_grid_priors__tensorrt(
-        ctx,
         self,
         featmap_size,
         level_idx,

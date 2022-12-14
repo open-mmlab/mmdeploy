@@ -8,11 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmdet.models.task_modules.coders.distance_point_bbox_coder'
     '.DistancePointBBoxCoder.decode',
     backend='default')
-def distancepointbboxcoder__decode(ctx,
-                                   self,
-                                   points,
-                                   pred_bboxes,
-                                   max_shape=None):
+def distancepointbboxcoder__decode(self, points, pred_bboxes, max_shape=None):
     """Rewrite `mmdet.models.task_modules.coders.distance_point_bbox_coder. \
     DistancePointBBoxCoder.decode`
 

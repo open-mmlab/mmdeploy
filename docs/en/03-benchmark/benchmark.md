@@ -1810,7 +1810,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/rotated_retinanet/rotated_retinanet_obb_r50_fpn_1x_dota_le135.py">RotatedRetinaNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/1.x/configs/rotated_retinanet/rotated-retinanet-hbox-oc_r50_fpn_1x_dota.py">RotatedRetinaNet</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1822,7 +1822,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/oriented_rcnn/oriented_rcnn_r50_fpn_1x_dota_le90.py">Oriented RCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/1.x/configs/oriented_rcnn/oriented-rcnn-le90_r50_fpn_1x_dota.py">Oriented RCNN</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1834,7 +1834,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/gliding_vertex_r50_fpn_1x_dota_le90.py">GlidingVertex</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex/gliding-vertex-rbox_r50_fpn_1x_dota.py">GlidingVertex</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1846,7 +1846,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/roi_trans_r50_fpn_1x_dota_le90.py">RoI Transformer</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/1.x/configs/roi_trans/roi-trans-le90_r50_fpn_1x_dota.py">RoI Transformer</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>

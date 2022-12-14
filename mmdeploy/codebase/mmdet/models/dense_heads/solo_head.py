@@ -13,8 +13,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.SOLOHead.predict_by_feat', backend='openvino')
-def solohead__predict_by_feat__openvino(ctx,
-                                        self,
+def solohead__predict_by_feat__openvino(self,
                                         mlvl_mask_preds: List[Tensor],
                                         mlvl_cls_scores: List[Tensor],
                                         batch_img_metas: List[Dict],
@@ -22,6 +21,7 @@ def solohead__predict_by_feat__openvino(ctx,
                                         **kwargs):
     """Rewrite `predict_by_feat` of `SOLOHead` for openvino backend."""
 
+    ctx = FUNCTION_REWRITER.get_context()
     batch_size = mlvl_cls_scores[0].size(0)
     cfg = self.test_cfg
     mlvl_cls_scores = [

@@ -27,15 +27,15 @@ class ImageDecoder final : public Decoder {
 
 class ImageDecoderCreator : public DecoderCreator {
  public:
-  const char* GetName() const override { return "image"; }
-  int GetVersion() const override { return 2004000; }
+  std::string_view name() const noexcept override { return "image"; }
+  int version() const noexcept override { return 2004000; }
   std::unique_ptr<Decoder> Create(const Value& value) override {
     ImageDecoder decoder;
     return std::make_unique<ImageDecoder>(std::move(decoder));
   }
 };
 
-REGISTER_MODULE(Decoder, ImageDecoderCreator);
+MMDEPLOY_REGISTER_CREATOR(Decoder, ImageDecoderCreator);
 
 namespace no_mmdeploy {
 class ImageDecoder final : public Decoder {
@@ -54,38 +54,39 @@ class ImageDecoder final : public Decoder {
 
 class ImageDecoderCreator : public DecoderCreator {
  public:
-  const char* GetName() const override { return "image"; }
-  int GetVersion() const override { return 1003006; };
+  std::string_view name() const noexcept override { return "image"; }
+  int version() const noexcept override { return 1003006; };
   std::unique_ptr<Decoder> Create(const Value& value) override {
     ImageDecoder decoder;
     return std::make_unique<ImageDecoder>(std::move(decoder));
   }
 };
-REGISTER_MODULE(Decoder, ImageDecoderCreator);
+
+MMDEPLOY_REGISTER_CREATOR(Decoder, ImageDecoderCreator);
+
 }  // namespace no_mmdeploy
 
 TEST_CASE("define module in global namespace", "[registry]") {
-  auto registry = Registry<Decoder>::Get();
+  auto& registry = gRegistry<Decoder>();
   std::string module_type{"image"};
   SECTION("get not existing decoder") {
-    auto creator = registry.GetCreator("dummy");
+    auto creator = registry.Get("dummy");
     CHECK(creator == nullptr);
   }
   SECTION("get creator without specifying version") {
-    auto creator = registry.GetCreator(module_type);
-    CHECK(creator != nullptr);
-    CHECK(creator->GetVersion() != 0);
+    auto creator = registry.Get(module_type);
+    CHECK(creator == nullptr);
   }
   SECTION("get creator by providing version") {
-    auto creator = registry.GetCreator(module_type, 100);
+    auto creator = registry.Get(module_type, 100);
     CHECK(creator == nullptr);
 
-    creator = registry.GetCreator(module_type, 2004000);
+    creator = registry.Get(module_type, 2004000);
     CHECK(creator != nullptr);
     auto decoder = creator->Create({});
     CHECK(decoder->Process({{"image_path", "./test.jpg"}}));
 
-    auto another_creator = registry.GetCreator(module_type, 1003006);
+    auto another_creator = registry.Get(module_type, 1003006);
     CHECK(another_creator != nullptr);
     auto another_decoder = another_creator->Create({});
     CHECK(!another_decoder->Process({{"image_path", "./test.jpg"}}));

@@ -8,8 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmaction.models.recognizers.BaseRecognizer.forward')
-def base_recognizer__forward(ctx,
-                             self,
+def base_recognizer__forward(self,
                              inputs: Tensor,
                              data_samples: OptSampleList = None,
                              mode: str = 'tensor',

@@ -33,14 +33,14 @@ class DBHead : public MMOCR {
       downsample_ratio_ = params.value("downsample_ratio", downsample_ratio_);
     }
     auto platform = Platform(device_.platform_id()).GetPlatformName();
-    auto creator = Registry<DbHeadImpl>::Get().GetCreator(platform);
+    auto creator = gRegistry<DbHeadImpl>().Get(platform);
     if (!creator) {
       MMDEPLOY_ERROR(
           "DBHead: implementation for platform \"{}\" not found. Available platforms: {}", platform,
-          Registry<DbHeadImpl>::Get().List());
+          gRegistry<DbHeadImpl>().List());
       throw_exception(eEntryNotFound);
     }
-    impl_ = creator->Create(nullptr);
+    impl_ = creator->Create();
     impl_->Init(stream_);
   }
 
@@ -130,10 +130,10 @@ class DBHead : public MMOCR {
   std::unique_ptr<DbHeadImpl> impl_;
 };
 
-REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, DBHead);
+
+MMDEPLOY_DEFINE_REGISTRY(DbHeadImpl);
 
 }  // namespace mmocr
-
-MMDEPLOY_DEFINE_REGISTRY(mmocr::DbHeadImpl);
 
 }  // namespace mmdeploy

@@ -6,11 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.linspace')
-def linspace__onnx(ctx,
-                   start: Number,
-                   end: Number,
-                   steps: int = None,
-                   **kwargs):
+def linspace__onnx(start: Number, end: Number, steps: int = None, **kwargs):
     """Rewrite `linspace` for onnxruntime."""
     steps = 100 if steps is None else steps
     dtype = kwargs.pop('dtype', torch.float32)

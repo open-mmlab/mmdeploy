@@ -8,8 +8,7 @@
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/serialization.h"
 
-namespace mmdeploy {
-namespace mmaction {
+namespace mmdeploy::mmaction {
 
 struct Label {
   int label_id;
@@ -19,10 +18,8 @@ struct Label {
 
 using Labels = std::vector<Label>;
 
-DECLARE_CODEBASE(MMAction, mmaction);
-}  // namespace mmaction
+MMDEPLOY_DECLARE_CODEBASE(MMAction, mmaction);
 
-MMDEPLOY_DECLARE_REGISTRY(mmaction::MMAction);
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction
 
 #endif  // MMDEPLOY_SRC_CODEBASE_MMACTION_MMACTION_H_

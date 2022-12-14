@@ -20,7 +20,7 @@ class PySegmentor {
     segmentor_ = {};
   }
 
-  std::vector<py::array_t<int>> Apply(const std::vector<PyImage>& imgs) {
+  std::vector<py::array> Apply(const std::vector<PyImage>& imgs) {
     std::vector<mmdeploy_mat_t> mats;
     mats.reserve(imgs.size());
     for (const auto& img : imgs) {
@@ -32,15 +32,19 @@ class PySegmentor {
     if (status != MMDEPLOY_SUCCESS) {
       throw std::runtime_error("failed to apply segmentor, code: " + std::to_string(status));
     }
-    auto output = std::vector<py::array_t<int>>{};
-    output.reserve(mats.size());
-    for (int i = 0; i < mats.size(); ++i) {
-      auto mask = py::array_t<int>({segm[i].height, segm[i].width});
-      memcpy(mask.mutable_data(), segm[i].mask, mask.nbytes());
-      output.push_back(std::move(mask));
+    using Sptr = std::shared_ptr<mmdeploy_segmentation_t>;
+    Sptr holder(segm, [n = mats.size()](auto p) { mmdeploy_segmentor_release_result(p, n); });
+
+    std::vector<py::array> rets(mats.size());
+    for (size_t i = 0; i < mats.size(); ++i) {
+      rets[i] = {
+          {segm[i].height, segm[i].width},                                 // shape
+          segm[i].mask,                                                    // data
+          py::capsule(new Sptr(holder),                                    // handle
+                      [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+      };
     }
-    mmdeploy_segmentor_release_result(segm, (int)mats.size());
-    return output;
+    return rets;
   }
 
  private:

@@ -116,6 +116,15 @@ def export(model: torch.nn.Module,
                 input_metas, dict
             ), f'Expect input_metas type is dict, get {type(input_metas)}.'
             model_forward = patched_model.forward
+
+            def wrap_forward(forward):
+
+                def wrapper(*arg, **kwargs):
+                    return forward(*arg, **kwargs)
+
+                return wrapper
+
+            patched_model.forward = wrap_forward(patched_model.forward)
             patched_model.forward = partial(patched_model.forward,
                                             **input_metas)
 

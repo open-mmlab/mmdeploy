@@ -2,7 +2,7 @@
 from typing import Dict
 
 import torch
-from mmocr.utils.typing import DetSampleList
+from mmocr.utils.typing_utils import DetSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -10,7 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.heads.BaseTextDetHead.predict')
 def base_text_det_head__predict(
-        ctx, self, x: torch.Tensor,
+        self, x: torch.Tensor,
         batch_data_samples: DetSampleList) -> DetSampleList:
     """Rewrite `predict` of BaseTextDetHead for default backend.
 
@@ -38,7 +38,7 @@ def base_text_det_head__predict(
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.heads.DBHead.predict')
-def db_head__predict(ctx, self, x: torch.Tensor,
+def db_head__predict(self, x: torch.Tensor,
                      batch_data_samples: DetSampleList) -> DetSampleList:
     """Rewrite to avoid post-process of text detection head.
 

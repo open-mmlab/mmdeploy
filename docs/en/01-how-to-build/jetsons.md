@@ -223,7 +223,7 @@ It takes about 15 minutes to install ppl.cv on a Jetson Nano. So, please be pati
 ## Install MMDeploy
 
 ```shell
-git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b 1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 export MMDEPLOY_DIR=$(pwd)
 ```
@@ -289,9 +289,9 @@ pip install -r requirements/build.txt
 pip install -v -e .  # or "python setup.py develop"
 ```
 
-1. Follow [this document](../02-how-to-run/convert_model.md) on how to convert model files.
+2. Follow [this document](../02-how-to-run/convert_model.md) on how to convert model files.
 
-For this example, we have used [retinanet_r18_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/3.x/configs/retinanet/retinanet_r18_fpn_1x_coco.py) as the model config, and [this file](https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth) as the corresponding checkpoint file. Also for deploy config, we have used [detection_tensorrt_dynamic-320x320-1344x1344.py](https://github.com/open-mmlab/mmdeploy/blob/master/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py)
+For this example, we have used [retinanet_r18_fpn_1x_coco.py](https://github.com/open-mmlab/mmdetection/blob/3.x/configs/retinanet/retinanet_r18_fpn_1x_coco.py) as the model config, and [this file](https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth) as the corresponding checkpoint file. Also for deploy config, we have used [detection_tensorrt_dynamic-320x320-1344x1344.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py)
 
 ```shell
 python ./tools/deploy.py \
