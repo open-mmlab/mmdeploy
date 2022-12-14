@@ -8,8 +8,7 @@ from mmdeploy.utils import IR
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.decoders.ABILanguageDecoder._get_length',
     IR=IR.ONNX)
-def abi_language_decoder___get_length__default(ctx,
-                                               self,
+def abi_language_decoder___get_length__default(self,
                                                logit: torch.Tensor,
                                                dim: int = -1,
                                                **kwargs) -> torch.Tensor:

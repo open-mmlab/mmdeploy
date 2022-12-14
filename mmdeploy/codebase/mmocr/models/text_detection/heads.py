@@ -2,7 +2,7 @@
 from typing import Dict
 
 import torch
-from mmocr.utils.typing_utils import DetSampleList
+from mmocr.utils import DetSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER
 

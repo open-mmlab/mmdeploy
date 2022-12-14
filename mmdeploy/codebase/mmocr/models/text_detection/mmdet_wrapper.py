@@ -5,7 +5,7 @@ import torch
 from mmdet.structures import DetDataSample
 from mmdet.structures import SampleList as MMDET_SampleList
 from mmocr.structures import TextDetDataSample
-from mmocr.utils.typing import DetSampleList
+from mmocr.utils.typing_utils import DetSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER
 

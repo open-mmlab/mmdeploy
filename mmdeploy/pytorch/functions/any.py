@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.any')
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.any')
-def any__default(ctx, input, *args, **kwargs) -> torch.Tensor:
+def any__default(input, *args, **kwargs) -> torch.Tensor:
     """Rewrite `any` for ONNX."""
     if len(args) == 0 and kwargs == {}:
         return (input != 0).sum() > 0

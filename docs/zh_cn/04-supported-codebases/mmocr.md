@@ -1,18 +1,19 @@
 # MMOCR 模型部署
 
-- [安装](#安装)
-  - [安装 mmocr](#安装-mmocr)
-  - [安装 mmdeploy](#安装-mmdeploy)
-- [模型转换](#模型转换)
-  - [文字检测任务模型转换](#文字检测任务模型转换)
-  - [文字识别任务模型转换](#文字识别任务模型转换)
-- [模型规范](#模型规范)
-- [模型推理](#模型推理)
-  - [后端模型推理](#后端模型推理)
-  - [SDK 模型推理](#sdk-模型推理)
-    - [文字检测 SDK 模型推理](#文字检测-sdk-模型推理)
-    - [文字识别 SDK 模型推理](#文字识别-sdk-模型推理)
-- [模型支持列表](#模型支持列表)
+- [MMOCR 模型部署](#mmocr-模型部署)
+  - [安装](#安装)
+    - [安装 mmocr](#安装-mmocr)
+    - [安装 mmdeploy](#安装-mmdeploy)
+  - [模型转换](#模型转换)
+    - [文字检测任务模型转换](#文字检测任务模型转换)
+    - [文字识别任务模型转换](#文字识别任务模型转换)
+  - [模型规范](#模型规范)
+  - [模型推理](#模型推理)
+    - [后端模型推理](#后端模型推理)
+    - [SDK 模型推理](#sdk-模型推理)
+      - [文字检测 SDK 模型推理](#文字检测-sdk-模型推理)
+      - [文字识别 SDK 模型推理](#文字识别-sdk-模型推理)
+  - [模型支持列表](#模型支持列表)
 
 ______________________________________________________________________
 
@@ -236,11 +237,14 @@ print(texts)
 
 ## 模型支持列表
 
-| Model                                                                         | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
-| [DBNet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [PSENet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet) | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet)   | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [CRNN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn)   | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
-| [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)     | text-recognition |      N      |      Y      |    N     |  N   |   N   |    N     |
-| [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn) | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| Model                                                                               | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :---------------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
+| [DBNet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [DBNetpp](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnetpp)     | text-detection   |      N      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [PSENet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet)       | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [TextSnake](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/textsnake) | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [CRNN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn)         | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
+| [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)           | text-recognition |      N      |      Y      |    Y     |  N   |   N   |    N     |
+| [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn)       | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| [ABINet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet)     | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |

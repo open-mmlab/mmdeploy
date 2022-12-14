@@ -104,7 +104,7 @@ tensorrt:
     convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
-    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt_dynamic-1x32x32-1x32x640.py
+    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt_dynamic-48x64-48x640.py
 
   pipeline_trt_recognition_dynamic_fp16: &pipeline_trt_recognition_dynamic_fp16
     convert_image: *convert_image_rec
@@ -176,6 +176,17 @@ models:
       - *pipeline_pplnn_detection_dynamic_fp32
       - *pipeline_openvino_detection_dynamic_fp32
 
+  - name: DBNetpp
+    metafile: configs/textdet/dbnetpp/metafile.yml
+    model_configs:
+      - configs/textdet/dbnetpp/dbnetpp_resnet50_fpnc_1200e_icdar2015.py
+    pipelines:
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
+      - *pipeline_ncnn_detection_static_fp32
+      - *pipeline_pplnn_detection_dynamic_fp32
+      - *pipeline_openvino_detection_dynamic_fp32
+
   - name: PANet
     metafile: configs/textdet/panet/metafile.yml
     model_configs:
@@ -200,6 +211,15 @@ models:
       - *pipeline_pplnn_detection_dynamic_fp32
       - *pipeline_openvino_detection_dynamic_fp32
 
+  - name: TextSnake
+    metafile: configs/textdet/textsnake/metafile.yml
+    model_configs:
+      - configs/textdet/textsnake/textsnake_resnet50_fpn-unet_1200e_ctw1500.py
+    pipelines:
+      - *pipeline_ts_detection_fp32
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp32
+
   - name: CRNN
     metafile: configs/textrecog/crnn/metafile.yml
     model_configs:
@@ -218,6 +238,7 @@ models:
     pipelines:
       - *pipeline_ts_recognition_fp32
       - *pipeline_ort_recognition_dynamic_fp32
+      - *pipeline_trt_recognition_dynamic_fp32
 
   - name: ABINet
     metafile: configs/textrecog/abinet/metafile.yml
