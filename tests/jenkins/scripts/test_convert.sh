@@ -69,7 +69,7 @@ for codebase in ${codebase_list[@]}; do
         echo "${codebase} convert finish!"
         # cat ${log_dir}/${codebase}.log
         echo "查看日志: ${log_url}/${codebase}.txt"
-        echo "查看任务运行结果: ${log_url}/${codebase}/"
+        echo "查看任务运行结果: ${log_url}/${codebase}/ \n"
 
         echo >&1000
     } &
