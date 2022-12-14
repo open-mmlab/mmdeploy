@@ -6,3 +6,4 @@ from . import encoder_decoder_recognizer  # noqa: F401,F403
 from . import lstm_layer  # noqa: F401,F403
 from . import sar_decoder  # noqa: F401,F403
 from . import sar_encoder  # noqa: F401,F403
+from . import transformer_module  # noqa: F401,F403

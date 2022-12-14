@@ -91,7 +91,7 @@ tensorrt:
     convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
-    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_static-1x32x32.py
+    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_static-1x32x128.py
 
   pipeline_trt_recognition_static_int8: &pipeline_trt_recognition_static_int8
     convert_image: *convert_image_rec
@@ -187,6 +187,18 @@ models:
       - *pipeline_pplnn_detection_dynamic_fp32
       - *pipeline_openvino_detection_dynamic_fp32
 
+  - name: PSENet
+    metafile: configs/textdet/psenet/metafile.yml
+    model_configs:
+      - configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py
+    pipelines:
+      - *pipeline_ts_detection_fp32
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp16
+      - *pipeline_ncnn_detection_static_fp32
+      - *pipeline_pplnn_detection_dynamic_fp32
+      - *pipeline_openvino_detection_dynamic_fp32
+
   - name: CRNN
     metafile: configs/textrecog/crnn/metafile.yml
     model_configs:
@@ -197,3 +209,20 @@ models:
       - *pipeline_trt_recognition_dynamic_fp16
       - *pipeline_ncnn_recognition_static_fp32
       - *pipeline_pplnn_recognition_dynamic_fp32
+
+  - name: SAR
+    metafile: configs/textrecog/sar/metafile.yml
+    model_configs:
+      - configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py
+    pipelines:
+      - *pipeline_ts_recognition_fp32
+      - *pipeline_ort_recognition_dynamic_fp32
+
+  - name: ABINet
+    metafile: configs/textrecog/abinet/metafile.yml
+    model_configs:
+      - configs/textrecog/abinet/abinet_20e_st-an_mj.py
+    pipelines:
+      - *pipeline_ts_recognition_fp32
+      - *pipeline_ort_recognition_static_fp32
+      - *pipeline_trt_recognition_static_fp16
