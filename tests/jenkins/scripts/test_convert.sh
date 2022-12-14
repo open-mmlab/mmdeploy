@@ -22,13 +22,15 @@ repo_url=$(grep repo_url ${config} | sed 's/repo_url=//')
 repo_version=$(grep repo_version ${config} | sed 's/repo_version=//')
 
 ## make log_dir
- 
+date_snap=$(date +%Y%m%d)
+time_snap=$(date +%Y%m%d%H%M)
+log_dir=/data2/regression_log/convert_log/${date_snap}/${time_snap}
 mkdir -p -m 777 ${log_dir}
 chmod 777 ${log_dir}/../
 
 ## get log_url
 host_ip=$(ip addr | awk '/^[0-9]+: / {}; /inet.*global/ {print gensub(/(.*)\/(.*)/, "\\1", "g", $2)}' | grep 10.)
-log_url=${host_ip}:8989/${log_dir/\/data2\/regression_log\//}
+log_url=$(host_ip):8989/${log_dir}
 
 # let container know the host log path and url prefix
 echo ${log_dir} > $log_dir/log_path.cfg
