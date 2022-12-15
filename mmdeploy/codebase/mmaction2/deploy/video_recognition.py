@@ -12,7 +12,7 @@ from mmengine.model import BaseDataPreprocessor
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
-from .mmaction import MMACTION_TASK
+from .mmaction2 import MMACTION2_TASK
 
 
 def process_model_config(model_cfg: mmengine.Config,
@@ -73,7 +73,7 @@ def process_model_config(model_cfg: mmengine.Config,
     return cfg
 
 
-@MMACTION_TASK.register_module(Task.VIDEO_RECOGNITION.value)
+@MMACTION2_TASK.register_module(Task.VIDEO_RECOGNITION.value)
 class VideoRecognition(BaseTask):
     """VideoRecognition task class.
 
@@ -188,7 +188,7 @@ class VideoRecognition(BaseTask):
             from moviepy.editor import ImageSequenceClip
         except Exception:
             logger.warn('Please install moviepy and decord to '
-                        'enable visualize for mmaction')
+                        'enable visualize for mmaction2')
 
         save_dir, save_name = osp.split(output_file)
         video = decord.VideoReader(image)

@@ -25,17 +25,17 @@ globals:
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py
+    deploy_config: configs/mmaction2/video-recognition/video-recognition_onnxruntime_static.py
     backend_test: *default_backend_test
 
 tensorrt:
   pipeline_trt_2d_static_fp32: &pipeline_trt_2d_static_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmaction/video-recognition/video-recognition_2d_tensorrt_static-224x224.py
+    deploy_config: configs/mmaction2/video-recognition/video-recognition_2d_tensorrt_static-224x224.py
     backend_test: *default_backend_test
   pipeline_trt_3d_static_fp32: &pipeline_trt_3d_static_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmaction/video-recognition/video-recognition_3d_tensorrt_static-256x256.py
+    deploy_config: configs/mmaction2/video-recognition/video-recognition_3d_tensorrt_static-256x256.py
     backend_test: *default_backend_test
 
 models:

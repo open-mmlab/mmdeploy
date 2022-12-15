@@ -52,7 +52,7 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) to convert mmaction2 models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
-When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction) of all supported backends for mmaction2, under which the config file path follows the pattern:
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction2) of all supported backends for mmaction2, under which the config file path follows the pattern:
 
 ```
 {task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -79,11 +79,11 @@ mim download mmaction2 --config tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kin
 
 # convert mmaction2 model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-    configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py \
+    configs/mmaction2/video-recognition/video-recognition_onnxruntime_static.py \
     tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb \
     tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb_20220906-cd10898e.pth \
     tests/data/arm_wrestling.mp4 \
-    --work-dir mmdeploy_models/mmaction/tsn/ort \
+    --work-dir mmdeploy_models/mmaction2/tsn/ort \
     --device cpu \
     --show \
     --dump-info
@@ -93,10 +93,10 @@ python tools/deploy.py \
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
-The converted model locates in the working directory like `mmdeploy_models/mmaction/tsn/ort` in the previous example. It includes:
+The converted model locates in the working directory like `mmdeploy_models/mmaction2/tsn/ort` in the previous example. It includes:
 
 ```
-mmdeploy_models/mmaction/tsn/ort
+mmdeploy_models/mmaction2/tsn/ort
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -108,7 +108,7 @@ in which,
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
 - \***.json**: the necessary information for mmdeploy SDK
 
-The whole package **mmdeploy_models/mmaction/tsn/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
+The whole package **mmdeploy_models/mmaction2/tsn/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
 ## Model Inference
 
@@ -122,7 +122,7 @@ from mmdeploy.utils import get_input_shape, load_config
 import numpy as np
 import torch
 
-deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
+deploy_cfg = 'configs/mmaction2/video-recognition/video-recognition_onnxruntime_static.py'
 model_cfg = 'tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
@@ -170,7 +170,7 @@ cap = cv2.VideoCapture('tests/data/arm_wrestling.mp4')
 clips, info = SampleFrames(cap, 1, 1, 25)
 
 # create a recognizer
-recognizer = VideoRecognizer(model_path='./mmdeploy_models/mmaction/tsn/ort', device_name='cpu', device_id=0)
+recognizer = VideoRecognizer(model_path='./mmdeploy_models/mmaction2/tsn/ort', device_name='cpu', device_id=0)
 # perform inference
 result = recognizer(clips, info)
 # show inference result
@@ -184,7 +184,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn  | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :---: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |   N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |   N   |   N   |    N     |

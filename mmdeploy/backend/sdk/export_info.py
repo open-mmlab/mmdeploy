@@ -32,7 +32,10 @@ def get_task(deploy_cfg: mmengine.Config) -> Dict:
     task_name = get_task_type(deploy_cfg).value
     codebase_name = get_codebase(deploy_cfg).value
     try:
-        codebase = importlib.import_module(codebase_name)
+        codebase_lib_name = codebase_name
+        if codebase_lib_name == 'mmaction2':
+            codebase_lib_name = 'mmaction'
+        codebase = importlib.import_module(codebase_lib_name)
     except ModuleNotFoundError:
         logger = get_root_logger()
         logger.warning(f'can not import the module: {codebase_name}')

@@ -53,7 +53,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) 把 mmaction2 模型一键式转换为推理后端模型。
 该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction2)。
 文件的命名模式是：
 
 ```
@@ -81,11 +81,11 @@ mim download mmaction2 --config tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kin
 
 # convert mmaction2 model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-    configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py \
+    configs/mmaction2/video-recognition/video-recognition_onnxruntime_static.py \
     tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb \
     tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb_20220906-cd10898e.pth \
     tests/data/arm_wrestling.mp4 \
-    --work-dir mmdeploy_models/mmaction/tsn/ort \
+    --work-dir mmdeploy_models/mmaction2/tsn/ort \
     --device cpu \
     --show \
     --dump-info
@@ -95,10 +95,10 @@ python tools/deploy.py \
 
 在使用转换后的模型进行推理之前，有必要了解转换结果的结构。 它存放在 `--work-dir` 指定的路路径下。
 
-上例中的`mmdeploy_models/mmaction/tsn/ort`，结构如下：
+上例中的`mmdeploy_models/mmaction2/tsn/ort`，结构如下：
 
 ```
-mmdeploy_models/mmaction/tsn/ort
+mmdeploy_models/mmaction2/tsn/ort
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -124,7 +124,7 @@ from mmdeploy.utils import get_input_shape, load_config
 import numpy as np
 import torch
 
-deploy_cfg = 'configs/mmaction/video-recognition/video-recognition_2d_onnxruntime_static.py'
+deploy_cfg = 'configs/mmaction2/video-recognition/video-recognition_onnxruntime_static.py'
 model_cfg = 'tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb'
 device = 'cpu'
 backend_model = ['./mmdeploy_models/mmaction2/tsn/ort/end2end.onnx']
@@ -172,7 +172,7 @@ cap = cv2.VideoCapture('tests/data/arm_wrestling.mp4')
 clips, info = SampleFrames(cap, 1, 1, 25)
 
 # create a recognizer
-recognizer = VideoRecognizer(model_path='./mmdeploy_models/mmaction/tsn/ort', device_name='cpu', device_id=0)
+recognizer = VideoRecognizer(model_path='./mmdeploy_models/mmaction2/tsn/ort', device_name='cpu', device_id=0)
 # perform inference
 result = recognizer(clips, info)
 # show inference result
@@ -187,7 +187,7 @@ for label_id, score in result:
 
 ## 模型支持列表
 
-| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn  | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :---: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |   N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |   N   |   N   |    N     |

@@ -1,12 +1,12 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include "cuda_runtime.h"
-#include "mmdeploy/codebase/mmaction/format_shape.h"
+#include "mmdeploy/codebase/mmaction2/format_shape.h"
 #include "mmdeploy/core/utils/device_utils.h"
 
 using namespace std;
 
-namespace mmdeploy::mmaction::cuda {
+namespace mmdeploy::mmaction2::cuda {
 
 template <typename T>
 void Transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides, int ndim,
@@ -52,9 +52,9 @@ class FormatShapeImpl : public FormatShapeOp {
     OUTCOME_TRY(stream().Copy(src_strides.data(), _src_strides));
     OUTCOME_TRY(stream().Copy(dst_strides.data(), _dst_strides));
 
-    ::mmdeploy::mmaction::cuda::Transpose(src.data<float>(), GetNative<int*>(_src_strides),
-                                          dst.data<float>(), GetNative<int*>(_dst_strides), ndim,
-                                          src.size(), (cudaStream_t)stream().GetNative());
+    ::mmdeploy::mmaction2::cuda::Transpose(src.data<float>(), GetNative<int*>(_src_strides),
+                                           dst.data<float>(), GetNative<int*>(_dst_strides), ndim,
+                                           src.size(), (cudaStream_t)stream().GetNative());
     return dst;
   }
 };
@@ -63,4 +63,4 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeOp, (cuda, 0), [](std::string input_fo
   return std::make_unique<FormatShapeImpl>(std::move(input_format));
 });
 
-}  // namespace mmdeploy::mmaction::cuda
+}  // namespace mmdeploy::mmaction2::cuda

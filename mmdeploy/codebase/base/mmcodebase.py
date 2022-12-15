@@ -80,7 +80,8 @@ def get_codebase_class(codebase: Codebase) -> MMCodebase:
     except ImportError as e:
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()
-        logger.warn(f'Import mmdeploy.codebase.{codebase.value}.deploy failed'
-                    'Please check whether the module is the custom module.'
-                    f'{e}')
+        logger.warn(
+            f'Import mmdeploy.codebase.{codebase.value}.deploy failed, '
+            'Please check whether the module is the custom module.'
+            f'{e}')
     return CODEBASE.build({'type': codebase.value})

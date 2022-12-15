@@ -4,18 +4,18 @@ from mmengine.registry import Registry
 from mmdeploy.codebase.base import CODEBASE, MMCodebase
 from mmdeploy.utils import Codebase
 
-MMACTION_TASK = Registry('mmaction_tasks')
+MMACTION2_TASK = Registry('mmaction2_tasks')
 
 
-@CODEBASE.register_module(Codebase.MMACTION.value)
-class MMACTION(MMCodebase):
-    """MMAction codebase class."""
+@CODEBASE.register_module(Codebase.MMACTION2.value)
+class MMACTION2(MMCodebase):
+    """MMAction2 codebase class."""
 
-    task_registry = MMACTION_TASK
+    task_registry = MMACTION2_TASK
 
     @classmethod
     def register_deploy_modules(cls):
-        import mmdeploy.codebase.mmaction.models  # noqa: F401
+        import mmdeploy.codebase.mmaction2.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):

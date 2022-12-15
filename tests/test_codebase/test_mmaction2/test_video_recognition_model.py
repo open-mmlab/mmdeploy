@@ -12,10 +12,10 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 IMAGE_SIZE = 224
 
 try:
-    import_codebase(Codebase.MMACTION)
+    import_codebase(Codebase.MMACTION2)
 except ImportError:
     pytest.skip(
-        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
+        f'{Codebase.MMACTION2} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -34,10 +34,10 @@ class TestEnd2EndModel:
         }
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
-        model_cfg_path = 'tests/test_codebase/test_mmaction/data/model.py'
+        model_cfg_path = 'tests/test_codebase/test_mmaction2/data/model.py'
         model_cfg = load_config(model_cfg_path)[0]
 
-        from mmdeploy.codebase.mmaction.deploy.video_recognition_model import \
+        from mmdeploy.codebase.mmaction2.deploy.video_recognition_model import \
             End2EndModel
         cls.end2end_model = End2EndModel(
             Backend.ONNXRUNTIME, [''],
@@ -62,13 +62,13 @@ class TestEnd2EndModel:
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_video_recognition_model():
-    model_cfg_path = 'tests/test_codebase/test_mmaction/data/model.py'
+    model_cfg_path = 'tests/test_codebase/test_mmaction2/data/model.py'
     model_cfg = load_config(model_cfg_path)[0]
     deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['outputs']),
-            codebase_config=dict(type='mmaction')))
+            codebase_config=dict(type='mmaction2')))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
@@ -76,7 +76,7 @@ def test_build_video_recognition_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmaction.deploy.video_recognition_model import (
+        from mmdeploy.codebase.mmaction2.deploy.video_recognition_model import (
             End2EndModel, build_video_recognition_model)
         classifier = build_video_recognition_model([''], model_cfg, deploy_cfg,
                                                    'cpu')

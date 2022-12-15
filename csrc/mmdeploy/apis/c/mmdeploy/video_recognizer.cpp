@@ -8,7 +8,7 @@
 #include "common_internal.h"
 #include "executor_internal.h"
 #include "mmdeploy/archive/value_archive.h"
-#include "mmdeploy/codebase/mmaction/mmaction.h"
+#include "mmdeploy/codebase/mmaction2/mmaction2.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/model.h"
@@ -152,7 +152,7 @@ int mmdeploy_video_recognizer_get_result(mmdeploy_value_t output,
   try {
     Value& value = Cast(output)->front();
 
-    auto classify_outputs = from_value<std::vector<mmaction::Labels>>(value);
+    auto classify_outputs = from_value<std::vector<mmaction2::Labels>>(value);
 
     std::vector<int> _result_count;
     _result_count.reserve(classify_outputs.size());

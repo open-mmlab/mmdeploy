@@ -30,7 +30,7 @@ typedef struct mmdeploy_video_recognizer* mmdeploy_video_recognizer_t;
 
 /**
  * @brief Create video recognizer's handle
- * @param[in] model an instance of mmaction sdk model created by
+ * @param[in] model an instance of mmaction2 sdk model created by
  * \ref mmdeploy_model_create_by_path or \ref mmdeploy_model_create in \ref model.h
  * @param[in] device_name name of device, such as "cpu", "cuda", etc.
  * @param[in] device_id id of device.

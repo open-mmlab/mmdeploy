@@ -8,21 +8,21 @@ from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
-    import_codebase(Codebase.MMACTION)
+    import_codebase(Codebase.MMACTION2)
 except ImportError:
     pytest.skip(
-        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
+        f'{Codebase.MMACTION2} is not installed.', allow_module_level=True)
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('model_cfg_path',
-                         ['tests/test_codebase/test_mmaction/data/model.py'])
+                         ['tests/test_codebase/test_mmaction2/data/model.py'])
 def test_forward_of_base_recognizer(model_cfg_path, backend):
     check_backend(backend)
     deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
-            codebase_config=dict(type='mmaction', task='VideoRecognition'),
+            codebase_config=dict(type='mmaction2', task='VideoRecognition'),
             onnx_config=dict(
                 type='onnx',
                 export_params=True,

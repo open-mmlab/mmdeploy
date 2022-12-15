@@ -1,11 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/codebase/mmaction/format_shape.h"
+#include "mmdeploy/codebase/mmaction2/format_shape.h"
 #include "mmdeploy/core/utils/device_utils.h"
 
 using namespace std;
 
-namespace mmdeploy::mmaction::cpu {
+namespace mmdeploy::mmaction2::cpu {
 
 class FormatShapeImpl : public FormatShapeOp {
  public:
@@ -64,4 +64,4 @@ MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeOp, (cpu, 0), [](std::string input_for
   return std::make_unique<FormatShapeImpl>(std::move(input_format));
 });
 
-}  // namespace mmdeploy::mmaction::cpu
+}  // namespace mmdeploy::mmaction2::cpu

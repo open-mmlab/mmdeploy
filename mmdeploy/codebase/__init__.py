@@ -25,10 +25,13 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     codebase_name = codebase_type.value
     dependent_library = [codebase_name] + \
         extra_dependent_library.get(codebase_type, [])
+    if codebase_name == 'mmaction2':
+        dependent_library = ['mmaction']
     for lib in dependent_library + custom_module_list:
-        if not importlib.util.find_spec(lib):
-            raise ImportError(f'{lib} has not been installed. '
-                              f'Import {lib} failed.')
+        third_lib = lib if lib != 'mmaction2' else 'mmaction'
+        if not importlib.util.find_spec(third_lib):
+            raise ImportError(f'{third_lib} has not been installed. '
+                              f'Import {third_lib} failed.')
     if len(custom_module_list) > 0:
         for custom_module in custom_module_list:
             importlib.import_module(f'{custom_module}')
