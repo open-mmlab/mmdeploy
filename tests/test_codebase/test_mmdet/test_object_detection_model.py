@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from tempfile import NamedTemporaryFile
+from typing import Sequence
 
 import mmcv
 import numpy as np
@@ -23,7 +24,7 @@ from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 
 def assert_det_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, Sequence)
     assert len(results) == 2
     assert results[0].shape[0] == results[1].shape[0]
     assert results[0].shape[1] == results[1].shape[1]
@@ -31,7 +32,7 @@ def assert_det_results(results, module_name: str = 'model'):
 
 def assert_forward_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, Sequence)
     assert len(results) == 1
     if isinstance(results[0], tuple):  # mask
         assert len(results[0][0]) == 80

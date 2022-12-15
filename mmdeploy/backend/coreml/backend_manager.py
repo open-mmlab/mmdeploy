@@ -29,3 +29,28 @@ class CoreMLManager(BaseBackendManager):
         """
         from .wrapper import CoreMLWrapper
         return CoreMLWrapper(model_file=backend_files[0])
+
+    @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+
+        Returns:
+            bool: True if backend package is installed.
+        """
+        import importlib
+        return importlib.util.find_spec('coreml') is not None
+
+    @classmethod
+    def get_version(cls) -> str:
+        """Get the version of the backend."""
+        if not cls.is_available():
+            return 'None'
+        else:
+            import pkg_resources
+            try:
+                return pkg_resources.get_distribution('coreml').version
+            except Exception:
+                return 'None'

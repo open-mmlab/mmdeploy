@@ -28,7 +28,50 @@ class BaseBackendManager(metaclass=ABCMeta):
                 to None.
         """
         raise NotImplementedError(
-            f'build_wrapper has not been implemented for {cls}')
+            f'build_wrapper has not been implemented for "{cls.__name__}"')
+
+    @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+
+        Returns:
+            bool: True if backend package is installed.
+        """
+        raise NotImplementedError(
+            f'is_available has not been implemented for "{cls.__name__}"')
+
+    @classmethod
+    def get_version(cls) -> str:
+        """Get the version of the backend."""
+        raise NotImplementedError(
+            f'get_version has not been implemented for "{cls.__name__}"')
+
+    @classmethod
+    def check_env(cls, log_callback: Optional[Any] = None) -> str:
+        """Check current environment.
+
+        Returns:
+            str: Info about the environment.
+        """
+        try:
+            available = cls.is_available()
+            if available:
+                try:
+                    backend_version = cls.get_version()
+                except NotImplementedError:
+                    backend_version = 'Unknown'
+            else:
+                backend_version = 'None'
+
+            info = f'{cls.backend_name}:\t{backend_version}'
+        except Exception:
+            info = f'{cls.backend_name}:\tCheckFailed'
+
+        log_callback(info)
+        return info
 
 
 class BackendManagerRegistry:
@@ -67,6 +110,8 @@ class BackendManagerRegistry:
 
             self._module_dict[name] = cls
 
+            cls.backend_name = name
+
             return cls
 
         return wrap_manager
@@ -89,3 +134,17 @@ class BackendManagerRegistry:
 
 
 BACKEND_MANAGERS = BackendManagerRegistry()
+
+
+def get_backend_manager(name: str) -> BaseBackendManager:
+    """Get backend manager.
+
+    Args:
+        name (str): name of the backend.
+    Returns:
+        BaseBackendManager: The backend manager of given name
+    """
+    from enum import Enum
+    if isinstance(name, Enum):
+        name = name.value
+    return BACKEND_MANAGERS.find(name)
