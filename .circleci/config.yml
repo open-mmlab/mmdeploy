@@ -8,6 +8,9 @@ setup: true
 orbs:
   path-filtering: circleci/path-filtering@0.1.2
 
+orbs:
+  codecov: codecov/codecov@3.2.4
+
 workflows:
   # the always-run workflow is always triggered, regardless of the pipeline parameters.
   always-run:
@@ -37,3 +40,8 @@ workflows:
           # complete. In this case, we are using the parent dynamic
           # configuration itself.
           config-path: .circleci/test.yml
+
+  upload-to-codecov:
+      jobs:
+          - checkout
+          - codecov/upload
