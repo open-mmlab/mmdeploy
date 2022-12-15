@@ -118,6 +118,6 @@ class SimCCLabelDecode : public MMPose {
   std::vector<int> input_size_{192, 256};
 };
 
-REGISTER_CODEBASE_COMPONENT(MMPose, SimCCLabelDecode);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, SimCCLabelDecode);
 
 }  // namespace mmdeploy::mmpose

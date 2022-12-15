@@ -35,10 +35,18 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
 
+### change the pip source for installing packages
+RUN if [ ${USE_SRC_INSIDE} == true ] ; \
+    then \
+        /opt/conda/bin/pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple; \
+        echo "pip using tsinghua source" ; \
+    else \
+        echo "Keep pip the download source unchanged" ; \
+    fi
+
 ### install pytorch openmim
 RUN /opt/conda/bin/conda install pytorch==${TORCH_VERSION} torchvision==${TORCHVISION_VERSION} cudatoolkit=${CUDA} -c pytorch -c conda-forge -y \
     && /opt/conda/bin/pip install --no-cache-dir openmim
-
 
 ### pytorch mmcv onnxruntime
 RUN /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime-gpu==${ONNXRUNTIME_VERSION} mmengine${MMENGINE_VERSION}
@@ -57,9 +65,9 @@ RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/co
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ENV TENSORRT_DIR=/workspace/tensorrt
 ARG VERSION
-RUN git clone https://github.com/open-mmlab/mmdeploy &&\
+RUN git clone -b 1.x https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then git checkout -b dev-1.x ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on 1.x" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     mkdir -p build &&\
     cd build &&\

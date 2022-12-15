@@ -13,9 +13,9 @@ from mmdeploy.utils import Backend, get_backend, get_ir_config
 # visible in mmcv.
 @SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.roi_align.__self__', backend='default')
-def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
-                      output_size: List[int], spatial_scale: float,
-                      sampling_ratio: int, pool_mode: str, aligned: bool):
+def roi_align_default(g, input: Tensor, rois: Tensor, output_size: List[int],
+                      spatial_scale: float, sampling_ratio: int,
+                      pool_mode: str, aligned: bool):
     """Rewrite symbolic function for default backend.
 
     Replace onnx::RoiAlign with mmcv::MMCVRoiAlign for PPLNN. For ONNXRuntime,
@@ -41,6 +41,7 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
     Returns:
         MMCVRoiAlign op for onnx.
     """
+    ctx = SYMBOLIC_REWRITER.get_context()
     backend = get_backend(ctx.cfg)
     if backend == Backend.PPLNN or backend == Backend.TENSORRT:
         domain = 'mmcv'
@@ -56,17 +57,17 @@ def roi_align_default(ctx, g, input: Tensor, rois: Tensor,
             aligned_i=aligned)
     else:
         from torch.onnx.symbolic_opset9 import _cast_Long
-        from torch.onnx.symbolic_opset11 import add, select, squeeze
+        from torch.onnx.symbolic_opset11 import add, select
         batch_indices = _cast_Long(
             g,
-            squeeze(
-                g,
+            g.op(
+                'Squeeze',
                 select(
                     g, rois, 1,
                     g.op(
                         'Constant',
-                        value_t=torch.tensor([0], dtype=torch.long))), 1),
-            False)
+                        value_t=torch.tensor([0], dtype=torch.long))),
+                axes_i=[1]), False)
         rois = select(
             g, rois, 1,
             g.op(

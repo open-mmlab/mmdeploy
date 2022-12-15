@@ -12,11 +12,6 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             get_root_logger, load_config)
 
-
-def __build_backend_model(cls_name: str, registry: Registry, *args, **kwargs):
-    return registry.module_dict[cls_name](*args, **kwargs)
-
-
 __BACKEND_MODEL = Registry('backend_segmentors')
 
 

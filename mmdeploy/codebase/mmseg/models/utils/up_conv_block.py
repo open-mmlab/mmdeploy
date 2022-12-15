@@ -8,7 +8,7 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.utils.UpConvBlock.forward')
-def up_conv_block__forward(ctx, self, skip, x):
+def up_conv_block__forward(self, skip, x):
     """Rewrite `forward` for default backend.
 
     To support dynamic shape for UNet backbone,
@@ -23,6 +23,7 @@ def up_conv_block__forward(ctx, self, skip, x):
     Returns:
         Tensor: Upsampled output feature map.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     from mmcv.cnn import ConvModule
 
     # only valid when self.upsample is from build_upsample_layer

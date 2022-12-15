@@ -12,6 +12,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
     assert(v.is_array());
     // handle empty input
     if (v.front().empty()) {
+      profiler::ScopedCounter counter(scope_);
       return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
     }
     if (v.front().is_array() && !is_batched_) {
@@ -24,6 +25,7 @@ Sender<Value> Task::Process(Sender<Value> input) {
             return Value{std::move(input), std::move(output)};
           })
           | Bulk(batch_size, [&](size_t index, Value& in_out) {
+            profiler::ScopedCounter counter(scope_);
             const auto& input = in_out[0];
             auto& output = in_out[1];
             output[index] = module_->Process(input[index]).value();
@@ -33,8 +35,10 @@ Sender<Value> Task::Process(Sender<Value> input) {
           });
       // clang-format on
     } else {
-      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_,
-                          [&](const Value& u) { return module_->Process(u).value(); });
+      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_, [&](const Value& u) {
+        profiler::ScopedCounter counter(scope_);
+        return module_->Process(u).value();
+      });
     }
   });
 }
@@ -45,7 +49,7 @@ namespace {
 
 inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
   auto type = config["module"].get<std::string>();
-  auto creator = Registry<Module>::Get().GetCreator(type);
+  auto creator = gRegistry<Module>().Get(type);
   if (!creator) {
     MMDEPLOY_ERROR("failed to find module creator: {}", type);
     return Status(eEntryNotFound);
@@ -63,6 +67,17 @@ inline Result<unique_ptr<Module>> CreateModule(const Value& config) {
 Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   try {
     auto task = std::make_unique<Task>();
+    if (auto scope = Maybe{config_} / "context" / "scope" / identity<profiler::Scope*>{}) {
+      auto module_name = config_.value<std::string>("module", "");
+      auto name = config_.value<std::string>("name", "");
+      string scope_name = (name != "") ? name : module_name;
+      task->scope_ = (*scope)->CreateScope(scope_name);
+      config_["context"]["scope"] = task->scope_;
+      if (module_name == "Transform") {
+        task->scope_ = nullptr;
+      }
+    }
+
     OUTCOME_TRY(task->module_, CreateModule(config_));
 
     if (auto name = Maybe{config_} / "scheduler" / identity<string>{}) {
@@ -86,13 +101,8 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
   }
 }
 
-class TaskCreator : public Creator<Builder> {
- public:
-  const char* GetName() const override { return "Task"; }
-  unique_ptr<Builder> Create(const Value& config) override {
-    return std::make_unique<TaskBuilder>(config);
-  }
-};
-REGISTER_MODULE(Builder, TaskCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Task, 0), [](const Value& config) {
+  return std::make_unique<TaskBuilder>(config);
+});
 
 }  // namespace mmdeploy::graph

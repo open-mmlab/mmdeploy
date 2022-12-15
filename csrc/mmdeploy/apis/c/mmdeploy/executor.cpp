@@ -13,10 +13,10 @@ namespace {
 
 mmdeploy_scheduler_t CreateScheduler(const char* type, const Value& config = Value()) {
   try {
-    auto creator = Registry<SchedulerType>::Get().GetCreator(type);
+    auto creator = gRegistry<SchedulerType>().Get(type);
     if (!creator) {
       MMDEPLOY_ERROR("Creator for {} not found. Available schedulers: {}", type,
-                     Registry<SchedulerType>::Get().List());
+                     gRegistry<SchedulerType>().List());
       return nullptr;
     }
     return Cast(new SchedulerType(creator->Create(config)));

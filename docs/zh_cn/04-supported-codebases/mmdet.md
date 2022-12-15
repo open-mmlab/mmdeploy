@@ -49,7 +49,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 ## 模型转换
 
 你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/tools/deploy.py) 把 mmdet 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/blob/master/docs/en/02-how-to-run/convert_model.md#usage).
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
 
 以下，我们将演示如何把 `Faster R-CNN` 转换为 onnx 模型。
 
@@ -188,7 +188,7 @@ cv2.imwrite('output_detection.png', img)
 ```
 
 除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
-你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/dev-1.x/demo)学习其他语言接口的使用方法。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo)学习其他语言接口的使用方法。
 
 ## 模型支持列表
 

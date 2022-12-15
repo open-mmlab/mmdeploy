@@ -1,84 +1,72 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "default_format_bundle.h"
-
-#include <cassert>
-
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/tensor.h"
+#include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy {
+namespace mmdeploy::transform {
 
-DefaultFormatBundleImpl::DefaultFormatBundleImpl(const Value& args) : TransformImpl(args) {
-  if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
-    arg_.img_to_float = args["img_to_float"].get<bool>();
-  }
-}
-
-Result<Value> DefaultFormatBundleImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", to_json(input).dump(2));
-  Value output = input;
-  if (input.contains("img")) {
-    Tensor in_tensor = input["img"].get<Tensor>();
-    OUTCOME_TRY(auto tensor, ToFloat32(in_tensor, arg_.img_to_float));
-
-    // set default meta keys
-    if (!output.contains("pad_shape")) {
-      for (auto v : tensor.shape()) {
-        output["pad_shape"].push_back(v);
-      }
-    }
-    if (!output.contains("scale_factor")) {
-      for (int i = 0; i < 4; ++i) {
-        output["scale_factor"].push_back(1.0);
-      }
-    }
-    if (!output.contains("img_norm_cfg")) {
-      int channel = tensor.shape()[3];
-      for (int i = 0; i < channel; i++) {
-        output["img_norm_cfg"]["mean"].push_back(0.0);
-        output["img_norm_cfg"]["std"].push_back(1.0);
-      }
-      output["img_norm_cfg"]["to_rgb"] = false;
-    }
-
-    // trace static info & runtime args
-    if (output.contains("__tracer__")) {
-      output["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(arg_.img_to_float,
-                                                                  in_tensor.data_type());
-    }
-
-    // transpose
-    OUTCOME_TRY(tensor, HWC2CHW(tensor));
-    SetTransformData(output, "img", std::move(tensor));
-  }
-
-  MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", to_json(output).dump(2));
-  return output;
-}
-
-DefaultFormatBundle::DefaultFormatBundle(const Value& args, int version) : Transform(args) {
-  auto impl_creator =
-      Registry<DefaultFormatBundleImpl>::Get().GetCreator(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'DefaultFormatBundle' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'DefaultFormatBundle' is not supported on specified platform");
-  }
-  impl_ = impl_creator->Create(args);
-}
-
-class DefaultFormatBundleCreator : public Creator<Transform> {
+class DefaultFormatBundle : public Transform {
  public:
-  const char* GetName() const override { return "DefaultFormatBundle"; }
-  int GetVersion() const override { return version_; }
-  ReturnType Create(const Value& args) override {
-    return std::make_unique<DefaultFormatBundle>(args, version_);
+  explicit DefaultFormatBundle(const Value& args) {
+    if (args.contains("img_to_float") && args["img_to_float"].is_boolean()) {
+      img_to_float_ = args["img_to_float"].get<bool>();
+    }
+    to_float_ = operation::Managed<operation::ToFloat>::Create();
+    hwc2chw_ = operation::Managed<operation::HWC2CHW>::Create();
+  }
+
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("DefaultFormatBundle input: {}", data);
+
+    if (data.contains("img")) {
+      Tensor tensor = data["img"].get<Tensor>();
+      auto input_data_type = tensor.data_type();
+      if (img_to_float_) {
+        OUTCOME_TRY(to_float_.Apply(tensor, tensor));
+      }
+
+      // set default meta keys
+      if (!data.contains("pad_shape")) {
+        for (auto v : tensor.shape()) {
+          data["pad_shape"].push_back(v);
+        }
+      }
+      if (!data.contains("scale_factor")) {
+        data["scale_factor"].push_back(1.0);
+      }
+      if (!data.contains("img_norm_cfg")) {
+        int channel = tensor.shape()[3];
+        for (int i = 0; i < channel; i++) {
+          data["img_norm_cfg"]["mean"].push_back(0.0);
+          data["img_norm_cfg"]["std"].push_back(1.0);
+        }
+        data["img_norm_cfg"]["to_rgb"] = false;
+      }
+
+      // trace static info & runtime args
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().DefaultFormatBundle(img_to_float_, input_data_type);
+      }
+
+      // transpose
+      OUTCOME_TRY(hwc2chw_.Apply(tensor, tensor));
+      data["img"] = std::move(tensor);
+    }
+
+    MMDEPLOY_DEBUG("DefaultFormatBundle output: {}", data);
+    return success();
   }
 
  private:
-  int version_{1};
+  operation::Managed<operation::ToFloat> to_float_;
+  operation::Managed<operation::HWC2CHW> hwc2chw_;
+  bool img_to_float_ = true;
 };
-REGISTER_MODULE(Transform, DefaultFormatBundleCreator);
-MMDEPLOY_DEFINE_REGISTRY(DefaultFormatBundleImpl);
-}  // namespace mmdeploy
+
+MMDEPLOY_REGISTER_TRANSFORM(DefaultFormatBundle);
+
+}  // namespace mmdeploy::transform

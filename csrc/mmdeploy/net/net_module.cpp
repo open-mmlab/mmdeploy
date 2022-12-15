@@ -11,7 +11,6 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/core/utils/scope_counter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 
 using std::string;
@@ -28,14 +27,17 @@ struct NetModule::Impl {
     auto init = [&]() -> Result<void> {
       auto name = args["name"].get<std::string>();
       auto& context = args["context"];
+      if (context.contains("scope")) {
+        is_profiling_ = true;
+      }
       auto model = context["model"].get<Model>();
       OUTCOME_TRY(auto config, model.GetModelConfig(name));
       device_ = context.value("device", Device{"cpu"});
       stream_ = context.value("stream", Stream::GetDefault(device_));
-      auto creator = Registry<Net>::Get().GetCreator(config.backend);
+      auto creator = gRegistry<Net>().Get(config.backend);
       if (!creator) {
         MMDEPLOY_ERROR("Net backend not found: {}, available backends: {}", config.backend,
-                       Registry<Net>::Get().List());
+                       gRegistry<Net>().List());
         return Status(eEntryNotFound);
       }
       auto net_cfg = args;
@@ -177,6 +179,9 @@ struct NetModule::Impl {
         output[0].emplace(name, std::move(tmp));
       }
     }
+    if (is_profiling_) {
+      OUTCOME_TRY(stream_.Wait());
+    }
 
     return output;
   }
@@ -190,6 +195,7 @@ struct NetModule::Impl {
   std::map<std::string, std::string> input_mapping_;
   // outer scope to model output names
   std::map<std::string, std::string> output_mapping_;
+  bool is_profiling_{false};
 };
 
 NetModule::~NetModule() = default;
@@ -227,15 +233,7 @@ Result<Value> NetModule::operator()(const Value& input) {
   }
 }
 
-class NetModuleCreator : public Creator<Module> {
- public:
-  const char* GetName() const override { return "Net"; }
-  int GetVersion() const override { return 0; }
-  std::unique_ptr<Module> Create(const Value& value) override {
-    return CreateTask(NetModule{value});
-  }
-};
-
-REGISTER_MODULE(Module, NetModuleCreator);
+MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Net, 0),
+                               [](const Value& config) { return CreateTask(NetModule{config}); });
 
 }  // namespace mmdeploy::framework

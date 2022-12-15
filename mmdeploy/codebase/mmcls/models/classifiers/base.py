@@ -12,7 +12,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
 def base_classifier__forward(
-        ctx,
         self,
         batch_inputs: Tensor,
         data_samples: Optional[List[BaseDataElement]] = None,
@@ -30,6 +29,7 @@ def base_classifier__forward(
     Returns:
         return a list of :obj:`mmengine.BaseDataElement`.
     """
-    feats = self.extract_feat(batch_inputs)
-    output = self.head(feats)
+    output = self.extract_feat(batch_inputs)
+    if self.head is not None:
+        output = self.head(output)
     return output

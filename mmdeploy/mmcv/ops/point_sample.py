@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcv.ops.point_sample', backend='default')
-def point_sample__default(ctx, input, points, align_corners=False, **kwargs):
+def point_sample__default(input, points, align_corners=False, **kwargs):
     """A wrapper around :func:`grid_sample` to support 3D point_coords tensors
     Unlike :func:`torch.nn.functional.grid_sample` it assumes point_coords to
     lie inside ``[0, 1] x [0, 1]`` square.
@@ -37,7 +37,7 @@ def point_sample__default(ctx, input, points, align_corners=False, **kwargs):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcv.ops.SimpleRoIAlign.forward')
-def simple_roialign__forward(ctx, self, features, rois):
+def simple_roialign__forward(self, features, rois):
     """Rewrite `forward` of SimpleRoIAlign.
 
     Args:

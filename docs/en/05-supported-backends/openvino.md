@@ -17,7 +17,7 @@ pip install openvino-dev
 
 3. Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
 
-To work with models from [MMDetection](https://github.com/open-mmlab/mmdetection/blob/master/docs/get_started.md), you may need to install it additionally.
+To work with models from [MMDetection](https://mmdetection.readthedocs.io/en/3.x/get_started.html), you may need to install it additionally.
 
 ## Usage
 

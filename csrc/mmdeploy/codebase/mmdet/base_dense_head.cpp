@@ -99,6 +99,6 @@ Result<Detections> BaseDenseHead::GetBBoxes(const Value& prep_res, const Tensor&
   return objs;
 }
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, BaseDenseHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, BaseDenseHead);
 
 }  // namespace mmdeploy::mmdet

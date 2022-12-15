@@ -8,7 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.structures.bbox.transforms.distance2bbox'  # noqa
 )
-def distance2bbox__default(ctx, points, distance, max_shape=None):
+def distance2bbox__default(points, distance, max_shape=None):
     """Rewrite `mmdet.core.bbox.transforms.distance2bbox`
 
     Decode distance prediction to bounding box.

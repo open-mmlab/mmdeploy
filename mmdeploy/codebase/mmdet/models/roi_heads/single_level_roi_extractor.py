@@ -61,13 +61,12 @@ class MultiLevelRoiAlign(Function):
             (num_proposals, channel, output_size[1], output_size[0]))
 
 
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.roi_extractors.'
     'single_level_roi_extractor.SingleRoIExtractor.forward',
     backend='tensorrt')
-@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def single_roi_extractor__forward__tensorrt(ctx,
-                                            self,
+def single_roi_extractor__forward__tensorrt(self,
                                             feats,
                                             rois,
                                             roi_scale_factor=None):
@@ -154,8 +153,7 @@ class AscendRoiExtractor(Function):
     'mmdet.models.roi_heads.roi_extractors.'
     'single_level_roi_extractor.SingleRoIExtractor.forward',
     backend='ascend')
-def single_roi_extractor__forward__ascend(ctx,
-                                          self,
+def single_roi_extractor__forward__ascend(self,
                                           feats,
                                           rois,
                                           roi_scale_factor=None):
@@ -185,14 +183,10 @@ def single_roi_extractor__forward__ascend(ctx,
                                     finest_scale, featmap_strides, aligned)
 
 
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward')
-@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def single_roi_extractor__forward(ctx,
-                                  self,
-                                  feats,
-                                  rois,
-                                  roi_scale_factor=None):
+def single_roi_extractor__forward(self, feats, rois, roi_scale_factor=None):
     """Rewrite `forward` of SingleRoIExtractor for default backend.
 
     Rewrite this function to:
@@ -206,6 +200,8 @@ def single_roi_extractor__forward(ctx,
 
     3. use the roi align in torhcvision to accelerate the inference.
     """
+    ctx = FUNCTION_REWRITER.get_context(
+        'mmdet.models.roi_heads.SingleRoIExtractor.forward')
     backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
@@ -268,8 +264,8 @@ class SingleRoIExtractorOpenVINO(Function):
     @staticmethod
     def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
         """Symbolic function for creating onnx op."""
-        from torch.onnx.symbolic_helper import _slice_helper
-        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        from torch.onnx.symbolic_opset10 import _slice
+        rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
         domain = 'org.openvinotoolkit'
         op_name = 'ExperimentalDetectronROIFeatureExtractor'
         roi_feats = g.op(
@@ -291,8 +287,7 @@ class SingleRoIExtractorOpenVINO(Function):
     'mmdet.models.roi_heads.roi_extractors.'
     'single_level_roi_extractor.SingleRoIExtractor.forward',
     backend='openvino')
-def single_roi_extractor__forward__openvino(ctx,
-                                            self,
+def single_roi_extractor__forward__openvino(self,
                                             feats,
                                             rois,
                                             roi_scale_factor=None):
@@ -301,6 +296,7 @@ def single_roi_extractor__forward__openvino(ctx,
 
     This function uses ExperimentalDetectronROIFeatureExtractor for OpenVINO.
     """
+    ctx = FUNCTION_REWRITER.get_context()
 
     # Adding original output to SingleRoIExtractorOpenVINO.
     state = torch._C._get_tracing_state()
@@ -317,12 +313,11 @@ def single_roi_extractor__forward__openvino(ctx,
     return result
 
 
+@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend=Backend.COREML.value)
-@mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
-def single_roi_extractor__forward__coreml(ctx,
-                                          self,
+def single_roi_extractor__forward__coreml(self,
                                           feats,
                                           rois,
                                           roi_scale_factor=None):

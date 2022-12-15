@@ -179,6 +179,6 @@ Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& de
   return objs;
 }
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeBBox);
 
 }  // namespace mmdeploy::mmdet

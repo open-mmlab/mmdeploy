@@ -9,7 +9,7 @@ from mmdeploy.utils import Backend
 @FUNCTION_REWRITER.register_rewriter(
     'mmcls.models.necks.GlobalAveragePooling.forward',
     backend=Backend.DEFAULT.value)
-def gap__forward(ctx, self, inputs):
+def gap__forward(self, inputs):
     """Rewrite `forward` of GlobalAveragePooling for default backend.
 
     Replace `view` with `flatten` to export simple onnx graph.

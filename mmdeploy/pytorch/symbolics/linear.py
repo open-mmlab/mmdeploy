@@ -36,7 +36,7 @@ def linear_normal(g, input, weight, bias):
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'linear', is_pytorch=True, backend=Backend.NCNN.value)
-def linear__ncnn(ctx, g, input, weight, bias):
+def linear__ncnn(g, input, weight, bias):
     """Support export linear This rewrite enable export Gemm."""
     if bias is None:
         return linear_no_bias(g, input, weight)

@@ -118,11 +118,11 @@ Take the latest precompiled package as example, you can install it as follows:
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.10.0/mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.10.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.10.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.10.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -139,11 +139,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.10.0/mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.10.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.10.0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
@@ -232,7 +232,7 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-cd mmdeploy-0.10.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # run python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
@@ -269,7 +269,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/master/demo/python).
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/python).
 
 #### C++ API
 
@@ -321,9 +321,9 @@ find_package(MMDeploy REQUIRED)
 target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
-For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/cpp).
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/cpp).
 
-For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/master/demo/java) respectively.
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/java) respectively.
 We'll talk about them more in our next release.
 
 #### Accelerate preprocessing（Experimental）
