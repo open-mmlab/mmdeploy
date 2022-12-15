@@ -111,6 +111,23 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
    **例子**
 
    ```Python
+   # mmdeploy/apis/ncnn/__init__.py
+
+   from mmdeploy.backend.ncnn import is_available
+
+   __all__ = ['is_available']
+
+   if is_available():
+       from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
+                                                    get_output_model_file)
+       __all__ += ['onnx2ncnn', 'get_output_model_file']
+   ```
+
+   然后根据需要使用这些 APIs 为 `tools/deploy.py` 添加相关转换代码
+
+   **例子**
+
+   ```Python
     @classmethod
     def to_backend(cls,
                    ir_files: Sequence[str],
@@ -120,34 +137,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
                    device: str = 'cpu',
                    **kwargs) -> Sequence[str]:
         return ir_files
-   ```
-
-   然后根据需要使用这些 APIs 为 `tools/deploy.py` 添加相关转换代码
-
-   **例子**
-
-   ```Python
-   # tools/deploy.py
-   # ...
-       elif backend == Backend.NCNN:
-           from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-           if not is_available_ncnn():
-               logging.error('ncnn support is not available.')
-               exit(-1)
-
-           from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
-
-           backend_files = []
-           for onnx_path in onnx_files:
-               create_process(
-                   f'mmdeploy_onnx2ncnn with {onnx_path}',
-                   target=onnx2ncnn,
-                   args=(onnx_path, args.work_dir),
-                   kwargs=dict(),
-                   ret_value=ret_value)
-               backend_files += get_output_model_file(onnx_path, args.work_dir)
-   # ...
    ```
 
 5. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
