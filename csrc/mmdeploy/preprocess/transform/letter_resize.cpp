@@ -17,7 +17,7 @@ namespace mmdeploy::transform {
 class LetterResize : public Transform {
  public:
   explicit LetterResize(const Value& args) {
-    keep_ratio_ = args.value<bool>("keep_ratio_", false);
+    keep_ratio_ = args.value<bool>("keep_ratio", false);
     if (args.contains("scale")) {
       if (args["scale"].is_number_integer()) {
         auto size = args["scale"].get<int>();
@@ -35,17 +35,17 @@ class LetterResize : public Transform {
         throw std::domain_error("'scale' is expected to be an integer or and array of size 2");
       }
     }
-    if (args.contains("pad_val_")) {
-      if (args["pad_val_"].is_number()) {
-        pad_val_ = args["pad_val_"].get<float>();
-      } else if (args["pad_val_"].contains("img")) {
-        pad_val_ = args["pad_val_"]["img"].get<float>();
+    if (args.contains("pad_val")) {
+      if (args["pad_val"].is_number()) {
+        pad_val_ = args["pad_val"].get<float>();
+      } else if (args["pad_val"].contains("img")) {
+        pad_val_ = args["pad_val"]["img"].get<float>();
       }
     }
     interpolation_ = args.value<string>("interpolation", "bilinear");
-    allow_scale_up_ = args.value<bool>("allow_scale_up_", true);
-    use_mini_pad_ = args.value<bool>("use_mini_pad_", false);
-    stretch_only_ = args.value<bool>("stretch_only_", false);
+    allow_scale_up_ = args.value<bool>("allow_scale_up", true);
+    use_mini_pad_ = args.value<bool>("use_mini_pad", false);
+    stretch_only_ = args.value<bool>("stretch_only", false);
 
     vector<string> interpolations{"nearest", "bilinear", "bicubic", "area", "lanczos"};
     if (std::find(interpolations.begin(), interpolations.end(), interpolation_) ==
@@ -102,6 +102,7 @@ class LetterResize : public Transform {
       } else {
         dst_img = src_img;
       }
+
       // TODO update when mmyolo match the scale sequence with mmcv
       ratios = {ratios[1], ratios[0]};  // mmcv scale factor is (w, h)
       if (data.contains("scale_factor")) {
@@ -125,15 +126,7 @@ class LetterResize : public Transform {
 
       data["img_shape"] = {1, dst_img.shape(1), dst_img.shape(2), desc.shape[3]};
       data["pad_param"] = {top_padding, left_padding, bottom_padding, right_padding};
-
-      // trace static info & runtime args
-      if (data.contains("__tracer__")) {
-        data["__tracer__"].get_ref<Tracer&>().Resize(
-            interpolation_, {(int)dst_img.shape(1), (int)dst_img.shape(2)}, src_img.data_type());
-        data["__tracer__"].get_ref<Tracer&>().Pad(
-            pad_val_, {top_padding, left_padding, bottom_padding, right_padding},
-            {(int)dst_img.shape(1), (int)dst_img.shape(2)}, dst_img.data_type());
-      }
+      data[key] = std::move(dst_img);
     }
     MMDEPLOY_DEBUG("output: {}", data);
     return success();
