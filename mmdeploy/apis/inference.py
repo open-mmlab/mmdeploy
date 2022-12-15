@@ -3,9 +3,6 @@ from typing import Any, Sequence, Union
 
 import mmcv
 import numpy as np
-import torch
-
-from mmdeploy.utils import get_input_shape, load_config
 
 
 def inference_model(model_cfg: Union[str, mmcv.Config],
@@ -37,6 +34,10 @@ def inference_model(model_cfg: Union[str, mmcv.Config],
     Returns:
         Any: The inference results
     """
+    import torch
+
+    from mmdeploy.utils import get_input_shape, load_config
+
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     from mmdeploy.apis.utils import build_task_processor
