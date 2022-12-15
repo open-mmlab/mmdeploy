@@ -50,6 +50,7 @@
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmrotate.md
    04-supported-codebases/mmseg.md
+   04-supported-codebases/mmaction2.md
 
 .. toctree::
    :maxdepth: 1
@@ -63,6 +64,7 @@
    05-supported-backends/snpe.md
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
+   05-supported-backends/coreml.md
 
 .. toctree::
    :maxdepth: 1
