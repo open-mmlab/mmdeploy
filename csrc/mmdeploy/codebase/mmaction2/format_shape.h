@@ -10,7 +10,7 @@
 #include "mmdeploy/operation/managed.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 
-namespace mmdeploy::mmaction {
+namespace mmdeploy::mmaction2 {
 
 class FormatShapeOp : public operation::Operation {
  public:
@@ -46,6 +46,6 @@ class FormatShape : public Transform {
 
 MMDEPLOY_DECLARE_REGISTRY(FormatShapeOp, std::unique_ptr<FormatShapeOp>(std::string input_format));
 
-}  // namespace mmdeploy::mmaction
+}  // namespace mmdeploy::mmaction2
 
 #endif

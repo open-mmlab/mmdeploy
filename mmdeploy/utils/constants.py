@@ -41,7 +41,7 @@ class Codebase(AdvancedEnum):
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
-    MMACTION = 'mmaction'
+    MMACTION2 = 'mmaction2'
 
 
 class IR(AdvancedEnum):

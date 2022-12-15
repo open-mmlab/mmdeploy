@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from .mmaction import MMACTION
+from .mmaction2 import MMACTION2
 from .video_recognition import VideoRecognition
 
-__all__ = ['MMACTION', 'VideoRecognition']
+__all__ = ['MMACTION2', 'VideoRecognition']

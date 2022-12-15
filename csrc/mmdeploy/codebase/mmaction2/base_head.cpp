@@ -3,15 +3,15 @@
 #include <algorithm>
 #include <numeric>
 
-#include "mmdeploy/codebase/mmaction/mmaction.h"
+#include "mmdeploy/codebase/mmaction2/mmaction2.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
 
-namespace mmdeploy::mmaction {
+namespace mmdeploy::mmaction2 {
 
-class BaseHead : public MMAction {
+class BaseHead : public MMAction2 {
  public:
-  explicit BaseHead(const Value& cfg) : MMAction(cfg) {
+  explicit BaseHead(const Value& cfg) : MMAction2(cfg) {
     if (cfg.contains("params")) {
       topk_ = cfg["params"].value("topk", 1);
       if (topk_ <= 0) {
@@ -61,12 +61,12 @@ class BaseHead : public MMAction {
   int topk_{1};
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, BaseHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction2, BaseHead);
 
 using SlowFastHead = BaseHead;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, SlowFastHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction2, SlowFastHead);
 
 using TSNHead = BaseHead;
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction, TSNHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMAction2, TSNHead);
 
-}  // namespace mmdeploy::mmaction
+}  // namespace mmdeploy::mmaction2

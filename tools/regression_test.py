@@ -26,7 +26,7 @@ def parse_args():
         help='regression test yaml path.',
         default=[
             'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
-            'mmdet3d', 'mmaction'
+            'mmdet3d', 'mmaction2'
         ])
     parser.add_argument(
         '-p',
@@ -761,7 +761,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
         if sdk_config is not None:
 
-            if codebase_name in ['mmcls', 'mmaction']:
+            if codebase_name in ['mmcls', 'mmaction2']:
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(backend_output_path, 'sdk_test.log')

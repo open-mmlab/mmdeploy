@@ -37,20 +37,20 @@ class ListToNumpy:
         return results
 
 
-def __build_mmaction_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
-                          device: str, registry: Registry) -> BaseTask:
+def __build_mmaction2_task(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
+                           device: str, registry: Registry) -> BaseTask:
     task = get_task_type(deploy_cfg)
     return registry.module_dict[task.value](model_cfg, deploy_cfg, device)
 
 
-MMACTION_TASK = Registry('mmaction_tasks', build_func=__build_mmaction_task)
+MMACTION2_TASK = Registry('mmaction2_tasks', build_func=__build_mmaction2_task)
 
 
-@CODEBASE.register_module(Codebase.MMACTION.value)
-class MMACTION(MMCodebase):
+@CODEBASE.register_module(Codebase.MMACTION2.value)
+class MMACTION2(MMCodebase):
     """mmaction2 codebase class."""
 
-    task_registry = MMACTION_TASK
+    task_registry = MMACTION2_TASK
 
     @staticmethod
     def build_task_processor(model_cfg: mmcv.Config, deploy_cfg: mmcv.Config,
@@ -65,7 +65,7 @@ class MMACTION(MMCodebase):
         Returns:
             BaseTask: A task processor.
         """
-        return MMACTION_TASK.build(model_cfg, deploy_cfg, device)
+        return MMACTION2_TASK.build(model_cfg, deploy_cfg, device)
 
     @staticmethod
     def build_dataset(dataset_cfg: Union[str, mmcv.Config],
@@ -81,11 +81,11 @@ class MMACTION(MMCodebase):
         Returns:
             Dataset: A PyTorch dataset.
         """
-        from mmaction.datasets import build_dataset as build_dataset_mmaction
+        from mmaction.datasets import build_dataset as build_dataset_mmaction2
 
         assert dataset_type in dataset_cfg.data
         data_cfg = dataset_cfg.data[dataset_type]
-        dataset = build_dataset_mmaction(data_cfg)
+        dataset = build_dataset_mmaction2(data_cfg)
         return dataset
 
     @staticmethod
@@ -131,8 +131,8 @@ class MMACTION(MMCodebase):
             DataLoader: A PyTorch dataloader.
         """
         from mmaction.datasets import \
-            build_dataloader as build_dataloader_mmaction
-        return build_dataloader_mmaction(
+            build_dataloader as build_dataloader_mmaction2
+        return build_dataloader_mmaction2(
             dataset,
             samples_per_gpu,
             workers_per_gpu,

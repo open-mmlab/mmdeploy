@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 namespace mmdeploy {
-namespace mmaction {
+namespace mmaction2 {
 namespace cuda {
 
 template <typename T>
@@ -38,5 +38,5 @@ template void Transpose<float>(const float* src, const int* src_strides, float* 
                                const int* dst_strides, int ndim, int total, cudaStream_t stream);
 
 }  // namespace cuda
-}  // namespace mmaction
+}  // namespace mmaction2
 }  // namespace mmdeploy

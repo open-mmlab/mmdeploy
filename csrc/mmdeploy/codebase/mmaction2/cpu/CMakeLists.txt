@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-project(mmdeploy_mmaction_cpu_impl CXX)
+project(mmdeploy_mmaction2_cpu_impl CXX)
 
 if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
     add_library(${PROJECT_NAME} OBJECT format_shape_impl.cpp)
@@ -10,6 +10,6 @@ if ("cpu" IN_LIST MMDEPLOY_TARGET_DEVICES)
     endif ()
     target_link_libraries(${PROJECT_NAME} PRIVATE
             mmdeploy::core)
-    target_link_libraries(mmdeploy_mmaction PRIVATE ${PROJECT_NAME})
+    target_link_libraries(mmdeploy_mmaction2 PRIVATE ${PROJECT_NAME})
     mmdeploy_export(${PROJECT_NAME})
 endif ()

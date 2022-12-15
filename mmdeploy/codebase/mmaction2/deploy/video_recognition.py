@@ -11,7 +11,7 @@ from mmdeploy.codebase.base import BaseTask
 from mmdeploy.utils import (Task, get_backend_config, get_input_shape,
                             get_root_logger)
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
-from .mmaction import MMACTION_TASK
+from .mmaction2 import MMACTION2_TASK
 
 
 def process_model_config(model_cfg: mmcv.Config,
@@ -43,7 +43,7 @@ def process_model_config(model_cfg: mmcv.Config,
     return cfg
 
 
-@MMACTION_TASK.register_module(Task.VIDEO_RECOGNITION.value)
+@MMACTION2_TASK.register_module(Task.VIDEO_RECOGNITION.value)
 class VideoRecognition(BaseTask):
     """Video recognition task class.
 
@@ -234,7 +234,7 @@ class VideoRecognition(BaseTask):
 
     @staticmethod
     def run_inference(model, model_inputs: Dict[str, torch.Tensor]):
-        """Run inference once for a video recognition model of mmaction.
+        """Run inference once for a video recognition model of mmaction2.
 
         Args:
             model (nn.Module): Input model.

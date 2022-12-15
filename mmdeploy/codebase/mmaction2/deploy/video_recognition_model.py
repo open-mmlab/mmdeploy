@@ -123,7 +123,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmaction format."""
+    """SDK inference class, converts SDK output to mmaction2 format."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

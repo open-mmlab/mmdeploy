@@ -1,13 +1,13 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "mmdeploy/codebase/mmaction/format_shape.h"
+#include "mmdeploy/codebase/mmaction2/format_shape.h"
 
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
 
 using namespace std;
 
-namespace mmdeploy::mmaction {
+namespace mmdeploy::mmaction2 {
 
 FormatShape::FormatShape(const Value& args) {
   auto input_format = args.value("input_format", std::string(""));
@@ -15,7 +15,7 @@ FormatShape::FormatShape(const Value& args) {
     MMDEPLOY_ERROR("'input_format' should be 'NCHW' or 'NCTHW'");
     throw_exception(eInvalidArgument);
   }
-  format_ = operation::Managed<mmdeploy::mmaction::FormatShapeOp>::Create(input_format);
+  format_ = operation::Managed<mmdeploy::mmaction2::FormatShapeOp>::Create(input_format);
 }
 
 Result<void> FormatShapeOp::apply(const std::vector<Tensor>& images, Tensor& output, int clip_len,
@@ -129,4 +129,4 @@ MMDEPLOY_REGISTER_TRANSFORM(FormatShape);
 
 MMDEPLOY_DEFINE_REGISTRY(FormatShapeOp);
 
-}  // namespace mmdeploy::mmaction
+}  // namespace mmdeploy::mmaction2

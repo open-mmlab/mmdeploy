@@ -26,7 +26,8 @@ def import_codebase(codebase: Codebase):
         extra_dependent_library.get(codebase, [])
 
     for lib in dependent_library:
-        if not importlib.util.find_spec(lib):
+        third_lib = lib if lib != 'mmaction2' else 'mmaction'
+        if not importlib.util.find_spec(third_lib):
             raise ImportError(
                 f'{lib} has not been installed. '
                 f'Import mmdeploy.codebase.{codebase_name} failed.')
