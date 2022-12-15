@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_SRC_CODEBASE_MMACTION_FORMAT_SHAPE_H_
-#define MMDEPLOY_SRC_CODEBASE_MMACTION_FORMAT_SHAPE_H_
+#ifndef MMDEPLOY_CODEBASE_MMACTION2_FORMAT_SHAPE_H_
+#define MMDEPLOY_CODEBASE_MMACTION2_FORMAT_SHAPE_H_
 
 #include <array>
 #include <vector>
