@@ -3,6 +3,7 @@ import torch
 import torch.onnx.symbolic_helper as sym_help
 
 from mmdeploy.core import SYMBOLIC_REWRITER
+from mmdeploy.utils import get_ir_config
 
 
 @SYMBOLIC_REWRITER.register_symbolic('squeeze', is_pytorch=True)
@@ -20,7 +21,8 @@ def squeeze__default(g, self, dim=None):
     else:
         dims = [sym_help._get_const(dim, 'i', 'dim')]
 
-    if g.opset >= 13:
+    ctx = SYMBOLIC_REWRITER.get_context('squeeze')
+    if get_ir_config(ctx.cfg).get('opset_version', 11) >= 13:
         axes = g.op('Constant', value_t=torch.tensor(dims, dtype=torch.long))
         return g.op('Squeeze', self, axes)
 
