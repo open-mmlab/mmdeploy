@@ -50,6 +50,7 @@
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmrotate.md
    04-supported-codebases/mmseg.md
+   04-supported-codebases/mmaction2.md
 
 .. toctree::
    :maxdepth: 1

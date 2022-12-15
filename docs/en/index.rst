@@ -50,6 +50,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmdet3d.md
    04-supported-codebases/mmrotate.md
+   04-supported-codebases/mmaction2.md
 
 .. toctree::
    :maxdepth: 1
