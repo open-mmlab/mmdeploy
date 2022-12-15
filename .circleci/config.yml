@@ -1,4 +1,4 @@
-version: 2.1
+version: '2.1'
 
 # this allows you to use CircleCI's dynamic configuration feature
 setup: true
@@ -7,8 +7,6 @@ setup: true
 # the path of an updated fileset
 orbs:
   path-filtering: circleci/path-filtering@0.1.2
-
-orbs:
   codecov: codecov/codecov@3.2.4
 
 workflows:
