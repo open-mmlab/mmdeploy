@@ -64,6 +64,7 @@
    05-supported-backends/snpe.md
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
+   05-supported-backends/coreml.md
 
 .. toctree::
    :maxdepth: 1

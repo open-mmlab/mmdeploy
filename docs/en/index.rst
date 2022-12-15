@@ -64,6 +64,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
    05-supported-backends/rknn.md
+   05-supported-backends/coreml.md
 
 .. toctree::
    :maxdepth: 1
