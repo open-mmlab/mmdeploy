@@ -135,14 +135,6 @@ pipeline {
                         sh "tests/jenkins/scripts/test_convert.sh 'tmp.config'"
                     }
 
-                    post {
-                        always {
-                            dir("mmcv") {
-                                archiveArtifacts artifacts: 'dist/*.whl', onlyIfSuccessful: false, allowEmptyArchive: true
-                            }
-                            cleanWs()
-                        }
-                    }
                 }
 
                 stage('Prebuild') {
