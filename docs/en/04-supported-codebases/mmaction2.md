@@ -184,7 +184,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn  | PPLNN | OpenVINO |
-| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :---: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |   N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |   N   |   N   |    N     |
+| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
