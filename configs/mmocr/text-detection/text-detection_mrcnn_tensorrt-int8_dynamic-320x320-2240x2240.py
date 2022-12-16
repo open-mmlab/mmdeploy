@@ -1,4 +1,6 @@
-_base_ = ['./text-detection_static.py', '../../_base_/backends/tensorrt.py']
+_base_ = [
+    './text-detection_static.py', '../../_base_/backends/tensorrt-int8.py'
+]
 onnx_config = dict(
     output_names=['dets', 'labels', 'masks'],
     dynamic_axes=dict(
