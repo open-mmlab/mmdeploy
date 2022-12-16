@@ -38,7 +38,7 @@ class TestEnd2EndModel:
         model_cfg = load_config(model_cfg_path)[0]
 
         from mmdeploy.codebase.mmaction2.deploy.video_recognition_model import \
-            End2EndModel
+            End2EndModel  # noqa: E501
         cls.end2end_model = End2EndModel(
             Backend.ONNXRUNTIME, [''],
             device='cpu',
@@ -76,7 +76,7 @@ def test_build_video_recognition_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmaction2.deploy.video_recognition_model import (
+        from mmdeploy.codebase.mmaction2.deploy.video_recognition_model import (  # noqa: E501
             End2EndModel, build_video_recognition_model)
         classifier = build_video_recognition_model([''], model_cfg, deploy_cfg,
                                                    'cpu')
