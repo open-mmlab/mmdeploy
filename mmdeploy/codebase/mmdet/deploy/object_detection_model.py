@@ -600,7 +600,7 @@ class NCNNEnd2EndModel(End2EndModel):
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        return dets, torch.tensor(labels, dtype=torch.int32)
+        return dets, labels.to(torch.int32)
 
 
 @__BACKEND_MODEL.register_module('sdk')
