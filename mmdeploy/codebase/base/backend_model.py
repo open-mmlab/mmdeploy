@@ -115,6 +115,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
             return RKNNWrapper(
                 model=backend_files[0],
                 common_config=common_config,
+                input_names=input_names,
                 output_names=output_names)
         elif backend == Backend.ASCEND:
             from mmdeploy.backend.ascend import AscendWrapper

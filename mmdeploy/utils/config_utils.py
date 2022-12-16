@@ -442,3 +442,31 @@ def get_precision(deploy_cfg: Union[str, mmengine.Config]) -> str:
 def get_codebase_external_module(
         deploy_cfg: Union[str, mmengine.Config]) -> List:
     return get_codebase_config(deploy_cfg).get('module', [])
+
+
+def get_normalization(model_cfg: Union[str, mmengine.Config]):
+    """Get the Normalize transform from model config.
+
+    Args:
+        model_cfg (mmengine.Config): The content of config.
+    Returns:
+        dict: The Normalize transform.
+    """
+    model_cfg = load_config(model_cfg)[0]
+    data_preprocessor = model_cfg.get('data_preprocessor', {})
+    data_preprocessor.update(model_cfg.model.get('data_preprocessor', {}))
+    return data_preprocessor
+
+
+def get_rknn_quantization(deploy_cfg: mmengine.Config):
+    """Get the flag of `do_quantization` for rknn backend.
+
+    Args:
+        deploy_cfg (mmengine.Config): The content of config.
+    Returns:
+        bool: Do quantization or not.
+    """
+    if get_backend(deploy_cfg) == Backend.RKNN:
+        return get_backend_config(
+            deploy_cfg)['quantization_config']['do_quantization']
+    return False

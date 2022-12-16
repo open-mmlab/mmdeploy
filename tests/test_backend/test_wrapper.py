@@ -165,6 +165,7 @@ def create_wrapper(backend, model_files):
         rknn_model = RKNNWrapper(
             model_files,
             common_config=dict(target_platform=target_platform),
+            input_names=input_names,
             output_names=output_names)
         return rknn_model
     elif backend == Backend.ASCEND:
