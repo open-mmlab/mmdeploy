@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.layers.matrix_nms.mask_matrix_nms')
-def mask_matrix_nms__onnx(ctx,
+def mask_matrix_nms__default(ctx,
                           masks,
                           labels,
                           scores,

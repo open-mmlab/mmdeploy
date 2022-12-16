@@ -7,4 +7,3 @@ from . import necks  # noqa: F401,F403
 from . import roi_heads  # noqa: F401,F403
 from . import task_modules  # noqa: F401,F403
 from . import transformer  # noqa: F401,F403
-from . import utils  # noqa: F401,F403

@@ -89,8 +89,7 @@ def solohead__predict_by_feat__openvino(ctx, self,
     kernel_preds = batch_mlvl_kernel_preds[0].unsqueeze(2).unsqueeze(3)
     mask_preds = F.conv2d(
         mask_feats, kernel_preds, stride=1).squeeze(0).sigmoid()
-    aligned_score_mask = score_mask[0].unsqueeze(1).unsqueeze(2).expand(
-        mask_preds.shape)
+    aligned_score_mask = score_mask[0].unsqueeze(1).unsqueeze(2)
     mask_preds = mask_preds.where(aligned_score_mask, mask_preds.new_zeros(1))
 
     # mask.
