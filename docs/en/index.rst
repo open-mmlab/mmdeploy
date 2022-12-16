@@ -50,6 +50,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmdet3d.md
    04-supported-codebases/mmrotate.md
+   04-supported-codebases/mmaction2.md
 
 .. toctree::
    :maxdepth: 1
@@ -64,6 +65,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    05-supported-backends/torchscript.md
    05-supported-backends/rknn.md
    05-supported-backends/tvm.md
+   05-supported-backends/coreml.md
 
 .. toctree::
    :maxdepth: 1

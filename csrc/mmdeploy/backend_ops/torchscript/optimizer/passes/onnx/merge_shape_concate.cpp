@@ -29,10 +29,12 @@ void MergeShapeConcate(Node* node) {
     if (!is_kind(unsqueeze_node, "onnx::Unsqueeze") || unsqueeze_node->output()->uses().size() != 1)
       return;
 
-    auto axes = unsqueeze_node->is(Symbol::attr("axes"));
-    if (axes.size() != 1 && axes[0] != 0) return;
+    if (unsqueeze_node->hasAttribute(Symbol::attr("axes"))) {
+      auto axes = unsqueeze_node->is(Symbol::attr("axes"));
+      if (axes.size() != 1 && axes[0] != 0) return;
+    }
 
-    auto gather_node = unsqueeze_node->input()->node();
+    auto gather_node = unsqueeze_node->input(0)->node();
     if (!is_kind(gather_node, "onnx::Gather") || gather_node->i(Symbol::attr("axis")) != 0 ||
         gather_node->output()->uses().size() != 1)
       return;

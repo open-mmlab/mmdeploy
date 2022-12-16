@@ -325,6 +325,7 @@ def single_roi_extractor__forward__coreml(self,
                                           rois,
                                           roi_scale_factor=None):
     """Rewrite `forward` of SingleRoIExtractor for coreml."""
+    ctx = FUNCTION_REWRITER.get_context()
     backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
