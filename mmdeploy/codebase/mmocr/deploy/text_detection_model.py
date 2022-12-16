@@ -39,9 +39,10 @@ class End2EndModel(BaseBackendModel):
     ):
         data_preprocessor = model_cfg.model.get('data_preprocessor', {})
         if data_preprocessor is not None:  # skip when it is SDKEnd2EndModel
-            data_preprocessor.update(_scope_='mmdet')  # MRCNN
             data_preprocessor.update(
                 model_cfg.model.get('cfg', {}).get('data_preprocessor', {}))
+            if data_preprocessor.get('type', None) == 'DetDataPreprocessor':
+                data_preprocessor.update(_scope_='mmdet')  # MRCNN
         super(End2EndModel, self).__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
