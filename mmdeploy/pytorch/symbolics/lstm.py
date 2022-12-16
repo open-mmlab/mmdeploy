@@ -13,8 +13,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.onnx.symbolic_opset9._generic_rnn', backend='ncnn')
-def generic_rnn__ncnn(ctx,
-                      g,
+def generic_rnn__ncnn(g,
                       variant,
                       input,
                       initial_states,

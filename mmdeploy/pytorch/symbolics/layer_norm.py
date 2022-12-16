@@ -12,7 +12,7 @@ from mmdeploy.utils import Backend
     'layer_norm',
     is_pytorch=True,
     arg_descriptors=['v', 'is', 'v', 'v', 'f', 'i'])
-def layer_norm__default(ctx, g, input, normalized_shape, weight, bias, eps,
+def layer_norm__default(g, input, normalized_shape, weight, bias, eps,
                         cudnn_enable):
     """Symbolic function for `layer_norm`
 
@@ -62,7 +62,7 @@ def _layer_norm_ncnn(g, input, normalized_shape, weight, bias, eps,
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'layer_norm', is_pytorch=True, backend=Backend.NCNN.value)
-def layer_norm__ncnn(ctx, *args):
+def layer_norm__ncnn(*args):
     """Register default symbolic function for `layer_norm`.
 
     Add support to layer_norm to ONNX.

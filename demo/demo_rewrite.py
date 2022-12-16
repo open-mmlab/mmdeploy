@@ -13,7 +13,7 @@ from mmdeploy.utils import get_root_logger
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torchvision.models.ResNet._forward_impl')
-def forward_of_resnet(ctx, self, x):
+def forward_of_resnet(self, x):
     """Rewrite the forward implementation of resnet.
 
     Early return the feature map after two down-sampling steps.

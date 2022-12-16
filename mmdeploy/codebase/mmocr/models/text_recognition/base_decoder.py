@@ -10,7 +10,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textrecog.decoders.BaseDecoder.predict')
 def base_decoder__forward(
-    ctx,
     self,
     feat: Optional[torch.Tensor] = None,
     out_enc: Optional[torch.Tensor] = None,

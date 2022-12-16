@@ -4,8 +4,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.segmentors.CascadeEncoderDecoder.predict')
-def cascade_encoder_decoder__predict(ctx, self, inputs, data_samples,
-                                     **kwargs):
+def cascade_encoder_decoder__predict(self, inputs, data_samples, **kwargs):
     """Rewrite `predict` for default backend.
 
     1. only support mode=`whole` inference

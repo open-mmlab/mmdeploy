@@ -1,122 +1,138 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "normalize.h"
-
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/tracer.h"
+#include "mmdeploy/preprocess/transform/transform.h"
 
-using namespace std;
+namespace mmdeploy::transform {
 
-namespace mmdeploy {
+inline Tensor to_tensor(const Mat& mat) {
+  assert(mat.pixel_format() != PixelFormat::kNV12 && mat.pixel_format() != PixelFormat::kNV21);
+  TensorDesc desc{mat.device(), mat.type(), {1, mat.height(), mat.width(), mat.channel()}, ""};
+  return {desc, mat.buffer()};
+}
 
-// MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
+inline Mat to_mat(const Tensor& tensor, PixelFormat format) {
+  assert(tensor.shape().size() == 4 && tensor.shape(0) == 1);
+  return {
+      static_cast<int>(tensor.shape(1)),  // height
+      static_cast<int>(tensor.shape(2)),  // width
+      format,                             // pixel format
+      tensor.data_type(),                 // data type
+      std::shared_ptr<void>(const_cast<void*>(tensor.data()),
+                            [buffer = tensor.buffer()](auto) {}),  // data
+      tensor.device()                                              // device
+  };
+}
 
-NormalizeImpl::NormalizeImpl(const Value& args) : TransformImpl(args) {
-  if (!args.contains("mean") || !args.contains("std")) {
-    MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
-    throw std::invalid_argument("no 'mean' or 'std' is configured");
-  }
-  for (auto& v : args["mean"]) {
-    arg_.mean.push_back(v.get<float>());
-  }
-  for (auto& v : args["std"]) {
-    arg_.std.push_back(v.get<float>());
-  }
-  arg_.to_rgb = args.value("to_rgb", true);
-  arg_.to_float = args.value("to_float", true);
-  // assert `mean` is 0 and `std` is 1 when `to_float` is false
-  if (!arg_.to_float) {
-    for (int i = 0; i < arg_.mean.size(); ++i) {
-      if ((int)arg_.mean[i] != 0 || (int)arg_.std[i] != 1) {
-        MMDEPLOY_ERROR("mean {} and std {} are not supported in int8 case", arg_.mean, arg_.std);
+class Normalize : public Transform {
+ public:
+  explicit Normalize(const Value& args) {
+    if (!args.contains("mean") || !args.contains("std")) {
+      MMDEPLOY_ERROR("no 'mean' or 'std' is configured");
+      throw_exception(eInvalidArgument);
+    }
+    for (auto& v : args["mean"]) {
+      mean_.push_back(v.get<float>());
+    }
+    for (auto& v : args["std"]) {
+      std_.push_back(v.get<float>());
+    }
+    to_rgb_ = args.value("to_rgb", to_rgb_);
+    to_float_ = args.value("to_float", to_float_);
+
+    if (!to_float_) {
+      if (std::count(mean_.begin(), mean_.end(), 0.f) != mean_.size() ||
+          std::count(std_.begin(), std_.end(), 1.f) != std_.size()) {
+        MMDEPLOY_ERROR("Non-trivial mean {} and std {} are not supported in uint8 mode", mean_,
+                       std_);
         throw_exception(eInvalidArgument);
       }
     }
-  }
-}
 
-/**
-  input:
-  {
-    "ori_img": Mat,
-    "img": Tensor,
-    "attribute": "",
-    "img_shape": [int],
-    "ori_shape": [int],
-    "img_fields": [int]
+    // auto context = GetContext(args);
+    normalize_ = operation::Managed<operation::Normalize>::Create(
+        operation::Normalize::Param{mean_, std_, to_rgb_});
+    cvt_color_ = operation::Managed<operation::CvtColor>::Create();
   }
-  output:
-  {
-    "img": Tensor,
-    "attribute": "",
-    "img_shape": [int],
-    "ori_shape": [int],
-    "img_fields": [string],
-    "img_norm_cfg": {
-      "mean": [float],
-      "std": [float],
-      "to_rgb": true
+
+  /**
+    input:
+    {
+      "ori_img": Mat,
+      "img": Tensor,
+      "attribute": "",
+      "img_shape": [int],
+      "ori_shape": [int],
+      "img_fields": [int]
     }
-  }
- */
-
-Result<Value> NormalizeImpl::Process(const Value& input) {
-  MMDEPLOY_DEBUG("input: {}", to_json(input).dump(2));
-
-  // copy input data, and update its properties later
-  Value output = input;
-
-  auto img_fields = GetImageFields(input);
-  for (auto& key : img_fields) {
-    Tensor tensor = input[key].get<Tensor>();
-    auto desc = tensor.desc();
-    assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
-    assert(desc.shape.size() == 4 /*n, h, w, c*/);
-    assert(desc.shape[3] == arg_.mean.size());
-
-    if (arg_.to_float) {
-      OUTCOME_TRY(auto dst, NormalizeImage(tensor));
-      SetTransformData(output, key, std::move(dst));
-    } else {
-      if (arg_.to_rgb) {
-        OUTCOME_TRY(auto dst, ConvertToRGB(tensor));
-        SetTransformData(output, key, std::move(dst));
+    output:
+    {
+      "img": Tensor,
+      "attribute": "",
+      "img_shape": [int],
+      "ori_shape": [int],
+      "img_fields": [string],
+      "img_norm_cfg": {
+        "mean": [float],
+        "std": [float],
+        "to_rgb": true
       }
     }
+   */
 
-    for (auto& v : arg_.mean) {
-      output["img_norm_cfg"]["mean"].push_back(v);
-    }
-    for (auto v : arg_.std) {
-      output["img_norm_cfg"]["std"].push_back(v);
-    }
-    output["img_norm_cfg"]["to_rgb"] = arg_.to_rgb;
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", data);
 
-    // trace static info & runtime args
-    if (output.contains("__tracer__")) {
-      output["__tracer__"].get_ref<Tracer&>().Normalize(arg_.mean, arg_.std, arg_.to_rgb,
-                                                        desc.data_type);
+    auto img_fields = GetImageFields(data);
+    for (auto& key : img_fields) {
+      Tensor tensor = data[key].get<Tensor>();
+      auto desc = tensor.desc();
+      assert(desc.data_type == DataType::kINT8 || desc.data_type == DataType::kFLOAT);
+      assert(desc.shape.size() == 4 /*n, h, w, c*/);
+      assert(desc.shape[3] == mean_.size());
+
+      Tensor dst;
+      if (to_float_) {
+        OUTCOME_TRY(normalize_.Apply(tensor, dst));
+      } else if (to_rgb_) {
+        auto src_mat = to_mat(tensor, PixelFormat::kBGR);
+        Mat dst_mat;
+        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
+        dst = to_tensor(src_mat);
+      }
+      data[key] = std::move(dst);
+
+      for (auto& v : mean_) {
+        data["img_norm_cfg"]["mean"].push_back(v);
+      }
+      for (auto v : std_) {
+        data["img_norm_cfg"]["std"].push_back(v);
+      }
+      data["img_norm_cfg"]["to_rgb"] = to_rgb_;
+
+      // trace static info & runtime args
+      if (data.contains("__tracer__")) {
+        data["__tracer__"].get_ref<Tracer&>().Normalize(mean_, std_, to_rgb_, desc.data_type);
+      }
     }
+    MMDEPLOY_DEBUG("output: {}", data);
+    return success();
   }
-  MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
-  return output;
-}
 
-Normalize::Normalize(const Value& args, int version) : Transform(args) {
-  auto impl_creator = gRegistry<NormalizeImpl>().Get(specified_platform_, version);
-  if (nullptr == impl_creator) {
-    MMDEPLOY_ERROR("'Normalize' is not supported on '{}' platform", specified_platform_);
-    throw std::domain_error("'Normalize' is not supported on specified platform");
-  }
-  impl_ = impl_creator->Create(args);
-}
+ private:
+  operation::Managed<operation::Normalize> normalize_;
+  operation::Managed<operation::CvtColor> cvt_color_;
+  std::vector<float> mean_;
+  std::vector<float> std_;
+  bool to_rgb_{true};
+  bool to_float_{true};
+};
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (Normalize, 0), [](const Value& config) {
-  return std::make_unique<Normalize>(config, 0);
-});
+MMDEPLOY_REGISTER_TRANSFORM(Normalize);
 
-MMDEPLOY_DEFINE_REGISTRY(NormalizeImpl);
-
-}  // namespace mmdeploy
+}  // namespace mmdeploy::transform
