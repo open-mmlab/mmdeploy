@@ -80,5 +80,6 @@ class TorchScriptManager(BaseBackendManager):
         if available:
             ops_info = f'torchscript custom ops:\t{ops_available}'
             log_callback(ops_info)
+            info = f'{info}\n{ops_info}'
 
-        return info + ops_info
+        return info

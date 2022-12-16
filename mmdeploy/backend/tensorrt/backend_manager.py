@@ -80,5 +80,5 @@ class TensorRTManager(BaseBackendManager):
         if available:
             ops_info = f'tensorrt custom ops:\t{ops_available}'
             log_callback(ops_info)
-            info = info + ops_info
+            info = f'{info}\n{ops_info}'
         return info
