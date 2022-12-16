@@ -7,15 +7,15 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.layers.matrix_nms.mask_matrix_nms')
 def mask_matrix_nms__default(ctx,
-                          masks,
-                          labels,
-                          scores,
-                          filter_thr=-1,
-                          nms_pre=-1,
-                          max_num=-1,
-                          kernel='gaussian',
-                          sigma=2.0,
-                          mask_area=None):
+                             masks,
+                             labels,
+                             scores,
+                             filter_thr=-1,
+                             nms_pre=-1,
+                             max_num=-1,
+                             kernel='gaussian',
+                             sigma=2.0,
+                             mask_area=None):
     """Matrix NMS for multi-class masks.
     Args:
         masks (Tensor): Has shape (num_instances, h, w)
