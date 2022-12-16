@@ -25,14 +25,14 @@ class LetterResize : public Transform {
       } else if (args["scale"].is_array()) {
         if (args["scale"].size() != 2) {
           MMDEPLOY_ERROR("'scale' expects an array of size 2, but got {}", args["scale"].size());
-          throw std::length_error("'scale' expects an array of size 2");
+          throw_exception(eInvalidArgument);
         }
         auto height = args["scale"][0].get<int>();
         auto width = args["scale"][1].get<int>();
         img_scale_ = {height, width};
       } else {
         MMDEPLOY_ERROR("'scale' is expected to be an integer or and array of size 2");
-        throw std::domain_error("'scale' is expected to be an integer or and array of size 2");
+        throw_exception(eInvalidArgument);
       }
     }
     if (args.contains("pad_val")) {
@@ -51,7 +51,7 @@ class LetterResize : public Transform {
     if (std::find(interpolations.begin(), interpolations.end(), interpolation_) ==
         interpolations.end()) {
       MMDEPLOY_ERROR("'{}' interpolation is not supported", interpolation_);
-      throw std::invalid_argument("unexpected interpolation");
+      throw_exception(eInvalidArgument);
     }
 
     resize_ = operation::Managed<operation::Resize>::Create(interpolation_);
