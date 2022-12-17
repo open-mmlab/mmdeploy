@@ -558,7 +558,7 @@ def test_prepare_onnx_paddings__tensorrt():
 
 
 @backend_checker(Backend.ONNXRUNTIME)
-def test_linspace__onnx():
+def test_linspace__default():
     import random
 
     deploy_cfg_ort = Config(
