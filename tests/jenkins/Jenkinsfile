@@ -25,11 +25,11 @@ pipeline {
         )
         booleanParam(
             name: 'EXEC_BUILD',
-            defaultValue: true,
+            defaultValue: false,
         )
         booleanParam(
             name: 'EXEC_PREBUILD',
-            defaultValue: true,
+            defaultValue: false,
         )
         booleanParam(
             name: 'EXEC_CONVERT',
@@ -37,7 +37,7 @@ pipeline {
         )
         booleanParam(
             name: 'EXEC_UNITTEST',
-            defaultValue: true,
+            defaultValue: false,
         )
         string(
             name: 'repo_url',
@@ -60,6 +60,7 @@ pipeline {
         )
         string(
             name: 'exec_torch_versions',
+            description: '3090上可选版本: 1.8.0/1.9.0/1.10.0/1.11.0/1.12.0, 2080上可选版本: 1.8.1/1.9.0/1.10.0/1.11.0/1.12.0',
             defaultValue: '1.10.0'
         )
         string(
@@ -81,19 +82,20 @@ pipeline {
         // )
         choice(
             name: 'tensorrt_version',
+            description: '3090上可选版本: 8.4.1.5/8.2.5.1, 2080上可选版本: 7.2.3.4',
             choices: [
                 '8.2.5.1',
                 '8.4.1.5',
-                '8.2.3.0'
+                '7.2.3.4'
             ]
         )
-        choice(
-            name: 'requirement',
-            choices: [
-                'requirementV1.0.json',
-                'requirementV2.0.json'
-            ]
-        )
+        // choice(
+        //     name: 'requirement',
+        //     choices: [
+        //         'requirementV1.0.json',
+        //         'requirementV2.0.json'
+        //     ]
+        // )
     }
 
     stages {
@@ -135,14 +137,6 @@ pipeline {
                         sh "tests/jenkins/scripts/test_convert.sh 'tmp.config'"
                     }
 
-                    post {
-                        always {
-                            dir("mmcv") {
-                                archiveArtifacts artifacts: 'dist/*.whl', onlyIfSuccessful: false, allowEmptyArchive: true
-                            }
-                            cleanWs()
-                        }
-                    }
                 }
 
                 stage('Prebuild') {
