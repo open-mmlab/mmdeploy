@@ -29,13 +29,14 @@ def rotated_rtmdet_head__predict_by_feat(
     batch into bbox predictions.
 
     Args:
-        ctx: Context that contains original meta information.
         cls_scores (list[Tensor]): Classification scores for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * num_classes, H, W).
         bbox_preds (list[Tensor]): Box energies / deltas for all
             scale levels, each is a 4D-tensor, has shape
             (batch_size, num_priors * 4, H, W).
+        angle_preds (list[Tensor]): Box angle for each scale level
+            with shape (batch_size, num_priors * angle_dim, H, W)
         batch_img_metas (list[dict], Optional): Batch image meta info.
             Defaults to None.
         cfg (ConfigDict, optional): Test / postprocessing
@@ -47,8 +48,8 @@ def rotated_rtmdet_head__predict_by_feat(
             Defaults to True.
 
     Returns:
-        tuple[Tensor, Tensor]: The first item is an (N, num_box, 5) tensor,
-            where 5 represent (tl_x, tl_y, br_x, br_y, score), N is batch
+        tuple[Tensor, Tensor]: The first item is an (N, num_box, 6) tensor,
+            where 5 represent (x, y, w, h, angle, score), N is batch
             size and the score between 0 and 1. The shape of the second
             tensor in the tuple is (N, num_box), and each element
             represents the class label of the corresponding box.
