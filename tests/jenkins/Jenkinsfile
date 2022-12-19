@@ -4,9 +4,9 @@ pipeline {
         choice(
             name: 'CONFIG',
             choices : [
+                'Linux-3090_cuda-113_master_full-test.config',
                 'Linux-3090_cuda-113_dev-1.x_full-test.config',
                 'Linux-3090_cuda-113_dev-1.x_quick-test.config',
-                'Linux-3090_cuda-113_master_full-test.config',
                 'Linux-3090_cuda-113_master_quick-test.config',
                 'Linux-2080_cuda-102_dev-1.x_full-test.config',
                 'Linux-2080_cuda-102_master_full-test.config',
@@ -82,11 +82,13 @@ pipeline {
         // )
         choice(
             name: 'tensorrt_version',
-            description: '3090上可选版本: 8.4.1.5/8.2.5.1, 2080上可选版本: 7.2.3.4',
+            description: '3090上可选版本: 8.2.3.0/8.4.1.5/8.2.5.1/8.5.1.7, 2080上可选版本: 8.2.3.0/7.2.3.4',
             choices: [
+                '8.2.3.0',
                 '8.2.5.1',
                 '8.4.1.5',
-                '7.2.3.4'
+                '7.2.3.4',
+                '8.5.1.7'
             ]
         )
         // choice(
