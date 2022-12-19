@@ -43,7 +43,7 @@ chmod 777 ${log_dir}/../
 
 ## get log_url
 host_ip=$(ifconfig -a|grep inet|grep -v 127.0.0.1|grep -v inet6|awk '{print $2}'|tr -d "addr:"|grep 10)
-log_url=$(host_ip):8989/${log_dir}
+log_url=${host_ip}:8989/${log_dir/\/data2\/regression_log\//}
 
 # let container know the host log path and url prefix
 echo ${log_dir} > $log_dir/log_path.cfg
