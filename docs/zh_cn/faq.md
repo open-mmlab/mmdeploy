@@ -81,7 +81,12 @@
   C:\Windows\System32\onnxruntime.dll
   ```
   **解决方法：** 以下两个方案任选其一
-  1. 将下载的onnxruntime中的lib目录下的dll拷贝到mmdeploy_onnxruntime_ops.dll的同级目录（推荐使用Everything 进行查找）
+  1. 将下载的onnxruntime中的lib目录下的dll拷贝到mmdeploy_onnxruntime_ops.dll的同级目录（推荐使用Everything 进行查找）。例如：将 [`onnxruntime`](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1) 的 `lib/onnxruntime.dll` 文件拷贝至 `mmdeploy/lib` 文件夹, 拷贝后 `mmdeploy/lib` 目录结构类似于
+     ```
+     `-- mmdeploy_onnxruntime_ops.dll
+     `-- mmdeploy_onnxruntime_ops.lib
+     `-- onnxruntime.dll
+     ```
   2. 将系统路径下的这两个dll改名，使其加载不到，可能涉及到修改文件权限的操作
 
 ### Pip
