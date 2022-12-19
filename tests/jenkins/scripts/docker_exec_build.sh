@@ -106,10 +106,10 @@ if [ $? -ne 0 ]; then
 fi
 test_log_dir=$BUILD_LOG_DIR/test_build
 mkdir -p ${test_log_dir}
-python tools/check_env.py 2>&1 | tee ${BUILD_LOG_DIR}/check_env.log
+python tools/check_env.py 2>&1 | tee ${BUILD_LOG_DIR}/check_env_log.txt
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends tensorrt onnxruntime \
     --performance --device cuda:0 --work-dir \
-    ${test_log_dir} 2>&1 | tee ${test_log_dir}/mmdet_regresion_test.log
+    ${test_log_dir} 2>&1 | tee ${test_log_dir}/mmdet_regresion_test_log.txt
 
 ## 校验不同torch版本下安装
 for TORCH_VERSION in 1.10.0 1.11.0 1.12.0; do

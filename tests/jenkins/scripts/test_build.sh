@@ -55,9 +55,9 @@ container_id=$(
 echo "container_id=${container_id} --name ${container_name}"
 
 nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-/root/workspace/jenkins/scripts/docker_exec_build.sh ${repo_version}" >${log_dir}/build.log 2>&1 &
+/root/workspace/jenkins/scripts/docker_exec_build.sh ${repo_version}" >${log_dir}/build_log.txt 2>&1 &
 
 wait
 docker stop $container_id
 
-cat ${log_dir}/build.log
+cat ${log_dir}/build_log.txt

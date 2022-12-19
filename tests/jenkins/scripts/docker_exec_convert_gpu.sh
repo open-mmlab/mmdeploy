@@ -138,10 +138,10 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
 
     ## start regression
     log_dir=${REGRESSION_DIR}/${codebase}/torch${TORCH_VERSION}
-    log_path=${log_dir}/convert.log
+    log_path=${log_dir}/convert_log.txt
     mkdir -p ${log_dir}
     # log env
-    python tools/check_env.py 2>&1 | tee ${log_dir}/check_env.log
+    python tools/check_env.py 2>&1 | tee ${log_dir}/check_env_log.txt
     # ignore pplnn as it's too slow
 
     start_regression=$(date +%s)

@@ -56,7 +56,7 @@ export PREBUILD_DIR=/root/workspace/prebuild-mmdeploy
 
 python tools/package_tools/mmdeploy_builder.py \
   tools/package_tools/configs/linux_x64.yaml . \
-  2>&1 | tee $PREBUILD_DIR/prebuild.log
+  2>&1 | tee $PREBUILD_DIR/prebuild_log.txt
 
 export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
 export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
@@ -83,9 +83,9 @@ pip install ${PREBUILD_DIR}/${onnxruntime_dirname}/sdk/python/mmdeploy_python-*-
 
 test_log_dir=${PREBUILD_DIR}/test_prebuild_onnxruntime
 mkdir -p $test_log_dir
-python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env_log.txt
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends onnxruntime --performance \
-    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
+    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test_log.txt
 
 # must forcely uninstall
 pip uninstall mmdeploy mmdeploy_python -y
@@ -96,8 +96,8 @@ pip install ${PREBUILD_DIR}/${tensorrt_dirname}/sdk/python/mmdeploy_python-*-cp$
 
 test_log_dir=${PREBUILD_DIR}/test_prebuild_tensorrt
 mkdir -p $test_log_dir
-python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env_log.txt
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends tensorrt --performance \
-    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
+    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test_log.txt
 
 echo "end_time-$(date +%Y%m%d%H%M)"
