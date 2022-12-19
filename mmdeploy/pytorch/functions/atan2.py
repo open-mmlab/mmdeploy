@@ -7,7 +7,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.atan2', backend='default')
 def atan2__default(
-    ctx,
     input1: torch.Tensor,
     input2: torch.Tensor,
 ):

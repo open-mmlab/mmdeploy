@@ -144,9 +144,12 @@ class RKNNModel(End2EndModel):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {inputs.device}.')
         inputs = inputs.to(self.device)
-        batch_outputs = self.wrapper({self.input_name: inputs})[0]
-        batch_outputs = batch_outputs.argmax(dim=1, keepdim=True)
-        return self.pack_result(batch_outputs, data_samples)
+        batch_outputs = self.wrapper({self.input_name: inputs})
+        batch_outputs = [
+            output.argmax(dim=1, keepdim=True)
+            for output in batch_outputs.values()
+        ]
+        return self.pack_result(batch_outputs[0], data_samples)
 
 
 @__BACKEND_MODEL.register_module('sdk')

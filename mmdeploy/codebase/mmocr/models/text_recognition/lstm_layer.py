@@ -6,7 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmocr.models.textrecog.layers.lstm_layer'
     '.BidirectionalLSTM.forward',
     backend='ncnn')
-def bidirectionallstm__forward__ncnn(ctx, self, input):
+def bidirectionallstm__forward__ncnn(self, input):
     """Rewrite `forward` of BidirectionalLSTM for ncnn backend.
 
     Rewrite this function to set batch_first of rnn layer to true. RNN in ncnn

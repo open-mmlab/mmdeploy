@@ -64,7 +64,7 @@ def instance_norm(g, input, num_groups, weight, bias, eps, cudnn_enabled):
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'group_norm', backend='tensorrt', is_pytorch=True)
-def instance_norm__tensorrt(ctx, *args):
+def instance_norm__tensorrt(*args):
     """Register symbolic function for TensorRT backend.
 
     Notes:

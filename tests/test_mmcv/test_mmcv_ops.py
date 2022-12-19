@@ -1,13 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 import tempfile
 
 import onnx
 import pytest
 import torch
+from mmengine import Config
 
+from mmdeploy.apis.onnx import export
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend
-from mmdeploy.utils.test import WrapFunction, check_backend
+from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
+                                 get_rewrite_outputs)
 
 
 @pytest.mark.parametrize(
@@ -36,16 +40,15 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
     wrapped_model = WrapFunction(wrapped_function).eval()
     result = wrapped_model(boxes, scores)
     assert result is not None
-    onnx_file_path = tempfile.NamedTemporaryFile().name
-    with RewriterContext({}, opset=11), torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file_path,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            output_names=['result'],
-            opset_version=11)
+    onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    onnx_file_prefix = osp.splitext(onnx_file_path)[0]
+    export(
+        wrapped_model, (boxes, scores),
+        onnx_file_prefix,
+        keep_initializers_as_inputs=False,
+        input_names=['boxes', 'scores'],
+        output_names=['result'],
+        opset_version=11)
     model = onnx.load(onnx_file_path)
     assert model.graph.node[3].op_type == 'NonMaxSuppression'
 
@@ -114,3 +117,107 @@ def test_patch_embed_ncnn():
     with RewriterContext({}, backend='ncnn'), torch.no_grad():
         _, shape = wrapped_model(input)
         assert shape[0] == patch_cfg['input_size'] / patch_cfg['stride']
+
+
+@backend_checker(Backend.TENSORRT)
+def test_multiclass_nms_static():
+    from mmdeploy.mmcv.ops import multiclass_nms
+    deploy_cfg = Config(
+        dict(
+            onnx_config=dict(output_names=None, input_shape=None),
+            backend_config=dict(
+                type='tensorrt',
+                common_config=dict(
+                    fp16_mode=False, max_workspace_size=1 << 20),
+                model_inputs=[
+                    dict(
+                        input_shapes=dict(
+                            boxes=dict(
+                                min_shape=[1, 5, 4],
+                                opt_shape=[1, 5, 4],
+                                max_shape=[1, 5, 4]),
+                            scores=dict(
+                                min_shape=[1, 5, 8],
+                                opt_shape=[1, 5, 8],
+                                max_shape=[1, 5, 8])))
+                ]),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    boxes = torch.rand(1, 5, 4).cuda()
+    scores = torch.rand(1, 5, 8).cuda()
+    max_output_boxes_per_class = 20
+    keep_top_k = 5
+    nms_type = 'nms'
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        nms_type=nms_type,
+        keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)
+
+
+@backend_checker(Backend.ASCEND)
+def test_multiclass_nms__ascend():
+    from mmdeploy.mmcv.ops import multiclass_nms
+    deploy_cfg = Config(
+        dict(
+            onnx_config=dict(
+                input_names=['boxes', 'scores'],
+                output_names=['dets', 'labels'],
+                input_shape=None),
+            backend_config=dict(
+                type='ascend',
+                model_inputs=[
+                    dict(input_shapes=dict(boxes=[1, 5, 4], scores=[1, 5, 8]))
+                ]),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=20,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    boxes = torch.rand(1, 5, 4)
+    scores = torch.rand(1, 5, 8)
+    max_output_boxes_per_class = 20
+    keep_top_k = 10
+    nms_type = 'nms'
+    wrapped_func = WrapFunction(
+        multiclass_nms,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        nms_type=nms_type,
+        keep_top_k=keep_top_k)
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={
+            'boxes': boxes,
+            'scores': scores
+        },
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None, 'Got unexpected rewrite '\
+        'outputs: {}'.format(rewrite_outputs)

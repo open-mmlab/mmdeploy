@@ -11,7 +11,7 @@ from mmdeploy.utils import Backend, get_dynamic_axes
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmcls.models.utils.attention.MultiheadAttention.forward',
     backend=Backend.NCNN.value)
-def multiheadattention__forward__ncnn(ctx, self, qkv_input):
+def multiheadattention__forward__ncnn(self, qkv_input):
     """Rewrite `forward` of MultiheadAttention used in vision_transformer for
     ncnn backend.
 
@@ -53,12 +53,13 @@ def multiheadattention__forward__ncnn(ctx, self, qkv_input):
     func_name=  # noqa: E251
     'mmcls.models.utils.ShiftWindowMSA.forward',
     extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
-def shift_window_msa__forward__default(ctx, self, query, hw_shape):
+def shift_window_msa__forward__default(self, query, hw_shape):
     """Rewrite forward function of ShiftWindowMSA class for TensorRT.
 
     1. replace dynamic padding with static padding and dynamic slice.
     2. always do slice `x = x[:, :H, :W, :].contiguous()` for stability.
     """
+    ctx = FUNCTION_REWRITER.get_context()
     if get_dynamic_axes(ctx.cfg) is None:
         # avoid the weird bug of torch to onnx
         return ctx.origin_func(self, query, hw_shape)
@@ -142,8 +143,7 @@ def shift_window_msa__forward__default(ctx, self, query, hw_shape):
     func_name=  # noqa: E251
     'mmcls.models.utils.ShiftWindowMSA.get_attn_mask',
     extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
-def shift_window_msa__get_attn_mask__default(ctx,
-                                             self,
+def shift_window_msa__get_attn_mask__default(self,
                                              hw_shape,
                                              window_size,
                                              shift_size,
