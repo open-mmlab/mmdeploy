@@ -28,11 +28,12 @@ def __forward_impl(self, batch_inputs, data_samples, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.single_stage_instance_seg.'
     'SingleStageInstanceSegmentor.forward')
-def single_stage_instance_segmentor__forward(self,
-                                             batch_inputs: torch.Tensor,
-                                             data_samples: OptSampleList = None,
-                                             mode: str = 'tensor',
-                                             **kwargs) -> SampleList:
+def single_stage_instance_segmentor__forward(
+        self,
+        batch_inputs: torch.Tensor,
+        data_samples: OptSampleList = None,
+        mode: str = 'tensor',
+        **kwargs) -> SampleList:
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input and return

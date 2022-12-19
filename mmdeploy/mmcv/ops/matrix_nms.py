@@ -41,7 +41,6 @@ def mask_matrix_nms__default(masks,
             - keep_inds (Tensor): The indices number of
                 the remaining mask in the input mask, has shape (n,).
     """
-    ctx = FUNCTION_REWRITER.get_context()
     assert len(labels) == len(masks) == len(scores)
     assert len(masks) == len(mask_area)
     # sort and keep top nms_pre
