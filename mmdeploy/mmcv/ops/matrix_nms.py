@@ -6,8 +6,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.layers.matrix_nms.mask_matrix_nms')
-def mask_matrix_nms__default(ctx,
-                             masks,
+def mask_matrix_nms__default(masks,
                              labels,
                              scores,
                              filter_thr=-1,
@@ -42,6 +41,7 @@ def mask_matrix_nms__default(ctx,
             - keep_inds (Tensor): The indices number of
                 the remaining mask in the input mask, has shape (n,).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(labels) == len(masks) == len(scores)
     assert len(masks) == len(mask_area)
     # sort and keep top nms_pre

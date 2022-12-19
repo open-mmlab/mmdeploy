@@ -14,7 +14,7 @@ from mmdeploy.core import FUNCTION_REWRITER
     func_name='mmdet.models.dense_heads.solov2_head.'
     'SOLOV2Head.predict_by_feat',
     backend='openvino')
-def solohead__predict_by_feat__openvino(ctx, self,
+def solohead__predict_by_feat__openvino(self,
                                         mlvl_kernel_preds: List[Tensor],
                                         mlvl_cls_scores: List[Tensor],
                                         mask_feats: Tensor,
@@ -47,6 +47,7 @@ def solohead__predict_by_feat__openvino(ctx, self,
             - masks (Tensor): Processed mask results, has
                 shape (num_instances, h, w).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     cfg = self.test_cfg
     num_levels = len(mlvl_cls_scores)
     batch_size = mlvl_cls_scores[0].size(0)

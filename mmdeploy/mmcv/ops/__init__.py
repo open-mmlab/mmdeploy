@@ -8,8 +8,9 @@ from . import transformer  # noqa: F401,F403
 from .nms import ONNXNMSop, TRTBatchedNMSop, multiclass_nms
 from .nms_rotated import (ONNXNMSRotatedOp, TRTBatchedRotatedNMSop,
                           multiclass_nms_rotated)
-
+from .matrix_nms import mask_matrix_nms__default
 __all__ = [
     'ONNXNMSop', 'TRTBatchedNMSop', 'TRTBatchedRotatedNMSop',
-    'ONNXNMSRotatedOp', 'multiclass_nms', 'multiclass_nms_rotated'
+    'ONNXNMSRotatedOp', 'multiclass_nms', 'multiclass_nms_rotated',
+    'mask_matrix_nms__default'
 ]

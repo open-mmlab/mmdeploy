@@ -8,13 +8,11 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.linspace')
-@FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.linspace')
-def linspace__default(ctx,
-                      start: Number,
+def linspace__default(start: Number,
                       end: Number,
                       steps: Optional[int] = None,
                       **kwargs):
-    """Rewrite `linspace` for onnxruntime."""
+    """Rewrite `linspace` for default backend."""
     steps = 100 if steps is None else steps
     if steps >= 1:
         step = (end - start) * 1. / (steps - 1)

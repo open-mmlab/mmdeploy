@@ -13,7 +13,7 @@ from mmdeploy.utils import is_dynamic_shape
     'instance_segmentor_forward',
     inputs=['input'],
     outputs=['dets', 'labels', 'masks'])
-def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
+def __forward_impl(self, batch_inputs, data_samples, **kwargs):
     """Rewrite and adding mark for `forward`.
 
     Encapsulate this function for rewriting `forward` of BaseDetector.
@@ -28,13 +28,11 @@ def __forward_impl(ctx, self, batch_inputs, data_samples, **kwargs):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.single_stage_instance_seg.'
     'SingleStageInstanceSegmentor.forward')
-def single_stage_instance_segmentor__forward(
-        ctx,
-        self,
-        batch_inputs: torch.Tensor,
-        data_samples: OptSampleList = None,
-        mode: str = 'tensor',
-        **kwargs) -> SampleList:
+def single_stage_instance_segmentor__forward(self,
+                                             batch_inputs: torch.Tensor,
+                                             data_samples: OptSampleList = None,
+                                             mode: str = 'tensor',
+                                             **kwargs) -> SampleList:
     """Rewrite `forward` for default backend.
 
     Support configured dynamic/static shape for model input and return
@@ -58,6 +56,7 @@ def single_stage_instance_segmentor__forward(
     data_samples = copy.deepcopy(data_samples)
     if data_samples is None:
         data_samples = [DetDataSample()]
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape
@@ -73,4 +72,4 @@ def single_stage_instance_segmentor__forward(
         data_sample.set_field(
             name='img_shape', value=img_shape, field_type='metainfo')
     return __forward_impl(
-        ctx, self, batch_inputs, data_samples=data_samples, **kwargs)
+        self, batch_inputs, data_samples=data_samples, **kwargs)
