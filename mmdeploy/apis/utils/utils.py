@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Any, Sequence
+from typing import Any, Optional, Sequence
 
 import mmcv
 
@@ -70,8 +70,8 @@ def get_predefined_partition_cfg(deploy_cfg: mmcv.Config, partition_type: str):
 @PIPELINE_MANAGER.register_pipeline()
 def to_backend(backend_name: str,
                ir_files: Sequence[str],
-               deploy_cfg: Any,
                work_dir: str,
+               deploy_cfg: Optional[Any] = None,
                log_level: int = 20,
                device: str = 'cpu',
                **kwargs) -> Sequence[str]:
@@ -80,9 +80,9 @@ def to_backend(backend_name: str,
     Args:
         backend_name (str): The name of the backend.
         ir_files (Sequence[str]): The intermediate representation files.
-        deploy_cfg (Any): The deploy config.
         work_dir (str): The work directory, backend files and logs should
             be save in this directory.
+        deploy_cfg (Any): The deploy config.
         log_level (int, optional): The log level. Defaults to logging.INFO.
         device (str, optional): The device type. Defaults to 'cpu'.
 
@@ -93,8 +93,8 @@ def to_backend(backend_name: str,
     backend_mgr = get_backend_manager(backend_name)
     return backend_mgr.to_backend(
         ir_files=ir_files,
-        deploy_cfg=deploy_cfg,
         work_dir=work_dir,
+        deploy_cfg=deploy_cfg,
         log_level=log_level,
         device=device,
         **kwargs)

@@ -491,8 +491,8 @@ def get_backend_outputs(ir_file_path: str,
         ]
     backend_files = to_backend(
         backend.value, [ir_file_path],
-        deploy_cfg=deploy_cfg,
         work_dir=work_dir,
+        deploy_cfg=deploy_cfg,
         device=device)
     backend_feats = model_inputs
 

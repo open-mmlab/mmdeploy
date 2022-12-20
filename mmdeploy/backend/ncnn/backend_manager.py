@@ -47,7 +47,6 @@ class NCNNManager(BaseBackendManager):
     @classmethod
     def to_backend(cls,
                    ir_files: Sequence[str],
-                   deploy_cfg: Any,
                    work_dir: str,
                    log_level: int = 20,
                    device: str = 'cpu',
@@ -56,7 +55,6 @@ class NCNNManager(BaseBackendManager):
 
         Args:
             ir_files (Sequence[str]): The intermediate representation files.
-            deploy_cfg (Any): The deploy config.
             work_dir (str): The work directory, backend files and logs should
                 be save in this directory.
             log_level (int, optional): The log level. Defaults to logging.INFO.

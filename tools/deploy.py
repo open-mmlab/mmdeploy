@@ -228,8 +228,8 @@ def main():
     backend_files = to_backend(
         backend,
         ir_files,
-        deploy_cfg,
         work_dir=args.work_dir,
+        deploy_cfg=deploy_cfg,
         log_level=log_level,
         device=args.device,
         uri=args.uri)
