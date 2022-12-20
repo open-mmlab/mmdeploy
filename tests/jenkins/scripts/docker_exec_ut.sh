@@ -89,6 +89,8 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         mmcv_full="mmcv-full==1.4.2"
     fi
     pip install -U openmim clip
+    # fix E   AttributeError: partially initialized module 'cv2' has no attribute 'gapi_wip_gst_GStreamerPipeline' (most likely due to a circular import)
+    pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
     mim install ${mmcv_full}
     pip install -r requirements/codebases.txt
     pip install -r requirements/tests.txt
