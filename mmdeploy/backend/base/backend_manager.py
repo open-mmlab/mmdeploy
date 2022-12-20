@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
 from abc import ABCMeta
-from typing import Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 
 class BaseBackendManager(metaclass=ABCMeta):
@@ -50,7 +50,7 @@ class BaseBackendManager(metaclass=ABCMeta):
             f'get_version has not been implemented for "{cls.__name__}"')
 
     @classmethod
-    def check_env(cls, log_callback: Optional[Any] = None) -> str:
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
         """Check current environment.
 
         Returns:

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 from ..base import BACKEND_MANAGERS, BaseBackendManager
 
@@ -66,7 +66,7 @@ class TorchScriptManager(BaseBackendManager):
                 return 'None'
 
     @classmethod
-    def check_env(cls, log_callback: Optional[Any] = None) -> str:
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
         """Check current environment.
 
         Returns:

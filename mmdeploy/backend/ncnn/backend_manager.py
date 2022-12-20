@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-from typing import Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
@@ -83,7 +83,7 @@ class NCNNManager(BaseBackendManager):
                 return 'None'
 
     @classmethod
-    def check_env(cls, log_callback: Optional[Any] = None) -> str:
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
         """Check current environment.
 
         Returns:
