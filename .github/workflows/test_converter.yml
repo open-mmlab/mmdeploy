@@ -2,10 +2,10 @@ name: test_converter
 
 on:
   push:
-    paths: &paths
+    paths:
       - "csrc/mmdeploy/backend_ops"
       - "mmdeploy"
-      - "requirements"
+      - "requirements*"
       - "tests"
       - "!tests/test_csrc"
       - "setup.py"
@@ -15,7 +15,17 @@ on:
       - "tools"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "csrc/mmdeploy/backend_ops"
+      - "mmdeploy"
+      - "requirements*"
+      - "tests"
+      - "!tests/test_csrc"
+      - "setup.py"
+      - "requirements.txt"
+      - ".github/workflows/test_converter.yml"
+      - ".github/scripts"
+      - "tools"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

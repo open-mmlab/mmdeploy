@@ -2,15 +2,18 @@ name: backend-ascend
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
-      - ".gitmodules"
       - ".github/workflows/backend-ascend.yml"
       - "CMakeLists.txt"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - ".github/workflows/backend-ascend.yml"
+      - "CMakeLists.txt"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

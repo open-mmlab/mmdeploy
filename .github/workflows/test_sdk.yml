@@ -2,17 +2,22 @@ name: test_sdk
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
       - "demo"
       - "tests/test_csrc"
-      - ".gitmodules"
       - ".github/workflows/test_sdk.yml"
       - "CMakeLists.txt"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - "demo"
+      - "tests/test_csrc"
+      - ".github/workflows/test_sdk.yml"
+      - "CMakeLists.txt"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

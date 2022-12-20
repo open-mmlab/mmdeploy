@@ -2,16 +2,20 @@ name: backend-pplnn
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
-      - ".gitmodules"
       - ".github/workflows/backend-pplnn.yml"
       - "CMakeLists.txt"
       - "tools/scripts/build_ubuntu_x64_pplnn.py"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - ".github/workflows/backend-pplnn.yml"
+      - "CMakeLists.txt"
+      - "tools/scripts/build_ubuntu_x64_pplnn.py"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -2,15 +2,18 @@ name: build_riscv64_gcc
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
-      - ".gitmodules"
       - ".github/workflows/linux-riscv64-gcc.yml"
       - "CMakeLists.txt"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - ".github/workflows/linux-riscv64-gcc.yml"
+      - "CMakeLists.txt"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

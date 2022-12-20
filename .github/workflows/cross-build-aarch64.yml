@@ -2,16 +2,20 @@ name: cross-build-aarch64
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
-      - ".gitmodules"
       - ".github/workflows/cross-build-aarch64.yml"
       - "CMakeLists.txt"
       - "tools/scripts/ubuntu_cross_build_aarch64.sh"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - ".github/workflows/cross-build-aarch64.yml"
+      - "CMakeLists.txt"
+      - "tools/scripts/ubuntu_cross_build_aarch64.sh"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

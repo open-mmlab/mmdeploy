@@ -2,16 +2,20 @@ name: backend-rknn
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
-      - ".gitmodules"
       - ".github/workflows/backend-rknn.yml"
       - "CMakeLists.txt"
       - "tools/scripts/ubuntu_cross_build_rknn.sh"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - ".github/workflows/backend-rknn.yml"
+      - "CMakeLists.txt"
+      - "tools/scripts/ubuntu_cross_build_rknn.sh"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

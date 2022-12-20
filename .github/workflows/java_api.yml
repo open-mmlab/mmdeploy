@@ -2,7 +2,7 @@ name: java_api
 
 on:
   push:
-    paths: &paths
+    paths:
       - "cmake"
       - "csrc"
       - "demo/java"
@@ -11,7 +11,13 @@ on:
       - "CMakeLists.txt"
 
   pull_request:
-    paths: *paths
+    paths:
+      - "cmake"
+      - "csrc"
+      - "demo/java"
+      - ".github/workflows/java_api.yml"
+      - ".github/scripts/test_java_demo.py"
+      - "CMakeLists.txt"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
