@@ -36,5 +36,4 @@ workflows:
           # path filtering and pipeline parameter value updates are
           # complete. In this case, we are using the parent dynamic
           # configuration itself.
-          config-path: .circleci/test.yml
-          
+          config-path: .circleci/test.yml     
