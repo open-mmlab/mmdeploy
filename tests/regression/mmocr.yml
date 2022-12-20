@@ -92,7 +92,7 @@ tensorrt:
     convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
-    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_static-1x32x128.py
+    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_static-32x128.py
 
   pipeline_trt_recognition_static_int8: &pipeline_trt_recognition_static_int8
     convert_image: *convert_image_rec
@@ -220,6 +220,15 @@ models:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp32
 
+  - name: MaskRCNN
+    metafile: configs/textdet/maskrcnn/metafile.yml
+    model_configs:
+      - configs/textdet/maskrcnn/mask-rcnn_resnet50_fpn_160e_icdar2015.py
+    pipelines:
+      - *pipeline_ts_detection_fp32
+      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_trt_detection_dynamic_fp32
+
   - name: CRNN
     metafile: configs/textrecog/crnn/metafile.yml
     model_configs:
@@ -235,6 +244,15 @@ models:
     metafile: configs/textrecog/sar/metafile.yml
     model_configs:
       - configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py
+    pipelines:
+      - *pipeline_ts_recognition_fp32
+      - *pipeline_ort_recognition_dynamic_fp32
+      - *pipeline_trt_recognition_dynamic_fp32
+
+  - name: SATRN
+    metafile: configs/textrecog/satrn/metafile.yml
+    model_configs:
+      - configs/textrecog/satrn/satrn_shallow-small_5e_st_mj.py
     pipelines:
       - *pipeline_ts_recognition_fp32
       - *pipeline_ort_recognition_dynamic_fp32
