@@ -1,4 +1,4 @@
-version: '2.1'
+version: 2.1
 
 # this allows you to use CircleCI's dynamic configuration feature
 setup: true
@@ -7,49 +7,6 @@ setup: true
 # the path of an updated fileset
 orbs:
   path-filtering: circleci/path-filtering@0.1.2
-  codecov: codecov/codecov@3.2.4
-
-upload:
-      description: |
-          Upload your coverage reports to Codecov without dealing with complex
-          configurations. This orb helps you get coverage results quickly so that you
-          can breathe easier and commit your code with confidence.
-
-          If running on `alpine` builds, the orb will need `coreutils`, `curl`, and
-          `gnupg` in order to validate.
-      parameters:
-          file:
-              default: ""
-              description: Path to the code coverage data file to upload.
-              type: string
-          flags:
-              default: ""
-              description: Flag the upload to group coverage metrics (e.g. unittests | integration | ui,chrome)
-              type: string
-          token:
-              default: CODECOV_TOKEN
-              description: Set the private repository token as the value of the variable CODECOV_TOKEN using CircleCI Environment Variables.
-              type: env_var_name
-          upload_name:
-              default: ${CIRCLE_BUILD_NUM}
-              description: Custom defined name of the upload. Visible in Codecov UI
-              type: string
-          validate:
-              default: true
-              description: Validate the uploader before uploading the codecov result.
-              type: boolean
-          version:
-              default: latest
-              description: Which version of the Codecov Uploader to use (defaults to 'latest')
-              type: string
-          when:
-              default: always
-              description: When should this step run?
-              type: string
-          xtra_args:
-              default: ""
-              description: Any extra flags as provided by the bash uploader (e.g. `-v -Z`).
-              type: string
 
 workflows:
   # the always-run workflow is always triggered, regardless of the pipeline parameters.
@@ -80,7 +37,3 @@ workflows:
           # complete. In this case, we are using the parent dynamic
           # configuration itself.
           config-path: .circleci/test.yml
-
-  upload-to-codecov:
-    jobs:
-    - codecov/upload
