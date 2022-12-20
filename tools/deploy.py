@@ -34,8 +34,8 @@ def parse_args():
         help='the dir to save logs and models')
     parser.add_argument(
         '--calib-dataset-cfg',
-        help='dataset config path used to calibrate in int8 mode. If not \
-            specified, it will use "val" dataset in model config instead.',
+        help=('dataset config path used to calibrate in int8 mode. If not '
+              'specified, it will use "val" dataset in model config instead.'),
         default=None)
     parser.add_argument(
         '--device', help='device used for conversion', default='cpu')
@@ -198,9 +198,9 @@ def main():
         assert len(model_params) == len(ir_files)
 
         from mmdeploy.apis.tensorrt import is_available as trt_is_available
-        assert trt_is_available(
-        ), 'TensorRT is not available,' \
-            + ' please install TensorRT and build TensorRT custom ops first.'
+        assert trt_is_available(), (
+            'TensorRT is not available,'
+            ' please install TensorRT and build TensorRT custom ops first.')
 
         from mmdeploy.apis.tensorrt import onnx2tensorrt
         PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
@@ -229,9 +229,9 @@ def main():
         from mmdeploy.apis.ncnn import is_available as is_available_ncnn
 
         if not is_available_ncnn():
-            logger.error('ncnn support is not available, please make sure \
-                1) `mmdeploy_onnx2ncnn` existed in `PATH` \
-                2) python import ncnn success')
+            logger.error('ncnn support is not available, please make sure:\n'
+                         '1) `mmdeploy_onnx2ncnn` existed in `PATH`\n'
+                         '2) python import ncnn success')
             exit(1)
 
         import mmdeploy.apis.ncnn as ncnn_api
@@ -279,9 +279,10 @@ def main():
         from mmdeploy.apis.snpe import is_available as is_available
 
         if not is_available():
-            logger.error('snpe support is not available, please check \
-                1) `snpe-onnx-to-dlc` existed in `PATH` 2) snpe only support \
-                    ubuntu18.04')
+            logger.error('snpe support is not available, please check\n'
+                         '1) `snpe-onnx-to-dlc` existed in `PATH`\n'
+                         '2) snpe only support\n'
+                         'ubuntu18.04')
             exit(1)
 
         import mmdeploy.apis.snpe as snpe_api
@@ -329,6 +330,7 @@ def main():
             'PPLNN is not available, please install PPLNN first.'
 
         from mmdeploy.apis.pplnn import from_onnx
+
         pplnn_pipeline_funcs = [from_onnx]
         PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
 
@@ -408,6 +410,51 @@ def main():
                              deploy_cfg, coreml_files)
 
         backend_files = coreml_files
+    elif backend == Backend.TVM:
+        import copy
+
+        from mmdeploy.apis.tvm import from_onnx, get_library_ext
+        PIPELINE_MANAGER.set_log_level(log_level, [from_onnx])
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        if args.device.startswith('cuda'):
+            target = 'cuda'
+        else:
+            target = 'llvm'
+
+        lib_ext = get_library_ext()
+
+        tvm_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            model_input = copy.deepcopy(model_inputs[model_id])
+            use_vm = model_input.get('use_vm', False)
+            if 'target' not in model_input['tuner']:
+                model_input['tuner']['target'] = target
+            lib_path = osp.splitext(onnx_path)[0] + lib_ext
+            code_path = osp.splitext(
+                onnx_path)[0] + '.code' if use_vm else None
+            model_input['output_file'] = lib_path
+            model_input['onnx_model'] = onnx_path
+            model_input['bytecode_file'] = code_path
+
+            # create calibration dataset
+            if 'qconfig' in model_input:
+                calib_path = osp.join(args.work_dir, calib_filename)
+                from mmdeploy.backend.tvm import HDF5Dataset
+                partition_type = 'end2end' if partition_cfgs is None \
+                    else onnx_name
+                dataset = HDF5Dataset(
+                    calib_path,
+                    model_input['shape'],
+                    model_type=partition_type,
+                    device=target)
+                model_input['dataset'] = dataset()
+
+            from_onnx(**model_input)
+
+            tvm_files += [lib_path, code_path]
+
+        backend_files = tvm_files
 
     if args.test_img is None:
         args.test_img = args.img
