@@ -12,12 +12,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmocr.models.textdet.detectors.MMDetWrapper.forward')
-def single_stage_text_detector__forward(
-        self,
-        inputs: torch.Tensor,
-        data_samples: Optional[Union[DetSampleList, MMDET_SampleList]] = None,
-        mode: str = 'tensor',
-        **kwargs) -> Sequence[TextDetDataSample]:
+def mmdet_wrapper__forward(self,
+                           inputs: torch.Tensor,
+                           data_samples: Optional[Union[
+                               DetSampleList, MMDET_SampleList]] = None,
+                           mode: str = 'tensor',
+                           **kwargs) -> Sequence[TextDetDataSample]:
     """The unified entry for a forward process in both training and test.
 
     The method works in three modes: "tensor", "predict" and "loss":

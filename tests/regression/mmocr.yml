@@ -184,7 +184,6 @@ models:
       - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
       - *pipeline_ncnn_detection_static_fp32
-      - *pipeline_pplnn_detection_dynamic_fp32
       - *pipeline_openvino_detection_dynamic_fp32
 
   - name: PANet
