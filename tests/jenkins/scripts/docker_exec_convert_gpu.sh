@@ -38,8 +38,8 @@ function getFullName() {
 ## prepare for mmdeploy test
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export REGRESSION_DIR=/root/workspace/mmdeploy_regression_working_dir
-ln -s /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
-cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+ln -sf /root/workspace/mmdeploy_benchmark $MMDEPLOY_DIR/data
+ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 
 # install tensorrt
 export TENSORRT_DIR=/root/workspace/TensorRT
@@ -94,7 +94,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         if [ -f ${target_file} ]; then
             echo "File exits: ${target_file}"
         else
-            cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${target_file}
+            cp -f ${torch_lib_dir}/lib/libnvrtc-builtins.so ${target_file}
         fi
     fi
     # need to build for each env
@@ -153,7 +153,8 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
         --backends $EXEC_BACKENDS \
         ${exec_performance} 2>&1 | tee ${log_path}
     end_regression=$(date +%s)
-    regression_time_${codebase}=$(( end_regression - start_regression ))
+    regression_time=$(( end_regression - start_regression ))
+    echo "execution time regression of ${codebase} is ${regression_time} seconds"
     # get stats results
     python ${MMDEPLOY_DIR}/tests/jenkins/scripts/check_results.py \
         ${URL_PREFIX} \

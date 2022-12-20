@@ -69,7 +69,7 @@ nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdepl
  /root/workspace/jenkins/scripts/docker_exec_prebuild.sh ${repo_version}" > ${log_file} 2>&1 &
 wait
 docker stop $container_id
-cp -R $prebuild_log/* $prebuild_archive_dir/
+cp -rf $prebuild_log/* $prebuild_archive_dir/
 
 echo "查看日志: ${log_file}"
 

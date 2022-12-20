@@ -23,8 +23,8 @@ unset __conda_setup
 export repo_version=${1:-v1.0}
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
 export BUILD_LOG_DIR=/root/workspace/build_log
-ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
-cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+ln -sf /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
+ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 export TENSORRT_DIR=/root/workspace/TensorRT
 export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 

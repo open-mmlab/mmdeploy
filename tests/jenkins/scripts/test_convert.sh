@@ -47,7 +47,7 @@ log_url=${host_ip}:8989/${log_dir/\/data2\/regression_log\//}
 
 # let container know the host log path and url prefix
 echo ${log_dir} > $log_dir/log_path.cfg
-cp /data2/regression_log/host.cfg $log_dir/
+cp -f /data2/regression_log/host.cfg $log_dir/
 
 ## make & init mutex
 trap "exec 1000>&-; exec 1000<&-;exit 0" 2
@@ -77,7 +77,7 @@ for codebase in ${codebase_list[@]}; do
         )
         echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
-        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}.txt 2>&1 &
+        /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}_log.txt 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"

@@ -23,7 +23,7 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 ## parameters
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 
 export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$1
 echo "Using config $CONFIG"
@@ -44,7 +44,12 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     if [ $TORCH_VERSION == "1.8.0" ]; then
         # fix torchscript issue of no libnvrtc-builtins.so.11.1
         export torch_lib_dir="$(python -m pip show torch | grep Location | awk '{print $2}')/torch"
-        cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
+        export target_file=${torch_lib_dir}/lib/libnvrtc-builtins.so.11.1
+        if [ -f ${target_file} ]; then
+            echo "File exits: ${target_file}"
+        else
+            cp ${torch_lib_dir}/lib/libnvrtc-builtins.so ${target_file}
+        fi
     fi
 
     # need to build for each env
@@ -70,11 +75,11 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
 
     # sdk tests
     mkdir -p mmdeploy_test_resources/transform
-    cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
+    cp -f ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
     ./bin/mmdeploy_tests
     lcov --capture --directory . --output-file coverage.info
     ls -lah coverage.info
-    cp coverage.info $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_sdk_ut_converage.info
+    cp -f coverage.info $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_sdk_ut_converage.info
 
     cd $MMDEPLOY_DIR
     export mmcv_full="mmcv>=2.0.0rc0"
@@ -93,7 +98,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     coverage run --branch --source mmdeploy -m pytest -rsE tests
     coverage xml
     coverage report -m
-    cp coverage.xml $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_converter_converage.xml
+    cp -f coverage.xml $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_converter_converage.xml
 
 done
 

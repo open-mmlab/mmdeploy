@@ -23,8 +23,8 @@ unset __conda_setup
 echo "start_time-$(date +%Y%m%d%H%M)"
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
-cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+ln -sf /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
+ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 
 # install tensorrt
 export TENSORRT_DIR=/root/workspace/TensorRT
