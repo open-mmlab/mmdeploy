@@ -10,11 +10,12 @@ from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_common_config, get_ir_config,
                             get_partition_config, get_root_logger,
                             get_task_type, is_dynamic_batch, load_config)
+from mmdeploy.utils.config_utils import get_backend_config
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 from .tracer import add_transform_tag, get_transform_static
 
 
-def get_mmdpeloy_version() -> str:
+def get_mmdeploy_version() -> str:
     """Return the version of MMDeploy."""
     import mmdeploy
     version = mmdeploy.__version__
@@ -80,7 +81,7 @@ def get_model_name_customs(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
 def get_models(deploy_cfg: Union[str, mmcv.Config],
                model_cfg: Union[str, mmcv.Config], work_dir: str,
                device: str) -> List:
-    """Get the output model informantion for deploy.json.
+    """Get the output model information for deploy.json.
 
     Args:
         deploy_cfg (mmcv.Config): Deploy config dict.
@@ -90,7 +91,7 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
 
     Return:
         list[dict]: The list contains dicts composed of the model name, net,
-            weghts, backend, precision batchsize and dynamic_shape.
+            weights, backend, precision batch_size and dynamic_shape.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
@@ -148,6 +149,26 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
         convert_to = deploy_cfg.backend_config.convert_to
         suffix = get_model_suffix(convert_to)
         net = replace_suffix(ir_name, suffix)
+    elif backend == Backend.TVM:
+        import os.path as osp
+
+        from mmdeploy.backend.tvm import get_library_ext
+        ext = get_library_ext()
+        net = replace_suffix(ir_name, ext)
+        # get input and output name
+        ir_cfg = get_ir_config(deploy_cfg)
+        backend_cfg = get_backend_config(deploy_cfg)
+        input_names = ir_cfg['input_names']
+        output_names = ir_cfg['output_names']
+        weights = replace_suffix(ir_name, '.txt')
+        weights_path = osp.join(work_dir, weights)
+        use_vm = backend_cfg.model_inputs[0].get('use_vm', False)
+        bytecode_path = replace_suffix(ir_name, '.code')
+        with open(weights_path, 'w') as f:
+            f.write(','.join(input_names) + '\n')
+            f.write(','.join(output_names) + '\n')
+            if use_vm:
+                f.write(bytecode_path + '\n')
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 
@@ -349,7 +370,7 @@ def get_deploy(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config, work_dir: str,
     cls_name = task_map[task]['cls_name']
     _, customs = get_model_name_customs(
         deploy_cfg, model_cfg, work_dir=work_dir, device=device)
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     models = get_models(deploy_cfg, model_cfg, work_dir, device)
     return dict(version=version, task=cls_name, models=models, customs=customs)
 
@@ -400,7 +421,7 @@ def get_detail(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         dict: Composed of version, codebase, codebase_config, onnx_config,
             backend_config and calib_config.
     """
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     codebase = get_task(deploy_cfg)
     codebase['pth'] = pth
     codebase['config'] = model_cfg.filename

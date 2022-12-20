@@ -53,8 +53,8 @@ def process_model_config(model_cfg: mmcv.Config,
                 test_pipeline[1].transforms[0].height = input_shape[1]
                 test_pipeline[1].transforms[0].max_width = input_shape[0]
             else:
-                raise ValueError(f'Transforms[0] should be ResizeOCR, but got\
-                        {test_pipeline[1].transforms[0].type}')
+                raise ValueError('Transforms[0] should be ResizeOCR, but got'
+                                 f'{test_pipeline[1].transforms[0].type}')
         else:
             test_pipeline[1].update(resize)
     model_cfg.data.test.pipeline = test_pipeline

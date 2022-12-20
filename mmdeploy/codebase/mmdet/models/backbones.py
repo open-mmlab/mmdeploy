@@ -41,8 +41,8 @@ def focus__forward__ncnn(ctx, self, x):
         x (Tensor): The calculated tensor with shape (N, 4*C, H//2, W//2).
     """
     batch_size, c, h, w = x.shape
-    assert h % 2 == 0 and w % 2 == 0, f'focus for yolox needs even feature\
-        height and width, got {(h, w)}.'
+    assert h % 2 == 0 and w % 2 == 0, 'focus for yolox needs even feature' \
+        f'height and width, got {(h, w)}.'
 
     x = x.reshape(batch_size, c * h, 1, w)
     _b, _c, _h, _w = x.shape

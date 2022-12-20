@@ -204,9 +204,9 @@ def mark(func_name: Optional[str] = None,
 
     Args:
         func_name (str): The name of the function where marks come from.
-        inputs (Sequence[str]): The input names of the marks. The final name \
+        inputs (Sequence[str]): The input names of the marks. The final name
             might have suffix if inputs is list or dictionary.
-        outputs (Sequence[str]): The output names of the marks. The final \
+        outputs (Sequence[str]): The output names of the marks. The final
             name might have suffix if outputs is list or dictionary.
 
     Returns:

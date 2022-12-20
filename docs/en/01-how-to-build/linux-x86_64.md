@@ -7,10 +7,8 @@
     - [Install Dependencies for SDK](#install-dependencies-for-sdk)
     - [Install Inference Engines for MMDeploy](#install-inference-engines-for-mmdeploy)
   - [Build MMDeploy](#build-mmdeploy)
-    - [Build Options Spec](#build-options-spec)
     - [Build Model Converter](#build-model-converter)
-      - [Build Custom Ops](#build-custom-ops)
-      - [Install Model Converter](#install-model-converter)
+    - [Install Model Converter](#install-model-converter)
     - [Build SDK and Demo](#build-sdk-and-demo)
 
 ______________________________________________________________________
@@ -246,6 +244,18 @@ export LD_LIBRARY_PATH=$Torch_DIR/lib:$LD_LIBRARY_PATH
     2. Setup environment
    <pre><code>
 export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
+   </code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td>TVM</td>
+    <td>TVM</td>
+    <td>
+    1. Install TVM follow <a href="https://tvm.apache.org/docs/install/from_source.html">official guide</a>.<br>
+    2. Setup environment
+   <pre><code>
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TVM_HOME}/build
+export PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
    </code></pre>
     </td>
   </tr>

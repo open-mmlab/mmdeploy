@@ -80,7 +80,7 @@ void TRTMultiLevelRoiAlign::configurePlugin(const nvinfer1::DynamicPluginTensorD
   ASSERT(nbOutputs == 1);
   ASSERT(nbInputs >= 1);
   mFeatmapStrides =
-      std::vector<float>(mFeatmapStrides.begin(), mFeatmapStrides.begin() + nbInputs - 1);
+      std::vector<float>(mFeatmapStrides.begin(), mFeatmapStrides.begin() + (nbInputs - 1));
 }
 
 size_t TRTMultiLevelRoiAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs,

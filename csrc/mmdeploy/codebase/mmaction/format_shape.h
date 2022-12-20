@@ -16,8 +16,19 @@ class FormatShapeOp : public operation::Operation {
  public:
   explicit FormatShapeOp(std::string input_format) : input_format_(std::move(input_format)){};
 
-  virtual Result<void> apply(const std::vector<Tensor>& inputs, Tensor& output, int clip_len,
-                             int num_clips) = 0;
+  Result<void> apply(const std::vector<Tensor>& inputs, Tensor& output, int clip_len,
+                     int num_clips);
+
+  virtual const Device& GetDevice() = 0;
+
+  virtual Result<Tensor> Transpose(Tensor& src, const TensorShape& src_dims,
+                                   const std::vector<int>& permutation) = 0;
+
+  Result<Tensor> FormatNCHW(Tensor& src, int clip_len, int num_clips);
+
+  Result<Tensor> FormatNCTHW(Tensor& src, int clip_len, int num_clips);
+
+  Result<void> MergeInputs(const std::vector<Tensor>& images, Tensor& inputs);
 
  protected:
   std::string input_format_;
