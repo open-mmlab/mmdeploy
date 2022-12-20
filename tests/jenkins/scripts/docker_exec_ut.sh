@@ -23,6 +23,8 @@ echo "start_time-$(date +%Y%m%d%H%M)"
 
 ## parameters
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
+export UT_LOG_DIR=/root/workspace/ut_log
+
 ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 
 export CONFIG=${MMDEPLOY_DIR}/tests/jenkins/conf/$1
@@ -79,7 +81,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     ./bin/mmdeploy_tests
     lcov --capture --directory . --output-file coverage.info
     ls -lah coverage.info
-    cp -f coverage.info $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_sdk_ut_converage.info
+    cp -f coverage.info ${UT_LOG_DIR}/torch${TORCH_VERSION}_sdk_ut_converage.info
 
     cd $MMDEPLOY_DIR
     export mmcv_full="mmcv>=2.0.0rc0"
@@ -100,7 +102,7 @@ for TORCH_VERSION in ${EXEC_TORCH_VERSIONS}; do
     set -e # enable step error check
     coverage xml
     coverage report -m
-    cp -f coverage.xml $MMDEPLOY_DIR/../ut_log/torch${TORCH_VERSION}_converter_converage.xml
+    cp -f coverage.xml ${UT_LOG_DIR}/torch${TORCH_VERSION}_converter_converage.xml
 
 done
 
