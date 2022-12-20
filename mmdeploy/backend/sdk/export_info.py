@@ -148,10 +148,12 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         input_name = input_names[0] if input_names else 'input'
         input_map = dict(img=input_name)
         output_map = {}
+    is_batched = is_dynamic_batch(deploy_cfg, input_name=input_map['img'])
     return_dict = dict(
         name=name,
         type='Task',
         module='Net',
+        is_batched=is_batched,
         input=['prep_output'],
         output=['infer_output'],
         input_map=input_map,
