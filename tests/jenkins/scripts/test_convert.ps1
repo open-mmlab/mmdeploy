@@ -5,14 +5,19 @@ $env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
 $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
 $env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
 $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
-$env:MMDEPLOY_DIR="$pwd"
+
+
+
+
+
+
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
 #read configuration file
-$config_path = "$env:MMDEPLOY_DIR\tests\jenkins\conf\win_default.config"
+$config_path = "$env:WORKSPACE\tests\jenkins\conf\win_default.config"
 $conf = ReadConfig $config_path
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     throw "can't load config from $config_path."
 }
 $env:CUDA_VERSION=$conf.cuda_version
@@ -29,7 +34,7 @@ $repo_url=$conf.repo_url
 Write-Host "repo_url=$repo_url"
 
 SwitchCudaVersion $env:CUDA_VERSION
-if ($LASTEXITCODE -ne 0) {
+if (-not $?) {
     throw "can't switch cuda version to $env:CUDA_VERSION."
 }
 
@@ -38,6 +43,13 @@ if ( $exec_performance -eq "y" ) {
 }else {
     $exec_performance=$null
 }
+
+git clone -b $mmdeploy_branch https://github.com/open-mmlab/mmdeploy.git 
+cd mmdeploy
+$env:MMDEPLOY_DIR="$pwd"
+Write-Host "mmdeploy_dr = $env:MMDEPLOY_DIR"
+git submodule update --init --recursive
+# Copy-Item -Force -Recurse D:\huangzijie\workspace\tests
 
 $codebase_fullname_opt = @{
     "mmdet" = "mmdetection";
@@ -88,10 +100,16 @@ $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 #cudnn
 $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
-git pull https://github.com/open-mmlab/mmdeploy.git
-git submodule update --init --recursive
+#git clone -b $mmdeploy_branch  https://github.com/open-mmlab/mmdeploy.git Tmp
+#git submodule update --init --recursive
+#Remove-Item -Force -Recurse .\Tmp\.git
+#Copy-Item -Path $pwd\Tmp\* -Recurse $pwd\ -Force
+#rm -r Tmp
+
 New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
 net use \\10.1.52.36\public\benchmark /user:zhengshaofeng
+
+
 
 mkdir build
 cd build
@@ -135,8 +153,8 @@ $script_block = {
         [string] $log_dir,
         [string] $scriptDir
     )
-    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.log"
-    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.log"
+    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase_log.txt"
+    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase_log.txt"
 }
 
 $threads = @()

@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 repo_version=${1:-v1.0}
 
 ## keep container alive
@@ -20,13 +23,12 @@ unset __conda_setup
 echo "start_time-$(date +%Y%m%d%H%M)"
 
 export MMDEPLOY_DIR=/root/workspace/mmdeploy
-ln -s /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
-cp -R /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/
+ln -sf /root/workspace/mmdeploy_benchmark ${MMDEPLOY_DIR}/data
+ln -sf /root/workspace/jenkins ${MMDEPLOY_DIR}/tests/jenkins
 
 # install tensorrt
-export TENSORRT_DIR=/root/workspace/TensorRT-8.2.3.0
-export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:${LD_LIBRARY_PATH}
-export TENSORRT_VERSION=8.2.3.0
+export TENSORRT_DIR=/root/workspace/TensorRT
+export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 
 cd /root/workspace
 mmdet_version=mmdet
@@ -54,7 +56,7 @@ export PREBUILD_DIR=/root/workspace/prebuild-mmdeploy
 
 python tools/package_tools/mmdeploy_builder.py \
   tools/package_tools/configs/linux_x64.yaml . \
-  2>&1 | tee $PREBUILD_DIR/prebuild.log
+  2>&1 | tee $PREBUILD_DIR/prebuild_log.txt
 
 export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
 export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
@@ -70,7 +72,7 @@ conda activate torch1.10.0
 export PYTHON_VERSION=$(python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
 
 pip install ${TENSORRT_DIR}/python/tensorrt-*-cp${PYTHON_VERSION}-none-linux_x86_64.whl
-pip install openmim
+pip install -U openmim
 mim install $mmdet_version
 pip install -r requirements/tests.txt
 
@@ -81,9 +83,9 @@ pip install ${PREBUILD_DIR}/${onnxruntime_dirname}/sdk/python/mmdeploy_python-*-
 
 test_log_dir=${PREBUILD_DIR}/test_prebuild_onnxruntime
 mkdir -p $test_log_dir
-python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env_log.txt
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends onnxruntime --performance \
-    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
+    --device cpu --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test_log.txt
 
 # must forcely uninstall
 pip uninstall mmdeploy mmdeploy_python -y
@@ -94,8 +96,8 @@ pip install ${PREBUILD_DIR}/${tensorrt_dirname}/sdk/python/mmdeploy_python-*-cp$
 
 test_log_dir=${PREBUILD_DIR}/test_prebuild_tensorrt
 mkdir -p $test_log_dir
-python tools/check_env.py 2>&1 | tee $test_log_dir/check_env.log
+python tools/check_env.py 2>&1 | tee $test_log_dir/check_env_log.txt
 python tools/regression_test.py --codebase mmdet --models ssd yolov3 --backends tensorrt --performance \
-    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test.log
+    --device cuda:0 --work-dir $test_log_dir 2>&1 | tee $test_log_dir/mmdet_regresion_test_log.txt
 
 echo "end_time-$(date +%Y%m%d%H%M)"
