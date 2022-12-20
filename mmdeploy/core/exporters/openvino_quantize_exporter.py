@@ -17,10 +17,10 @@ class OpenVinoQuantizeExportor(BaseQuantizeExportor):
         qmin = int(qmin)
         levels = qmax - qmin + 1
         # adjust weight levels
-        if levels == 128:
-            levels = 256
-            qmax = qmax * 2 + 1
-            qmin = qmin * 2
+        # if levels == 128:
+        #     levels = 256
+        #     qmax = qmax * 2 + 1
+        #     qmin = qmin * 2
         output_name = node.output[0]
         # Create a node (FakeQuantize)
         keys = ['input_min', 'input_max', 'output_min', 'output_max']

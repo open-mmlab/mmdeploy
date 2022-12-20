@@ -131,7 +131,7 @@ class BaseQuantizeExportor():
                                            symbolic_constant_inputs):
         for node in symbolic_nodes:
             self.onnx_model.graph.node.remove(node)
-
+        removed = set()
         for constant in symbolic_constant_inputs:
             remove = True
             for node in self.onnx_model.graph.node:
@@ -139,9 +139,9 @@ class BaseQuantizeExportor():
                     if input_name == constant.output[0]:
                         remove = False
                         break
-            if remove:
+            if remove and constant.name not in removed:
                 self.onnx_model.graph.node.remove(constant)
-
+                removed.add(constant.name)
     def export(self, onnx_path):
         pass
 
