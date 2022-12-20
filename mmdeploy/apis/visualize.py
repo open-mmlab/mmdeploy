@@ -62,7 +62,10 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         if backend == Backend.PYTORCH:
             model = task_processor.build_pytorch_model(model[0])
         else:
-            model = task_processor.build_backend_model(model)
+            model = task_processor.build_backend_model(
+                model,
+                data_preprocessor_updater=task_processor.
+                update_data_preprocessor)
 
     model_inputs, _ = task_processor.create_input(img, input_shape)
     with torch.no_grad():

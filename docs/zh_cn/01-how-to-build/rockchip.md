@@ -1,12 +1,15 @@
 # 瑞芯微 NPU 部署
 
-- [模型转换](#模型转换)
-  - [安装环境](#安装环境)
-  - [分裂模型转换](#分类模型转换)
-  - [检测模型转换](#检测模型转换)
-- [模型推理](#模型推理)
-  - [Host 交叉编译](#Host-交叉编译)
-  - [Device 执行推理](#Device-执行推理)
+- [瑞芯微 NPU 部署](#瑞芯微-npu-部署)
+  - [模型转换](#模型转换)
+    - [安装环境](#安装环境)
+    - [分类模型转换](#分类模型转换)
+    - [检测模型转换](#检测模型转换)
+    - [部署 config 说明](#部署-config-说明)
+    - [问题说明](#问题说明)
+  - [模型推理](#模型推理)
+    - [Host 交叉编译](#host-交叉编译)
+    - [Device 执行推理](#device-执行推理)
 
 ______________________________________________________________________
 
@@ -105,7 +108,7 @@ python tools/deploy.py \
 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)
 
 ```python
-# yolov3, yolox
+# yolov3, yolox for rknn-toolkit and rknn-toolkit2
 partition_config = dict(
   type='rknn',  # the partition policy name
   apply_marks=True,  # should always be set to True
@@ -113,7 +116,8 @@ partition_config = dict(
       dict(
           save_file='model.onnx',  # name to save the partitioned onnx
           start=['detector_forward:input'],  # [mark_name:input, ...]
-          end=['yolo_head:input'])  # [mark_name:output, ...]
+          end=['yolo_head:input'],  # [mark_name:output, ...]
+          output_names=[f'pred_maps.{i}' for i in range(3)]) # output names
   ])
 ```
 
@@ -135,7 +139,7 @@ python tools/deploy.py \
 将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)。使用 rknn-toolkit 的用户则不用。
 
 ```python
-# retinanet, ssd
+# retinanet, ssd and fsaf for rknn-toolkit2
 partition_config = dict(
     type='rknn',  # the partition policy name
     apply_marks=True,
@@ -143,7 +147,9 @@ partition_config = dict(
         dict(
             save_file='model.onnx',
             start='detector_forward:input',
-            end=['BaseDenseHead:output'])
+            end=['BaseDenseHead:output'],
+            output_names=[f'BaseDenseHead.cls.{i}' for i in range(5)] +
+            [f'BaseDenseHead.loc.{i}' for i in range(5)])
     ])
 ```
 
@@ -168,25 +174,8 @@ backend_config = dict(
 
 ### 问题说明
 
-- 量化失败.
-
-  经验来说, 如果 `do_quantization` 被设置为 `True`，RKNN 需要的输入没有被归一化过。请修改 `Normalize` 在 `model_cfg` 的设置，如将
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-  ```
-
-  改为
-
-  ```python
-  img_norm_cfg = dict(
-    mean=[0, 0, 0], std=[1, 1, 1], to_rgb=True)
-  ```
-
-  此外, deploy_cfg 的 `mean_values` 和 `std_values` 应该被设置为 `model_cfg` 中归一化的设置. 使 `mean_values=[[103.53, 116.28, 123.675]]`, `std_values=[[57.375, 57.12, 58.395]]`。
-
 - SDK 只支持 int8 的 rknn 模型，这需要在转换模型时设置 `do_quantization=True`。
+- 模型速度问题：如果使用的设备运行的是 RKNPU，比如 rv1126 设备，请记得在 `quantization_config` 中设置 `pre_compile=True`。
 
 ## 模型推理
 
