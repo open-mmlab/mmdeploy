@@ -220,5 +220,5 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 [pass-build-riscv64-gcc]: https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/linux-riscv64-gcc.yml?branch=master
 [pass-build-rknpu]: https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml?branch=master
 [pass-build-tvm]: https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-tvm.yml?branch=master
-[pass-no-status]: https://img.shields.io/badge/build-no%20status-lightgrey
+[pass-no-status]: https://img.shields.io/badge/build-no%20status-lightgreen
 
