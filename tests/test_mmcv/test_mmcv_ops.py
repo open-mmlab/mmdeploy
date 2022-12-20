@@ -221,3 +221,25 @@ def test_multiclass_nms__ascend():
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '\
         'outputs: {}'.format(rewrite_outputs)
+
+
+def test_modulated_deform_conv():
+    check_backend(Backend.TORCHSCRIPT)
+    from mmdeploy.backend.torchscript import ops_available
+
+    if not ops_available():
+        pytest.skip('torchscript custom ops is required.')
+
+    from mmcv.ops import ModulatedDeformConv2dPack
+
+    from mmdeploy.apis.torch_jit import trace
+
+    model = ModulatedDeformConv2dPack(3, 1, 1).eval()
+    x = torch.rand(1, 3, 16, 16)
+
+    jit_model = trace(model, x, None, backend='torchscript')
+
+    out = model(x)
+    jit_out = jit_model(x)
+
+    torch.testing.assert_allclose(out, jit_out)
