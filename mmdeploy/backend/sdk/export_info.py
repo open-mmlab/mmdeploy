@@ -220,10 +220,12 @@ def get_inference_info(deploy_cfg: mmcv.Config, model_cfg: mmcv.Config,
         input_name = input_names[0] if input_names else 'input'
         input_map = dict(img=input_name)
         output_map = {}
+    is_batched = is_dynamic_batch(deploy_cfg, input_name=input_map['img'])
     return_dict = dict(
         name=name,
         type=type,
         module=module,
+        is_batched=is_batched,
         input=input,
         output=output,
         input_map=input_map,
