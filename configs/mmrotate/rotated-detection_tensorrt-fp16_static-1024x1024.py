@@ -2,25 +2,7 @@ _base_ = [
     './rotated-detection_static.py', '../_base_/backends/tensorrt-fp16.py'
 ]
 
-onnx_config = dict(
-    output_names=['dets', 'labels'],
-    input_shape=(1024, 1024),
-    dynamic_axes={
-        'input': {
-            0: 'batch',
-            2: 'height',
-            3: 'width'
-        },
-        'dets': {
-            0: 'batch',
-            1: 'num_dets',
-        },
-        'labels': {
-            0: 'batch',
-            1: 'num_dets',
-        },
-    },
-)
+onnx_config = dict(output_names=['dets', 'labels'], input_shape=(1024, 1024))
 
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 30),
