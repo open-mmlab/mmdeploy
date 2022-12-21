@@ -43,7 +43,7 @@ build_ocv() {
 
 build_ncnn() {
   if [ ! -e "ncnn" ];then
-    git clone https://github.com/tencent/ncnn --branch 20220729 --depth=1
+    git clone https://github.com/tencent/ncnn --branch 20221128 --depth=1
   fi
   if [ ! -e "ncnn/build_aarch64" ];then
     mkdir -p ncnn/build_aarch64
@@ -75,7 +75,10 @@ build_mmdeploy() {
     -DMMDEPLOY_TARGET_DEVICES="cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
     -Dncnn_DIR=/tmp/ncnn-aarch64/lib/cmake/ncnn \
-    -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4
+    -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4 \
+    -DMMDEPLOY_BUILD_SDK=ON \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON
+
 
   good_nproc
   jobs=$?

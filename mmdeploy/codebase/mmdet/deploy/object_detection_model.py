@@ -16,7 +16,7 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.codebase.mmdet.core.post_processing import multiclass_nms
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
-                            get_partition_config, load_config)
+                            get_ir_config, get_partition_config, load_config)
 
 
 def __build_backend_model(partition_name: str, backend: Backend,
@@ -231,14 +231,14 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                export_postprocess_mask = True
+                export_postprocess_mask = False
                 if self.deploy_cfg is not None:
 
                     mmdet_deploy_cfg = get_post_processing_params(
                         self.deploy_cfg)
                     # this flag enable postprocess when export.
                     export_postprocess_mask = mmdet_deploy_cfg.get(
-                        'export_postprocess_mask', True)
+                        'export_postprocess_mask', False)
                 if not export_postprocess_mask:
                     masks = End2EndModel.postprocessing_masks(
                         dets[:, :4], masks, ori_w, ori_h, self.device)
@@ -583,8 +583,8 @@ class NCNNEnd2EndModel(End2EndModel):
                  device: str, class_names: Sequence[str],
                  model_cfg: Union[str, mmcv.Config],
                  deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        assert backend == Backend.NCNN, f'only supported ncnn, but give \
-            {backend.value}'
+        assert backend == Backend.NCNN, 'only supported ncnn, but give' \
+            f'{backend.value}'
 
         super(NCNNEnd2EndModel,
               self).__init__(backend, backend_files, device, class_names,
@@ -669,14 +669,38 @@ class RKNNModel(End2EndModel):
                  device: str, class_names: Sequence[str],
                  model_cfg: Union[str, mmcv.Config],
                  deploy_cfg: Union[str, mmcv.Config], **kwargs):
-        assert backend == Backend.RKNN, f'only supported RKNN, but give \
-            {backend.value}'
+        assert backend == Backend.RKNN, 'only supported RKNN, but give' \
+            f'{backend.value}'
 
         super(RKNNModel, self).__init__(backend, backend_files, device,
                                         class_names, deploy_cfg, **kwargs)
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
+
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths rknn model files.
+            device (str): A string specifying device type.
+        """
+        output_names = None
+        if self.deploy_cfg is not None:
+            ir_config = get_ir_config(self.deploy_cfg)
+            output_names = ir_config.get('output_names', None)
+            if get_partition_config(self.deploy_cfg) is not None:
+                output_names = get_partition_config(
+                    self.deploy_cfg)['partition_cfg'][0]['output_names']
+
+        self.wrapper = BaseBackendModel._build_wrapper(
+            backend,
+            backend_files,
+            device,
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg)
 
     def _get_bboxes(self, outputs, img_metas):
         from mmdet.models import build_head

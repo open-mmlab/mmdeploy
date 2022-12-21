@@ -3,6 +3,7 @@
 import importlib
 import os.path as osp
 
+from .backend_manager import TensorRTManager
 from .init_plugins import get_ops_path, load_tensorrt_plugin
 
 
@@ -26,14 +27,17 @@ def is_custom_ops_available():
     return osp.exists(tensorrt_op_path)
 
 
+__all__ = ['TensorRTManager']
+
 if is_available():
     from .utils import from_onnx, load, save
 
-    __all__ = ['from_onnx', 'save', 'load', 'load_tensorrt_plugin']
+    __all__ += ['from_onnx', 'save', 'load', 'load_tensorrt_plugin']
 
     try:
         # import wrapper if pytorch is available
+        from .torch_allocator import TorchAllocator
         from .wrapper import TRTWrapper
-        __all__ += ['TRTWrapper']
+        __all__ += ['TorchAllocator', 'TRTWrapper']
     except Exception:
         pass

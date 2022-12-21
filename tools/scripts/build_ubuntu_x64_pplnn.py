@@ -20,7 +20,7 @@ def install_pplcv(dep_dir, build_cuda):
     # git clone
     if not os.path.exists(pplcv_dir):
         os.system(
-            'git clone --depth 1 --branch v0.7.0 https://github.com/openppl-public/ppl.cv/'  # noqa: E501
+            'git clone --depth 1 --branch v0.7.1 https://github.com/openppl-public/ppl.cv/'  # noqa: E501
         )
 
     # build
@@ -50,7 +50,7 @@ def install_pplnn(dep_dir, build_cuda):
     # git clone
     if not os.path.exists(pplnn_dir):
         os.system(
-            'git clone --depth 1 --branch v0.8.2 https://github.com/openppl-public/ppl.nn/'  # noqa: E501
+            'git clone --depth 1 --branch v0.9.1 https://github.com/openppl-public/ppl.nn/'  # noqa: E501
         )
 
     # build

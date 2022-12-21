@@ -77,9 +77,9 @@ export OPENCV_ANDROID_SDK_DIR=${PWD}/OpenCV-android-sdk
   <tr>
     <td>ncnn </td>
     <td>A high-performance neural network inference computing framework supporting for android.</br>
-  <b> Now, MMDeploy supports 20220721 and has to use <code>git clone</code> to download it. For supported android ABI, see <a href='https://github.com/Tencent/ncnn/releases'> here </a>. </b><br>
+  <b> Now, MMDeploy supports 20221128 and has to use <code>git clone</code> to download it. For supported android ABI, see <a href='https://github.com/Tencent/ncnn/releases'> here </a>. </b><br>
 <pre><code>
-git clone -b 20220721 https://github.com/Tencent/ncnn.git
+git clone -b 20221128 https://github.com/Tencent/ncnn.git
 cd ncnn
 git submodule update --init
 export NCNN_DIR=${PWD}

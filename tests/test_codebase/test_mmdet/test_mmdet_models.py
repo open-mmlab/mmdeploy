@@ -574,6 +574,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1,
+                    export_postprocess_mask=False,
                 ))))
 
     model_cfg = mmcv.Config(dict(model=mmcv.load(model_cfg_path)))

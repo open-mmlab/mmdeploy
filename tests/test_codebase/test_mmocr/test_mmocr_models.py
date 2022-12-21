@@ -386,8 +386,9 @@ def test_simple_test_of_encode_decode_recognizer(backend):
 def test_forward_of_fpnc(backend: Backend):
     """Test forward rewrite of fpnc."""
     check_backend(backend)
-    fpnc = get_fpnc_neck_model()
+    fpnc = get_fpnc_neck_model().cuda()
     fpnc.eval()
+    input = torch.rand(1, 1, 64, 64).cuda()
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(
@@ -397,9 +398,9 @@ def test_forward_of_fpnc(backend: Backend):
                     dict(
                         input_shapes=dict(
                             inputs=dict(
-                                min_shape=[1, 3, 64, 64],
-                                opt_shape=[1, 3, 64, 64],
-                                max_shape=[1, 3, 64, 64])))
+                                min_shape=input.shape,
+                                opt_shape=input.shape,
+                                max_shape=input.shape)))
                 ]),
             onnx_config=dict(
                 input_shape=None,
@@ -407,7 +408,6 @@ def test_forward_of_fpnc(backend: Backend):
                 output_names=['output']),
             codebase_config=dict(type='mmocr', task='TextDetection')))
 
-    input = torch.rand(1, 3, 64, 64).cuda()
     model_inputs = {
         'inputs': input,
     }

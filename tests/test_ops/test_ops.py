@@ -584,8 +584,8 @@ def test_topk(backend,
         input = torch.rand(1, 8, 12, 17)
     else:
         input = input_list[0]
-    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {input.shape[0]}')
+    assert input.shape[0] == 1, ('ncnn batch must be 1, '
+                                 f'but got {input.shape[0]}')
 
     def topk_function(inputs):
         return torch.Tensor.topk(inputs, k, dim, largest, sorted)
@@ -635,11 +635,11 @@ def test_shape(backend,
     else:
         input = input_list[0]
         assert input.dim() == dim + 1, 'input.dim() must equal to dim + 1'
-        assert tuple(input.shape) == orig_shape, 'input.shape must the \
-            same as orig_shape'
+        assert tuple(input.shape) == orig_shape, ('input.shape must the '
+                                                  'same as orig_shape')
 
-    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {input.shape[0]}')
+    assert input.shape[0] == 1, ('ncnn batch must be 1, '
+                                 f'but got {input.shape[0]}')
 
     shape_node = make_node('Shape', input_names, output_names)
     assert len(input_names) == 1, 'length of input_names must be 1'
@@ -688,13 +688,13 @@ def test_constantofshape(backend,
         input = input_list[0]
         assert input.dim() == dim + 1, 'input.dim() must equal to dim + 1'
         assert tuple(input.shape) == (n, c, h,
-                                      w)[-dim - 1:], 'input.shape must the \
-            same as orig_shape'
+                                      w)[-dim - 1:], ('input.shape must the '
+                                                      'same as orig_shape')
 
-    assert input.shape[0] == 1, (f'ncnn input batch must be 1, \
-        got {input.shape[0]}')
-    assert input[0][0] == 1, (f'ncnn output mat batch must be 1, \
-        got {input[0][0]}')
+    assert input.shape[0] == 1, ('ncnn input batch must be 1, '
+                                 f'got {input.shape[0]}')
+    assert input[0][0] == 1, ('ncnn output mat batch must be 1, '
+                              f'got {input[0][0]}')
 
     constantofshape_node = make_node(
         'ConstantOfShape', input_names, output_names, value=float(val))
@@ -745,10 +745,10 @@ def test_gather(backend,
     else:
         data = input_list[0]
         indice = input_list[1]
-    assert data.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {data.shape[0]}')
-    assert indice.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {indice.shape[0]}')
+    assert data.shape[0] == 1, ('ncnn batch must be 1, '
+                                f'but got {data.shape[0]}')
+    assert indice.shape[0] == 1, ('ncnn batch must be 1, '
+                                  f'but got {indice.shape[0]}')
 
     gather_node = make_node('Gather', input_names, output_names, axis=axis + 1)
     gather_graph = make_graph([gather_node], 'gather_graph', [
@@ -766,8 +766,8 @@ def test_gather(backend,
     import importlib
 
     import onnxruntime
-    assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
-         not installed.'
+    assert importlib.util.find_spec('onnxruntime') is not None, \
+        'onnxruntime not installed.'
 
     import numpy as np
     session = onnxruntime.InferenceSession(gather_model.SerializeToString())
@@ -795,11 +795,12 @@ def test_tensorslice(backend, dim, input_list=None, save_dir=None):
         input = torch.rand((8, 12, 17)[-dim:]).unsqueeze(0)
     else:
         input = input_list[0]
-        assert input.dim() == dim + 1, f'input.dim() must equal to \
-            dim + 1, expected: {dim + 1}, got: {input.dim()}'
+        assert input.dim() == dim + 1, ('input.dim() must equal to '
+                                        f'dim + 1, expected: {dim + 1}, '
+                                        f'got: {input.dim()}')
 
-    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but got {input.shape[0]}')
+    assert input.shape[0] == 1, ('ncnn batch must be 1, '
+                                 f'but got {input.shape[0]}')
 
     def tensorslice_function(inputs):
         if dim == 1:
@@ -835,10 +836,10 @@ def test_expand(backend,
     else:
         input = input_list[0]
         target = input_list[1]
-    assert input.shape[0] == 1, (f'ncnn batch must be 1, \
-        but not {input.shape[0]}')
-    assert target.shape[0] == 1, (f'ncnn batch must be 1, \
-        but not {target.shape[0]}')
+    assert input.shape[0] == 1, (f'ncnn batch must be 1, '
+                                 f'but not {input.shape[0]}')
+    assert target.shape[0] == 1, (f'ncnn batch must be 1, '
+                                  f'but not {target.shape[0]}')
 
     def expand_function(input, target):
         return input.expand_as(target)

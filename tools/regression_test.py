@@ -26,7 +26,7 @@ def parse_args():
         help='regression test yaml path.',
         default=[
             'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
-            'mmdet3d'
+            'mmdet3d', 'mmaction'
         ])
     parser.add_argument(
         '-p',
@@ -314,6 +314,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
             for ds in configured_dataset:
                 if ds in _metrics:
                     pytorch_metric.update(_metrics[ds])
+                if ds == dataset:
+                    pytorch_metric.update(_metrics)
         else:
             pytorch_metric.update(_metrics)
         task_name = metafile_metric['Task']
@@ -759,7 +761,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
         if sdk_config is not None:
 
-            if codebase_name == 'mmcls':
+            if codebase_name in ['mmcls', 'mmaction']:
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(backend_output_path, 'sdk_test.log')

@@ -1,7 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "transform_module.h"
-
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/utils/formatter.h"
@@ -10,16 +8,28 @@
 
 namespace mmdeploy {
 
+class TransformModule {
+ public:
+  ~TransformModule();
+  TransformModule(TransformModule&&) noexcept;
+
+  explicit TransformModule(const Value& args);
+  Result<Value> operator()(const Value& input);
+
+ private:
+  std::unique_ptr<transform::Transform> transform_;
+};
+
 TransformModule::~TransformModule() = default;
 
 TransformModule::TransformModule(TransformModule&&) noexcept = default;
 
 TransformModule::TransformModule(const Value& args) {
   const auto type = "Compose";
-  auto creator = gRegistry<Transform>().Get(type);
+  auto creator = gRegistry<transform::Transform>().Get(type);
   if (!creator) {
     MMDEPLOY_ERROR("Unable to find Transform creator: {}. Available transforms: {}", type,
-                   gRegistry<Transform>().List());
+                   gRegistry<transform::Transform>().List());
     throw_exception(eEntryNotFound);
   }
   auto cfg = args;
@@ -33,20 +43,9 @@ TransformModule::TransformModule(const Value& args) {
 }
 
 Result<Value> TransformModule::operator()(const Value& input) {
-  auto output = transform_->Process(input);
-  if (!output) {
-    MMDEPLOY_ERROR("error: {}", output.error().message().c_str());
-  }
-  auto& ret = output.value();
-  if (ret.is_object()) {
-    // pass
-  } else if (ret.is_array() && ret.size() == 1 && ret[0].is_object()) {
-    ret = ret[0];
-  } else {
-    MMDEPLOY_ERROR("unsupported return value: {}", ret);
-    return Status(eNotSupported);
-  }
-  return ret;
+  auto data = input;
+  OUTCOME_TRY(transform_->Apply(data));
+  return data;
 }
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Transform, 0), [](const Value& config) {

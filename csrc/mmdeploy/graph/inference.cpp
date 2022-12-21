@@ -35,9 +35,8 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
 
   auto pipeline_config = from_json<Value>(json);
   if (context.contains("scope")) {
-    auto net_cfg = pipeline_config["pipeline"]["tasks"][1];
-    std::string net_name = net_cfg["name"].get<std::string>();
-    auto scope = context["scope"].get_ref<profiler::Scope*&>()->CreateScope(net_name);
+    auto name = config_.value("name", config_["type"].get<std::string>());
+    auto scope = context["scope"].get_ref<profiler::Scope*&>()->CreateScope(name);
     context["scope"] = scope;
   }
   pipeline_config["context"] = context;

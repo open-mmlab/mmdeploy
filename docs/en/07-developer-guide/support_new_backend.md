@@ -123,32 +123,20 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        __all__ += ['onnx2ncnn', 'get_output_model_file']
    ```
 
-   Then add the codes about conversion to `tools/deploy.py` using these APIs if necessary.
+   Create a backend manager class which derive from `BackendManager`, implement its `to_backend` static method.
 
    **Example:**
 
    ```Python
-   # tools/deploy.py
-   # ...
-       elif backend == Backend.NCNN:
-           from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-           if not is_available_ncnn():
-               logging.error('ncnn support is not available.')
-               exit(-1)
-
-           from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
-
-           backend_files = []
-           for onnx_path in onnx_files:
-               create_process(
-                   f'onnx2ncnn with {onnx_path}',
-                   target=onnx2ncnn,
-                   args=(onnx_path, args.work_dir),
-                   kwargs=dict(),
-                   ret_value=ret_value)
-               backend_files += get_output_model_file(onnx_path, args.work_dir)
-   # ...
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        return ir_files
    ```
 
 6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](support_new_model.md) or add custom operators.
@@ -209,23 +197,27 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. Add a default initialization method for the new wrapper in `mmdeploy/codebase/base/backend_model.py`
+4. Create a backend manager class which derive from `BackendManager`, implement its `build_wrapper` static method.
 
    **Example:**
 
    ```Python
-       @staticmethod
-       def _build_wrapper(backend: Backend,
-                          backend_files: Sequence[str],
-                          device: str,
-                          input_names: Optional[Sequence[str]] = None,
-                          output_names: Optional[Sequence[str]] = None):
-           if backend == Backend.ONNXRUNTIME:
-               from mmdeploy.backend.onnxruntime import ORTWrapper
-               return ORTWrapper(
-                   onnx_file=backend_files[0],
-                   device=device,
-                   output_names=output_names)
+        @BACKEND_MANAGERS.register('onnxruntime')
+        class ONNXRuntimeUtils(BaseBackendManager):
+
+            @classmethod
+            def build_wrapper(cls,
+                              backend_files: Sequence[str],
+                              device: str = 'cpu',
+                              input_names: Optional[Sequence[str]] = None,
+                              output_names: Optional[Sequence[str]] = None,
+                              deploy_cfg: Optional[Any] = None,
+                              **kwargs):
+                from .wrapper import ORTWrapper
+                return ORTWrapper(
+                    onnx_file=backend_files[0],
+                    device=device,
+                    output_names=output_names)
    ```
 
 5. Add docstring and unit tests for new code :).

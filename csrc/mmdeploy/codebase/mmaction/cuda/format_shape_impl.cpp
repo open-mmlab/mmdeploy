@@ -1,94 +1,25 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "cudnn.h"
+#include "cuda_runtime.h"
 #include "mmdeploy/codebase/mmaction/format_shape.h"
 #include "mmdeploy/core/utils/device_utils.h"
 
 using namespace std;
 
-namespace mmdeploy {
-namespace cuda {
+namespace mmdeploy::mmaction::cuda {
 
-#define CUDNN_CHECK(condition)                                                 \
-  do {                                                                         \
-    if (condition != CUDNN_STATUS_SUCCESS) {                                   \
-      MMDEPLOY_ERROR("cudnn error, msg = {}", cudnnGetErrorString(condition)); \
-    }                                                                          \
-  } while (0);
+template <typename T>
+void Transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides, int ndim,
+               int total, cudaStream_t stream);
 
-class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
+class FormatShapeImpl : public FormatShapeOp {
  public:
-  explicit FormatShapeImpl(const Value& args) : ::mmdeploy::FormatShapeImpl(args) {
-    CUDNN_CHECK(cudnnCreate(&handle_));
-    CUDNN_CHECK(cudnnSetStream(handle_, (cudaStream_t)stream_.GetNative()));
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&src_desc_));
-    CUDNN_CHECK(cudnnCreateTensorDescriptor(&dst_desc_));
-  }
-
-  ~FormatShapeImpl() {
-    CUDNN_CHECK(cudnnDestroy(handle_));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(src_desc_));
-    CUDNN_CHECK(cudnnDestroyTensorDescriptor(dst_desc_));
-  }
+  explicit FormatShapeImpl(std::string input_format) : FormatShapeOp(std::move(input_format)) {}
 
  protected:
-  Result<Tensor> Format(const std::vector<Tensor>& tensors, int clip_len, int num_clips) {
-    int N = tensors.size();
-    int H = tensors[0].shape(1);
-    int W = tensors[0].shape(2);
-    int C = tensors[0].shape(3);
+  const Device& GetDevice() { return device(); }
 
-    auto t0 = std::chrono::high_resolution_clock::now();
-    TensorDesc desc = {device_, DataType::kFLOAT, {N, H, W, C}};
-    Tensor imgs(desc);
-    int offset = 0;
-    int n_item = H * W * C;
-    int copy_size = n_item * sizeof(float);
-    for (int i = 0; i < N; i++) {
-      auto src_buffer = tensors[i].buffer();
-      auto dst_buffer = imgs.buffer();
-      OUTCOME_TRY(stream_.Copy(src_buffer, dst_buffer, copy_size, 0, offset));
-      offset += copy_size;
-    }
-
-    Tensor dst;
-    if (arg_.input_format == "NCHW") {
-      OUTCOME_TRY(dst, FormatNCHW(imgs, clip_len, num_clips));
-    }
-    if (arg_.input_format == "NCTHW") {
-      OUTCOME_TRY(dst, FormatNCTHW(imgs, clip_len, num_clips));
-    }
-    TensorShape expand_dim = dst.shape();
-    expand_dim.insert(expand_dim.begin(), 1);
-    dst.Reshape(expand_dim);
-
-    return dst;
-  }
-
-  Result<Tensor> FormatNCHW(Tensor& src, int clip_len, int num_clips) {
-    int N = src.shape(0);
-    int H = src.shape(1);
-    int W = src.shape(2);
-    int C = src.shape(3);
-    return Transpose(src, {N, H, W, C}, {0, 3, 1, 2});
-  };
-
-  Result<Tensor> FormatNCTHW(Tensor& src, int clip_len, int num_clips) {
-    int N = src.shape(0);
-    int H = src.shape(1);
-    int W = src.shape(2);
-    int C = src.shape(3);
-    int L = clip_len;
-    if (N % L != 0) {
-      return Status(eInvalidArgument);
-    }
-    int M = N / L;
-    src.Reshape({M, L, H, W, C});
-
-    return Transpose(src, {M, L, H, W, C}, {0, 4, 1, 2, 3});
-  };
-
-  Result<Tensor> Transpose(Tensor& src, const std::vector<int>& src_dims,
+  Result<Tensor> Transpose(Tensor& src, const TensorShape& src_dims,
                            const std::vector<int>& permutation) {
     Tensor dst(src.desc());
     TensorShape shape(src.shape().size());
@@ -97,16 +28,7 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
     }
     dst.Reshape(shape);
 
-    SetCudnnTensorDescriptor(src_dims, permutation);
-    CUDNN_CHECK(cudnnTransformTensor(handle_, &one_, src_desc_, src.data<float>(), &zero_,
-                                     dst_desc_, dst.data<float>()));
-
-    return dst;
-  }
-
-  void SetCudnnTensorDescriptor(const std::vector<int> src_dims,
-                                const std::vector<int>& permutation) {
-    int ndim = src_dims.size();
+    auto ndim = src_dims.size();
     std::vector<int> dst_dims(ndim);
     for (int i = 0; i < ndim; i++) {
       dst_dims[i] = src_dims[permutation[i]];
@@ -125,20 +47,20 @@ class FormatShapeImpl : public ::mmdeploy::FormatShapeImpl {
       src_strides[i] = buffer[permutation[i]];
     }
 
-    CUDNN_CHECK(cudnnSetTensorNdDescriptor(src_desc_, CUDNN_DATA_FLOAT, ndim, dst_dims.data(),
-                                           src_strides.data()));
-    CUDNN_CHECK(cudnnSetTensorNdDescriptor(dst_desc_, CUDNN_DATA_FLOAT, ndim, dst_dims.data(),
-                                           dst_strides.data()));
-  }
+    Buffer _src_strides(Device("cuda"), sizeof(int) * ndim);
+    Buffer _dst_strides(Device("cuda"), sizeof(int) * ndim);
+    OUTCOME_TRY(stream().Copy(src_strides.data(), _src_strides));
+    OUTCOME_TRY(stream().Copy(dst_strides.data(), _dst_strides));
 
-  constexpr static float one_{1.0};
-  constexpr static float zero_{0.0};
-  cudnnHandle_t handle_;
-  cudnnTensorDescriptor_t src_desc_;
-  cudnnTensorDescriptor_t dst_desc_;
+    ::mmdeploy::mmaction::cuda::Transpose(src.data<float>(), GetNative<int*>(_src_strides),
+                                          dst.data<float>(), GetNative<int*>(_dst_strides), ndim,
+                                          src.size(), (cudaStream_t)stream().GetNative());
+    return dst;
+  }
 };
 
-MMDEPLOY_REGISTER_TRANSFORM_IMPL(::mmdeploy::FormatShapeImpl, (cuda, 0), FormatShapeImpl);
+MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeOp, (cuda, 0), [](std::string input_format) {
+  return std::make_unique<FormatShapeImpl>(std::move(input_format));
+});
 
-}  // namespace cuda
-}  // namespace mmdeploy
+}  // namespace mmdeploy::mmaction::cuda

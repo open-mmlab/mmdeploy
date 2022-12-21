@@ -269,8 +269,8 @@ class SingleRoIExtractorOpenVINO(Function):
 
     @staticmethod
     def symbolic(g, output_size, featmap_strides, sample_num, rois, *feats):
-        from torch.onnx.symbolic_helper import _slice_helper
-        rois = _slice_helper(g, rois, axes=[1], starts=[1], ends=[5])
+        from torch.onnx.symbolic_opset10 import _slice
+        rois = _slice(g, rois, axes=[1], starts=[1], ends=[5])
         domain = 'org.openvinotoolkit'
         op_name = 'ExperimentalDetectronROIFeatureExtractor'
         roi_feats = g.op(
@@ -320,6 +320,9 @@ def single_roi_extractor__forward__openvino(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend=Backend.TVM.value)
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend=Backend.COREML.value)
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 def single_roi_extractor__forward__coreml(ctx,
@@ -328,6 +331,7 @@ def single_roi_extractor__forward__coreml(ctx,
                                           rois,
                                           roi_scale_factor=None):
     """Rewrite `forward` of SingleRoIExtractor for coreml."""
+    backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
@@ -346,7 +350,8 @@ def single_roi_extractor__forward__coreml(ctx,
         # inds = mask.nonzero(as_tuple=False).squeeze(1)
         rois_t = rois * mask.unsqueeze(-1)
         # use the roi align in torhcvision
-        self.roi_layers[i].use_torchvision = True
+        if backend == Backend.COREML:
+            self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats = roi_feats + roi_feats_t * (rois_t[:, -1] > 0).reshape(
             -1, 1, 1, 1)
