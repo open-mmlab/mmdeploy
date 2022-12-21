@@ -71,15 +71,11 @@ def test_baseclassifier_forward():
 
         def __init__(self, backbone):
             super().__init__(backbone=backbone)
+            self.head = lambda x: x
+            self.predict = lambda x, data_samples: x
 
         def extract_feat(self, batch_inputs: torch.Tensor):
             return batch_inputs
-
-        def head(self, x):
-            return x
-
-        def predict(self, x, data_samples):
-            return x
 
     backbone_cfg = dict(
         type='ResNet',
