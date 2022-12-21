@@ -637,14 +637,6 @@ class Tracker {
     const auto n_rows = static_cast<int>(bboxes.size());
     const auto n_cols = static_cast<int>(tracks.size());
 
-    auto scale_diff = [](const Bbox& a, const Bbox& b) {
-      auto ax = std::log(std::abs(a[2] - a[0]));
-      auto ay = std::log(std::abs(a[3] - a[1]));
-      auto bx = std::log(std::abs(b[2] - b[0]));
-      auto by = std::log(std::abs(b[3] - b[1]));
-      return std::abs(bx - ax) + std::abs(by - ay);
-    };
-
     // generate similarity matrix
     vector<float> iou(n_rows * n_cols);
     vector<float> oks(n_rows * n_cols);
