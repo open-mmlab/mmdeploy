@@ -201,11 +201,12 @@ nvinfer1::IPluginV2 *TRTRoIAlignCreator::createPlugin(
 
     if (field_name.compare("mode") == 0) {
       int data_size = fc->fields[i].length;
+      ASSERT(data_size > 0);
       const char *data_start = static_cast<const char *>(fc->fields[i].data);
-      std::string poolModeStr(data_start, data_size);
-      if (strcmp(poolModeStr.c_str(), "avg") == 0) {
+      std::string poolModeStr(data_start);
+      if (poolModeStr == "avg") {
         poolMode = 1;
-      } else if (strcmp(poolModeStr.c_str(), "max") == 0) {
+      } else if (poolModeStr == "max") {
         poolMode = 0;
       } else {
         std::cout << "Unknown pool mode \"" << poolModeStr << "\"." << std::endl;
