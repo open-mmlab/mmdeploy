@@ -36,7 +36,9 @@ if is_available():
 
     try:
         # import wrapper if pytorch is available
+        from .torch_allocator import TorchAllocator
         from .wrapper import TRTWrapper
         __all__ += ['TRTWrapper']
+        __all__ += ['TorchAllocator', 'TRTWrapper']
     except Exception:
         pass

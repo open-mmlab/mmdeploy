@@ -1,25 +1,20 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <set>
-
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
-#include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/preprocess/transform/resize.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
-#include "opencv2/imgproc.hpp"
-#include "opencv_utils.h"
 
 using namespace std;
 
 namespace mmdeploy::mmocr {
 
-class ResizeOCRImpl : public Module {
+class ResizeOCR : public transform::Transform {
  public:
-  explicit ResizeOCRImpl(const Value& args) noexcept {
+  explicit ResizeOCR(const Value& args) noexcept {
     height_ = args.value("height", height_);
     min_width_ = args.contains("min_width") && args["min_width"].is_number_integer()
                      ? args["min_width"].get<int>()
@@ -33,31 +28,30 @@ class ResizeOCRImpl : public Module {
                    : backend_;
     img_pad_value_ = args.value("img_pad_value", img_pad_value_);
     width_downsample_ratio_ = args.value("width_downsample_ratio", width_downsample_ratio_);
-    stream_ = args["context"]["stream"].get<Stream>();
+
+    resize_ = operation::Managed<operation::Resize>::Create("bilinear");
+    pad_ = operation::Managed<operation::Pad>::Create("constant", img_pad_value_);
   }
 
-  ~ResizeOCRImpl() override = default;
+  ~ResizeOCR() override = default;
 
-  Result<Value> Process(const Value& input) override {
-    MMDEPLOY_DEBUG("input: {}", input);
+  Result<void> Apply(Value& data) override {
+    MMDEPLOY_DEBUG("input: {}", data);
     auto dst_height = height_;
     auto dst_min_width = min_width_;
     auto dst_max_width = max_width_;
 
     std::vector<int> img_shape;  // NHWC
-    from_value(input["img_shape"], img_shape);
+    from_value(data["img_shape"], img_shape);
 
     std::vector<int> ori_shape;  // NHWC
-    from_value(input["ori_shape"], ori_shape);
+    from_value(data["ori_shape"], ori_shape);
 
     auto ori_height = ori_shape[1];
     auto ori_width = ori_shape[2];
     auto valid_ratio = 1.f;
 
-    Device host{"cpu"};
-    auto _img = input["img"].get<Tensor>();
-    OUTCOME_TRY(auto img, MakeAvailableOnDevice(_img, host, stream_));
-    stream_.Wait().value();
+    auto img = data["img"].get<Tensor>();
     Tensor img_resize;
     if (keep_aspect_ratio_) {
       auto new_width = static_cast<int>(std::ceil(1.f * dst_height / ori_height * ori_width));
@@ -71,55 +65,29 @@ class ResizeOCRImpl : public Module {
       if (dst_max_width > 0) {
         valid_ratio = std::min(1., 1. * new_width / dst_max_width);
         auto resize_width = std::min(dst_max_width, new_width);
-        img_resize = ResizeImage(img, dst_height, resize_width);
+        OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, resize_width));
         if (new_width < dst_max_width) {
-          img_resize = PadImage(img_resize, dst_height, dst_max_width);
+          auto pad_w = std::max(0, dst_max_width - resize_width);
+          OUTCOME_TRY(pad_.Apply(img_resize, img_resize, 0, 0, 0, pad_w));
         }
       } else {
-        img_resize = ResizeImage(img, dst_height, new_width);
+        OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, new_width));
       }
     } else {
-      img_resize = ResizeImage(img, dst_height, dst_max_width);
+      OUTCOME_TRY(resize_.Apply(img, img_resize, dst_height, dst_max_width));
     }
-    Value output = input;
-    output["img"] = img_resize;
-    output["resize_shape"] = to_value(img_resize.desc().shape);
-    output["pad_shape"] = output["resize_shape"];
-    output["valid_ratio"] = valid_ratio;
-    MMDEPLOY_DEBUG("output: {}", to_json(output).dump(2));
-    return output;
-  }
 
-  Tensor ResizeImage(const Tensor& img, int dst_h, int dst_w) {
-    TensorDesc desc = img.desc();
-    assert(desc.shape.size() == 4);
-    assert(desc.data_type == DataType::kINT8);
-    int h = desc.shape[1];
-    int w = desc.shape[2];
-    int c = desc.shape[3];
-    assert(c == 3 || c == 1);
-    cv::Mat src_mat, dst_mat;
-    if (3 == c) {  // rgb
-      src_mat = cv::Mat(h, w, CV_8UC3, const_cast<uint8_t*>(img.data<uint8_t>()));
-    } else {  // gray
-      src_mat = cv::Mat(h, w, CV_8UC1, const_cast<uint8_t*>(img.data<uint8_t>()));
-    }
-    cv::Size size{dst_w, dst_h};
-    cv::resize(src_mat, dst_mat, size, cv::INTER_LINEAR);
-    return Tensor({desc.device, desc.data_type, {1, dst_h, dst_w, c}, ""},
-                  {dst_mat.data, [mat = dst_mat](void* ptr) {}});
-  }
-
-  Tensor PadImage(const Tensor& src_img, int height, int width) {
-    cv::Mat src_mat = cpu::Tensor2CVMat(src_img);
-    cv::Mat dst_mat;
-    auto pad_h = std::max(0, height - src_mat.rows);
-    auto pad_w = std::max(0, width - src_mat.cols);
-    cv::copyMakeBorder(src_mat, dst_mat, 0, pad_h, 0, pad_w, cv::BORDER_CONSTANT, img_pad_value_);
-    return cpu::CVMat2Tensor(dst_mat);
+    data["img"] = img_resize;
+    data["resize_shape"] = to_value(img_resize.desc().shape);
+    data["pad_shape"] = data["resize_shape"];
+    data["valid_ratio"] = valid_ratio;
+    MMDEPLOY_DEBUG("output: {}", data);
+    return success();
   }
 
  protected:
+  operation::Managed<operation::Resize> resize_;
+  operation::Managed<operation::Pad> pad_;
   int height_{-1};
   int min_width_{-1};
   int max_width_{-1};
@@ -127,33 +95,8 @@ class ResizeOCRImpl : public Module {
   float img_pad_value_{0};
   float width_downsample_ratio_{1. / 16};
   std::string backend_;
-  Stream stream_;
 };
 
-MMDEPLOY_CREATOR_SIGNATURE(ResizeOCRImpl, std::unique_ptr<ResizeOCRImpl>(const Value& config));
-
-MMDEPLOY_DEFINE_REGISTRY(ResizeOCRImpl);
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(ResizeOCRImpl, (cpu, 0), [](const Value& config) {
-  return std::make_unique<ResizeOCRImpl>(config);
-});
-
-class ResizeOCR : public Transform {
- public:
-  explicit ResizeOCR(const Value& args) : Transform(args) {
-    impl_ = Instantiate<ResizeOCRImpl>("ResizeOCR", args);
-  }
-  ~ResizeOCR() override = default;
-
-  Result<Value> Process(const Value& input) override { return impl_->Process(input); }
-
- private:
-  std::unique_ptr<ResizeOCRImpl> impl_;
-  static const std::string name_;
-};
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(Transform, (ResizeOCR, 0), [](const Value& config) {
-  return std::make_unique<ResizeOCR>(config);
-});
+MMDEPLOY_REGISTER_TRANSFORM(ResizeOCR);
 
 }  // namespace mmdeploy::mmocr

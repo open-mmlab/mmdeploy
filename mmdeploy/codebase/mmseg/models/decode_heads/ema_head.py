@@ -7,7 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmseg.models.decode_heads.ema_head.EMAModule.forward')
-def ema_module__forward(ctx, self, feats):
+def ema_module__forward(self, feats):
     """Rewrite `forward` for default backend.
 
     Replace torch.einsum with other operations.

@@ -34,4 +34,5 @@ class RKNNManager(BaseBackendManager):
         return RKNNWrapper(
             model=backend_files[0],
             common_config=common_config,
+            input_names=input_names,
             output_names=output_names)

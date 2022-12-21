@@ -9,8 +9,8 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet.deploy import (gather_topk,
                                             get_post_processing_params,
                                             pad_with_value_if_necessary)
-from mmdeploy.codebase.mmdet.models.layers import multiclass_nms
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import multiclass_nms
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -35,12 +35,13 @@ def _bbox_post_decode(bboxes: torch.Tensor, max_shape: Sequence[int]):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.reppoints_head.RepPointsHead.points2bbox')
-def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
+def reppoints_head__points2bbox(self, pts, y_first=True):
     """Rewrite of `points2bbox` in `RepPointsHead`.
 
     Use `self.moment_transfer` in `points2bbox` will cause error:
     RuntimeError: Input, output and indices must be on the current device
     """
+    ctx = FUNCTION_REWRITER.get_context()
     update_moment = hasattr(self, 'moment_transfer')
     if update_moment:
         moment_transfer = self.moment_transfer
@@ -55,7 +56,6 @@ def reppoints_head__points2bbox(ctx, self, pts, y_first=True):
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.reppoints_head.RepPointsHead.predict_by_feat')
 def reppoints_head__predict_by_feat(
-        ctx,
         self,
         cls_scores: List[Tensor],
         bbox_preds: List[Tensor],
@@ -91,6 +91,7 @@ def reppoints_head__predict_by_feat(
             `dets` of shape [N, num_det, 5] and `labels` of shape
             [N, num_det].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     num_levels = len(cls_scores)
@@ -179,10 +180,12 @@ def reppoints_head__predict_by_feat(
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
+    nms_type = cfg.nms.get('type')
     return multiclass_nms(
         batch_bboxes,
         batch_scores,
         max_output_boxes_per_class,
+        nms_type=nms_type,
         iou_threshold=iou_threshold,
         score_threshold=score_threshold,
         pre_top_k=pre_top_k,

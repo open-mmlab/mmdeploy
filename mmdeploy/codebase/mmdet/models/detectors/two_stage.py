@@ -11,8 +11,7 @@ from mmdeploy.utils import is_dynamic_shape
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.two_stage.TwoStageDetector.extract_feat')
-@mark('extract_feat', inputs='img', outputs='feat')
-def two_stage_detector__extract_feat(ctx, self, img):
+def two_stage_detector__extract_feat(self, img):
     """Rewrite `extract_feat` for default backend.
 
     This function uses the specific `extract_feat` function for the two
@@ -27,13 +26,18 @@ def two_stage_detector__extract_feat(ctx, self, img):
         list[Tensor]: Each item with shape (N, C, H, W) corresponds one
         level of backbone and neck features.
     """
-    return ctx.origin_func(self, img)
+    ctx = FUNCTION_REWRITER.get_context()
+
+    @mark('extract_feat', inputs='img', outputs='feat')
+    def __extract_feat_impl(self, img):
+        return ctx.origin_func(self, img)
+
+    return __extract_feat_impl(self, img)
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.two_stage.TwoStageDetector.forward')
-def two_stage_detector__forward(ctx,
-                                self,
+def two_stage_detector__forward(self,
                                 batch_inputs: torch.Tensor,
                                 data_samples: OptSampleList = None,
                                 mode: str = 'tensor',
@@ -58,6 +62,7 @@ def two_stage_detector__forward(ctx,
             - labels (Tensor): Labels of bboxes, has a shape
                 (num_instances, ).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     data_samples = copy.deepcopy(data_samples)
     deploy_cfg = ctx.cfg
 

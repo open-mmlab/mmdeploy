@@ -22,8 +22,7 @@ def main():
     args = parse_args()
 
     img = cv2.imread(args.image_path)
-    detector = RotatedDetector(
-        model_path=args.model_path, device_name=args.device_name, device_id=0)
+    detector = RotatedDetector(args.model_path, args.device_name, 0)
     rbboxes, labels = detector(img)
 
     indices = [i for i in range(len(rbboxes))]
