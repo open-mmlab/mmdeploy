@@ -1,5 +1,6 @@
 
 
+#include <cmath>
 #include <numeric>
 
 #include "mmdeploy/archive/json_archive.h"
