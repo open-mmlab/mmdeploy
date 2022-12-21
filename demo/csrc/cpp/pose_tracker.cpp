@@ -1013,8 +1013,10 @@ void Visualize(cv::Mat& frame, const Value& result, const Bboxes& pose_bboxes,
     }
   }
   static int frame_id = 0;
-  cv::imwrite(fmt::format("pose_{}.jpg", frame_id++), frame, {cv::IMWRITE_JPEG_QUALITY, 80});
+  cv::imwrite(fmt::format("pose_{}.jpg", frame_id++), frame, {cv::IMWRITE_JPEG_QUALITY, 90});
 }
+
+// ffmpeg -f image2 -i pose_%d.jpg -vcodec hevc -crf 30 pose.mp4
 
 int main(int argc, char* argv[]) {
   const auto device_name = argv[1];
