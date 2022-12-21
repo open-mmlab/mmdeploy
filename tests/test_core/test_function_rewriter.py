@@ -16,9 +16,10 @@ def test_function_rewriter():
         func_name='torch.mul', backend='tensorrt')
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='tensorrt')
-    def sub_func(rewriter, x, y):
-        assert hasattr(rewriter, 'cfg')
-        assert hasattr(rewriter, 'origin_func')
+    def sub_func(x, y):
+        ctx = FUNCTION_REWRITER.get_context('torch.add')
+        assert hasattr(ctx, 'cfg')
+        assert hasattr(ctx, 'origin_func')
         return x - y
 
     cfg = dict()
@@ -42,7 +43,7 @@ def test_function_rewriter():
     # test different config
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.Tensor.add', backend='default')
-    def mul_func_class(rewriter, x, y):
+    def mul_func_class(x, y):
         return x * y
 
     with RewriterContext(cfg, backend='tensorrt'):
@@ -62,8 +63,9 @@ def test_function_rewriter():
     # test origin_func
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='default')
-    def origin_add_func(rewriter, x, y, **kwargs):
-        return rewriter.origin_func(x, y, **kwargs) + 1
+    def origin_add_func(x, y, **kwargs):
+        ctx = FUNCTION_REWRITER.get_context('torch.add')
+        return ctx.origin_func(x, y, **kwargs) + 1
 
     with RewriterContext(cfg):
         result = torch.add(x, y)
@@ -79,7 +81,7 @@ def test_rewrite_empty_function():
     function_rewriter = FunctionRewriter()
 
     @function_rewriter.register_rewriter(func_name='torch.abcdefghijklmn')
-    def func(rewriter, x, y):
+    def func(x, y):
         return x + y
 
     function_rewriter.enter()
@@ -101,12 +103,12 @@ class TestHomonymicRewriter:
         assert c.method() == 1
 
         @function_rewriter.register_rewriter(func_name=path1)
-        def func_2(ctx, self):
+        def func_2(self):
             return 2
 
         @function_rewriter.register_rewriter(
             func_name=path2, backend=Backend.NCNN.value)
-        def func_3(ctx, self):
+        def func_3(self):
             return 3
 
         function_rewriter.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
@@ -119,11 +121,11 @@ class TestHomonymicRewriter:
 
         @function_rewriter2.register_rewriter(
             func_name=path1, backend=Backend.NCNN.value)
-        def func_4(ctx, self):
+        def func_4(self):
             return 4
 
         @function_rewriter2.register_rewriter(func_name=path2)
-        def func_5(ctx, self):
+        def func_5(self):
             return 5
 
         function_rewriter2.enter(env=collect_env(Backend.NCNN, ir=IR.DEFAULT))
@@ -147,12 +149,12 @@ def test_rewrite_derived_methods():
     function_rewriter = FunctionRewriter()
 
     @function_rewriter.register_rewriter(func_name=path1)
-    def func_2(ctx, self):
+    def func_2(self):
         return 2
 
     @function_rewriter.register_rewriter(
         func_name=path2, backend=Backend.NCNN.value)
-    def func_3(ctx, self):
+    def func_3(self):
         return 3
 
     function_rewriter.enter(env=collect_env(Backend.DEFAULT, ir=IR.DEFAULT))

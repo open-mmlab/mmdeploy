@@ -7,8 +7,9 @@ import mmengine
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_ir_config, get_precision, get_root_logger,
-                            get_task_type, is_dynamic_batch, load_config)
+                            get_ir_config, get_partition_config, get_precision,
+                            get_root_logger, get_task_type, is_dynamic_batch,
+                            load_config)
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
@@ -83,6 +84,9 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
     ir_name = get_ir_config(deploy_cfg)['save_file']
+    if get_partition_config(deploy_cfg) is not None:
+        ir_name = get_partition_config(
+            deploy_cfg)['partition_cfg'][0]['save_file']
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg).value
 
@@ -134,6 +138,9 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     backend = get_backend(deploy_cfg=deploy_cfg)
     if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
+        if get_partition_config(deploy_cfg) is not None:
+            output_names = get_partition_config(
+                deploy_cfg)['partition_cfg'][0]['output_names']
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
     else:
@@ -141,10 +148,12 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         input_name = input_names[0] if input_names else 'input'
         input_map = dict(img=input_name)
         output_map = {}
+    is_batched = is_dynamic_batch(deploy_cfg, input_name=input_map['img'])
     return_dict = dict(
         name=name,
         type='Task',
         module='Net',
+        is_batched=is_batched,
         input=['prep_output'],
         output=['infer_output'],
         input_map=input_map,
@@ -165,6 +174,8 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         for transform in transforms:
             if transform['type'] == 'Normalize':
                 transform['to_float'] = False
+                transform['mean'] = [0, 0, 0]
+                transform['std'] = [1, 1, 1]
     if transforms[0]['type'] != 'Lift':
         assert transforms[0]['type'] == 'LoadImageFromFile', \
             'The first item type of pipeline should be LoadImageFromFile'
@@ -193,10 +204,12 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
     post_processor = task_processor.get_postprocess(work_dir)
+    module = get_codebase(deploy_cfg).value
+    module = 'mmdet' if module == 'mmyolo' else module
 
     return dict(
         type='Task',
-        module=get_codebase(deploy_cfg).value,
+        module=module,
         name='postprocess',
         component=post_processor['type'],
         params=post_processor.get('params', dict()),

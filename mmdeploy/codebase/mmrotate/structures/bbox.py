@@ -21,7 +21,7 @@ def _dist_torch(point1, point2):
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.structures.bbox.box_converters.qbox2rbox')
-def qbox2rbox__default(ctx, boxes: Tensor) -> Tensor:
+def qbox2rbox__default(boxes: Tensor) -> Tensor:
     """Convert quadrilateral boxes to rotated boxes.
 
     Implement with PyTorch.

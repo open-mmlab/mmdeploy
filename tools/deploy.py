@@ -384,6 +384,7 @@ def main():
                 onnx_path,
                 output_path,
                 deploy_cfg_path,
+                model_cfg_path,
                 dataset_file=dataset_file)
 
             backend_files.append(output_path)

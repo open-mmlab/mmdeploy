@@ -133,13 +133,17 @@ class SegmentationTask(BaseTask):
                  device: str):
         super(SegmentationTask, self).__init__(model_cfg, deploy_cfg, device)
 
-    def build_backend_model(self,
-                            model_files: Optional[str] = None,
-                            **kwargs) -> torch.nn.Module:
+    def build_backend_model(
+            self,
+            model_files: Optional[str] = None,
+            data_preprocessor_updater: Optional[Callable] = None,
+            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
             model_files (Sequence[str]): Input model files.
+            data_preprocessor_updater (Callable | None): A function to update
+                the data_preprocessor. Defaults to None.
 
         Returns:
             nn.Module: An initialized backend model.
@@ -147,6 +151,8 @@ class SegmentationTask(BaseTask):
         from .segmentation_model import build_segmentation_model
 
         data_preprocessor = self.model_cfg.model.data_preprocessor
+        if data_preprocessor_updater is not None:
+            data_preprocessor = data_preprocessor_updater(data_preprocessor)
         model = build_segmentation_model(
             model_files,
             self.model_cfg,

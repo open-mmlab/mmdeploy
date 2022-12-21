@@ -72,8 +72,8 @@ void TestResize(const Value& cfg, const std::string& device_name, const cv::Mat&
 
     auto res_mat = mmdeploy::cpu::Tensor2CVMat(host_tensor.value());
     REQUIRE(mmdeploy::cpu::Compare(ref_mat, res_mat));
-    cv::imwrite("ref.bmp", ref_mat);
-    cv::imwrite("res.bmp", res_mat);
+    // cv::imwrite("ref.bmp", ref_mat);
+    // cv::imwrite("res.bmp", res_mat);
   }
 }
 

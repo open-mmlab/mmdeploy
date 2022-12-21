@@ -7,8 +7,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.task_modules.coders.tblr_bbox_coder.tblr2bboxes',
     backend='default')
-def tblr2bboxes(ctx,
-                priors,
+def tblr2bboxes(priors,
                 tblr,
                 normalizer=4.0,
                 normalize_by_wh=True,

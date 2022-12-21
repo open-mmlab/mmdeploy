@@ -272,8 +272,7 @@ def _multiclass_nms_rotated(boxes: Tensor,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.mmcv.ops.nms_rotated._multiclass_nms_rotated',
     backend='tensorrt')
-def multiclass_nms_rotated__tensorrt(ctx,
-                                     boxes: Tensor,
+def multiclass_nms_rotated__tensorrt(boxes: Tensor,
                                      scores: Tensor,
                                      max_output_boxes_per_class: int = 1000,
                                      iou_threshold: float = 0.5,
@@ -317,7 +316,19 @@ def multiclass_nms_rotated__tensorrt(ctx,
     'multiclass_nms_rotated',
     inputs=['boxes', 'scores'],
     outputs=['dets', 'labels'])
-def multiclass_nms_rotated(*args, **kwargs):
+def multiclass_nms_rotated(boxes: Tensor,
+                           scores: Tensor,
+                           max_output_boxes_per_class: int = 1000,
+                           iou_threshold: float = 0.1,
+                           score_threshold: float = 0.05,
+                           pre_top_k: int = -1,
+                           keep_top_k: int = -1):
     """Wrapper function for `_multiclass_nms`."""
     return mmdeploy.mmcv.ops.nms_rotated._multiclass_nms_rotated(
-        *args, **kwargs)
+        boxes,
+        scores,
+        max_output_boxes_per_class=max_output_boxes_per_class,
+        iou_threshold=iou_threshold,
+        score_threshold=score_threshold,
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k)

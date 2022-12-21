@@ -13,8 +13,7 @@ from mmdeploy.mmcv.ops import multiclass_nms
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.fovea_head.FoveaHead.predict_by_feat')
-def fovea_head__predict_by_feat(ctx,
-                                self,
+def fovea_head__predict_by_feat(self,
                                 cls_scores: List[Tensor],
                                 bbox_preds: List[Tensor],
                                 score_factors: Optional[List[Tensor]] = None,
@@ -49,6 +48,7 @@ def fovea_head__predict_by_feat(ctx,
             `dets` of shape [N, num_det, 5] and `labels` of shape
             [N, num_det].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     assert len(cls_scores) == len(bbox_preds)
     cfg = self.test_cfg if cfg is None else cfg
     num_levels = len(cls_scores)

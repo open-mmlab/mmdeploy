@@ -2,7 +2,7 @@
 import os.path as osp
 from abc import ABCMeta, abstractmethod
 from copy import deepcopy
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
 import numpy as np
@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader, Dataset
 
 from mmdeploy.utils import (get_backend_config, get_codebase,
                             get_codebase_config, get_root_logger)
+from mmdeploy.utils.config_utils import get_rknn_quantization
 from mmdeploy.utils.dataset import is_can_sort_dataset, sort_dataset
 
 
@@ -40,13 +41,17 @@ class BaseTask(metaclass=ABCMeta):
         self.visualizer = self.model_cfg.get('visualizer', None)
 
     @abstractmethod
-    def build_backend_model(self,
-                            model_files: Sequence[str] = None,
-                            **kwargs) -> torch.nn.Module:
+    def build_backend_model(
+            self,
+            model_files: Sequence[str] = None,
+            data_preprocessor_updater: Optional[Callable] = None,
+            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
             model_files (Sequence[str]): Input model files.
+            data_preprocessor_updater (Callable | None): A function to update
+                the data_preprocessor. Defaults to None.
 
         Returns:
             nn.Module: An initialized backend model.
@@ -205,6 +210,21 @@ class BaseTask(metaclass=ABCMeta):
             test_evaluator=model_cfg.test_evaluator,
             default_scope=model_cfg.default_scope)
         return runner
+
+    def update_data_preprocessor(self, data_preprocessor: Config):
+        """Update data_preprocessor.
+
+        Args:
+            data_preprocessor (mmengine.Config): The data preprocessor.
+        Returns:
+            mmengine.Config: The updated data preprocessor.
+        """
+        data_preprocessor = deepcopy(data_preprocessor)
+        if get_rknn_quantization(self.deploy_cfg):
+            if data_preprocessor is not None:
+                data_preprocessor['mean'] = [0, 0, 0]
+                data_preprocessor['std'] = [1, 1, 1]
+        return data_preprocessor
 
     @abstractmethod
     def create_input(self,

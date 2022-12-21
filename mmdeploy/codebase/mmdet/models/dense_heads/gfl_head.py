@@ -18,8 +18,7 @@ from mmdeploy.utils import Backend, get_backend, is_dynamic_shape
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.gfl_head.'
     'GFLHead.predict_by_feat')
-def gfl_head__predict_by_feat(ctx,
-                              self,
+def gfl_head__predict_by_feat(self,
                               cls_scores: List[Tensor],
                               bbox_preds: List[Tensor],
                               score_factors: Optional[List[Tensor]] = None,
@@ -58,6 +57,7 @@ def gfl_head__predict_by_feat(ctx,
             tuple[Tensor, Tensor, Tensor]: batch_mlvl_bboxes,
                 batch_mlvl_scores, batch_mlvl_centerness
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
     backend = get_backend(deploy_cfg)

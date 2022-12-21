@@ -11,8 +11,8 @@ if (NOT (MMDEPLOY_SHARED_LIBS OR MSVC))
     target_compile_options(${PROJECT_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
 endif ()
 target_include_directories(${PROJECT_NAME} PRIVATE
-            ${CUDA_INCLUDE_DIRS})
+    ${CUDA_INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
-        mmdeploy::core)
+    mmdeploy::core)
 target_link_libraries(mmdeploy_mmaction PRIVATE ${PROJECT_NAME})
 mmdeploy_export(${PROJECT_NAME})
