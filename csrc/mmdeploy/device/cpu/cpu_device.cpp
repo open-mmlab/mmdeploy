@@ -11,13 +11,16 @@ class CpuHostMemory : public NonCopyable {
  public:
   CpuHostMemory() : size_(), data_(), owned_data_{false} {}
   Result<void> Init(size_t size, size_t alignment) {
-    if (alignment != 1) {
-      return Status(eNotSupported);
-    }
-    data_ = std::malloc(size);
+    size_t space = (size + alignment - 1) / alignment * alignment;
+#ifdef _MSC_VER
+    data_ = _aligned_malloc(space, alignment);
+#else
+    data_ = std::aligned_alloc(alignment, space);
+#endif
     if (!data_) {
       return Status(eOutOfMemory);
     }
+    aligned_data_ = data_;
     size_ = size;
     owned_data_ = true;
     return success();
@@ -38,7 +41,11 @@ class CpuHostMemory : public NonCopyable {
   ~CpuHostMemory() {
     if (data_) {
       if (owned_data_) {
+#ifdef _MSC_VER
+        _aligned_free(data_);
+#else
         std::free(data_);
+#endif
         owned_data_ = false;
       }
       data_ = nullptr;
@@ -47,11 +54,12 @@ class CpuHostMemory : public NonCopyable {
     size_ = 0;
   }
   size_t size() const { return size_; }
-  void* data() const { return data_; }
+  void* data() const { return owned_data_ ? aligned_data_ : data_; }
 
  private:
   size_t size_;
   void* data_;
+  void* aligned_data_{nullptr};
   bool owned_data_;
   std::shared_ptr<void> external_;
 };

@@ -130,6 +130,18 @@ def onnx2backend(backend, onnx_file):
             dict(input_shapes=dict(input=test_img.shape)))
         from_onnx(onnx_file, work_dir, model_inputs)
         return backend_file
+    elif backend == Backend.TVM:
+        from mmdeploy.backend.tvm import from_onnx, get_library_ext
+        ext = get_library_ext()
+        lib_file = tempfile.NamedTemporaryFile(suffix=ext).name
+        shape = {'input': test_img.shape}
+        dtype = {'input': 'float32'}
+        target = 'llvm'
+        tuner_dict = dict(type='DefaultTuner', target=target)
+        from_onnx(
+            onnx_file, lib_file, shape=shape, dtype=dtype, tuner=tuner_dict)
+        assert osp.exists(lib_file)
+        return lib_file
 
 
 def create_wrapper(backend, model_files):
@@ -172,6 +184,10 @@ def create_wrapper(backend, model_files):
         from mmdeploy.backend.ascend import AscendWrapper
         ascend_model = AscendWrapper(model_files)
         return ascend_model
+    elif backend == Backend.TVM:
+        from mmdeploy.backend.tvm import TVMWrapper
+        tvm_model = TVMWrapper(model_files, output_names=output_names)
+        return tvm_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
@@ -207,13 +223,17 @@ def run_wrapper(backend, wrapper, input):
     elif backend == Backend.ASCEND:
         results = wrapper({'input': input})['output']
         return results
+    elif backend == Backend.TVM:
+        results = wrapper({'input': input})['output']
+        return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN
+    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
+    Backend.TVM
 ]
 
 
