@@ -366,8 +366,7 @@ def get_rotated_rtmdet_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_rotated_rtmdet_head_predict_by_feat(backend_type: Backend):
     """Test predict_by_feat rewrite of RTMDet-R."""
     check_backend(backend_type)
