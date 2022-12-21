@@ -142,7 +142,8 @@ class OneEuroFilter : public Filter {
 
  private:
   static float SmoothingFactor(float cutoff) {
-    auto r = 2 * (float)M_PI * cutoff;
+    static constexpr float kPi = 3.1415926;
+    auto r = 2 * kPi * cutoff;
     return r / (r + 1);
   }
 
