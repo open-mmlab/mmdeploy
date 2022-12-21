@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import logging
 from typing import Any, Optional, Sequence
 
 from ..base import BACKEND_MANAGERS, BaseBackendManager
@@ -38,7 +39,7 @@ class TorchScriptManager(BaseBackendManager):
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
-                   log_level: int = 20,
+                   log_level: int = logging.INFO,
                    device: str = 'cpu',
                    **kwargs) -> Sequence[str]:
         """Convert intermediate representation to given backend.

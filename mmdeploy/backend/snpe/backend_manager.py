@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os
 import os.path as osp
 from typing import Any, Optional, Sequence
@@ -41,7 +42,7 @@ class SNPEManager(BaseBackendManager):
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
-                   log_level: int = 20,
+                   log_level: int = logging.INFO,
                    device: str = 'cpu',
                    uri: str = '',
                    **kwargs) -> Sequence[str]:

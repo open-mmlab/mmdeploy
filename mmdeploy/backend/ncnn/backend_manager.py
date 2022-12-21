@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os.path as osp
+import sys
 from typing import Any, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config, get_root_logger
@@ -48,7 +50,7 @@ class NCNNManager(BaseBackendManager):
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
-                   log_level: int = 20,
+                   log_level: int = logging.INFO,
                    device: str = 'cpu',
                    **kwargs) -> Sequence[str]:
         """Convert intermediate representation to given backend.
@@ -71,7 +73,7 @@ class NCNNManager(BaseBackendManager):
             logger.error('ncnn support is not available, please make sure:\n'
                          '1) `mmdeploy_onnx2ncnn` existed in `PATH`\n'
                          '2) python import ncnn success')
-            exit(1)
+            sys.exit(1)
 
         from mmdeploy.apis.ncnn import get_output_model_file
         from .onnx2ncnn import from_onnx

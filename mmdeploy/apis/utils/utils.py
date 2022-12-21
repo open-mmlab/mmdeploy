@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 from typing import Any, Optional, Sequence
 
 import mmcv
@@ -72,7 +73,7 @@ def to_backend(backend_name: str,
                ir_files: Sequence[str],
                work_dir: str,
                deploy_cfg: Optional[Any] = None,
-               log_level: int = 20,
+               log_level: int = logging.INFO,
                device: str = 'cpu',
                **kwargs) -> Sequence[str]:
     """Convert intermediate representation to given backend.
