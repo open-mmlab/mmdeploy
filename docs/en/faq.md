@@ -81,7 +81,12 @@
   C:\Windows\System32\onnxruntime.dll
   ```
   **Solution：** Choose one of the following two options
-  1. Copy the dll in the lib directory of the downloaded onnxruntime to the directory where mmdeploy_onnxruntime_ops.dll locates (It is recommended to use Everything to search the ops dll)
+  1. Copy the dll in the lib directory of the downloaded onnxruntime to the directory where mmdeploy_onnxruntime_ops.dll locates (It is recommended to use Everything to search the ops dll). For example, copy [`onnxruntime`](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1) `lib/onnxruntime.dll` to `mmdeploy/lib`, then the `mmdeploy/lib` directory should like this
+     ```
+     `-- mmdeploy_onnxruntime_ops.dll
+     `-- mmdeploy_onnxruntime_ops.lib
+     `-- onnxruntime.dll
+     ```
   2. Rename the two dlls in the system path so that they cannot be loaded.
 
 ### Pip

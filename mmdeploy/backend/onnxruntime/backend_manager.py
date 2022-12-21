@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
 import os.path as osp
 from typing import Any, Callable, Optional, Sequence
 
@@ -120,3 +121,24 @@ class ONNXRuntimeManager(BaseBackendManager):
             info = f'{cls.backend_name}:\tCheckFailed'
             log_callback(info)
         return info
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        return ir_files

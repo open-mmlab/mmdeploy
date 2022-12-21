@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
+import os.path as osp
 from typing import Any, Optional, Sequence
 
 from mmdeploy.utils import get_common_config
@@ -61,3 +63,39 @@ class RKNNManager(BaseBackendManager):
                 return pkg_resources.get_distribution('rknn').version
             except Exception:
                 return 'None'
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   work_dir: str,
+                   deploy_cfg: Any,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            deploy_cfg (Any): The deploy config.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        from . import is_available
+        assert is_available(
+        ), 'RKNN is not available, please install RKNN first.'
+
+        from .onnx2rknn import onnx2rknn
+
+        backend_files = []
+        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
+            pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
+            output_path = osp.join(work_dir, pre_fix_name + '.rknn')
+            onnx2rknn(onnx_path, output_path, deploy_cfg)
+            backend_files.append(output_path)
+
+        return backend_files

@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
+import logging
 from abc import ABCMeta
 from typing import Any, Callable, Optional, Sequence
 
@@ -73,6 +74,30 @@ class BaseBackendManager(metaclass=ABCMeta):
         log_callback(info)
         return info
 
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   work_dir: str,
+                   deploy_cfg: Any,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        """Convert intermediate representation to given backend.
+
+        Args:
+            ir_files (Sequence[str]): The intermediate representation files.
+            work_dir (str): The work directory, backend files and logs should
+                be save in this directory.
+            deploy_cfg (Any): The deploy config.
+            log_level (int, optional): The log level. Defaults to logging.INFO.
+            device (str, optional): The device type. Defaults to 'cpu'.
+
+        Returns:
+            Seqeuence[str]: Backend files.
+        """
+        raise NotImplementedError(
+            f'to_backend has not been implemented for `{cls.__name__}`')
+
 
 class BackendManagerRegistry:
     """backend manager registry."""
@@ -141,6 +166,7 @@ def get_backend_manager(name: str) -> BaseBackendManager:
 
     Args:
         name (str): name of the backend.
+
     Returns:
         BaseBackendManager: The backend manager of given name
     """
