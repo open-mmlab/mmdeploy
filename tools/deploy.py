@@ -13,11 +13,11 @@ from mmdeploy.apis import (create_calib_input_data, extract_model,
                            get_predefined_partition_cfg, torch2onnx,
                            torch2torchscript, visualize_model)
 from mmdeploy.apis.core import PIPELINE_MANAGER
+from mmdeploy.apis.utils import to_backend
 from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
-                            get_ir_config, get_model_inputs,
-                            get_partition_config, get_root_logger, load_config,
-                            target_wrapper)
+                            get_ir_config, get_partition_config,
+                            get_root_logger, load_config, target_wrapper)
 
 
 def parse_args():
@@ -193,268 +193,79 @@ def main():
     backend_files = ir_files
     # convert backend
     backend = get_backend(deploy_cfg)
-    if backend == Backend.TENSORRT:
-        model_params = get_model_inputs(deploy_cfg)
-        assert len(model_params) == len(ir_files)
 
-        from mmdeploy.apis.tensorrt import is_available as trt_is_available
-        assert trt_is_available(), (
-            'TensorRT is not available,'
-            ' please install TensorRT and build TensorRT custom ops first.')
+    # preprocess deploy_cfg
+    if backend == Backend.RKNN:
+        # TODO: Add this to task_processor in the future
+        import tempfile
 
-        from mmdeploy.apis.tensorrt import onnx2tensorrt
-        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2tensorrt])
-        PIPELINE_MANAGER.set_log_level(log_level, [onnx2tensorrt])
+        from mmdeploy.utils import (get_common_config, get_normalization,
+                                    get_quantization_config,
+                                    get_rknn_quantization)
+        quantization_cfg = get_quantization_config(deploy_cfg)
+        common_params = get_common_config(deploy_cfg)
+        if get_rknn_quantization(deploy_cfg) is True:
+            transform = get_normalization(model_cfg)
+            common_params.update(
+                dict(
+                    mean_values=[transform['mean']],
+                    std_values=[transform['std']]))
 
-        backend_files = []
-        for model_id, model_param, onnx_path in zip(
-                range(len(ir_files)), model_params, ir_files):
-            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            save_file = model_param.get('save_file', onnx_name + '.engine')
-
-            partition_type = 'end2end' if partition_cfgs is None \
-                else onnx_name
-            onnx2tensorrt(
-                args.work_dir,
-                save_file,
-                model_id,
-                deploy_cfg_path,
-                onnx_path,
-                device=args.device,
-                partition_type=partition_type)
-
-            backend_files.append(osp.join(args.work_dir, save_file))
-
-    elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-        if not is_available_ncnn():
-            logger.error('ncnn support is not available, please make sure:\n'
-                         '1) `mmdeploy_onnx2ncnn` existed in `PATH`\n'
-                         '2) python import ncnn success')
-            exit(1)
-
-        import mmdeploy.apis.ncnn as ncnn_api
-        from mmdeploy.apis.ncnn import get_output_model_file
-
-        PIPELINE_MANAGER.set_log_level(log_level, [ncnn_api.from_onnx])
-
-        backend_files = []
-        for onnx_path in ir_files:
-            model_param_path, model_bin_path = get_output_model_file(
-                onnx_path, args.work_dir)
-            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            ncnn_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
-
-            if quant:
-                from onnx2ncnn_quant_table import get_table
-
-                from mmdeploy.apis.ncnn import get_quant_model_file, ncnn2int8
-
-                deploy_cfg, model_cfg = load_config(deploy_cfg_path,
-                                                    model_cfg_path)
-                quant_onnx, quant_table, quant_param, quant_bin = get_quant_model_file(  # noqa: E501
-                    onnx_path, args.work_dir)
-
-                create_process(
-                    'ncnn quant table',
-                    target=get_table,
-                    args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
-                          quant_table, quant_image_dir, args.device),
-                    kwargs=dict(),
-                    ret_value=ret_value)
-
-                create_process(
-                    'ncnn_int8',
-                    target=ncnn2int8,
-                    args=(model_param_path, model_bin_path, quant_table,
-                          quant_param, quant_bin),
-                    kwargs=dict(),
-                    ret_value=ret_value)
-                backend_files += [quant_param, quant_bin]
-            else:
-                backend_files += [model_param_path, model_bin_path]
-
-    elif backend == Backend.SNPE:
-        from mmdeploy.apis.snpe import is_available as is_available
-
-        if not is_available():
-            logger.error('snpe support is not available, please check\n'
-                         '1) `snpe-onnx-to-dlc` existed in `PATH`\n'
-                         '2) snpe only support\n'
-                         'ubuntu18.04')
-            exit(1)
-
-        import mmdeploy.apis.snpe as snpe_api
-        from mmdeploy.apis.snpe import get_env_key, get_output_model_file
-
-        if get_env_key() not in os.environ:
-            os.environ[get_env_key()] = args.uri
-
-        PIPELINE_MANAGER.set_log_level(log_level, [snpe_api.from_onnx])
-
-        backend_files = []
-        for onnx_path in ir_files:
-            dlc_path = get_output_model_file(onnx_path, args.work_dir)
-            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            snpe_api.from_onnx(onnx_path, osp.join(args.work_dir, onnx_name))
-            backend_files = [dlc_path]
-
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import \
-            is_available as is_available_openvino
-        assert is_available_openvino(), \
-            'OpenVINO is not available, please install OpenVINO first.'
-
-        import mmdeploy.apis.openvino as openvino_api
-        from mmdeploy.apis.openvino import (get_input_info_from_cfg,
-                                            get_mo_options_from_cfg,
-                                            get_output_model_file)
-
-        PIPELINE_MANAGER.set_log_level(log_level, [openvino_api.from_onnx])
-
-        openvino_files = []
-        for onnx_path in ir_files:
-            model_xml_path = get_output_model_file(onnx_path, args.work_dir)
-            input_info = get_input_info_from_cfg(deploy_cfg)
-            output_names = get_ir_config(deploy_cfg).output_names
-            mo_options = get_mo_options_from_cfg(deploy_cfg)
-            openvino_api.from_onnx(onnx_path, args.work_dir, input_info,
-                                   output_names, mo_options)
-            openvino_files.append(model_xml_path)
-        backend_files = openvino_files
-
-    elif backend == Backend.PPLNN:
-        from mmdeploy.apis.pplnn import is_available as is_available_pplnn
-        assert is_available_pplnn(), \
-            'PPLNN is not available, please install PPLNN first.'
-
-        from mmdeploy.apis.pplnn import from_onnx
-
-        pplnn_pipeline_funcs = [from_onnx]
-        PIPELINE_MANAGER.set_log_level(log_level, pplnn_pipeline_funcs)
-
-        pplnn_files = []
-        for onnx_path in ir_files:
-            algo_file = onnx_path.replace('.onnx', '.json')
-            model_inputs = get_model_inputs(deploy_cfg)
-            assert 'opt_shape' in model_inputs, 'Expect opt_shape ' \
-                'in deploy config for PPLNN'
-            # PPLNN accepts only 1 input shape for optimization,
-            # may get changed in the future
-            input_shapes = [model_inputs.opt_shape]
-            algo_prefix = osp.splitext(algo_file)[0]
-            from_onnx(
-                onnx_path,
-                algo_prefix,
-                device=args.device,
-                input_shapes=input_shapes)
-            pplnn_files += [onnx_path, algo_file]
-        backend_files = pplnn_files
-
-    elif backend == Backend.RKNN:
-        from mmdeploy.apis.rknn import is_available as rknn_is_available
-        assert rknn_is_available(
-        ), 'RKNN is not available, please install RKNN first.'
-
-        from mmdeploy.apis.rknn import onnx2rknn
-        PIPELINE_MANAGER.enable_multiprocess(True, [onnx2rknn])
-        PIPELINE_MANAGER.set_log_level(logging.INFO, [onnx2rknn])
-
-        backend_files = []
-        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
-            pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            output_path = osp.join(args.work_dir, pre_fix_name + '.rknn')
-            import tempfile
-            dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
-            with open(dataset_file, 'w') as f:
-                f.writelines([osp.abspath(args.img)])
-            onnx2rknn(
-                onnx_path,
-                output_path,
-                deploy_cfg_path,
-                model_cfg_path,
-                dataset_file=dataset_file)
-
-            backend_files.append(output_path)
-    elif backend == Backend.ASCEND:
-        from mmdeploy.apis.ascend import from_onnx
-
-        ascend_pipeline_funcs = [from_onnx]
-        PIPELINE_MANAGER.set_log_level(log_level, ascend_pipeline_funcs)
-
-        model_inputs = get_model_inputs(deploy_cfg)
-
-        om_files = []
-        for model_id, onnx_path in enumerate(ir_files):
-            om_path = osp.splitext(onnx_path)[0] + '.om'
-            from_onnx(onnx_path, args.work_dir, model_inputs[model_id])
-            om_files.append(om_path)
-        backend_files = om_files
-
+        dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
+        with open(dataset_file, 'w') as f:
+            f.writelines([osp.abspath(args.img)])
+        quantization_cfg.setdefault('dataset', dataset_file)
+    if backend == Backend.ASCEND:
+        # TODO: Add this to backend manager in the future
         if args.dump_info:
             from mmdeploy.backend.ascend import update_sdk_pipeline
             update_sdk_pipeline(args.work_dir)
 
-    elif backend == Backend.COREML:
-        from mmdeploy.apis.coreml import from_torchscript
-        coreml_pipeline_funcs = [from_torchscript]
-        PIPELINE_MANAGER.set_log_level(log_level, coreml_pipeline_funcs)
+    # convert to backend
+    PIPELINE_MANAGER.set_log_level(log_level, [to_backend])
+    if backend == Backend.TENSORRT:
+        PIPELINE_MANAGER.enable_multiprocess(True, [to_backend])
+    backend_files = to_backend(
+        backend,
+        ir_files,
+        work_dir=args.work_dir,
+        deploy_cfg=deploy_cfg,
+        log_level=log_level,
+        device=args.device,
+        uri=args.uri)
 
-        coreml_files = []
-        for model_id, torchscript_path in enumerate(ir_files):
-            torchscript_name = osp.splitext(osp.split(torchscript_path)[1])[0]
-            output_file_prefix = osp.join(args.work_dir, torchscript_name)
+    # ncnn quantization
+    if backend == Backend.NCNN and quant:
+        from onnx2ncnn_quant_table import get_table
 
-            from_torchscript(model_id, torchscript_path, output_file_prefix,
-                             deploy_cfg, coreml_files)
+        from mmdeploy.apis.ncnn import get_quant_model_file, ncnn2int8
+        model_param_paths = backend_files[::2]
+        model_bin_paths = backend_files[1::2]
+        backend_files = []
+        for onnx_path, model_param_path, model_bin_path in zip(
+                ir_files, model_param_paths, model_bin_paths):
 
-        backend_files = coreml_files
-    elif backend == Backend.TVM:
-        import copy
+            deploy_cfg, model_cfg = load_config(deploy_cfg_path,
+                                                model_cfg_path)
+            quant_onnx, quant_table, quant_param, quant_bin = get_quant_model_file(  # noqa: E501
+                onnx_path, args.work_dir)
 
-        from mmdeploy.apis.tvm import from_onnx, get_library_ext
-        PIPELINE_MANAGER.set_log_level(log_level, [from_onnx])
-        model_inputs = get_model_inputs(deploy_cfg)
+            create_process(
+                'ncnn quant table',
+                target=get_table,
+                args=(onnx_path, deploy_cfg, model_cfg, quant_onnx,
+                      quant_table, quant_image_dir, args.device),
+                kwargs=dict(),
+                ret_value=ret_value)
 
-        if args.device.startswith('cuda'):
-            target = 'cuda'
-        else:
-            target = 'llvm'
-
-        lib_ext = get_library_ext()
-
-        tvm_files = []
-        for model_id, onnx_path in enumerate(ir_files):
-            model_input = copy.deepcopy(model_inputs[model_id])
-            use_vm = model_input.get('use_vm', False)
-            if 'target' not in model_input['tuner']:
-                model_input['tuner']['target'] = target
-            lib_path = osp.splitext(onnx_path)[0] + lib_ext
-            code_path = osp.splitext(
-                onnx_path)[0] + '.code' if use_vm else None
-            model_input['output_file'] = lib_path
-            model_input['onnx_model'] = onnx_path
-            model_input['bytecode_file'] = code_path
-
-            # create calibration dataset
-            if 'qconfig' in model_input:
-                calib_path = osp.join(args.work_dir, calib_filename)
-                from mmdeploy.backend.tvm import HDF5Dataset
-                partition_type = 'end2end' if partition_cfgs is None \
-                    else onnx_name
-                dataset = HDF5Dataset(
-                    calib_path,
-                    model_input['shape'],
-                    model_type=partition_type,
-                    device=target)
-                model_input['dataset'] = dataset()
-
-            from_onnx(**model_input)
-
-            tvm_files += [lib_path, code_path]
-
-        backend_files = tvm_files
+            create_process(
+                'ncnn_int8',
+                target=ncnn2int8,
+                args=(model_param_path, model_bin_path, quant_table,
+                      quant_param, quant_bin),
+                kwargs=dict(),
+                ret_value=ret_value)
+            backend_files += [quant_param, quant_bin]
 
     if args.test_img is None:
         args.test_img = args.img
