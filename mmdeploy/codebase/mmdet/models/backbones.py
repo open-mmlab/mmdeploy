@@ -46,7 +46,7 @@ def focus__forward__ncnn(self, x):
 
     x = x.reshape(batch_size, c * h, 1, w)
     _b, _c, _h, _w = x.shape
-    g = _c // 2
+    g = torch.div(_c, 2, rounding_mode='floor')
     # fuse to ncnn's shufflechannel
     x = x.view(_b, g, 2, _h, _w)
     x = torch.transpose(x, 1, 2).contiguous()
@@ -55,13 +55,14 @@ def focus__forward__ncnn(self, x):
     x = x.reshape(_b, c * h * w, 1, 1)
 
     _b, _c, _h, _w = x.shape
-    g = _c // 2
+    g = torch.div(_c, 2, rounding_mode='floor')
     # fuse to ncnn's shufflechannel
     x = x.view(_b, g, 2, _h, _w)
     x = torch.transpose(x, 1, 2).contiguous()
     x = x.view(_b, -1, _h, _w)
 
-    x = x.reshape(_b, c * 4, h // 2, w // 2)
+    x = x.reshape(_b, c * 4, torch.div(h, 2, rounding_mode='floor'),
+                  torch.div(w, 2, rounding_mode='floor'))
 
     return self.conv(x)
 
@@ -198,8 +199,12 @@ def shift_window_msa__forward__default(self, query, hw_shape):
         [query,
          query.new_zeros(B, C, self.window_size, query.shape[-1])],
         dim=-2)
-    slice_h = (H + self.window_size - 1) // self.window_size * self.window_size
-    slice_w = (W + self.window_size - 1) // self.window_size * self.window_size
+    slice_h = torch.div(
+        (H + self.window_size - 1), self.window_size,
+        rounding_mode='floor') * self.window_size
+    slice_w = torch.div(
+        (W + self.window_size - 1), self.window_size,
+        rounding_mode='floor') * self.window_size
     query = query[:, :, :slice_h, :slice_w]
     query = query.permute(0, 2, 3, 1).contiguous()
     H_pad, W_pad = query.shape[1], query.shape[2]
