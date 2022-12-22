@@ -51,4 +51,4 @@ jobs:
         run: |
           python3 tools/scripts/build_ubuntu_x64_pplnn.py
           python3 -c "import pyppl"
-          ls -lah build/install
+          ls -lah build
