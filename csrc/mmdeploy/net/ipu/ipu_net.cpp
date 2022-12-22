@@ -24,9 +24,8 @@ mmdeploy::DataType IPUNet::ipu_type_convert(const popef::DataType& ipu_type) {
   } else if (ipu_type == popef::DataType::F8) {
     mtype = mmdeploy::DataType::kINT8;
   } else {
-    mtype = mmdeploy::DataType::kINT8;
-    // throw std::invalid_argument(
-    //     "invalid data type for IPU backend, current legit is : fp32, fp16, fp8");
+    throw std::invalid_argument(
+        "invalid data type for IPU backend, current legit is : fp32, fp16, fp8");
   }
   return mtype;
 }
