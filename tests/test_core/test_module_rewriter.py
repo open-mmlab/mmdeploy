@@ -1,6 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import torch
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
 from mmdeploy.core import MODULE_REWRITER, patch_model
 
 
@@ -29,7 +33,7 @@ def test_module_rewriter():
     rewritten_model = patch_model(model, cfg=cfg, backend='tensorrt')
     rewritten_bottle_nect = rewritten_model.layer1[0]
     rewritten_result = rewritten_bottle_nect(x)
-    torch.testing.assert_allclose(rewritten_result, result * 2)
+    torch_assert_close(rewritten_result, result * 2)
 
     # wrong backend should not be rewritten
     model = resnet50().eval()
@@ -38,7 +42,7 @@ def test_module_rewriter():
     rewritten_model = patch_model(model, cfg=cfg)
     rewritten_bottle_nect = rewritten_model.layer1[0]
     rewritten_result = rewritten_bottle_nect(x)
-    torch.testing.assert_allclose(rewritten_result, result)
+    torch_assert_close(rewritten_result, result)
 
 
 def test_pass_redundant_args_to_model():
