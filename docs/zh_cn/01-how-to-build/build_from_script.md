@@ -49,4 +49,5 @@ $ python3 tools/check_env.py
 |     build_ubuntu_x64_ort.py     |     18.04/20.04     |
 |    build_ubuntu_x64_pplnn.py    |     18.04/20.04     |
 | build_ubuntu_x64_torchscript.py |     18.04/20.04     |
+|     build_ubuntu_x64_tvm.py     |     18.04/20.04     |
 |  build_jetson_orin_python38.sh  | JetPack5.0 L4T 34.1 |

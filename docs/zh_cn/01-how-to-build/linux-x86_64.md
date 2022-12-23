@@ -245,6 +245,18 @@ export ASCEND_TOOLKIT_HOME="/usr/local/Ascend/ascend-toolkit/latest"
    </code></pre>
     </td>
   </tr>
+  <tr>
+    <td>TVM</td>
+    <td>TVM</td>
+    <td>
+    1. 按照 <a href="https://tvm.apache.org/docs/install/from_source.html">官方指引</a>安装 TVM.<br>
+    2. 配置环境
+   <pre><code>
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${TVM_HOME}/build
+export PYTHONPATH=${TVM_HOME}/python:${PYTHONPATH}
+   </code></pre>
+    </td>
+  </tr>
 </tbody>
 </table>
 

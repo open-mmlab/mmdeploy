@@ -69,7 +69,7 @@ class CudaDeviceMemory : public NonCopyable {
  public:
   explicit CudaDeviceMemory(int device_id) : device_id_(device_id), size_(), owned_block_() {}
   Result<void> Init(size_t size, Allocator allocator, size_t alignment, uint64_t flags) {
-    if (alignment != 1) {
+    if (alignment > 256 || 256 % alignment != 0) {
       return Status(eNotSupported);
     }
     allocator_ = std::move(allocator);

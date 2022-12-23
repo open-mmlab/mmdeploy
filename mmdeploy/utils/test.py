@@ -14,6 +14,11 @@ from mmengine import Config
 from mmengine.model import BaseModel
 from torch import nn
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
 import mmdeploy.codebase  # noqa: F401,F403
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (IR, Backend, get_backend, get_dynamic_axes,
@@ -51,6 +56,8 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
         # device not require as backend is not really running
         from mmdeploy.apis.rknn import is_available
     elif backend == Backend.ASCEND:
+        from mmdeploy.apis.ascend import is_available
+    elif backend == Backend.TVM:
         from mmdeploy.apis.ascend import is_available
     else:
         warnings.warn('The backend checker is not available')
@@ -105,6 +112,8 @@ def check_backend(backend: Backend, require_plugin: bool = False):
     elif backend == Backend.RKNN:
         from mmdeploy.backend.rknn import is_available
     elif backend == Backend.ASCEND:
+        from mmdeploy.backend.ascend import is_available
+    elif backend == Backend.TVM:
         from mmdeploy.backend.ascend import is_available
     else:
         warnings.warn('The backend checker is not available')
@@ -289,8 +298,7 @@ def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
         if isinstance(actual[i], (list, np.ndarray)):
             actual[i] = torch.tensor(actual[i])
         try:
-            torch.testing.assert_allclose(
-                actual[i], expected[i], rtol=1e-03, atol=1e-05)
+            torch_assert_close(actual[i], expected[i], rtol=1e-03, atol=1e-05)
         except AssertionError as error:
             if tolerate_small_mismatch:
                 assert '(0.00%)' in str(error), str(error)

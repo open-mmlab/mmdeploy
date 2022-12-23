@@ -10,6 +10,7 @@ from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
                             get_ir_config, get_partition_config, get_precision,
                             get_root_logger, get_task_type, is_dynamic_batch,
                             load_config)
+from mmdeploy.utils.config_utils import get_backend_config
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
@@ -69,7 +70,7 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
 def get_models(deploy_cfg: Union[str, mmengine.Config],
                model_cfg: Union[str, mmengine.Config], work_dir: str,
                device: str) -> List:
-    """Get the output model informantion for deploy.json.
+    """Get the output model information for deploy.json.
 
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
@@ -79,7 +80,7 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
 
     Return:
         list[dict]: The list contains dicts composed of the model name, net,
-            weghts, backend, precision batchsize and dynamic_shape.
+            weight, backend, precision batchsize and dynamic_shape.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
@@ -102,8 +103,34 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         pplnn=lambda file: re.sub(r'\.[a-z]+', '.json', file),
         openvino=lambda file: re.sub(r'\.[a-z]+', '.bin', file),
         ncnn=lambda file: re.sub(r'\.[a-z]+', '.bin', file))
-    net = backend_net.get(backend, lambda x: x)(ir_name)
-    weights = backend_weights.get(backend, lambda x: weights)(ir_name)
+    if backend != Backend.TVM.value:
+        net = backend_net.get(backend, lambda x: x)(ir_name)
+        weights = backend_weights.get(backend, lambda x: weights)(ir_name)
+    else:
+        # TODO: add this to backend manager
+        import os.path as osp
+
+        from mmdeploy.backend.tvm import get_library_ext
+
+        def _replace_suffix(file_name: str, dst_suffix: str) -> str:
+            return re.sub(r'\.[a-z]+', dst_suffix, file_name)
+
+        ext = get_library_ext()
+        net = _replace_suffix(ir_name, ext)
+        # get input and output name
+        ir_cfg = get_ir_config(deploy_cfg)
+        backend_cfg = get_backend_config(deploy_cfg)
+        input_names = ir_cfg['input_names']
+        output_names = ir_cfg['output_names']
+        weights = _replace_suffix(ir_name, '.txt')
+        weights_path = osp.join(work_dir, weights)
+        bytecode_path = _replace_suffix(ir_name, '.code')
+        with open(weights_path, 'w') as f:
+            f.write(','.join(input_names) + '\n')
+            f.write(','.join(output_names) + '\n')
+            use_vm = backend_cfg.model_inputs[0].get('use_vm', False)
+            if use_vm:
+                f.write(bytecode_path + '\n')
 
     precision = get_precision(deploy_cfg)
     dynamic_shape = is_dynamic_batch(deploy_cfg, input_name='input')
