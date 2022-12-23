@@ -3,7 +3,6 @@ import os.path as osp
 import tempfile
 from multiprocessing import Process
 
-import h5py
 import mmcv
 
 from mmdeploy.apis import create_calib_input_data
@@ -171,6 +170,7 @@ def get_model_cfg():
 
 
 def run_test_create_calib_end2end():
+    import h5py
     model_cfg = get_model_cfg()
     deploy_cfg = get_end2end_deploy_cfg()
     create_calib_input_data(
@@ -203,6 +203,7 @@ def test_create_calib_end2end():
 
 
 def run_test_create_calib_parittion():
+    import h5py
     model_cfg = get_model_cfg()
     deploy_cfg = get_partition_deploy_cfg()
     create_calib_input_data(
