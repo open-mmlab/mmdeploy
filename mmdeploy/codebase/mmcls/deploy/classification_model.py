@@ -84,11 +84,21 @@ class End2EndModel(BaseBackendModel):
         cls_score = self.wrapper({self.input_name:
                                   inputs})[self.output_names[0]]
 
-        from mmcls.models.heads.cls_head import ClsHead
-        predict = ClsHead._get_predictions(
-            None, cls_score, data_samples=data_samples)
+        from mmcls.structures import ClsDataSample
+        pred_scores = cls_score
+        pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
 
-        return predict
+        if data_samples is not None:
+            for data_sample, score, label in zip(data_samples, pred_scores,
+                                                 pred_labels):
+                data_sample.set_pred_score(score).set_pred_label(label)
+        else:
+            data_samples = []
+            for score, label in zip(pred_scores, pred_labels):
+                data_samples.append(ClsDataSample().set_pred_score(
+                    score).set_pred_label(label))
+
+        return data_samples
 
 
 @__BACKEND_MODEL.register_module('sdk')
