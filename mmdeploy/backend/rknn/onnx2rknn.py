@@ -25,7 +25,7 @@ def rknn_package_info():
 def onnx2rknn(onnx_model: str,
               output_path: str,
               deploy_cfg: Union[str, mmengine.Config],
-              model_cfg: Union[str, mmengine.Config],
+              model_cfg: Optional[Union[str, mmengine.Config]] = None,
               dataset_file: Optional[str] = None,
               **kwargs):
     """Convert ONNX to RKNN.
@@ -55,7 +55,7 @@ def onnx2rknn(onnx_model: str,
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
     # update norm value
-    if get_rknn_quantization(deploy_cfg) is True:
+    if get_rknn_quantization(deploy_cfg) is True and model_cfg is not None:
         transform = get_normalization(model_cfg)
         common_params.update(
             dict(

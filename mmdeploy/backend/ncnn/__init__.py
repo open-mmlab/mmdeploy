@@ -17,7 +17,6 @@ def is_available():
     has_pyncnn = importlib.util.find_spec('ncnn') is not None
 
     onnx2ncnn = get_onnx2ncnn_path()
-
     return has_pyncnn and osp.exists(onnx2ncnn)
 
 

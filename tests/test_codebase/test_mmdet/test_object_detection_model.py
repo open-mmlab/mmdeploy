@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import pytest
 import torch
 from mmengine import Config
@@ -20,7 +22,7 @@ from mmdeploy.codebase.mmdet.deploy.object_detection_model import End2EndModel
 
 def assert_det_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, tuple)
+    assert isinstance(results, Sequence)
     assert len(results) == 2
     assert results[0].shape[0] == results[1].shape[0]
     assert results[0].shape[1] == results[1].shape[1]

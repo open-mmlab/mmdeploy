@@ -57,8 +57,8 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
                 names from the model.
             deploy_cfg: Deployment config file.
         """
-        from mmdeploy.backend.base import BACKEND_MANAGERS
-        backend_mgr = BACKEND_MANAGERS.find(backend.value)
+        from mmdeploy.backend.base import get_backend_manager
+        backend_mgr = get_backend_manager(backend.value)
         if backend_mgr is None:
             raise NotImplementedError(
                 f'Unsupported backend type: {backend.value}')
