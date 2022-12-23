@@ -416,8 +416,11 @@ def main():
         for model_id, onnx_path in enumerate(ir_files):
             model_name = onnx_path.split('/')[-1][:-5]
             ipu_config = deploy_cfg.get('backend_config', {})
-            print('ipu config keys ', ipu_config.keys())
-            output_dir = ipu_config['output_dir']
+            # print('ipu config keys ', ipu_config.keys())
+            output_dir = ipu_config.get('output_dir', '')
+            assert output_dir != '', 'output dir for ipu backend is not set'
+            assert os.path.exists(output_dir), 'output dir not exist'
+
             model_dir = os.path.join(output_dir, model_name)
             if not os.path.exists(model_dir):
                 os.mkdir(model_dir)
@@ -435,6 +438,8 @@ def main():
         show_result=args.show)
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
+    elif backend == Backend.IPU:
+        extra['bps'] = ipu_config['batch_per_step']
 
     # get backend inference result, try render
     create_process(

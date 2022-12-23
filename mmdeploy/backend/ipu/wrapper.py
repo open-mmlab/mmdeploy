@@ -45,6 +45,7 @@ class IPUWrapper(BaseWrapper):
                  bps=1,
                  output_names: Optional[Sequence[str]] = None):
         super().__init__(output_names)
+        print('init ipu backend with bps ', bps)
         self.bps = bps
         # Create model runner
         config = model_runtime.ModelRunnerConfig()
@@ -65,7 +66,7 @@ class IPUWrapper(BaseWrapper):
                 popef.popefTypeToNumpyDType(input_desc.data_type))
             for input_desc in self.input_descriptions
         ]
-        # self.input_view = model_runtime.InputMemoryView()
+        self.input_view = model_runtime.InputMemoryView()
 
         # for input_desc, input_tensor in zip(self.input_descriptions, input_tensors):
         #     print("\tname:", input_desc.name, "shape:", input_tensor.shape,
@@ -76,51 +77,31 @@ class IPUWrapper(BaseWrapper):
 
     def forward(self, inputs):
         start = time.time()
-        input_view = model_runtime.InputMemoryView()
         # print('input desc ', self.input_descriptions)
         for input_desc in self.input_descriptions:
-            # print("\tname:", input_desc.name, "shape:", input_tensor.shape,
-            #       "dtype:", input_tensor.dtype)
-            # input_tensor = np.repeat(input_tensor, repeats=self.bps, axis=0)
-            # print('forward input tensor ', inputs[input_desc.name].dtype)
-            input_view[input_desc.name] = inputs[input_desc.name].numpy().astype(
+
+            self.input_view[input_desc.name] = inputs[input_desc.name].numpy().astype(
                 popef.popefTypeToNumpyDType(input_desc.data_type))
-            # print('actual input shape ', inputs[input_desc.name].numpy().shape)
-            # .astype(popef.popefTypeToNumpyDType(input_desc.data_type))
-        # print('input view key ', self.input_view.keys())
-        # print('inputs key ', inputs.keys())
-        # for key in inputs.keys():
-        #     print('input view key val ', key, self.input_view[key])
-        #     print('input key val ', key, inputs[key])
-        #     print('input view data and type ', type(
-        #         self.input_view[key].data), self.input_view[key].data)
-        #     self.input_view[key].data = inputs[key]
-        result = self.runner.executeAsync(input_view)
+            # print('input assign time ', time.time()-astart)
+
+        result = self.runner.executeAsync(self.input_view)
         result.wait()
-        print('forward time ', time.time()-start)
+        print('ipu forward time ', time.time()-start)
         output_descriptions = self.runner.getExecuteOutputs()
-        # print('output desc ', output_descriptions)
 
         outputs = {}
-        # print("Processing output tensors:")
+
         for output_desc in output_descriptions:
 
             out_shape = output_desc.shape
-            # print('out desc type & shape ', output_desc.data_type, out_shape)
-            # out_shape[0] = out_shape[0] * self.bps
-            # print(result[output_desc.name], type(
-            #     result[output_desc.name]))
-            # print('buffer dtype ', popef.popefTypeToNumpyDType(
-            #     output_desc.data_type))
+
+            out_shape[0] = out_shape[0] * self.bps
+
             output_tensor = np.frombuffer(result[output_desc.name],
                                           dtype=popef.popefTypeToNumpyDType(
-                output_desc.data_type)).reshape(output_desc.shape)
-            # print('output tensor ', output_tensor, len(
-            #     output_tensor), type(output_tensor[0]))
-            # .reshape(output_desc.shape)
+                output_desc.data_type)).reshape(out_shape)
+
             outputs[output_desc.name] = torch.from_numpy(output_tensor)
-            # print("\tname:", output_desc.name, "shape:", output_tensor.shape,
-            #       "dtype:", output_tensor.dtype, "\n", output_tensor)
 
         return outputs
 
