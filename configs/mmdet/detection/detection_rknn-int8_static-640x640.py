@@ -6,7 +6,7 @@ codebase_config = dict(model_type='rknn')
 
 backend_config = dict(input_size_list=[[3, 640, 640]])
 
-# # rtmdet for rknn-toolkit and rknn-toolkit2
+# rtmdet for rknn-toolkit and rknn-toolkit2
 partition_config = dict(
     type='rknn',  # the partition policy name
     apply_marks=True,  # should always be set to True
