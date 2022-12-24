@@ -2,7 +2,7 @@
 import importlib
 import logging
 from abc import ABCMeta
-from typing import Any, Optional, Sequence
+from typing import Any, Callable, Optional, Sequence
 
 
 class BaseBackendManager(metaclass=ABCMeta):
@@ -32,6 +32,49 @@ class BaseBackendManager(metaclass=ABCMeta):
             f'build_wrapper has not been implemented for `{cls.__name__}`')
 
     @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+        Returns:
+            bool: True if backend package is installed.
+        """
+        raise NotImplementedError(
+            f'is_available has not been implemented for "{cls.__name__}"')
+
+    @classmethod
+    def get_version(cls) -> str:
+        """Get the version of the backend."""
+        raise NotImplementedError(
+            f'get_version has not been implemented for "{cls.__name__}"')
+
+    @classmethod
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
+        """Check current environment.
+
+        Returns:
+            str: Info about the environment.
+        """
+        try:
+            available = cls.is_available()
+            if available:
+                try:
+                    backend_version = cls.get_version()
+                except NotImplementedError:
+                    backend_version = 'Unknown'
+            else:
+                backend_version = 'None'
+
+            info = f'{cls.backend_name}:\t{backend_version}'
+        except Exception:
+            info = f'{cls.backend_name}:\tCheckFailed'
+
+        log_callback(info)
+
+        return info
+
+    @classmethod
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
@@ -49,7 +92,7 @@ class BaseBackendManager(metaclass=ABCMeta):
             log_level (int, optional): The log level. Defaults to logging.INFO.
             device (str, optional): The device type. Defaults to 'cpu'.
         Returns:
-            Seqeuence[str]: Backend files.
+            Sequence[str]: Backend files.
         """
         raise NotImplementedError(
             f'to_backend has not been implemented for `{cls.__name__}`')
@@ -90,6 +133,8 @@ class BackendManagerRegistry:
                 )
 
             self._module_dict[name] = cls
+
+            cls.backend_name = name
 
             return cls
 

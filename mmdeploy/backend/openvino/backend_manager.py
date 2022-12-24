@@ -33,6 +33,32 @@ class OpenVINOManager(BaseBackendManager):
             ir_model_file=backend_files[0], output_names=output_names)
 
     @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+        Returns:
+            bool: True if backend package is installed.
+        """
+        import importlib
+        ret = importlib.util.find_spec('openvino') is not None
+
+        return ret
+
+    @classmethod
+    def get_version(cls) -> str:
+        """Get the version of the backend."""
+        if not cls.is_available():
+            return 'None'
+        else:
+            import pkg_resources
+            try:
+                return pkg_resources.get_distribution('openvino').version
+            except Exception:
+                return 'None'
+
+    @classmethod
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
@@ -50,7 +76,7 @@ class OpenVINOManager(BaseBackendManager):
             log_level (int, optional): The log level. Defaults to logging.INFO.
             device (str, optional): The device type. Defaults to 'cpu'.
         Returns:
-            Seqeuence[str]: Backend files.
+            Sequence[str]: Backend files.
         """
         from . import is_available
         assert is_available(), \

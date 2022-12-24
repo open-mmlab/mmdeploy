@@ -1,17 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-
 from .backend_manager import OpenVINOManager
 
+_BackendManager = OpenVINOManager
 
-def is_available() -> bool:
-    """Checking if OpenVINO is installed.
-
-    Returns:
-        bool: True if OpenVINO is installed.
-    """
-    return importlib.util.find_spec('openvino') is not None
-
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
 __all__ = ['OpenVINOManager']
 if is_available():

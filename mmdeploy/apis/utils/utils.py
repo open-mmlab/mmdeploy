@@ -91,7 +91,7 @@ def to_backend(backend_name: str,
         log_level (int, optional): The log level. Defaults to logging.INFO.
         device (str, optional): The device type. Defaults to 'cpu'.
     Returns:
-        Seqeuence[str]: Backend files.
+        Sequence[str]: Backend files.
     """
     from mmdeploy.backend.base import get_backend_manager
     backend_mgr = get_backend_manager(backend_name)

@@ -30,7 +30,7 @@ def assert_det_results(results, module_name: str = 'model'):
 
 def assert_forward_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, Sequence)
     assert len(results) == 1
     assert isinstance(results[0].pred_instances, InstanceData)
     assert results[0].pred_instances.bboxes.shape[-1] == 4
