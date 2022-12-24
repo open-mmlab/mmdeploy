@@ -72,7 +72,8 @@ Result<Detections> RTMDetSepBNHead::GetBBoxes(const Value& prep_res,
   std::vector<int> class_ids;
 
   for (int i = 0; i < bbox_preds.size(); i++) {
-    RTMDetFeatDeocde(bbox_preds[i], cls_scores[i], strides_[i], offset_, filter_boxes, obj_probs, class_ids);
+    RTMDetFeatDeocde(bbox_preds[i], cls_scores[i], strides_[i], offset_, filter_boxes, obj_probs,
+                     class_ids);
   }
 
   std::vector<int> indexArray;
@@ -114,7 +115,7 @@ Result<Detections> RTMDetSepBNHead::GetBBoxes(const Value& prep_res,
         MapToOriginImage(x1, y1, x2, y2, scale_factor.data(), 0, 0, ori_width, ori_height, 0, 0);
     if (rect[2] - rect[0] < min_bbox_size_ || rect[3] - rect[1] < min_bbox_size_) {
       MMDEPLOY_DEBUG("ignore small bbox with width '{}' and height '{}", rect[2] - rect[0],
-                    rect[3] - rect[1]);
+                     rect[3] - rect[1]);
       continue;
     }
     Detection det{};
@@ -185,9 +186,9 @@ std::array<float, 4> RTMDetSepBNHead::RTMDetdecode(float tl_x, float tl_y, float
   tl_y = (offset + i) * stride - tl_y;
   br_x = (offset + j) * stride + br_x;
   br_y = (offset + i) * stride + br_y;
-  return std::array<float, 4> { tl_x, tl_y, br_x, br_y };
+  return std::array<float, 4>{tl_x, tl_y, br_x, br_y};
 }
 
-REGISTER_CODEBASE_COMPONENT(MMDetection, RTMDetSepBNHead);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, RTMDetSepBNHead);
 
 }  // namespace mmdeploy::mmdet
