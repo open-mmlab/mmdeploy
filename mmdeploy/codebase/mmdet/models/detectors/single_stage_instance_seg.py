@@ -13,7 +13,7 @@ from mmdeploy.utils import is_dynamic_shape
     'instance_segmentor_forward',
     inputs=['input'],
     outputs=['dets', 'labels', 'masks'])
-def __forward_impl(self, batch_inputs, data_samples, **kwargs):
+def __forward_impl(self, batch_inputs, data_samples):
     """Rewrite and adding mark for `forward`.
 
     Encapsulate this function for rewriting `forward` of BaseDetector.
@@ -23,6 +23,27 @@ def __forward_impl(self, batch_inputs, data_samples, **kwargs):
     x = self.extract_feat(batch_inputs)
     results_list = self.mask_head.predict(x, data_samples, rescale=False)
     return results_list
+
+
+@torch.fx.wrap
+def _set_metainfo(data_samples, img_shape):
+    """Set the metainfo.
+
+    Code in this function cannot be traced by fx.
+    """
+
+    # fx can not trace deepcopy correctly
+    data_samples = copy.deepcopy(data_samples)
+    if data_samples is None:
+        data_samples = [DetDataSample()]
+
+    # note that we can not use `set_metainfo`, deepcopy would crash the
+    # onnx trace.
+    for data_sample in data_samples:
+        data_sample.set_field(
+            name='img_shape', value=img_shape, field_type='metainfo')
+
+    return data_samples
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -54,10 +75,8 @@ def single_stage_instance_segmentor__forward(
             - labels (Tensor): Labels of bboxes, has a shape
                 (num_instances, ).
     """
-    data_samples = copy.deepcopy(data_samples)
-    if data_samples is None:
-        data_samples = [DetDataSample()]
     ctx = FUNCTION_REWRITER.get_context()
+
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape
@@ -67,10 +86,5 @@ def single_stage_instance_segmentor__forward(
         img_shape = [int(val) for val in img_shape]
 
     # set the metainfo
-    # note that we can not use `set_metainfo`, deepcopy would crash the
-    # onnx trace.
-    for data_sample in data_samples:
-        data_sample.set_field(
-            name='img_shape', value=img_shape, field_type='metainfo')
-    return __forward_impl(
-        self, batch_inputs, data_samples=data_samples, **kwargs)
+    data_samples = _set_metainfo(data_samples, img_shape)
+    return __forward_impl(self, batch_inputs, data_samples=data_samples)

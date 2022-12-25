@@ -8,16 +8,17 @@ from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.solov2_head.'
     'SOLOV2Head.predict_by_feat',
-    backend='openvino')
-def solohead__predict_by_feat__openvino(self, mlvl_kernel_preds: List[Tensor],
-                                        mlvl_cls_scores: List[Tensor],
-                                        mask_feats: Tensor,
-                                        batch_img_metas: List[Dict], **kwargs):
+    backend=Backend.OPENVINO.value)
+def solov2head__predict_by_feat(self, mlvl_kernel_preds: List[Tensor],
+                                mlvl_cls_scores: List[Tensor],
+                                mask_feats: Tensor,
+                                batch_img_metas: List[Dict], **kwargs):
     """Transform a batch of output features extracted from the head into mask
     results.
 
