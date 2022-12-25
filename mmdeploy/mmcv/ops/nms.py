@@ -511,7 +511,7 @@ def multiclass_nms(boxes: Tensor,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms',
     backend=Backend.COREML.value)
 def multiclass_nms__coreml(boxes: Tensor,
                            scores: Tensor,
@@ -574,8 +574,7 @@ def multiclass_nms__coreml(boxes: Tensor,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
-    ir=IR.TORCHSCRIPT)
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms', ir=IR.TORCHSCRIPT)
 def multiclass_nms__torchscript(boxes: Tensor,
                                 scores: Tensor,
                                 max_output_boxes_per_class: int = 1000,
@@ -676,8 +675,7 @@ class AscendBatchNMSOp(torch.autograd.Function):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
-    backend='ascend')
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms', backend='ascend')
 def multiclass_nms__ascend(boxes: Tensor,
                            scores: Tensor,
                            max_output_boxes_per_class: int = 1000,

@@ -339,3 +339,10 @@ models:
         convert_image: *convert_image
         backend_test: *default_backend_test
         sdk_config: *sdk_dynamic
+
+  - name: SOLO
+    metafile: configs/solo/metafile.yml
+    model_configs:
+      - configs/solo/solo_r50_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_openvino_dynamic_fp32

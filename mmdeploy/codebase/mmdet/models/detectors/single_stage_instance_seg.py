@@ -1,19 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
-
 import torch
-from mmdet.structures import DetDataSample, SampleList
+from mmdet.models.detectors.base import ForwardResults
 from mmdet.structures.det_data_sample import OptSampleList
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
+from .single_stage import _set_metainfo
 
 
 @mark(
     'instance_segmentor_forward',
     inputs=['input'],
     outputs=['dets', 'labels', 'masks'])
-def __forward_impl(self, batch_inputs, data_samples):
+def __forward_impl_instance_seg(self, batch_inputs, data_samples, **kwargs):
     """Rewrite and adding mark for `forward`.
 
     Encapsulate this function for rewriting `forward` of BaseDetector.
@@ -21,29 +20,8 @@ def __forward_impl(self, batch_inputs, data_samples):
     2. Support both dynamic and static export to onnx.
     """
     x = self.extract_feat(batch_inputs)
-    results_list = self.mask_head.predict(x, data_samples, rescale=False)
-    return results_list
-
-
-@torch.fx.wrap
-def _set_metainfo(data_samples, img_shape):
-    """Set the metainfo.
-
-    Code in this function cannot be traced by fx.
-    """
-
-    # fx can not trace deepcopy correctly
-    data_samples = copy.deepcopy(data_samples)
-    if data_samples is None:
-        data_samples = [DetDataSample()]
-
-    # note that we can not use `set_metainfo`, deepcopy would crash the
-    # onnx trace.
-    for data_sample in data_samples:
-        data_sample.set_field(
-            name='img_shape', value=img_shape, field_type='metainfo')
-
-    return data_samples
+    mask_outs = self.mask_head.predict(x, data_samples, rescale=False)
+    return mask_outs
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -54,19 +32,17 @@ def single_stage_instance_segmentor__forward(
         batch_inputs: torch.Tensor,
         data_samples: OptSampleList = None,
         mode: str = 'tensor',
-        **kwargs) -> SampleList:
+        **kwargs) -> ForwardResults:
     """Rewrite `forward` for default backend.
-
     Support configured dynamic/static shape for model input and return
     detection result as Tensor instead of numpy array.
-
     Args:
         batch_inputs (Tensor): Inputs with shape (N, C, H, W).
         data_samples (List[:obj:`DetDataSample`]): The Data
             Samples. It usually includes information such as
             `gt_instance`, `gt_panoptic_seg` and `gt_sem_seg`.
-        mode (str): export mode, not used.
-
+        rescale (bool): Whether to rescale the results.
+            Defaults to True.
     Returns:
         tuple[Tensor]: Detection results of the
         input images.
@@ -76,7 +52,6 @@ def single_stage_instance_segmentor__forward(
                 (num_instances, ).
     """
     ctx = FUNCTION_REWRITER.get_context()
-
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape
@@ -87,4 +62,6 @@ def single_stage_instance_segmentor__forward(
 
     # set the metainfo
     data_samples = _set_metainfo(data_samples, img_shape)
-    return __forward_impl(self, batch_inputs, data_samples=data_samples)
+
+    return __forward_impl_instance_seg(
+        self, batch_inputs, data_samples=data_samples, **kwargs)

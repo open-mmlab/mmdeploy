@@ -352,7 +352,7 @@ class PartitionSingleStageModel(End2EndModel):
         ret = [r.cpu() for r in ret]
         return ret
 
-    def forward_test(self, imgs: Tensor, *args, **kwargs):
+    def predict(self, imgs: Tensor, *args, **kwargs):
         """Implement forward test.
 
         Args:
@@ -517,8 +517,8 @@ class PartitionTwoStageModel(End2EndModel):
             img_metas[0][0]['scale_factor'],
             cfg=rcnn_test_cfg)
 
-    def forward_test(self, imgs: Tensor, img_metas: Sequence[dict], *args,
-                     **kwargs):
+    def predict(self, imgs: Tensor, img_metas: Sequence[dict], *args,
+                **kwargs):
         """Implement forward test.
 
         Args:
@@ -601,7 +601,7 @@ class NCNNEnd2EndModel(End2EndModel):
         scores = out[:, :, 1:2]
         boxes = out[:, :, 2:6] * scales
         dets = torch.cat([boxes, scores], dim=2)
-        return dets, torch.tensor(labels, dtype=torch.int32)
+        return dets, labels.to(torch.int32)
 
 
 @__BACKEND_MODEL.register_module('sdk')

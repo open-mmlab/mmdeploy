@@ -316,12 +316,17 @@ def single_roi_extractor__forward__openvino(self,
 @mark('roi_extractor', inputs=['feats', 'rois'], outputs=['bbox_feats'])
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
+    backend=Backend.TVM.value)
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='mmdet.models.roi_heads.SingleRoIExtractor.forward',
     backend=Backend.COREML.value)
 def single_roi_extractor__forward__coreml(self,
                                           feats,
                                           rois,
                                           roi_scale_factor=None):
     """Rewrite `forward` of SingleRoIExtractor for coreml."""
+    ctx = FUNCTION_REWRITER.get_context()
+    backend = get_backend(ctx.cfg)
     out_size = self.roi_layers[0].output_size
     num_levels = len(feats)
     roi_feats = feats[0].new_zeros(rois.shape[0], self.out_channels, *out_size)
@@ -340,7 +345,8 @@ def single_roi_extractor__forward__coreml(self,
         # inds = mask.nonzero(as_tuple=False).squeeze(1)
         rois_t = rois * mask.unsqueeze(-1)
         # use the roi align in torhcvision
-        self.roi_layers[i].use_torchvision = True
+        if backend == Backend.COREML:
+            self.roi_layers[i].use_torchvision = True
         roi_feats_t = self.roi_layers[i](feats[i], rois_t)
         roi_feats = roi_feats + roi_feats_t * (rois_t[:, -1] > 0).reshape(
             -1, 1, 1, 1)
