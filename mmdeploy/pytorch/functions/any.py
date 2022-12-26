@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Optional
+
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -6,19 +8,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.Tensor.any')
 @FUNCTION_REWRITER.register_rewriter(func_name='torch.any')
-def any__default(input, *args, **kwargs) -> torch.Tensor:
+def any__default(input: torch.Tensor,
+                 dim: Optional[str] = None,
+                 keepdim: bool = False,
+                 **kwargs) -> torch.Tensor:
     """Rewrite `any` for ONNX."""
-    if len(args) == 0 and kwargs == {}:
+    if dim is None and keepdim is False:
         return (input != 0).sum() > 0
 
-    keepdim = False
-    if len(args) == 2:
-        keepdim = args[1]
-    if 'keepdim' in kwargs:
-        keepdim = kwargs['keepdim']
-    dim = None
-    if len(args) > 0 and isinstance(args[0], int):
-        dim = args[0]
-    if 'dim' in kwargs:
-        dim = kwargs['dim']
     return (input != 0).sum(dim, keepdim=keepdim) > 0
