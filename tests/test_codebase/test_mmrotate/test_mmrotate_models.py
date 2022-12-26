@@ -335,3 +335,126 @@ def test_gvfixcoder__decode(backend_type: Backend):
         run_with_backend=False)
 
     assert rewrite_outputs is not None
+
+
+def get_rotated_rtmdet_head_model():
+    """RTMDet-R Head Config."""
+    test_cfg = Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms_rotated', iou_threshold=0.1),
+            max_per_img=2000))
+
+    from mmrotate.models.dense_heads import RotatedRTMDetHead
+    model = RotatedRTMDetHead(
+        num_classes=4,
+        in_channels=1,
+        anchor_generator=dict(
+            type='mmdet.MlvlPointGenerator', offset=0, strides=[8, 16, 32]),
+        bbox_coder=dict(type='DistanceAnglePointCoder', angle_version='le90'),
+        loss_cls=dict(
+            type='mmdet.QualityFocalLoss',
+            use_sigmoid=True,
+            beta=2.0,
+            loss_weight=1.0),
+        loss_bbox=dict(type='RotatedIoULoss', mode='linear', loss_weight=2.0),
+        test_cfg=test_cfg)
+
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_rotated_rtmdet_head_predict_by_feat(backend_type: Backend):
+    """Test predict_by_feat rewrite of RTMDet-R."""
+    check_backend(backend_type)
+    rtm_r_head = get_rotated_rtmdet_head_model()
+    rtm_r_head.cpu().eval()
+    s = 128
+    batch_img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+    output_names = ['dets', 'labels']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmrotate',
+                task='RotatedDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.1,
+                    pre_top_k=3000,
+                    keep_top_k=2000,
+                    max_output_boxes_per_class=2000))))
+    seed_everything(1234)
+    cls_scores = [
+        torch.rand(1, rtm_r_head.num_classes, 2 * pow(2, i), 2 * pow(2, i))
+        for i in range(3, 0, -1)
+    ]
+    seed_everything(5678)
+    bbox_preds = [
+        torch.rand(1, 4, 2 * pow(2, i), 2 * pow(2, i))
+        for i in range(3, 0, -1)
+    ]
+    seed_everything(9101)
+    angle_preds = [
+        torch.rand(1, rtm_r_head.angle_coder.encode_size, 2 * pow(2, i),
+                   2 * pow(2, i)) for i in range(3, 0, -1)
+    ]
+
+    # to get outputs of pytorch model
+    model_inputs = {
+        'cls_scores': cls_scores,
+        'bbox_preds': bbox_preds,
+        'angle_preds': angle_preds,
+        'batch_img_metas': batch_img_metas,
+        'with_nms': True
+    }
+    model_outputs = get_model_outputs(rtm_r_head, 'predict_by_feat',
+                                      model_inputs)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        rtm_r_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
+    rewrite_inputs = {
+        'cls_scores': cls_scores,
+        'bbox_preds': bbox_preds,
+        'angle_preds': angle_preds,
+    }
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        # hard code to make two tensors with the same shape
+        # rewrite and original codes applied different nms strategy
+        min_shape = min(model_outputs[0].bboxes.shape[0],
+                        rewrite_outputs[0].shape[1], 5)
+        for i in range(len(model_outputs)):
+            assert np.allclose(
+                model_outputs[i].bboxes.tensor[:min_shape],
+                rewrite_outputs[0][i, :min_shape, :5],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].scores[:min_shape],
+                rewrite_outputs[0][i, :min_shape, 5],
+                rtol=1e-03,
+                atol=1e-05)
+            assert np.allclose(
+                model_outputs[i].labels[:min_shape],
+                rewrite_outputs[1][i, :min_shape],
+                rtol=1e-03,
+                atol=1e-05)
+    else:
+        assert rewrite_outputs is not None
