@@ -77,14 +77,14 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         tkinter.Tk()
         if not isinstance(img, list):
             img = [img]
-            for single_img in img:
-                task_processor.visualize(
-                    image=single_img,
-                    model=model,
-                    result=result,
-                    output_file=output_file,
-                    window_name=backend.value,
-                    show_result=show_result)
+        for single_img in img:
+            task_processor.visualize(
+                image=single_img,
+                model=model,
+                result=result,
+                output_file=output_file,
+                window_name=backend.value,
+                show_result=show_result)
     except Exception as e:
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()
