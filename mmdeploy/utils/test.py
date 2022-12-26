@@ -60,11 +60,6 @@ def check_backend(backend: Backend, require_plugin: bool = False):
     backend_mgr = get_backend_manager(backend.value)
     result = backend_mgr.is_available(with_custom_ops=require_plugin)
 
-    if backend == Backend.RKNN:
-        # device required
-        from mmdeploy.backend.rknn import device_available
-        result = result and device_available()
-
     if not result:
         pytest.skip(f'{backend.value} package is not available')
 
