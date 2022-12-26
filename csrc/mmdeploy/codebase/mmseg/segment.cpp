@@ -18,6 +18,7 @@ class ResizeMask : public MMSegmentation {
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
+      with_argmax_ = cfg["params"].value("with_argmax", true);
       little_endian_ = IsLittleEndian();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
@@ -31,8 +32,17 @@ class ResizeMask : public MMSegmentation {
     auto mask = inference_result["output"].get<Tensor>();
     MMDEPLOY_DEBUG("tensor.name: {}, tensor.shape: {}, tensor.data_type: {}", mask.name(),
                    mask.shape(), mask.data_type());
-    if (!(mask.shape().size() == 4 && mask.shape(0) == 1 && mask.shape(1) == 1)) {
+    if (!(mask.shape().size() == 4 && mask.shape(0) == 1)) {
       MMDEPLOY_ERROR("unsupported `output` tensor, shape: {}", mask.shape());
+      return Status(eNotSupported);
+    }
+    if ((mask.shape(1) != 1) && with_argmax_) {
+      MMDEPLOY_ERROR("probability feat map with shape: {} requires `with_argmax_=false`",
+                     mask.shape());
+      return Status(eNotSupported);
+    }
+    if (!with_argmax_) {
+      MMDEPLOY_ERROR("TODO: SDK will support probability featmap soon.");
       return Status(eNotSupported);
     }
 
@@ -85,6 +95,7 @@ class ResizeMask : public MMSegmentation {
 
  protected:
   int classes_{};
+  bool with_argmax_{true};
   bool little_endian_;
 };
 
