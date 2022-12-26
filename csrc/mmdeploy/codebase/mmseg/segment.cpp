@@ -18,8 +18,7 @@ class ResizeMask : public MMSegmentation {
   explicit ResizeMask(const Value &cfg) : MMSegmentation(cfg) {
     try {
       classes_ = cfg["params"]["num_classes"].get<int>();
-      if (cfg["params"].contains("with_argmax"))
-        with_argmax_ = cfg["params"]["with_argmax"].get<bool>();
+      with_argmax_ = cfg["params"].value("with_argmax", true);
       little_endian_ = IsLittleEndian();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
@@ -42,6 +41,10 @@ class ResizeMask : public MMSegmentation {
                      mask.shape());
       return Status(eNotSupported);
     }
+    if (!with_argmax_) {
+      MMDEPLOY_ERROR("TODO: SDK will support probability featmap soon.");
+      return Status(eNotSupported);
+    }
 
     auto height = (int)mask.shape(2);
     auto width = (int)mask.shape(3);
@@ -50,29 +53,6 @@ class ResizeMask : public MMSegmentation {
     Device host{"cpu"};
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
     OUTCOME_TRY(stream_.Wait());
-
-    if (!with_argmax_ && mask.shape(1) > 1 && mask.shape(1) == classes_ &&
-        host_tensor.data_type() == DataType::kFLOAT) {
-      int stride = height * width;
-      Tensor mask_out = TensorDesc{Device("cpu"),
-                                   DataType::kFLOAT,
-                                   {mask.shape(0), 1, mask.shape(2), mask.shape(3)},
-                                   "argmax_out"};
-      auto ptr = host_tensor.data<float>();
-      auto out_ptr = mask_out.data<float>();
-      for (int i = 0; i < stride; i++, ptr++) {
-        auto v = *ptr;
-        auto idx = 0.f;
-        for (int j = 0; j < classes_; j++) {
-          if (v < *(ptr + stride * j)) {
-            v = *(ptr + stride * j);
-            idx = j;
-          }
-        }
-        *out_ptr++ = idx;
-      }
-      host_tensor = mask_out;
-    }
 
     OUTCOME_TRY(auto cv_type, GetCvType(mask.data_type()));
     cv::Mat mask_mat(height, width, cv_type, host_tensor.data());
