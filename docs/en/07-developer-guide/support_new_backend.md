@@ -123,7 +123,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        __all__ += ['onnx2ncnn', 'get_output_model_file']
    ```
 
-   Create a backend manager class which derive from `BackendManager`, implement its `to_backend` static method.
+   Create a backend manager class which derive from `BaseBackendManager`, implement its `to_backend` static method.
 
    **Example:**
 
@@ -197,13 +197,13 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. Create a backend manager class which derive from `BackendManager`, implement its `build_wrapper` static method.
+4. Create a backend manager class which derive from `BaseBackendManager`, implement its `build_wrapper` static method.
 
    **Example:**
 
    ```Python
         @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeUtils(BaseBackendManager):
+        class ONNXRuntimeManager(BaseBackendManager):
             @classmethod
             def build_wrapper(cls,
                               backend_files: Sequence[str],

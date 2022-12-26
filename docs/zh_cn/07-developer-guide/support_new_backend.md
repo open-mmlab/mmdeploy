@@ -123,7 +123,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        __all__ += ['onnx2ncnn', 'get_output_model_file']
    ```
 
-   从 BackendManager 派生类，实现 `to_backend` 类方法。
+   从 BaseBackendManager 派生类，实现 `to_backend` 类方法。
 
    **例子**
 
@@ -198,13 +198,13 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. 从 `BackendManager` 派生接口类，实现 `build_wrapper` 静态方法
+4. 从 `BaseBackendManager` 派生接口类，实现 `build_wrapper` 静态方法
 
    **例子**
 
    ```Python
         @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeUtils(BaseBackendManager):
+        class ONNXRuntimeManager(BaseBackendManager):
             @classmethod
             def build_wrapper(cls,
                               backend_files: Sequence[str],

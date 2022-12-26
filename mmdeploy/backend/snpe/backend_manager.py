@@ -67,7 +67,7 @@ class SNPEManager(BaseBackendManager):
         Args:
             ir_files (Sequence[str]): The intermediate representation files.
             work_dir (str): The work directory, backend files and logs should
-                be save in this directory.
+                be saved in this directory.
             log_level (int, optional): The log level. Defaults to logging.INFO.
             device (str, optional): The device type. Defaults to 'cpu'.
         Returns:
