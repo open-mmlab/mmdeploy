@@ -138,13 +138,17 @@ class Classification(BaseTask):
 
         return data_preprocessor
 
-    def build_backend_model(self,
-                            model_files: Sequence[str] = None,
-                            **kwargs) -> torch.nn.Module:
+    def build_backend_model(
+            self,
+            model_files: Sequence[str] = None,
+            data_preprocessor_updater: Optional[Callable] = None,
+            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
             model_files (Sequence[str]): Input model files.
+            data_preprocessor_updater (Callable | None): A function to update
+                the data_preprocessor. Defaults to None.
 
         Returns:
             nn.Module: An initialized backend model.
@@ -152,6 +156,8 @@ class Classification(BaseTask):
         from .classification_model import build_classification_model
 
         data_preprocessor = self.model_cfg.data_preprocessor
+        if data_preprocessor_updater is not None:
+            data_preprocessor = data_preprocessor_updater(data_preprocessor)
         data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
 
         model = build_classification_model(

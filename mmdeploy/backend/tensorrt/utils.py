@@ -13,15 +13,17 @@ from mmdeploy.utils import get_root_logger
 from .init_plugins import load_tensorrt_plugin
 
 
-def save(engine: trt.ICudaEngine, path: str) -> None:
+def save(engine: Any, path: str) -> None:
     """Serialize TensorRT engine to disk.
 
     Args:
-        engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
+        engine (Any): TensorRT engine to be serialized.
         path (str): The absolute disk path to write the engine.
     """
     with open(path, mode='wb') as f:
-        f.write(bytearray(engine.serialize()))
+        if isinstance(engine, trt.ICudaEngine):
+            engine = engine.serialize()
+        f.write(bytearray(engine))
 
 
 def load(path: str, allocator: Optional[Any] = None) -> trt.ICudaEngine:
@@ -226,7 +228,10 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             builder.int8_calibrator = config.int8_calibrator
 
     # create engine
-    engine = builder.build_engine(network, config)
+    if hasattr(builder, 'build_serialized_network'):
+        engine = builder.build_serialized_network(network, config)
+    else:
+        engine = builder.build_engine(network, config)
 
     assert engine is not None, 'Failed to create TensorRT engine'
 

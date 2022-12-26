@@ -372,6 +372,7 @@ def main():
                 onnx_path,
                 output_path,
                 deploy_cfg_path,
+                model_cfg_path,
                 dataset_file=dataset_file)
 
             backend_files.append(output_path)
@@ -410,6 +411,51 @@ def main():
             suffix = get_model_suffix(convert_to)
             coreml_files.append(output_file_prefix + suffix)
         backend_files = coreml_files
+    elif backend == Backend.TVM:
+        import copy
+
+        from mmdeploy.apis.tvm import from_onnx, get_library_ext
+        PIPELINE_MANAGER.set_log_level(log_level, [from_onnx])
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        if args.device.startswith('cuda'):
+            target = 'cuda'
+        else:
+            target = 'llvm'
+
+        lib_ext = get_library_ext()
+
+        tvm_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            model_input = copy.deepcopy(model_inputs[model_id])
+            use_vm = model_input.get('use_vm', False)
+            if 'target' not in model_input['tuner']:
+                model_input['tuner']['target'] = target
+            lib_path = osp.splitext(onnx_path)[0] + lib_ext
+            code_path = osp.splitext(
+                onnx_path)[0] + '.code' if use_vm else None
+            model_input['output_file'] = lib_path
+            model_input['onnx_model'] = onnx_path
+            model_input['bytecode_file'] = code_path
+
+            # create calibration dataset
+            if 'qconfig' in model_input:
+                calib_path = osp.join(args.work_dir, calib_filename)
+                from mmdeploy.backend.tvm import HDF5Dataset
+                partition_type = 'end2end' if partition_cfgs is None \
+                    else onnx_name
+                dataset = HDF5Dataset(
+                    calib_path,
+                    model_input['shape'],
+                    model_type=partition_type,
+                    device=target)
+                model_input['dataset'] = dataset()
+
+            from_onnx(**model_input)
+
+            tvm_files += [lib_path, code_path]
+
+        backend_files = tvm_files
 
     if args.test_img is None:
         args.test_img = args.img

@@ -115,6 +115,7 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
             return RKNNWrapper(
                 model=backend_files[0],
                 common_config=common_config,
+                input_names=input_names,
                 output_names=output_names)
         elif backend == Backend.ASCEND:
             from mmdeploy.backend.ascend import AscendWrapper
@@ -129,6 +130,14 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
         elif backend == Backend.COREML:
             from mmdeploy.backend.coreml import CoreMLWrapper
             return CoreMLWrapper(model_file=backend_files[0])
+        elif backend == Backend.TVM:
+            from mmdeploy.backend.tvm import TVMWrapper
+            bytecode = None if len(backend_files) == 1 else backend_files[1]
+            return TVMWrapper(
+                lib=backend_files[0],
+                output_names=output_names,
+                bytecode=bytecode,
+                device=device)
         else:
             raise NotImplementedError(f'Unknown backend type: {backend.value}')
 

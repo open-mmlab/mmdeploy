@@ -580,3 +580,37 @@ def test_any__default(dim, keepdim):
         rewrite_output[0].float(),
         rtol=1e-3,
         atol=1e-5)
+
+
+def test_linspace__default():
+    import random
+
+    deploy_cfg_ort = Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime')))
+
+    def linspace_caller(*arg, **kwargs):
+        return torch.linspace(*arg, **kwargs)
+
+    steps_list = [1, random.randint(1, 1000)]
+    for steps in steps_list:
+        start = random.random() * 100
+        end = random.random() * 100 + start
+
+        model_output = linspace_caller(start=start, end=end, steps=steps)
+
+        wrapped_func = WrapFunction(
+            linspace_caller, start=start, end=end, steps=steps)
+
+        rewrite_outputs, is_backend_output = get_rewrite_outputs(
+            wrapped_func,
+            model_inputs={},
+            deploy_cfg=deploy_cfg_ort,
+            run_with_backend=True)
+
+        if is_backend_output:
+            rewrite_outputs = rewrite_outputs[0]
+
+        assert np.allclose(
+            model_output, rewrite_outputs, rtol=1e-03, atol=1e-05)
