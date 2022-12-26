@@ -111,8 +111,6 @@ class BaseTask(metaclass=ABCMeta):
         preprocess_cfg.update(
             deepcopy(self.model_cfg.get('data_preprocessor', {})))
         model.setdefault('data_preprocessor', preprocess_cfg)
-        if model.type == 'MMDetWrapper':  # Mask-RCNN in MMOCR
-            model = deepcopy(self.model_cfg.model)
         model = MODELS.build(model)
         if model_checkpoint is not None:
             from mmengine.runner.checkpoint import load_checkpoint

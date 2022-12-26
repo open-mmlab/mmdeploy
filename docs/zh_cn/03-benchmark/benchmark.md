@@ -1149,7 +1149,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8199</td>
     <td align="center">0.8204</td>
     <td align="center">0.8204</td>
-    <td>-</td>
+    <td align="center">-</td>
     <td align="center">0.8209</td>
   </tr>
   <tr>
