@@ -485,38 +485,53 @@ class ObjectDetection(BaseTask):
         if is_dynamic_batch:
             max_batch = 2
         num_channel = 3
+
         if not is_dynamic_size:
             assert input_shape is not None
             min_shape = (min_batch, num_channel, *input_shape[::-1])
             opt_shape = (opt_batch, num_channel, *input_shape[::-1])
             max_shape = (max_batch, num_channel, *input_shape[::-1])
-
-            if backend == Backend.TENSORRT:
-                backend_mgr.update_deploy_config(
-                    deploy_config,
-                    opt_shapes=dict(input=opt_shape),
-                    min_shapes=dict(input=min_shape),
-                    max_shapes=dict(input=max_shape))
-            else:
-                backend_mgr.update_deploy_config(
-                    deploy_config,
-                    opt_shapes=dict(input=opt_shape),
-                    mean=mean,
-                    std=std)
         else:
             min_shape = (min_batch, num_channel, *min_size[::-1])
             opt_shape = (opt_batch, num_channel, *opt_size[::-1])
             max_shape = (max_batch, num_channel, *max_size[::-1])
-            if backend == Backend.TENSORRT:
+
+        if backend == Backend.TENSORRT:
+
+            backend_mgr.update_deploy_config(
+                deploy_config,
+                opt_shapes=dict(input=opt_shape),
+                min_shapes=dict(input=min_shape),
+                max_shapes=dict(input=max_shape))
+        elif is_dynamic_size and backend == Backend.ASCEND:
+            img_scale = opt_shape[2:]
+
+            if img_scale[0] != img_scale[1]:
+                dynamic_image_size = [img_scale, img_scale[::-1]]
+                opt_shape = (1, num_channel, -1, -1)
+                assert not is_dynamic_batch, \
+                    'dynamic batch is not supported.'
                 backend_mgr.update_deploy_config(
                     deploy_config,
                     opt_shapes=dict(input=opt_shape),
-                    min_shapes=dict(input=min_shape),
-                    max_shapes=dict(input=max_shape))
-            else:
-                backend_mgr.update_deploy_config(
-                    deploy_config,
-                    opt_shapes=dict(input=opt_shape),
-                    mean=mean,
-                    std=std)
+                    dynamic_image_size=dynamic_image_size)
+        elif backend == Backend.SDK:
+            backend_mgr.update_deploy_config(
+                deploy_config,
+                pipeline=[
+                    dict(type='LoadImageFromFile'),
+                    dict(
+                        type='Collect',
+                        keys=['img'],
+                        meta_keys=['filename', 'ori_shape'])
+                ])
+        else:
+            backend_mgr.update_deploy_config(
+                deploy_config,
+                opt_shapes=dict(input=opt_shape),
+                dtypes=dict(input='float32'),
+                input_names=input_names,
+                mean=mean,
+                std=std)
+
         return deploy_config

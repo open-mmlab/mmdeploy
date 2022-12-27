@@ -105,3 +105,7 @@ class TorchScriptManager(BaseBackendManager):
             Seqeuence[str]: Backend files.
         """
         return ir_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, **kwargs):
+        return deploy_config

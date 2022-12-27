@@ -108,3 +108,17 @@ class PPLNNManager(BaseBackendManager):
             pplnn_files += [onnx_path, algo_file]
 
         return pplnn_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, opt_shapes: dict,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+
+        assert len(opt_shapes) == 1
+        for k, v in opt_shapes.items():
+            opt_shape = v
+            break
+        model_inputs = [dict(opt_shape=opt_shape)]
+        backend_config['model_inputs'] = model_inputs
+        return deploy_config

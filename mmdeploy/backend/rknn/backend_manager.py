@@ -154,3 +154,18 @@ class RKNNManager(BaseBackendManager):
             backend_files.append(output_path)
 
         return backend_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, opt_shapes: dict,
+                             input_names: list, mean: list, std: list,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config, get_common_config
+        backend_config = get_backend_config(deploy_config)
+        common_config = get_common_config(deploy_config)
+
+        common_config['mean_values'] = mean
+        common_config['std_values'] = std
+        input_size_list = [opt_shapes[name][1:] for name in input_names]
+        backend_config['input_size_list'] = input_size_list
+
+        return deploy_config

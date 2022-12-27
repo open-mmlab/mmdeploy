@@ -82,3 +82,12 @@ class SDKManager(BaseBackendManager):
                 return pkg_resources.get_distribution('mmdeploy').version
             except Exception:
                 return 'None'
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, pipeline: list,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+
+        backend_config['pipeline'] = pipeline
+        return deploy_config

@@ -171,3 +171,4 @@ class TensorRTManager(BaseBackendManager):
 
         model_inputs = [dict(input_shapes=input_shapes)]
         backend_config['model_inputs'] = model_inputs
+        return deploy_config

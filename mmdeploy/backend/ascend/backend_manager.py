@@ -91,3 +91,28 @@ class AscendManager(BaseBackendManager):
         backend_files = om_files
 
         return backend_files
+
+    @classmethod
+    def update_deploy_config(cls,
+                             deploy_config: Any,
+                             opt_shapes: dict,
+                             dynamic_batch_size: Optional[list] = None,
+                             dynamic_image_size: Optional[list] = None,
+                             dynamic_dims: Optional[list] = None,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+        model_input = dict()
+
+        model_input['input_shapes'] = opt_shapes
+        if dynamic_batch_size is not None:
+            model_input['dynamic_batch_size'] = dynamic_batch_size
+        if dynamic_image_size is not None:
+            model_input['dynamic_image_size'] = dynamic_image_size
+        if dynamic_dims is not None:
+            model_input['dynamic_dims'] = dynamic_dims
+
+        model_inputs = [model_input]
+        backend_config['model_inputs'] = model_inputs
+
+        return deploy_config
