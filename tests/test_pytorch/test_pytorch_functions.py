@@ -557,7 +557,6 @@ def test_prepare_onnx_paddings__tensorrt():
         pytorch_output, rewrite_output[0], rtol=1e-3, atol=1e-5)
 
 
-@backend_checker(Backend.ONNXRUNTIME)
 @pytest.mark.parametrize('dim', [0, -1])
 @pytest.mark.parametrize('keepdim', [True, False])
 def test_any__default(dim, keepdim):
@@ -582,6 +581,7 @@ def test_any__default(dim, keepdim):
         atol=1e-5)
 
 
+@backend_checker(Backend.ONNXRUNTIME)
 def test_linspace__default():
     import random
 
