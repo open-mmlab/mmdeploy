@@ -5,16 +5,26 @@ tree
 
 .
 ├── Jenkinsfile
+├── win_Jenkinsfile
 ├── README.md
 ├── conf
-│   ├── default.config
-│   ├── jenkins.config
+│   ├── Linux-2080_cuda-102_dev-1.x_full-test.config
+│   ├── Linux-2080_cuda-102_master_full-test.config
+│   ├── Linux-2080_cuda-111_dev-1.x_full-test.config
+│   ├── Linux-2080_cuda-111_master_full-test.config
+│   ├── Linux-3090_cuda-111_master_full-test.config
+│   ├── Linux-3090_cuda-113_dev-1.x_full-test.config
+│   ├── Linux-3090_cuda-113_dev-1.x_quick-test.config
+│   ├── Linux-3090_cuda-113_master_full-test.config
+│   ├── Linux-2080_cuda-113_master_quick-test.config
+│   ├── README.md
+│   ├── Windows-3080_cuda-113_master_full-test.config
+│   ├── requirementV1.0.json
+│   ├── requirementV2.0.json
 │   ├── tmp.config
 │   └── win_default.config
-│   ├── requirementV1.0.json
-│   └── requirementV2.0.json
 ├── docker
-│   ├── mmdeploy-ci-ubuntu-18.04
+│   ├── mmdeploy-ci-ubuntu-18.04-cu111
 │   │   └── Dockerfile
 │   ├── mmdeploy-ci-ubuntu-18.04-cu102
 │   │   └── Dockerfile
@@ -24,10 +34,12 @@ tree
 │       └── Dockerfile
 ├── scripts
 │   ├── docker_exec_build.sh
-│   ├── docker_exec_convert.sh
+│   ├── check_results.py
 │   ├── docker_exec_convert_gpu.sh
 │   ├── docker_exec_prebuild.sh
 │   ├── docker_exec_ut.sh
+│   ├── get_log.py
+│   ├── get_requirements.py
 │   ├── test_build.sh
 │   ├── test_convert.ps1
 │   ├── test_convert.sh
@@ -37,12 +49,13 @@ tree
 │   ├── win_convert_exec.ps1
 │   └── win_default.config
 └── todolist.md
+
 ```
 
 ## conf
 
-存放脚本运行时的配置文件，default.config和win_default.config是linux和windows系统的默认配置文件
-`win_default.config`配置如下：
+存放脚本运行时的配置文件分成linux和windows系统的默认配置文件
+windows配置如下：
 
 - CUDA版本（cu111, cu113可选）
 - 支持的codebase
@@ -51,16 +64,25 @@ tree
 - mmdeploy的分支
 - mmdeploy仓库的地址
 
-`default.config`配置如下：
+linux配置如下：
 
+- CUDA版本（cu102,cu111, cu113可选）
+- 显卡型号（2080,3090可选）
 - docker镜像
 - 支持的codebase
+- torch版本选择
+- 不同模型精度测试
+- 精度测试后端选择
 - 是否进行精度测试
 - 最大线程数
 - mmdeploy的分支
-- mmdeploy仓库的地址
+- mmdeploy仓库的地址和版本
 - tensorrt版本
 - 指定算法库的分支和依赖
+
+```
+tmp.config #测试版配置
+```
 
 ## docker
 
@@ -86,6 +108,8 @@ Dockerfile中会安装：
 ```shell
 test_${Job_Type}.sh ## 执行任务的入口脚本
 docker_exec_${Job_Type}.sh ## 在容器中实际运行的脚本
+
+
 ```
 
 - test\_${Job_Type}.sh:
