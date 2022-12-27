@@ -514,7 +514,7 @@ def test_abi_language_decoder___get_length(backend):
     check_backend(backend)
     from mmocr.models.textrecog.decoders import ABILanguageDecoder
     model = ABILanguageDecoder(dictionary=dictionary)
-    input = torch.rand(1, 26, 37)
+    input = torch.randn(1, 26, 37)
     model_inputs = {'logit': input}
     model_outputs = get_model_outputs(model, '_get_length', model_inputs)
     wrapped_model = WrapModel(model, '_get_length')
