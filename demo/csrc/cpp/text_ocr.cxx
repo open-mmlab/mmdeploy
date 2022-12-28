@@ -23,8 +23,17 @@ int main(int argc, char* argv[]) {
 
   using namespace mmdeploy;
 
-  TextDetector detector{Model(det_model_path), Device(device_name)};
-  TextRecognizer recognizer{Model(reg_model_path), Device(device_name)};
+  Context context(Device(device_name, 0));
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  context.Add(profiler);
+
+  TextDetector detector{Model(det_model_path), context};
+  TextRecognizer recognizer{Model(reg_model_path), context};
+
+  for (int i = 0; i < 20; ++i) {
+    auto bboxes = detector.Apply(img);
+    recognizer.Apply(img, {bboxes.begin(), bboxes.size()});
+  }
 
   auto bboxes = detector.Apply(img);
   auto texts = recognizer.Apply(img, {bboxes.begin(), bboxes.size()});

@@ -19,8 +19,16 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Context context(mmdeploy::Device(device_name, 0));
+  context.Add(profiler);
+
   mmdeploy::Model model(model_path);
-  mmdeploy::RotatedDetector detector(model, mmdeploy::Device{device_name, 0});
+  mmdeploy::RotatedDetector detector(model, context);
+
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
 
   auto dets = detector.Apply(img);
 

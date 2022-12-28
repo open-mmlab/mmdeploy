@@ -18,6 +18,12 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  mmdeploy_profiler_t profiler{};
+  mmdeploy_profiler_create("/deploee-tmp/profile.bin", &profiler);
+  mmdeploy_context_t ctx{};
+  mmdeploy_context_create(&ctx);
+  mmdeploy_context_add(ctx, MMDEPLOY_TYPE_PROFILER, nullptr, profiler);
+
   mmdeploy_classifier_t classifier{};
   int status{};
   status = mmdeploy_classifier_create_by_path(model_path, device_name, 0, &classifier);
@@ -43,6 +49,8 @@ int main(int argc, char* argv[]) {
   mmdeploy_classifier_release_result(res, res_count, 1);
 
   mmdeploy_classifier_destroy(classifier);
+  mmdeploy_context_destroy(ctx);
+  mmdeploy_profiler_destroy(profiler);
 
   return 0;
 }

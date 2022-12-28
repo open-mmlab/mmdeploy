@@ -21,7 +21,15 @@ int main(int argc, char *argv[]) {
 
   using namespace mmdeploy;
 
-  PoseDetector detector{Model(model_path), Device(device_name)};
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Context context(mmdeploy::Device(device_name, 0));
+  context.Add(profiler);
+
+  PoseDetector detector(Model(model_path), context);
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
+  
   auto res = detector.Apply(img);
 
   for (int i = 0; i < res[0].length; i++) {

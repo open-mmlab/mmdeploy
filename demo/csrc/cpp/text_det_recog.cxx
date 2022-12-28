@@ -64,6 +64,8 @@ int main(int argc, char* argv[]) {
   auto config = from_json<Value>(config_json);
 
   Context context(Device(device_name, 0));
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  context.Add(profiler);
 
   auto thread_pool = Scheduler::ThreadPool(4);
   auto infer_thread = Scheduler::Thread();
@@ -73,6 +75,10 @@ int main(int argc, char* argv[]) {
   context.Add("text_recognition", Model(reg_model_path));
 
   Pipeline pipeline(config, context);
+
+  for (int i = 0; i < 20; ++i) {
+    pipeline.Apply(mat);
+  }
 
   auto output = pipeline.Apply(mat);
 

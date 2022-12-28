@@ -18,8 +18,17 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Context context(mmdeploy::Device(device_name, 0));
+  context.Add(profiler);
+
   mmdeploy::Model model(model_path);
-  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, 0});
+  mmdeploy::Detector detector(model, context);
+
+  const int REPEAT = 20;
+  for (int i = 0; i < REPEAT; ++i) {
+    detector.Apply(img);
+  }
 
   auto dets = detector.Apply(img);
 

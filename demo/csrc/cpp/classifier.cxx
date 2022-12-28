@@ -1,5 +1,6 @@
 
 #include "mmdeploy/classifier.hpp"
+#include "mmdeploy/common.hpp"
 
 #include <string>
 
@@ -19,13 +20,20 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Context context(mmdeploy::Device(device_name, 0));
+  context.Add(profiler);
+
   mmdeploy::Model model(model_path);
-  mmdeploy::Classifier classifier(model, mmdeploy::Device{device_name, 0});
+  mmdeploy::Classifier classifier(model, context);
 
-  auto res = classifier.Apply(img);
+  const int REPEAT = 20;
+  for (int i = 0; i < REPEAT; ++i) {
+    auto res = classifier.Apply(img);
 
-  for (const auto& cls : res) {
-    fprintf(stderr, "label: %d, score: %.4f\n", cls.label_id, cls.score);
+    for (const auto& cls : res) {
+      fprintf(stderr, "label: %d, score: %.4f\n", cls.label_id, cls.score);
+    }
   }
 
   return 0;
