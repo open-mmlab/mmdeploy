@@ -1,34 +1,17 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-import os.path as osp
+from .backend_manager import ONNXRuntimeManager
 
-from .init_plugins import get_ops_path
+_BackendManager = ONNXRuntimeManager
 
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
-def is_available():
-    """Check whether ONNX Runtime package is installed.
-
-    Returns:
-        bool: True if ONNX Runtime package is installed.
-    """
-
-    return importlib.util.find_spec('onnxruntime') is not None
-
-
-def is_custom_ops_available():
-    """Check whether ONNX Runtime custom ops are installed.
-
-    Returns:
-        bool: True if ONNX Runtime custom ops are compiled.
-    """
-    onnxruntime_op_path = get_ops_path()
-    return osp.exists(onnxruntime_op_path)
-
+__all__ = ['ONNXRuntimeManager']
 
 if is_available():
     try:
         # import wrapper if pytorch is available
         from .wrapper import ORTWrapper
-        __all__ = ['ORTWrapper']
+        __all__ += ['ORTWrapper']
     except Exception:
         pass

@@ -2,12 +2,9 @@
 from copy import deepcopy
 from typing import Callable, Dict, Optional
 
-import h5py
 import torch
-import tqdm
 from torch.utils.data import DataLoader
 
-from mmdeploy.core import RewriterContext, reset_mark_function_count
 from ..core import PIPELINE_MANAGER
 
 
@@ -46,7 +43,10 @@ def create_calib_input_data(calib_file: str,
             'val', defaults to 'val'.
         device (str): Specifying the device to run on, defaults to 'cpu'.
     """
+    import h5py
+    import tqdm
 
+    from mmdeploy.core import RewriterContext, reset_mark_function_count
     backend = 'default'
 
     with h5py.File(calib_file, mode='w') as file:

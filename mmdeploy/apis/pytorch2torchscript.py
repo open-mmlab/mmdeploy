@@ -3,11 +3,8 @@ import os.path as osp
 from typing import Any, Optional, Union
 
 import mmengine
-import torch
 
 from mmdeploy.apis.core.pipeline_manager import PIPELINE_MANAGER, no_mp
-from mmdeploy.utils import get_backend, get_input_shape, load_config
-from .torch_jit import trace
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -32,6 +29,11 @@ def torch2torchscript(img: Any,
             defaults to `None`.
         device (str): A string specifying device type, defaults to 'cuda:0'.
     """
+    import torch
+
+    from mmdeploy.utils import get_backend, get_input_shape, load_config
+    from .torch_jit import trace
+
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
     mmengine.mkdir_or_exist(osp.abspath(work_dir))
