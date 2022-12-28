@@ -119,7 +119,7 @@ def test_upconvblock_forward(backend, is_dynamic_shape):
         dict(
             backend_config=dict(type=backend.value),
             onnx_config=dict(
-                input_names=['skip', 'x'],
+                input_names=['x', 'skip'],
                 output_names=['output'],
                 dynamic_axes=dynamic_axes),
             codebase_config=dict(

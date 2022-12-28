@@ -64,7 +64,8 @@ def fcn_mask_head__predict_by_feat(self,
     # grid sample is not supported by most engine
     # so we add a flag to disable it.
     mmdet_params = get_post_processing_params(ctx.cfg)
-    export_postprocess_mask = mmdet_params.get('export_postprocess_mask', True)
+    export_postprocess_mask = mmdet_params.get('export_postprocess_mask',
+                                               False)
     if not export_postprocess_mask:
         return mask_pred
 

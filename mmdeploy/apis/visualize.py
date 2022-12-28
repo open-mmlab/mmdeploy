@@ -5,13 +5,12 @@ import mmengine
 import numpy as np
 import torch
 
-from mmdeploy.codebase import BaseTask
 from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
 
 
 def visualize_model(model_cfg: Union[str, mmengine.Config],
                     deploy_cfg: Union[str, mmengine.Config],
-                    model: Union[str, Sequence[str], BaseTask],
+                    model: Union[str, Sequence[str]],
                     img: Union[str, np.ndarray],
                     device: str,
                     backend: Optional[Backend] = None,
