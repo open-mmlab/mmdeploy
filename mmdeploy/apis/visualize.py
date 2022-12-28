@@ -36,8 +36,8 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         deploy_cfg (str | mmcv.Config): Deployment config file or Config
             object.
         model (str | list[str], BaseSubtask): Input model or file(s).
-        img (str | np.ndarray | list[str]): Input image file(s) or numpy array
-            for inference.
+        img (str | np.ndarray | Sequence[str]): Input image file(s) or numpy
+            array for inference.
         device (str): A string specifying device type.
         backend (Backend): Specifying backend type, defaults to `None`.
         output_file (str): Output file to save visualized image, defaults to
