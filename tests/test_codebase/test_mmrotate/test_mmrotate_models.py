@@ -96,7 +96,7 @@ def get_single_roi_extractor():
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_rotated_single_roi_extractor(backend_type: Backend):
-    check_backend(backend_type)
+    check_backend(backend_type, True)
 
     single_roi_extractor = get_single_roi_extractor()
     output_names = ['roi_feat']
@@ -226,7 +226,7 @@ def test_oriented_rpn_head__predict_by_feat(backend_type: Backend):
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_gv_ratio_roi_head__predict_bbox(backend_type: Backend):
-    check_backend(backend_type)
+    check_backend(backend_type, True)
     from mmrotate.models.roi_heads import GVRatioRoIHead
     output_names = ['dets', 'labels']
     deploy_cfg = Config(
@@ -369,7 +369,7 @@ def get_rotated_rtmdet_head_model():
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_rotated_rtmdet_head_predict_by_feat(backend_type: Backend):
     """Test predict_by_feat rewrite of RTMDet-R."""
-    check_backend(backend_type)
+    check_backend(backend_type, require_plugin=True)
     rtm_r_head = get_rotated_rtmdet_head_model()
     rtm_r_head.cpu().eval()
     s = 128

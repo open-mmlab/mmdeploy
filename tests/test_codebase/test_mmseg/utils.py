@@ -31,7 +31,7 @@ def generate_mmseg_deploy_config(backend='onnxruntime'):
                 keep_initializers_as_inputs=False,
                 opset_version=11,
                 input_shape=None,
-                input_names=['input'],
+                input_names=['inputs'],
                 output_names=['output'])))
     return deploy_cfg
 
