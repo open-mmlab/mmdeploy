@@ -337,7 +337,7 @@ class BaseTask(metaclass=ABCMeta):
 
         return from_mmrazor
 
-    @abstractmethod
     def update_deploy_config(self, deploy_config: Any, model_type: str, *args,
                              **kwargs):
-        pass
+        raise NotImplementedError('Update deploy config is not supported '
+                                  f'for {type(self)}')

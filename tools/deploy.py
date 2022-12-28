@@ -16,8 +16,9 @@ from mmdeploy.apis.core import PIPELINE_MANAGER
 from mmdeploy.apis.utils import to_backend
 from mmdeploy.backend.sdk.export_info import export2SDK
 from mmdeploy.utils import (IR, Backend, get_backend, get_calib_filename,
-                            get_ir_config, get_partition_config,
-                            get_root_logger, load_config, target_wrapper)
+                            get_codebase_config, get_ir_config,
+                            get_partition_config, get_root_logger, load_config,
+                            target_wrapper)
 
 
 def parse_args():
@@ -120,6 +121,19 @@ def main():
 
     # create work_dir if not
     mmcv.mkdir_or_exist(osp.abspath(args.work_dir))
+
+    # update deploy config if necessary
+    codebase_cfg = get_codebase_config(deploy_cfg)
+    update_config = codebase_cfg.get('update_config', False)
+    if update_config:
+        from mmdeploy.apis import build_task_processor
+        task_processor = build_task_processor(
+            model_cfg, deploy_cfg, device=args.device)
+        deploy_cfg = task_processor.update_deploy_config(
+            deploy_cfg, **codebase_cfg)
+        new_deploy_cfg_path = osp.join(args.work_dir, 'deploy_config.py')
+        deploy_cfg_path = new_deploy_cfg_path
+        deploy_cfg.dump(deploy_cfg_path)
 
     if args.dump_info:
         export2SDK(
