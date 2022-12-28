@@ -305,8 +305,6 @@ def test_instance_norm(disable_cudnn,
 
     wrapped_model = nn.InstanceNorm2d(c, affine=True).eval().cuda()
 
-    cudnn_enable = torch.backends.cudnn.enabled
-    torch.backends.cudnn.enabled = False
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         backend.run_and_validate(
             wrapped_model, [input],
@@ -315,7 +313,6 @@ def test_instance_norm(disable_cudnn,
             dynamic_axes=dynamic_axes,
             output_names=['output'],
             save_dir=save_dir)
-    torch.backends.cudnn.enabled = cudnn_enable
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -791,7 +788,6 @@ def test_gather(backend,
                 np.array(indice[0], dtype=np.int64)
             ])))
     model_outputs = [model_output for model_output in model_outputs]
-    model_outputs = [data[indice[0]]]
     ncnn_outputs = ncnn_model(
         dict(zip(input_names, [data.float(), indice.float()])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
