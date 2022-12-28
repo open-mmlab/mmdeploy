@@ -16,7 +16,7 @@ TEST_TENSORRT = TestTensorRTExporter()
 TEST_NCNN = TestNCNNExporter()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture(scope='function')
 def disable_cudnn():
     cudnn_enable = torch.backends.cudnn.enabled
     torch.backends.cudnn.enabled = False
@@ -775,7 +775,7 @@ def test_gather(backend,
     import importlib
 
     if importlib.util.find_spec('onnxruntime') is None:
-        pytest.skip(f'onnxruntime not installed.')
+        pytest.skip('onnxruntime not installed.')
 
     import numpy as np
     import onnxruntime
