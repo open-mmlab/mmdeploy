@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
 
+import torch
 from mmengine.structures import BaseDataElement
 from torch import Tensor
 from torch.nn import functional as F
@@ -34,5 +35,9 @@ def base_classifier__forward(
     if self.head is not None:
         output = self.head(output)
 
-    output = F.softmax(output, dim=1)
+    from mmcls.models.heads import MultiLabelClsHead
+    if isinstance(self.head, MultiLabelClsHead):
+        output = torch.sigmoid(output)
+    else:
+        output = F.softmax(output, dim=1)
     return output
