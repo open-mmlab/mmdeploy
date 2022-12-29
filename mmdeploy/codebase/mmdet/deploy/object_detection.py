@@ -341,11 +341,17 @@ class ObjectDetection(BaseTask):
             return int(np.ceil(val / divisor) * divisor)
 
         def _shape_inference():
+            nonlocal is_dynamic_size
+            nonlocal input_shape
             pipeline = self.model_cfg.data.test.pipeline
             pipeline = pipeline.copy()
 
-            transforms = pipeline[1]['transforms']
-            img_scale = pipeline[1]['img_scale']
+            img_scale = None
+            if pipeline[1]['type'] == 'MultiScaleFlipAug':
+                transforms = pipeline[1]['transforms']
+                img_scale = pipeline[1]['img_scale']
+            else:
+                transforms = pipeline
 
             resize_trans = None
             pad_trans = None
@@ -354,6 +360,13 @@ class ObjectDetection(BaseTask):
                     resize_trans = trans
                 if trans['type'] == 'Pad':
                     pad_trans = trans
+
+            if 'img_scale' in resize_trans:
+                img_scale = resize_trans['img_scale']
+
+            if img_scale is None:
+                assert input_shape is not None
+                img_scale = input_shape
 
             min_size = img_scale
             opt_size = img_scale
@@ -392,8 +405,6 @@ class ObjectDetection(BaseTask):
 
             if min_size[0] == opt_size[0] == max_size[0] and min_size[
                     1] == opt_size[1] == max_size[1]:
-                nonlocal is_dynamic_size
-                nonlocal input_shape
                 is_dynamic_size = False
                 input_shape = opt_size
 
