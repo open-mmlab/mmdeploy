@@ -25,8 +25,7 @@ def parse_args():
     parser.add_argument('deploy_cfg', help='deploy config path')
     parser.add_argument('model_cfg', help='model config path')
     parser.add_argument('checkpoint', help='model checkpoint path')
-    parser.add_argument(
-        'img', type=str, nargs='+', help='image used to convert model model')
+    parser.add_argument('img', help='image used to convert model model')
     parser.add_argument(
         '--test-img',
         default=None,
