@@ -106,23 +106,34 @@ Tensor CVMat2Tensor(const cv::Mat& mat) {
   return Tensor{desc, data};
 }
 
+Result<int> GetInterpolationMethod(const std::string_view& method) {
+  if (method == "bilinear") {
+    return cv::INTER_LINEAR;
+  } else if (method == "nearest") {
+    return cv::INTER_NEAREST;
+  } else if (method == "area") {
+    return cv::INTER_AREA;
+  } else if (method == "bicubic") {
+    return cv::INTER_CUBIC;
+  } else if (method == "lanczos") {
+    return cv::INTER_LANCZOS4;
+  }
+  MMDEPLOY_ERROR("unsupported interpolation method: {}", method);
+  return Status(eNotSupported);
+}
+
 cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                const std::string& interpolation) {
   cv::Mat dst(dst_height, dst_width, src.type());
-  if (interpolation == "bilinear") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_LINEAR);
-  } else if (interpolation == "nearest") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_NEAREST);
-  } else if (interpolation == "area") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_AREA);
-  } else if (interpolation == "bicubic") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_CUBIC);
-  } else if (interpolation == "lanczos") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_LANCZOS4);
-  } else {
-    MMDEPLOY_ERROR("{} interpolation is not supported", interpolation);
-    assert(0);
-  }
+  auto method = GetInterpolationMethod(interpolation).value();
+  cv::resize(src, dst, dst.size(), method);
+  return dst;
+}
+
+cv::Mat WarpAffine(const cv::Mat& src, const cv::Mat& affine_matrix, int dst_height, int dst_width,
+                   int interpolation) {
+  cv::Mat dst(dst_height, dst_width, src.type());
+  cv::warpAffine(src, dst, affine_matrix, dst.size(), interpolation);
   return dst;
 }
 

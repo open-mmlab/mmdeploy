@@ -76,7 +76,13 @@ class Flip : public Operation {
 };
 MMDEPLOY_DECLARE_REGISTRY(Flip, unique_ptr<Flip>(int flip_code));
 
-// TODO: warp affine
+// 2x3 OpenCV affine matrix, row major
+class WarpAffine : public Operation {
+ public:
+  virtual Result<void> apply(const Tensor& src, Tensor& dst, const float affine_matrix[6],
+                             int dst_h, int dst_w) = 0;
+};
+MMDEPLOY_DECLARE_REGISTRY(WarpAffine, unique_ptr<WarpAffine>(const string_view& interp));
 
 }  // namespace mmdeploy::operation
 
