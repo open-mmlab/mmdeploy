@@ -15,12 +15,11 @@ from mmdeploy.utils import Backend
     func_name='mmdet.models.dense_heads.solov2_head.'
     'SOLOV2Head.predict_by_feat',
     backend=Backend.OPENVINO.value)
-def solov2head__predict_by_feat__openvino(self, mlvl_kernel_preds: List[Tensor],
-                                mlvl_cls_scores: List[Tensor],
-                                mask_feats: Tensor,
-                                batch_img_metas: List[Dict], **kwargs):
-    """Transform a batch of output features extracted from the head into mask
-    results.
+def solov2_head__predict_by_feat(self, mlvl_kernel_preds: List[Tensor],
+                                 mlvl_cls_scores: List[Tensor],
+                                 mask_feats: Tensor,
+                                 batch_img_metas: List[Dict], **kwargs):
+    """Rewrite `predict_by_feat` of `SOLOHead` for openvino backend.
 
     Args:
         mlvl_kernel_preds (list[Tensor]): Multi-level dynamic kernel
