@@ -48,6 +48,12 @@ class PrepareImage : public Transform {
 
   Result<void> Apply(Value& data) override {
     MMDEPLOY_DEBUG("input: {}", data);
+
+    // early exit
+    if (data.contains("img") && data["img"].is_any<Tensor>()) {
+      return success();
+    }
+
     assert(data.contains("ori_img"));
 
     Mat src_mat = data["ori_img"].get<Mat>();

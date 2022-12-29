@@ -7,6 +7,8 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/operation/managed.h"
+#include "mmdeploy/operation/vision.h"
 #include "mmdeploy/preprocess/transform/transform.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv_utils.h"
@@ -32,6 +34,7 @@ class TopDownAffine : public transform::Transform {
     stream_ = args["context"]["stream"].get<Stream>();
     assert(args.contains("image_size"));
     from_value(args["image_size"], image_size_);
+    warp_affine_ = operation::Managed<operation::WarpAffine>::Create("bilinear");
   }
 
   ~TopDownAffine() override = default;
@@ -39,11 +42,7 @@ class TopDownAffine : public transform::Transform {
   Result<void> Apply(Value& data) override {
     MMDEPLOY_DEBUG("top_down_affine input: {}", data);
 
-    Device host{"cpu"};
-    auto _img = data["img"].get<Tensor>();
-    OUTCOME_TRY(auto img, MakeAvailableOnDevice(_img, host, stream_));
-    stream_.Wait().value();
-    auto src = cpu::Tensor2CVMat(img);
+    auto img = data["img"].get<Tensor>();
 
     // prepare data
     vector<float> bbox;
@@ -62,21 +61,20 @@ class TopDownAffine : public transform::Transform {
 
     auto r = data["rotation"].get<float>();
 
-    cv::Mat dst;
+    Tensor dst;
     if (use_udp_) {
       cv::Mat trans =
           GetWarpMatrix(r, {c[0] * 2.f, c[1] * 2.f}, {image_size_[0] - 1.f, image_size_[1] - 1.f},
                         {s[0] * 200.f, s[1] * 200.f});
-
-      cv::warpAffine(src, dst, trans, {image_size_[0], image_size_[1]}, cv::INTER_LINEAR);
+      OUTCOME_TRY(warp_affine_.Apply(img, dst, trans.ptr<float>(), image_size_[1], image_size_[0]));
     } else {
       cv::Mat trans =
           GetAffineTransform({c[0], c[1]}, {s[0], s[1]}, r, {image_size_[0], image_size_[1]});
-      cv::warpAffine(src, dst, trans, {image_size_[0], image_size_[1]}, cv::INTER_LINEAR);
+      OUTCOME_TRY(warp_affine_.Apply(img, dst, trans.ptr<float>(), image_size_[1], image_size_[0]));
     }
 
-    data["img"] = cpu::CVMat2Tensor(dst);
-    data["img_shape"] = {1, image_size_[1], image_size_[0], dst.channels()};
+    data["img_shape"] = {1, image_size_[1], image_size_[0], dst.shape(3)};
+    data["img"] = std::move(dst);
     data["center"] = to_value(c);
     data["scale"] = to_value(s);
     MMDEPLOY_DEBUG("output: {}", data);
@@ -106,7 +104,7 @@ class TopDownAffine : public transform::Transform {
     theta = theta * 3.1415926 / 180;
     float scale_x = size_dst.width / size_target.width;
     float scale_y = size_dst.height / size_target.height;
-    cv::Mat matrix = cv::Mat(2, 3, CV_32FC1);
+    cv::Mat matrix = cv::Mat(2, 3, CV_32F);
     matrix.at<float>(0, 0) = std::cos(theta) * scale_x;
     matrix.at<float>(0, 1) = -std::sin(theta) * scale_x;
     matrix.at<float>(0, 2) =
@@ -142,6 +140,7 @@ class TopDownAffine : public transform::Transform {
 
     cv::Mat trans = inv ? cv::getAffineTransform(dst_points, src_points)
                         : cv::getAffineTransform(src_points, dst_points);
+    trans.convertTo(trans, CV_32F);
     return trans;
   }
 
@@ -160,6 +159,7 @@ class TopDownAffine : public transform::Transform {
   }
 
  protected:
+  operation::Managed<operation::WarpAffine> warp_affine_;
   bool use_udp_{false};
   vector<int> image_size_;
   std::string backend_;
