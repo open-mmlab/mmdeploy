@@ -10,6 +10,10 @@ changelog:
     - title: 🐞 Bug fixes
       labels:
         - bug
+        - Bug:P0
+        - Bug:P1
+        - Bug:P2
+        - Bug:P3
     - title: 📚 Documentations
       labels:
         - documentation
@@ -22,3 +26,7 @@ changelog:
           - enhancement
           - bug
           - documentation
+          - Bug:P0
+          - Bug:P1
+          - Bug:P2
+          - Bug:P3
