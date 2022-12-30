@@ -133,6 +133,8 @@ def main():
             deploy_cfg, **codebase_cfg)
         new_deploy_cfg_path = osp.join(args.work_dir, 'deploy_config.py')
         deploy_cfg_path = new_deploy_cfg_path
+        codebase_cfg = get_codebase_config(deploy_cfg)
+        codebase_cfg['update_config'] = False
         deploy_cfg.dump(deploy_cfg_path)
 
     if args.dump_info:

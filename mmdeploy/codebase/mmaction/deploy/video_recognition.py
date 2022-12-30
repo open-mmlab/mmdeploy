@@ -457,6 +457,11 @@ class VideoRecognition(BaseTask):
         input_shape = _get_input_shape(num_channel)
         mean, std = _get_mean_std()
 
+        # update codebase_config
+        codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
+
+        # update ir config
         input_names = ['input']
         output_names = ['output']
 

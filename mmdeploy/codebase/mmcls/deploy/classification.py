@@ -373,6 +373,12 @@ class Classification(BaseTask):
         input_shape = _get_input_size()
         mean, std = _get_mean_std()
 
+        # update codebase_config
+        codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
+        deploy_config['codebase_config'] = codebase_config
+
+        # update ir config
         input_names = ['input']
         output_names = ['output']
 
@@ -396,6 +402,7 @@ class Classification(BaseTask):
         ir_config['input_shape'] = input_shape
         deploy_config['ir_config'] = ir_config
 
+        # update bachend config
         backend = get_backend(deploy_config)
         backend_mgr = get_backend_manager(backend.value)
 

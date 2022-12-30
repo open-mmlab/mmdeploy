@@ -408,12 +408,20 @@ class ObjectDetection(BaseTask):
                 is_dynamic_size = False
                 input_shape = opt_size
 
+            if not is_dynamic_size and input_shape is None:
+                input_shape = opt_size
+
             return min_size, opt_size, max_size
 
         def _get_mean_std():
             pipeline = self.model_cfg.data.test.pipeline
             pipeline = pipeline.copy()
-            transforms = pipeline[1]['transforms']
+
+            if pipeline[1]['type'] == 'MultiScaleFlipAug':
+                transforms = pipeline[1]['transforms']
+            else:
+                transforms = pipeline
+
             for trans in transforms:
                 if trans['type'] == 'Normalize':
                     mean = trans.get('mean', [0.0, 0.0, 0.0])
@@ -430,6 +438,7 @@ class ObjectDetection(BaseTask):
 
         # update codebase_config
         codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
         post_processing = dict(
             score_threshold=0.05,
             confidence_threshold=0.005,

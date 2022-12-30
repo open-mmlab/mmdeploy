@@ -387,3 +387,107 @@ class PoseDetection(BaseTask):
             target=None,
             target_weight=None)
         return [output]
+
+    def update_deploy_config(self,
+                             deploy_config: Any,
+                             model_type: str,
+                             is_dynamic_batch: bool = False,
+                             *args,
+                             **kwargs):
+
+        from mmdeploy.backend.base import get_backend_manager
+        from mmdeploy.utils import Backend, get_backend, get_ir_config
+
+        def _shape_inference():
+            data_cfg = self.model_cfg.data.test.data_cfg
+            image_size = data_cfg['image_size']
+
+            return image_size
+
+        def _get_mean_std():
+            pipeline = self.model_cfg.data.test.pipeline
+            pipeline = pipeline.copy()
+            transforms = pipeline
+            for trans in transforms:
+                if trans['type'] == 'NormalizeTensor':
+                    mean = trans.get('mean', [0.0, 0.0, 0.0])
+                    std = trans.get('std', [1.0, 1.0, 1.0])
+                    to_rgb = trans.get('to_rgb', False)
+                    if to_rgb:
+                        mean = mean[::-1]
+                        std = std[::-1]
+                    return mean, std
+            return None, None
+
+        image_size = _shape_inference()
+        mean, std = _get_mean_std()
+
+        # update codebase_config
+        codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
+        deploy_config['codebase_config'] = codebase_config
+
+        # update ir config
+        input_names = ['input']
+        output_names = ['output']
+
+        ir_config = get_ir_config(deploy_config)
+        ir_config['input_names'] = input_names
+        ir_config['output_names'] = output_names
+
+        if is_dynamic_batch:
+            dynamic_axes = dict()
+            input_axes = dict()
+            output_axes = dict()
+
+            if is_dynamic_batch:
+                input_axes[0] = 'batch'
+                output_axes[0] = 'batch'
+
+            dynamic_axes['input'] = input_axes
+            dynamic_axes['output'] = output_axes
+            ir_config['dynamic_axes'] = dynamic_axes
+
+        ir_config['input_shape'] = image_size
+        deploy_config['ir_config'] = ir_config
+
+        # update bachend config
+        backend = get_backend(deploy_config)
+        backend_mgr = get_backend_manager(backend.value)
+
+        min_batch = 1
+        opt_batch = 1
+        max_batch = 1
+        if is_dynamic_batch:
+            max_batch = 8
+        num_channel = 3
+
+        min_shape = (min_batch, num_channel, *image_size[::-1])
+        opt_shape = (opt_batch, num_channel, *image_size[::-1])
+        max_shape = (max_batch, num_channel, *image_size[::-1])
+
+        if backend == Backend.SDK:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                pipeline=[
+                    dict(type='LoadImageFromFile', channel_order='bgr'),
+                    dict(
+                        type='Collect',
+                        keys=['img'],
+                        meta_keys=[
+                            'image_file', 'bbox', 'rotation', 'bbox_score',
+                            'flip_pairs'
+                        ])
+                ])
+        else:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                opt_shapes=dict(input=opt_shape),
+                min_shapes=dict(input=min_shape),
+                max_shapes=dict(input=max_shape),
+                dtypes=dict(input='float32'),
+                input_names=input_names,
+                mean=mean,
+                std=std)
+
+        return deploy_config
