@@ -163,6 +163,15 @@ utils.psm1 ## 工具类
   - 根据codebase安装配套mmcv
   - 执行回归测试
 
+### 如何在windows上运行
+### step1
+在workspace目录下git clone https://github.com/kumailf/mmdeploy
+只保留tests目录及文件，并放在workspace目录下。
+### step2
+新增支持修改分支参数，配置文件在./tests/jekins/conf/win_default.config
+### step3
+修改配置文件参数以及相关环境变量参数后在workspace目录下打开power shell,运行python ./tests/jekins/scripts/test_convert.ps1
+
 ## Jenkinsfile
 
 Jenkins执行任务时所需的pipeline配置文件
