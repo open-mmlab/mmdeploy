@@ -11,7 +11,7 @@ from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
 def visualize_model(model_cfg: Union[str, mmcv.Config],
                     deploy_cfg: Union[str, mmcv.Config],
                     model: Union[str, Sequence[str]],
-                    img: Union[str, np.ndarray],
+                    img: Union[str, np.ndarray, Sequence[str]],
                     device: str,
                     backend: Optional[Backend] = None,
                     output_file: Optional[str] = None,
@@ -36,7 +36,8 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         deploy_cfg (str | mmcv.Config): Deployment config file or Config
             object.
         model (str | list[str], BaseSubtask): Input model or file(s).
-        img (str | np.ndarray): Input image file or numpy array for inference.
+        img (str | np.ndarray | Sequence[str]): Input image file(s) or numpy
+            array for inference.
         device (str): A string specifying device type.
         backend (Backend): Specifying backend type, defaults to `None`.
         output_file (str): Output file to save visualized image, defaults to
@@ -74,14 +75,16 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         # check headless
         import tkinter
         tkinter.Tk()
-
-        task_processor.visualize(
-            image=img,
-            model=model,
-            result=result,
-            output_file=output_file,
-            window_name=backend.value,
-            show_result=show_result)
+        if not isinstance(img, Sequence):
+            img = [img]
+        for single_img in img:
+            task_processor.visualize(
+                image=single_img,
+                model=model,
+                result=result,
+                output_file=output_file,
+                window_name=backend.value,
+                show_result=show_result)
     except Exception as e:
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()
