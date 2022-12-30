@@ -75,7 +75,8 @@ conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c c
 export cu_version=cu111 # cuda 11.1
 export torch_version=torch1.8
 pip install -U openmim
-mim install "mmcv>=2.0.0rc1"
+mim install mmengine
+mim install "mmcv>=2.0.0rc2"
 </code></pre>
     </td>
   </tr>
@@ -326,7 +327,7 @@ Please check [cmake build option](cmake_option.md).
 
 ```bash
 cd ${MMDEPLOY_DIR}
-pip install -e .
+mim install -e .
 ```
 
 **Note**

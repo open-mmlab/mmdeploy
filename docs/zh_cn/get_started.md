@@ -167,13 +167,13 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster R-CNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换为 TenorRT 模型，从而部署到 NVIDIA GPU 上.
 
 ```shell
-# 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+# 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线, `--recursive` 不是必须的
+git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 
 # 安装 mmdetection。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
-git clone https://github.com/open-mmlab/mmdetection.git
+git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -v -e .
+mim install -v -e .
 cd ..
 
 # 下载 Faster R-CNN 模型权重
@@ -182,7 +182,7 @@ wget -P checkpoints https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/
 # 执行转换命令，实现端到端的转换
 python mmdeploy/tools/deploy.py \
     mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    mmdetection/configs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
     checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     mmdetection/demo/demo.jpg \
     --work-dir mmdeploy_model/faster-rcnn \
