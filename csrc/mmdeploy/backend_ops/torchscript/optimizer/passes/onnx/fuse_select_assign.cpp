@@ -108,7 +108,6 @@ bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& param
 
 void FuseSelectAssign(Block* block, std::unordered_map<std::string, Tensor>& params,
                       std::unordered_map<std::string, Value*>& vmap, SubgraphMatcher& matcher) {
-  auto graph = block->owningGraph();
   auto it = block->nodes().begin();
   while (it != block->nodes().end()) {
     auto node = *it;
