@@ -41,7 +41,7 @@ target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../common>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
-target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas cudnn)
+target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas cudart)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
