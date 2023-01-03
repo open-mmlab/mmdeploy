@@ -5,6 +5,9 @@ on:
     # execute at 01:30 a.m. every Monday
     - cron: '30 1 * * MON'
 
+permissions:
+  contents: read
+
 jobs:
   test_rust_api:
     runs-on: ubuntu-18.04

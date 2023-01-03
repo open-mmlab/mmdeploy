@@ -3,15 +3,9 @@
 from .backend_manager import TorchScriptManager
 from .init_plugins import get_ops_path, ops_available
 
-
-def is_available():
-    """Torchscript available.
-
-    Returns:
-        bool: Always True.
-    """
-    return True
-
+_BackendManager = TorchScriptManager
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
 __all__ = ['get_ops_path', 'ops_available', 'TorchScriptManager']
 

@@ -26,56 +26,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        TENSORRT = 'tensorrt'
    ```
 
-2. Add a corresponding package (a folder with `__init__.py`) in `mmdeploy/backend/`. For example, `mmdeploy/backend/tensorrt`. In the `__init__.py`, there must be a function named `is_available` which checks if users have installed the backend library. If the check is passed, then the remaining files of the package will be loaded.
-
-   **Example**:
-
-   ```Python
-   # mmdeploy/backend/tensorrt/__init__.py
-
-   def is_available():
-       return importlib.util.find_spec('tensorrt') is not None
-
-
-   if is_available():
-       from .utils import from_onnx, load, save
-       from .wrapper import TRTWrapper
-
-       __all__ = [
-           'from_onnx', 'save', 'load', 'TRTWrapper'
-       ]
-   ```
-
-3. Create a config file in `configs/_base_/backends` (e.g., `configs/_base_/backends/tensorrt.py`).  If the backend just takes the '.onnx' file as input, the new config can be simple. The config of the backend only consists of one field denoting the name of the backend (which should be same as the name in `mmdeploy/utils/constants.py`).
-
-   **Example**:
-
-   ```python
-   backend_config = dict(type='onnxruntime')
-   ```
-
-   If the backend requires other files, then the arguments for the conversion from ".onnx" file to backend files should be included in the config file.
-
-   **Example:**
-
-   ```Python
-
-   backend_config = dict(
-       type='tensorrt',
-       common_config=dict(
-           fp16_mode=False, max_workspace_size=0))
-   ```
-
-   After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/write_config.md) for more details. Here is an example:
-
-   ```Python
-   _base_ = ['../_base_/backends/onnxruntime.py']
-
-   codebase_config = dict(type='mmcls', task='Classification')
-   onnx_config = dict(input_shape=None)
-   ```
-
-4. If the backend requires model files or weight files other than a ".onnx" file, create a `onnx2backend.py` file in the corresponding folder (e.g., create `mmdeploy/backend/tensorrt/onnx2tensorrt.py`). Then add a conversion function `onnx2backend` in the file. The function should convert a given ".onnx" file to the required backend files in a given work directory. There are no requirements on other parameters of the function and the implementation details. You can use any tools for conversion. Here are some examples:
+2. Add a corresponding package (a folder with `__init__.py`) in `mmdeploy/backend/`. For example, `mmdeploy/backend/tensorrt`. If the backend requires model files or weight files other than a ".onnx" file, create a `onnx2backend.py` file in the corresponding folder (e.g., create `mmdeploy/backend/tensorrt/onnx2tensorrt.py`). Then add a conversion function `onnx2backend` in the file. The function should convert a given ".onnx" file to the required backend files in a given work directory. There are no requirements on other parameters of the function and the implementation details. You can use any tools for conversion. Here are some examples:
 
    **Use Python script:**
 
@@ -106,6 +57,65 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
    ```
 
+3. Create a backend manager class and implement the interface to support model conversion, version check and other features.
+
+   **Example**:
+
+   ```Python
+    # register the backend manager
+    # the backend manager derive from BaseBackendManager
+    @BACKEND_MANAGERS.register('tensorrt')
+    class TensorRTManager(BaseBackendManager):
+
+        @classmethod
+        def is_available(cls, with_custom_ops: bool = False) -> bool:
+            ....
+
+
+        @classmethod
+        def get_version(cls) -> str:
+            ....
+
+        @classmethod
+        def to_backend(cls,
+                    ir_files: Sequence[str],
+                    work_dir: str,
+                    deploy_cfg: Any,
+                    log_level: int = logging.INFO,
+                    device: str = 'cpu',
+                    **kwargs) -> Sequence[str]:
+            ...
+   ```
+
+4. Create a config file in `configs/_base_/backends` (e.g., `configs/_base_/backends/tensorrt.py`).  If the backend just takes the '.onnx' file as input, the new config can be simple. The config of the backend only consists of one field denoting the name of the backend (which should be same as the name in `mmdeploy/utils/constants.py`).
+
+   **Example**:
+
+   ```python
+   backend_config = dict(type='onnxruntime')
+   ```
+
+   If the backend requires other files, then the arguments for the conversion from ".onnx" file to backend files should be included in the config file.
+
+   **Example:**
+
+   ```Python
+
+   backend_config = dict(
+       type='tensorrt',
+       common_config=dict(
+           fp16_mode=False, max_workspace_size=0))
+   ```
+
+   After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/write_config.md) for more details. Here is an example:
+
+   ```Python
+   _base_ = ['../_base_/backends/onnxruntime.py']
+
+   codebase_config = dict(type='mmcls', task='Classification')
+   onnx_config = dict(input_shape=None)
+   ```
+
 5. Define APIs in a new package in  `mmdeploy/apis`.
 
    **Example:**
@@ -121,22 +131,6 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
                                                     get_output_model_file)
        __all__ += ['onnx2ncnn', 'get_output_model_file']
-   ```
-
-   Create a backend manager class which derive from `BackendManager`, implement its `to_backend` static method.
-
-   **Example:**
-
-   ```Python
-    @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   deploy_cfg: Any,
-                   work_dir: str,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
-        return ir_files
    ```
 
 6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](support_new_model.md) or add custom operators.
@@ -197,13 +191,13 @@ Although the backend engines are usually implemented in C/C++, it is convenient 
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. Create a backend manager class which derive from `BackendManager`, implement its `build_wrapper` static method.
+4. Implement `build_wrapper` method in the backend manager.
 
    **Example:**
 
    ```Python
         @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeUtils(BaseBackendManager):
+        class ONNXRuntimeManager(BaseBackendManager):
 
             @classmethod
             def build_wrapper(cls,

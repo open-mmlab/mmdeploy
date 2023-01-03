@@ -96,7 +96,7 @@ def mask_test_mixin__simple_test_mask(ctx, self, x, img_metas, det_bboxes,
     # expand might lead to static shape, use broadcast instead
     batch_index = torch.arange(
         det_bboxes.size(0), device=det_bboxes.device).float().view(
-            -1, 1) + det_bboxes.new_zeros(
+            -1, 1, 1) + det_bboxes.new_zeros(
                 (det_bboxes.size(0), det_bboxes.size(1))).unsqueeze(-1)
     mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
     mask_rois = mask_rois.view(-1, 5)

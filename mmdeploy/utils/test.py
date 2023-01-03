@@ -4,7 +4,6 @@ import os.path as osp
 import random
 import string
 import tempfile
-import warnings
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import mmcv
@@ -29,47 +28,13 @@ def backend_checker(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_custom_ops_available = None
-    if backend == Backend.ONNXRUNTIME:
-        from mmdeploy.apis.onnxruntime import is_available
-        if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_custom_ops_available
-    elif backend == Backend.TENSORRT:
-        from mmdeploy.apis.tensorrt import is_available
-        if require_plugin:
-            from mmdeploy.apis.tensorrt import is_custom_ops_available
-    elif backend == Backend.PPLNN:
-        from mmdeploy.apis.pplnn import is_available
-    elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import is_available
-        if require_plugin:
-            from mmdeploy.apis.ncnn import is_custom_ops_available
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import is_available
-    elif backend == Backend.RKNN:
-        # device not require as backend is not really running
-        from mmdeploy.apis.rknn import is_available
-    elif backend == Backend.ASCEND:
-        from mmdeploy.apis.ascend import is_available
-    elif backend == Backend.TVM:
-        from mmdeploy.apis.tvm import is_available
-    else:
-        warnings.warn('The backend checker is not available')
-        return
+    from mmdeploy.backend.base import get_backend_manager
+
+    backend_mgr = get_backend_manager(backend.value)
+    result = backend_mgr.is_available(with_custom_ops=require_plugin)
 
     checker = pytest.mark.skipif(
-        not is_available(), reason=f'{backend.value} package is not available')
-    if require_plugin and is_custom_ops_available is not None:
-        plugin_checker = pytest.mark.skipif(
-            not is_custom_ops_available(),
-            reason=f'{backend.value} plugin is not available')
-
-        def double_checker(func):
-            func = checker(func)
-            func = plugin_checker(func)
-            return func
-
-        return double_checker
+        not result, reason=f'{backend.value} package is not available')
 
     return checker
 
@@ -84,47 +49,18 @@ def check_backend(backend: Backend, require_plugin: bool = False):
             will also check if the backend plugin has been compiled. Default
             to `False`.
     """
-    is_custom_ops_available = None
-    if backend == Backend.ONNXRUNTIME:
-        from mmdeploy.apis.onnxruntime import is_available
-        if require_plugin:
-            from mmdeploy.apis.onnxruntime import is_custom_ops_available
-    elif backend == Backend.TENSORRT:
-        from mmdeploy.apis.tensorrt import is_available
-        if require_plugin:
-            from mmdeploy.apis.tensorrt import is_custom_ops_available
-    elif backend == Backend.PPLNN:
-        from mmdeploy.apis.pplnn import is_available
-    elif backend == Backend.NCNN:
-        from mmdeploy.apis.ncnn import is_available
-        if require_plugin:
-            from mmdeploy.apis.ncnn import is_custom_ops_available
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.apis.openvino import is_available
-    elif backend == Backend.TORCHSCRIPT:
-        from mmdeploy.backend.torchscript import ops_available as is_available
-    elif backend == Backend.RKNN:
-        from mmdeploy.backend.rknn import is_available
-        if not is_available():
-            # skip CI in github
-            pytest.skip(f'{backend.value} package is not available')
-        # device required
-        from mmdeploy.backend.rknn import device_available as is_available
-    elif backend == Backend.ASCEND:
-        from mmdeploy.backend.ascend import is_available
-    elif backend == Backend.TVM:
-        from mmdeploy.backend.tvm import is_available
-    elif backend == Backend.COREML:
-        from mmdeploy.backend.coreml import is_available
-    else:
-        warnings.warn('The backend checker is not available')
-        return
+    from mmdeploy.backend.base import get_backend_manager
 
-    if not is_available():
+    backend_mgr = get_backend_manager(backend.value)
+    result = backend_mgr.is_available(with_custom_ops=require_plugin)
+
+    if backend == Backend.RKNN:
+        # device required
+        from mmdeploy.backend.rknn import device_available
+        result = result and device_available()
+
+    if not result:
         pytest.skip(f'{backend.value} package is not available')
-    if require_plugin and is_custom_ops_available is not None:
-        if not is_custom_ops_available():
-            pytest.skip(f'{backend.value} plugin is not available')
 
 
 class WrapFunction(nn.Module):

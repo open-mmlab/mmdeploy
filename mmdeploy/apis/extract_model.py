@@ -5,7 +5,6 @@ from typing import Dict, Iterable, Optional, Union
 import onnx
 
 from .core import PIPELINE_MANAGER
-from .onnx import extract_partition
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -62,6 +61,7 @@ def extract_model(model: Union[str, onnx.ModelProto],
     Returns:
         onnx.ModelProto: The extracted model.
     """
+    from .onnx import extract_partition
 
     return extract_partition(model, start_marker, end_marker, start_name_map,
                              end_name_map, dynamic_axes, save_file)
