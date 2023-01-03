@@ -42,10 +42,10 @@ nvinfer1::DimsExprs TRTBicubicInterpolate::getOutputDimensions(
   ret.nbDims = 4;
   ret.d[0] = inputs[0].d[0];
   ret.d[1] = inputs[0].d[1];
-  auto height = (double) inputs[0].d[2]->getConstantValue();
-  auto width = (double) inputs[0].d[3]->getConstantValue();
-  auto outHeight = (int) height * mScaleFactor[0];
-  auto outWidth = (int) width * mScaleFactor[1];
+  auto height = (double)inputs[0].d[2]->getConstantValue();
+  auto width = (double)inputs[0].d[3]->getConstantValue();
+  auto outHeight = (int)height * mScaleFactor[0];
+  auto outWidth = (int)width * mScaleFactor[1];
   ret.d[2] = exprBuilder.constant(outHeight);
   ret.d[3] = exprBuilder.constant(outWidth);
   return ret;

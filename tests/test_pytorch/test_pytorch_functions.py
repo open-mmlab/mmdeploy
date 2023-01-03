@@ -143,6 +143,31 @@ def test_interpolate__rknn():
     assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
+@backend_checker(Backend.TENSORRT)
+def test_bicubic_interpolate__tensorrt():
+    input = torch.randn([1, 2, 2, 2])
+
+    def model_func(input):
+        return F.interpolate(input, scale_factor=[1.5, 1.5], mode='bicubic')
+
+    model_output = model_func(input)
+    wrapped_func = WrapFunction(model_func)
+
+    # mmdeploy.pytorch.functions.interpolate.interpolate__tensorrt
+    deploy_cfg_tensorrt = get_trt_config(['values'], [1, 2, 2, 2])
+    output, is_backend_output = get_rewrite_outputs(
+        wrapped_func,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_tensorrt)
+
+    if is_backend_output:
+        output = output[0].detach().cpu()
+
+        assert np.allclose(model_output, output, rtol=1, atol=1)
+    else:
+        assert output is not None
+
+
 @backend_checker(Backend.NCNN)
 def test_linear_ncnn():
     input = torch.rand([1, 2, 2])
@@ -235,7 +260,6 @@ def test_size__ascend():
 
 
 class TestTopk:
-
     input = torch.rand(1, 5, 5, 5)
 
     @backend_checker(Backend.NCNN)
@@ -291,7 +315,6 @@ class TestTopk:
 @pytest.mark.parametrize('shape', [[2, 2], [4, 2], [2, 4], [2, 4, 2]])
 @pytest.mark.parametrize('diagonal', [0, 1, -1])
 def test_triu_trt(shape, diagonal):
-
     input = torch.rand(shape)
     model_output = torch.triu(input=input, diagonal=diagonal)
 
@@ -338,7 +361,6 @@ def test_normalize_ncnn(input, dim):
 
 @backend_checker(Backend.ASCEND)
 def test_getitem__ascend():
-
     input = torch.rand(1, 2, 3)
 
     def tensor_getitem(x):
