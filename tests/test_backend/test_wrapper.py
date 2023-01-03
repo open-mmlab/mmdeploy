@@ -186,7 +186,7 @@ def run_wrapper(backend, wrapper, input):
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
     Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
-    Backend.IPU
+    Backend.IPU,
     Backend.COREML, Backend.TVM
 ]
 
