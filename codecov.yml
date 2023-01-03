@@ -1,3 +1,5 @@
+# See: https://docs.codecov.com/docs/codecovyml-reference
+
 comment:
   layout: "reach, diff, flags, files"
   behavior: default
