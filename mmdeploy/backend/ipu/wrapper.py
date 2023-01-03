@@ -69,34 +69,38 @@ class IPUWrapper(BaseWrapper):
         ]
         self.input_view = model_runtime.InputMemoryView()
 
-    @TimeCounter.count_time(Backend.IPU.value)
     def forward(self, inputs):
-        start = time.time()
         for input_desc in self.input_descriptions:
             astart = time.time()
             self.input_view[input_desc.name] = inputs[input_desc.name].contiguous().numpy().astype(
                 popef.popefTypeToNumpyDType(input_desc.data_type))
-            # print('input assign time ', time.time()-astart)
-        result = self.runner.executeAsync(self.input_view)
-        result.wait()
-        # print('ipu forward time ', time.time()-start)
+
+        self.__ipu_execute()
+
         output_descriptions = self.runner.getExecuteOutputs()
-
         outputs = {}
-
         for output_desc in output_descriptions:
-
             out_shape = output_desc.shape
-
             out_shape[0] = out_shape[0] * self.bps
-
             output_tensor = np.frombuffer(result[output_desc.name],
                                           dtype=popef.popefTypeToNumpyDType(
                 output_desc.data_type)).reshape(out_shape)
-
             outputs[output_desc.name] = torch.from_numpy(output_tensor)
 
         return outputs
+
+    @TimeCounter.count_time(Backend.IPU.value)
+    def __ipu_execute(self]:
+        """Run inference with ipu.
+        Args:
+
+        Returns:
+            dict[str, ncnn.Mat]: Inference results of ipu model.
+        """
+
+        result = self.runner.executeAsync(self.input_view)
+        result.wait()
+        return result
 
 
 if __name__ == "__main__":
