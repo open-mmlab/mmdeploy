@@ -8,7 +8,7 @@ from mmcv.parallel import DataContainer
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils import Task, get_codebase_config, get_input_shape
 from .mmsegmentation import MMSEG_TASK
 
 
@@ -286,6 +286,9 @@ class Segmentation(BaseTask):
         postprocess = self.model_cfg.model.decode_head
         if isinstance(postprocess, list):
             postprocess = postprocess[-1]
+        with_argmax = get_codebase_config(self.deploy_cfg).get(
+            'with_argmax', True)
+        postprocess['with_argmax'] = with_argmax
         return postprocess
 
     def get_model_name(self) -> str:
