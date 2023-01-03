@@ -489,8 +489,8 @@ class Tracker {
 
   float ObjectKeypointSimilarity(const Points& pts_a, const Bbox& box_a, const Points& pts_b,
                                  const Bbox& box_b) {
-    assert(pts_a.size() == sigmas.size());
-    assert(pts_b.size() == sigmas.size());
+    assert(pts_a.size() == params.sigmas.size());
+    assert(pts_b.size() == params.sigmas.size());
     auto scale = [](const Bbox& bbox) -> float {
       auto a = bbox[2] - bbox[0];
       auto b = bbox[3] - bbox[1];
