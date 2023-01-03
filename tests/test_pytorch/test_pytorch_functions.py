@@ -148,7 +148,7 @@ def test_bicubic_interpolate__tensorrt():
     input = torch.randn([1, 2, 2, 2])
 
     def model_func(input):
-        return F.interpolate(input, scale_factor=[1.5, 1.5], mode='bicubic')
+        return F.interpolate(input, scale_factor=[1.5, 1.5], mode='bicubic', align_corners=False)
 
     model_output = model_func(input)
     wrapped_func = WrapFunction(model_func)
@@ -162,8 +162,7 @@ def test_bicubic_interpolate__tensorrt():
 
     if is_backend_output:
         output = output[0].detach().cpu()
-
-        assert np.allclose(model_output, output, rtol=1, atol=1)
+        assert np.allclose(model_output, output, rtol=1e-03, atol=1e-05)
     else:
         assert output is not None
 
