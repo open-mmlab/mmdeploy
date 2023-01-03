@@ -60,13 +60,7 @@ class IPUWrapper(BaseWrapper):
         self.runner = model_runtime.ModelRunner(popef_file,
                                                 config=config)
 
-        print("Preparing input tensors:")
         self.input_descriptions = self.runner.getExecuteInputs()
-        input_tensors = [
-            np.random.randn(*input_desc.shape).astype(
-                popef.popefTypeToNumpyDType(input_desc.data_type))
-            for input_desc in self.input_descriptions
-        ]
         self.input_view = model_runtime.InputMemoryView()
 
     def forward(self, inputs):
@@ -94,7 +88,7 @@ class IPUWrapper(BaseWrapper):
         Args:
 
         Returns:
-            dict[str, ncnn.Mat]: Inference results of ipu model.
+            dict[str, tensor]: Inference results of ipu model.
         """
 
         result = self.runner.executeAsync(self.input_view)
