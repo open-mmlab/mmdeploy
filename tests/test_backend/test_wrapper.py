@@ -159,26 +159,6 @@ def create_wrapper(backend, model_files):
         model_files = [model_files]
 
     elif backend == Backend.RKNN:
-
-
-<< << << < HEAD
-        from mmdeploy.backend.rknn import RKNNWrapper
-        rknn_model = RKNNWrapper(
-            model_files,
-            common_config=dict(target_platform=target_platform),
-            output_names=output_names)
-        return rknn_model
-    elif backend == Backend.ASCEND:
-        from mmdeploy.backend.ascend import AscendWrapper
-        ascend_model = AscendWrapper(model_files)
-        return ascend_model
-    elif backend == Backend.IPU:
-        from mmdeploy.backend.ipu import IPUWrapper
-        ipu_model = IPUWrapper(model_files)
-        return ipu_model
-    else:
-        raise NotImplementedError(f'Unknown backend type: {backend.value}')
-=======
         deploy_cfg = dict(
             backend_config=dict(
                 common_config=dict(target_platform=target_platform)))
@@ -187,47 +167,11 @@ def create_wrapper(backend, model_files):
         input_names=input_names,
         output_names=output_names,
         deploy_cfg=deploy_cfg)
->>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 
 
 def run_wrapper(backend, wrapper, input):
     if backend == Backend.TENSORRT:
         input = input.cuda()
-<<<<<<< HEAD
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.ONNXRUNTIME:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.PPLNN:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.NCNN:
-        input = input.float()
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.OPENVINO:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.TORCHSCRIPT:
-        results = wrapper({'input': input})['output']
-        return results
-    elif backend == Backend.RKNN:
-        results = wrapper({'input': input})
-    elif backend == Backend.ASCEND:
-        results = wrapper({'input': input})['output']
-        return results
-    elif backend == Backend.IPU:
-        results = wrapper({'input': input})['output']
-        return results
-    else:
-        raise NotImplementedError(f'Unknown backend type: {backend.value}')
-=======
 
     results = wrapper({'input': input})
 
@@ -237,17 +181,13 @@ def run_wrapper(backend, wrapper, input):
     results = results.detach().cpu()
 
     return results
->>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
     Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
-<<<<<<< HEAD
     Backend.IPU
-=======
     Backend.COREML, Backend.TVM
->>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 ]
 
 

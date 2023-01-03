@@ -69,13 +69,6 @@ class IPUWrapper(BaseWrapper):
         ]
         self.input_view = model_runtime.InputMemoryView()
 
-        # for input_desc, input_tensor in zip(self.input_descriptions, input_tensors):
-        #     print("\tname:", input_desc.name, "shape:", input_tensor.shape,
-        #           "dtype:", input_tensor.dtype)
-        #     input_tensor = np.repeat(input_tensor, repeats=self.bps, axis=0)
-        #     print('init input tensor ', input_tensor)
-        #     self.input_view[input_desc.name] = input_tensor
-
     def forward(self, inputs):
         start = time.time()
         for input_desc in self.input_descriptions:
