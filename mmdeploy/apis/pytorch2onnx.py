@@ -11,8 +11,6 @@ from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
 from .core import PIPELINE_MANAGER
 from .onnx import export
 
-from mmdet.apis.inference import init_detector
-
 
 @PIPELINE_MANAGER.register_pipeline()
 def torch2onnx(img: Any,

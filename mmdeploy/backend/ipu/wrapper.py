@@ -71,7 +71,6 @@ class IPUWrapper(BaseWrapper):
 
     def forward(self, inputs):
         for input_desc in self.input_descriptions:
-            astart = time.time()
             self.input_view[input_desc.name] = inputs[input_desc.name].contiguous().numpy().astype(
                 popef.popefTypeToNumpyDType(input_desc.data_type))
 
@@ -90,7 +89,7 @@ class IPUWrapper(BaseWrapper):
         return outputs
 
     @TimeCounter.count_time(Backend.IPU.value)
-    def __ipu_execute(self]:
+    def __ipu_execute(self):
         """Run inference with ipu.
         Args:
 
