@@ -39,6 +39,22 @@ class SNPEManager(BaseBackendManager):
             dlc_file=backend_files[0], uri=uri, output_names=output_names)
 
     @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+
+        Returns:
+            bool: True if backend package is installed.
+        """
+        from .onnx2dlc import get_onnx2dlc_path
+        onnx2dlc = get_onnx2dlc_path()
+        if onnx2dlc is None:
+            return False
+        return osp.exists(onnx2dlc)
+
+    @classmethod
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,

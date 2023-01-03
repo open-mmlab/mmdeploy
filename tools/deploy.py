@@ -27,7 +27,11 @@ def parse_args():
     parser.add_argument('checkpoint', help='model checkpoint path')
     parser.add_argument('img', help='image used to convert model model')
     parser.add_argument(
-        '--test-img', default=None, help='image used to test model')
+        '--test-img',
+        default=None,
+        type=str,
+        nargs='+',
+        help='image used to test model')
     parser.add_argument(
         '--work-dir',
         default=os.getcwd(),

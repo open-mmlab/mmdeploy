@@ -1,18 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import re
 import subprocess
 
 from .backend_manager import RKNNManager
 
-
-def is_available():
-    """Check whether rknn is installed.
-
-    Returns:
-        bool: True if rknn package is installed.
-    """
-    return importlib.util.find_spec('rknn') is not None
+_BackendManager = RKNNManager
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
 
 def device_available():
