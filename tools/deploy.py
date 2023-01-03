@@ -294,7 +294,7 @@ def main():
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
     elif backend == Backend.IPU:
-        extra['bps'] = ipu_config['batch_per_step']
+        extra['batches_per_step'] = ipu_config['batches_per_step']
 
     # get backend inference result, try render
     create_process(

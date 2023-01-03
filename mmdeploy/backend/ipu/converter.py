@@ -2,7 +2,7 @@ import subprocess
 
 
 def onnx_to_popef(onnx_path, ipu_config):
-    command = ['python3', '-m', 'popconverter.cli',
+    command = ['python3', '-m', 'poprt.cli',
                '--input_model', onnx_path,
                '--output_dir', output_dir,
                '--export_popef',
@@ -16,7 +16,7 @@ def onnx_to_popef(onnx_path, ipu_config):
             command += ['--'+str(key)]
             for ikey in opt_dict.keys():
                 command += [str(ikey)+'='+str(opt_dict[ikey])]
-            
+
         elif ipu_config[key] == '':
             command += ['--'+str(key)]
         else:

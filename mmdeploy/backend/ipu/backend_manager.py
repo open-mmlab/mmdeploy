@@ -35,7 +35,7 @@ class IPUManager(BaseBackendManager):
         # function.
         if deploy_cfg:
             backend_config = get_backend_config(deploy_cfg)
-            bps = backend_config.get('batch_per_step', 1)
+            bps = backend_config.get('batches_per_step', 1)
         else:
             bps = 1
         return IPUWrapper(
