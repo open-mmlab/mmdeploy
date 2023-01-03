@@ -84,18 +84,6 @@ class TorchWrapper(torch.nn.Module):
         return self.model(*args, **kwargs)
 
 
-class IpuWrapper(torch.nn.Module):
-
-    def __init__(self, model):
-        super(IpuWrapper, self).__init__()
-
-        self.model = model
-
-    @TimeCounter.count_time(Backend.IPU.value)
-    def forward(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
-
-
 def main():
     args = parse_args()
     deploy_cfg_path = args.deploy_cfg
@@ -131,8 +119,6 @@ def main():
         # load the model of the backend
         model = task_processor.init_backend_model(args.model)
         backend = get_backend(deploy_cfg).value
-        if backend == 'ipu':
-            model = IpuWrapper(model)
 
     model = model.eval().to(args.device)
     is_device_cpu = args.device == 'cpu'

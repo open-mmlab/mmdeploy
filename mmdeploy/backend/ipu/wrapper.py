@@ -33,7 +33,7 @@ class IPUWrapper(BaseWrapper):
 
     Examples:
         >>> from mmdeploy.backend.ipu import IPUWrapper
-        >>> popef_file = 'resnet.ef'
+        >>> popef_file = 'resnet.popef'
         >>> model = IPUWrapper(popef_file)
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224))
         >>> outputs = model(inputs)
@@ -69,6 +69,7 @@ class IPUWrapper(BaseWrapper):
         ]
         self.input_view = model_runtime.InputMemoryView()
 
+    @TimeCounter.count_time(Backend.IPU.value)
     def forward(self, inputs):
         start = time.time()
         for input_desc in self.input_descriptions:

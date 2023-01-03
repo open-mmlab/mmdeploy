@@ -53,7 +53,6 @@ configure_file(config/test_define.h.in
         ${CMAKE_CURRENT_SOURCE_DIR}/test_define.h)
 
 set(TC_SRCS
-        ${NET_TC}
         ${TC_SRCS}
         ${ARCHIVE_TC}
         ${CORE_TC}
