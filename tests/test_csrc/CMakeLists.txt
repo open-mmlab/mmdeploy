@@ -59,7 +59,7 @@ set(TC_SRCS
         ${CORE_TC}
         ${TRANSFORM_TC}
         ${MODEL_TC}
-        
+        ${NET_TC}
         ${DEVICE_TC}
         ${CAPI_TC}
         ${GRAPH_TC})
