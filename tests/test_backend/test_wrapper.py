@@ -134,7 +134,7 @@ def onnx2backend(backend, onnx_file):
     elif backend == Backend.IPU:
         from mmdeploy.apis.ipu import onnx_to_popef
         onnx_dir = onnx_file[:onnx_file.rfind('/')]
-        ipu_config = {'bps': 1, 'output_dir': onnx_dir}
+        ipu_config = {'batches_per_step': 1, 'output_dir': onnx_dir}
         onnx_to_popef(onnx_file, ipu_config)
         return popef_file
     elif backend == Backend.TVM:
