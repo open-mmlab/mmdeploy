@@ -1,5 +1,6 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <array>
 #include <set>
 
 #include "mmdeploy/archive/value_archive.h"
