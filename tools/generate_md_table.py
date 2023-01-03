@@ -14,6 +14,8 @@ def parse_args():
         description='from yaml export markdown table')
     parser.add_argument('yml_file', help='input yml config path')
     parser.add_argument('output', help='output markdown file path')
+    parser.add_argument('backends', nargs='*',help='backends you want to generate',
+    default=['onnxruntime', 'tensorrt', 'torchscript', 'pplnn', 'openvino', 'ncnn'])
     args = parser.parse_args()
     return args
 
@@ -24,11 +26,8 @@ def main():
     output_dir, _ = osp.split(args.output)
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
-    backends = [
-        'onnxruntime', 'tensorrt', 'torchscript', 'pplnn', 'openvino', 'ncnn'
-    ]
-    header = ['model', 'task'] + backends
-    aligner = [':--'] * 2 + [':--'] * len(backends)
+    header = ['model', 'task'] + args.backends
+    aligner = [':--'] * 2 + [':--'] * len(args.backends)
 
     def write_row_f(writer, row):
         writer.write('|' + '|'.join(row) + '|\n')
@@ -46,7 +45,7 @@ def main():
             pipelines = config.models[i].pipelines
             config_url = osp.join(repo_url, model_configs[0])
             config_url, _ = osp.split(config_url)
-            support_backends = {b: 'N' for b in backends}
+            support_backends = {b: 'N' for b in args.backends}
             deploy_config = [
                 pipelines[i].deploy_config for i in range(len(pipelines))
             ]
@@ -64,7 +63,7 @@ def main():
             ]
             for i in range(len(deploy_config)):
                 support_backends[backend_type[i]] = 'Y'
-            support_backends = [support_backends[i] for i in backends]
+            support_backends = [support_backends[i] for i in args.backends]
             model_name = f'[{name}]({config_url})'
             row = [model_name, task[i]] + support_backends
 

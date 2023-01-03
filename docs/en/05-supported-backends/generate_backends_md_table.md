@@ -4,23 +4,25 @@ This tool can be used to generate supported-backends markdown table.
 
 ## Usage
 
-```
+```shell
 python tests/regression/generate_md_table.py \
     ${yml_file} \
-    ${output}
+    ${output} \
+    ${backends}
 ```
 
 ## Description of all arguments
 
 - `yml_file:` input yml config path
 - `output:`  output markdown file path
+- `backends:` output backends list. If not specified, it will be set 'onnxruntime' 'tensorrt' 'torchscript' 'pplnn' 'openvino' 'ncnn'.
 
 ## Example:
 
 Generate backends markdown table from mmocr.yml
 
 ```
-python tests/regression/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md
+python tests/regression/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
 ```
 
 And the output look like this:
