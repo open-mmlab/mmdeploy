@@ -14,8 +14,14 @@ def parse_args():
         description='from yaml export markdown table')
     parser.add_argument('yml_file', help='input yml config path')
     parser.add_argument('output', help='output markdown file path')
-    parser.add_argument('backends', nargs='*',help='backends you want to generate',
-    default=['onnxruntime', 'tensorrt', 'torchscript', 'pplnn', 'openvino', 'ncnn'])
+    parser.add_argument(
+        'backends',
+        nargs='*',
+        help='backends you want to generate',
+        default=[
+            'onnxruntime', 'tensorrt', 'torchscript', 'pplnn', 'openvino',
+            'ncnn'
+        ])
     args = parser.parse_args()
     return args
 
