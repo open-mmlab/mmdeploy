@@ -77,26 +77,23 @@ class IPUWrapper(BaseWrapper):
         #     self.input_view[input_desc.name] = input_tensor
 
     def forward(self, inputs):
-        # print('ipu inputs ', inputs)
         start = time.time()
-        print('input desc ', self.input_descriptions)
         for input_desc in self.input_descriptions:
             astart = time.time()
             self.input_view[input_desc.name] = inputs[input_desc.name].contiguous().numpy().astype(
                 popef.popefTypeToNumpyDType(input_desc.data_type))
-            print('input assign time ', time.time()-astart)
-
+            # print('input assign time ', time.time()-astart)
         result = self.runner.executeAsync(self.input_view)
         result.wait()
-        print('ipu forward time ', time.time()-start)
+        # print('ipu forward time ', time.time()-start)
         output_descriptions = self.runner.getExecuteOutputs()
-        print('output descriptions ', output_descriptions)
+
         outputs = {}
 
         for output_desc in output_descriptions:
 
             out_shape = output_desc.shape
-            # print('out shape 0 ', out_shape[0], ' bps ', self.bps)
+
             out_shape[0] = out_shape[0] * self.bps
 
             output_tensor = np.frombuffer(result[output_desc.name],

@@ -72,15 +72,7 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
 IPUNet::~IPUNet() {}
 
 Result<void> IPUNet::Init(const Value& args) {
-  // Result<void> IPUNet::Init(const std::string& popef_path) {
-  // auto& context = args["context"];
-  // device_ = context["device"].get<Device>();
-  // stream_ = context["stream"].get<Stream>();
-  // auto name = args["name"].get<std::string>();
-  // auto model = context["model"].get<Model>();
-
-  // OUTCOME_TRY(auto config, model.GetModelConfig(name));
-  // //   OUTCOME_TRY(auto onnx, model.ReadFile(config.net))
+  
   std::string popef_path = args["popef_path"].get<std::string>();
 
   batch_per_step = args["batches_per_step"].get<int>();
@@ -150,8 +142,6 @@ Result<Span<Tensor>> IPUNet::GetOutputTensors() { return output_tensors_; }
 
 Result<void> IPUNet::Forward() {
   MMDEPLOY_INFO("ipu device running forward ");
-  // OUTCOME_TRY(stream_.Wait());
-
   {
     // copy input to itensor buffer
 
@@ -163,7 +153,6 @@ Result<void> IPUNet::Forward() {
 
   {
     struct timeval start, end;
-    // for (int i = 0; i < 50; i++) {
     gettimeofday(&start, 0);
     model_runner->execute(examples::toInputMemoryView(input_memory),
                           examples::toOutputMemoryView(output_memory));
@@ -171,14 +160,9 @@ Result<void> IPUNet::Forward() {
     long sec = end.tv_sec - start.tv_sec;
     long micro = end.tv_usec - start.tv_usec;
     double elapsed = sec + micro * 1e-6;
-    // output_desc = model_runner->getExecuteOutputs();
-    // sleep(30);
+    
     MMDEPLOY_INFO("ipu inference done, time elapsed {} sec", elapsed);
-    // }
-    // if (!success) {
-    //   MMDEPLOY_ERROR("IPU Inference error: {}",
-    //   std::string(zdl::DlSystem::getLastErrorString())); return Status(eFail);
-    // }
+    
   }
 
   {
@@ -189,34 +173,11 @@ Result<void> IPUNet::Forward() {
       copy_output(output_memory[name], to_tensor);
     }
 
-    //   for (const OutputValueType &name_with_memory : output_memory) {
-    //     auto &&[name, memory] = name_with_memory;
-    //     auto to_tensor = output_tensors_[index];
-    //     copy_output(memory, to_tensor);
-
-    //     index += 1;
-
-    // }
+    
   }
   return success();
 }
 
-// class IPUNetCreator : public Creator<Net> {
-//  public:
-//   const char* GetName() const override { return "ipu"; }
-//   int GetVersion() const override { return 0; }
-//   std::unique_ptr<Net> Create(const Value& args) override {
-//     auto p = std::make_unique<IPUNet>();
-//     if (auto r = p->Init(args)) {
-//       return p;
-//     } else {
-//       MMDEPLOY_ERROR("error creating IPUNet: {}", r.error().message().c_str());
-//       return nullptr;
-//     }
-//   }
-// };
-
-// REGISTER_MODULE(Net, IPUNetCreator);
 static std::unique_ptr<Net> Create(const Value& args) {
   auto p = std::make_unique<IPUNet>();
   if (auto r = p->Init(args)) {
