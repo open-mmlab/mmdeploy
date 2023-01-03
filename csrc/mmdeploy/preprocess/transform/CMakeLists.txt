@@ -5,10 +5,11 @@ project(mmdeploy_transform)
 set(SRCS
         collect.cpp
         compose.cpp
-        crop.cpp
+        center_crop.cpp
         three_crop.cpp
         ten_crop.cpp
         image2tensor.cpp
+        letter_resize.cpp
         default_format_bundle.cpp
         load.cpp
         normalize.cpp
@@ -18,6 +19,7 @@ set(SRCS
         tracer.cpp
         lift.cpp)
 mmdeploy_add_module(${PROJECT_NAME} LIBRARY "${SRCS}")
+target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy_operation)
 target_include_directories(
         ${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/preprocess>)
 add_library(mmdeploy::transform ALIAS ${PROJECT_NAME})

@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import glob
 import os.path as osp
 
 
@@ -9,14 +8,14 @@ def get_ops_path() -> str:
     Returns:
         str: A path of the torchscript extension library.
     """
-    wildcard = osp.abspath(
-        osp.join(
-            osp.dirname(__file__),
-            '../../../build/lib/libmmdeploy_torchscript_ops.so'))
-
-    paths = glob.glob(wildcard)
-    lib_path = paths[0] if len(paths) > 0 else ''
-    return lib_path
+    from mmdeploy.utils import get_file_path
+    candidates = [
+        '../../lib/libmmdeploy_torchscript_ops.so',
+        '../../lib/mmdeploy_torchscript_ops.dll',
+        '../../../build/lib/libmmdeploy_torchscript_ops.so',
+        '../../../build/bin/*/mmdeploy_torchscript_ops.dll'
+    ]
+    return get_file_path(osp.dirname(__file__), candidates)
 
 
 def ops_available() -> bool:

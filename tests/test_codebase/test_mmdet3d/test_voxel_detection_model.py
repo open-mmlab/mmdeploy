@@ -50,6 +50,10 @@ class TestVoxelDetectionModel:
             deploy_cfg=deploy_cfg,
             model_cfg=model_cfg)
 
+    @classmethod
+    def teardown_class(cls):
+        cls.wrapper.recover()
+
     @pytest.mark.skipif(
         reason='Only support GPU test',
         condition=not torch.cuda.is_available())

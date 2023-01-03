@@ -13,13 +13,13 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 
 @mark(
     'detector_forward', inputs=['input'], outputs=['dets', 'labels', 'masks'])
-def __forward_impl(ctx, self, img, img_metas=None, **kwargs):
+def __forward_impl(self, img, img_metas=None, **kwargs):
     ...
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.detectors.base.BaseDetector.forward')
-def base_detector__forward(ctx, self, img, img_metas=None, **kwargs):
+def base_detector__forward(self, img, img_metas=None, **kwargs):
     ...
     # call the mark function
     return __forward_impl(...)
@@ -32,8 +32,7 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.YOLOV3Head.get_bboxes')
-def yolov3_head__get_bboxes(ctx,
-                            self,
+def yolov3_head__get_bboxes(self,
                             pred_maps,
                             img_metas,
                             cfg=None,
@@ -66,7 +65,8 @@ partition_config = dict(
         dict(
             save_file='yolov3.onnx', # filename to save the partitioned onnx model
             start=['detector_forward:input'], # [mark_name:input/output, ...]
-            end=['yolo_head:input'])  # [mark_name:input/output, ...]
+            end=['yolo_head:input'],  # [mark_name:input/output, ...]
+            output_names=[f'pred_maps.{i}' for i in range(3)]) # output names
     ])
 
 ```

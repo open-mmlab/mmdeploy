@@ -82,7 +82,6 @@ class ONNXNMSop(torch.autograd.Function):
         Returns:
             NonMaxSuppression op for onnx.
         """
-
         if not sym_help._is_value(max_output_boxes_per_class):
             max_output_boxes_per_class = g.op(
                 'Constant',
@@ -354,8 +353,7 @@ def _multiclass_nms_single(boxes: Tensor,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.mmcv.ops.nms._multiclass_nms')
-def multiclass_nms__default(ctx,
-                            boxes: Tensor,
+def multiclass_nms__default(boxes: Tensor,
                             scores: Tensor,
                             max_output_boxes_per_class: int = 1000,
                             iou_threshold: float = 0.5,
@@ -388,6 +386,7 @@ def multiclass_nms__default(ctx,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
             and `labels` of shape [N, num_det].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     batch_size = boxes.size(0)
     if not is_dynamic_batch(deploy_cfg) and batch_size == 1:
@@ -414,8 +413,7 @@ def multiclass_nms__default(ctx,
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.mmcv.ops.nms._multiclass_nms', backend='tensorrt')
-def multiclass_nms_static(ctx,
-                          boxes: Tensor,
+def multiclass_nms_static(boxes: Tensor,
                           scores: Tensor,
                           max_output_boxes_per_class: int = 1000,
                           iou_threshold: float = 0.5,
@@ -479,21 +477,43 @@ def multiclass_nms_static(ctx,
     'multiclass_nms',
     inputs=['boxes', 'scores'],
     outputs=['dets', 'labels', 'index'])
-def multiclass_nms(*args, nms_type='nms', **kwargs):
+def multiclass_nms(boxes: Tensor,
+                   scores: Tensor,
+                   max_output_boxes_per_class: int = 1000,
+                   iou_threshold: float = 0.5,
+                   score_threshold: float = 0.05,
+                   pre_top_k: int = -1,
+                   keep_top_k: int = -1,
+                   output_index: bool = False,
+                   nms_type='nms'):
     """Apis for multiclass nms."""
     if nms_type == 'nms':
-        return _multiclass_nms(*args, **kwargs)
+        return _multiclass_nms(
+            boxes,
+            scores,
+            max_output_boxes_per_class=max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=pre_top_k,
+            keep_top_k=keep_top_k,
+            output_index=output_index)
     elif nms_type == 'nms_rotated':
-        return multiclass_nms_rotated(*args, **kwargs)
+        return multiclass_nms_rotated(
+            boxes,
+            scores,
+            max_output_boxes_per_class=max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=pre_top_k,
+            keep_top_k=keep_top_k)
     else:
         raise NotImplementedError(f'Unsupported nms type: {nms_type}.')
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms',
     backend=Backend.COREML.value)
-def multiclass_nms__coreml(ctx,
-                           boxes: Tensor,
+def multiclass_nms__coreml(boxes: Tensor,
                            scores: Tensor,
                            max_output_boxes_per_class: int = 1000,
                            iou_threshold: float = 0.5,
@@ -554,10 +574,8 @@ def multiclass_nms__coreml(ctx,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
-    ir=IR.TORCHSCRIPT)
-def multiclass_nms__torchscript(ctx,
-                                boxes: Tensor,
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms', ir=IR.TORCHSCRIPT)
+def multiclass_nms__torchscript(boxes: Tensor,
                                 scores: Tensor,
                                 max_output_boxes_per_class: int = 1000,
                                 iou_threshold: float = 0.5,
@@ -657,10 +675,8 @@ class AscendBatchNMSOp(torch.autograd.Function):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmcv.ops.nms.bbox_nms._multiclass_nms',
-    backend='ascend')
-def multiclass_nms__ascend(ctx,
-                           boxes: Tensor,
+    func_name='mmdeploy.mmcv.ops.nms._multiclass_nms', backend='ascend')
+def multiclass_nms__ascend(boxes: Tensor,
                            scores: Tensor,
                            max_output_boxes_per_class: int = 1000,
                            iou_threshold: float = 0.5,

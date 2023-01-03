@@ -15,7 +15,10 @@ def get_library_version(lib):
     """
     try:
         lib = importlib.import_module(lib)
-        version = lib.__version__
+        if hasattr(lib, '__version__'):
+            version = lib.__version__
+        else:
+            version = None
     except Exception:
         version = None
 
@@ -41,7 +44,7 @@ def get_backend_version():
     Returns:
         Dict: The name and the version of some supported backend.
     """
-    backend_library_list = ['tensorrt', 'onnxruntime', 'ncnn']
+    backend_library_list = ['tensorrt', 'onnxruntime', 'ncnn', 'tvm']
     version_dict = dict()
     for backend in backend_library_list:
         version_dict[backend] = get_library_version(backend)

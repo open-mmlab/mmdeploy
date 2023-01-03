@@ -170,18 +170,25 @@ class PoseDetectionTask(BaseTask):
             cfg_options=cfg_options)
         return model
 
-    def build_backend_model(self,
-                            model_files: Sequence[str] = None,
-                            **kwargs) -> torch.nn.Module:
+    def build_backend_model(
+            self,
+            model_files: Sequence[str] = None,
+            data_preprocessor_updater: Optional[Callable] = None,
+            **kwargs) -> torch.nn.Module:
         """build backend model.
 
         Args:
             model_files (Sequence[str]): Input model files. Default is None.
+            data_preprocessor_updater (Callable | None): A function to update
+                the data_preprocessor. Defaults to None.
+
         Returns:
             nn.Module: An initialized backend model.
         """
         from .pose_detection_model import build_pose_detection_model
         data_preprocessor = self.model_cfg.model.data_preprocessor
+        if data_preprocessor_updater is not None:
+            data_preprocessor = data_preprocessor_updater(data_preprocessor)
         model = build_pose_detection_model(
             model_files,
             self.model_cfg,

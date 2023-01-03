@@ -66,9 +66,12 @@ def process_model_config(model_cfg: Config,
 
     for i, transform in enumerate(pipeline):
         # for static exporting
-        if input_shape is not None and transform.type == 'Resize':
-            pipeline[i].keep_ratio = False
-            pipeline[i].scale = tuple(input_shape)
+        if input_shape is not None:
+            if transform.type == 'Resize':
+                pipeline[i].keep_ratio = False
+                pipeline[i].scale = tuple(input_shape)
+            if transform.type in ('YOLOv5KeepRatioResize', 'LetterResize'):
+                pipeline[i].scale = tuple(input_shape)
 
     pipeline = [
         transform for transform in pipeline
@@ -128,13 +131,17 @@ class ObjectDetectionTask(BaseTask):
                  device: str) -> None:
         super().__init__(model_cfg, deploy_cfg, device)
 
-    def build_backend_model(self,
-                            model_files: Optional[str] = None,
-                            **kwargs) -> torch.nn.Module:
+    def build_backend_model(
+            self,
+            model_files: Optional[str] = None,
+            data_preprocessor_updater: Optional[Callable] = None,
+            **kwargs) -> torch.nn.Module:
         """Initialize backend model.
 
         Args:
             model_files (Sequence[str]): Input model files.
+            data_preprocessor_updater (Callable | None): A function to update
+                the data_preprocessor. Defaults to None.
 
         Returns:
             nn.Module: An initialized backend model.
@@ -143,6 +150,8 @@ class ObjectDetectionTask(BaseTask):
 
         data_preprocessor = deepcopy(
             self.model_cfg.model.get('data_preprocessor', {}))
+        if data_preprocessor_updater is not None:
+            data_preprocessor = data_preprocessor_updater(data_preprocessor)
         data_preprocessor.setdefault('type', 'mmdet.DetDataPreprocessor')
 
         model = build_object_detection_model(
@@ -240,7 +249,7 @@ class ObjectDetectionTask(BaseTask):
         meta_keys = [
             'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
             'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
-            'valid_ratio'
+            'valid_ratio', 'pad_param'
         ]
         # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
         for i, transform in enumerate(pipeline):
@@ -257,7 +266,7 @@ class ObjectDetectionTask(BaseTask):
             and 'Annotation' not in item['type']
         ]
         for i, transform in enumerate(transforms):
-            if transform['type'] == 'PackDetInputs':
+            if 'PackDetInputs' in transform['type']:
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))
@@ -265,6 +274,11 @@ class ObjectDetectionTask(BaseTask):
                 transforms[i]['type'] = 'Collect'
             if transform['type'] == 'Resize':
                 transforms[i]['size'] = transforms[i].pop('scale')
+        if self.codebase.value == 'mmyolo':
+            transforms = [
+                item for item in pipeline
+                if item['type'] not in ('ToGray', 'YOLOv5KeepRatioResize')
+            ]
 
         data_preprocessor = model_cfg.model.data_preprocessor
 
@@ -303,7 +317,9 @@ class ObjectDetectionTask(BaseTask):
                 bbox_head = self.model_cfg.model.bbox_head
                 type = bbox_head.type
                 params['anchor_generator'] = bbox_head.get(
-                    'anchor_generator', None)
+                    'anchor_generator', {})
+                params['anchor_generator'].update(
+                    bbox_head.get('prior_generator', {}))
             else:  # default using base_dense_head
                 type = 'BaseDenseHead'
         return dict(type=type, params=params)

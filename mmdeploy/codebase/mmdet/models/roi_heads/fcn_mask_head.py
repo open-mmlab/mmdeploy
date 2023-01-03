@@ -14,8 +14,7 @@ from mmdeploy.utils import Backend, get_backend
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.roi_heads.'
     'mask_heads.fcn_mask_head.FCNMaskHead.predict_by_feat')
-def fcn_mask_head__predict_by_feat(ctx,
-                                   self,
+def fcn_mask_head__predict_by_feat(self,
                                    mask_preds: Tuple[Tensor],
                                    results_list: List[Tensor],
                                    batch_img_metas: List[dict],
@@ -48,6 +47,7 @@ def fcn_mask_head__predict_by_feat(ctx,
                 (num_instances, ).
             - masks (Tensor): Has a shape (num_instances, H, W).
     """
+    ctx = FUNCTION_REWRITER.get_context()
     ori_shape = batch_img_metas[0]['img_shape']
     dets, det_labels = results_list
     dets = dets.view(-1, 5)
@@ -64,7 +64,8 @@ def fcn_mask_head__predict_by_feat(ctx,
     # grid sample is not supported by most engine
     # so we add a flag to disable it.
     mmdet_params = get_post_processing_params(ctx.cfg)
-    export_postprocess_mask = mmdet_params.get('export_postprocess_mask', True)
+    export_postprocess_mask = mmdet_params.get('export_postprocess_mask',
+                                               False)
     if not export_postprocess_mask:
         return mask_pred
 

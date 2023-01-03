@@ -4,11 +4,7 @@ from typing import Optional, Union
 
 from mmengine import Config
 
-from mmdeploy.core import patch_model
-from mmdeploy.utils import (IR, cfg_apply_marks, get_backend, get_ir_config,
-                            load_config)
 from .core import PIPELINE_MANAGER, no_mp
-from .utils import create_calib_input_data as create_calib_input_data_impl
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -34,6 +30,11 @@ def create_calib_input_data(calib_file: str,
         dataset_type (str, optional): The dataset type. Defaults to 'val'.
         device (str, optional): Device to create dataset. Defaults to 'cpu'.
     """
+
+    from mmdeploy.core import patch_model
+    from mmdeploy.utils import (IR, cfg_apply_marks, get_backend,
+                                get_ir_config, load_config)
+    from .utils import create_calib_input_data as create_calib_input_data_impl
     with no_mp():
         if dataset_cfg is None:
             dataset_cfg = model_cfg

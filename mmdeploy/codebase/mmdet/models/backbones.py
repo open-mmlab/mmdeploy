@@ -7,7 +7,7 @@ from mmdeploy.utils import get_common_config
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.csp_darknet.Focus.forward')
-def focus__forward__default(ctx, self, x):
+def focus__forward__default(self, x):
     """Rewrite forward function of Focus class.
 
     Replace slice with transpose.
@@ -27,7 +27,7 @@ def focus__forward__default(ctx, self, x):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.csp_darknet.Focus.forward',
     backend='ncnn')
-def focus__forward__ncnn(ctx, self, x):
+def focus__forward__ncnn(self, x):
     """Rewrite forward function of Focus class for ncnn.
 
     Focus width and height information into channel space. ncnn does not
@@ -46,7 +46,7 @@ def focus__forward__ncnn(ctx, self, x):
 
     x = x.reshape(batch_size, c * h, 1, w)
     _b, _c, _h, _w = x.shape
-    g = _c // 2
+    g = torch.div(_c, 2, rounding_mode='floor')
     # fuse to ncnn's shufflechannel
     x = x.view(_b, g, 2, _h, _w)
     x = torch.transpose(x, 1, 2).contiguous()
@@ -55,13 +55,14 @@ def focus__forward__ncnn(ctx, self, x):
     x = x.reshape(_b, c * h * w, 1, 1)
 
     _b, _c, _h, _w = x.shape
-    g = _c // 2
+    g = torch.div(_c, 2, rounding_mode='floor')
     # fuse to ncnn's shufflechannel
     x = x.view(_b, g, 2, _h, _w)
     x = torch.transpose(x, 1, 2).contiguous()
     x = x.view(_b, -1, _h, _w)
 
-    x = x.reshape(_b, c * 4, h // 2, w // 2)
+    x = x.reshape(_b, c * 4, torch.div(h, 2, rounding_mode='floor'),
+                  torch.div(w, 2, rounding_mode='floor'))
 
     return self.conv(x)
 
@@ -69,7 +70,7 @@ def focus__forward__ncnn(ctx, self, x):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.swin.WindowMSA.forward',
     backend='tensorrt')
-def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
+def windowmsa__forward__tensorrt(self, x, mask=None):
     """Rewrite forward function of WindowMSA class for TensorRT.
 
     1. replace Gather operation of qkv with split.
@@ -80,6 +81,7 @@ def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
         mask (tensor | None, Optional): mask with shape of (num_windows,
             Wh*Ww, Wh*Ww), value should be between (-inf, 0].
     """
+    ctx = FUNCTION_REWRITER.get_context()
     B, N, C = x.shape
     qkv = self.qkv(x).reshape(B, N, 3, self.num_heads,
                               -1).permute(2, 0, 3, 1, 4).contiguous()
@@ -129,7 +131,7 @@ def windowmsa__forward__tensorrt(ctx, self, x, mask=None):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.swin.ShiftWindowMSA.window_reverse',
     backend='tensorrt')
-def shift_window_msa__window_reverse__tensorrt(ctx, self, windows, H, W):
+def shift_window_msa__window_reverse__tensorrt(self, windows, H, W):
     """Rewrite window_reverse function of ShiftWindowMSA class for TensorRT.
     For TensorRT, seems radical shape transformations are not allowed. Replace
     them with soft ones.
@@ -155,7 +157,7 @@ def shift_window_msa__window_reverse__tensorrt(ctx, self, windows, H, W):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.swin.ShiftWindowMSA.window_partition',
     backend='tensorrt')
-def shift_window_msa__window_partition__tensorrt(ctx, self, x):
+def shift_window_msa__window_partition__tensorrt(self, x):
     """Rewrite window_partition function of ShiftWindowMSA class for TensorRT.
     For TensorRT, seems radical shape transformations are not allowed. Replace
     them with soft ones.
@@ -176,7 +178,7 @@ def shift_window_msa__window_partition__tensorrt(ctx, self, x):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.backbones.swin.ShiftWindowMSA.forward')
-def shift_window_msa__forward__default(ctx, self, query, hw_shape):
+def shift_window_msa__forward__default(self, query, hw_shape):
     """Rewrite forward function of ShiftWindowMSA class.
 
     1. replace dynamic padding with static padding and dynamic slice.
@@ -197,8 +199,12 @@ def shift_window_msa__forward__default(ctx, self, query, hw_shape):
         [query,
          query.new_zeros(B, C, self.window_size, query.shape[-1])],
         dim=-2)
-    slice_h = (H + self.window_size - 1) // self.window_size * self.window_size
-    slice_w = (W + self.window_size - 1) // self.window_size * self.window_size
+    slice_h = torch.div(
+        (H + self.window_size - 1), self.window_size,
+        rounding_mode='floor') * self.window_size
+    slice_w = torch.div(
+        (W + self.window_size - 1), self.window_size,
+        rounding_mode='floor') * self.window_size
     query = query[:, :, :slice_h, :slice_w]
     query = query.permute(0, 2, 3, 1).contiguous()
     H_pad, W_pad = query.shape[1], query.shape[2]

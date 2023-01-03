@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os.path as osp
 import tempfile
 
 import onnx
@@ -6,6 +7,7 @@ import pytest
 import torch
 from mmengine import Config
 
+from mmdeploy.apis.onnx import export
 from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker, check_backend,
@@ -38,16 +40,15 @@ def test_ONNXNMSop(iou_threshold, score_threshold, max_output_boxes_per_class):
     wrapped_model = WrapFunction(wrapped_function).eval()
     result = wrapped_model(boxes, scores)
     assert result is not None
-    onnx_file_path = tempfile.NamedTemporaryFile().name
-    with RewriterContext({}, opset=11), torch.no_grad():
-        torch.onnx.export(
-            wrapped_model, (boxes, scores),
-            onnx_file_path,
-            export_params=True,
-            keep_initializers_as_inputs=True,
-            input_names=['boxes', 'scores'],
-            output_names=['result'],
-            opset_version=11)
+    onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    onnx_file_prefix = osp.splitext(onnx_file_path)[0]
+    export(
+        wrapped_model, (boxes, scores),
+        onnx_file_prefix,
+        keep_initializers_as_inputs=False,
+        input_names=['boxes', 'scores'],
+        output_names=['result'],
+        opset_version=11)
     model = onnx.load(onnx_file_path)
     assert model.graph.node[3].op_type == 'NonMaxSuppression'
 
@@ -220,3 +221,25 @@ def test_multiclass_nms__ascend():
 
     assert rewrite_outputs is not None, 'Got unexpected rewrite '\
         'outputs: {}'.format(rewrite_outputs)
+
+
+def test_modulated_deform_conv():
+    check_backend(Backend.TORCHSCRIPT)
+    from mmdeploy.backend.torchscript import ops_available
+
+    if not ops_available():
+        pytest.skip('torchscript custom ops is required.')
+
+    from mmcv.ops import ModulatedDeformConv2dPack
+
+    from mmdeploy.apis.torch_jit import trace
+
+    model = ModulatedDeformConv2dPack(3, 1, 1).eval()
+    x = torch.rand(1, 3, 16, 16)
+
+    jit_model = trace(model, x, None, backend='torchscript')
+
+    out = model(x)
+    jit_out = jit_model(x)
+
+    torch.testing.assert_allclose(out, jit_out)

@@ -4,13 +4,16 @@
 #include <stdio.h>
 
 namespace mmdeploy {
+namespace mmaction {
 namespace cuda {
 
 template <typename T>
 __global__ void transpose(const T* src, const int* src_strides, T* dst, const int* dst_strides,
                           int ndim, int total) {
   int u = blockIdx.x * blockDim.x + threadIdx.x;
-  if (u >= total) return;
+  if (u >= total) {
+    return;
+  }
 
   int remaining = u;
   int v = 0;
@@ -35,4 +38,5 @@ template void Transpose<float>(const float* src, const int* src_strides, float* 
                                const int* dst_strides, int ndim, int total, cudaStream_t stream);
 
 }  // namespace cuda
+}  // namespace mmaction
 }  // namespace mmdeploy

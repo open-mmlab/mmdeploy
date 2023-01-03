@@ -58,6 +58,7 @@ python ./tools/deploy.py \
 - `--log-level` : 设置日记的等级，选项包括`'CRITICAL'， 'FATAL'， 'ERROR'， 'WARN'， 'WARNING'， 'INFO'， 'DEBUG'， 'NOTSET'`。 默认是`INFO`。
 - `--show` : 是否显示检测的结果。
 - `--dump-info` : 是否输出 SDK 信息。
+- `--custom-imports`: 导入自定义模块。
 
 ### 如何查找pytorch模型对应的部署配置文件
 

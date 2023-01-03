@@ -4,8 +4,7 @@ from mmdeploy.core import SYMBOLIC_REWRITER
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.deform_conv.DeformConv2dFunction')
-def deform_conv__default(ctx,
-                         g,
+def deform_conv__default(g,
                          input,
                          offset,
                          weight,
@@ -31,8 +30,7 @@ def deform_conv__default(ctx,
 
 @SYMBOLIC_REWRITER.register_symbolic(
     'mmcv.ops.deform_conv.DeformConv2dFunction', backend='openvino')
-def deform_conv_openvino(ctx,
-                         g,
+def deform_conv_openvino(g,
                          input,
                          offset,
                          weight,

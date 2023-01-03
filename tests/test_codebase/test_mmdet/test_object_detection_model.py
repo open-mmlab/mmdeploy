@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from typing import Sequence
+
 import pytest
 import torch
 from mmengine import Config
@@ -13,7 +15,7 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 def assert_det_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, tuple)
+    assert isinstance(results, Sequence)
     assert len(results) == 2
     assert results[0].shape[0] == results[1].shape[0]
     assert results[0].shape[1] == results[1].shape[1]
@@ -21,7 +23,7 @@ def assert_det_results(results, module_name: str = 'model'):
 
 def assert_forward_results(results, module_name: str = 'model'):
     assert results is not None, f'failed to get output using {module_name}'
-    assert isinstance(results, list)
+    assert isinstance(results, Sequence)
     assert len(results) == 1
     assert isinstance(results[0].pred_instances, InstanceData)
     assert results[0].pred_instances.bboxes.shape[-1] == 4
@@ -226,7 +228,9 @@ def test_build_object_detection_model(partition_type):
                 type='mmdet', post_processing=post_processing)))
     if partition_type:
         deploy_cfg.partition_config = dict(
-            apply_marks=True, type=partition_type)
+            apply_marks=True,
+            type=partition_type,
+            partition_cfg=[dict(output_names=[])])
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})

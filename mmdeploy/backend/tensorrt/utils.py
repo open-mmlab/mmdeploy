@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import sys
-from typing import Dict, Optional, Sequence, Union
+from typing import Any, Dict, Optional, Sequence, Union
 
 import onnx
 import tensorrt as trt
@@ -13,28 +13,33 @@ from mmdeploy.utils import get_root_logger
 from .init_plugins import load_tensorrt_plugin
 
 
-def save(engine: trt.ICudaEngine, path: str) -> None:
+def save(engine: Any, path: str) -> None:
     """Serialize TensorRT engine to disk.
 
     Args:
-        engine (tensorrt.ICudaEngine): TensorRT engine to be serialized.
+        engine (Any): TensorRT engine to be serialized.
         path (str): The absolute disk path to write the engine.
     """
     with open(path, mode='wb') as f:
-        f.write(bytearray(engine.serialize()))
+        if isinstance(engine, trt.ICudaEngine):
+            engine = engine.serialize()
+        f.write(bytearray(engine))
 
 
-def load(path: str) -> trt.ICudaEngine:
+def load(path: str, allocator: Optional[Any] = None) -> trt.ICudaEngine:
     """Deserialize TensorRT engine from disk.
 
     Args:
         path (str): The disk path to read the engine.
+        allocator (Any): gpu allocator
 
     Returns:
         tensorrt.ICudaEngine: The TensorRT engine loaded from disk.
     """
     load_tensorrt_plugin()
     with trt.Logger() as logger, trt.Runtime(logger) as runtime:
+        if allocator is not None:
+            runtime.gpu_allocator = allocator
         with open(path, mode='rb') as f:
             engine_bytes = f.read()
         trt.init_libnvinfer_plugins(logger, namespace='')
@@ -135,19 +140,23 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             })
     """
 
-    import os
-    old_cuda_device = os.environ.get('CUDA_DEVICE', None)
-    os.environ['CUDA_DEVICE'] = str(device_id)
-    import pycuda.autoinit  # noqa:F401
-    if old_cuda_device is not None:
-        os.environ['CUDA_DEVICE'] = old_cuda_device
-    else:
-        os.environ.pop('CUDA_DEVICE')
+    if device_id != 0:
+        import os
+        old_cuda_device = os.environ.get('CUDA_DEVICE', None)
+        os.environ['CUDA_DEVICE'] = str(device_id)
+        import pycuda.autoinit  # noqa:F401
+        if old_cuda_device is not None:
+            os.environ['CUDA_DEVICE'] = old_cuda_device
+        else:
+            os.environ.pop('CUDA_DEVICE')
 
     load_tensorrt_plugin()
     # create builder and network
     logger = trt.Logger(log_level)
     builder = trt.Builder(logger)
+
+    # TODO: use TorchAllocator as builder.gpu_allocator
+
     EXPLICIT_BATCH = 1 << (int)(
         trt.NetworkDefinitionCreationFlag.EXPLICIT_BATCH)
     network = builder.create_network(EXPLICIT_BATCH)
@@ -220,7 +229,10 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             builder.int8_calibrator = config.int8_calibrator
 
     # create engine
-    engine = builder.build_engine(network, config)
+    if hasattr(builder, 'build_serialized_network'):
+        engine = builder.build_serialized_network(network, config)
+    else:
+        engine = builder.build_engine(network, config)
 
     assert engine is not None, 'Failed to create TensorRT engine'
 

@@ -8,7 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 @FUNCTION_REWRITER.register_rewriter(
     'mmrotate.models.task_modules.coders.gliding_vertex_coder'
     '.GVFixCoder.decode')
-def gvfixcoder__decode(ctx, self, hboxes, fix_deltas):
+def gvfixcoder__decode(self, hboxes, fix_deltas):
     """Rewriter for GVFixCoder decode, support more dimension input."""
 
     assert hboxes.size(

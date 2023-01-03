@@ -35,6 +35,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    03-benchmark/supported_models.md
    03-benchmark/benchmark.md
    03-benchmark/benchmark_edge.md
+   03-benchmark/benchmark_tvm.md
    03-benchmark/quantization.md
 
 .. toctree::
@@ -49,6 +50,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmdet3d.md
    04-supported-codebases/mmrotate.md
+   04-supported-codebases/mmaction2.md
 
 .. toctree::
    :maxdepth: 1
@@ -62,6 +64,8 @@ You can switch between Chinese and English documents in the lower-left corner of
    05-supported-backends/tensorrt.md
    05-supported-backends/torchscript.md
    05-supported-backends/rknn.md
+   05-supported-backends/tvm.md
+   05-supported-backends/coreml.md
 
 .. toctree::
    :maxdepth: 1

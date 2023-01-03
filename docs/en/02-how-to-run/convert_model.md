@@ -43,6 +43,7 @@ python ./tools/deploy.py \
 - `--log-level` : To set log level which in `'CRITICAL', 'FATAL', 'ERROR', 'WARN', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'`. If not specified, it will be set to `INFO`.
 - `--show` : Whether to show detection outputs.
 - `--dump-info` : Whether to output information for SDK.
+- `--custom-imports`: Import custom modules.
 
 ### How to find the corresponding deployment config of a PyTorch model
 

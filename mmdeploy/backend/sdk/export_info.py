@@ -7,12 +7,14 @@ import mmengine
 
 from mmdeploy.apis import build_task_processor
 from mmdeploy.utils import (Backend, Task, get_backend, get_codebase,
-                            get_ir_config, get_precision, get_root_logger,
-                            get_task_type, is_dynamic_batch, load_config)
+                            get_ir_config, get_partition_config, get_precision,
+                            get_root_logger, get_task_type, is_dynamic_batch,
+                            load_config)
+from mmdeploy.utils.config_utils import get_backend_config
 from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
 
 
-def get_mmdpeloy_version() -> str:
+def get_mmdeploy_version() -> str:
     """Return the version of MMDeploy."""
     import mmdeploy
     version = mmdeploy.__version__
@@ -68,7 +70,7 @@ def get_model_name_customs(deploy_cfg: mmengine.Config,
 def get_models(deploy_cfg: Union[str, mmengine.Config],
                model_cfg: Union[str, mmengine.Config], work_dir: str,
                device: str) -> List:
-    """Get the output model informantion for deploy.json.
+    """Get the output model information for deploy.json.
 
     Args:
         deploy_cfg (mmengine.Config): Deploy config dict.
@@ -78,11 +80,14 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
 
     Return:
         list[dict]: The list contains dicts composed of the model name, net,
-            weghts, backend, precision batchsize and dynamic_shape.
+            weight, backend, precision batchsize and dynamic_shape.
     """
     name, _ = get_model_name_customs(deploy_cfg, model_cfg, work_dir, device)
     precision = 'FP32'
     ir_name = get_ir_config(deploy_cfg)['save_file']
+    if get_partition_config(deploy_cfg) is not None:
+        ir_name = get_partition_config(
+            deploy_cfg)['partition_cfg'][0]['save_file']
     weights = ''
     backend = get_backend(deploy_cfg=deploy_cfg).value
 
@@ -98,8 +103,34 @@ def get_models(deploy_cfg: Union[str, mmengine.Config],
         pplnn=lambda file: re.sub(r'\.[a-z]+', '.json', file),
         openvino=lambda file: re.sub(r'\.[a-z]+', '.bin', file),
         ncnn=lambda file: re.sub(r'\.[a-z]+', '.bin', file))
-    net = backend_net.get(backend, lambda x: x)(ir_name)
-    weights = backend_weights.get(backend, lambda x: weights)(ir_name)
+    if backend != Backend.TVM.value:
+        net = backend_net.get(backend, lambda x: x)(ir_name)
+        weights = backend_weights.get(backend, lambda x: weights)(ir_name)
+    else:
+        # TODO: add this to backend manager
+        import os.path as osp
+
+        from mmdeploy.backend.tvm import get_library_ext
+
+        def _replace_suffix(file_name: str, dst_suffix: str) -> str:
+            return re.sub(r'\.[a-z]+', dst_suffix, file_name)
+
+        ext = get_library_ext()
+        net = _replace_suffix(ir_name, ext)
+        # get input and output name
+        ir_cfg = get_ir_config(deploy_cfg)
+        backend_cfg = get_backend_config(deploy_cfg)
+        input_names = ir_cfg['input_names']
+        output_names = ir_cfg['output_names']
+        weights = _replace_suffix(ir_name, '.txt')
+        weights_path = osp.join(work_dir, weights)
+        bytecode_path = _replace_suffix(ir_name, '.code')
+        with open(weights_path, 'w') as f:
+            f.write(','.join(input_names) + '\n')
+            f.write(','.join(output_names) + '\n')
+            use_vm = backend_cfg.model_inputs[0].get('use_vm', False)
+            if use_vm:
+                f.write(bytecode_path + '\n')
 
     precision = get_precision(deploy_cfg)
     dynamic_shape = is_dynamic_batch(deploy_cfg, input_name='input')
@@ -134,6 +165,9 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     backend = get_backend(deploy_cfg=deploy_cfg)
     if backend in (Backend.TORCHSCRIPT, Backend.RKNN):
         output_names = ir_config.get('output_names', None)
+        if get_partition_config(deploy_cfg) is not None:
+            output_names = get_partition_config(
+                deploy_cfg)['partition_cfg'][0]['output_names']
         input_map = dict(img='#0')
         output_map = {name: f'#{i}' for i, name in enumerate(output_names)}
     else:
@@ -141,10 +175,12 @@ def get_inference_info(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         input_name = input_names[0] if input_names else 'input'
         input_map = dict(img=input_name)
         output_map = {}
+    is_batched = is_dynamic_batch(deploy_cfg, input_name=input_map['img'])
     return_dict = dict(
         name=name,
         type='Task',
         module='Net',
+        is_batched=is_batched,
         input=['prep_output'],
         output=['infer_output'],
         input_map=input_map,
@@ -165,6 +201,8 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         for transform in transforms:
             if transform['type'] == 'Normalize':
                 transform['to_float'] = False
+                transform['mean'] = [0, 0, 0]
+                transform['std'] = [1, 1, 1]
     if transforms[0]['type'] != 'Lift':
         assert transforms[0]['type'] == 'LoadImageFromFile', \
             'The first item type of pipeline should be LoadImageFromFile'
@@ -193,10 +231,12 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     task_processor = build_task_processor(
         model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
     post_processor = task_processor.get_postprocess(work_dir)
+    module = get_codebase(deploy_cfg).value
+    module = 'mmdet' if module == 'mmyolo' else module
 
     return dict(
         type='Task',
-        module=get_codebase(deploy_cfg).value,
+        module=module,
         name='postprocess',
         component=post_processor['type'],
         params=post_processor.get('params', dict()),
@@ -221,7 +261,7 @@ def get_deploy(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     cls_name = task_map[task]['cls_name']
     _, customs = get_model_name_customs(
         deploy_cfg, model_cfg, work_dir=work_dir, device=device)
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     models = get_models(deploy_cfg, model_cfg, work_dir, device)
     return dict(version=version, task=cls_name, models=models, customs=customs)
 
@@ -272,7 +312,7 @@ def get_detail(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
         dict: Composed of version, codebase, codebase_config, onnx_config,
             backend_config and calib_config.
     """
-    version = get_mmdpeloy_version()
+    version = get_mmdeploy_version()
     codebase = get_task(deploy_cfg)
     codebase['pth'] = pth
     codebase['config'] = model_cfg.filename

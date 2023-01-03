@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import functools
 import inspect
+import types
 import warnings
 from abc import ABCMeta, abstractmethod
 from functools import wraps
@@ -326,6 +328,29 @@ class RewriterRegistry:
 
         return decorator
 
+    def remove_record(self, object: Any, filter_cb: Optional[Callable] = None):
+        """Remove record.
+
+        Args:
+            object (Any): The object to remove.
+            filter_cb (Callable): Check if the object need to be remove.
+                Defaults to None.
+        """
+        key_to_pop = []
+        for key, records in self._rewrite_records.items():
+            for rec in records:
+                if rec['_object'] == object:
+                    if filter_cb is not None:
+                        if filter_cb(rec):
+                            continue
+                    key_to_pop.append((key, rec))
+
+        for key, rec in key_to_pop:
+            records = self._rewrite_records[key]
+            records.remove(rec)
+            if len(records) == 0:
+                self._rewrite_records.pop(key)
+
 
 class ContextCaller:
     """A callable object used in RewriteContext.
@@ -342,8 +367,9 @@ class ContextCaller:
 
     Example:
         >>> @FUNCTION_REWRITER.register_rewriter(func_name='torch.add')
-        >>> def func(ctx, x, y):
+        >>> def func(x, y):
         >>>     # ctx is an instance of ContextCaller
+        >>>     ctx = FUNCTION_REWRITER.get_context()
         >>>     print(ctx.cfg)
         >>>     return x + y
     """
@@ -379,3 +405,61 @@ class ContextCaller:
             return self.func(self, *args, **kwargs)
 
         return wrapper
+
+
+def get_func_qualname(func: Callable) -> str:
+    """get function name."""
+    assert isinstance(func, Callable), f'{func} is not a Callable object.'
+    _func_name = None
+    if hasattr(func, '__qualname__'):
+        _func_name = f'{func.__module__}.{func.__qualname__}'
+    elif hasattr(func, '__class__'):
+        _func_name = func.__class__
+    else:
+        _func_name = str(func)
+    return _func_name
+
+
+def get_frame_func(top: int = 1) -> Callable:
+    """get func of frame."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
+
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    return func
+
+
+def get_frame_qualname(top: int = 1) -> str:
+    """get frame name."""
+    frameinfo = inspect.stack()[top]
+    frame = frameinfo.frame
+
+    g_vars = frame.f_globals
+    func_name = frameinfo.function
+    assert func_name in g_vars, \
+        f'Can not find function: {func_name} in global.'
+    func = g_vars[func_name]
+    module_name = inspect.getmodule(func).__name__
+
+    return f'{module_name}.{func_name}'
+
+
+def copy_function(f: types.FunctionType):
+    """Copy the function."""
+    # copy the global so we can get different func for different origin
+    glb = f.__globals__.copy()
+    name = f.__name__
+    g = types.FunctionType(
+        f.__code__,
+        glb,
+        name=name,
+        argdefs=f.__defaults__,
+        closure=f.__closure__)
+    g = functools.update_wrapper(g, f)
+    g.__kwdefaults__ = f.__kwdefaults__
+    glb[name] = g
+    return g

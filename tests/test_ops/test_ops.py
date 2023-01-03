@@ -769,17 +769,13 @@ def test_gather(backend,
     assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
          not installed.'
 
-    import numpy as np
-    import onnxruntime
-    session = onnxruntime.InferenceSession(gather_model.SerializeToString())
-    model_outputs = session.run(
-        output_names,
-        dict(
-            zip(input_names, [
-                np.array(data, dtype=np.float32),
-                np.array(indice[0], dtype=np.int64)
-            ])))
-    model_outputs = [model_output for model_output in model_outputs]
+    from mmdeploy.backend.onnxruntime import ORTWrapper
+    ort_model = ORTWrapper(
+        gather_model.SerializeToString(),
+        device='cpu',
+        output_names=output_names)
+    model_outputs = ort_model(dict(zip(input_names, [data, indice[0]])))
+    model_outputs = ort_model.output_to_list(model_outputs)
 
     ncnn_outputs = ncnn_model(
         dict(zip(input_names, [data.float(), indice.float()])))

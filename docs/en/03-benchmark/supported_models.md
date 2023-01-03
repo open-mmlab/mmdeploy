@@ -22,6 +22,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)                       | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)                                 | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
 | [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                       | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
+| [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)                                 | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)                        | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)                      | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)                   | MMClassification |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
