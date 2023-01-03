@@ -17,6 +17,11 @@ from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (IR, Backend, get_backend, get_dynamic_axes,
                             get_ir_config, get_onnx_config)
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
 
 def backend_checker(backend: Backend, require_plugin: bool = False):
     """A decorator which checks if a backend is available.
@@ -239,8 +244,7 @@ def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
         if isinstance(actual[i], (list, np.ndarray)):
             actual[i] = torch.tensor(actual[i])
         try:
-            torch.testing.assert_allclose(
-                actual[i], expected[i], rtol=1e-03, atol=1e-05)
+            torch_assert_close(actual[i], expected[i], rtol=1e-03, atol=1e-05)
         except AssertionError as error:
             if tolerate_small_mismatch:
                 assert '(0.00%)' in str(error), str(error)

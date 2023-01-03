@@ -9,6 +9,11 @@ from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend
 from mmdeploy.utils.test import WrapFunction, check_backend
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
 
 @pytest.mark.parametrize(
     'iou_threshold, score_threshold,max_output_boxes_per_class',
@@ -135,4 +140,4 @@ def test_modulated_deform_conv():
     out = model(x)
     jit_out = jit_model(x)
 
-    torch.testing.assert_allclose(out, jit_out)
+    torch_assert_close(out, jit_out)

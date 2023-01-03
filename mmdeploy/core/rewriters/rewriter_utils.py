@@ -326,6 +326,29 @@ class RewriterRegistry:
 
         return decorator
 
+    def remove_record(self, object: Any, filter_cb: Optional[Callable] = None):
+        """Remove record.
+
+        Args:
+            object (Any): The object to remove.
+            filter_cb (Callable): Check if the object need to be remove.
+                Defaults to None.
+        """
+        key_to_pop = []
+        for key, records in self._rewrite_records.items():
+            for rec in records:
+                if rec['_object'] == object:
+                    if filter_cb is not None:
+                        if filter_cb(rec):
+                            continue
+                    key_to_pop.append((key, rec))
+
+        for key, rec in key_to_pop:
+            records = self._rewrite_records[key]
+            records.remove(rec)
+            if len(records) == 0:
+                self._rewrite_records.pop(key)
+
 
 class ContextCaller:
     """A callable object used in RewriteContext.
