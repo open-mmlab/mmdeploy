@@ -35,6 +35,7 @@ class End2EndModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
+                 model_cfg: Union[str, Config] = None,
                  deploy_cfg: Union[str, Config] = None,
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
@@ -46,7 +47,17 @@ class End2EndModel(BaseBackendModel):
             backend_files=backend_files,
             device=device,
             **kwargs)
+        self.model_cfg = model_cfg
+        self.head = None
+        if model_cfg is not None:
+            self.head = self._get_head()
         self.device = device
+
+    def _get_head(self):
+        from mmcls.models import build_head
+        head_config = self.model_cfg['model']['head']
+        head = build_head(head_config)
+        return head
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -84,11 +95,38 @@ class End2EndModel(BaseBackendModel):
         cls_score = self.wrapper({self.input_name:
                                   inputs})[self.output_names[0]]
 
-        from mmcls.models.heads.cls_head import ClsHead
-        predict = ClsHead._get_predictions(
-            None, cls_score, data_samples=data_samples)
+        from mmcls.models.heads import MultiLabelClsHead
+        from mmcls.structures import ClsDataSample
+        pred_scores = cls_score
 
-        return predict
+        if self.head is None or not isinstance(self.head, MultiLabelClsHead):
+            pred_labels = pred_scores.argmax(dim=1, keepdim=True).detach()
+
+            if data_samples is not None:
+                for data_sample, score, label in zip(data_samples, pred_scores,
+                                                     pred_labels):
+                    data_sample.set_pred_score(score).set_pred_label(label)
+            else:
+                data_samples = []
+                for score, label in zip(pred_scores, pred_labels):
+                    data_samples.append(ClsDataSample().set_pred_score(
+                        score).set_pred_label(label))
+        else:
+            if data_samples is None:
+                data_samples = [
+                    ClsDataSample() for _ in range(cls_score.size(0))
+                ]
+
+            for data_sample, score in zip(data_samples, pred_scores):
+                if self.head.thr is not None:
+                    # a label is predicted positive if larger than thr
+                    label = torch.where(score >= self.head.thr)[0]
+                else:
+                    # top-k labels will be predicted positive for any example
+                    _, label = score.topk(self.head.topk)
+                data_sample.set_pred_score(score).set_pred_label(label)
+
+        return data_samples
 
 
 @__BACKEND_MODEL.register_module('sdk')
@@ -204,6 +242,7 @@ def build_classification_model(
             backend=backend,
             backend_files=model_files,
             device=device,
+            model_cfg=model_cfg,
             deploy_cfg=deploy_cfg,
             data_preprocessor=data_preprocessor,
             **kwargs))
