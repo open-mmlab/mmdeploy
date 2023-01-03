@@ -4,6 +4,7 @@ version: 2.1
 
 orbs:
   win: circleci/windows@4.1
+  codecov: codecov/codecov@3.2.3
 
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb
@@ -122,6 +123,7 @@ commands:
             coverage xml
             coverage report -m
             cd ..
+      - codecov/upload
 jobs:
   lint:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
