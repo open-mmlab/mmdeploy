@@ -207,3 +207,117 @@ jobs:
           env_vars: OS,PYTHON,CPLUS
           name: codecov-umbrella
           fail_ci_if_error: false
+
+  build_cuda102-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Install cuda
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cuda/cuda_v10.2_win10.zip -OutFile cuda_v10.2_win10.zip
+          Expand-Archive cuda_v10.2_win10.zip .
+          New-Item 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA' -ItemType Directory
+          Copy-Item 'v10.2\extras\visual_studio_integration\MSBuildExtensions\*' 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Msbuild\Microsoft\VC\v160\BuildCustomizations'
+          Copy-Item 'v10.2\extras\visual_studio_integration\MSBuildExtensions\*' 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Msbuild\Microsoft\VC\v170\BuildCustomizations'
+          Move-Item v10.2 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA'
+          echo "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CUDA_PATH_V10_2=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v10.2\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Install cudnn
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cudnn/cudnn-10.2-windows10-x64-v8.2.1.32.zip -OutFile cudnn-10.2-windows10-x64-v8.2.1.32.zip
+          Expand-Archive cudnn-10.2-windows10-x64-v8.2.1.32.zip .
+          echo "CUDNN_DIR=$pwd\CUDA" >> $env:GITHUB_ENV
+      - name: Install tensorrt
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/tensorrt/TensorRT-8.2.3.0.Windows10.x86_64.cuda-10.2.cudnn8.2.zip -OutFile TensorRT-8.2.3.0.Windows10.x86_64.cuda-10.2.cudnn8.2.zip
+          Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-10.2.cudnn8.2.zip .
+          echo "TENSORRT_DIR=$pwd\TensorRT-8.2.3.0" >> $env:GITHUB_ENV
+      - name: Install opencv
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/opencv/opencv-win-amd64-4.5.5-vc16.zip -OutFile opencv-win-amd64-4.5.5-vc16.zip
+          Expand-Archive opencv-win-amd64-4.5.5-vc16.zip .
+          echo "OPENCV_DIR=$pwd\opencv-4.5.5\x64\vc16\lib" >> $env:GITHUB_ENV
+      - name: Install pplcv
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv_cuda10.2.zip -OutFile pplcv_cuda10.2.zip
+          Expand-Archive pplcv_cuda10.2.zip pplcv
+          echo "PPLCV_DIR=$pwd\pplcv\lib\cmake\ppl" >> $env:GITHUB_ENV
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..  -A x64 -T v142 `
+            -DMMDEPLOY_SHARED_LIBS=OFF `
+            -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+            -DMMDEPLOY_BUILD_SDK=ON `
+            -DMMDEPLOY_TARGET_DEVICES='cuda' `
+            -DMMDEPLOY_TARGET_BACKENDS='trt' `
+            -DMMDEPLOY_CODEBASES='all' `
+            -Dpplcv_DIR="$env:PPLCV_DIR" `
+            -DOpenCV_DIR="$env:OPENCV_DIR" `
+            -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+            -DMMDEPLOY_BUILD_EXAMPLES=ON `
+            -DCUDNN_DIR="$env:CUDNN_DIR"
+          cmake --build . --config Release -- /m
+
+  build_cuda111-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Install cuda
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cuda/cuda_v11.1_win10.zip -OutFile cuda_v11.1_win10.zip
+          Expand-Archive cuda_v11.1_win10.zip .
+          New-Item 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA' -ItemType Directory
+          Copy-Item 'v11.1\extras\visual_studio_integration\MSBuildExtensions\*' 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Msbuild\Microsoft\VC\v160\BuildCustomizations'
+          Copy-Item 'v11.1\extras\visual_studio_integration\MSBuildExtensions\*' 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Msbuild\Microsoft\VC\v170\BuildCustomizations'
+          Move-Item v11.1 'C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA'
+          echo "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "CUDA_PATH_V11_1=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Install cudnn
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cudnn/cudnn-11.3-windows-x64-v8.2.1.32_2.zip -OutFile cudnn-11.3-windows-x64-v8.2.1.32_2.zip
+          Expand-Archive cudnn-11.3-windows-x64-v8.2.1.32_2.zip .
+          echo "CUDNN_DIR=$pwd\CUDA" >> $env:GITHUB_ENV
+      - name: Install tensorrt
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/tensorrt/TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip -OutFile TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip
+          Expand-Archive TensorRT-8.2.3.0.Windows10.x86_64.cuda-11.4.cudnn8.2.zip .
+          echo "TENSORRT_DIR=$pwd\TensorRT-8.2.3.0" >> $env:GITHUB_ENV
+      - name: Install opencv
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/opencv/opencv-win-amd64-4.5.5-vc16.zip -OutFile opencv-win-amd64-4.5.5-vc16.zip
+          Expand-Archive opencv-win-amd64-4.5.5-vc16.zip .
+          echo "OPENCV_DIR=$pwd\opencv-4.5.5\x64\vc16\lib" >> $env:GITHUB_ENV
+      - name: Install pplcv
+        run: |
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv_cuda11.0.zip -OutFile pplcv_cuda11.0.zip
+          Expand-Archive pplcv_cuda11.0.zip pplcv
+          echo "PPLCV_DIR=$pwd\pplcv\lib\cmake\ppl" >> $env:GITHUB_ENV
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake ..  -A x64 -T v142 `
+            -DMMDEPLOY_SHARED_LIBS=OFF `
+            -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+            -DMMDEPLOY_BUILD_SDK=ON `
+            -DMMDEPLOY_TARGET_DEVICES='cuda' `
+            -DMMDEPLOY_TARGET_BACKENDS='trt' `
+            -DMMDEPLOY_CODEBASES='all' `
+            -Dpplcv_DIR="$env:PPLCV_DIR" `
+            -DOpenCV_DIR="$env:OPENCV_DIR" `
+            -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+            -DMMDEPLOY_BUILD_EXAMPLES=ON `
+            -DCUDNN_DIR="$env:CUDNN_DIR"
+          cmake --build . --config Release -- /m
