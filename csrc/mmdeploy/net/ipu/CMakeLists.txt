@@ -3,7 +3,7 @@
 project(mmdeploy_ipu_net)
 
 find_package(model_runtime REQUIRED)
-# find_package(popef         REQUIRED)
+find_package(popef         REQUIRED)
 mmdeploy_add_module(${PROJECT_NAME} ipu_net.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${MODEL_RUNTIME_INCLUDE_DIR})

@@ -123,32 +123,20 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
        __all__ += ['onnx2ncnn', 'get_output_model_file']
    ```
 
-   Then add the codes about conversion to `tools/deploy.py` using these APIs if necessary.
+   Create a backend manager class which derive from `BackendManager`, implement its `to_backend` static method.
 
    **Example:**
 
    ```Python
-   # tools/deploy.py
-   # ...
-       elif backend == Backend.NCNN:
-           from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-           if not is_available_ncnn():
-               logging.error('ncnn support is not available.')
-               exit(-1)
-
-           from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
-
-           backend_files = []
-           for onnx_path in onnx_files:
-               create_process(
-                   f'onnx2ncnn with {onnx_path}',
-                   target=onnx2ncnn,
-                   args=(onnx_path, args.work_dir),
-                   kwargs=dict(),
-                   ret_value=ret_value)
-               backend_files += get_output_model_file(onnx_path, args.work_dir)
-   # ...
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        return ir_files
    ```
 
 6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](support_new_model.md) or add custom operators.

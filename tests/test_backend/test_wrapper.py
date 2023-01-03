@@ -133,41 +133,35 @@ def onnx2backend(backend, onnx_file):
         return backend_file
     elif backend == Backend.IPU:
         from mmdeploy.apis.ipu import onnx_to_popef
-        popef_file = onnx_file.replace('.onnx', '.popef')
-        ipu_config = {'bps': 1}
-        onnx_to_popef(onnx_file, popef_file, ipu_config)
+        onnx_dir = onnx_file[:onnx_file.rfind('/')]
+        ipu_config = {'bps': 1, 'output_dir': onnx_dir}
+        onnx_to_popef(onnx_file, ipu_config)
         return popef_file
+    elif backend == Backend.TVM:
+        from mmdeploy.backend.tvm import from_onnx, get_library_ext
+        ext = get_library_ext()
+        lib_file = tempfile.NamedTemporaryFile(suffix=ext).name
+        shape = {'input': test_img.shape}
+        dtype = {'input': 'float32'}
+        target = 'llvm'
+        tuner_dict = dict(type='DefaultTuner', target=target)
+        from_onnx(
+            onnx_file, lib_file, shape=shape, dtype=dtype, tuner=tuner_dict)
+        assert osp.exists(lib_file)
+        return lib_file
 
 
 def create_wrapper(backend, model_files):
-    if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import TRTWrapper
-        trt_model = TRTWrapper(model_files, output_names)
-        return trt_model
-    elif backend == Backend.ONNXRUNTIME:
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_model = ORTWrapper(model_files, 'cpu', output_names)
-        return ort_model
-    elif backend == Backend.PPLNN:
-        from mmdeploy.backend.pplnn import PPLNNWrapper
-        onnx_file, algo_file = model_files
-        pplnn_model = PPLNNWrapper(onnx_file, algo_file, 'cpu', output_names)
-        return pplnn_model
-    elif backend == Backend.NCNN:
-        from mmdeploy.backend.ncnn import NCNNWrapper
-        param_file, bin_file = model_files
-        ncnn_model = NCNNWrapper(param_file, bin_file, output_names)
-        return ncnn_model
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.backend.openvino import OpenVINOWrapper
-        openvino_model = OpenVINOWrapper(model_files, output_names)
-        return openvino_model
-    elif backend == Backend.TORCHSCRIPT:
-        from mmdeploy.backend.torchscript import TorchscriptWrapper
-        torchscript_model = TorchscriptWrapper(
-            model_files, input_names=input_names, output_names=output_names)
-        return torchscript_model
+    from mmdeploy.backend.base import get_backend_manager
+    backend_mgr = get_backend_manager(backend.value)
+    deploy_cfg = None
+    if isinstance(model_files, str):
+        model_files = [model_files]
+
     elif backend == Backend.RKNN:
+
+
+<< << << < HEAD
         from mmdeploy.backend.rknn import RKNNWrapper
         rknn_model = RKNNWrapper(
             model_files,
@@ -184,11 +178,22 @@ def create_wrapper(backend, model_files):
         return ipu_model
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
+=======
+        deploy_cfg = dict(
+            backend_config=dict(
+                common_config=dict(target_platform=target_platform)))
+    return backend_mgr.build_wrapper(
+        model_files,
+        input_names=input_names,
+        output_names=output_names,
+        deploy_cfg=deploy_cfg)
+>>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 
 
 def run_wrapper(backend, wrapper, input):
     if backend == Backend.TENSORRT:
         input = input.cuda()
+<<<<<<< HEAD
         results = wrapper({'input': input})['output']
         results = results.detach().cpu()
         return results
@@ -222,12 +227,27 @@ def run_wrapper(backend, wrapper, input):
         return results
     else:
         raise NotImplementedError(f'Unknown backend type: {backend.value}')
+=======
+
+    results = wrapper({'input': input})
+
+    if backend != Backend.RKNN:
+        results = results['output']
+
+    results = results.detach().cpu()
+
+    return results
+>>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 
 
 ALL_BACKEND = [
     Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
     Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
+<<<<<<< HEAD
     Backend.IPU
+=======
+    Backend.COREML, Backend.TVM
+>>>>>>> 5285caf30a7b111a4fb754881ee6e862f4dcc94c
 ]
 
 

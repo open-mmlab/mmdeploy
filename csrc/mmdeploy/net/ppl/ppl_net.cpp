@@ -10,18 +10,15 @@
 #if PPL_NN_HAS_X86
 #include "ppl/nn/engines/x86/engine_factory.h"
 #include "ppl/nn/engines/x86/engine_options.h"
-#include "ppl/nn/engines/x86/ops.h"
 #endif
 #if PPL_NN_HAS_CUDA
 #include "ppl/nn/engines/cuda/engine_factory.h"
 #include "ppl/nn/engines/cuda/engine_options.h"
-#include "ppl/nn/engines/cuda/ops.h"
 #define PPL_CUDA_IMPORT_FROM_BUFFER 1
 #endif
 #if PPL_NN_HAS_RISCV
 #include "ppl/nn/engines/riscv/engine_factory.h"
 #include "ppl/nn/engines/riscv/engine_options.h"
-#include "ppl/nn/engines/riscv/ops.h"
 #endif
 
 namespace mmdeploy::framework {
@@ -64,7 +61,6 @@ Result<void> PPLNet::Init(const Value& args) {
 
 #if PPL_NN_HAS_CUDA
   if (device_.is_device()) {
-    ppl::nn::cuda::RegisterBuiltinOpImpls();
     ppl::nn::cuda::EngineOptions options{};
     options.device_id = device_.device_id();
     options.mm_policy = ppl::nn::cuda::MM_BEST_FIT;
@@ -93,13 +89,11 @@ Result<void> PPLNet::Init(const Value& args) {
 #endif
 #if PPL_NN_HAS_X86
   if (device_.is_host()) {
-    ppl::nn::x86::RegisterBuiltinOpImpls();
     engines_.emplace_back(ppl::nn::x86::EngineFactory::Create({}));
   }
 #endif
 #if PPL_NN_HAS_RISCV
   if (device_.is_host()) {
-    ppl::nn::riscv::RegisterBuiltinOpImpls();
     ppl::nn::riscv::EngineOptions options{};
     // TODO:
     //   FP16 -> postprocess

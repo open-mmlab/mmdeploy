@@ -66,6 +66,7 @@ class Backend(AdvancedEnum):
     ASCEND = 'ascend'
     COREML = 'coreml'
     IPU = 'ipu'
+    TVM = 'tvm'
     DEFAULT = 'default'
 
 

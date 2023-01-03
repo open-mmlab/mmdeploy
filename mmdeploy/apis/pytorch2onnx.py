@@ -11,6 +11,8 @@ from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
 from .core import PIPELINE_MANAGER
 from .onnx import export
 
+from mmdet.apis.inference import init_detector
+
 
 @PIPELINE_MANAGER.register_pipeline()
 def torch2onnx(img: Any,
@@ -60,6 +62,10 @@ def torch2onnx(img: Any,
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
     torch_model = task_processor.init_pytorch_model(model_checkpoint)
+    # torch_model = init_detector(deploy_cfg, device='cpu')
+    # torch_model.eval()
+    # print('torch model ', torch_model)
+    # print('torch 2 onnx, input shape ', input_shape)
     data, model_inputs = task_processor.create_input(img, input_shape)
     if 'img_metas' in data:
         input_metas = dict(img_metas=data['img_metas'])

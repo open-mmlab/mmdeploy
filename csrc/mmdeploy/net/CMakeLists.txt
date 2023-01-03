@@ -41,6 +41,11 @@ endif ()
 if ("ipu" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(ipu)
 endif ()
+
+if ("tvm" IN_LIST MMDEPLOY_TARGET_BACKENDS)
+    add_subdirectory(tvm)
+endif ()
+
 if ("rknn" IN_LIST MMDEPLOY_TARGET_BACKENDS)
     add_subdirectory(rknn)
 endif ()
