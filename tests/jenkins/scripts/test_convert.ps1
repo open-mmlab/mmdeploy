@@ -6,11 +6,6 @@ $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
 $env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
 $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
 
-
-
-
-
-
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
@@ -43,11 +38,13 @@ if ( $exec_performance -eq "y" ) {
 }else {
     $exec_performance=$null
 }
-
-git clone -b $mmdeploy_branch https://github.com/open-mmlab/mmdeploy.git 
+Write-Host "$pwd"
+cd ..
+Write-Host "$pwd"
+git clone -b $mmdeploy_branch https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 $env:MMDEPLOY_DIR="$pwd"
-Write-Host "mmdeploy_dr = $env:MMDEPLOY_DIR"
+Write-Host "mmdeploy_dir = $env:MMDEPLOY_DIR"
 git submodule update --init --recursive
 # Copy-Item -Force -Recurse D:\huangzijie\workspace\tests
 

@@ -5,6 +5,7 @@ param(
 )
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
+
 cd $env:MMDEPLOY_DIR
 Write-Host "exec_path: $pwd"
 Write-Host "mim install $codebase"
@@ -31,13 +32,13 @@ pip install -v $codebase_path
 Write-Host "$pwd"
 #Invoke-Expression -Command "python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance"
 # python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance
-python $env:MMDEPLOY_DIR/tools/regression_test.py `
+python $pwd/tools/regression_test.py `
     --codebase $codebase `
     --device cuda:0 `
     --backends tensorrt onnxruntime `
     --work-dir $log_dir  `
     $exec_performance
-   
+
 if (-not $?) {
     throw "regression_test failed"
 }
