@@ -64,6 +64,7 @@ We recommend that users follow our best practices installing MMDeploy.
 
 ```shell
 pip install -U openmim
+mim install mmengine
 mim install "mmcv>=2.0.0rc2"
 ```
 
@@ -172,12 +173,12 @@ Based on the above settings, we provide an example to convert the Faster R-CNN i
 
 ```shell
 # clone mmdeploy to get the deployment config. `--recursive` is not necessary
-git clone https://github.com/open-mmlab/mmdeploy.git
+git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module
-git clone https://github.com/open-mmlab/mmdetection.git
+git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -v -e .
+mim install -v -e .
 cd ..
 
 # download Faster R-CNN checkpoint
@@ -186,7 +187,7 @@ wget -P checkpoints https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/
 # run the command to start model conversion
 python mmdeploy/tools/deploy.py \
     mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    mmdetection/configs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
     checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     mmdetection/demo/demo.jpg \
     --work-dir mmdeploy_model/faster-rcnn \
@@ -201,7 +202,7 @@ For more details about model conversion, you can read [how_to_convert_model](02-
 
 ```{tip}
 If MMDeploy-ONNXRuntime prebuilt package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
-just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
+just by changing 'detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
 ```
 
 ## Inference Model

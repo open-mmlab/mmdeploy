@@ -40,7 +40,8 @@
 # install pytoch & mmcv
 conda install pytorch==1.9.0 torchvision==0.10.0 -c pytorch
 pip install -U openmim
-mim install "mmcv>=2.0.0rc1"
+mim install mmengine
+mim install "mmcv>=2.0.0rc2"
 ```
 
 #### 安装 MMDeploy SDK 依赖
@@ -147,7 +148,7 @@ conda install grpcio
 
 ```bash
 cd ${MMDEPLOY_DIR}
-pip install -v -e .
+mim install -v -e .
 ```
 
 **注意**
