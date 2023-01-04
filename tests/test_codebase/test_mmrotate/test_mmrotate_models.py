@@ -627,7 +627,7 @@ def roi_trans_roi_head_model():
     return model
 
 
-@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize('backend_type', [Backend.TENSORRT])
 def test_simple_test_of_roi_trans_roi_head(backend_type: Backend,
                                            roi_trans_roi_head_model):
     check_backend(backend_type)
@@ -658,7 +658,9 @@ def test_simple_test_of_roi_trans_roi_head(backend_type: Backend,
     output_names = ['det_bboxes', 'det_labels']
     deploy_cfg = mmcv.Config(
         dict(
-            backend_config=dict(type=backend_type.value),
+            backend_config=dict(
+                type=backend_type.value,
+                common_config=dict(max_workspace_size=1 << 30)),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmrotate',

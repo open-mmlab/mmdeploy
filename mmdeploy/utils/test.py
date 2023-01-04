@@ -421,6 +421,19 @@ def get_backend_outputs(ir_file_path: str,
     if backend == Backend.TENSORRT:
         device = 'cuda'
         model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
+        input_shapes = dict(
+            (k, dict(min_shape=v.shape, max_shape=v.shape, opt_shape=v.shape))
+            for k, v in model_inputs.items())
+        model_inputs_cfg = deploy_cfg['backend_config'].get(
+            'model_inputs', [dict(input_shapes=input_shapes)])
+        if len(model_inputs_cfg) < 1:
+            model_inputs_cfg = [dict(input_shapes=input_shapes)]
+
+        if 'input_shapes' not in model_inputs_cfg[0]:
+            model_inputs_cfg[0]['input_shapes'] = input_shapes
+
+        deploy_cfg['backend_config']['model_inputs'] = model_inputs_cfg
+
     elif backend == Backend.OPENVINO:
         input_info = {
             name: value.shape
