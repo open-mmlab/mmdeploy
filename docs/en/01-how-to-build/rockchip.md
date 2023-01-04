@@ -156,6 +156,22 @@ label: 65, score: 0.95
       ])
   ```
 
+  RTMDet: you may paste the following partition configuration into [detection_rknn-int8_static-640x640.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/configs/mmdet/detection/detection_rknn-int8_static-640x640.py):
+
+  ```python
+  # rtmdet for rknn-toolkit and rknn-toolkit2
+  partition_config = dict(
+      type='rknn',  # the partition policy name
+      apply_marks=True,  # should always be set to True
+      partition_cfg=[
+          dict(
+              save_file='model.onnx',  # name to save the partitioned onnx
+              start=['detector_forward:input'],  # [mark_name:input, ...]
+              end=['rtmdet_head:output'],  # [mark_name:output, ...]
+              output_names=[f'pred_maps.{i}' for i in range(6)])  # output names
+      ])
+  ```
+
   RetinaNet & SSD & FSAF with rknn-toolkit2, you may paste the following partition configuration into [detection_rknn_static-320x320.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py). Users with rknn-toolkit can directly use default config.
 
   ```python
