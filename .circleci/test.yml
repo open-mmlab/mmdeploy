@@ -275,7 +275,10 @@ jobs:
           name: Inference model by SDK
           command: |
             ./mmdeploy/build/bin/image_classification cpu mmdeploy-models/mmcls/onnxruntime mmclassification/demo/demo.JPEG
-
+      - run:
+          name: test converter tools
+          command: |
+            bash ./mmdeploy/.circleci/scripts/linux/test_tools.sh
 
 # See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:

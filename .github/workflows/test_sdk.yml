@@ -24,49 +24,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build_cpu:
-    runs-on: ubuntu-18.04
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - name: Install system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y gcc-multilib g++-multilib
-          sudo apt install -y wget git unzip lcov cmake
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
-          sudo apt update && sudo apt install -y libopencv-dev
-          pkg-config --libs opencv
-          sudo apt clean
-      - name: Build and run SDK unit test without backend
-        run: |
-          mkdir -p build && cd build
-          cmake .. -DCMAKE_CXX_COMPILER=g++-7 \
-            -DMMDEPLOY_CODEBASES=all \
-            -DMMDEPLOY_BUILD_SDK=ON \
-            -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF \
-            -DMMDEPLOY_TARGET_DEVICES=cpu \
-            -DMMDEPLOY_COVERAGE=ON \
-            -DMMDEPLOY_BUILD_TEST=ON
-          make -j2 && make install
-          mkdir -p mmdeploy_test_resources/transform
-          cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
-          ./bin/mmdeploy_tests
-          lcov --capture --directory . --output-file coverage.info
-          ls -lah coverage.info
-          cp coverage.info ../
-          cd -
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
-        with:
-          file: ./coverage.info
-          flags: unittests
-          env_vars: OS,CPLUS
-          name: codecov-umbrella
-          fail_ci_if_error: false
-
   build_cuda:
     runs-on: ubuntu-18.04
     container:
