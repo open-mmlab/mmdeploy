@@ -9,7 +9,7 @@ from .task import BaseTask, TaskRegistry
 
 
 class BaseCodebase(metaclass=ABCMeta):
-    """Wrap the apis of OpenMMLab Codebase."""
+    """Wrap the apis of Codebase."""
 
     task_registry: TaskRegistry = None
 

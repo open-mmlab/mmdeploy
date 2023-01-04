@@ -15,7 +15,8 @@ def import_codebase(codebase_type: Union[str, Codebase],
     must be installed.
 
     Args:
-        codebase (Codebase): The codebase to import.
+        codebase_type (Codebase): The codebase to import.
+        custom_module_list (List): The modules to load as custom modules.
     """
     import importlib
     if isinstance(codebase_type, Codebase):
