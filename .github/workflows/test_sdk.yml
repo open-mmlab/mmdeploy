@@ -51,12 +51,14 @@ jobs:
           wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0-linux-x86_64.tar.gz
           tar -xzvf cmake-3.20.0-linux-x86_64.tar.gz
           ln -sf $(pwd)/cmake-3.20.0-linux-x86_64/bin/* /usr/bin/
+          python -m pip install cmake==3.20.0
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: Build and run SDK unit test without backend
         run: |
+          export PATH=$(pwd)/cmake-3.20.0-linux-x86_64/bin:$PATH
           mkdir -p build && cd build
           cmake .. -DCMAKE_CXX_COMPILER=g++-7 \
             -DMMDEPLOY_CODEBASES=all \

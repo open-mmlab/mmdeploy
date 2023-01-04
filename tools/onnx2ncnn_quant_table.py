@@ -101,6 +101,8 @@ def parse_args():
         help='set log level',
         default='INFO',
         choices=list(logging._nameToLevel.keys()))
+    parser.add_argument(
+        '--device', help='device used for conversion', default='cpu')
     args = parser.parse_args()
 
     return args
@@ -116,8 +118,14 @@ def main():
     quant_onnx_path = args.out_onnx
     image_dir = args.image_dir
 
-    get_table(onnx_path, deploy_cfg, model_cfg, quant_onnx_path,
-              quant_table_path, image_dir)
+    get_table(
+        onnx_path,
+        deploy_cfg,
+        model_cfg,
+        quant_onnx_path,
+        quant_table_path,
+        image_dir,
+        device=args.device)
     logger.info('onnx2ncnn_quant_table success.')
 
 
