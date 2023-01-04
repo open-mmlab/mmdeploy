@@ -1,10 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
+import logging
+import os
 from typing import Any, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config
+# from mmdeploy.apis.ipu import onnx_to_popef
+from .converter import onnx_to_popef
 from ..base import BACKEND_MANAGERS, BaseBackendManager
-from mmdeploy.apis.ipu import onnx_to_popef
 
 
 @BACKEND_MANAGERS.register('ipu')
@@ -63,7 +65,7 @@ class IPUManager(BaseBackendManager):
             # assert os.path.exists(output_dir), 'output dir not exist'
 
             if output_dir == '':
-                output_dir = workdir
+                output_dir = work_dir
 
             model_dir = os.path.join(output_dir, model_name)
             if not os.path.exists(model_dir):

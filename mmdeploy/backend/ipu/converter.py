@@ -4,7 +4,6 @@ import subprocess
 def onnx_to_popef(onnx_path, ipu_config):
     command = ['python3', '-m', 'poprt.cli',
                '--input_model', onnx_path,
-               '--output_dir', output_dir,
                '--export_popef',
                '--convert_version', '11']
     for key in ipu_config.keys():
@@ -22,7 +21,7 @@ def onnx_to_popef(onnx_path, ipu_config):
         else:
             command += ['--'+str(key), str(ipu_config[key])]
 
-    print('command ', command)
+    # print('command ', command)
     if subprocess.call(command) != 0:
         raise RuntimeError(
             '\n\n!!! PopConverter compile command failed, plese check the above trace for details.')

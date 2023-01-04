@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import sys
 from .backend_manager import IPUManager
+import sys
 
 
 def is_available():
@@ -18,14 +18,12 @@ def is_available():
             import onnx
         else:
             import popart
-        print('popart imported')
+
         deviceManager = popart.DeviceManager()
         device = deviceManager.acquireAvailableDevice(1)
-        print('ipu device checked')
         return True
     except Exception as e:
-        print('IPU environment is not set')
-        print(e)
+        print('IPU environment is not set', str(e))
         return False
 
 
@@ -34,10 +32,8 @@ __all__ = ['IPUManager']
 if is_available():
     try:
         from .wrapper import IPUWrapper
-        print('imported wrapper')
         from .converter import onnx_to_popef
-        print('imported ipu wrapper & onnx_to_popef')
         __all__ += ['IPUWrapper', 'onnx_to_popef']
     except Exception as e:
-        print('import error ', e)
+        print('ipu import error ', e)
         pass

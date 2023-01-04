@@ -67,7 +67,7 @@ class IPUWrapper(BaseWrapper):
             self.input_view[input_desc.name] = inputs[input_desc.name].contiguous().numpy().astype(
                 popef.popefTypeToNumpyDType(input_desc.data_type))
 
-        self.__ipu_execute()
+        result = self.__ipu_execute()
 
         output_descriptions = self.runner.getExecuteOutputs()
         outputs = {}

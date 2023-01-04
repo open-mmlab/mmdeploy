@@ -108,7 +108,9 @@ class BackendManagerRegistry:
         # try import backend if backend is in `mmdeploy.backend`
         try:
             importlib.import_module('mmdeploy.backend.' + name)
-        except Exception:
+            print('import ', name, 'succeed')
+        except Exception as e:
+            print('import ', name, 'failed : ', str(e))
             pass
         return self._module_dict.get(name, None)
 
