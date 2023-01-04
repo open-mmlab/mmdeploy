@@ -710,6 +710,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1,
+                    export_postprocess_mask=False,
                 ))))
     model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)

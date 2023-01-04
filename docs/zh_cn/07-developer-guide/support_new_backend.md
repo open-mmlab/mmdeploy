@@ -123,32 +123,20 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        __all__ += ['onnx2ncnn', 'get_output_model_file']
    ```
 
-   然后根据需要使用这些 APIs 为 `tools/deploy.py` 添加相关转换代码
+   从 BaseBackendManager 派生类，实现 `to_backend` 类方法。
 
    **例子**
 
    ```Python
-   # tools/deploy.py
-   # ...
-       elif backend == Backend.NCNN:
-           from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-           if not is_available_ncnn():
-               logging.error('ncnn support is not available.')
-               exit(-1)
-
-           from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
-
-           backend_files = []
-           for onnx_path in onnx_files:
-               create_process(
-                   f'mmdeploy_onnx2ncnn with {onnx_path}',
-                   target=onnx2ncnn,
-                   args=(onnx_path, args.work_dir),
-                   kwargs=dict(),
-                   ret_value=ret_value)
-               backend_files += get_output_model_file(onnx_path, args.work_dir)
-   # ...
+   @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        return ir_files
    ```
 
 6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
@@ -210,22 +198,26 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. 为新封装装器添加默认初始化方法 `mmdeploy/codebase/base/backend_model.py`
+4. 从 `BaseBackendManager` 派生接口类，实现 `build_wrapper` 静态方法
 
    **例子**
 
    ```Python
-       @staticmethod
-       def _build_wrapper(backend: Backend,
-                          backend_files: Sequence[str],
-                          device: str,
-                          output_names: Optional[Sequence[str]] = None):
-           if backend == Backend.ONNXRUNTIME:
-               from mmdeploy.backend.onnxruntime import ORTWrapper
-               return ORTWrapper(
-                   onnx_file=backend_files[0],
-                   device=device,
-                   output_names=output_names)
+        @BACKEND_MANAGERS.register('onnxruntime')
+        class ONNXRuntimeManager(BaseBackendManager):
+            @classmethod
+            def build_wrapper(cls,
+                              backend_files: Sequence[str],
+                              device: str = 'cpu',
+                              input_names: Optional[Sequence[str]] = None,
+                              output_names: Optional[Sequence[str]] = None,
+                              deploy_cfg: Optional[Any] = None,
+                              **kwargs):
+                from .wrapper import ORTWrapper
+                return ORTWrapper(
+                    onnx_file=backend_files[0],
+                    device=device,
+                    output_names=output_names)
    ```
 
 5. 为新后端引擎代码添加相关注释和单元测试 :).

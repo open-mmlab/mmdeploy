@@ -10,6 +10,10 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+try:
     import_codebase(Codebase.MMCLS)
 except ImportError:
     pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
@@ -77,6 +81,7 @@ def test_baseclassifier_forward():
         def extract_feat(self, batch_inputs: torch.Tensor):
             return batch_inputs
 
+    input = torch.rand(1, 1000)
     backbone_cfg = dict(
         type='ResNet',
         depth=18,
@@ -90,8 +95,8 @@ def test_baseclassifier_forward():
     with RewriterContext({}):
         backend_output = model(input)
 
-    assert model_output == input
-    assert backend_output == input
+    torch_assert_close(model_output, input)
+    torch_assert_close(backend_output, torch.nn.functional.softmax(input, -1))
 
 
 @pytest.mark.parametrize(

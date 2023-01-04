@@ -1,16 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import sys
 
+from .backend_manager import TVMManager
 
-def is_available() -> bool:
-    """Check whether tvm package is installed.
-
-    Returns:
-        bool: True if tvm package is installed.
-    """
-
-    return importlib.util.find_spec('tvm') is not None
+_BackendManager = TVMManager
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
 
 def get_library_ext() -> str:
@@ -26,12 +21,14 @@ def get_library_ext() -> str:
         return '.so'
 
 
+__all__ = ['TVMManager']
+
 if is_available():
     from .onnx2tvm import from_onnx
     from .quantize import HDF5Dataset
     from .tuner import build_tvm_tuner
 
-    __all__ = ['from_onnx', 'build_tvm_tuner', 'HDF5Dataset', 'TVMManager']
+    __all__ += ['from_onnx', 'build_tvm_tuner', 'HDF5Dataset']
 
     try:
         # import wrapper if pytorch is available

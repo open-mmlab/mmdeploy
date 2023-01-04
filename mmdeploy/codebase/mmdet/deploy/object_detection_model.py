@@ -239,14 +239,14 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                export_postprocess_mask = True
+                export_postprocess_mask = False
                 if self.deploy_cfg is not None:
 
                     mmdet_deploy_cfg = get_post_processing_params(
                         self.deploy_cfg)
                     # this flag enable postprocess when export.
                     export_postprocess_mask = mmdet_deploy_cfg.get(
-                        'export_postprocess_mask', True)
+                        'export_postprocess_mask', False)
                 if not export_postprocess_mask:
                     masks = End2EndModel.postprocessing_masks(
                         dets[:, :4], masks, ori_w, ori_h, self.device)

@@ -1,19 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-
+from .backend_manager import AscendManager
 from .utils import update_sdk_pipeline
 
+_BackendManager = AscendManager
 
-def is_available():
-    """Check whether acl is installed.
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
-    Returns:
-        bool: True if acl package is installed.
-    """
-    return importlib.util.find_spec('acl') is not None
-
-
-__all__ = ['update_sdk_pipeline']
+__all__ = ['update_sdk_pipeline', 'AscendManager']
 
 if is_available():
     from .wrapper import AscendWrapper, Error
