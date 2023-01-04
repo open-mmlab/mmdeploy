@@ -168,7 +168,7 @@ label: 65, score: 0.95
               save_file='model.onnx',  # name to save the partitioned onnx
               start=['detector_forward:input'],  # [mark_name:input, ...]
               end=['rtmdet_head:output'],  # [mark_name:output, ...]
-              output_names=[f'pred_maps.{i}' for i in range(6)])  # output names
+              output_names=[f'pred_maps.{i}' for i in range(6)]) # output names
       ])
   ```
 
