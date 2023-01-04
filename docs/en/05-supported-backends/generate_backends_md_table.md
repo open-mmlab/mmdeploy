@@ -5,7 +5,7 @@ This tool can be used to generate supported-backends markdown table.
 ## Usage
 
 ```shell
-python tests/regression/generate_md_table.py \
+python tools/generate_md_table.py \
     ${yml_file} \
     ${output} \
     ${backends}
@@ -21,8 +21,8 @@ python tests/regression/generate_md_table.py \
 
 Generate backends markdown table from mmocr.yml
 
-```
-python tests/regression/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
+```shell
+python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
 ```
 
 And the output look like this:

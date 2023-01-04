@@ -5,7 +5,7 @@
 ## 用法
 
 ```shell
-python tests/regression/generate_md_table.py \
+python tools/generate_md_table.py \
     ${yml_file} \
     ${output} \
     ${backends}
@@ -21,8 +21,8 @@ python tests/regression/generate_md_table.py \
 
 从 mmocr.yml 生成mmdeploy支持的后端表
 
-```
-python tests/regression/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
+```shell
+python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
 ```
 
 输出：
