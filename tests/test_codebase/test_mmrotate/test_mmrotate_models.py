@@ -9,17 +9,10 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.config_utils import get_ir_config
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
-
-try:
-    import_codebase(Codebase.MMROTATE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMROTATE} is not installed.', allow_module_level=True)
 
 
 def seed_everything(seed=1029):
@@ -47,7 +40,17 @@ def convert_to_list(rewrite_output: Dict, output_names: List[str]) -> List:
     return outputs
 
 
-def get_anchor_head_model():
+def get_head_inputs(seed, channels, num_inputs):
+    """Generate inputs for the head."""
+    seed_everything(seed)
+    return [
+        torch.rand(1, channels, pow(2, i), pow(2, i))
+        for i in range(num_inputs, 0, -1)
+    ]
+
+
+@pytest.fixture
+def anchor_head():
     """AnchorHead Config."""
     test_cfg = mmcv.Config(
         dict(
@@ -137,10 +140,10 @@ def get_deploy_cfg(backend_type: Backend, ir_type: str):
 
 @pytest.mark.parametrize('backend_type, ir_type',
                          [(Backend.ONNXRUNTIME, 'onnx')])
-def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str):
+def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str,
+                                    anchor_head):
     """Test get_bboxes rewrite of base dense head."""
     check_backend(backend_type)
-    anchor_head = get_anchor_head_model()
     anchor_head.cpu().eval()
     s = 128
     img_metas = [{
@@ -156,12 +159,8 @@ def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str):
     # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
     # the bboxes's size: (1, 45, 32, 32), (1, 45, 16, 16),
     # (1, 45, 8, 8), (1, 45, 4, 4), (1, 45, 2, 2)
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 36, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-    seed_everything(5678)
-    bboxes = [torch.rand(1, 45, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    cls_score = get_head_inputs(1234, 36, 5)
+    bboxes = get_head_inputs(5678, 45, 5)
 
     # to get outputs of pytorch model
     model_inputs = {
@@ -202,7 +201,8 @@ def test_base_dense_head_get_bboxes(backend_type: Backend, ir_type: str):
         assert rewrite_outputs is not None
 
 
-def get_single_roi_extractor():
+@pytest.fixture
+def single_roi_extractor():
     """SingleRoIExtractor Config."""
     from mmrotate.models.roi_heads import RotatedSingleRoIExtractor
     roi_layer = dict(
@@ -216,10 +216,10 @@ def get_single_roi_extractor():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_rotated_single_roi_extractor(backend_type: Backend):
+def test_rotated_single_roi_extractor(backend_type: Backend,
+                                      single_roi_extractor):
     check_backend(backend_type)
 
-    single_roi_extractor = get_single_roi_extractor()
     output_names = ['roi_feat']
     deploy_cfg = mmcv.Config(
         dict(
@@ -262,7 +262,8 @@ def test_rotated_single_roi_extractor(backend_type: Backend):
             model_output, backend_output, rtol=1e-03, atol=1e-05)
 
 
-def get_oriented_rpn_head_model():
+@pytest.fixture
+def oriented_rpn_head_model():
     """Oriented RPN Head Config."""
     test_cfg = mmcv.Config(
         dict(
@@ -283,9 +284,10 @@ def get_oriented_rpn_head_model():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
+def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend,
+                                         oriented_rpn_head_model):
     check_backend(backend_type)
-    head = get_oriented_rpn_head_model()
+    head = oriented_rpn_head_model
     head.cpu().eval()
     s = 128
     img_metas = [{
@@ -312,12 +314,8 @@ def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
     # (1, 36, 8, 8), (1, 36, 4, 4), (1, 36, 2, 2).
     # the bboxes's size: (1, 54, 32, 32), (1, 54, 16, 16),
     # (1, 54, 8, 8), (1, 54, 4, 4), (1, 54, 2, 2)
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 9, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-    seed_everything(5678)
-    bboxes = [torch.rand(1, 54, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    cls_score = get_head_inputs(1234, 9, 5)
+    bboxes = get_head_inputs(5678, 54, 5)
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
@@ -334,7 +332,8 @@ def test_get_bboxes_of_oriented_rpn_head(backend_type: Backend):
     assert rewrite_outputs is not None
 
 
-def get_rotated_rpn_head_model():
+@pytest.fixture
+def rotated_rpn_head_model():
     """Oriented RPN Head Config."""
     test_cfg = mmcv.Config(
         dict(
@@ -364,9 +363,10 @@ def get_rotated_rpn_head_model():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_get_bboxes_of_rotated_rpn_head(backend_type: Backend):
+def test_get_bboxes_of_rotated_rpn_head(backend_type: Backend,
+                                        rotated_rpn_head_model):
     check_backend(backend_type)
-    head = get_rotated_rpn_head_model()
+    head = rotated_rpn_head_model
     head.cpu().eval()
     s = 128
     img_metas = [{
@@ -393,12 +393,8 @@ def test_get_bboxes_of_rotated_rpn_head(backend_type: Backend):
     # (1, 3, 8, 8), (1, 3, 4, 4), (1, 3, 2, 2).
     # the bboxes's size: (1, 18, 32, 32), (1, 18, 16, 16),
     # (1, 18, 8, 8), (1, 18, 4, 4), (1, 18, 2, 2)
-    seed_everything(1234)
-    cls_score = [
-        torch.rand(1, 3, pow(2, i), pow(2, i)) for i in range(5, 0, -1)
-    ]
-    seed_everything(5678)
-    bboxes = [torch.rand(1, 18, pow(2, i), pow(2, i)) for i in range(5, 0, -1)]
+    cls_score = get_head_inputs(1234, 3, 5)
+    bboxes = get_head_inputs(5678, 18, 5)
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
@@ -468,8 +464,7 @@ def test_rotate_standard_roi_head__simple_test(backend_type: Backend):
         test_cfg=test_cfg)
     head.cpu().eval()
 
-    seed_everything(1234)
-    x = [torch.rand(1, 3, pow(2, i), pow(2, i)) for i in range(4, 0, -1)]
+    x = get_head_inputs(1234, 3, 4)
     proposals = [torch.rand(1, 100, 6), torch.randint(0, 10, (1, 100))]
     img_metas = [{'img_shape': torch.tensor([224, 224])}]
 
@@ -536,7 +531,7 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
     head.cpu().eval()
 
     seed_everything(1234)
-    x = [torch.rand(1, 3, pow(2, i), pow(2, i)) for i in range(4, 0, -1)]
+    x = get_head_inputs(1234, 3, 4)
     bboxes = torch.rand(1, 100, 2)
     bboxes = torch.cat(
         [bboxes, bboxes + torch.rand(1, 100, 2) + torch.rand(1, 100, 1)],
@@ -554,7 +549,8 @@ def test_gv_ratio_roi_head__simple_test(backend_type: Backend):
     assert rewrite_outputs is not None
 
 
-def get_roi_trans_roi_head_model():
+@pytest.fixture
+def roi_trans_roi_head_model():
     """Oriented RPN Head Config."""
     angle_version = 'le90'
 
@@ -632,10 +628,11 @@ def get_roi_trans_roi_head_model():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_simple_test_of_roi_trans_roi_head(backend_type: Backend):
+def test_simple_test_of_roi_trans_roi_head(backend_type: Backend,
+                                           roi_trans_roi_head_model):
     check_backend(backend_type)
 
-    roi_head = get_roi_trans_roi_head_model()
+    roi_head = roi_trans_roi_head_model
     roi_head.cpu()
 
     seed_everything(1234)

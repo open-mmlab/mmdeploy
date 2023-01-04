@@ -4,18 +4,12 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
-try:
-    import_codebase(Codebase.MMPOSE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
 
-
-def get_top_down_heatmap_simple_head_model():
+@pytest.fixture
+def top_down_heatmap_simple_head_model():
     from mmpose.models.heads import TopdownHeatmapSimpleHead
     model = TopdownHeatmapSimpleHead(
         2,
@@ -28,9 +22,10 @@ def get_top_down_heatmap_simple_head_model():
 
 @pytest.mark.parametrize('backend_type',
                          [Backend.ONNXRUNTIME, Backend.TENSORRT])
-def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
+def test_top_down_heatmap_simple_head_inference_model(
+        backend_type: Backend, top_down_heatmap_simple_head_model):
     check_backend(backend_type, True)
-    model = get_top_down_heatmap_simple_head_model()
+    model = top_down_heatmap_simple_head_model
     model.cpu().eval()
     if backend_type == Backend.TENSORRT:
         deploy_cfg = mmcv.Config(
@@ -76,7 +71,8 @@ def test_top_down_heatmap_simple_head_inference_model(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-def get_top_down_heatmap_msmu_head_model():
+@pytest.fixture
+def top_down_heatmap_msmu_head_model():
 
     class DummyMSMUHead(torch.nn.Module):
 
@@ -104,9 +100,10 @@ def get_top_down_heatmap_msmu_head_model():
 
 @pytest.mark.parametrize('backend_type',
                          [Backend.ONNXRUNTIME, Backend.TENSORRT])
-def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
+def test_top_down_heatmap_msmu_head_inference_model(
+        backend_type: Backend, top_down_heatmap_msmu_head_model):
     check_backend(backend_type, True)
-    model = get_top_down_heatmap_msmu_head_model()
+    model = top_down_heatmap_msmu_head_model
     model.cpu().eval()
     if backend_type == Backend.TENSORRT:
         deploy_cfg = mmcv.Config(
@@ -152,7 +149,8 @@ def test_top_down_heatmap_msmu_head_inference_model(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-def get_cross_resolution_weighting_model():
+@pytest.fixture
+def cross_resolution_weighting_model():
     from mmpose.models.backbones.litehrnet import CrossResolutionWeighting
 
     class DummyModel(torch.nn.Module):
@@ -171,9 +169,10 @@ def get_cross_resolution_weighting_model():
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME, Backend.NCNN])
-def test_cross_resolution_weighting_forward(backend_type: Backend):
+def test_cross_resolution_weighting_forward(backend_type: Backend,
+                                            cross_resolution_weighting_model):
     check_backend(backend_type, True)
-    model = get_cross_resolution_weighting_model()
+    model = cross_resolution_weighting_model
     model.cpu().eval()
     imgs = torch.rand(1, 16, 16, 16)
 
@@ -210,7 +209,8 @@ def test_cross_resolution_weighting_forward(backend_type: Backend):
             model_output, rewrite_output, rtol=1e-03, atol=1e-05)
 
 
-def get_top_down_model():
+@pytest.fixture
+def top_down_model():
     from mmpose.models.detectors.top_down import TopDown
     model_cfg = dict(
         type='TopDown',
@@ -237,9 +237,9 @@ def get_top_down_model():
 
 @pytest.mark.parametrize('backend_type',
                          [Backend.ONNXRUNTIME, Backend.TENSORRT])
-def test_top_down_forward(backend_type: Backend):
+def test_top_down_forward(backend_type: Backend, top_down_model):
     check_backend(backend_type, True)
-    model = get_top_down_model()
+    model = top_down_model
     model.cpu().eval()
     if backend_type == Backend.TENSORRT:
         deploy_cfg = mmcv.Config(

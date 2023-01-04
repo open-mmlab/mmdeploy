@@ -1,23 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import tempfile
-
 import mmcv
 import numpy as np
 import pytest
 import torch
+from mmocr.models.textdet.necks import FPNC
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
-
-try:
-    import_codebase(Codebase.MMOCR)
-except ImportError:
-    pytest.skip(f'{Codebase.MMOCR} is not installed.', allow_module_level=True)
-
-from mmocr.models.textdet.necks import FPNC
 
 
 class FPNCNeckModel(FPNC):
@@ -35,7 +26,8 @@ class FPNCNeckModel(FPNC):
         return output
 
 
-def get_bidirectionallstm_model():
+@pytest.fixture
+def bidirectionallstm_model():
     from mmocr.models.textrecog.layers.lstm_layer import BidirectionalLSTM
     model = BidirectionalLSTM(32, 16, 16)
 
@@ -43,7 +35,8 @@ def get_bidirectionallstm_model():
     return model
 
 
-def get_single_stage_text_detector_model():
+@pytest.fixture
+def single_stage_text_detector():
     from mmocr.models.textdet import SingleStageTextDetector
     backbone = dict(
         type='mmdet.ResNet',
@@ -71,7 +64,8 @@ def get_single_stage_text_detector_model():
     return model
 
 
-def get_encode_decode_recognizer_model():
+@pytest.fixture
+def encode_decode_recognizer():
     from mmocr.models.textrecog import EncodeDecodeRecognizer
 
     cfg = dict(
@@ -97,7 +91,9 @@ def get_encode_decode_recognizer_model():
     return model
 
 
-def get_crnn_decoder_model(rnn_flag):
+@pytest.fixture(params=[True, False])
+def crnn_decoder_model(request):
+    rnn_flag = request.param
     from mmocr.models.textrecog.decoders import CRNNDecoder
     model = CRNNDecoder(32, 4, rnn_flag=rnn_flag)
 
@@ -105,14 +101,16 @@ def get_crnn_decoder_model(rnn_flag):
     return model
 
 
-def get_fpnc_neck_model():
+@pytest.fixture
+def fpnc_neck_model():
     model = FPNCNeckModel([2, 4, 8, 16])
 
     model.requires_grad_(False)
     return model
 
 
-def get_base_recognizer_model():
+@pytest.fixture
+def base_recognizer():
     from mmocr.models.textrecog import CRNNNet
 
     cfg = dict(
@@ -138,10 +136,10 @@ def get_base_recognizer_model():
 
 
 @pytest.mark.parametrize('backend', [Backend.NCNN])
-def test_bidirectionallstm(backend: Backend):
+def test_bidirectionallstm(backend: Backend, bidirectionallstm_model):
     """Test forward rewrite of bidirectionallstm."""
     check_backend(backend)
-    bilstm = get_bidirectionallstm_model()
+    bilstm = bidirectionallstm_model
     bilstm.cpu().eval()
 
     deploy_cfg = mmcv.Config(
@@ -178,10 +176,10 @@ def test_bidirectionallstm(backend: Backend):
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
-def test_simple_test_of_single_stage_text_detector(backend: Backend):
+def test_simple_test_of_single_stage_text_detector(backend: Backend,
+                                                   single_stage_text_detector):
     """Test simple_test single_stage_text_detector."""
     check_backend(backend)
-    single_stage_text_detector = get_single_stage_text_detector_model()
     single_stage_text_detector.eval()
 
     deploy_cfg = mmcv.Config(
@@ -214,11 +212,10 @@ def test_simple_test_of_single_stage_text_detector(backend: Backend):
 
 
 @pytest.mark.parametrize('backend', [Backend.NCNN])
-@pytest.mark.parametrize('rnn_flag', [True, False])
-def test_crnndecoder(backend: Backend, rnn_flag: bool):
+def test_crnndecoder(backend: Backend, crnn_decoder_model):
     """Test forward rewrite of crnndecoder."""
     check_backend(backend)
-    crnn_decoder = get_crnn_decoder_model(rnn_flag)
+    crnn_decoder = crnn_decoder_model
     crnn_decoder.cpu().eval()
 
     deploy_cfg = mmcv.Config(
@@ -277,10 +274,10 @@ def test_crnndecoder(backend: Backend, rnn_flag: bool):
         'valid_ratio': 1.0
     }]]])
 @pytest.mark.parametrize('is_dynamic', [True, False])
-def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
+def test_forward_of_base_recognizer(img_metas, is_dynamic, backend,
+                                    base_recognizer):
     """Test forward base_recognizer."""
     check_backend(backend)
-    base_recognizer = get_base_recognizer_model()
     base_recognizer.eval()
 
     if not is_dynamic:
@@ -342,10 +339,10 @@ def test_forward_of_base_recognizer(img_metas, is_dynamic, backend):
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
-def test_simple_test_of_encode_decode_recognizer(backend):
+def test_simple_test_of_encode_decode_recognizer(backend,
+                                                 encode_decode_recognizer):
     """Test simple_test encode_decode_recognizer."""
     check_backend(backend)
-    encode_decode_recognizer = get_encode_decode_recognizer_model()
     encode_decode_recognizer.eval()
 
     deploy_cfg = mmcv.Config(
@@ -383,10 +380,10 @@ def test_simple_test_of_encode_decode_recognizer(backend):
 
 
 @pytest.mark.parametrize('backend', [Backend.TENSORRT])
-def test_forward_of_fpnc(backend: Backend):
+def test_forward_of_fpnc(backend: Backend, fpnc_neck_model):
     """Test forward rewrite of fpnc."""
     check_backend(backend)
-    fpnc = get_fpnc_neck_model().cuda()
+    fpnc = fpnc_neck_model.cuda()
     fpnc.eval()
     input = torch.rand(1, 1, 64, 64).cuda()
     deploy_cfg = mmcv.Config(
@@ -483,7 +480,7 @@ def get_sar_model_cfg(decoder_type: str):
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('decoder_type',
                          ['SequentialSARDecoder', 'ParallelSARDecoder'])
-def test_sar_model(backend: Backend, decoder_type):
+def test_sar_model(backend: Backend, decoder_type, tmp_path):
     check_backend(backend)
     import os.path as osp
 
@@ -506,7 +503,7 @@ def test_sar_model(backend: Backend, decoder_type):
     pytorch_model.cfg = sar_cfg
     patched_model = patch_model(
         pytorch_model, cfg=deploy_cfg, backend=backend.value)
-    onnx_file_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    onnx_file_path = str(tmp_path / 'tmp.onnx')
     input_names = [k for k, v in model_inputs.items() if k != 'ctx']
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value), torch.no_grad():
