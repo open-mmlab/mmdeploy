@@ -29,7 +29,7 @@ def is_available():
         return False
 
 
-__all__ = []
+__all__ = ['IPUManager']
 
 if is_available():
     try:

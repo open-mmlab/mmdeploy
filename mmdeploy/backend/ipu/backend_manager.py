@@ -4,6 +4,7 @@ from typing import Any, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.apis.ipu import onnx_to_popef
 
 
 @BACKEND_MANAGERS.register('ipu')
@@ -43,3 +44,32 @@ class IPUManager(BaseBackendManager):
             bps=bps,
             output_names=output_names
         )
+
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   work_dir: str,
+                   deploy_cfg: Any,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+
+        backend_files = []
+        for model_id, onnx_path in enumerate(ir_files):
+            model_name = onnx_path.split('/')[-1][:-5]
+            ipu_config = deploy_cfg.get('backend_config', {})
+            output_dir = ipu_config.get('output_dir', '')
+            # assert output_dir != '', 'output dir for ipu backend is not set'
+            # assert os.path.exists(output_dir), 'output dir not exist'
+
+            if output_dir == '':
+                output_dir = workdir
+
+            model_dir = os.path.join(output_dir, model_name)
+            if not os.path.exists(model_dir):
+                os.mkdir(model_dir)
+            ipu_config['output_dir'] = model_dir
+            onnx_to_popef(onnx_path, ipu_config)
+            backend_files.append(os.path.join(model_dir, 'executable.popef'))
+
+        return backend_files

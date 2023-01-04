@@ -5,7 +5,7 @@ from typing import Any, Dict, Optional, Sequence, Union
 import torch
 import onnx
 
-from mmdeploy.utils import Backend
+from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
@@ -45,8 +45,9 @@ class IPUWrapper(BaseWrapper):
                  bps=1,
                  output_names: Optional[Sequence[str]] = None):
         super().__init__(output_names)
-        print('init ipu backend with bps ', bps,
-              ' output_names ', output_names)
+        self.logger = get_root_logger()
+        self.logger.info(
+            f'init ipu backend with bps {bps} output_names {output_names}')
         self.bps = bps
         # Create model runner
         config = model_runtime.ModelRunnerConfig()
@@ -55,8 +56,6 @@ class IPUWrapper(BaseWrapper):
             timeout=timedelta(seconds=600),
             sleepTime=timedelta(seconds=1))
 
-        print("Creating ModelRunner with", config)
-        print("popef path ", popef_file)
         self.runner = model_runtime.ModelRunner(popef_file,
                                                 config=config)
 

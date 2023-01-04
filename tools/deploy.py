@@ -266,23 +266,6 @@ def main():
                 kwargs=dict(),
                 ret_value=ret_value)
             backend_files += [quant_param, quant_bin]
-    if backend == Backend.IPU:
-        from mmdeploy.apis.ipu import onnx_to_popef
-        popef_files = []
-        for model_id, onnx_path in enumerate(ir_files):
-            model_name = onnx_path.split('/')[-1][:-5]
-            ipu_config = deploy_cfg.get('backend_config', {})
-            output_dir = ipu_config.get('output_dir', '')
-            assert output_dir != '', 'output dir for ipu backend is not set'
-            assert os.path.exists(output_dir), 'output dir not exist'
-
-            model_dir = os.path.join(output_dir, model_name)
-            if not os.path.exists(model_dir):
-                os.mkdir(model_dir)
-            ipu_config['output_dir'] = model_dir
-            onnx_to_popef(onnx_path, ipu_config)
-            popef_files.append(os.path.join(model_dir, 'executable.popef'))
-        backend_files = popef_files
 
     if args.test_img is None:
         args.test_img = args.img
