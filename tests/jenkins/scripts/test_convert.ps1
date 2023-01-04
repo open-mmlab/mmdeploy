@@ -10,7 +10,7 @@ $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
 #read configuration file
-$config_path = "$env:WORKSPACE\tests\jenkins\conf\win_default.config"
+$config_path = "$pwd\tests\jenkins\conf\win_default.config"
 $conf = ReadConfig $config_path
 if (-not $?) {
     throw "can't load config from $config_path."

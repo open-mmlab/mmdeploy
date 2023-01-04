@@ -25,10 +25,6 @@ pipeline {
             name: 'repo_url',
             defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
         )
-        string(
-            name: 'max_job_nums',
-            defaultValue: '1'
-        )
     }
 
     stages {
