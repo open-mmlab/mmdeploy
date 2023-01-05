@@ -54,6 +54,11 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )
 
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PUBLIC
+            $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>)
+endif ()
+
 if (MMDEPLOY_STATUS_USE_STACKTRACE)
     include(${CMAKE_SOURCE_DIR}/cmake/stacktrace.cmake)
 else ()
