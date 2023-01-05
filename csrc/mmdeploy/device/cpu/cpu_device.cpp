@@ -11,9 +11,11 @@ class CpuHostMemory : public NonCopyable {
  public:
   CpuHostMemory() : size_(), data_(), owned_data_{false} {}
   Result<void> Init(size_t size, size_t alignment) {
-    size_t space = (size + alignment - 1) / alignment * alignment;
+    alignment = std::max(alignment, sizeof(void*));
 #ifdef _MSC_VER
     data_ = _aligned_malloc(space, alignment);
+#elif defined(ANDROID)
+    posix_memalign(&data_, alignment, size);
 #else
     data_ = std::aligned_alloc(alignment, space);
 #endif
