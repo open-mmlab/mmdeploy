@@ -141,7 +141,7 @@ jobs:
         run: |
           export include_flag=$(python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])')
           CFLAGS=${include_flag} python -m pip install -r requirements/build.txt -r requirements/runtime.txt
-          CFLAGS=${include_flag} python -m pip install openmim
+          CFLAGS=${include_flag} python -m pip install -U openmim numpy
           python -m mim install $(cat requirements/codebases.txt | grep mmcls)
           python -m pip list
       - name: Build mmdeploy with cpu backends

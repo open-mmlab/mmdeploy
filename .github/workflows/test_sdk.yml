@@ -40,10 +40,12 @@ jobs:
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt update && apt install -y software-properties-common
+          add-apt-repository ppa:ignaciovizzo/opencv3-nonfree -y
           add-apt-repository ppa:git-core/ppa -y && apt-get update
           apt install -y ffmpeg libsm6 libxext6 libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
           apt install -y gcc-multilib g++-multilib ninja-build
-          apt install -y wget git unzip tar lcov cmake
+          apt install -y wget git unzip tar lcov cmake libopencv-dev
+          pkg-config --libs opencv
           apt clean
           rm -rf /var/lib/apt/lists/*
       - name: Install cmake
