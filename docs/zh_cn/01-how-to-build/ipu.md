@@ -25,4 +25,4 @@ $ cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_S
 $ make -j$(nproc)
 
 ## 三、安装ipu converter
-目前ipu的converter暂时没有开源，如果您对ipu试用感兴趣，请联系c600-support@graphcore.ai
+具体converter安装细节参见https://docs.graphcore.ai/projects/poprt-user-guide/zh_CN/latest/installation.html

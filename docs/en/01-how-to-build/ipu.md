@@ -25,4 +25,4 @@ $ cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_S
 $ make -j$(nproc)
 
 ## 3、install ipu converter
-currently the converter for ipu is not publically available, if you interested with the performance of ipu, please contact c600-support@graphcore.ai
+to fetch detailed ipu converter install guild, plese refer to https://docs.graphcore.ai/projects/poprt-user-guide/en/latest/installation.html
