@@ -13,8 +13,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <spdlog/fmt/fmt.h>
-#include <spdlog/fmt/ostr.h>
+#include "mmdeploy/core/logger.h"
 
 #include <pvti/pvti.hpp>
 
@@ -22,23 +21,6 @@
 #include "model_runtime/SessionUtils.hpp"
 #include "model_runtime/Tensor.hpp"
 namespace examples {
-
-inline void print(const std::string &msg, _IO_FILE *out = stdout);
-inline void print(const char *msg, _IO_FILE *out = stdout);
-inline void print_err(const std::string &msg);
-inline void print_err(const char *msg);
-
-inline void print(const std::string &msg, _IO_FILE *out) {
-  print(msg.c_str(), out);
-}
-
-inline void print(const char *msg, _IO_FILE *out) {
-  fmt::print(out, "[thread:{}] {}\n", std::this_thread::get_id(), msg);
-}
-
-inline void print_err(const std::string &msg) { print_err(msg.c_str()); }
-
-inline void print_err(const char *msg) { print(msg, stderr); }
 
 inline boost::program_options::variables_map parsePopefProgramOptions(
     const char *example_desc, int argc, char *argv[]) {
@@ -65,11 +47,11 @@ inline boost::program_options::variables_map parsePopefProgramOptions(
     store(parsed_options, vm);
     notify(vm);
     if (vm.count("help")) {
-      fmt::print("{}\n", desc);
+      MMDEPLOY_INFO("parse popef option succeed");
       exit(EXIT_SUCCESS);
     }
   } catch (const error &ex) {
-    examples::print_err(ex.what());
+    MMDEPLOY_INFO(ex.what());
     exit(EXIT_FAILURE);
   }
 
@@ -102,8 +84,6 @@ inline HostMemory allocateHostData(
     const std::string name = input_desc.name;
     const int64_t size_in_bytes = input_desc.size_in_bytes;
 
-    // examples::print(
-    //     fmt::format("Allocating tensor {}, {} bytes.", name, size_in_bytes));
     host_allocated_memory.emplace(name,
                                   model_runtime::TensorMemory(size_in_bytes));
   }
@@ -155,8 +135,7 @@ inline void printInputMemory(const model_runtime::InputMemory &input_memory) {
       std::pair<const std::string, model_runtime::TensorMemory>;
   for (const InputValueType &name_with_memory : input_memory) {
     auto &&[name, memory] = name_with_memory;
-    examples::print(
-        fmt::format("Input tensor {}, {} bytes", name, memory.data_size_bytes));
+    MMDEPLOY_INFO("Input tensor {}, {} bytes", name, memory.data_size_bytes);
   }
 }
 

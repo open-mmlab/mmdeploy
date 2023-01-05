@@ -57,6 +57,10 @@ struct Registry<void>::Impl {
   std::vector<string_view> names_;
 };
 
+Registry<void>::Registry() : impl_(std::make_unique<Impl>()) {}
+
+Registry<void>::~Registry() = default;
+
 bool Registry<void>::AddCreator(Creator<void>& creator) {
   assert(impl_);
   return impl_->Add(creator);
@@ -71,6 +75,7 @@ Span<Creator<void>*> Registry<void>::Creators() {
   assert(impl_);
   return impl_->Creators();
 }
+
 }  // namespace _registry
 
 }  // namespace mmdeploy
