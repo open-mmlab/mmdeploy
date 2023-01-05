@@ -264,6 +264,18 @@ jobs:
             -DMMDEPLOY_BUILD_EXAMPLES=ON `
             -DCUDNN_DIR="$env:CUDNN_DIR"
           cmake --build . --config Release -- /m
+          cmake --install . --config Release
+          echo "MMDEPLOY_DIR=$pwd\install\lib\cmake\MMDeploy" >> $env:GITHUB_ENV
+      - name: Build examples
+        run: |
+          cd build/install/example/cpp
+          mkdir build
+          cd build
+          cmake .. -A x64 -T v142 `
+            -DMMDeploy_DIR="env:MMDEPLOY_DIR" `
+            -Dpplcv_DIR="$env:PPLCV_DIR" `
+            -DOpenCV_DIR="$env:OPENCV_DIR"
+          cmake --build . --config Release
 
   build_cuda111-windows:
     runs-on: windows-latest
@@ -321,3 +333,15 @@ jobs:
             -DMMDEPLOY_BUILD_EXAMPLES=ON `
             -DCUDNN_DIR="$env:CUDNN_DIR"
           cmake --build . --config Release -- /m
+          cmake --install . --config Release
+          echo "MMDEPLOY_DIR=$pwd\install\lib\cmake\MMDeploy" >> $env:GITHUB_ENV
+      - name: Build examples
+        run: |
+          cd build/install/example/cpp
+          mkdir build
+          cd build
+          cmake .. -A x64 -T v142 `
+            -DMMDeploy_DIR="env:MMDEPLOY_DIR" `
+            -Dpplcv_DIR="$env:PPLCV_DIR" `
+            -DOpenCV_DIR="$env:OPENCV_DIR"
+          cmake --build . --config Release
