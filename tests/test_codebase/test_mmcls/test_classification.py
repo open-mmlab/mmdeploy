@@ -160,3 +160,5 @@ def test_build_test_runner():
     with TemporaryDirectory() as dir:
         runner = task_processor.build_test_runner(model, dir)
         runner.test()
+        # from mmdeploy.codebase.base.runner import DeployTestRunner
+        # assert isinstance(runner, DeployTestRunner)
