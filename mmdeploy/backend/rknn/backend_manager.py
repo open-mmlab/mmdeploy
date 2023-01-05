@@ -108,7 +108,7 @@ class RKNNManager(BaseBackendManager):
                 pass
 
             rknn_info = f'rknn-toolkit:\t{rknn_version}'
-            rknn2_info = f'rknn2-toolkit:\t{rknn2_version}'
+            rknn2_info = f'rknn-toolkit2:\t{rknn2_version}'
             log_callback(rknn_info)
             log_callback(rknn2_info)
 
