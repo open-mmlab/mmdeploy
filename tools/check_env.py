@@ -22,6 +22,7 @@ def check_backend():
     trt_version = backend_versions['tensorrt']
     ncnn_version = backend_versions['ncnn']
     tvm_version = backend_versions['tvm']
+    ipu_version = backend_versions['ipu']
 
     import mmdeploy.apis.onnxruntime as ort_apis
     logger = get_root_logger()
@@ -52,6 +53,9 @@ def check_backend():
 
     import mmdeploy.apis.coreml as coreml_apis
     logger.info(f'coreml_is_available: {coreml_apis.is_available()}')
+
+    import mmdeploy.apis.ipu as ipu_apis
+    logger.info(f'ipu_is_available: {ipu_apis.is_available()}')
 
 
 def check_codebase():
