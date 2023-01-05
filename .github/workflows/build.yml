@@ -252,6 +252,7 @@ jobs:
           cd build
           cmake ..  -A x64 -T v142 `
             -DMMDEPLOY_SHARED_LIBS=OFF `
+            -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
             -DMMDEPLOY_BUILD_SDK=ON `
@@ -321,6 +322,7 @@ jobs:
           cd build
           cmake ..  -A x64 -T v142 `
             -DMMDEPLOY_SHARED_LIBS=OFF `
+            -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
             -DMMDEPLOY_BUILD_SDK=ON `
