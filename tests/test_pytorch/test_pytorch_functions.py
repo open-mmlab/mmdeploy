@@ -12,11 +12,15 @@ from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, backend_checker,
                                  get_rewrite_outputs)
 
-deploy_cfg_ncnn = mmcv.Config(
-    dict(
-        onnx_config=dict(input_shape=None),
-        backend_config=dict(type='ncnn', model_inputs=None, use_vulkan=False),
-        codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
+@pytest.fixture(scope='module')
+def deploy_cfg_ncnn():
+    return mmcv.Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(
+                type='ncnn', model_inputs=None, use_vulkan=False),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
 
 def get_trt_config(output_names, shape):
@@ -40,7 +44,7 @@ def get_trt_config(output_names, shape):
 
 
 @backend_checker(Backend.NCNN)
-def test_get_attribute():
+def test_get_attribute(deploy_cfg_ncnn):
 
     def model_func(tensor):
         x = tensor.size()
@@ -60,7 +64,7 @@ def test_get_attribute():
 
 
 @backend_checker(Backend.NCNN)
-def test_group_norm_ncnn():
+def test_group_norm_ncnn(deploy_cfg_ncnn):
     input = torch.rand([1, 2, 2, 2])
     weight = torch.rand([2])
     bias = torch.rand([2])
@@ -80,7 +84,7 @@ def test_group_norm_ncnn():
 
 
 @backend_checker(Backend.NCNN)
-def test_chunk_ncnn():
+def test_chunk_ncnn(deploy_cfg_ncnn):
     input = torch.rand(1, 16, 16, 16)
 
     model_output = input.chunk(2, dim=1)
@@ -102,7 +106,7 @@ def test_chunk_ncnn():
 
 
 @backend_checker(Backend.NCNN)
-def test_interpolate_static():
+def test_interpolate_static(deploy_cfg_ncnn):
     input = torch.rand([1, 2, 2, 2])
     model_output = F.interpolate(input, scale_factor=[2, 2])
 
@@ -144,7 +148,7 @@ def test_interpolate__rknn():
 
 
 @backend_checker(Backend.NCNN)
-def test_linear_ncnn():
+def test_linear_ncnn(deploy_cfg_ncnn):
     input = torch.rand([1, 2, 2])
     weight = torch.rand([2, 2])
     bias = torch.rand([2])
@@ -189,7 +193,7 @@ def test_repeat_static():
 
 
 @backend_checker(Backend.NCNN)
-def test_size_of_tensor_static():
+def test_size_of_tensor_static(deploy_cfg_ncnn):
 
     def model_func(input):
         x = torch.Tensor.size(input)
@@ -241,7 +245,7 @@ class TestTopk:
     @backend_checker(Backend.NCNN)
     @pytest.mark.parametrize('k', [1, 3, 4])
     @pytest.mark.parametrize('dim', [1, 2, 3])
-    def test_topk_ncnn(self, dim, k):
+    def test_topk_ncnn(self, dim, k, deploy_cfg_ncnn):
 
         model_output = torch.Tensor.topk(TestTopk.input, k, dim).values
 
@@ -318,7 +322,7 @@ def test_triu_trt(shape, diagonal):
     'input',
     [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
 @pytest.mark.parametrize('dim', [1, 2])
-def test_normalize_ncnn(input, dim):
+def test_normalize_ncnn(input, dim, deploy_cfg_ncnn):
     import mmdeploy.apis.ncnn as ncnn_apis
     from mmdeploy.utils.test import get_onnx_model
 

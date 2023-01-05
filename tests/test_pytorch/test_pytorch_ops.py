@@ -13,39 +13,31 @@ onnx_file = tempfile.NamedTemporaryFile(suffix='onnx').name
 
 @pytest.fixture(autouse=False, scope='function')
 def prepare_symbolics():
-    context = RewriterContext(
-        Config(
-            dict(
-                onnx_config=dict(
-                    type='onnx',
-                    export_params=True,
-                    keep_initializers_as_inputs=False,
-                    opset_version=11,
-                    save_file='end2end.onnx',
-                    input_names=['input'],
-                    output_names=['output'],
-                    input_shape=None),
-                backend_config=dict(type='tensorrt'))),
-        'tensorrt',
-        opset=11)
-    context.enter()
-
-    yield
-
-    context.exit()
+    with RewriterContext(
+            Config(
+                dict(
+                    onnx_config=dict(
+                        type='onnx',
+                        export_params=True,
+                        keep_initializers_as_inputs=False,
+                        opset_version=11,
+                        save_file='end2end.onnx',
+                        input_names=['input'],
+                        output_names=['output'],
+                        input_shape=None),
+                    backend_config=dict(type='tensorrt'))),
+            'tensorrt',
+            opset=11):
+        yield
 
 
 @pytest.fixture(autouse=False, scope='function')
 def prepare_symbolics_ncnn():
-    context = RewriterContext(
-        Config({'backend_config': {
-            'type': 'ncnn'
-        }}), 'ncnn', opset=11)
-    context.enter()
-
-    yield
-
-    context.exit()
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': 'ncnn'
+            }}), 'ncnn', opset=11):
+        yield
 
 
 class OpModel(torch.nn.Module):
@@ -116,7 +108,6 @@ def test_instance_norm():
 class TestLinear:
 
     def check(self, nodes):
-        print(nodes)
         exist = False
         for node in nodes:
             if node.op_type in ['Gemm', 'MatMul']:

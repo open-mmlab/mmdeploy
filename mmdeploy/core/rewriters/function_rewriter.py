@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import inspect
 from typing import (Any, Callable, Dict, List, MutableSequence, Optional,
                     Tuple, Union)
 
@@ -72,7 +73,16 @@ def _set_func(origin_func_path: str,
             rewrite_func,
             ignore_refs=ignore_refs,
             ignore_keys=ignore_keys)
-    exec(f'{origin_func_path} = rewrite_func')
+
+    is_static_method = False
+    if method_class:
+        origin_type = inspect.getattr_static(module_or_class, split_path[-1])
+        is_static_method = isinstance(origin_type, staticmethod)
+
+    if is_static_method:
+        exec(f'{origin_func_path} = staticmethod(rewrite_func)')
+    else:
+        exec(f'{origin_func_path} = rewrite_func')
 
 
 def _del_func(path: str):

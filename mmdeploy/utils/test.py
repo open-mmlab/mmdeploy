@@ -194,12 +194,6 @@ class SwitchBackendWrapper:
         self._recover_class = recover_class
 
     def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, trace):
-        self.recover()
-
-    def set(self, **kwargs):
         """Replace attributes in backend wrappers with dummy items."""
         obj = self._recover_class
         self.init = obj.__init__
@@ -208,10 +202,9 @@ class SwitchBackendWrapper:
         obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
         obj.forward = SwitchBackendWrapper.BackendWrapper.forward
         obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
-        for k, v in kwargs.items():
-            setattr(obj, k, v)
+        return self
 
-    def recover(self):
+    def __exit__(self, type, value, trace):
         """Recover to original class."""
         assert self.init is not None and \
             self.forward is not None,\
@@ -220,6 +213,11 @@ class SwitchBackendWrapper:
         obj.__init__ = self.init
         obj.forward = self.forward
         obj.__call__ = self.call
+
+    def set(self, **kwargs):
+        obj = self._recover_class
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],

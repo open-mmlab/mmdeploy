@@ -11,9 +11,18 @@ from mmdeploy.core import RewriterContext
 from mmdeploy.utils.test import WrapFunction, assert_allclose
 from .utils import TestNCNNExporter, TestOnnxRTExporter, TestTensorRTExporter
 
-TEST_ONNXRT = TestOnnxRTExporter()
-TEST_TENSORRT = TestTensorRTExporter()
-TEST_NCNN = TestNCNNExporter()
+
+@pytest.fixture(scope='module')
+def backend(request):
+    name = request.param
+    if name == 'onnxruntime':
+        return TestOnnxRTExporter()
+    elif name == 'tensorrt':
+        return TestTensorRTExporter()
+    elif name == 'ncnn':
+        return TestNCNNExporter()
+    else:
+        pytest.skip('Unsupported backend.')
 
 
 @pytest.fixture(scope='function')
@@ -25,24 +34,15 @@ def disable_cudnn():
     torch.backends.cudnn.enabled = cudnn_enable
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
-def test_roi_align(backend,
-                   pool_h,
-                   pool_w,
-                   spatial_scale,
-                   sampling_ratio,
-                   input_list=None,
-                   save_dir=None):
+def test_roi_align(backend, pool_h, pool_w, spatial_scale, sampling_ratio,
+                   tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
-        single_roi = torch.tensor([[0, 0, 0, 4, 4]], dtype=torch.float32)
-    else:
-        input = torch.tensor(input_list[0], dtype=torch.float32)
-        single_roi = torch.tensor(input_list[1], dtype=torch.float32)
+    input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
+    single_roi = torch.tensor([[0, 0, 0, 4, 4]], dtype=torch.float32)
 
     from mmcv.ops import roi_align
 
@@ -52,6 +52,7 @@ def test_roi_align(backend,
 
     wrapped_model = WrapFunction(wrapped_function).eval()
 
+    save_dir = str(tmp_path)
     with RewriterContext(
             Config({'backend_config': {
                 'type': backend.backend_name
@@ -66,22 +67,14 @@ def test_roi_align(backend,
             save_dir=save_dir)
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
+@pytest.mark.parametrize('backend', ['tensorrt', 'onnxruntime'], indirect=True)
 @pytest.mark.parametrize('mode', ['bilinear', 'nearest'])
 @pytest.mark.parametrize('padding_mode', ['zeros', 'border', 'reflection'])
 @pytest.mark.parametrize('align_corners', [True, False])
-def test_grid_sample(backend,
-                     mode,
-                     padding_mode,
-                     align_corners,
-                     input_list=None,
-                     save_dir=None):
+def test_grid_sample(backend, mode, padding_mode, align_corners, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(1, 1, 10, 10)
-    else:
-        input = torch.tensor(input_list[0])
+    input = torch.rand(1, 1, 10, 10)
     grid = torch.Tensor([[[1, 0, 0], [0, 1, 0]]])
     grid = nn.functional.affine_grid(
         grid, (1, 1, input.shape[2] * 2, input.shape[3] * 2)).type_as(input)
@@ -107,32 +100,21 @@ def test_grid_sample(backend,
             'grid_sampler',
             input_names=['input', 'grid'],
             output_names=['output'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('dynamic_export', [True, False])
 @pytest.mark.parametrize('mode', ['bicubic', 'nearest'])
 @pytest.mark.parametrize('align_corners', [True, False])
 @pytest.mark.parametrize('output_size', [[10, 20], None])
 @pytest.mark.parametrize('scale_factor', [2])
 @pytest.mark.parametrize('n, c, h, w', [(2, 3, 5, 10)])
-def test_bicubic_interpolate(backend,
-                             dynamic_export,
-                             mode,
-                             align_corners,
-                             output_size,
-                             scale_factor,
-                             n,
-                             c,
-                             h,
-                             w,
-                             input_list=None,
-                             save_dir=None):
+def test_bicubic_interpolate(backend, dynamic_export, mode, align_corners,
+                             output_size, scale_factor, n, c, h, w, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.randn(n, c, h, w)
+    input = torch.randn(n, c, h, w)
     if dynamic_export:
         dynamic_axes = {
             'input': {
@@ -167,35 +149,23 @@ def test_bicubic_interpolate(backend,
             input_names=['input'],
             dynamic_axes=dynamic_axes,
             output_names=['output'],
-            save_dir=save_dir,
+            save_dir=str(tmp_path),
             expected_result=expected_result)
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT, TEST_ONNXRT])
+@pytest.mark.parametrize('backend', ['tensorrt', 'onnxruntime'], indirect=True)
 @pytest.mark.parametrize('in_channels,out_channels,stride,padding,'
                          'dilation,groups,deform_groups,kernel_size',
                          [(3, 64, 1, 0, 1, 1, 1, 3),
                           (1, 32, 3, 2, 1, 1, 1, 3)])
 @pytest.mark.parametrize('bias', [True, False])
-def test_modulated_deform_conv(backend,
-                               in_channels,
-                               out_channels,
-                               stride,
-                               padding,
-                               dilation,
-                               groups,
-                               deform_groups,
-                               kernel_size,
-                               bias,
-                               input_list=None,
-                               save_dir=None):
+def test_modulated_deform_conv(backend, in_channels, out_channels, stride,
+                               padding, dilation, groups, deform_groups,
+                               kernel_size, bias, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(
-            1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
-    else:
-        input = torch.tensor(input_list[0])
+    input = torch.rand(
+        1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
     conv_offset = nn.Conv2d(
         in_channels=in_channels,
         out_channels=deform_groups * 3 * kernel_size * kernel_size,
@@ -220,32 +190,20 @@ def test_modulated_deform_conv(backend,
             'modulated_deform_conv',
             input_names=['input', 'offset', 'mask'],
             output_names=['output'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('in_channels,out_channels,stride,padding,'
                          'dilation,groups,deform_groups,kernel_size',
                          [(3, 64, 1, 0, 1, 1, 1, 3),
                           (1, 32, 3, 2, 1, 1, 1, 3)])
-def test_deform_conv(backend,
-                     in_channels,
-                     out_channels,
-                     stride,
-                     padding,
-                     dilation,
-                     groups,
-                     deform_groups,
-                     kernel_size,
-                     input_list=None,
-                     save_dir=None):
+def test_deform_conv(backend, in_channels, out_channels, stride, padding,
+                     dilation, groups, deform_groups, kernel_size, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(
-            1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
-    else:
-        input = torch.tensor(input_list[0])
+    input = torch.rand(
+        1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
     conv_offset = nn.Conv2d(
         in_channels=in_channels,
         out_channels=deform_groups * 2 * kernel_size * kernel_size,
@@ -266,27 +224,19 @@ def test_deform_conv(backend,
             'deform_conv',
             input_names=['input', 'offset'],
             output_names=['output'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.usefixtures('disable_cudnn')
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('dynamic_export', [True, False])
 @pytest.mark.parametrize('fp16_mode', [True, False])
 @pytest.mark.parametrize('n, c, h, w', [(2, 3, 10, 10)])
-def test_instance_norm(disable_cudnn,
-                       backend,
-                       dynamic_export,
-                       fp16_mode,
-                       n,
-                       c,
-                       h,
-                       w,
-                       input_list=None,
-                       save_dir=None):
+def test_instance_norm(backend, dynamic_export, fp16_mode, n, c, h, w,
+                       tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.randn(n, c, h, w)
+    input = torch.randn(n, c, h, w)
     if dynamic_export:
         dynamic_axes = {
             'input': {
@@ -312,50 +262,40 @@ def test_instance_norm(disable_cudnn,
             input_names=['input'],
             dynamic_axes=dynamic_axes,
             output_names=['output'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('num_classes,pre_topk,after_topk,iou_threshold,'
                          'score_threshold,background_label_id',
                          [(5, 6, 3, 0.7, 0.1, -1)])
-def test_batched_nms(backend,
-                     num_classes,
-                     pre_topk,
-                     after_topk,
-                     iou_threshold,
-                     score_threshold,
-                     background_label_id,
-                     input_list=None,
-                     save_dir=None):
+def test_batched_nms(backend, num_classes, pre_topk, after_topk, iou_threshold,
+                     score_threshold, background_label_id, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        nms_boxes = torch.tensor([[[291.1746, 316.2263, 343.5029, 347.7312],
-                                   [288.4846, 315.0447, 343.7267, 346.5630],
-                                   [288.5307, 318.1989, 341.6425, 349.7222],
-                                   [918.9102, 83.7463, 933.3920, 164.9041],
-                                   [895.5786, 78.2361, 907.8049, 172.0883],
-                                   [292.5816, 316.5563, 340.3462, 352.9989],
-                                   [609.4592, 83.5447, 631.2532, 144.0749],
-                                   [917.7308, 85.5870, 933.2839, 168.4530],
-                                   [895.5138, 79.3596, 908.2865, 171.0418],
-                                   [291.4747, 318.6987, 347.1208, 349.5754]]])
-        scores = torch.tensor([[[0.9577, 0.9745, 0.3030, 0.6589, 0.2742],
-                                [0.1618, 0.7963, 0.5124, 0.6964, 0.6850],
-                                [0.8425, 0.4843, 0.9489, 0.8068, 0.7340],
-                                [0.7337, 0.4340, 0.9923, 0.0704, 0.4506],
-                                [0.3090, 0.5606, 0.6939, 0.3764, 0.6920],
-                                [0.0044, 0.7986, 0.2221, 0.2782, 0.4378],
-                                [0.7293, 0.2735, 0.8381, 0.0264, 0.6278],
-                                [0.7144, 0.1066, 0.4125, 0.4041, 0.8819],
-                                [0.4963, 0.7891, 0.6908, 0.1499, 0.5584],
-                                [0.4385, 0.6035, 0.0508, 0.0662, 0.5938]]])
-    else:
-        nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
-        scores = torch.tensor(input_list[1], dtype=torch.float32)
+    nms_boxes = torch.tensor([[[291.1746, 316.2263, 343.5029, 347.7312],
+                               [288.4846, 315.0447, 343.7267, 346.5630],
+                               [288.5307, 318.1989, 341.6425, 349.7222],
+                               [918.9102, 83.7463, 933.3920, 164.9041],
+                               [895.5786, 78.2361, 907.8049, 172.0883],
+                               [292.5816, 316.5563, 340.3462, 352.9989],
+                               [609.4592, 83.5447, 631.2532, 144.0749],
+                               [917.7308, 85.5870, 933.2839, 168.4530],
+                               [895.5138, 79.3596, 908.2865, 171.0418],
+                               [291.4747, 318.6987, 347.1208, 349.5754]]])
+    scores = torch.tensor([[[0.9577, 0.9745, 0.3030, 0.6589, 0.2742],
+                            [0.1618, 0.7963, 0.5124, 0.6964, 0.6850],
+                            [0.8425, 0.4843, 0.9489, 0.8068, 0.7340],
+                            [0.7337, 0.4340, 0.9923, 0.0704, 0.4506],
+                            [0.3090, 0.5606, 0.6939, 0.3764, 0.6920],
+                            [0.0044, 0.7986, 0.2221, 0.2782, 0.4378],
+                            [0.7293, 0.2735, 0.8381, 0.0264, 0.6278],
+                            [0.7144, 0.1066, 0.4125, 0.4041, 0.8819],
+                            [0.4963, 0.7891, 0.6908, 0.1499, 0.5584],
+                            [0.4385, 0.6035, 0.0508, 0.0662, 0.5938]]])
 
-    from mmdeploy.codebase.mmdet.core.post_processing import _multiclass_nms
+    from mmdeploy.codebase.mmdet.core.post_processing.bbox_nms import \
+        _multiclass_nms
     expected_result = _multiclass_nms(
         nms_boxes,
         scores,
@@ -385,50 +325,39 @@ def test_batched_nms(backend,
             input_names=['boxes', 'scores'],
             output_names=['batched_nms_bboxes', 'inds'],
             expected_result=expected_result,
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('num_classes,pre_topk,after_topk,iou_threshold,'
                          'score_threshold,background_label_id',
                          [(5, 6, 3, 0.7, 0.1, -1)])
-def test_batched_rotated_nms(backend,
-                             num_classes,
-                             pre_topk,
-                             after_topk,
-                             iou_threshold,
-                             score_threshold,
-                             background_label_id,
-                             input_list=None,
-                             save_dir=None):
+def test_batched_rotated_nms(backend, num_classes, pre_topk, after_topk,
+                             iou_threshold, score_threshold,
+                             background_label_id, tmp_path):
     backend.check_env()
     pytest.importorskip('mmrotate', reason='mmrorate is not installed.')
 
-    if input_list is None:
-        nms_boxes = torch.tensor(
-            [[[291.1746, 316.2263, 343.5029, 347.7312, 1.],
-              [288.4846, 315.0447, 343.7267, 346.5630, 2.],
-              [288.5307, 318.1989, 341.6425, 349.7222, 3.],
-              [918.9102, 83.7463, 933.3920, 164.9041, 4.],
-              [895.5786, 78.2361, 907.8049, 172.0883, 5.],
-              [292.5816, 316.5563, 340.3462, 352.9989, 6.],
-              [609.4592, 83.5447, 631.2532, 144.0749, 7.],
-              [917.7308, 85.5870, 933.2839, 168.4530, 8.],
-              [895.5138, 79.3596, 908.2865, 171.0418, 9.],
-              [291.4747, 318.6987, 347.1208, 349.5754, 10.]]])
-        scores = torch.tensor([[[0.9577, 0.9745, 0.3030, 0.6589, 0.2742],
-                                [0.1618, 0.7963, 0.5124, 0.6964, 0.6850],
-                                [0.8425, 0.4843, 0.9489, 0.8068, 0.7340],
-                                [0.7337, 0.4340, 0.9923, 0.0704, 0.4506],
-                                [0.3090, 0.5606, 0.6939, 0.3764, 0.6920],
-                                [0.0044, 0.7986, 0.2221, 0.2782, 0.4378],
-                                [0.7293, 0.2735, 0.8381, 0.0264, 0.6278],
-                                [0.7144, 0.1066, 0.4125, 0.4041, 0.8819],
-                                [0.4963, 0.7891, 0.6908, 0.1499, 0.5584],
-                                [0.4385, 0.6035, 0.0508, 0.0662, 0.5938]]])
-    else:
-        nms_boxes = torch.tensor(input_list[0], dtype=torch.float32)
-        scores = torch.tensor(input_list[1], dtype=torch.float32)
+    nms_boxes = torch.tensor([[[291.1746, 316.2263, 343.5029, 347.7312, 1.],
+                               [288.4846, 315.0447, 343.7267, 346.5630, 2.],
+                               [288.5307, 318.1989, 341.6425, 349.7222, 3.],
+                               [918.9102, 83.7463, 933.3920, 164.9041, 4.],
+                               [895.5786, 78.2361, 907.8049, 172.0883, 5.],
+                               [292.5816, 316.5563, 340.3462, 352.9989, 6.],
+                               [609.4592, 83.5447, 631.2532, 144.0749, 7.],
+                               [917.7308, 85.5870, 933.2839, 168.4530, 8.],
+                               [895.5138, 79.3596, 908.2865, 171.0418, 9.],
+                               [291.4747, 318.6987, 347.1208, 349.5754, 10.]]])
+    scores = torch.tensor([[[0.9577, 0.9745, 0.3030, 0.6589, 0.2742],
+                            [0.1618, 0.7963, 0.5124, 0.6964, 0.6850],
+                            [0.8425, 0.4843, 0.9489, 0.8068, 0.7340],
+                            [0.7337, 0.4340, 0.9923, 0.0704, 0.4506],
+                            [0.3090, 0.5606, 0.6939, 0.3764, 0.6920],
+                            [0.0044, 0.7986, 0.2221, 0.2782, 0.4378],
+                            [0.7293, 0.2735, 0.8381, 0.0264, 0.6278],
+                            [0.7144, 0.1066, 0.4125, 0.4041, 0.8819],
+                            [0.4963, 0.7891, 0.6908, 0.1499, 0.5584],
+                            [0.4385, 0.6035, 0.0508, 0.0662, 0.5938]]])
 
     from mmdeploy.codebase.mmrotate.core.post_processing.bbox_nms import \
         _multiclass_nms_rotated
@@ -462,74 +391,58 @@ def test_batched_rotated_nms(backend,
             input_names=['boxes', 'scores'],
             output_names=['batched_rotated_nms_bboxes', 'inds'],
             expected_result=expected_result,
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize(
     'out_size, pool_mode, sampling_ratio,roi_scale_factor,'
     ' finest_scale,featmap_strides, aligned',
     [(tuple([2, 2]), 0, 2, 1.0, 2, list([2.0, 4.0]), 1),
      (tuple([2, 2]), 1, 2, 1.0, 2, list([2.0, 4.0]), 1)])
-def test_multi_level_roi_align(backend,
-                               out_size,
-                               pool_mode,
-                               sampling_ratio,
-                               roi_scale_factor,
-                               finest_scale,
-                               featmap_strides,
-                               aligned,
-                               input_list=None,
-                               save_dir=None):
+def test_multi_level_roi_align(backend, out_size, pool_mode, sampling_ratio,
+                               roi_scale_factor, finest_scale, featmap_strides,
+                               aligned, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = [
-            torch.tensor([[[[0.3014, 0.7334, 0.6502, 0.1689],
-                            [0.3031, 0.3735, 0.6032, 0.1644],
-                            [0.0393, 0.4415, 0.3858, 0.2657],
-                            [0.5766, 0.0211, 0.6384, 0.0016]],
-                           [[0.0811, 0.6255, 0.0247, 0.3471],
-                            [0.1390, 0.9298, 0.6178, 0.6636],
-                            [0.2243, 0.2024, 0.2366, 0.3660],
-                            [0.1050, 0.2301, 0.7489, 0.7506]],
-                           [[0.3868, 0.1706, 0.2390, 0.8494],
-                            [0.2643, 0.9347, 0.0412, 0.5790],
-                            [0.6202, 0.0682, 0.0390, 0.5296],
-                            [0.5383, 0.1221, 0.6344, 0.1514]]]]),
-            torch.tensor([[[[0.1939, 0.9983, 0.4031, 0.2712],
-                            [0.7929, 0.1504, 0.0946, 0.5030],
-                            [0.1421, 0.7908, 0.9595, 0.4198],
-                            [0.6880, 0.4722, 0.9896, 0.2266]],
-                           [[0.0778, 0.4232, 0.0736, 0.0168],
-                            [0.2887, 0.8461, 0.1140, 0.9582],
-                            [0.5169, 0.4924, 0.8275, 0.5530],
-                            [0.8961, 0.7466, 0.5976, 0.3760]],
-                           [[0.1542, 0.5028, 0.8412, 0.6617],
-                            [0.3751, 0.2798, 0.3835, 0.8640],
-                            [0.5821, 0.6588, 0.1324, 0.7619],
-                            [0.9178, 0.7282, 0.0291, 0.3028]]]])
-        ]
-        rois = torch.tensor([[0., 0., 0., 4., 4.]])
-        if pool_mode == 1:
-            expected_result = torch.tensor([[[[0.1939, 0.3950],
-                                              [0.3437, 0.4543]],
-                                             [[0.0778, 0.1641],
-                                              [0.1305, 0.2301]],
-                                             [[0.1542, 0.2413],
-                                              [0.2094, 0.2688]]]])
-        else:
-            expected_result = torch.tensor([[[[0.1939, 0.4956],
-                                              [0.4185, 0.5167]],
-                                             [[0.0778, 0.2073],
-                                              [0.1569, 0.3162]],
-                                             [[0.1542, 0.2849],
-                                              [0.2370, 0.3053]]]])
-
+    input = [
+        torch.tensor([[[[0.3014, 0.7334, 0.6502, 0.1689],
+                        [0.3031, 0.3735, 0.6032, 0.1644],
+                        [0.0393, 0.4415, 0.3858, 0.2657],
+                        [0.5766, 0.0211, 0.6384, 0.0016]],
+                       [[0.0811, 0.6255, 0.0247, 0.3471],
+                        [0.1390, 0.9298, 0.6178, 0.6636],
+                        [0.2243, 0.2024, 0.2366, 0.3660],
+                        [0.1050, 0.2301, 0.7489, 0.7506]],
+                       [[0.3868, 0.1706, 0.2390, 0.8494],
+                        [0.2643, 0.9347, 0.0412, 0.5790],
+                        [0.6202, 0.0682, 0.0390, 0.5296],
+                        [0.5383, 0.1221, 0.6344, 0.1514]]]]),
+        torch.tensor([[[[0.1939, 0.9983, 0.4031, 0.2712],
+                        [0.7929, 0.1504, 0.0946, 0.5030],
+                        [0.1421, 0.7908, 0.9595, 0.4198],
+                        [0.6880, 0.4722, 0.9896, 0.2266]],
+                       [[0.0778, 0.4232, 0.0736, 0.0168],
+                        [0.2887, 0.8461, 0.1140, 0.9582],
+                        [0.5169, 0.4924, 0.8275, 0.5530],
+                        [0.8961, 0.7466, 0.5976, 0.3760]],
+                       [[0.1542, 0.5028, 0.8412, 0.6617],
+                        [0.3751, 0.2798, 0.3835, 0.8640],
+                        [0.5821, 0.6588, 0.1324, 0.7619],
+                        [0.9178, 0.7282, 0.0291, 0.3028]]]])
+    ]
+    rois = torch.tensor([[0., 0., 0., 4., 4.]])
+    if pool_mode == 1:
+        expected_result = torch.tensor([[[[0.1939, 0.3950], [0.3437, 0.4543]],
+                                         [[0.0778, 0.1641], [0.1305, 0.2301]],
+                                         [[0.1542, 0.2413], [0.2094,
+                                                             0.2688]]]])
     else:
-        input = input_list[0]
-        rois = input_list[1]
-        expected_result = input_list[2]
+        expected_result = torch.tensor([[[[0.1939, 0.4956], [0.4185, 0.5167]],
+                                         [[0.0778, 0.2073], [0.1569, 0.3162]],
+                                         [[0.1542, 0.2849], [0.2370,
+                                                             0.3053]]]])
+
     input_name = [('input_' + str(i)) for i in range(len(featmap_strides))]
     input_name.insert(0, 'rois')
 
@@ -572,29 +485,18 @@ def test_multi_level_roi_align(backend,
         input_names=input_name,
         output_names=['bbox_feats'],
         expected_result=expected_result,
-        save_dir=save_dir)
+        save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('k', [1, 3, 5])
 @pytest.mark.parametrize('dim', [1, 2, 3])
 @pytest.mark.parametrize('largest', [True, False])
 @pytest.mark.parametrize('sorted', [True, False])
-def test_topk(backend,
-              k,
-              dim,
-              largest,
-              sorted,
-              input_list=None,
-              save_dir=None):
+def test_topk(backend, k, dim, largest, sorted, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(1, 8, 12, 17)
-    else:
-        input = input_list[0]
-    assert input.shape[0] == 1, ('ncnn batch must be 1, '
-                                 f'but got {input.shape[0]}')
+    input = torch.rand(1, 8, 12, 17)
 
     def topk_function(inputs):
         return torch.Tensor.topk(inputs, k, dim, largest, sorted)
@@ -612,47 +514,28 @@ def test_topk(backend,
                 'topk' + f'_no_sorted_dim_{dim}',
                 input_names=['inputs'],
                 output_names=['data', 'index'],
-                save_dir=save_dir)
+                save_dir=tmp_path)
         else:
             backend.run_and_validate(
                 wrapped_model, [input.float()],
                 'topk',
                 input_names=['inputs'],
                 output_names=['data', 'index'],
-                save_dir=save_dir)
+                save_dir=tmp_path)
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('dim, n, c, h, w', [(1, 1, 1, 1, 8), (2, 1, 1, 5, 7),
                                              (3, 1, 3, 10, 15)])
-def test_shape(backend,
-               dim,
-               n,
-               c,
-               h,
-               w,
-               input_names=['input'],
-               output_names=['output'],
-               tolerate_small_mismatch=False,
-               input_list=None,
-               save_dir=None):
+def test_shape(backend, dim, n, c, h, w, tmp_path):
     backend.check_env()
+    input_names = ['input']
+    output_names = ['output']
 
     orig_shape = (n, c, h, w)[-dim - 1:]
-    if input_list is None:
-        input = torch.rand(orig_shape)
-    else:
-        input = input_list[0]
-        assert input.dim() == dim + 1, 'input.dim() must equal to dim + 1'
-        assert tuple(input.shape) == orig_shape, ('input.shape must the '
-                                                  'same as orig_shape')
-
-    assert input.shape[0] == 1, ('ncnn batch must be 1, '
-                                 f'but got {input.shape[0]}')
+    input = torch.rand(orig_shape)
 
     shape_node = make_node('Shape', input_names, output_names)
-    assert len(input_names) == 1, 'length of input_names must be 1'
-    assert len(output_names) == 1, 'length of output_names must be 1'
     shape_graph = make_graph([shape_node], 'shape_graph', [
         make_tensor_value_info(input_names[0], onnx.TensorProto.FLOAT,
                                orig_shape)
@@ -664,51 +547,28 @@ def test_shape(backend,
 
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         ncnn_model = backend.onnx2ncnn(shape_model, 'shape', output_names,
-                                       save_dir)
+                                       tmp_path)
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
     model_outputs = [torch.tensor(orig_shape).unsqueeze(0).float()]
     ncnn_outputs = ncnn_model(dict(zip(input_names, [input])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
-    assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
+    assert_allclose(model_outputs, ncnn_outputs, False)
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('dim, n, c, h, w', [(1, 1, 1, 1, 8), (2, 1, 1, 5, 7),
                                              (3, 1, 3, 10, 15)])
 @pytest.mark.parametrize('val', [0., 1., -3, 4.25])
-def test_constantofshape(backend,
-                         dim,
-                         n,
-                         c,
-                         h,
-                         w,
-                         val,
-                         input_names=['input'],
-                         output_names=['output'],
-                         tolerate_small_mismatch=False,
-                         input_list=None,
-                         save_dir=None):
+def test_constantofshape(backend, dim, n, c, h, w, val, tmp_path):
     backend.check_env()
-    if input_list is None:
-        input = torch.tensor((n, c, h, w)[-dim - 1:]).unsqueeze(0)
-    else:
-        input = input_list[0]
-        assert input.dim() == dim + 1, 'input.dim() must equal to dim + 1'
-        assert tuple(input.shape) == (n, c, h,
-                                      w)[-dim - 1:], ('input.shape must the '
-                                                      'same as orig_shape')
+    input = torch.tensor((n, c, h, w)[-dim - 1:]).unsqueeze(0)
 
-    assert input.shape[0] == 1, ('ncnn input batch must be 1, '
-                                 f'got {input.shape[0]}')
-    assert input[0][0] == 1, ('ncnn output mat batch must be 1, '
-                              f'got {input[0][0]}')
-
+    input_names = ['input']
+    output_names = ['output']
     constantofshape_node = make_node(
         'ConstantOfShape', input_names, output_names, value=float(val))
-    assert len(input_names) == 1, 'length of input_names must be 1'
-    assert len(output_names) == 1, 'length of output_names must be 1'
     constantofshape_graph = make_graph(
         [constantofshape_node], 'constantofshape_graph', [
             make_tensor_value_info(input_names[0], onnx.TensorProto.FLOAT,
@@ -721,43 +581,28 @@ def test_constantofshape(backend,
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         ncnn_model = backend.onnx2ncnn(constantofshape_model,
                                        'constantofshape', output_names,
-                                       save_dir)
+                                       str(tmp_path))
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
     model_outputs = [torch.fill_(torch.rand(tuple(input[0])), val)]
     ncnn_outputs = ncnn_model(dict(zip(input_names, [input.float()])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
-    assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
+    assert_allclose(model_outputs, ncnn_outputs, False)
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('axis, data_dims, indice_dims', [(0, 1, 1), (0, 2, 1),
                                                           (1, 2, 1), (0, 3, 1),
                                                           (1, 3, 1),
                                                           (2, 3, 1)])
-def test_gather(backend,
-                axis,
-                data_dims,
-                indice_dims,
-                input_names=['input', 'indices'],
-                output_names=['output'],
-                tolerate_small_mismatch=False,
-                input_list=None,
-                save_dir=None):
+def test_gather(backend, axis, data_dims, indice_dims, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        # the real data dims is data_dims + 1
-        data = torch.rand((8, 12, 17)[-data_dims:]).unsqueeze(0)
-        indice = torch.randint(0, 8, (3, 4, 5)[-indice_dims:]).unsqueeze(0)
-    else:
-        data = input_list[0]
-        indice = input_list[1]
-    assert data.shape[0] == 1, ('ncnn batch must be 1, '
-                                f'but got {data.shape[0]}')
-    assert indice.shape[0] == 1, ('ncnn batch must be 1, '
-                                  f'but got {indice.shape[0]}')
+    input_names = ['input', 'indices']
+    output_names = ['output']
+    data = torch.rand((8, 12, 17)[-data_dims:]).unsqueeze(0)
+    indice = torch.randint(0, 8, (3, 4, 5)[-indice_dims:]).unsqueeze(0)
 
     gather_node = make_node('Gather', input_names, output_names, axis=axis + 1)
     gather_graph = make_graph([gather_node], 'gather_graph', [
@@ -768,7 +613,7 @@ def test_gather(backend,
 
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
-                                       save_dir)
+                                       str(tmp_path))
 
     # ncnn mat has implicit batch for mat, the ncnn_output is a mat,
     # so the ncnn_outputs has 2 dimensions, not 1.
@@ -791,24 +636,15 @@ def test_gather(backend,
     ncnn_outputs = ncnn_model(
         dict(zip(input_names, [data.float(), indice.float()])))
     ncnn_outputs = [ncnn_outputs[name] for name in output_names]
-    assert_allclose(model_outputs, ncnn_outputs, tolerate_small_mismatch)
+    assert_allclose(model_outputs, ncnn_outputs, False)
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('dim', [1, 2, 3])
-def test_tensorslice(backend, dim, input_list=None, save_dir=None):
+def test_tensorslice(backend, dim, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand((8, 12, 17)[-dim:]).unsqueeze(0)
-    else:
-        input = input_list[0]
-        assert input.dim() == dim + 1, ('input.dim() must equal to '
-                                        f'dim + 1, expected: {dim + 1}, '
-                                        f'got: {input.dim()}')
-
-    assert input.shape[0] == 1, ('ncnn batch must be 1, '
-                                 f'but got {input.shape[0]}')
+    input = torch.rand((8, 12, 17)[-dim:]).unsqueeze(0)
 
     def tensorslice_function(inputs):
         if dim == 1:
@@ -826,28 +662,16 @@ def test_tensorslice(backend, dim, input_list=None, save_dir=None):
             'tensorslice',
             input_names=['inputs'],
             output_names=['outputs'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_NCNN])
+@pytest.mark.parametrize('backend', ['ncnn'], indirect=True)
 @pytest.mark.parametrize('input_dim, output_dim', [(1, 1), (1, 2), (1, 3),
                                                    (2, 2), (2, 3), (3, 3)])
-def test_expand(backend,
-                input_dim,
-                output_dim,
-                input_list=None,
-                save_dir=None):
+def test_expand(backend, input_dim, output_dim, tmp_path):
     backend.check_env()
-    if input_list is None:
-        input = torch.rand((1, 12, 1)[-input_dim:]).unsqueeze(0)
-        target = torch.rand((8, 12, 17)[-output_dim:]).unsqueeze(0)
-    else:
-        input = input_list[0]
-        target = input_list[1]
-    assert input.shape[0] == 1, (f'ncnn batch must be 1, '
-                                 f'but not {input.shape[0]}')
-    assert target.shape[0] == 1, (f'ncnn batch must be 1, '
-                                  f'but not {target.shape[0]}')
+    input = torch.rand((1, 12, 1)[-input_dim:]).unsqueeze(0)
+    target = torch.rand((8, 12, 17)[-output_dim:]).unsqueeze(0)
 
     def expand_function(input, target):
         return input.expand_as(target)
@@ -859,13 +683,13 @@ def test_expand(backend,
             'expand',
             input_names=['input', 'shape'],
             output_names=['output'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('backend', ['onnxruntime'], indirect=True)
 @pytest.mark.parametrize('iou_threshold', [0.1, 0.3])
 @pytest.mark.parametrize('score_threshold', [0., 0.1])
-def test_nms_rotated(backend, iou_threshold, score_threshold, save_dir=None):
+def test_nms_rotated(backend, iou_threshold, score_threshold, tmp_path):
     backend.check_env()
 
     boxes = torch.tensor(
@@ -896,29 +720,19 @@ def test_nms_rotated(backend, iou_threshold, score_threshold, save_dir=None):
             'nms_rotated',
             input_names=['boxes', 'scores'],
             output_names=['keep_inds'],
-            save_dir=save_dir)
+            save_dir=tmp_path)
 
 
-@pytest.mark.parametrize('backend', [TEST_ONNXRT])
+@pytest.mark.parametrize('backend', ['onnxruntime'], indirect=True)
 @pytest.mark.parametrize('pool_h,pool_w,spatial_scale,sampling_ratio',
                          [(2, 2, 1.0, 2), (4, 4, 2.0, 4)])
-def test_roi_align_rotated(backend,
-                           pool_h,
-                           pool_w,
-                           spatial_scale,
-                           sampling_ratio,
-                           input_list=None,
-                           save_dir=None):
+def test_roi_align_rotated(backend, pool_h, pool_w, spatial_scale,
+                           sampling_ratio, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        # input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
-        input = torch.tensor([[[[1., 2.], [3., 4.]]]], dtype=torch.float32)
-        single_roi = torch.tensor([[0., 0.5, 0.5, 1., 1., 0]],
-                                  dtype=torch.float32)
-    else:
-        input = torch.tensor(input_list[0], dtype=torch.float32)
-        single_roi = torch.tensor(input_list[1], dtype=torch.float32)
+    # input = torch.rand(1, 1, 16, 16, dtype=torch.float32)
+    input = torch.tensor([[[[1., 2.], [3., 4.]]]], dtype=torch.float32)
+    single_roi = torch.tensor([[0., 0.5, 0.5, 1., 1., 0]], dtype=torch.float32)
 
     from mmcv.ops import roi_align_rotated
 
@@ -939,38 +753,27 @@ def test_roi_align_rotated(backend,
             'roi_align_rotated',
             input_names=['input', 'rois'],
             output_names=['roi_feat'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize(
     'out_size, clockwise, sampling_ratio, roi_scale_factor,'
     ' finest_scale, featmap_strides, aligned',
     [(tuple([2, 2]), False, 2, 1.0, 2, list([1.0]), 1)])
-def test_multi_level_rotated_roi_align(backend,
-                                       out_size,
-                                       clockwise,
-                                       sampling_ratio,
-                                       roi_scale_factor,
-                                       finest_scale,
-                                       featmap_strides,
-                                       aligned,
-                                       input_list=None,
-                                       save_dir=None):
+def test_multi_level_rotated_roi_align(backend, out_size, clockwise,
+                                       sampling_ratio, roi_scale_factor,
+                                       finest_scale, featmap_strides, aligned,
+                                       tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        import numpy as np
-        input = [
-            torch.tensor([[[[1., 2., 5., 6.], [3., 4., 7., 8.],
-                            [9., 10., 13., 14.], [11., 12., 15., 16.]]]])
-        ]
-        rois = torch.tensor([[0., 1.5, 1.5, 3., 3., np.pi / 2]])
-        expected_result = torch.tensor([[[[7.5625, 1.9375], [10.375, 4.75]]]])
-    else:
-        input = input_list[0]
-        rois = input_list[1]
-        expected_result = input_list[2]
+    import numpy as np
+    input = [
+        torch.tensor([[[[1., 2., 5., 6.], [3., 4., 7., 8.],
+                        [9., 10., 13., 14.], [11., 12., 15., 16.]]]])
+    ]
+    rois = torch.tensor([[0., 1.5, 1.5, 3., 3., np.pi / 2]])
+    expected_result = torch.tensor([[[[7.5625, 1.9375], [10.375, 4.75]]]])
     input_name = [('input_' + str(i)) for i in range(len(featmap_strides))]
     input_name.insert(0, 'rois')
 
@@ -1013,36 +816,31 @@ def test_multi_level_rotated_roi_align(backend,
         input_names=input_name,
         output_names=['bbox_feats'],
         expected_result=expected_result,
-        save_dir=save_dir)
+        save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
 @pytest.mark.parametrize('strides', [(4, 4)])
-def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
+def test_trt_grid_priors(backend, strides, tmp_path):
     backend.check_env()
 
-    if input_list is None:
-        input = torch.rand(1, 3, 2, 2)
-        base_anchors = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
-                                     [-16.0000, -16.0000, 16.0000, 16.0000],
-                                     [-11.3137, -22.6274, 11.3137, 22.6274]])
+    input = torch.rand(1, 3, 2, 2)
+    base_anchors = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                 [-16.0000, -16.0000, 16.0000, 16.0000],
+                                 [-11.3137, -22.6274, 11.3137, 22.6274]])
 
-        expected_result = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
-                                        [-16.0000, -16.0000, 16.0000, 16.0000],
-                                        [-11.3137, -22.6274, 11.3137, 22.6274],
-                                        [-18.6274, -11.3137, 26.6274, 11.3137],
-                                        [-12.0000, -16.0000, 20.0000, 16.0000],
-                                        [-7.3137, -22.6274, 15.3137, 22.6274],
-                                        [-22.6274, -7.3137, 22.6274, 15.3137],
-                                        [-16.0000, -12.0000, 16.0000, 20.0000],
-                                        [-11.3137, -18.6274, 11.3137, 26.6274],
-                                        [-18.6274, -7.3137, 26.6274, 15.3137],
-                                        [-12.0000, -12.0000, 20.0000, 20.0000],
-                                        [-7.3137, -18.6274, 15.3137, 26.6274]])
-    else:
-        input = input_list[0]
-        base_anchors = input_list[1]
-        expected_result = input_list[2]
+    expected_result = torch.tensor([[-22.6274, -11.3137, 22.6274, 11.3137],
+                                    [-16.0000, -16.0000, 16.0000, 16.0000],
+                                    [-11.3137, -22.6274, 11.3137, 22.6274],
+                                    [-18.6274, -11.3137, 26.6274, 11.3137],
+                                    [-12.0000, -16.0000, 20.0000, 16.0000],
+                                    [-7.3137, -22.6274, 15.3137, 22.6274],
+                                    [-22.6274, -7.3137, 22.6274, 15.3137],
+                                    [-16.0000, -12.0000, 16.0000, 20.0000],
+                                    [-11.3137, -18.6274, 11.3137, 26.6274],
+                                    [-18.6274, -7.3137, 26.6274, 15.3137],
+                                    [-12.0000, -12.0000, 20.0000, 20.0000],
+                                    [-7.3137, -18.6274, 15.3137, 26.6274]])
     input_name = ['input']
     output_name = ['output']
 
@@ -1104,11 +902,11 @@ def test_trt_grid_priors(backend, strides, input_list=None, save_dir=None):
             2: 'h',
             3: 'w'
         }),
-        save_dir=save_dir)
+        save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
-def test_dot_product_attention(backend, save_dir=None):
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
+def test_dot_product_attention(backend, tmp_path):
     backend.check_env()
 
     B = 2
@@ -1132,11 +930,11 @@ def test_dot_product_attention(backend, save_dir=None):
             'dot_product_attention',
             input_names=['query', 'key', 'value'],
             output_names=['out', 'attn'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
-def test_gather_topk(backend, save_dir=None):
+@pytest.mark.parametrize('backend', ['tensorrt'], indirect=True)
+def test_gather_topk(backend, tmp_path):
     backend.check_env()
     from mmdeploy.codebase.mmdet.deploy.utils import gather_topk
 
@@ -1168,4 +966,4 @@ def test_gather_topk(backend, save_dir=None):
             'gather_topk',
             input_names=['x'],
             output_names=['out'],
-            save_dir=save_dir)
+            save_dir=str(tmp_path))
