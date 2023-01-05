@@ -1,20 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import pytest
 import torch
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, load_config
+from mmdeploy.utils import Backend, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_H = 192
 IMAGE_W = 256
-
-try:
-    import_codebase(Codebase.MMPOSE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMPOSE} is not installed.', allow_module_level=True)
 
 from .utils import generate_datasample  # noqa: E402
 from .utils import generate_mmpose_deploy_config  # noqa: E402

@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .voxel_detection import MMDetection3d, VoxelDetection
 from .voxel_detection_model import VoxelDetectionModel
+from .voxel_detection_task import MMDetection3d, VoxelDetectionTask
 
-__all__ = ['MMDetection3d', 'VoxelDetection', 'VoxelDetectionModel']
+__all__ = ['MMDetection3d', 'VoxelDetectionTask', 'VoxelDetectionModel']

@@ -74,7 +74,7 @@ def process_model_config(model_cfg: mmengine.Config,
 
 
 @MMACTION_TASK.register_module(Task.VIDEO_RECOGNITION.value)
-class VideoRecognition(BaseTask):
+class VideoRecognitionTask(BaseTask):
     """VideoRecognition task class.
 
     Args:
@@ -86,7 +86,8 @@ class VideoRecognition(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
-        super(VideoRecognition, self).__init__(model_cfg, deploy_cfg, device)
+        super(VideoRecognitionTask, self).__init__(model_cfg, deploy_cfg,
+                                                   device)
 
     def build_data_preprocessor(self):
         model_cfg = self.model_cfg

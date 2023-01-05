@@ -7,9 +7,9 @@ import torch
 from mmengine import Config
 from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase, Task
 from mmdeploy.utils.config_utils import get_input_shape, is_dynamic_shape
 
@@ -26,7 +26,8 @@ class MMRotate(MMCodebase):
     def register_deploy_modules(cls):
         import mmdeploy.codebase.mmrotate.models  # noqa: F401
         import mmdeploy.codebase.mmrotate.structures  # noqa: F401
-        from mmdeploy.codebase.mmdet.deploy.object_detection import MMDetection
+        from mmdeploy.codebase.mmdet.deploy.object_detection_task import \
+            MMDetection
         MMDetection.register_deploy_modules()
 
     @classmethod
@@ -137,23 +138,19 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMROTATE_TASK.register_module(Task.ROTATED_DETECTION.value)
-class RotatedDetection(BaseTask):
+class RotatedDetectionTask(BaseTask):
     """Rotated detection task class.
 
     Args:
-        model_cfg (Config): Loaded model Config object..
+        model_cfg (Config): Loaded model Config object.
         deploy_cfg (Config): Loaded deployment Config object.
         device (str): A string represents device type.
         experiment_name (str): The experiment name. Default to
             `RotatedDetection`.
     """
 
-    def __init__(self,
-                 model_cfg: Config,
-                 deploy_cfg: Config,
-                 device: str,
-                 experiment_name: str = 'RotatedDetection'):
-        super().__init__(model_cfg, deploy_cfg, device, experiment_name)
+    def __init__(self, model_cfg: Config, deploy_cfg: Config, device: str):
+        super().__init__(model_cfg, deploy_cfg, device)
 
     def build_backend_model(self,
                             model_files: Optional[str] = None,
@@ -258,6 +255,7 @@ class RotatedDetection(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
+        from mmengine import Registry as EngineRegistry
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         pipeline = model_cfg.test_pipeline
@@ -271,7 +269,8 @@ class RotatedDetection(BaseTask):
         # NOTE: There is a potential risk that transforms with same names in
         # different scope might have different behavior
         for transform in pipeline:
-            _, transform['type'] = Registry.split_scope_key(transform['type'])
+            _, transform['type'] = EngineRegistry.split_scope_key(
+                transform['type'])
 
         # Extra pad outside datapreprocessor for CenterNet, CornerNet, etc.
         for i, transform in enumerate(pipeline):

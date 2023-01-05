@@ -2,9 +2,14 @@
 import pytest
 
 
+def pytest_ignore_collect(collection_path, path, config):
+    import importlib
+    return importlib.util.find_spec('mmcls') is None
+
+
 @pytest.fixture(autouse=True)
 def init_test():
     # init default scope
-    from mmcls.utils import register_all_modules
-
-    register_all_modules(True)
+    from mmdeploy.codebase import import_codebase
+    from mmdeploy.utils import Codebase
+    import_codebase(Codebase.MMCLS)

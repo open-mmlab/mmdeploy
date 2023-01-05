@@ -91,7 +91,7 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMOCR_TASK.register_module(Task.TEXT_RECOGNITION.value)
-class TextRecognition(BaseTask):
+class TextRecognitionTask(BaseTask):
     """Text detection task class.
 
     Args:
@@ -102,7 +102,8 @@ class TextRecognition(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
-        super(TextRecognition, self).__init__(model_cfg, deploy_cfg, device)
+        super(TextRecognitionTask, self).__init__(model_cfg, deploy_cfg,
+                                                  device)
 
     def build_backend_model(self,
                             model_files: Optional[str] = None,

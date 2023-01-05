@@ -55,8 +55,12 @@ class End2EndModel(BaseBackendModel):
 
     def _get_head(self):
         from mmcls.models import build_head
-        head_config = self.model_cfg['model']['head']
-        head = build_head(head_config)
+        model = self.model_cfg.get('model', None)
+        if model is not None and 'head' in model:
+            head_config = self.model_cfg['model']['head']
+            head = build_head(head_config)
+        else:
+            head = None
         return head
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],

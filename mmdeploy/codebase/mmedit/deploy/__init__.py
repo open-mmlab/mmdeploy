@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.codebase.mmedit.deploy.mmediting import MMEditing
-from mmdeploy.codebase.mmedit.deploy.super_resolution import SuperResolution
+from .mmediting import MMEditing
+from .super_resolution_task import SuperResolutionTask
 
-__all__ = ['MMEditing', 'SuperResolution']
+__all__ = ['MMEditing', 'SuperResolutionTask']

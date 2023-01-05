@@ -1,16 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import numpy as np
-import pytest
 import torch
 from mmengine import Config
-
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase
-
-try:
-    import_codebase(Codebase.MMDET)
-except ImportError:
-    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 from mmdeploy.codebase.mmdet.deploy import (clip_bboxes,
                                             get_post_processing_params,

@@ -8,16 +8,9 @@ import pytest
 import torch
 from mmengine import Config
 
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
-
-try:
-    import_codebase(Codebase.MMROTATE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMROTATE} is not installed.', allow_module_level=True)
 
 
 def seed_everything(seed=1029):

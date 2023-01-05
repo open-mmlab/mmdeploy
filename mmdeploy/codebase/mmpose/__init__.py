@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .deploy import PoseDetection
+from .deploy import PoseDetectionTask
 
-__all__ = ['PoseDetection']
+__all__ = ['PoseDetectionTask']

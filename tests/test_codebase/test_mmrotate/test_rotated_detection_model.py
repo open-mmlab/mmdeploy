@@ -1,19 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import pytest
 import torch
 from mmengine import Config
 from mmengine.structures import BaseDataElement
 
 import mmdeploy.backend.onnxruntime as ort_apis
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, load_config
+from mmdeploy.utils import Backend, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
-
-try:
-    import_codebase(Codebase.MMROTATE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMROTATE} is not installed.', allow_module_level=True)
 
 IMAGE_SIZE = 32
 

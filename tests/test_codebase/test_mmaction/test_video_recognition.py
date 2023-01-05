@@ -7,15 +7,8 @@ from mmengine import Config
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
-
-try:
-    import_codebase(Codebase.MMACTION)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMACTION} is not installed.', allow_module_level=True)
 
 model_cfg_path = 'tests/test_codebase/test_mmaction/data/model.py'
 model_cfg = load_config(model_cfg_path)[0]
@@ -33,10 +26,16 @@ deploy_cfg = Config(
             output_names=['output'])))
 
 onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+task_processor = None
 img_shape = (224, 224)
 num_classes = 400
 video = 'tests/test_codebase/test_mmaction/data/video/demo.mp4'
+
+
+@pytest.fixture(autouse=True)
+def init_task_processor():
+    global task_processor
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
 
 
 @pytest.fixture

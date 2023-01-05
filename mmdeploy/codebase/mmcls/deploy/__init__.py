@@ -1,4 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .classification import Classification
+from .classification_task import ClassificationTask
 
-__all__ = ['Classification']
+__all__ = ['ClassificationTask']

@@ -9,9 +9,9 @@ from mmdet3d.structures import get_box_type
 from mmengine import Config
 from mmengine.dataset import Compose, pseudo_collate
 from mmengine.model import BaseDataPreprocessor
-from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
+from mmdeploy.codebase.base import TaskRegistry as Registry
 from mmdeploy.utils import Codebase, Task
 
 MMDET3D_TASK = Registry('mmdet3d_tasks')
@@ -58,7 +58,7 @@ def _get_dataset_metainfo(model_cfg: Config):
 
 
 @MMDET3D_TASK.register_module(Task.VOXEL_DETECTION.value)
-class VoxelDetection(BaseTask):
+class VoxelDetectionTask(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
