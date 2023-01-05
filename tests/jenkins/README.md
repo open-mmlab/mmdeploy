@@ -167,16 +167,20 @@ utils.psm1 ## 工具类
 
 ### step1
 
-在workspace目录下git clone https://github.com/kumailf/mmdeploy
-只保留tests目录及文件，并放在workspace目录下。
+power shell脚本存放于在workspace目录下mmdeploy_win_master@2中tests/jekins/
 
 ### step2
 
-新增支持修改分支参数，配置文件在./tests/jekins/conf/win_default.config
+新增支持修改分支参数，配置文件在workspace目录下mmdeploy_win_master@2/tests/jekins/conf/win_default.config
 
 ### step3
 
-修改配置文件参数以及相关环境变量参数后在workspace目录下打开power shell,运行python ./tests/jekins/scripts/test_convert.ps1
+修改配置文件参数以及相关环境变量参数后在workspace目录下mmdeploy_win_master@2打开power shell,运行python ./tests/jekins/scripts/test_convert.ps1
+
+### step4
+
+测试结果存放在D:\huangzijie\workspace\mmdeploy_regression_working_dir\$codebase\cu113
+测试日志存放在D:\huangzijie\workspace\regression_log\convert_log\
 
 ## Jenkinsfile
 

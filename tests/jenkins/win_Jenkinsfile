@@ -1,18 +1,20 @@
 pipeline {
     agent { label 'deploy_win2' }
     parameters {
-        string(
+        choice(
             name: 'CONFIG',
-            defaultValue: 'Windows-3080_cuda-113_master_full-test.config',
+            choices : [
+                'Windows-3080_cuda-113_master_full-test.config'
+            ],
             description: 'select config'
         )
         string(
-            name: 'CODEBASES',
+            name: 'codebase_list',
             defaultValue: 'mmdet mmcls mmedit mmocr mmpose mmrotate mmseg',
             description: 'select codebase'
         )
         string(
-            name: 'EXEC_PERFORMANCE',
+            name: 'exec_performance',
             defaultValue: 'y',
             description: 'exec performance or not,use y/n'
         )
@@ -28,6 +30,17 @@ pipeline {
     }
 
     stages {
+        stage('Set Config') {
+            agent { label 'deploy_win2' }
+            steps {
+                powershell "Write-Host $pwd"
+                powershell "cp ./tests/jenkins/conf/${params.CONFIG} ./tests/jenkins/conf/win_tmp.config"
+                powershell "(Get-content ./tests/jenkins/conf/win_tmp.config -replace "codebase_list=.*","codebase_list=${params.codebase_list}" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
+                powershell "(Get-content ./tests/jenkins/conf/win_tmp.config -replace "exec_performance=.*","exec_performance=${params.exec_performance}" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
+                powershell "(Get-content ./tests/jenkins/conf/win_tmp.config -replace "repo_url=.*","repo_url=${params.repo_url}" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
+                powershell "(Get-content ./tests/jenkins/conf/win_tmp.config -replace "mmdeploy_branch=.*","mmdeploy_branch=${params.mmdeploy_branch}" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
+            }
+        }
         stage('Convert') {
             agent { label 'deploy_win2' }
             steps {
@@ -35,6 +48,12 @@ pipeline {
                     @ECHO ON
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1
                 """
+            }
+        }
+        stage('Tear Down') {
+            agent { 'deploy_win2' }
+            steps {
+                powershell "rm -f ./tests/jenkins/conf/win_tmp.config"
             }
         }
     }
