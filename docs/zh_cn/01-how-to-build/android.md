@@ -123,7 +123,7 @@ make -j$(nproc) install
       -DOpenCV_DIR=${OPENCV_ANDROID_SDK_DIR}/sdk/native/jni/abi-${ANDROID_ABI} \
       -Dncnn_DIR=${NCNN_DIR}/build_${ANDROID_ABI}/install/lib/cmake/ncnn \
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
-      -DMMDEPLOY_SHARED_LIBS=ON \
+      -DMMDEPLOY_SHARED_LIBS=OFF \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
       -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30 \
