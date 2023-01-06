@@ -35,11 +35,11 @@ pipeline {
             steps {
                 bat """
                     @ECHO ON
-                    pwsh.exe "cp ./tests/jenkins/conf/${params.CONFIG} ./tests/jenkins/conf/win_tmp.config"
-                    pwsh.exe "(Get-content ./tests/jenkins/conf/win_tmp.config -replace 'codebase_list=.*','codebase_list=${params.codebase_list}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
-                    pwsh.exe "(Get-content ./tests/jenkins/conf/win_tmp.config -replace 'exec_performance=.*','exec_performance=${params.exec_performance}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
-                    pwsh.exe "(Get-content ./tests/jenkins/conf/win_tmp.config -replace 'repo_url=.*','repo_url=${params.repo_url}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
-                    pwsh.exe "(Get-content ./tests/jenkins/conf/win_tmp.config -replace 'mmdeploy_branch=.*','mmdeploy_branch=${params.mmdeploy_branch}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos"
+                    cp ./tests/jenkins/conf/${params.CONFIG} ./tests/jenkins/conf/win_tmp.config
+                    (Get-content ./tests/jenkins/conf/win_tmp.config -replace 'codebase_list=.*','codebase_list=${params.codebase_list}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
+                    (Get-content ./tests/jenkins/conf/win_tmp.config -replace 'exec_performance=.*','exec_performance=${params.exec_performance}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
+                    (Get-content ./tests/jenkins/conf/win_tmp.config -replace 'repo_url=.*','repo_url=${params.repo_url}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
+                    (Get-content ./tests/jenkins/conf/win_tmp.config -replace 'mmdeploy_branch=.*','mmdeploy_branch=${params.mmdeploy_branch}' | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
             """
             }
         }
