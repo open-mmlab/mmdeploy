@@ -38,6 +38,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
+          export DEBIAN_FRONTEND=noninteractive
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt update && apt install -y software-properties-common
           add-apt-repository ppa:ignaciovizzo/opencv3-nonfree -y

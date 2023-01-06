@@ -141,7 +141,7 @@ jobs:
         run: |
           export include_flag=$(python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])')
           CFLAGS=${include_flag} python -m pip install -r requirements/build.txt -r requirements/runtime.txt
-          CFLAGS=${include_flag} python -m pip install -U openmim numpy
+          CFLAGS=${include_flag} python -m pip install -U openmim
           python -m mim install $(cat requirements/codebases.txt | grep mmcls)
           python -m pip list
       - name: Build mmdeploy with cpu backends
@@ -164,6 +164,8 @@ jobs:
           cd ppq
           git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
           python -m pip install -r requirements.txt
+          # fix ppq using deprecated function np.asscalar
+          python -m pip install numpy==1.21.5
           python setup.py install
           cd -
       - name: test ppq ncnn quant
