@@ -97,7 +97,7 @@ class LetterResize : public Transform {
       }
 
       Tensor dst_img;
-      if (!(no_pad_shape[0] == h, no_pad_shape[1] == w)) {
+      if (!(no_pad_shape[0] == h && no_pad_shape[1] == w)) {
         OUTCOME_TRY(resize_.Apply(src_img, dst_img, no_pad_shape[0], no_pad_shape[1]));
       } else {
         dst_img = src_img;
