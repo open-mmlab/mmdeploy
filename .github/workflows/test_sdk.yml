@@ -55,6 +55,11 @@ jobs:
           tar -xzvf cmake-3.22.0-linux-x86_64.tar.gz
           ln -sf $(pwd)/cmake-3.22.0-linux-x86_64/bin/* /usr/bin/
           python -m pip install cmake==3.22.0
+      - name: Install ppl.cv
+        run: |
+          git clone --depth 1 --branch v0.7.0 git clone https://github.com/openppl-public/ppl.cv.git
+          cd ppl.cv && bash ./build.sh cuda
+          cd -
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -62,12 +67,15 @@ jobs:
       - name: Build and run SDK unit test without backend
         run: |
           export PATH=$(pwd)/cmake-3.22.0-linux-x86_64/bin:$PATH
+          export pplcv_DIR=$(pwd)/ppl.cv/cuda-build/install/lib/cmake/ppl
+
           mkdir -p build && cd build
           cmake .. -DCMAKE_CXX_COMPILER=g++-7 \
             -DMMDEPLOY_CODEBASES=all \
             -DMMDEPLOY_BUILD_SDK=ON \
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF \
             -DMMDEPLOY_TARGET_DEVICES="cpu;cuda" \
+            -Dpplcv_DIR=${pplcv_DIR} \
             -DMMDEPLOY_COVERAGE=ON \
             -DMMDEPLOY_BUILD_TEST=ON
           make -j2 && make install
