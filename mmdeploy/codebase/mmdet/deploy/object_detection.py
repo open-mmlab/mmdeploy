@@ -313,7 +313,8 @@ class ObjectDetection(BaseTask):
                 params['mask_thr_binary'] = params['rcnn']['mask_thr_binary']
                 type = 'ResizeInstanceMask'  # for instance-seg
         if get_backend(self.deploy_cfg) == Backend.RKNN:
-            if 'YOLO' in self.model_cfg.model.type:
+            if 'YOLO' in self.model_cfg.model.type or \
+               'RTMDet' in self.model_cfg.model.type:
                 bbox_head = self.model_cfg.model.bbox_head
                 type = bbox_head.type
                 params['anchor_generator'] = bbox_head.get(
