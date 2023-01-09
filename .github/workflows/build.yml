@@ -154,10 +154,10 @@ jobs:
 #          coverage xml
 #          coverage report -m
 
-  build_cuda111:
+  build_cuda113:
     runs-on: [self-hosted, NVIDIA-3090]
     container:
-      image: pytorch/pytorch:1.10.0-cuda11.1-cudnn8-devel
+      image: pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
 
     strategy:
       matrix:
