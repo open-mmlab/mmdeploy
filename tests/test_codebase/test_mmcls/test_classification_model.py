@@ -99,7 +99,16 @@ class TestRKNNEnd2EndModel:
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_classification_model():
-    model_cfg = Config(dict(data=dict(test={'type': 'ImageNet'})))
+    model_cfg = Config(
+        dict(
+            data=dict(test={'type': 'ImageNet'}),
+            model=dict(
+                type='ImageClassifier',
+                head=dict(
+                    type='LinearClsHead',
+                    num_classes=10,
+                    in_channels=512,
+                    loss=dict(type='CrossEntropyLoss', loss_weight=1.0)))))
     deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
@@ -117,3 +126,6 @@ def test_build_classification_model():
         classifier = build_classification_model([''], model_cfg, deploy_cfg,
                                                 'cpu')
         assert isinstance(classifier, End2EndModel)
+
+
+test_build_classification_model()
