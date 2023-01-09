@@ -46,11 +46,6 @@ pipeline {
                 """
             }
         }
-        stage('Tear Down') {
-            agent { label 'deploy_win2' }
-            steps {
-                powershell "rm -f ./tests/jenkins/conf/win_tmp.config"
-            }
-        }
+
     }
 }
