@@ -867,6 +867,70 @@ def _filter_string(inputs):
     outputs = ''.join([i.lower() for i in inputs if i.isalnum()])
     return outputs
 
+def env(yml: str):
+    """Return some env.
+    Args:
+        yml(str): Input codebase yaml filename.
+    
+    Returns:
+        deploee_codebase(str): Codebase string in deploee.
+        codebase_version(str): Codebase version.
+        torch_version(str): Pytorch version.
+    """
+    codebase_map = {'mmaction': 'mmaction-videorec', 'mmdet': 'mmdet-det', 'mmdet3d': 'mmdet3d-voxel', 'mmedit': 'mmedit-superres', 
+    'mmocr': 'mmocr-rec', }
+
+    if 'mmcls' in yml:
+        import mmcls
+        codebase_version = mmcls.__version__
+        codebase = 'mmcls'
+
+    elif 'mmaction' == yml:
+        import mmaction
+        codebase_version = mmaction.__version__
+        codebase = 'mmaction'
+
+    elif 'mmdet3d' == yml:
+        import mmdet3d
+        codebase_version = mmdet3d.__version__
+        codebase = 'mmdet3d'
+
+    elif 'mmdet' in yml:
+        import mmdet
+        codebase_version = mmdet.__version__
+        codebase = 'mmdet'
+
+    elif 'mmedit' in yml:
+        import mmedit
+        codebase_version = mmedit.__version__
+        codebase = 'mmedit'
+
+    elif 'mmocr' in yml:
+        import mmocr
+        codebase_version = mmocr.__version__
+        codebase = 'mmocr'
+
+    elif 'mmpose' in yml:
+        import mmpose
+        codebase_version = mmpose.__version__
+        codebase = 'mmpose'
+
+    elif 'mmseg' in yml:
+        import mmseg
+        codebase_version = mmseg.__version__
+        codebase = 'mmseg'
+
+    else:
+        raise Exception('cannot parse codebase version from yml {}'.format(yml))
+
+    deploee_codebase = codebase
+    if codebase in codebase_map:
+        deploee_codebase = codebase_map[codebase]
+    
+    import torch
+    torch_version = torch.__version__
+
+    return deploee_codebase, codebase_version, torch_version
 
 def main():
     args = parse_args()
@@ -909,7 +973,11 @@ def main():
         f'./tests/regression/{codebase}.yml' for codebase in args.codebase
     ]
 
+
     for deploy_yaml in deploy_yaml_list:
+
+        deploee_codebase, codebase_version, torch_version = env(deploy_yaml)
+
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
                                     'please check !')
@@ -920,6 +988,7 @@ def main():
         report_save_path = \
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
         report_txt_path = report_save_path.with_suffix('.txt')
+        report_deploee_path = work_dir.joinpath('deploee').with_suffix('.txt')
 
         report_dict = {
             'Model': [],
@@ -933,6 +1002,24 @@ def main():
             'Precision Type': [],
             'Conversion Result': [],
             # 'FPS': []
+        }
+
+        deploee_dict = {
+            'name' : [],
+            'dataset': [],
+            'codebase' : [],
+            'train_path': [],
+            'pth_url': [],
+            'data_dir': [],
+            'runtime': [],
+            'preprocess': [],
+            'postprocess': [],
+            'quant': [],
+            'torch_version': [],
+            'codebase_version': [],
+            'forward_param': [],
+            'backward_param': [],
+            'pass': []
         }
 
         global_info = yaml_info.get('globals')
@@ -952,7 +1039,16 @@ def main():
             title_str = title_str[:-1] + '\n'
             f_report.write(title_str)  # clear the report tmp file
 
+        with open(report_deploee_path, 'w') as f_report:
+            title_str = ''
+            for key in deploee_dict:
+                title_str += f'{key},'
+            title_str = title_str[:-1] + '\n'
+            f_report.write(title_str)  # clear deploee report tmp file
+
         models_info = yaml_info.get('models')
+    
+
         for models in models_info:
             model_name_origin = models.get('name', 'model')
             model_name_new = _filter_string(model_name_origin)
@@ -1010,6 +1106,19 @@ def main():
                         logger.warning('backend_file_name is None, '
                                        'skip it...')
                         continue
+
+                    # fill deploee dict
+                    deploee_dict[]
+
+                    forward_param = dict()
+                    forward_param['quant'] = 'fp32'
+                    deploee_dict['forward_param'].append(forward_param)
+                    
+                    backward_param = pytorch_metric.copy()
+                    backward_param['torch_version'] = torch_version
+                    backward_param[deploee_codebase] = codebase_version
+                    deploee_dict['backward_param'].append(backward_param)
+
 
                     get_backend_result(pipeline, model_cfg_path,
                                        checkpoint_path, work_dir, args.device,
