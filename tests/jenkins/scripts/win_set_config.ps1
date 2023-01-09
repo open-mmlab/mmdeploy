@@ -8,7 +8,7 @@ cat ./tests/jenkins/conf/win_tmp.config
 #(Get-content ./tests/jenkins/conf/win_tmp.config) -replace 'exec_performance=.*',"exec_performance=$eperformance" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
 #(Get-content ./tests/jenkins/conf/win_tmp.config) -replace 'repo_url=.*',"repo_url=$rurl" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
 #(Get-content ./tests/jenkins/conf/win_tmp.config) -replace 'mmdeploy_branch=.*',"mmdeploy_branch=$mbranch" | Set-Content ./tests/jenkins/conf/win_tmp.config -Verbos
-$ConfigPath = './tests/jenkins/conf/win_tmp.config'
+$ConfigPath = ./tests/jenkins/conf/win_tmp.config
 Write-Host "$ConfigPath"
 $content = Get-Content $ConfigPath
 $content.replace('codebase_list=.*', "codebase_list=$cblist") | Set-Content $ConfigPath -Verbos
