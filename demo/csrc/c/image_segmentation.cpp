@@ -60,7 +60,19 @@ int main(int argc, char* argv[]) {
   cv::Mat color_mask = cv::Mat::zeros(result->height, result->width, CV_8UC3);
   int pos = 0;
   for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
-    *iter = palette[result->mask[pos++]];
+    // output mask
+    if (result->mask) {
+      *iter = palette[result->mask[pos++]];
+    }
+    // output score
+    if (result->score) {
+      std::vector<std::pair<float, int>> score(result->classes);
+      for (int k = 0; k < result->classes; k++) {
+        score[k] = {result->score[pos++], k};
+      }
+      std::sort(score.begin(), score.end());
+      *iter = palette[score.back().second];
+    }
   }
 
   img = img * 0.5 + color_mask * 0.5;
