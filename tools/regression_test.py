@@ -1180,16 +1180,17 @@ def main():
                     deploee_dict['pth_url'].append(pth_url)
                     deploee_dict['runtime'].append(deploee_runtime(backend_name))
 
-                    # from mmdeploy.apis import build_task_processor
-                    # import mmengine
-                    # deploy_cfg_path = mmengine.Config.fromfile(pipeline.get('deploy_config'))
+                    from mmdeploy.apis import build_task_processor
+                    import mmengine
+                    deploy_cfg_path = mmengine.Config.fromfile(pipeline.get('deploy_config'))
 
-                    # import pdb
-                    # pdb.set_trace()
                     # from mmdet3d.utils import register_all_modules
                     # register_all_modules()
-                    # task_processor = build_task_processor(model_cfg=deploy_cfg_path, deploy_cfg=deploy_cfg_path, device=args.device)
-                    # postprocess = task_processor.get_postprocess(work_dir)
+
+                    import pdb
+                    pdb.set_trace()
+                    task_processor = build_task_processor(model_cfg=mmengine.Config.fromfile(model_cfg_path), deploy_cfg=deploy_cfg_path, device=args.device)
+                    postprocess = task_processor.get_postprocess(work_dir)
                     # preprocess = task_processor.get_preprocess()
                     # deploee_dict['preprocess'].append(preprocess)
                     # deploee_dict['postprocess'].append(postprocess)
