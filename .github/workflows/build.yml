@@ -157,17 +157,17 @@ jobs:
   build_cuda111:
     runs-on: [self-hosted, NVIDIA-3090]
     container:
-      image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
+      image: pytorch/pytorch:1.10.0-cuda11.1-cudnn8-devel
 
     strategy:
       matrix:
         python-version: [3.7]
-        torch: [1.8.0+cu111]
+        torch: [1.10.0+cu113]
         mmcv: [1.4.2]
         include:
-          - torch: 1.8.0+cu111
-            torch_version: torch1.8
-            torchvision: 0.9.0+cu111
+          - torch: 1.10.0+cu113
+            torch_version: torch1.10
+            torchvision: 0.9.0+cu113
 
     steps:
       - uses: actions/checkout@v2
@@ -186,7 +186,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu113/${{matrix.torch_version}}/index.html
           CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
