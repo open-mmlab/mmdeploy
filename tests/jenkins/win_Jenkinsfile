@@ -3,9 +3,7 @@ pipeline {
     parameters {
         choice(
             name: 'CONFIG',
-            choices : [
-                'Windows-3080_cuda-113_master_full-test.config'
-            ],
+            defaultValue:'Windows-3080_cuda-113_master_full-test.config',
             description: 'select config'
         )
         string(
