@@ -11,7 +11,18 @@ Import-Module $scriptDir\utils.psm1
 
 #read configuration file
 $config_path = "$pwd\tests\jenkins\conf\win_default.config"
-$conf = ReadConfig $config_path
+$tmp_config_path = "$pwd\tests\jenkins\conf\win_tmp_default.config"
+if (Test-Path $tmp_config_path){
+    $conf = ReadConfig $tmp_config_path
+
+}
+else {
+    $conf = ReadConfig $config_path
+
+}
+
+
+
 if (-not $?) {
     throw "can't load config from $config_path."
 }
