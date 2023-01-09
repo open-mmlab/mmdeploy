@@ -89,12 +89,14 @@ int TRTBicubicInterpolate::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,
   const void *x = inputs[0];
   void *output = outputs[0];
 
+  float height_scale = mScaleFactor[0];
+  float width_scale = mScaleFactor[1];
   // TODO: add fp16 support
   auto data_type = inputDesc[0].type;
   switch (data_type) {
     case nvinfer1::DataType::kFLOAT:
       bicubic_interpolate<float>((float *)x, (float *)output, batch, channels, height, width,
-                                 height_out, width_out, mAlignCorners, stream);
+                                 height_out, width_out, height_scale, width_scale, mAlignCorners, stream);
       break;
     default:
       return 1;

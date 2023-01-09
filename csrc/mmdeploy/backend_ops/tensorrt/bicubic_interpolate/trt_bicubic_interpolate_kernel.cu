@@ -142,29 +142,58 @@ __global__ void resize_cubic_kernel_torch(const int num_elements, const scalar_t
 }
 
 template <typename scalar_t>
-void resizeGPU(const scalar_t *pIn_d, scalar_t *pOut_d, int batch, int channels, int srcWidth,
-               int srcHeight, int dstWidth, int dstHeight, bool align_corners,
-               cudaStream_t stream) {
-  float height_scale = float(srcHeight) / dstHeight;
-  float width_scale = float(srcWidth) / dstWidth;
-  if (align_corners && dstWidth > 1 && dstHeight > 1) {
-    height_scale = (float)(srcHeight - 1) / (dstHeight - 1);
-    width_scale = (float)(srcWidth - 1) / (dstWidth - 1);
-  }
-  int n = batch * dstWidth * dstHeight * channels;
-  resize_cubic_kernel_torch<<<GET_BLOCKS(n), THREADS_PER_BLOCK, 0, stream>>>(
-      dstWidth * dstHeight, pIn_d, batch, channels, srcWidth, srcHeight, pOut_d, dstWidth,
-      dstHeight, align_corners, height_scale, width_scale);
+static inline scalar_t compute_scales_value(
+    double scale,
+    int64_t input_size,
+    int64_t output_size) {
+      // see Note [compute_scales_value]
+      // FIXME: remove magic > 0 after we ensure no models were serialized with -1 defaults.
+      return (scale> 0.)
+          ? static_cast<scalar_t>(1.0 / scale)
+          : (static_cast<scalar_t>(input_size) / output_size);
 }
 
 template <typename scalar_t>
+static inline scalar_t area_pixel_compute_scale(
+    int64_t input_size,
+    int64_t output_size,
+    bool align_corners,
+    double scale) {
+  // see Note [area_pixel_compute_scale]
+  if(align_corners) {
+    if(output_size > 1) {
+      return static_cast<scalar_t>(input_size - 1) / (output_size - 1);
+    } else {
+      return static_cast<scalar_t>(0);
+    }
+  } else {
+    return compute_scales_value<scalar_t>(scale, input_size, output_size);
+  }
+}
+
+template <typename scalar_t>
+void resizeGPU(const scalar_t *pIn_d, scalar_t *pOut_d, int batch, int channels, int srcWidth,
+               int srcHeight, int dstWidth, int dstHeight, scalar_t height_scale, scalar_t width_scale,
+               bool align_corners, cudaStream_t stream) {
+  float rheight = area_pixel_compute_scale<float>(
+            srcHeight, dstHeight, align_corners, height_scale);
+  float rwidth = area_pixel_compute_scale<float>(
+            srcWidth, dstWidth, align_corners, width_scale);
+  int n = batch * dstWidth * dstHeight * channels;
+  resize_cubic_kernel_torch<<<GET_BLOCKS(n), THREADS_PER_BLOCK, 0, stream>>>(
+      dstWidth * dstHeight, pIn_d, batch, channels, srcWidth, srcHeight, pOut_d, dstWidth,
+      dstHeight, align_corners, rheight, rwidth);
+}
+template <typename scalar_t>
 void bicubic_interpolate(const scalar_t *input, scalar_t *output, int batch, int channels,
                          int in_height, int in_width, int out_height, int out_width,
+                         scalar_t height_scale, scalar_t width_scale,
                          bool align_corners, cudaStream_t stream) {
   resizeGPU(input, output, batch, channels, in_width, in_height, out_width, out_height,
-            align_corners, stream);
+            height_scale, width_scale, align_corners, stream);
 }
 
 template void bicubic_interpolate<float>(const float *input, float *output, int batch, int channels,
                                          int in_height, int in_width, int out_height, int out_width,
+                                         float height_scale, float width_scale,
                                          bool align_corners, cudaStream_t stream);

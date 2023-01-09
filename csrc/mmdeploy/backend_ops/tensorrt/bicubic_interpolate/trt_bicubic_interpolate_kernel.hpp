@@ -7,5 +7,6 @@
 template <typename scalar_t>
 void bicubic_interpolate(const scalar_t *input, scalar_t *output, int batch, int channels,
                          int in_height, int in_width, int out_height, int out_width,
+                         scalar_t height_scale, scalar_t width_scale,
                          bool align_corners, cudaStream_t stream);
 #endif  // TRT_BICUBIC_INTERPOLATE_KERNEL_HPP
