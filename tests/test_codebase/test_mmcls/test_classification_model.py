@@ -126,6 +126,3 @@ def test_build_classification_model():
         classifier = build_classification_model([''], model_cfg, deploy_cfg,
                                                 'cpu')
         assert isinstance(classifier, End2EndModel)
-
-
-test_build_classification_model()
