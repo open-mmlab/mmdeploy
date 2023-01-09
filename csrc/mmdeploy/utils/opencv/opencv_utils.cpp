@@ -126,7 +126,7 @@ cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                const std::string& interpolation) {
   cv::Mat dst(dst_height, dst_width, src.type());
   auto method = GetInterpolationMethod(interpolation).value();
-  cv::resize(src, dst, dst.size(), method);
+  cv::resize(src, dst, dst.size(), 0, 0, method);
   return dst;
 }
 
