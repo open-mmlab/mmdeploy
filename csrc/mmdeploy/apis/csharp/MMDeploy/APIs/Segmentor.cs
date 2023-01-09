@@ -10,6 +10,7 @@ namespace MMDeploy
         public int Width;
         public int Classes;
         public int* Mask;
+        public float* Score;
     }
 #pragma warning restore 0649
 
@@ -39,19 +40,42 @@ namespace MMDeploy
         public int[] Mask;
 
         /// <summary>
+        /// Score data.
+        /// </summary>
+        public float[] Score;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SegmentorOutput"/> struct.
         /// </summary>
         /// <param name="height">height.</param>
         /// <param name="width">width.</param>
         /// <param name="classes">classes.</param>
         /// <param name="mask">mask.</param>
-        public SegmentorOutput(int height, int width, int classes, int[] mask)
+        /// <param name="score">score.</param>
+        public SegmentorOutput(int height, int width, int classes, int[] mask, float[] score)
         {
             Height = height;
             Width = width;
             Classes = classes;
-            Mask = new int[Height * Width];
-            Array.Copy(mask, this.Mask, mask.Length);
+            if (mask.Length > 0)
+            {
+                Mask = new int[Height * Width];
+                Array.Copy(mask, this.Mask, mask.Length);
+            }
+            else
+            {
+                Mask = new int[] { };
+            }
+
+            if (score.Length > 0)
+            {
+                Score = new float[Height * Width * Classes];
+                Array.Copy(score, this.Score, score.Length);
+            }
+            else
+            {
+                Score = new float[] { };
+            }
         }
 
         internal unsafe SegmentorOutput(CSegment* result)
@@ -59,11 +83,34 @@ namespace MMDeploy
             Height = result->Height;
             Width = result->Width;
             Classes = result->Classes;
-            Mask = new int[Height * Width];
-            int nbytes = Height * Width * sizeof(int);
-            fixed (int* data = this.Mask)
+            if (result->Mask != null)
             {
-                Buffer.MemoryCopy(result->Mask, data, nbytes, nbytes);
+                Mask = new int[Height * Width];
+
+                int nbytes = Height * Width * sizeof(int);
+                fixed (int* data = this.Mask)
+                {
+                    Buffer.MemoryCopy(result->Mask, data, nbytes, nbytes);
+                }
+            }
+            else
+            {
+                Mask = new int[] { };
+            }
+
+            if (result->Score != null)
+            {
+                Score = new float[Height * Width * Classes];
+
+                int nbytes = Height * Width * Classes * sizeof(float);
+                fixed (float* data = this.Score)
+                {
+                    Buffer.MemoryCopy(result->Score, data, nbytes, nbytes);
+                }
+            }
+            else
+            {
+                Score = new float[] { };
             }
         }
     }
