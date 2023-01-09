@@ -119,10 +119,17 @@ int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mmdeploy_segmentation
       results_ptr->height = segmentor_output.height;
       results_ptr->width = segmentor_output.width;
       results_ptr->classes = segmentor_output.classes;
-      auto mask_size = results_ptr->height * results_ptr->width;
       auto& mask = segmentor_output.mask;
-      results_ptr->mask = mask.data<int>();
-      buffers[i] = mask.buffer();
+      auto& score = segmentor_output.score;
+      results_ptr->mask = nullptr;
+      results_ptr->score = nullptr;
+      if (mask.shape().size()) {
+        results_ptr->mask = mask.data<int>();
+        buffers[i] = mask.buffer();
+      } else {
+        results_ptr->score = score.data<float>();
+        buffers[i] = score.buffer();
+      }
     }
 
     *results = results_data;
