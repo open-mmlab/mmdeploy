@@ -15,16 +15,18 @@ FormatShape::FormatShape(const Value& args) {
     MMDEPLOY_ERROR("'input_format' should be 'NCHW' or 'NCTHW'");
     throw_exception(eInvalidArgument);
   }
-  format_ = operation::Managed<mmdeploy::mmaction::FormatShapeOp>::Create(input_format);
+  format_ = operation::Managed<mmdeploy::mmaction::FormatShapeImpl>::Create(input_format);
 }
 
-Result<void> FormatShapeOp::apply(const std::vector<Tensor>& images, Tensor& output, int clip_len,
-                                  int num_clips) {
+FormatShapeImpl::FormatShapeImpl(const std::string_view& input_format) {
+  input_format_ = input_format;
+  permute_ = ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute>::Create();
+}
+
+Result<void> FormatShapeImpl::apply(const std::vector<Tensor>& images, Tensor& output, int clip_len,
+                                    int num_clips) {
   Tensor inputs;
   OUTCOME_TRY(MergeInputs(images, inputs));
-  if (GetDevice().is_host()) {
-    OUTCOME_TRY(stream().Wait());
-  }
 
   // Tensor dst;
   if (input_format_ == "NCHW") {
@@ -41,13 +43,13 @@ Result<void> FormatShapeOp::apply(const std::vector<Tensor>& images, Tensor& out
   return success();
 }
 
-Result<void> FormatShapeOp::MergeInputs(const std::vector<Tensor>& images, Tensor& inputs) {
+Result<void> FormatShapeImpl::MergeInputs(const std::vector<Tensor>& images, Tensor& inputs) {
   auto N = static_cast<int64_t>(images.size());
   auto H = images[0].shape(1);
   auto W = images[0].shape(2);
   auto C = images[0].shape(3);
 
-  TensorDesc desc = {GetDevice(), DataType::kFLOAT, {N, H, W, C}};
+  TensorDesc desc = {device(), DataType::kFLOAT, {N, H, W, C}};
   inputs = Tensor(desc);
   auto offset = 0UL;
   auto n_item = H * W * C;
@@ -61,15 +63,14 @@ Result<void> FormatShapeOp::MergeInputs(const std::vector<Tensor>& images, Tenso
   return success();
 }
 
-Result<Tensor> FormatShapeOp::FormatNCHW(Tensor& src, int clip_len, int num_clips) {
-  auto N = src.shape(0);
-  auto H = src.shape(1);
-  auto W = src.shape(2);
-  auto C = src.shape(3);
-  return Transpose(src, {N, H, W, C}, {0, 3, 1, 2});
+Result<Tensor> FormatShapeImpl::FormatNCHW(Tensor& src, int clip_len, int num_clips) {
+  Tensor dst;
+  const vector<int> axes = {0, 3, 1, 2};
+  OUTCOME_TRY(permute_.Apply(src, dst, axes));
+  return dst;
 }
 
-Result<Tensor> FormatShapeOp::FormatNCTHW(Tensor& src, int clip_len, int num_clips) {
+Result<Tensor> FormatShapeImpl::FormatNCTHW(Tensor& src, int clip_len, int num_clips) {
   auto N = src.shape(0);
   auto H = src.shape(1);
   auto W = src.shape(2);
@@ -80,8 +81,10 @@ Result<Tensor> FormatShapeOp::FormatNCTHW(Tensor& src, int clip_len, int num_cli
   }
   int M = N / L;
   src.Reshape({M, L, H, W, C});
-
-  return Transpose(src, {M, L, H, W, C}, {0, 4, 1, 2, 3});
+  Tensor dst;
+  const vector<int> axes = {0, 4, 1, 2, 3};
+  OUTCOME_TRY(permute_.Apply(src, dst, axes));
+  return dst;
 }
 
 Result<void> FormatShape::Apply(Value& data) {
@@ -127,6 +130,14 @@ Result<void> FormatShape::Apply(Value& data) {
 
 MMDEPLOY_REGISTER_TRANSFORM(FormatShape);
 
-MMDEPLOY_DEFINE_REGISTRY(FormatShapeOp);
+MMDEPLOY_DEFINE_REGISTRY(FormatShapeImpl);
+
+MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeImpl, (cpu, 0), [](const std::string& input_format) {
+  return std::make_unique<FormatShapeImpl>(input_format);
+});
+
+MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeImpl, (cuda, 0), [](const std::string& input_format) {
+  return std::make_unique<FormatShapeImpl>(input_format);
+});
 
 }  // namespace mmdeploy::mmaction

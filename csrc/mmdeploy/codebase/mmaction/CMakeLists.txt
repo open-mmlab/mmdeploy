@@ -4,8 +4,7 @@ project(mmdeploy_mmaction)
 
 file(GLOB SRCS ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
-add_subdirectory(cpu)
-add_subdirectory(cuda)
+
 target_link_libraries(${PROJECT_NAME} PRIVATE
     mmdeploy_operation
     mmdeploy_transform
