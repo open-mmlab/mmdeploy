@@ -1,7 +1,7 @@
 pipeline {
     agent { label 'deploy_win2' }
     parameters {
-        choice(
+        string(
             name: 'CONFIG',
             defaultValue:'Windows-3080_cuda-113_master_full-test.config',
             description: 'select config'
