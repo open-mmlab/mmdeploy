@@ -7,7 +7,7 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-18.04
+    runs-on: [self-hosted, NVIDIA-3090]
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
