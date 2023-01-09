@@ -22,7 +22,7 @@ workflows:
           mapping: |
             .circle/.* lint_only false
             cmake/.* lint_only false
-            configs/.* lint_only false
+            configs/.* lint_only true
             csrc/.* lint_only false
             demo/csrc/.* lint_only false
             docker/.* lint_only true
