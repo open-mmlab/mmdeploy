@@ -38,13 +38,12 @@ void IPUNet::copy_output(const model_runtime::TensorMemory& from, Tensor& to) {
   }
   int size = from.data_size_bytes;
 
-  MMDEPLOY_INFO("copy output total byte_size {}", size);
+  MMDEPLOY_DEBUG("copy output total byte_size {}", size);
 
   char* from_ptr = static_cast<char*>(from.data.get());
 
   char* pto = to.data<char>();
   for (int i = 0; i < size; i++) {
-    // to->data[i] = typeid(*to).name()(pfrom[i]);  // hidden type conversion here
     pto[i] = *(from_ptr + i);
   }
 }
@@ -57,13 +56,12 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
   }
   int size = from.byte_size();
 
-  MMDEPLOY_INFO("copy input total byte_size {}", size);
+  MMDEPLOY_DEBUG("copy input total byte_size {}", size);
 
   char* to_ptr = static_cast<char*>(to.data.get());
 
   const char* pfrom = from.data<char>();
   for (int i = 0; i < size; i++) {
-    // to->data[i] = typeid(*to).name()(pfrom[i]);  // hidden type conversion here
     *(to_ptr + i) = pfrom[i];
   }
 }
@@ -144,7 +142,6 @@ Result<void> IPUNet::Forward() {
   MMDEPLOY_INFO("ipu device running forward ");
   {
     // copy input to itensor buffer
-
     for (auto& tensor : input_tensors_) {
       const auto& name = tensor.desc().name;
       copy_input(tensor, input_memory[name]);
@@ -152,28 +149,16 @@ Result<void> IPUNet::Forward() {
   }
 
   {
-    struct timeval start, end;
-    gettimeofday(&start, 0);
     model_runner->execute(examples::toInputMemoryView(input_memory),
                           examples::toOutputMemoryView(output_memory));
-    gettimeofday(&end, 0);
-    long sec = end.tv_sec - start.tv_sec;
-    long micro = end.tv_usec - start.tv_usec;
-    double elapsed = sec + micro * 1e-6;
-    
-    MMDEPLOY_INFO("ipu inference done, time elapsed {} sec", elapsed);
-    
   }
 
   {
     for (int i = 0; i < output_tensors_.size(); i++) {
       auto to_tensor = output_tensors_[i];
       auto name = to_tensor.desc().name;
-
       copy_output(output_memory[name], to_tensor);
     }
-
-    
   }
   return success();
 }
