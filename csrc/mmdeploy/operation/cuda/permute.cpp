@@ -61,6 +61,7 @@ class PermuteImpl : public Permute {
       return Status(eNotSupported);
     }
     dst = std::move(dst_tensor);
+    return success();
   }
 
   template <typename T>
