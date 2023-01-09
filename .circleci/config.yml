@@ -26,6 +26,7 @@ workflows:
             csrc/.* lint_only false
             demo/csrc/.* lint_only false
             docker/.* lint_only false
+            docs/.* lint_only true
             mmdeploy/.* lint_only false
             requirements/.* lint_only false
             tests/.* lint_only false
