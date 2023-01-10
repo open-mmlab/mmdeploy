@@ -28,7 +28,7 @@ pipeline {
 
     }
 
-
+    stages {
         stage('Convert') {
             agent { label 'deploy_win2' }
             steps {
