@@ -66,12 +66,14 @@ int main(int argc, char* argv[]) {
     }
     // output score
     if (result->score) {
-      std::vector<std::pair<float, int>> score(result->classes);
-      for (int k = 0; k < result->classes; k++) {
-        score[k] = {result->score[pos++], k};
-      }
-      std::sort(score.begin(), score.end());
-      *iter = palette[score.back().second];
+      std::vector<int> idxs(result->classes);
+      std::iota(idxs.begin(), idxs.end(), 0);
+      auto k = std::max_element(
+                   idxs.begin(), idxs.end(),
+                   [&](int i, int j) { return result->score[pos + i] < result->score[pos + j]; }) -
+               idxs.begin();
+      *iter = palette[k];
+      pos += result->classes;
     }
   }
 
