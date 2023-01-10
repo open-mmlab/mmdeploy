@@ -72,17 +72,19 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         result = model.test_step(model_inputs)[0]
 
     visualize = True
-    try:
-        # check headless
-        import tkinter
-        tkinter.Tk()
-    except Exception as e:
-        from mmdeploy.utils import get_root_logger
-        logger = get_root_logger()
-        logger.warning(
-            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
-        )
-        visualize = False
+
+    if show_result:
+        try:
+            # check headless
+            import tkinter
+            tkinter.Tk()
+        except Exception as e:
+            from mmdeploy.utils import get_root_logger
+            logger = get_root_logger()
+            logger.warning(
+                f'render and display result skipped for headless device, exception {e}'  # noqa: E501
+            )
+            visualize = False
 
     if visualize is True:
         if not isinstance(img, list):
