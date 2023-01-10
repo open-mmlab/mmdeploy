@@ -10,7 +10,7 @@
 namespace mmdeploy {
 class TRTBicubicInterpolate : public TRTPluginBase {
  public:
-  TRTBicubicInterpolate(const std::string &name, std::vector<float> scale_factor,
+  TRTBicubicInterpolate(const std::string &name, std::vector<int> output_size, std::vector<float> scale_factor,
                         bool align_corners);
 
   TRTBicubicInterpolate(const std::string name, const void *data, size_t length);
@@ -46,6 +46,7 @@ class TRTBicubicInterpolate : public TRTPluginBase {
   void serialize(void *buffer) const TRT_NOEXCEPT override;
 
  private:
+  std::vector<int> mOutputSize;
   std::vector<float> mScaleFactor;
   bool mAlignCorners;
 };
@@ -57,10 +58,10 @@ class TRTBicubicInterpolateCreator : public TRTPluginCreatorBase {
   const char *getPluginName() const TRT_NOEXCEPT override;
 
   const char *getPluginVersion() const TRT_NOEXCEPT override;
-  nvinfer1::IPluginV2 *createPlugin(const char *name, const nvinfer1::PluginFieldCollection *fc)
+  nvinfer1::IPluginV2DynamicExt *createPlugin(const char *name, const nvinfer1::PluginFieldCollection *fc)
       TRT_NOEXCEPT override;
 
-  nvinfer1::IPluginV2 *deserializePlugin(const char *name, const void *serialData,
+  nvinfer1::IPluginV2DynamicExt *deserializePlugin(const char *name, const void *serialData,
                                          size_t serialLength) TRT_NOEXCEPT override;
 };
 }  // namespace mmdeploy

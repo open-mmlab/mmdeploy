@@ -97,16 +97,17 @@ def interpolate__tensorrt(
             super().__init__()
 
         @staticmethod
-        def symbolic(g, input, scale_factor, align_corners):
+        def symbolic(g, input, output_size, scale_factor, align_corners):
             """Symbolic function for creating onnx op."""
             return g.op(
                 'mmdeploy::TRTBicubicInterpolate',
                 input,
+                output_size_i=output_size,
                 scale_factor_f=scale_factor,
                 align_corners_i=align_corners)
 
         @staticmethod
-        def forward(g, input, scale_factor, align_corners):
+        def forward(g, input, output_size, scale_factor, align_corners):
             """Run forward."""
             return ctx.origin_func(
                 input,
@@ -128,7 +129,13 @@ def interpolate__tensorrt(
                 float(s_out / s_in)
                 for s_out, s_in in zip(size, input_size[2:])
             ]
-        return BicubicInterpolate.apply(input, scale_factor, align_corners)
+        if size is None:
+            size = [
+                int(s_in * s_out)
+                for s_in, s_out in zip(input_size[2:], scale_factor)
+            ]
+        return BicubicInterpolate.apply(input, size, scale_factor,
+                                        align_corners)
     else:
         return ctx.origin_func(
             input,

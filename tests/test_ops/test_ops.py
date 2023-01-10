@@ -115,7 +115,7 @@ def test_grid_sample(backend,
 @pytest.mark.parametrize('mode', ['bicubic', 'nearest'])
 @pytest.mark.parametrize('align_corners', [True, False])
 @pytest.mark.parametrize('output_size', [[10, 20], None])
-@pytest.mark.parametrize('scale_factor', [2])
+@pytest.mark.parametrize('scale_factor', [2, 2.25])
 @pytest.mark.parametrize('n, c, h, w', [(2, 3, 5, 10)])
 def test_bicubic_interpolate(backend,
                              dynamic_export,

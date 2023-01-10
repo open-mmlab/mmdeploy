@@ -17,19 +17,20 @@ static const char *PLUGIN_NAME{"TRTBicubicInterpolate"};
 }  // namespace
 
 TRTBicubicInterpolate::TRTBicubicInterpolate(const std::string &name,
-                                             std::vector<float> scale_factor, bool align_corners)
-    : TRTPluginBase(name), mScaleFactor(scale_factor), mAlignCorners(align_corners) {}
+                                             std::vector<int> output_size, std::vector<float> scale_factor, bool align_corners)
+    : TRTPluginBase(name), mOutputSize(output_size), mScaleFactor(scale_factor), mAlignCorners(align_corners) {}
 
 TRTBicubicInterpolate::TRTBicubicInterpolate(const std::string name, const void *data,
                                              size_t length)
     : TRTPluginBase(name) {
+  deserialize_value(&data, &length, &mOutputSize);
   deserialize_value(&data, &length, &mScaleFactor);
   deserialize_value(&data, &length, &mAlignCorners);
 }
 
 nvinfer1::IPluginV2DynamicExt *TRTBicubicInterpolate::clone() const TRT_NOEXCEPT {
   TRTBicubicInterpolate *plugin =
-      new TRTBicubicInterpolate(mLayerName, mScaleFactor, mAlignCorners);
+      new TRTBicubicInterpolate(mLayerName, mOutputSize, mScaleFactor, mAlignCorners);
   plugin->setPluginNamespace(getPluginNamespace());
 
   return plugin;
@@ -42,12 +43,8 @@ nvinfer1::DimsExprs TRTBicubicInterpolate::getOutputDimensions(
   ret.nbDims = 4;
   ret.d[0] = inputs[0].d[0];
   ret.d[1] = inputs[0].d[1];
-  auto height = (double)inputs[0].d[2]->getConstantValue();
-  auto width = (double)inputs[0].d[3]->getConstantValue();
-  auto outHeight = (int)height * mScaleFactor[0];
-  auto outWidth = (int)width * mScaleFactor[1];
-  ret.d[2] = exprBuilder.constant(outHeight);
-  ret.d[3] = exprBuilder.constant(outWidth);
+  ret.d[2] = exprBuilder.constant(mOutputSize[0]);
+  ret.d[3] = exprBuilder.constant(mOutputSize[1]);
   return ret;
 }
 
@@ -120,10 +117,11 @@ const char *TRTBicubicInterpolate::getPluginVersion() const TRT_NOEXCEPT { retur
 int TRTBicubicInterpolate::getNbOutputs() const TRT_NOEXCEPT { return 1; }
 
 size_t TRTBicubicInterpolate::getSerializationSize() const TRT_NOEXCEPT {
-  return serialized_size(mScaleFactor) + serialized_size(mAlignCorners);
+  return serialized_size(mOutputSize) + serialized_size(mScaleFactor) + serialized_size(mAlignCorners);
 }
 
 void TRTBicubicInterpolate::serialize(void *buffer) const TRT_NOEXCEPT {
+  serialize_value(&buffer, mOutputSize);
   serialize_value(&buffer, mScaleFactor);
   serialize_value(&buffer, mAlignCorners);
 }
@@ -132,6 +130,7 @@ void TRTBicubicInterpolate::serialize(void *buffer) const TRT_NOEXCEPT {
 
 TRTBicubicInterpolateCreator::TRTBicubicInterpolateCreator() {
   mPluginAttributes.clear();
+  mPluginAttributes.emplace_back(nvinfer1::PluginField("output_size"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("scale_factor"));
   mPluginAttributes.emplace_back(nvinfer1::PluginField("align_corners"));
   mFC.nbFields = mPluginAttributes.size();
@@ -144,9 +143,10 @@ const char *TRTBicubicInterpolateCreator::getPluginVersion() const TRT_NOEXCEPT 
   return PLUGIN_VERSION;
 }
 
-nvinfer1::IPluginV2 *TRTBicubicInterpolateCreator::createPlugin(
+nvinfer1::IPluginV2DynamicExt *TRTBicubicInterpolateCreator::createPlugin(
     const char *name, const nvinfer1::PluginFieldCollection *fc) TRT_NOEXCEPT {
   nvinfer1::Dims size{2, {1, 1}};
+  std::vector<int> output_size;
   std::vector<float> scale_factor;
   bool align_corners = 1;
 
@@ -155,6 +155,16 @@ nvinfer1::IPluginV2 *TRTBicubicInterpolateCreator::createPlugin(
       continue;
     }
     std::string field_name(fc->fields[i].name);
+
+    if (field_name.compare("output_size") == 0) {
+      int data_size = (fc->fields[i].length);
+      if (data_size != 2) {
+        data_size = data_size / sizeof(int);
+      }
+      ASSERT(data_size == 2)
+      const int *data_start = static_cast<const int *>(fc->fields[i].data);
+      output_size = std::vector<int>(data_start, data_start + data_size);
+    }
 
     if (field_name.compare("scale_factor") == 0) {
       int data_size = (fc->fields[i].length);
@@ -171,12 +181,12 @@ nvinfer1::IPluginV2 *TRTBicubicInterpolateCreator::createPlugin(
     }
   }
 
-  TRTBicubicInterpolate *plugin = new TRTBicubicInterpolate(name, scale_factor, align_corners);
+  TRTBicubicInterpolate *plugin = new TRTBicubicInterpolate(name, output_size, scale_factor, align_corners);
   plugin->setPluginNamespace(getPluginNamespace());
   return plugin;
 }
 
-nvinfer1::IPluginV2 *TRTBicubicInterpolateCreator::deserializePlugin(
+nvinfer1::IPluginV2DynamicExt *TRTBicubicInterpolateCreator::deserializePlugin(
     const char *name, const void *serialData, size_t serialLength) TRT_NOEXCEPT {
   auto plugin = new TRTBicubicInterpolate(name, serialData, serialLength);
   plugin->setPluginNamespace(getPluginNamespace());
