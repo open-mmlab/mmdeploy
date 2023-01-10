@@ -10,8 +10,6 @@ $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
-
-
 #read configuration file
 $config_path = "$pwd\tests\jenkins\conf\win_default.config"
 $tmp_config_path = "$pwd\tests\jenkins\conf\win_tmp.config"
