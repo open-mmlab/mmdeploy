@@ -158,9 +158,12 @@ class PoseDetection(BaseTask):
         Returns:
             nn.Module: An initialized pytorch model.
         """
+        from mmengine.model import revert_sync_batchnorm
         from mmpose.apis import init_model
         from mmpose.utils import register_all_modules
+
         register_all_modules()
+
         self.model_cfg.model.test_cfg['flip_test'] = False
 
         model = init_model(
@@ -168,6 +171,9 @@ class PoseDetection(BaseTask):
             model_checkpoint,
             device=self.device,
             cfg_options=cfg_options)
+        model = revert_sync_batchnorm(model)
+        model = model.to(self.device)
+        model.eval()
         return model
 
     def build_backend_model(
