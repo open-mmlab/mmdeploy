@@ -9,7 +9,7 @@ Get-content $pwd/tests/jenkins/conf/win_tmp.config
 (Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'exec_performance=.*',"exec_performance=$eperformance" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
 (Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'repo_url=.*',"repo_url=$rurl" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
 (Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'mmdeploy_branch=.*',"mmdeploy_branch=$mbranch" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
-(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'max_job_nums=.*',"mmdeploy_branch=$mjn" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
+(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'max_job_nums=.*',"max_job_nums=$mjn" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
 #$ConfigPath = './tests/jenkins/conf/win_tmp.config'
 #Write-Host "$ConfigPath"
 #$content = Get-Content $ConfigPath
