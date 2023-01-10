@@ -29,12 +29,20 @@ pipeline {
     }
 
     stages {
-        stage('Convert') {
+        stage('Set Config') {
             agent { label 'deploy_win2' }
             steps {
                 bat """
                     @ECHO ON
-                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist ${params.codebase_list} -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG}
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\win_set_config.ps1 -cblist ${params.codebase_list} -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG}
+                """
+            }
+        }
+        stage('Convert') {
+            steps {
+                bat """
+                    @ECHO ON
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1
                 """
             }
         }
