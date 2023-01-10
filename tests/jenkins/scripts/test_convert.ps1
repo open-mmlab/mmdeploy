@@ -1,3 +1,4 @@
+param($cblist, $eperformance, $rurl, $mbranch, $winconfig)
 $env:DEPS_DIR="D:\huangzijie\workspace\deps"
 $env:WORKSPACE="D:\huangzijie\workspace"
 $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
@@ -8,6 +9,24 @@ $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
 
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
+#set_config
+
+Write-Host "$cblist, $eperformance, $rurl, $mbranch , $winconfig"
+Write-Host "$pwd"
+Copy-Item -Path $pwd/tests/jenkins/conf/$winconfig -Destination $pwd/tests/jenkins/conf/win_tmp.config -Recurse -Force -Verbos
+#cp $pwd/tests/jenkins/conf/$winconfig $pwd/tests/jenkins/conf/win_tmp.config
+# Get-content $pwd/tests/jenkins/conf/$winconfig
+Get-content $pwd/tests/jenkins/conf/win_tmp.config
+(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'codebase_list=.*',"codebase_list=$cblist" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
+(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'exec_performance=.*',"exec_performance=$eperformance" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
+(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'repo_url=.*',"repo_url=$rurl" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
+(Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'mmdeploy_branch=.*',"mmdeploy_branch=$mbranch" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
+#$ConfigPath = './tests/jenkins/conf/win_tmp.config'
+#Write-Host "$ConfigPath"
+#$content = Get-Content $ConfigPath
+#$content.replace('codebase_list=.*', "codebase_list=$cblist") | Set-Content $ConfigPath -Verbos
+Get-content $pwd/tests/jenkins/conf/win_tmp.config
+
 
 #read configuration file
 $config_path = "$pwd\tests\jenkins\conf\win_default.config"
