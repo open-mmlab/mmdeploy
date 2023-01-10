@@ -1,14 +1,15 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import glob
+import json
 import logging
 import os
+import platform
 import subprocess
 from datetime import datetime
 from pathlib import Path
 from typing import List, Union
-import re
-import sys
+
 import mmengine
 import openpyxl
 import pandas as pd
@@ -639,9 +640,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                        logger: logging.Logger, backend_file_name: Union[str,
                                                                         list],
                        report_txt_path: Path, metafile_dataset: str,
-                       model_name: str,
-                       deploee_dict: dict,
-                       dump_sdk: bool):
+                       model_name: str, deploee_dict: dict, dump_sdk: bool):
     """Convert model to onnx and then get metric.
 
     Args:
@@ -881,19 +880,25 @@ def _filter_string(inputs):
     outputs = ''.join([i.lower() for i in inputs if i.isalnum()])
     return outputs
 
+
 def env(yml: str):
     """Return some env.
     Args:
         yml(str): Input codebase yaml filename.
-    
+
     Returns:
         deploee_codebase(str): Codebase string in deploee.
         codebase_version(str): Codebase version.
         torch_version(str): Pytorch version.
         dump_sdk(bool): Dump sdk or not.
     """
-    codebase_map = {'mmaction': 'mmaction-videorec', 'mmdet': 'mmdet-det', 'mmdet3d': 'mmdet3d-voxel', 'mmedit': 'mmedit-superres', 
-    'mmocr': 'mmocr-rec', }
+    codebase_map = {
+        'mmaction': 'mmaction-videorec',
+        'mmdet': 'mmdet-det',
+        'mmdet3d': 'mmdet3d-voxel',
+        'mmedit': 'mmedit-superres',
+        'mmocr': 'mmocr-rec',
+    }
     dump_sdk = True
     if 'mmcls' in yml:
         import mmcls
@@ -937,14 +942,16 @@ def env(yml: str):
         codebase = 'mmseg'
 
     else:
-        raise Exception('cannot parse codebase version from yml {}'.format(yml))
+        raise Exception(
+            'cannot parse codebase version from yml {}'.format(yml))
 
+    codebase_version = 'v' + codebase_version
     deploee_codebase = codebase
     if codebase in codebase_map:
         deploee_codebase = codebase_map[codebase]
-    
+
     import torch
-    torch_version = torch.__version__
+    torch_version = 'v' + torch.__version__
 
     return deploee_codebase, codebase_version, torch_version, dump_sdk
 
@@ -954,7 +961,7 @@ def modelname(config_path: str):
 
     Args:
         config_path(str): Input model config.
-    
+
     Returns:
         name(str): Model name.
     """
@@ -972,22 +979,42 @@ def deploee_runtime(backend: str):
         runtime = 'ort{}'.format(onnxruntime.__version__)
 
     elif backend == 'tensorrt':
-        # for example: cu102+trt841+cudnn76+sm75
-        import torch
-        cuda_version = 'cu'+''.join(torch.version.cuda.split('.'))
-        cudnn_version = 'cudnn'+str(torch.backends.cudnn.version())[0:2]
-        import tensorrt
-        trt_version = 'trt'+''.join(tensorrt.__version__.split('.')[0:3])
-        compatibility = torch.cuda.get_device_capability()
-        sm_version = 'sm'
-        for val in compatibility:
-            sm_version += str(val)
-        runtime = '{}+{}+{}+{}'.format(cuda_version, trt_version, cudnn_version, sm_version)
-    
+        arch = platform.machine()
+        if 'aarch' in arch:
+            # jetson embedded device, for example: jetson-agx+jetpack4.6
+            command = [
+                'bash', '-c', 'source scripts/jetson_variables.sh && env'
+            ]
+
+            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            environment_vars = {}
+            for line in proc.stdout:
+                (key, _, value) = line.partition(b'=')
+                environment_vars[key.decode()] = value.decode()
+
+            proc.communicate()
+            runtime = '{}+jetpack{}'.format(
+                environment_vars['JETSON_MODEL'].strip().lower(),
+                environment_vars['JETSON_JETPACK'].strip().lower())
+
+        else:
+            # x86 platform, for example: cu102+trt841+cudnn76+sm75
+            import torch
+            cuda_version = 'cu' + ''.join(torch.version.cuda.split('.'))
+            cudnn_version = 'cudnn' + str(torch.backends.cudnn.version())[0:2]
+            import tensorrt
+            trt_version = 'trt' + ''.join(tensorrt.__version__.split('.')[0:3])
+            compatibility = torch.cuda.get_device_capability()
+            sm_version = 'sm'
+            for val in compatibility:
+                sm_version += str(val)
+            runtime = '{}+{}+{}+{}'.format(cuda_version, trt_version,
+                                           cudnn_version, sm_version)
+
     elif backend == 'ncnn':
         import ncnn
         runtime = 'ncnn' + ncnn.__version__.split('.')[-1]
-    
+
     return runtime
 
 
@@ -1032,10 +1059,10 @@ def main():
         f'./tests/regression/{codebase}.yml' for codebase in args.codebase
     ]
 
-
     for deploy_yaml in deploy_yaml_list:
 
-        deploee_codebase, codebase_version, torch_version, dump_sdk = env(deploy_yaml)
+        deploee_codebase, codebase_version, torch_version, dump_sdk = env(
+            deploy_yaml)
 
         if not Path(deploy_yaml).exists():
             raise FileNotFoundError(f'deploy_yaml {deploy_yaml} not found, '
@@ -1047,7 +1074,8 @@ def main():
         report_save_path = \
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
         report_txt_path = report_save_path.with_suffix('.txt')
-        report_deploee_path = work_dir.joinpath('deploee_'+deploee_codebase).with_suffix('.xlsx')
+        report_deploee_path = work_dir.joinpath(
+            'deploee_' + deploee_codebase).with_suffix('.xlsx')
 
         report_dict = {
             'Model': [],
@@ -1064,10 +1092,10 @@ def main():
         }
 
         deploee_dict = {
-            'name' : [],
+            'name': [],
             'model_config': [],
             'dataset': [],
-            'codebase' : [],
+            'codebase': [],
             'pth_url': [],
             'data_dir': [],
             'runtime': [],
@@ -1140,7 +1168,7 @@ def main():
                     model_name_origin, model_metafile_info, checkpoint_path,
                     model_cfg_path, model_config, metric_info, report_dict,
                     logger, report_txt_path, global_info.get('codebase_name'))
-                
+
                 for pipeline in pipelines_info:
                     deploy_config = pipeline.get('deploy_config')
                     backend_name = get_backend(deploy_config).name.lower()
@@ -1157,70 +1185,64 @@ def main():
                         continue
 
                     # fill deploee dict
-                        # deploee_dict = {
-                        #     'name' : [],
-                        #     'model_config': [],
-                        #     'dataset': [],
-                        #     'codebase' : [],
-                        #     'pth_url': [],
-                        #     'runtime': [],
-                        #     'preprocess': [],
-                        #     'postprocess': [],
-                        #     'forward_param': [],
-                        #     'backward_param': [],
-                        #     'data_dir': [],
-                        #     'pass': []
-                        # }
-                    
+
                     deploee_dict['name'].append(modelname(model_cfg_path))
                     deploee_dict['model_config'].append(model_config)
-                    deploee_dict['dataset'].append(metafile_dataset['dataset'].lower())
+                    deploee_dict['dataset'].append(
+                        metafile_dataset['dataset'].lower())
                     deploee_dict['codebase'].append(deploee_codebase)
-                    pth_url = model_metafile_info.get(model_config).get('Weights')
+                    pth_url = model_metafile_info.get(model_config).get(
+                        'Weights')
                     deploee_dict['pth_url'].append(pth_url)
-                    deploee_dict['runtime'].append(deploee_runtime(backend_name))
+                    deploee_dict['runtime'].append(
+                        deploee_runtime(backend_name))
 
                     from mmdeploy.apis import build_task_processor
-                    import mmengine
-                    deploy_cfg_path = mmengine.Config.fromfile(pipeline.get('deploy_config'))
+                    deploy_cfg_path = mmengine.Config.fromfile(
+                        pipeline.get('deploy_config'))
 
-                    # from mmdet3d.utils import register_all_modules
-                    # register_all_modules()
+                    task_processor = build_task_processor(
+                        model_cfg=mmengine.Config.fromfile(model_cfg_path),
+                        deploy_cfg=deploy_cfg_path,
+                        device=args.device)
 
-                    import pdb
-                    pdb.set_trace()
-                    task_processor = build_task_processor(model_cfg=mmengine.Config.fromfile(model_cfg_path), deploy_cfg=deploy_cfg_path, device=args.device)
-                    postprocess = task_processor.get_postprocess(work_dir)
-                    # preprocess = task_processor.get_preprocess()
-                    # deploee_dict['preprocess'].append(preprocess)
-                    # deploee_dict['postprocess'].append(postprocess)
-                    deploee_dict['preprocess'].append('')
-                    deploee_dict['postprocess'].append('')
+                    preprocess = ''
+                    postprocess = ''
+                    try:
+                        preprocess = task_processor.get_preprocess()
+                        postprocess = task_processor.get_postprocess(work_dir)
+                    except Exception:
+                        # waiting for user input preproc and postproc
+                        preprocess = ''
+                        postprocess = ''
+
+                    deploee_dict['preprocess'].append(preprocess)
+                    deploee_dict['postprocess'].append(postprocess)
 
                     forward_param = dict()
                     forward_param['quant'] = 'fp32'
                     forward_param['sdk'] = dump_sdk
-                    deploee_dict['forward_param'].append(forward_param)
-                    
+                    deploee_dict['forward_param'].append(
+                        json.dumps(forward_param))
+
                     backward_param = pytorch_metric.copy()
                     backward_param[deploee_codebase] = codebase_version
                     backward_param['torch_version'] = torch_version
-                    deploee_dict['backward_param'].append(backward_param)
+                    deploee_dict['backward_param'].append(
+                        json.dumps(backward_param))
 
                     # run cmd
-                    success, data_dir = get_backend_result(pipeline, model_cfg_path,
-                                       checkpoint_path, work_dir, args.device,
-                                       pytorch_metric, metric_info,
-                                       report_dict, test_type, logger,
-                                       backend_file_name, report_txt_path,
-                                       metafile_dataset, model_name_origin, deploee_dict, dump_sdk)
+                    success, data_dir = get_backend_result(
+                        pipeline, model_cfg_path, checkpoint_path, work_dir,
+                        args.device, pytorch_metric, metric_info, report_dict,
+                        test_type, logger, backend_file_name, report_txt_path,
+                        metafile_dataset, model_name_origin, deploee_dict,
+                        dump_sdk)
                     deploee_dict['data_dir'].append(data_dir)
                     deploee_dict['pass'].append(success)
-        
+
         if len(report_dict.get('Model')) > 0:
             save_report(report_dict, report_save_path, logger)
-            import pdb
-            pdb.set_trace()
             save_report(deploee_dict, report_deploee_path, logger)
 
         else:
