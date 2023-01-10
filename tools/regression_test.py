@@ -1075,7 +1075,8 @@ def main():
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
         report_txt_path = report_save_path.with_suffix('.txt')
         report_deploee_path = work_dir.joinpath(
-            'deploee_' + deploee_codebase).with_suffix('.xlsx')
+            'deploee_' + deploee_codebase + '_' +
+            '+'.join(args.backends)).with_suffix('.xlsx')
 
         report_dict = {
             'Model': [],
