@@ -25,6 +25,10 @@ pipeline {
             name: 'repo_url',
             defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
         )
+        string(
+            name: 'max_job_nums',
+            defaultValue: '1'
+        )
     }
 
     stages {
@@ -33,7 +37,7 @@ pipeline {
             steps {
                 bat """
                     @ECHO ON
-                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\win_set_config.ps1 -cblist ${params.codebase_list} -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG}
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\win_set_config.ps1 -cblist ${params.codebase_list} -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn $(params.max_job_nums)
                 """
             }
         }
