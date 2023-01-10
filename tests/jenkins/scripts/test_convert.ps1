@@ -14,8 +14,7 @@ Import-Module $scriptDir\utils.psm1
 Write-Host "$cblist, $eperformance, $rurl, $mbranch , $winconfig"
 Write-Host "$pwd"
 Copy-Item -Path $pwd/tests/jenkins/conf/$winconfig -Destination $pwd/tests/jenkins/conf/win_tmp.config -Recurse -Force -Verbos
-#cp $pwd/tests/jenkins/conf/$winconfig $pwd/tests/jenkins/conf/win_tmp.config
-# Get-content $pwd/tests/jenkins/conf/$winconfig
+
 Get-content $pwd/tests/jenkins/conf/win_tmp.config
 (Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'codebase_list=.*',"codebase_list=$cblist" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
 (Get-content $pwd/tests/jenkins/conf/win_tmp.config) -replace 'exec_performance=.*',"exec_performance=$eperformance" | Set-Content $pwd/tests/jenkins/conf/win_tmp.config -Verbos
@@ -31,8 +30,7 @@ Get-content $pwd/tests/jenkins/conf/win_tmp.config
 #read configuration file
 $config_path = "$pwd\tests\jenkins\conf\win_default.config"
 $tmp_config_path = "$pwd\tests\jenkins\conf\win_tmp.config"
-cat $config_path
-cat $tmp_config_path
+
 if (Test-Path $tmp_config_path){
     $conf = ReadConfig $tmp_config_path
 
