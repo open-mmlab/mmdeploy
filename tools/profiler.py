@@ -80,8 +80,8 @@ class TorchWrapper(torch.nn.Module):
         self.model = model
 
     @TimeCounter.count_time(Backend.PYTORCH.value)
-    def forward(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
+    def test_step(self, *args, **kwargs):
+        return self.model.test_step(*args, **kwargs)
 
 
 def main():
