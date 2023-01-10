@@ -186,6 +186,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -V
+          python -m pip list
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu113/${{matrix.torch_version}}/index.html
           CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
