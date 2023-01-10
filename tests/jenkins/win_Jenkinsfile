@@ -30,7 +30,6 @@ pipeline {
 
     stages {
         stage('Set Config') {
-            agent { label 'deploy_win2' }
             steps {
                 bat """
                     @ECHO ON
