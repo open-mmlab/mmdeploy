@@ -56,7 +56,7 @@ target_include_directories(${PROJECT_NAME}
 
 if (MSVC)
     target_compile_options(${PROJECT_NAME} PUBLIC
-            $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>)
+            $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor;/Zc:__cplusplus>)
 endif ()
 
 if (MMDEPLOY_STATUS_USE_STACKTRACE)
