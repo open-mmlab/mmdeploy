@@ -157,11 +157,11 @@ jobs:
   build_cuda113:
     runs-on: [self-hosted, NVIDIA-3090]
     container:
-      image: pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
+      image: runningleon814/mmdeploy-base:ubuntu20.04-cuda11.3-py3.8-torch1.10-tensorrt8.0.1.6
 
     strategy:
       matrix:
-        python-version: [3.7]
+        python-version: [3.8]
         torch: [1.10.0+cu113]
         mmcv: [1.4.2]
         include:
@@ -175,18 +175,17 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install system dependencies
-        run: |
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
-          apt-get clean
-          rm -rf /var/lib/apt/lists/*
-      - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+#      - name: Install system dependencies
+#        run: |
+#          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
+#          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
+#          apt-get clean
+#          rm -rf /var/lib/apt/lists/*
+#      - name: Install PyTorch
+#        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu113/${{matrix.torch_version}}/index.html
           CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
           pip install -U pycuda
           python -m pip install -U numpy
