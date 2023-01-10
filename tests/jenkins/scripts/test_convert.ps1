@@ -1,4 +1,3 @@
-
 $env:DEPS_DIR="D:\huangzijie\workspace\deps"
 $env:WORKSPACE="D:\huangzijie\workspace"
 $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
@@ -13,8 +12,6 @@ Import-Module $scriptDir\utils.psm1
 #read configuration file
 $config_path = "$pwd\tests\jenkins\conf\win_default.config"
 $tmp_config_path = "$pwd\tests\jenkins\conf\win_tmp.config"
-Get-content $config_path
-Get-content $tmp_config_path
 
 if (Test-Path $tmp_config_path){
     $conf = ReadConfig $tmp_config_path
@@ -56,7 +53,7 @@ if ( $exec_performance -eq "y" ) {
 Write-Host "$pwd"
 cd ..
 Write-Host "$pwd"
-git clone -b $mmdeploy_branch https://github.com/open-mmlab/mmdeploy.git
+git clone -b $mmdeploy_branch $repo_url
 cd mmdeploy
 $env:MMDEPLOY_DIR="$pwd"
 Write-Host "mmdeploy_dir = $env:MMDEPLOY_DIR"
