@@ -224,6 +224,6 @@ std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box
 }
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV3Head);
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOv5Head);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV5Head);
 
 }  // namespace mmdeploy::mmdet
