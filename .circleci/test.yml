@@ -123,7 +123,7 @@ commands:
             coverage xml
             coverage report -m
             cd ..
-      - codecov/upload
+
 jobs:
   lint:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
@@ -263,6 +263,9 @@ jobs:
       - install_mmdeploy
       - install_model_converter_req
       - perform_model_converter_ut
+      - codecov/upload:
+          flags: unittests
+          upload_name: linux_tensorrt
       - run:
           name: Perform SDK unittests
           command: |
