@@ -75,7 +75,7 @@ def visualize_model(model_cfg: Union[str, mmcv.Config],
         # check headless
         import tkinter
         tkinter.Tk()
-        if not isinstance(img, Sequence):
+        if not isinstance(img, list):
             img = [img]
         for single_img in img:
             task_processor.visualize(
