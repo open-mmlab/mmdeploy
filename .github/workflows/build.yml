@@ -187,6 +187,8 @@ jobs:
         run: |
           python -V
           python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          python -m pip install openmim
+          python -m mim install 'mmcv-full==1.5.0'
           python -m pip list
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu113/${{matrix.torch_version}}/index.html
           CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
@@ -212,8 +214,8 @@ jobs:
               -DMMDEPLOY_TARGET_BACKENDS="ort;trt" \
               -DMMDEPLOY_CODEBASES=all &&\
           make -j$(nproc) && make install &&\
-          export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
-          pip install -e .
+          export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${ONNXRUNTIME_DIR}/lib:${BACKUP_LD_LIBRARY_PATH}"
+          cd ..
           python tools/check_env.py
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
