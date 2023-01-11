@@ -78,7 +78,6 @@ jobs:
           python -m pip list
       - name: Build mmdeploy
         run: |
-          python tools/scripts/build_ubuntu_x64_ncnn.py
           python tools/scripts/build_ubuntu_x64_ort.py
       - name: Install mmdeploy
         run: rm -rf .eggs && python -m pip install -e .
