@@ -183,12 +183,10 @@ def run_wrapper(backend, wrapper, input):
     return results
 
 
-ALL_BACKEND = [
-    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
-    Backend.IPU,
-    Backend.COREML, Backend.TVM
-]
+ALL_BACKEND = list(Backend)
+ALL_BACKEND.remove(Backend.DEFAULT)
+ALL_BACKEND.remove(Backend.PYTORCH)
+ALL_BACKEND.remove(Backend.SDK)
 
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)

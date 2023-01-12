@@ -17,45 +17,16 @@ def collect_env():
 
 
 def check_backend():
-    backend_versions = get_backend_version()
-    ort_version = backend_versions['onnxruntime']
-    trt_version = backend_versions['tensorrt']
-    ncnn_version = backend_versions['ncnn']
-    tvm_version = backend_versions['tvm']
-    ipu_version = backend_versions['ipu']
+    from mmdeploy.backend.base import get_backend_manager
+    from mmdeploy.utils import Backend
+    exclude_backend_lists = [Backend.DEFAULT, Backend.PYTORCH, Backend.SDK]
+    backend_lists = [
+        backend for backend in Backend if backend not in exclude_backend_lists
+    ]
 
-    import mmdeploy.apis.onnxruntime as ort_apis
-    logger = get_root_logger()
-    logger.info(f'onnxruntime: {ort_version}\tops_is_avaliable : '
-                f'{ort_apis.is_custom_ops_available()}')
-
-    import mmdeploy.apis.tensorrt as trt_apis
-    logger.info(f'tensorrt: {trt_version}\tops_is_avaliable : '
-                f'{trt_apis.is_custom_ops_available()}')
-
-    import mmdeploy.apis.ncnn as ncnn_apis
-    logger.info(f'ncnn: {ncnn_version}\tops_is_avaliable : '
-                f'{ncnn_apis.is_custom_ops_available()}')
-
-    logger.info(f'tvm: {tvm_version}')
-
-    import mmdeploy.apis.pplnn as pplnn_apis
-    logger.info(f'pplnn_is_avaliable: {pplnn_apis.is_available()}')
-
-    import mmdeploy.apis.openvino as openvino_apis
-    logger.info(f'openvino_is_avaliable: {openvino_apis.is_available()}')
-
-    import mmdeploy.apis.snpe as snpe_apis
-    logger.info(f'snpe_is_available: {snpe_apis.is_available()}')
-
-    import mmdeploy.apis.ascend as ascend_apis
-    logger.info(f'ascend_is_available: {ascend_apis.is_available()}')
-
-    import mmdeploy.apis.coreml as coreml_apis
-    logger.info(f'coreml_is_available: {coreml_apis.is_available()}')
-
-    import mmdeploy.apis.ipu as ipu_apis
-    logger.info(f'ipu_is_available: {ipu_apis.is_available()}')
+    for backend in backend_lists:
+        backend_mgr = get_backend_manager(backend.value)
+        backend_mgr.check_env(logger.info)
 
 
 def check_codebase():
