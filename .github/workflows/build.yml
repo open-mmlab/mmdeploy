@@ -1,23 +1,6 @@
 name: build
 
-on:
-  push:
-    paths-ignore:
-      - "demo/**"
-      - "docker/**"
-      - "tools/**"
-      - "docs/**"
-
-  pull_request:
-    paths-ignore:
-      - "demo/**"
-      - "docker/**"
-      - "tools/**"
-      - "docs/**"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+on: [push, pull_request]
 
 permissions:
   contents: read
