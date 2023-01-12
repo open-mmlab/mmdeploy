@@ -22,16 +22,18 @@ workflows:
           mapping: |
             .circle/.* lint_only false
             cmake/.* lint_only false
-            configs/.* lint_only false
+            configs/.* lint_only true
             csrc/.* lint_only false
             demo/csrc/.* lint_only false
-            docker/.* lint_only false
+            docker/.* lint_only true
+            docs/.* lint_only true
             mmdeploy/.* lint_only false
             requirements/.* lint_only false
             tests/.* lint_only false
             third_party/.* lint_only false
             tools/.* lint_only false
-          base-revision: master
+            setup.py lint_only false
+          base-revision: dev-1.x
           # this is the path of the configuration we should trigger once
           # path filtering and pipeline parameter value updates are
           # complete. In this case, we are using the parent dynamic
