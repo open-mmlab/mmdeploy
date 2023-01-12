@@ -1,3 +1,4 @@
+# ABINet models use static input 32x128
 _base_ = ['./text-recognition_static.py', '../../_base_/backends/tensorrt.py']
 
 onnx_config = dict(input_shape=[128, 32])

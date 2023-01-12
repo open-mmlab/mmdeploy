@@ -1,3 +1,4 @@
+# 3 channel and 48 height for SAR models
 _base_ = [
     './text-recognition_dynamic.py', '../../_base_/backends/tensorrt-int8.py'
 ]

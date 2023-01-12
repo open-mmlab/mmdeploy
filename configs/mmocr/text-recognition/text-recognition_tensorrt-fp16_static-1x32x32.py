@@ -1,3 +1,4 @@
+# 1 channel input for CRNN models
 _base_ = [
     './text-recognition_static.py', '../../_base_/backends/tensorrt-fp16.py'
 ]

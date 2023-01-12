@@ -1,3 +1,4 @@
+# 3 channel and 48 height for SAR models
 _base_ = ['./text-recognition_dynamic.py', '../../_base_/backends/tensorrt.py']
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 30),
