@@ -155,11 +155,10 @@ jobs:
             torchvision: 0.11.0+cu113
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          python-version: ${{ matrix.python-version }}
+          submodules: recursive
 #      - name: Install system dependencies
 #        run: |
 #          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
