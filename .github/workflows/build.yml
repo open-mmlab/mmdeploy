@@ -143,9 +143,7 @@ jobs:
       volumes:
         - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
         - /data2/benchmark:/__w/mmdeploy/data
-      options:
-        - "--gpus=all"
-        - "--ipc=host"
+      options: "--gpus=all --ipc=host"
     strategy:
       matrix:
         python-version: [3.8]
