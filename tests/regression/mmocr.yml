@@ -109,7 +109,7 @@ tensorrt:
     convert_image: *convert_image_rec
     backend_test: *default_backend_test
     sdk_config: *sdk_recognition_dynamic
-    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt-fp32_static-32x128.py
+    deploy_config: configs/mmocr/text-recognition/text-recognition_tensorrt_static-32x128.py
 
   pipeline_trt_recognition_static_fp16_C3: &pipeline_trt_recognition_static_fp16_C3
     convert_image: *convert_image_rec
