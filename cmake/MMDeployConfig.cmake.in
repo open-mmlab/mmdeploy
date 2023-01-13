@@ -25,6 +25,7 @@ if (NOT MMDEPLOY_BUILD_SHARED AND NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
         endif()
         set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
         enable_language(CUDA)
+        find_package(pplcv REQUIRED)
     endif ()
 endif ()
 
@@ -37,7 +38,6 @@ list(APPEND CMAKE_MODULE_PATH ${MMDEPLOY_MODULE_PATH})
 @ncnn_DEPENDENCY@
 @InferenceEngine_DEPENDENCY@
 @pplnn_DEPENDENCY@
-@pplcv_DEPENDENCY@
 list(REMOVE_ITEM CMAKE_MODULE_PATH ${MMDEPLOY_MODULE_PATH})
 
 find_package(OpenCV REQUIRED)

@@ -28,7 +28,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         ${PPLCV_LIBRARIES})
 target_include_directories(${PROJECT_NAME}
         PRIVATE ${CUDA_TOOLKIT_ROOT_DIR}/include ${PPLCV_INCLUDE_DIRS})
-
-if (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
-    set(pplcv_DEPENDENCY "find_package(pplcv REQUIRED)")
-endif ()
