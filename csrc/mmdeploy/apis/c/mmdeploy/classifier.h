@@ -132,11 +132,6 @@ MMDEPLOY_API int mmdeploy_classifier_get_result(mmdeploy_value_t output,
                                                 mmdeploy_classification_t** results,
                                                 int** result_count);
 
-MMDEPLOY_API int mmdeploy_classifier_create_by_path_v2(const char* model_path,
-                                                       const char* device_name,
-                                                       int device_id,
-                                                       mmdeploy_profiler_t profiler,
-                                                       mmdeploy_classifier_t* classifier);
 #ifdef __cplusplus
 }
 #endif
