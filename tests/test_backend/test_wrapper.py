@@ -67,7 +67,7 @@ def generate_torchscript_file():
         context_info=context_info)
 
 
-def onnx2backend(backend, onnx_file):
+def ir2backend(backend, onnx_file, ts_file):
     if backend == Backend.TENSORRT:
         from mmdeploy.backend.tensorrt import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
@@ -143,6 +143,34 @@ def onnx2backend(backend, onnx_file):
             onnx_file, lib_file, shape=shape, dtype=dtype, tuner=tuner_dict)
         assert osp.exists(lib_file)
         return lib_file
+    elif backend == Backend.TORCHSCRIPT:
+        return ts_file
+    elif backend == Backend.COREML:
+        output_names = ['output']
+        from mmdeploy.backend.coreml.torchscript2coreml import (
+            from_torchscript, get_model_suffix)
+        backend_dir = tempfile.TemporaryDirectory().name
+        work_dir = backend_dir
+        torchscript_name = osp.splitext(osp.split(ts_file)[1])[0]
+        output_file_prefix = osp.join(work_dir, torchscript_name)
+        convert_to = 'mlprogram'
+        from_torchscript(
+            ts_file,
+            output_file_prefix,
+            input_names=input_names,
+            output_names=output_names,
+            input_shapes=dict(
+                input=dict(
+                    min_shape=[1, 3, 8, 8],
+                    default_shape=[1, 3, 8, 8],
+                    max_shape=[1, 3, 8, 8])),
+            convert_to=convert_to)
+
+        suffix = get_model_suffix(convert_to)
+        return output_file_prefix + suffix
+    else:
+        raise NotImplementedError(
+            f'Convert for {backend.value} has not been implemented.')
 
 
 def create_wrapper(backend, model_files):
@@ -186,10 +214,7 @@ ALL_BACKEND.remove(Backend.SDK)
 @pytest.mark.parametrize('backend', ALL_BACKEND)
 def test_wrapper(backend):
     check_backend(backend, True)
-    if backend == Backend.TORCHSCRIPT:
-        model_files = ts_file
-    else:
-        model_files = onnx2backend(backend, onnx_file)
+    model_files = ir2backend(backend, onnx_file, ts_file)
     assert model_files is not None
     wrapper = create_wrapper(backend, model_files)
     assert wrapper is not None
