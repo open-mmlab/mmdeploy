@@ -28,6 +28,30 @@ namespace cxx {
 
 using Rect = mmdeploy_rect_t;
 
+template <typename T>
+class UniqueHandle : public NonCopyable {
+ public:
+  UniqueHandle() = default;
+  explicit UniqueHandle(T handle) : handle_(handle) {}
+
+  // derived class must destroy the object and reset `handle_`
+  ~UniqueHandle() { assert(handle_ == nullptr); }
+
+  UniqueHandle(UniqueHandle&& o) noexcept : handle_(std::exchange(o.handle_, nullptr)) {}
+  UniqueHandle& operator=(UniqueHandle&& o) noexcept {
+    if (this != &o) {
+      handle_ = std::exchange(o.handle_, nullptr);
+    }
+    return *this;
+  }
+
+  explicit operator T() const noexcept { return handle_; }
+  T operator->() const noexcept { return handle_; }
+
+ protected:
+  T handle_{};
+};
+
 class Model {
  public:
   explicit Model(const char* path) {
@@ -101,6 +125,8 @@ class Mat {
   Mat(int height, int width, int channels, mmdeploy_pixel_format_t format,
       mmdeploy_data_type_t type, uint8_t* data, mmdeploy_device_t device = nullptr)
       : desc_{data, height, width, channels, format, type, device} {}
+
+  Mat(const mmdeploy_mat_t& desc) : desc_(desc) {}  // NOLINT
 
   const mmdeploy_mat_t& desc() const noexcept { return desc_; }
 

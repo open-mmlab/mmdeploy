@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_EXECUTOR_INTERNAL_H_
 #define MMDEPLOY_CSRC_APIS_C_EXECUTOR_INTERNAL_H_
 
-#include "executor.h"
+#include "mmdeploy/executor.h"
 #include "mmdeploy/execution/schedulers/registry.h"
 
 using namespace mmdeploy;

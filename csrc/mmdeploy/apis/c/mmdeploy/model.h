@@ -8,7 +8,7 @@
 #ifndef MMDEPLOY_SRC_APIS_C_MODEL_H_
 #define MMDEPLOY_SRC_APIS_C_MODEL_H_
 
-#include "common.h"
+#include "mmdeploy/common.h"
 
 #ifdef __cplusplus
 extern "C" {

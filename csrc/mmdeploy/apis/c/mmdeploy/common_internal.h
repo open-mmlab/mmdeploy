@@ -3,12 +3,12 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 #define MMDEPLOY_CSRC_APIS_C_COMMON_INTERNAL_H_
 
-#include "common.h"
-#include "handle.h"
+#include "mmdeploy/common.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/value.h"
-#include "model.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/model.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 
@@ -90,7 +90,7 @@ class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
   T release() noexcept { return std::exchange(v_, nullptr); }
 
   auto operator*() { return Cast(v_); }
-  auto operator-> () { return Cast(v_); }
+  auto operator->() { return Cast(v_); }
 
   T* ptr() noexcept { return &v_; }
 

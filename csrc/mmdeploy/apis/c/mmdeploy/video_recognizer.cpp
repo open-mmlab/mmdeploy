@@ -1,22 +1,22 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "video_recognizer.h"
+#include "mmdeploy/video_recognizer.h"
 
 #include <numeric>
 #include <vector>
 
-#include "common_internal.h"
-#include "executor_internal.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmaction/mmaction.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/core/value.h"
-#include "model.h"
-#include "pipeline.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/model.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 
