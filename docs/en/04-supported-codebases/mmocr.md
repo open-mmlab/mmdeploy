@@ -14,6 +14,7 @@
       - [Text detection SDK model inference](#text-detection-sdk-model-inference)
       - [Text Recognition SDK model inference](#text-recognition-sdk-model-inference)
   - [Supported models](#supported-models)
+  - [Reminder](#reminder)
 
 ______________________________________________________________________
 
@@ -245,3 +246,17 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)           | text-recognition |      N      |      Y      |    Y     |  N   |   N   |    N     |
 | [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn)       | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
 | [ABINet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet)     | text-recognition |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
+
+## Reminder
+
+- ABINet for TensorRT require pytorch1.10+ and TensorRT 8.4+.
+
+- For TensorRT backend, users have to choose the right config. For example, CRNN only accepts 1 channel input. Here is a recommendation table:
+
+  | Model    | Config                                                     |
+  | :------- | :--------------------------------------------------------- |
+  | MaskRCNN | text-detection_mrcnn_tensorrt_dynamic-320x320-2240x2240.py |
+  | CRNN     | text-recognition_tensorrt_dynamic-1x32x32-1x32x640.py      |
+  | SATRN    | text-recognition_tensorrt_dynamic-32x32-32x640.py          |
+  | SAR      | text-recognition_tensorrt_dynamic-48x64-48x640.py          |
+  | ABINet   | text-recognition_tensorrt_static-32x128.py                 |

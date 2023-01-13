@@ -14,6 +14,7 @@
       - [文字检测 SDK 模型推理](#文字检测-sdk-模型推理)
       - [文字识别 SDK 模型推理](#文字识别-sdk-模型推理)
   - [模型支持列表](#模型支持列表)
+  - [注意事项](#注意事项)
 
 ______________________________________________________________________
 
@@ -249,3 +250,17 @@ print(texts)
 | [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)           | text-recognition |      N      |      Y      |    Y     |  N   |   N   |    N     |
 | [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn)       | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
 | [ABINet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet)     | text-recognition |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
+
+## 注意事项
+
+- ABINet 在 TensorRT 后端要求使用 pytorch1.10+， TensorRT 8.4+。
+
+- 对于 TensorRT 后端，用户需要使用正确的配置文件。比如 CRNN 只接受单通道输入。下面是一个示例表格:
+
+  | Model    | Config                                                     |
+  | :------- | :--------------------------------------------------------- |
+  | MaskRCNN | text-detection_mrcnn_tensorrt_dynamic-320x320-2240x2240.py |
+  | CRNN     | text-recognition_tensorrt_dynamic-1x32x32-1x32x640.py      |
+  | SATRN    | text-recognition_tensorrt_dynamic-32x32-32x640.py          |
+  | SAR      | text-recognition_tensorrt_dynamic-48x64-48x640.py          |
+  | ABINet   | text-recognition_tensorrt_static-32x128.py                 |
