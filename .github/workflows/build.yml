@@ -171,7 +171,7 @@ jobs:
       - name: Run mmyolo deploy unittests
         run: |
           python -m pip install xdoctest
-          cd /home/runner/work/mmyolo
+          cd ../../mmyolo
           pytest tests/test_deploy
 
   build_cuda111:
@@ -229,7 +229,7 @@ jobs:
       - name: Run mmyolo deploy unittests
         run: |
           python -m pip install xdoctest
-          cd /home/runner/work/mmyolo
+          cd ../../mmyolo
           pytest tests/test_deploy
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
