@@ -1,8 +1,8 @@
+#include "mmdeploy/classifier.h"
+
 #include <fstream>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <string>
-
-#include "mmdeploy/classifier.h"
 
 int main(int argc, char* argv[]) {
   if (argc < 4) {

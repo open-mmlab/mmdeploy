@@ -8,18 +8,18 @@ endif ()
 
 find_package(OpenCV)
 
-add_executable(video_recognizer main.cpp)
+add_executable(video_recognition main.cpp)
 
 if (NOT (MSVC OR APPLE))
     # Disable new dtags so that executables can run even without LD_LIBRARY_PATH set
-    target_link_libraries(video_recognizer PRIVATE -Wl,--disable-new-dtags)
+    target_link_libraries(video_recognition PRIVATE -Wl,--disable-new-dtags)
 endif ()
 if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
-    target_link_libraries(video_recognizer PRIVATE mmdeploy ${OpenCV_LIBS})
+    target_link_libraries(video_recognition PRIVATE mmdeploy ${OpenCV_LIBS})
 else ()
     # Load MMDeploy modules
-    mmdeploy_load_static(video_recognizer MMDeployStaticModules)
-    mmdeploy_load_dynamic(video_recognizer MMDeployDynamicModules)
+    mmdeploy_load_static(video_recognition MMDeployStaticModules)
+    mmdeploy_load_dynamic(video_recognition MMDeployDynamicModules)
     # Link to MMDeploy libraries
-    target_link_libraries(video_recognizer PRIVATE MMDeployLibs ${OpenCV_LIBS})
+    target_link_libraries(video_recognition PRIVATE MMDeployLibs ${OpenCV_LIBS})
 endif ()

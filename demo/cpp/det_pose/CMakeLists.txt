@@ -8,7 +8,7 @@ endif ()
 
 find_package(OpenCV)
 
-add_executable(det_pose det_pose.cpp)
+add_executable(det_pose main.cpp)
 
 if (NOT (MSVC OR APPLE))
     # Disable new dtags so that executables can run even without LD_LIBRARY_PATH set

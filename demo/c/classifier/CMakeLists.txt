@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_cxxapi_ocr)
+project(mmdeploy_capi_classifier)
 
 if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
     find_package(MMDeploy REQUIRED)
@@ -24,8 +24,8 @@ macro(link_mmdeploy target_name)
     endif ()
 endmacro()
 
-add_executable(ocr main.cpp)
-add_executable(ocr2 text_det_recog.cpp)
+add_executable(image_classification main.cpp)
+add_executable(batch_image_classification batch.cpp)
 
-link_mmdeploy(ocr)
-link_mmdeploy(ocr2)
+link_mmdeploy(image_classification)
+link_mmdeploy(batch_image_classification)
