@@ -1,3 +1,11 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+cmake_minimum_required(VERSION 3.14)
+project(mmdeploy_cxxapi_demos)
+
+if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
+    find_package(MMDeploy REQUIRED)
+endif ()
+
 set(TASK_LIST ${MMDEPLOY_TASKS})
 
 if ("text_detector" IN_LIST TASK_LIST)
