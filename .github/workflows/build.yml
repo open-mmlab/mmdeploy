@@ -65,6 +65,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
+          python -m pip install xdoctest
           pytest mmyolo/tests/test_deploy
 
   build_cpu_sdk:
@@ -166,6 +167,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
+          python -m pip install xdoctest
           pytest mmyolo/tests/test_deploy
 
   build_cuda111:
@@ -221,6 +223,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
+          python -m pip install xdoctest
           pytest mmyolo/tests/test_deploy
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

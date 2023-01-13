@@ -100,6 +100,7 @@ commands:
             coverage xml
             coverage report -m
             cd ..
+            python -m pip install xdoctest
             pytest mmyolo/tests/test_deploy
 jobs:
   lint:
@@ -157,7 +158,7 @@ jobs:
           name: Perform Model Converter unittests
           command: |
             docker exec -i mmdeploy bash -c "cd mmdeploy && coverage run --branch --source mmdeploy -m pytest -rsE tests && coverage xml && coverage report -m"
-            docker exec -i mmdeploy bash -c "pytest mmyolo/tests/test_deploy"
+            docker exec -i mmdeploy bash -c "python -m pip install xdoctest && pytest mmyolo/tests/test_deploy"
       - run:
           name: Run SDK unittests
           command: |
