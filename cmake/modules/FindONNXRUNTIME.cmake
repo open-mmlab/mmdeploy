@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
+if (TARGET onnxruntime)
+    return ()
+endif ()
 if (NOT DEFINED ONNXRUNTIME_DIR)
     set(ONNXRUNTIME_DIR $ENV{ONNXRUNTIME_DIR})
 endif ()

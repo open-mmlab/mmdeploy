@@ -1,5 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+if (TARGET cudnn)
+    return()
+endif ()
+
 if (NOT DEFINED CUDNN_DIR)
     set(CUDNN_DIR $ENV{CUDNN_DIR})
 endif ()
