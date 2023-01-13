@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Optional, Union
+from typing import Dict, Optional, Union, Sequence
 
 import coremltools as ct
 import torch
@@ -49,9 +49,9 @@ def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
 def from_torchscript(torchscript_model: Union[str,
                                               torch.jit.RecursiveScriptModule],
                      output_file_prefix: str,
-                     input_names: list[str],
-                     output_names: list[str],
-                     input_shapes: dict[str, dict],
+                     input_names: Sequence[str],
+                     output_names: Sequence[str],
+                     input_shapes: Dict[str, Dict],
                      compute_precision: str = 'FLOAT32',
                      convert_to: str = 'neuralnetwork',
                      minimum_deployment_target: Optional[str] = None,
