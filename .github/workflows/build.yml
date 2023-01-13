@@ -52,6 +52,7 @@ jobs:
           python -m pip list
       - name: Install mmyolo
         run: |
+          cd ../../
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
           cd mmyolo && python -m pip install -v -e .
       - name: Build and install
@@ -155,9 +156,9 @@ jobs:
           python -m pip list
       - name: Install mmyolo
         run: |
+          cd ../../
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
           cd mmyolo && python -m pip install -v -e .
-          cd mmyolo && echo ${pwd}
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -213,6 +214,7 @@ jobs:
           python -m pip list
       - name: Install mmyolo
         run: |
+          cd ../../
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
           cd mmyolo && python -m pip install -v -e .
       - name: Build and install
