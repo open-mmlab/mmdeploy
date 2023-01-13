@@ -11,7 +11,6 @@
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/experimental/module_adapter.h"
 #include "mmpose.h"
-#include "opencv_utils.h"
 
 namespace mmdeploy::mmpose {
 

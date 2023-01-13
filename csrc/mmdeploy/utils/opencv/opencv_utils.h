@@ -92,6 +92,16 @@ MMDEPLOY_API cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int 
                          int border_type, float val);
 
 /**
+ * @param src
+ * @param crop_rect t, l, b, r
+ * @param target_size w, h
+ * @param pad_rect t, l, b, r
+ */
+MMDEPLOY_API cv::Mat CropResizePad(const cv::Mat& src, const std::vector<int>& crop_rect,
+                                   const std::vector<int>& target_size,
+                                   const std::vector<int>& pad_rect);
+
+/**
  * @brief compare two images
  *
  * @param src1 one input image
