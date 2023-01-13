@@ -53,7 +53,7 @@ jobs:
       - name: Install mmyolo
         run: |
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
-          cd /home/circleci/project/mmyolo && python -m pip install -v -e .
+          cd mmyolo && python -m pip install -v -e .
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -65,7 +65,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
-          pytest /home/circleci/project/mmyolo/tests/test_deploy
+          pytest mmyolo/tests/test_deploy
 
   build_cpu_sdk:
     runs-on: ubuntu-18.04
@@ -154,7 +154,7 @@ jobs:
       - name: Install mmyolo
         run: |
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
-          cd /home/circleci/project/mmyolo && python -m pip install -v -e .
+          cd mmyolo && python -m pip install -v -e .
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -166,7 +166,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
-          pytest /home/circleci/project/mmyolo/tests/test_deploy
+          pytest mmyolo/tests/test_deploy
 
   build_cuda111:
     runs-on: ubuntu-18.04
@@ -209,7 +209,7 @@ jobs:
       - name: Install mmyolo
         run: |
           git clone -b dev https://github.com/open-mmlab/mmyolo.git
-          cd /home/circleci/project/mmyolo && python -m pip install -v -e .
+          cd mmyolo && python -m pip install -v -e .
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -221,7 +221,7 @@ jobs:
           coverage report -m
       - name: Run mmyolo deploy unittests
         run: |
-          pytest /home/circleci/project/mmyolo/tests/test_deploy
+          pytest mmyolo/tests/test_deploy
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
