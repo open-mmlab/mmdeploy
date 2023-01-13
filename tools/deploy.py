@@ -225,6 +225,29 @@ def main():
             from mmdeploy.backend.ascend import update_sdk_pipeline
             update_sdk_pipeline(args.work_dir)
 
+    if backend == Backend.VACC:
+        # TODO: Add this to task_processor in the future
+
+        from onnx2vacc_quant_dataset import get_quant
+        from mmdeploy.utils import get_model_inputs
+
+        deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+        model_inputs = get_model_inputs(deploy_cfg)
+
+        for onnx_path, model_input in zip(ir_files, model_inputs):
+
+            quant_mode = model_input.get('qconfig', {}).get('dtype', 'fp16')
+            assert quant_mode in ['int8', 'fp16'], quant_mode + ' not support now'
+            shape_dict = model_input.get('shape', {})
+
+            if quant_mode == 'int8':
+                create_process(
+                    'vacc quant dataste',
+                    target=get_quant,
+                    args=(deploy_cfg, model_cfg, shape_dict, checkpoint_path, args.work_dir, args.device),
+                    kwargs=dict(),
+                    ret_value=ret_value)
+    
     # convert to backend
     PIPELINE_MANAGER.set_log_level(log_level, [to_backend])
     if backend == Backend.TENSORRT:
@@ -280,6 +303,15 @@ def main():
         show_result=args.show)
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
+
+    if backend == Backend.VACC:
+        from mmdeploy.utils import get_common_config
+        deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
+        common_cfg = get_common_config(deploy_cfg)
+
+        if common_cfg['model_info'] is None or common_cfg['vdsp_params_info'] is None:
+            logger.info('All process success.')
+            return
 
     # get backend inference result, try render
     create_process(

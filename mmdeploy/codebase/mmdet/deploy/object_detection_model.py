@@ -603,6 +603,38 @@ class NCNNEnd2EndModel(End2EndModel):
         dets = torch.cat([boxes, scores], dim=2)
         return dets, labels.to(torch.int32)
 
+@__BACKEND_MODEL.register_module('vacc_det')
+class VACCDetModel(End2EndModel):
+
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config], **kwargs):
+        assert backend == Backend.VACC, f'only supported vacc, but give \
+            {backend.value}'
+
+        super(VACCDetModel, self).__init__(backend, backend_files, device,
+                                               deploy_cfg, **kwargs)
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def predict(self, imgs: Tensor, *args, **kwargs) -> List:
+        """Implement forward test.
+
+        Args:
+            imgs (Tensor): Input image(s) in [N x C x H x W] format.
+
+        Returns:
+            list[Tensor]: dets of shape [N, num_det, 5] and
+                class labels of shape [N, num_det].
+        """
+        _, _, H, W = imgs.shape
+        outputs = self.wrapper({self.input_name: imgs})
+        for key, item in outputs.items():
+            if item is None:
+                return torch.zeros(1, 0, 5), torch.zeros(1, 0)
+        
+        return torch.zeros(1, 0, 5), torch.zeros(1, 0)
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
