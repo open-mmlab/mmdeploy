@@ -87,7 +87,7 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
             visualize = False
 
     if visualize is True:
-        if not isinstance(img, list):
+        if isinstance(img, str) or not isinstance(img, Sequence):
             img = [img]
         for single_img in img:
             task_processor.visualize(
