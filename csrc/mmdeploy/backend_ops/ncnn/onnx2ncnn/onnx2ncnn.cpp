@@ -394,6 +394,8 @@ int main(int argc, char** argv) {
   for (std::map<std::string, onnx::TensorProto>::iterator it = weights.begin(); it != weights.end();
        it++) {
     const std::string& input_name = it->first;
+    
+    blob_names.insert(input_name);
 
     int refcount = node_reference[input_name];
     if (refcount == 0) zero_reference_weight_node_count++;
