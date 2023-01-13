@@ -3,14 +3,13 @@
 
 #include <iomanip>
 #include <iostream>
+#include <opencv2/imgcodecs.hpp>
 #include <string>
-
-#include "opencv2/imgcodecs/imgcodecs.hpp"
 
 int main(int argc, char* argv[]) {
   if (argc < 4) {
     std::cerr << "usage:" << std::endl
-              << "  ./bin/classifier device_name sdk_model_path image_path"
+              << "  ./classifier device_name sdk_model_path image_path"
                  " [--profile]"
               << std::endl;
     return 1;
@@ -20,24 +19,19 @@ int main(int argc, char* argv[]) {
   auto image_path = argv[3];
   auto profile = argc > 4 ? std::string("--profile") == argv[argc - 1] : false;
 
+  mmdeploy::Context context(mmdeploy::Device{device_name});
+  mmdeploy::Profiler profiler("profiler.bin");
+  if (profile) {
+    context.Add(profiler);
+  }
+
+  mmdeploy::Classifier classifier(mmdeploy::Model(model_path), context);
+
   cv::Mat img = cv::imread(image_path);
   if (!img.data) {
     std::cerr << "failed to load image: " << image_path;
     return 1;
   }
-
-  mmdeploy::Model model(model_path);
-  mmdeploy::Profiler profiler("profile.bin");
-  mmdeploy::Context context;
-
-  context.Add("model", mmdeploy::Model{model_path});
-  context.Add(mmdeploy::Device{device_name, 0});
-  if (profile) {
-    context.Add(profiler);
-  }
-
-  mmdeploy::Classifier classifier(model, context);
-
   auto res = classifier.Apply(img);
 
   for (const auto& cls : res) {

@@ -1,22 +1,23 @@
 
+#include <iomanip>
+#include <iostream>
 #include <map>
+#include <opencv2/videoio.hpp>
 #include <string>
 
 #include "mmdeploy/video_recognizer.hpp"
-#include "opencv2/imgcodecs/imgcodecs.hpp"
-#include "opencv2/videoio.hpp"
 
 void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
                   std::vector<mmdeploy::Mat>& clips, int clip_len, int frame_interval = 1,
                   int num_clips = 1) {
   cv::VideoCapture cap = cv::VideoCapture(video_path);
   if (!cap.isOpened()) {
-    fprintf(stderr, "failed to load video: %s\n", video_path);
+    std::cerr << "failed to load video: " << video_path << std::endl;
     exit(1);
   }
 
   int num_frames = cap.get(cv::CAP_PROP_FRAME_COUNT);
-  printf("num_frames %d\n", num_frames);
+  std::cout << "num_frames: " << num_frames << std::endl;
 
   int ori_clip_len = clip_len * frame_interval;
   float avg_interval = (num_frames - ori_clip_len + 1.f) / num_clips;
@@ -38,8 +39,7 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
   unique_inds.erase(last, unique_inds.end());
 
   int ind = 0;
-  for (int i = 0; i < unique_inds.size(); i++) {
-    int tid = unique_inds[i];
+  for (int tid : unique_inds) {
     cv::Mat frame;
     while (ind < tid) {
       cap.read(frame);
@@ -58,13 +58,26 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  video_cls device_name model_path video_path\n");
+  if (argc < 4) {
+    std::cerr << "usage:" << std::endl
+              << "  ./video_cls device_name sdk_model_path "
+                 "video_path [--profile]"
+              << std::endl;
     return 1;
   }
+
   auto device_name = argv[1];
   auto model_path = argv[2];
   auto video_path = argv[3];
+  auto profile = argc > 4 ? std::string("--profile") == argv[argc - 1] : false;
+
+  mmdeploy::Context context(mmdeploy::Device{device_name, 0});
+  mmdeploy::Profiler profiler("profiler.bin");
+  if (profile) {
+    context.Add(profiler);
+  }
+
+  mmdeploy::VideoRecognizer recognizer( mmdeploy::Model{model_path}, context);
 
   int clip_len = 1;
   int frame_interval = 1;
@@ -75,13 +88,11 @@ int main(int argc, char* argv[]) {
   mmdeploy::VideoSampleInfo clip_info = {clip_len, num_clips};
   SampleFrames(video_path, buffer, clips, clip_len, frame_interval, num_clips);
 
-  mmdeploy::Model model(model_path);
-  mmdeploy::VideoRecognizer recognizer(model, mmdeploy::Device{device_name, 0});
-
   auto res = recognizer.Apply(clips, clip_info);
 
   for (const auto& cls : res) {
-    fprintf(stderr, "label: %d, score: %.4f\n", cls.label_id, cls.score);
+    std::cout << "label: " << cls.label_id << ", score: " << std::fixed << std::setprecision(2)
+              << cls.score << std::endl;
   }
 
   return 0;

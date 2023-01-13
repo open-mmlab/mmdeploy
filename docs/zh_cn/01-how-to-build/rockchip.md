@@ -1,12 +1,15 @@
 # 瑞芯微 NPU 部署
 
-- [模型转换](#模型转换)
-  - [安装环境](#安装环境)
-  - [分裂模型转换](#分类模型转换)
-  - [检测模型转换](#检测模型转换)
-- [模型推理](#模型推理)
-  - [Host 交叉编译](#Host-交叉编译)
-  - [Device 执行推理](#Device-执行推理)
+- [瑞芯微 NPU 部署](#瑞芯微-npu-部署)
+  - [模型转换](#模型转换)
+    - [安装环境](#安装环境)
+    - [分类模型转换](#分类模型转换)
+    - [检测模型转换](#检测模型转换)
+    - [部署 config 说明](#部署-config-说明)
+    - [问题说明](#问题说明)
+  - [模型推理](#模型推理)
+    - [Host 交叉编译](#host-交叉编译)
+    - [Device 执行推理](#device-执行推理)
 
 ______________________________________________________________________
 
@@ -234,7 +237,6 @@ mkdir -p build && cd build
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
 -DMMDEPLOY_BUILD_SDK=ON \
--DMMDEPLOY_BUILD_SDK_CXX_API=ON \
 -DMMDEPLOY_BUILD_EXAMPLES=ON \
 -DMMDEPLOY_TARGET_BACKENDS="rknn" \
 -DRKNPU_DEVICE_DIR=${RKNPU_DIR}/rknn/rknn_api/librknn_api \
@@ -281,7 +283,6 @@ export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DOpenCV_DIR=${OpenCV_AARCH64_INSTALL_DIR}/lib/cmake/opencv4

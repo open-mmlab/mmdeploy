@@ -27,7 +27,6 @@ option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
 option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" OFF)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
-option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
 option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
 option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
@@ -108,7 +107,8 @@ if (MMDEPLOY_BUILD_SDK)
 
     if (MMDEPLOY_BUILD_EXAMPLES)
         include(${CMAKE_SOURCE_DIR}/cmake/opencv.cmake)
-        add_subdirectory(demo/csrc)
+        add_subdirectory(demo/c)
+        add_subdirectory(demo/cpp)
     endif ()
 
     # export MMDeploy package

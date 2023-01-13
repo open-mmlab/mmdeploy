@@ -7,7 +7,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
-    fprintf(stderr, "usage:\n  oriented_object_detection device_name model_path image_path\n");
+    fprintf(stderr, "usage:\n  rotated_detector device_name model_path image_path\n");
     return 1;
   }
   auto device_name = argv[1];
