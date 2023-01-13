@@ -3,7 +3,6 @@
 In this chapter, we introduce how to install MMDeploy on NVIDIA Jetson platforms, which we have verified on the following modules:
 
 - Jetson Nano
-- Jetson Xavier NX
 - Jetson TX2
 - Jetson AGX Xavier
 
@@ -174,10 +173,25 @@ It takes about 1 hour 40 minutes to install MMCV on a Jetson Nano. So, please be
 
 #### Install ONNX
 
+Don't install the latest ONNX. The recommended ONNX version is 1.10.0.
+
 ```shell
 # Execute one of the following commands
-pip install onnx
+pip install onnx==1.10.0
 conda install -c conda-forge onnx
+```
+
+If the installation failed and showed the following error:
+
+```
+CMake Error at CMakeLists.txt:299 (message):
+      Protobuf compiler not found
+```
+
+Please install dependencies:
+
+```shell
+sudo apt-get install protobuf-compiler libprotoc-dev
 ```
 
 #### Install h5py and pycuda

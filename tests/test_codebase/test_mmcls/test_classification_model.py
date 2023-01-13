@@ -12,6 +12,7 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 64
 NUM_CLASS = 1000
+MODEL_CFG_PATH = 'tests/test_codebase/test_mmcls/data/model.py'
 
 try:
     import_codebase(Codebase.MMCLS)
@@ -31,7 +32,7 @@ class TestEnd2EndModel:
         # simplify backend inference
         cls.wrapper = SwitchBackendWrapper(ORTWrapper)
         cls.outputs = {
-            'outputs': torch.rand(1, 100),
+            'outputs': torch.rand(1, NUM_CLASS),
         }
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
@@ -99,7 +100,7 @@ class TestRKNNEnd2EndModel:
 
 @backend_checker(Backend.ONNXRUNTIME)
 def test_build_classification_model():
-    model_cfg = Config(dict(data=dict(test={'type': 'ImageNet'})))
+    model_cfg = Config.fromfile(MODEL_CFG_PATH)
     deploy_cfg = Config(
         dict(
             backend_config=dict(type='onnxruntime'),
