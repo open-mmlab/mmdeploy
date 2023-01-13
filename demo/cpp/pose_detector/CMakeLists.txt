@@ -6,7 +6,7 @@ if (NOT (${CMAKE_PROJECT_NAME} STREQUAL "MMDeploy"))
     find_package(MMDeploy REQUIRED)
 endif ()
 
-find_package(OpenCV)
+find_package(OpenCV REQUIRED)
 
 add_executable(pose_detector main.cpp)
 
