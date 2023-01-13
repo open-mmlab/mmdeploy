@@ -55,9 +55,7 @@ foreach (TASK ${TASK_LIST})
             DESTINATION include/mmdeploy)
 endforeach ()
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/c/ DESTINATION example/c
-        PATTERN "CMakeLists.txt" EXCLUDE
-        )
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/c/ DESTINATION example/c)
 
 if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     add_library(mmdeploy SHARED)

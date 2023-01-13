@@ -105,18 +105,18 @@
 </code></pre>
     1. <b>ort</b>: ONNXRuntime. <code>ONNXRUNTIME_DIR</code> is needed.
 <pre><code>-DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR}</code></pre>
-    1. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
+    2. <b>pplnn</b>: PPL.NN. <code>pplnn_DIR</code> is needed.
 <pre><code>-Dpplnn_DIR=${PPLNN_DIR}</code></pre>
-    1. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
+    3. <b>ncnn</b>: ncnn. <code>ncnn_DIR</code> is needed.
 <pre><code>-Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn</code></pre>
-    1. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
+    4. <b>openvino</b>: OpenVINO. <code>InferenceEngine_DIR</code> is needed.
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
-    1. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
+    5. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
 <pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
 Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.<br>
-    1. <b>snpe</b>: qcom snpe. <code>SNPE_ROOT</code> must existed in the environment variable because of C/S mode.<br>
-    2. <b>coreml</b>: CoreML. <code>Torch_DIR</code> is required. <code>Torch_DIR</code>。 <br>
-    3. <b>TVM</b>: TVM. <code>TVM_DIR</code> is required. <pre><code>-DTVM_DIR=${TVM_DIR}</code></pre>
+    6. <b>snpe</b>: qcom snpe. <code>SNPE_ROOT</code> must existed in the environment variable because of C/S mode.<br>
+    7. <b>coreml</b>: CoreML. <code>Torch_DIR</code> is required. <code>Torch_DIR</code>。 <br>
+    8. <b>TVM</b>: TVM. <code>TVM_DIR</code> is required. <pre><code>-DTVM_DIR=${TVM_DIR}</code></pre>
    </td>
   </tr>
   <tr>
