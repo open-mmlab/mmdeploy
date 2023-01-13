@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/utils/formatter.h"

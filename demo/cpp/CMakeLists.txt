@@ -8,7 +8,7 @@ endif ()
 
 set(TASK_LIST ${MMDEPLOY_TASKS})
 
-if ("text_detector" IN_LIST TASK_LIST)
+if ("text_detector" IN_LIST TASK_LIST OR "text_recognizer" IN_LIST TASK_LIST)
     list(REMOVE_ITEM TASK_LIST "text_detector" "text_recognizer")
     add_subdirectory(ocr)
 endif()

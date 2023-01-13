@@ -1,6 +1,7 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
 #include <string>
 
 #include "mmdeploy/text_detector.hpp"
