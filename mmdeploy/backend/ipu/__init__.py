@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from .backend_manager import IPUManager
+
 _BackendManager = IPUManager
 
 is_available = _BackendManager.is_available

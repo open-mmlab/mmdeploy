@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os
-from typing import Any, Optional, Sequence, Callable
+import sys
+from typing import Any, Callable, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
 from .converter import onnx_to_popef
-import sys
 
 
 @BACKEND_MANAGERS.register('ipu')
