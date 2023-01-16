@@ -24,7 +24,8 @@ class TrackingFilter {
 
   float BboxDistance(const Bbox& bbox);
 
-  std::pair<Bbox, Points> Correct(const Bbox& bbox, const Points& kpts);
+  std::pair<Bbox, Points> Correct(const Bbox& bbox, const Points& kpts,
+                                  const vector<bool>& tracked);
 
  private:
   void SetBboxProcessCov(float sigma_p, float sigma_v);
@@ -38,6 +39,8 @@ class TrackingFilter {
   void SetKeyPointErrorCov(int index, float sigma_p, float sigma_v);
   void SetKeyPointTransitionMat(int index);
   void SetKeyPointMeasurementMat(int index);
+
+  void ResetKeyPoint(int index, const Point& kpt, float scale);
 
  private:
   std::vector<cv::KalmanFilter> pt_filters_;

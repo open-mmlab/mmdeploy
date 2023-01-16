@@ -27,34 +27,36 @@ std::vector<py::tuple> Apply(mmdeploy::PoseTracker* self,
   assert(states.size() == frames.size());
   assert(states.size() == detect.size());
   auto results = self->Apply(states, frames, detect);
-  std::vector<py::tuple> rets;
-  for (const auto& r : results) {
-    py::array_t<float> keypoints({r->target_count, r->keypoint_count, 3});
-    py::array_t<float> bboxes({r->target_count, 4});
-    py::array_t<uint32_t> track_ids(r->target_count);
+  std::vector<py::tuple> batch_ret;
+  batch_ret.reserve(frames.size());
+  for (const auto& rs : results) {
+    py::array_t<float> keypoints({static_cast<int>(rs.size()), rs[0].keypoint_count, 3});
+    py::array_t<float> bboxes({static_cast<int>(rs.size()), 4});
+    py::array_t<uint32_t> track_ids(static_cast<int>(rs.size()));
     auto kpts_ptr = keypoints.mutable_data();
     auto bbox_ptr = bboxes.mutable_data();
     auto track_id_ptr = track_ids.mutable_data();
-    for (int i = 0; i < r->target_count; ++i) {
-      for (int j = 0; j < r->keypoint_count; ++j) {
-        kpts_ptr[0] = r->keypoints[i][j].x;
-        kpts_ptr[1] = r->keypoints[i][j].y;
-        kpts_ptr[2] = r->scores[i][j];
+    for (const auto& r : rs) {
+      for (int i = 0; i < r.keypoint_count; ++i) {
+        kpts_ptr[0] = r.keypoints[i].x;
+        kpts_ptr[1] = r.keypoints[i].y;
+        kpts_ptr[2] = r.scores[i];
         kpts_ptr += 3;
       }
-      auto bbox = (std::array<float, 4>&)r->bboxes[i];
-      bbox_ptr[0] = bbox[0];
-      bbox_ptr[1] = bbox[1];
-      bbox_ptr[2] = bbox[2];
-      bbox_ptr[3] = bbox[3];
-      bbox_ptr += 4;
-      if (r->track_ids) {
-        *track_id_ptr++ = r->track_ids[i];
+      {
+        auto tmp_bbox = (std::array<float, 4>&)r.bbox;
+        bbox_ptr[0] = tmp_bbox[0];
+        bbox_ptr[1] = tmp_bbox[1];
+        bbox_ptr[2] = tmp_bbox[2];
+        bbox_ptr[3] = tmp_bbox[3];
+        bbox_ptr += 4;
       }
+      *track_id_ptr++ = r.target_id;
     }
-    rets.push_back(py::make_tuple(std::move(keypoints), std::move(bboxes), std::move(track_ids)));
+    batch_ret.push_back(
+        py::make_tuple(std::move(keypoints), std::move(bboxes), std::move(track_ids)));
   }
-  return rets;
+  return batch_ret;
 }
 
 template <typename T, size_t N>

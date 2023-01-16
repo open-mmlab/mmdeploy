@@ -45,16 +45,13 @@ typedef struct mmdeploy_pose_tracker_param_t {
   float smooth_key_points[3];
 } mmdeploy_pose_tracker_param_t;
 
-typedef struct mmdeploy_pose_tracker_result_t {
-  mmdeploy_point_t** keypoints;
-  float** scores;
-  mmdeploy_rect_t* bboxes;
-  uint32_t* track_ids;
+typedef struct mmdeploy_pose_tracker_target_t {
+  mmdeploy_point_t* keypoints;
   int32_t keypoint_count;
-  int32_t target_count;
-  void* reserved0;
-  void* reserved1;
-} mmdeploy_pose_tracker_result_t;
+  float* scores;
+  mmdeploy_rect_t bbox;
+  uint32_t target_id;
+} mmdeploy_pose_tracker_target_t;
 
 MMDEPLOY_API int mmdeploy_pose_tracker_default_params(mmdeploy_pose_tracker_param_t* params);
 
@@ -74,11 +71,12 @@ MMDEPLOY_API void mmdeploy_pose_tracker_destroy_state(mmdeploy_pose_tracker_stat
 MMDEPLOY_API int mmdeploy_pose_tracker_apply(mmdeploy_pose_tracker_t pipeline,
                                              mmdeploy_pose_tracker_state_t* states,
                                              const mmdeploy_mat_t* frames,
-                                             const int32_t* use_detect, int32_t batch_size,
-                                             mmdeploy_pose_tracker_result_t** results);
+                                             const int32_t* use_detect, int32_t count,
+                                             mmdeploy_pose_tracker_target_t** results,
+                                             int32_t** result_count);
 
-MMDEPLOY_API void mmdeploy_pose_tracker_release_result(mmdeploy_pose_tracker_result_t* results,
-                                                       int32_t result_count);
+MMDEPLOY_API void mmdeploy_pose_tracker_release_result(mmdeploy_pose_tracker_target_t* results,
+                                                       const int32_t* result_count, int count);
 
 #ifdef __cplusplus
 }

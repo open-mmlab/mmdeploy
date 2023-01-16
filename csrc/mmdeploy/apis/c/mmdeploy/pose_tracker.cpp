@@ -139,12 +139,12 @@ int mmdeploy_pose_tracker_create_input(mmdeploy_pose_tracker_state_t* states,
   return MMDEPLOY_E_FAIL;
 }
 
-using ResultType = mmdeploy::Structure<mmdeploy_pose_tracker_result_t,
-                                       std::vector<mmpose::_pose_tracker::TrackerResult>,
-                                       std::vector<mmdeploy_point_t*>, std::vector<float*>>;
+using ResultType = mmdeploy::Structure<mmdeploy_pose_tracker_target_t, std::vector<int32_t>,
+                                       std::vector<mmpose::_pose_tracker::TrackerResult>>;
 
 int mmdeploy_pose_tracker_get_result(mmdeploy_value_t output,
-                                     mmdeploy_pose_tracker_result_t** results) {
+                                     mmdeploy_pose_tracker_target_t** results,
+                                     int32_t** result_count) {
   if (!output || !results) {
     return MMDEPLOY_E_INVALID_ARG;
   }
@@ -153,44 +153,37 @@ int mmdeploy_pose_tracker_get_result(mmdeploy_value_t output,
     std::vector<mmpose::_pose_tracker::TrackerResult> res;
     from_value(Cast(output)->front(), res);
 
-    size_t target_count = 0;
+    size_t total = 0;
     for (const auto& r : res) {
-      target_count += r.bboxes.size();
+      total += r.bboxes.size();
     }
 
     // preserve space for the output structure
-    ResultType result_type({res.size(), 1, 1, 1});
-    auto [result_data, result_holder, keypoints, scores] = result_type.pointers();
-    keypoints->resize(target_count);
-    scores->resize(target_count);
+    ResultType result_type({total, 1, 1});
+    auto [result_data, result_cnt, result_holder] = result_type.pointers();
 
-    auto keypoints_ptr = keypoints->data();
-    auto scores_ptr = scores->data();
     auto result_ptr = result_data;
 
     result_holder->swap(res);
 
     // build output structure
     for (auto& r : *result_holder) {
-      auto& p = *result_ptr++;
-      p.target_count = static_cast<int32_t>(r.bboxes.size());
-      p.keypoints = keypoints_ptr;
-      p.scores = scores_ptr;
-      p.bboxes = r.bboxes.data();
-      p.track_ids = r.track_ids.data();
       for (int j = 0; j < r.bboxes.size(); ++j) {
+        auto& p = *result_ptr++;
         p.keypoint_count = static_cast<int32_t>(r.keypoints[j].size());
-        p.keypoints[j] = r.keypoints[j].data();
-        p.scores[j] = r.scores[j].data();
+        p.keypoints = r.keypoints[j].data();
+        p.scores = r.scores[j].data();
+        p.bbox = r.bboxes[j];
+        p.target_id = r.track_ids[j];
       }
-      keypoints_ptr += p.target_count;
-      scores_ptr += p.target_count;
+      result_cnt->push_back(r.bboxes.size());
       // debug info
-      p.reserved0 = new std::vector(r.pose_input_bboxes);
-      p.reserved1 = new std::vector(r.pose_output_bboxes);
+      //  p.reserved0 = new std::vector(r.pose_input_bboxes);
+      //  p.reserved1 = new std::vector(r.pose_output_bboxes);
     }
 
     *results = result_data;
+    *result_count = result_cnt->data();
     result_type.release();
 
     return MMDEPLOY_SUCCESS;
@@ -205,24 +198,25 @@ int mmdeploy_pose_tracker_get_result(mmdeploy_value_t output,
 
 int mmdeploy_pose_tracker_apply(mmdeploy_pose_tracker_t pipeline,
                                 mmdeploy_pose_tracker_state_t* states, const mmdeploy_mat_t* frames,
-                                const int32_t* use_detect, int32_t batch_size,
-                                mmdeploy_pose_tracker_result_t** results) {
+                                const int32_t* use_detect, int32_t count,
+                                mmdeploy_pose_tracker_target_t** results, int32_t** result_count) {
   wrapped<mmdeploy_value_t> input;
   if (auto ec =
-          mmdeploy_pose_tracker_create_input(states, frames, use_detect, batch_size, input.ptr())) {
+          mmdeploy_pose_tracker_create_input(states, frames, use_detect, count, input.ptr())) {
     return ec;
   }
   wrapped<mmdeploy_value_t> output;
   if (auto ec = mmdeploy_pipeline_apply((mmdeploy_pipeline_t)pipeline, input, output.ptr())) {
     return ec;
   }
-  if (auto ec = mmdeploy_pose_tracker_get_result(output, results)) {
+  if (auto ec = mmdeploy_pose_tracker_get_result(output, results, result_count)) {
     return ec;
   }
   return MMDEPLOY_SUCCESS;
 }
 
-void mmdeploy_pose_tracker_release_result(mmdeploy_pose_tracker_result_t* results,
-                                          int32_t result_count) {
-  ResultType deleter({static_cast<size_t>(result_count), 1, 1, 1}, results);
+void mmdeploy_pose_tracker_release_result(mmdeploy_pose_tracker_target_t* results,
+                                          const int32_t* result_count, int count) {
+  auto total = std::accumulate(result_count, result_count + count, 0);
+  ResultType deleter({static_cast<size_t>(total), 1, 1}, results);
 }

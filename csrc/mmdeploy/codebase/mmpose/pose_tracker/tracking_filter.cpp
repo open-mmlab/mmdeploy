@@ -27,11 +27,7 @@ TrackingFilter::TrackingFilter(const Bbox& bbox, const vector<Point>& kpts,
     SetKeyPointTransitionMat(i);
     SetKeyPointMeasurementMat(i);
 
-    SetKeyPointErrorCov(i,                                     //
-                        2 * std_weight_position * mean_scale,  //
-                        10 * std_weight_velocity * mean_scale);
-    f.statePost.at<float>(0) = kpts[i].x;
-    f.statePost.at<float>(1) = kpts[i].y;
+    ResetKeyPoint(i, kpts[i], mean_scale);
   }
 
   {
@@ -76,17 +72,23 @@ std::pair<Bbox, Points> TrackingFilter::Predict() {
   return {bbox, pts};
 }
 
-std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& kpts) {
+std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& kpts,
+                                                const vector<bool>& tracked) {
   auto mean_scale = get_mean_scale(bbox_filter_.statePre.at<float>(2),  //
                                    bbox_filter_.statePre.at<float>(3));
   const auto n = pt_filters_.size();
   Points corr_kpts(n);
   for (int i = 0; i < n; ++i) {
-    SetKeyPointMeasurementCov(i, std_weight_position * mean_scale);
-    std::array<float, 2> m{kpts[i].x, kpts[i].y};
-    auto mat = pt_filters_[i].correct(cv::Mat(m, false));
-    corr_kpts[i].x = mat.at<float>(0);
-    corr_kpts[i].y = mat.at<float>(1);
+    if (!tracked.empty() && tracked[i]) {
+      SetKeyPointMeasurementCov(i, std_weight_position * mean_scale);
+      std::array<float, 2> m{kpts[i].x, kpts[i].y};
+      auto mat = pt_filters_[i].correct(cv::Mat(m, false));
+      corr_kpts[i].x = mat.at<float>(0);
+      corr_kpts[i].y = mat.at<float>(1);
+    } else {
+      ResetKeyPoint(i, kpts[i], mean_scale);
+      corr_kpts[i] = kpts[i];
+    }
   }
   Bbox corr_bbox;
   {
@@ -192,6 +194,13 @@ void TrackingFilter::SetKeyPointTransitionMat(int index) {
 void TrackingFilter::SetKeyPointMeasurementMat(int index) {
   auto& m = pt_filters_[index].measurementMatrix;
   cv::setIdentity(m(cv::Rect(0, 0, 2, 2)));
+}
+
+void TrackingFilter::ResetKeyPoint(int index, const Point& kpt, float scale) {
+  auto& f = pt_filters_[index];
+  SetKeyPointErrorCov(index, 2 * std_weight_position * scale, 10 * std_weight_velocity * scale);
+  f.statePost.at<float>(0) = kpt.x;
+  f.statePost.at<float>(1) = kpt.y;
 }
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

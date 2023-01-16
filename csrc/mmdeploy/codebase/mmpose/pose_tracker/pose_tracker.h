@@ -59,10 +59,10 @@ class Tracker {
 
   void GetSimilarityMatrices(const vector<Bbox>& bboxes, const vector<Points>& keypoints,
                              const vector<int64_t>& prev_ids, vector<float>& similarity0,
-                             vector<float>& similarity1);
+                             vector<float>& similarity1, vector<vector<bool>>& gating);
 
-  std::array<float, 3> GetTrackPoseSimilarity(Track& track, const Bbox& bbox,
-                                              const Points& kpts) const;
+  std::tuple<float, float, vector<bool>> GetTrackPoseSimilarity(Track& track, const Bbox& bbox,
+                                                                const Points& kpts) const;
 
   void CreateTrack(const Bbox& bbox, const Points& kpts, const Scores& scores);
 
@@ -75,6 +75,9 @@ class Tracker {
   void SummaryTracks();
 
  private:
+
+  static constexpr const auto kInf = 1000.f;
+
   float frame_h_ = 0;
   float frame_w_ = 0;
 

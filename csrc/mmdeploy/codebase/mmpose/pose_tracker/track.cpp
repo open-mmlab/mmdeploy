@@ -16,16 +16,17 @@ Track::Track(const mmdeploy_pose_tracker_param_t* params, const Bbox& bbox, cons
 
 Track::~Track() { POSE_TRACKER_DEBUG("track lost {}", track_id_); }
 
-void Track::UpdateVisible(const Bbox& bbox, const Points& kpts, const Scores& ss) {
-  if (missing_ == 0) {
-    auto [bbox_corr, kpts_corr] = filter_.Correct(bbox, kpts);
-    Add(bbox_corr, kpts_corr, ss);
-  } else {
-    POSE_TRACKER_DEBUG("track recovered {}", track_id_);
-    filter_ = CreateFilter(bbox, kpts);
-    smoother_.Reset(bbox, kpts);
-    Add(bbox, kpts, ss);
-  }
+void Track::UpdateVisible(const Bbox& bbox, const Points& kpts, const Scores& scores,
+                          const vector<bool>& tracked) {
+  auto [bbox_corr, kpts_corr] = filter_.Correct(bbox, kpts, tracked);
+  Add(bbox_corr, kpts_corr, scores);
+}
+
+void Track::UpdateRecovered(const Bbox& bbox, const Points& kpts, const Scores& scores) {
+  POSE_TRACKER_DEBUG("track recovered {}", track_id_);
+  filter_ = CreateFilter(bbox, kpts);
+  smoother_.Reset(bbox, kpts);
+  Add(bbox, kpts, scores);
   missing_ = 0;
 }
 

@@ -12,7 +12,7 @@ namespace cxx {
 
 class PoseTracker : public UniqueHandle<mmdeploy_pose_tracker_t> {
  public:
-  using Result = Result_<mmdeploy_pose_tracker_result_t>;
+  using Result = Result_<mmdeploy_pose_tracker_target_t>;
 
   class State : public UniqueHandle<mmdeploy_pose_tracker_state_t> {
    public:
@@ -83,23 +83,28 @@ inline std::vector<PoseTracker::Result> PoseTracker::Apply(const Span<State>& st
   if (frames.empty()) {
     return {};
   }
-  mmdeploy_pose_tracker_result_t* results{};
+  mmdeploy_pose_tracker_target_t* results{};
+  int32_t* result_count{};
 
   auto ec = mmdeploy_pose_tracker_apply(
       handle_, reinterpret_cast<mmdeploy_pose_tracker_state_t*>(states.data()),
-      reinterpret(frames.data()), detects.data(), static_cast<int32_t>(frames.size()), &results);
+      reinterpret(frames.data()), detects.data(), static_cast<int32_t>(frames.size()), &results,
+      &result_count);
   if (ec != MMDEPLOY_SUCCESS) {
     throw_exception(static_cast<ErrorCode>(ec));
   }
 
-  std::shared_ptr<mmdeploy_pose_tracker_result_t> data(
-      results, [count = frames.size()](auto p) { mmdeploy_pose_tracker_release_result(p, count); });
+  std::shared_ptr<mmdeploy_pose_tracker_target_t> data(
+      results, [result_count, count = frames.size()](auto p) {
+        mmdeploy_pose_tracker_release_result(p, result_count, count);
+      });
 
   std::vector<Result> rets;
   rets.reserve(frames.size());
 
+  size_t offset = 0;
   for (size_t i = 0; i < frames.size(); ++i) {
-    rets.emplace_back(i, 1, data);
+    offset += rets.emplace_back(offset, result_count[i], data).size();
   }
 
   return rets;

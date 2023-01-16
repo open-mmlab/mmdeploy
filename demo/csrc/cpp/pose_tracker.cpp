@@ -11,17 +11,17 @@
 using std::vector;
 using namespace mmdeploy;
 
-cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size);
+cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bool with_bbox);
 
 int main(int argc, char* argv[]) {
+  if (argc != 5) {
+    std::cerr << "usage:\n\tpose_tracker device_name det_model_path pose_model_path video_path\n";
+  }
+
   const auto device_name = argv[1];
   const auto det_model_path = argv[2];
   const auto pose_model_path = argv[3];
   const auto video_path = argv[4];
-
-  if (argc != 5) {
-    std::cerr << "usage:\n\tpose_tracker device_name det_model_path pose_model_path video_path\n";
-  }
 
   Context context(Device{device_name});
   Profiler profiler("pose_tracker.perf");
@@ -31,7 +31,9 @@ int main(int argc, char* argv[]) {
   PoseTracker::Params params;
   params->det_min_bbox_size = 100;
   params->det_interval = 1;
+  params->pose_max_num_bboxes = 6;
 
+  // optionally use OKS for keypoints similarity comparison
   std::array<float, 17> sigmas{0.026, 0.025, 0.025, 0.035, 0.035, 0.079, 0.079, 0.072, 0.072,
                                0.062, 0.062, 0.107, 0.107, 0.087, 0.087, 0.089, 0.089};
   params->keypoint_sigmas = sigmas.data();
@@ -52,7 +54,7 @@ int main(int argc, char* argv[]) {
       break;
     }
     auto result = tracker.Apply(state, frame);
-    auto vis = Visualize(frame, result, 1280);
+    auto vis = Visualize(frame, result, 1280, false);
     cv::imwrite("pose_" + std::to_string(frame_id++) + ".jpg", vis, {cv::IMWRITE_JPEG_QUALITY, 90});
   }
 
@@ -85,7 +87,7 @@ const Skeleton& gCocoSkeleton() {
   return inst;
 }
 
-cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size) {
+cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bool with_bbox) {
   auto& [skeleton, palette, link_color, point_color] = gCocoSkeleton();
   auto scale = (float)size / (float)std::max(frame.cols, frame.rows);
   if (scale != 1) {
@@ -97,10 +99,9 @@ cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size) {
     std::for_each(bbox.begin(), bbox.end(), [&](auto& x) { x *= scale; });
     cv::rectangle(frame, cv::Point2f(bbox[0], bbox[1]), cv::Point2f(bbox[2], bbox[3]), color);
   };
-  for (int i = 0; i < result->target_count; ++i) {
-    vector<float> kpts(&result->keypoints[i]->x,
-                       &result->keypoints[i]->x + result->keypoint_count * 2);
-    vector<float> scores(result->scores[i], result->scores[i] + result->keypoint_count);
+  for (const auto& r : result) {
+    vector<float> kpts(&r.keypoints[0].x, &r.keypoints[0].x + r.keypoint_count * 2);
+    vector<float> scores(r.scores, r.scores + r.keypoint_count);
     std::for_each(kpts.begin(), kpts.end(), [&](auto& x) { x *= scale; });
     constexpr auto score_thr = .5f;
     vector<int> used(kpts.size());
@@ -119,18 +120,8 @@ cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size) {
         cv::circle(frame, p, 1, palette[point_color[i / 2]], 2, cv::LINE_AA);
       }
     }
-    if (1) {
-      draw_bbox((std::array<float, 4>&)result->bboxes[i], cv::Scalar(0, 255, 0));
-    }
-    if (result->reserved0) {
-      for (const auto& bbox : *(vector<std::array<float, 4>>*)result->reserved0) {
-        draw_bbox(bbox, cv::Scalar(0, 255, 255));
-      }
-    }
-    if (result->reserved1) {
-      for (const auto& bbox : *(vector<std::array<float, 4>>*)result->reserved1) {
-        draw_bbox(bbox, cv::Scalar(255, 0, 255));
-      }
+    if (with_bbox) {
+      draw_bbox((std::array<float, 4>&)r.bbox, cv::Scalar(0, 255, 0));
     }
   }
   return frame;

@@ -22,7 +22,7 @@ struct TrackerResult {
 };
 
 inline void SetDefaultParams(mmdeploy_pose_tracker_param_t& p) {
-  p.det_interval = 5;
+  p.det_interval = 1;
   p.det_label = 0;
   p.det_min_bbox_size = -1;
   p.det_thr = .5f;
@@ -34,18 +34,17 @@ inline void SetDefaultParams(mmdeploy_pose_tracker_param_t& p) {
   p.pose_nms_thr = .5f;
   p.keypoint_sigmas = nullptr;
   p.keypoint_sigmas_size = 0;
-  p.track_visible_thr = .3f;
+  p.track_visible_thr = .3f;  // TODO: remove
   p.track_missing_thr = .4f;
   p.track_bbox_scale = 1.25f;
   p.track_max_missing = 10;
   p.track_history_size = 1;
-  (std::array<float, 2>&)p.kf_bbox_center = {1, 1};
-  (std::array<float, 2>&)p.kf_bbox_scale = {1, 1};
-  (std::array<float, 2>&)p.kf_key_points = {1, 1};
-  (std::array<float, 3>&)p.smooth_bbox_center = {0.005, 0.5, 1.};
-  (std::array<float, 3>&)p.smooth_bbox_scale = {0, 1, 0};
-  //  (std::array<float, 3>&)p.smooth_key_points = {0.005, 0.5, 1.};
-  (std::array<float, 3>&)p.smooth_key_points = {0.005, 100, 1.};
+  (std::array<float, 2>&)p.kf_bbox_center = {1, 1};               // TODO: remove
+  (std::array<float, 2>&)p.kf_bbox_scale = {1, 1};                // TODO: remove
+  (std::array<float, 2>&)p.kf_key_points = {1, 1};                // TODO: remove
+  (std::array<float, 3>&)p.smooth_bbox_center = {0.007, 1., 1.};  // TODO: remove
+  (std::array<float, 3>&)p.smooth_bbox_scale = {0, 1, 0};         // TODO: remove
+  (std::array<float, 3>&)p.smooth_key_points = {0.007, 1., 1.};
 }
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

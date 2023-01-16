@@ -18,7 +18,9 @@ class Track {
         const Scores& ss, int64_t id);
   ~Track();
 
-  void UpdateVisible(const Bbox& bbox, const Points& ks, const Scores& ss);
+  void UpdateVisible(const Bbox& bbox, const Points& kpts, const Scores& scores,
+                     const vector<bool>& tracked);
+  void UpdateRecovered(const Bbox& bbox, const Points& kpts, const Scores& scores);
   void UpdateMissing();
   void Predict();
 
