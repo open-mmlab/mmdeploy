@@ -558,6 +558,31 @@ def test_prepare_onnx_paddings__tensorrt():
 
 
 @backend_checker(Backend.ONNXRUNTIME)
+@pytest.mark.parametrize('dim', [0, -1])
+@pytest.mark.parametrize('keepdim', [True, False])
+def test_any__default(dim, keepdim):
+    input = torch.rand(2, 4)
+    model = WrapFunction(lambda input: input.any(dim, keepdim=keepdim))
+    pytorch_output = model(input)
+    deploy_cfg_ort = Config(
+        dict(
+            onnx_config=dict(input_shape=None),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=deploy_cfg_ort,
+        run_with_backend=True)
+    assert pytorch_output.dtype == rewrite_output[0].dtype
+    assert torch.allclose(
+        pytorch_output.float(),
+        rewrite_output[0].float(),
+        rtol=1e-3,
+        atol=1e-5)
+
+
+@backend_checker(Backend.ONNXRUNTIME)
 def test_linspace__default():
     import random
 

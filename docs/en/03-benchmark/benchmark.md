@@ -1178,6 +1178,42 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7949</td>
     <td align="center">0.7950</td>
   </tr>
+ <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnetpp/dbnetpp_resnet50_fpnc_1200e_icdar2015.py">DBNetpp</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.8209</td>
+    <td align="center">0.8209</td>
+    <td align="center">0.8209</td>
+    <td align="center">0.8199</td>
+    <td align="center">0.8204</td>
+    <td align="center">0.8204</td>
+    <td align="center">-</td>
+    <td align="center">0.8209</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.9079</td>
+    <td align="center">0.9079</td>
+    <td align="center">0.9079</td>
+    <td align="center">0.9117</td>
+    <td align="center">0.9117</td>
+    <td align="center">0.9142</td>
+    <td align="center">-</td>
+    <td align="center">0.9079</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8622</td>
+    <td align="center">0.8622</td>
+    <td align="center">0.8622</td>
+    <td align="center">0.8634</td>
+    <td align="center">0.8637</td>
+    <td align="center">0.8648</td>
+    <td align="center">-</td>
+    <td align="center">0.8622</td>
+  </tr>
   <tr>
     <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py">PSENet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
@@ -1251,6 +1287,78 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7955</td>
   </tr>
   <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/textsnake/textsnake_resnet50_fpn-unet_1200e_ctw1500.py">TextSnake</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">CTW1500</td>
+    <td align="center">recall</td>
+    <td align="center">0.8052</td>
+    <td align="center">0.8052</td>
+    <td align="center">0.8052</td>
+    <td align="center">0.8055</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8535</td>
+    <td align="center">0.8535</td>
+    <td align="center">0.8535</td>
+    <td align="center">0.8538</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8286</td>
+    <td align="center">0.8286</td>
+    <td align="center">0.8286</td>
+    <td align="center">0.8290</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/maskrcnn/mask-rcnn_resnet50_fpn_160e_icdar2015.py">MaskRCNN</a></td>
+    <td align="center" rowspan="3">TextDetection</td>
+    <td align="center" rowspan="3">ICDAR2015</td>
+    <td align="center">recall</td>
+    <td align="center">0.7766</td>
+    <td align="center">0.7766</td>
+    <td align="center">0.7766</td>
+    <td align="center">0.7766</td>
+    <td align="center">0.7761</td>
+    <td align="center">0.7670</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">precision</td>
+    <td align="center">0.8644</td>
+    <td align="center">0.8644</td>
+    <td align="center">0.8644</td>
+    <td align="center">0.8644</td>
+    <td align="center">0.8630</td>
+    <td align="center">0.8705</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center">hmean</td>
+    <td align="center">0.8182</td>
+    <td align="center">0.8182</td>
+    <td align="center">0.8182</td>
+    <td align="center">0.8182</td>
+    <td align="center">0.8172</td>
+    <td align="center">0.8155</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
     <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
@@ -1289,6 +1397,20 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.9487</td>
     <td align="center">0.9483</td>
     <td align="center">0.9483</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet/abinet_20e_st-an_mj.py">ABINet</a></td>
+    <td align="center">TextRecognition</td>
+    <td align="center">IIIT5K</td>
+    <td align="center">acc</td>
+    <td align="center">0.9603</td>
+    <td align="center">0.9563</td>
+    <td align="center">0.9563</td>
+    <td align="center">0.9573</td>
+    <td align="center">0.9507</td>
+    <td align="center">0.9510</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>

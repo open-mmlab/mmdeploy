@@ -9,6 +9,7 @@ import torch
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils.config_utils import load_config
 from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
                                  get_rewrite_outputs)
 
@@ -22,7 +23,8 @@ from mmocr.models.textdet.necks import FPNC
 dictionary = dict(
     type='Dictionary',
     dict_file='tests/test_codebase/test_mmocr/data/lower_english_digits.txt',
-    with_padding=True)
+    with_padding=True,
+    with_end=True)
 
 
 class FPNCNeckModel(FPNC):
@@ -408,16 +410,6 @@ def test_sar_model(backend: Backend, decoder_type):
     sar_cfg.model.pop('type')
     pytorch_model = SARNet(**(sar_cfg.model))
 
-    # img_meta = {
-    #     'ori_shape': [48, 160],
-    #     'img_shape': [48, 160, 3],
-    #     'scale_factor': [1., 1.]
-    # }
-    # from mmengine.structures import InstanceData
-    # from mmocr.structures import TextRecogDataSample
-    # pred_instances = InstanceData(metainfo=img_meta)
-    # data_sample = TextRecogDataSample(pred_instances=pred_instances)
-    # data_sample.set_metainfo(img_meta)
     model_inputs = {'inputs': torch.rand(1, 3, 48, 160), 'data_samples': None}
 
     deploy_cfg = mmengine.Config(
@@ -461,3 +453,121 @@ def test_sar_model(backend: Backend, decoder_type):
         onnx.checker.check_model(model)
     except onnx.checker.ValidationError:
         assert False
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_mmdet_wrapper__forward(backend):
+    check_backend(backend)
+    from mmdet.structures import DetDataSample
+    from mmengine.structures import InstanceData
+    from mmocr.models.textdet import MMDetWrapper
+    cfg, = load_config('tests/test_codebase/test_mmocr/data/mrcnn.py')
+
+    model = MMDetWrapper(cfg.model.cfg)
+    model.eval()
+    deploy_cfg = mmengine.Config(
+        dict(
+            backend_config=dict(
+                type=backend.value,
+                common_config=dict(max_workspace_size=1 << 30)),
+            onnx_config=dict(
+                input_shape=None,
+                input_names=['inputs'],
+                output_names=['output']),
+            codebase_config=dict(
+                type='mmocr',
+                task='TextDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    confidence_threshold=0.005,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=5000,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                    export_postprocess_mask=False))))
+
+    input = torch.rand(1, 3, 64, 64)
+    img_meta = {
+        'ori_shape': [64, 64],
+        'img_shape': [64, 64],
+        'scale_factor': [1., 1.],
+        'img_path': ''
+    }
+    pred_instances = InstanceData(metainfo=img_meta)
+    data_sample = DetDataSample(pred_instances=pred_instances)
+    data_sample.set_metainfo(img_meta)
+    wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
+
+    rewrite_inputs = {'inputs': input}
+
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_abi_language_decoder___get_length(backend):
+    check_backend(backend)
+    from mmocr.models.textrecog.decoders import ABILanguageDecoder
+    model = ABILanguageDecoder(dictionary=dictionary)
+    input = torch.randn(1, 26, 37)
+    model_inputs = {'logit': input}
+    model_outputs = get_model_outputs(model, '_get_length', model_inputs)
+    wrapped_model = WrapModel(model, '_get_length')
+    rewrite_inputs = {'logit': input}
+    deploy_cfg = mmengine.Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(input_shape=None),
+            codebase_config=dict(
+                type='mmocr',
+                task='TextRecognition',
+            )))
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    model_outputs = model_outputs.float().cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    print(model_outputs, rewrite_outputs)
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test__positional_encoding(backend):
+    check_backend(backend)
+    from mmocr.models.common.modules import PositionalEncoding
+    pytorch_model = PositionalEncoding(64, 20)
+    input = torch.rand(1, 20, 64)
+    model_inputs = {'x': input}
+    model_outputs = get_model_outputs(pytorch_model, 'forward', model_inputs)
+    wrapped_model = WrapModel(pytorch_model, 'forward')
+    rewrite_inputs = {'x': input}
+    deploy_cfg = mmengine.Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(input_shape=None),
+            codebase_config=dict(
+                type='mmocr',
+                task='TextRecognition',
+            )))
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    if is_backend_output:
+        rewrite_outputs = rewrite_outputs[0]
+
+    model_outputs = model_outputs.float().cpu().numpy()
+    rewrite_outputs = rewrite_outputs.cpu().numpy()
+    print(model_outputs, rewrite_outputs)
+    assert np.allclose(model_outputs, rewrite_outputs, rtol=1e-03, atol=1e-05)
