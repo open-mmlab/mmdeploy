@@ -62,9 +62,6 @@ def process_model_config(model_cfg: Config,
         if cfg.test_pipeline[0]['type'] == 'LoadImageFromFile':
             cfg.test_pipeline.pop(0)
     # check whether input_shape is valid
-    if 'CIFAR' in cfg.dataset_type:
-        # cifar dataset needs input image (32, 32)
-        cfg.test_pipeline.insert(-1, dict(type='Resize', scale=(32, 32)))
     if input_shape is not None:
         for pipeline_component in cfg.test_pipeline:
             if 'Crop' in pipeline_component['type']:
@@ -74,14 +71,6 @@ def process_model_config(model_cfg: Config,
                         logger = get_root_logger()
                         logger.warning(
                             f'`input shape` should be equal to `crop_size`: {crop_size},\
-                                but given: {input_shape}')
-            if 'Resize' in pipeline_component['type']:
-                if 'scale' in pipeline_component:
-                    size = pipeline_component['scale']
-                    if tuple(input_shape) != size:
-                        logger = get_root_logger()
-                        logger.warning(
-                            f'`input shape` should be equal to `shape`: {size},\
                                 but given: {input_shape}')
     return cfg
 
