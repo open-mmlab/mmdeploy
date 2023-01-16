@@ -145,30 +145,7 @@ class PoseDetection(BaseTask):
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
         super().__init__(model_cfg, deploy_cfg, device)
-
-    def build_pytorch_model(self,
-                            model_checkpoint: Optional[str] = None,
-                            cfg_options: Optional[Dict] = None,
-                            **kwargs) -> torch.nn.Module:
-        """build pytorch model from model config and checkpoint
-        Args:
-            model_checkpoint (str|None): Input model checkpoint file.
-            cfg_options (dict|None): Optional config arguments.
-
-        Returns:
-            nn.Module: An initialized pytorch model.
-        """
-        from mmpose.apis import init_model
-        from mmpose.utils import register_all_modules
-        register_all_modules()
         self.model_cfg.model.test_cfg['flip_test'] = False
-
-        model = init_model(
-            self.model_cfg,
-            model_checkpoint,
-            device=self.device,
-            cfg_options=cfg_options)
-        return model
 
     def build_backend_model(
             self,
