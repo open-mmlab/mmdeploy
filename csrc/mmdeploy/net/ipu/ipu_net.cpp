@@ -173,4 +173,4 @@ static std::unique_ptr<Net> Create(const Value& args) {
 
 MMDEPLOY_REGISTER_FACTORY_FUNC(Net, (ipu, 0), Create);
 
-}  // namespace mmdeploy framework
+}  // namespace mmdeploy::framework

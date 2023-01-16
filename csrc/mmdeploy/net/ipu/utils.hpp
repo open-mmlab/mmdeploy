@@ -46,12 +46,14 @@ inline model_runtime::InputMemoryView toInputMemoryView(
     const model_runtime::InputMemory &input_memory) {
   model_runtime::InputMemoryView input_memory_view;
 
-  std::transform(input_memory.cbegin(), input_memory.cend(),
-+                 std::inserter(input_memory_view, input_memory_view.end()),
-+                 [](model_runtime::InputMemory::const_reference name_with_memory) {
-+                   auto &&[name, memory] = name_with_memory;
-+                   return std::make_pair(name, memory.getView());
-+                 });
+  std::transform(
++      input_memory.cbegin(), input_memory.cend(),
++      +std::inserter(input_memory_view, input_memory_view.end()),
++      +[](model_runtime::InputMemory::const_reference name_with_memory) {
++        +auto &&[name, memory] = name_with_memory;
++        +return std::make_pair(name, memory.getView());
++        +
++      });
 
   return input_memory_view;
 }

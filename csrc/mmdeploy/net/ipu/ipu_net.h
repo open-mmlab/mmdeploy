@@ -48,6 +48,6 @@ class IPUNet : public Net {
   std::vector<Tensor> output_tensors_;
 };
 
-}  // namespace mmdeploy
+}  // namespace mmdeploy::framework
 
 #endif  // MMDEPLOY_SRC_NET_IPU_NET_H_
