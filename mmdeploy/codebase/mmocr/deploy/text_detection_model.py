@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional, Sequence, Union
 
+import cv2
 import mmengine
 import torch
 from mmengine.registry import Registry
@@ -36,14 +37,22 @@ class End2EndModel(BaseBackendModel):
         model_cfg: Optional[mmengine.Config] = None,
         **kwargs,
     ):
+        data_preprocessor = model_cfg.model.get('data_preprocessor', {})
+        if data_preprocessor is not None:  # skip when it is SDKEnd2EndModel
+            data_preprocessor.update(
+                model_cfg.model.get('cfg', {}).get('data_preprocessor', {}))
+            if data_preprocessor.get('type', None) == 'DetDataPreprocessor':
+                data_preprocessor.update(_scope_='mmdet')  # MRCNN
         super(End2EndModel, self).__init__(
-            deploy_cfg=deploy_cfg,
-            data_preprocessor=model_cfg.model.data_preprocessor)
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
         self.show_score = False
 
         from mmocr.registry import MODELS
-        self.det_head = MODELS.build(model_cfg.model.det_head)
+        if hasattr(model_cfg.model, 'det_head'):
+            self.det_head = MODELS.build(model_cfg.model.det_head)
+        else:
+            self.text_repr_type = model_cfg.model.get('text_repr_type', 'poly')
         self._init_wrapper(
             backend=backend,
             backend_files=backend_files,
@@ -101,7 +110,79 @@ class End2EndModel(BaseBackendModel):
                     instance, in (xn, yn) order.
         """
         x = self.extract_feat(inputs)
-        return self.det_head.postprocessor(x[0], data_samples)
+        if hasattr(self, 'det_head'):
+            return self.det_head.postprocessor(x[0], data_samples)
+        # post-process of mmdet models
+        from mmdet.structures.mask import bitmap_to_polygon
+        from mmocr.utils.bbox_utils import bbox2poly
+
+        from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
+        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+            End2EndModel as DetModel
+        if len(x) == 3:  # instance seg
+            batch_dets, _, batch_masks = x
+            for i in range(batch_dets.size(0)):
+                masks = batch_masks[i]
+                bboxes = batch_dets[i, :, :4]
+                bboxes[:, ::2] /= data_samples[i].scale_factor[0]
+                bboxes[:, 1::2] /= data_samples[i].scale_factor[1]
+                ori_h, ori_w = data_samples[i].ori_shape[:2]
+                img_h, img_w = data_samples[i].img_shape[:2]
+                export_postprocess_mask = True
+                polygons = []
+                scores = []
+                if self.deploy_cfg is not None:
+                    codebase_cfg = get_post_processing_params(self.deploy_cfg)
+                    # this flag enable postprocess when export.
+                    export_postprocess_mask = codebase_cfg.get(
+                        'export_postprocess_mask', True)
+                if not export_postprocess_mask:
+                    masks = DetModel.postprocessing_masks(
+                        bboxes, masks, ori_w, ori_h, batch_masks.device)
+                else:
+                    masks = masks[:, :img_h, :img_w]
+                masks = torch.nn.functional.interpolate(
+                    masks.unsqueeze(0).float(), size=(ori_h, ori_w))
+                masks = masks.squeeze(0)
+                if masks.dtype != bool:
+                    masks = masks >= 0.5
+
+                for mask_idx, mask in enumerate(masks.cpu()):
+                    contours, _ = bitmap_to_polygon(mask)
+                    polygons += [contour.reshape(-1) for contour in contours]
+                    scores += [batch_dets[i, :, 4][mask_idx].cpu()
+                               ] * len(contours)
+                # filter invalid polygons
+                filterd_polygons = []
+                keep_idx = []
+                for poly_idx, polygon in enumerate(polygons):
+                    if len(polygon) < 6:
+                        continue
+                    filterd_polygons.append(polygon)
+                    keep_idx.append(poly_idx)
+                # convert by text_repr_type
+                if self.text_repr_type == 'quad':
+                    for j, poly in enumerate(filterd_polygons):
+                        rect = cv2.minAreaRect(poly)
+                        vertices = cv2.boxPoints(rect)
+                        poly = vertices.flatten()
+                        filterd_polygons[j] = poly
+                pred_instances = InstanceData()
+                pred_instances.polygons = filterd_polygons
+                pred_instances.scores = torch.FloatTensor(scores)[keep_idx]
+                data_samples[i].pred_instances = pred_instances
+        else:
+            dets = x[0]
+            for i in range(dets.size(0)):
+                bboxes = dets[i, :, :4].cpu().numpy()
+                bboxes[:, ::2] /= data_samples[i].scale_factor[0]
+                bboxes[:, 1::2] /= data_samples[i].scale_factor[1]
+                polygons = [bbox2poly(bbox) for bbox in bboxes]
+                pred_instances = InstanceData()
+                pred_instances.polygons = polygons
+                pred_instances.scores = torch.FloatTensor(dets[i, :, 4].cpu())
+                data_samples[i].pred_instances = pred_instances
+        return data_samples
 
     def extract_feat(self, batch_inputs: torch.Tensor) -> torch.Tensor:
         """The interface for forward test.
