@@ -298,7 +298,7 @@ jobs:
           echo "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.1\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Install cudnn
         run: |
-          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cudnn/cudnn-11.3-windows-x64-v8.2.1.32_2.zip -OutFile cudnn-11.3-windows-x64-v8.2.1.32.zip
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/cudnn/cudnn-11.3-windows-x64-v8.2.1.32.zip -OutFile cudnn-11.3-windows-x64-v8.2.1.32.zip
           Expand-Archive cudnn-11.3-windows-x64-v8.2.1.32.zip .
           echo "CUDNN_DIR=$pwd\CUDA" >> $env:GITHUB_ENV
       - name: Install tensorrt
