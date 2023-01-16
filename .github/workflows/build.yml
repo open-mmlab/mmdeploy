@@ -243,8 +243,8 @@ jobs:
           echo "OPENCV_DIR=$pwd\opencv-4.5.5\x64\vc16\lib" >> $env:GITHUB_ENV
       - name: Install pplcv
         run: |
-          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv_cuda10.2.zip -OutFile pplcv_cuda10.2.zip
-          Expand-Archive pplcv_cuda10.2.zip pplcv
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv-0.6.2.windows10.x86_64.cuda-10.2.zip -OutFile pplcv.zip
+          Expand-Archive pplcv.zip pplcv
           echo "PPLCV_DIR=$pwd\pplcv\lib\cmake\ppl" >> $env:GITHUB_ENV
       - name: Build
         run: |
@@ -313,8 +313,8 @@ jobs:
           echo "OPENCV_DIR=$pwd\opencv-4.5.5\x64\vc16\lib" >> $env:GITHUB_ENV
       - name: Install pplcv
         run: |
-          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv_cuda11.0.zip -OutFile pplcv_cuda11.0.zip
-          Expand-Archive pplcv_cuda11.0.zip pplcv
+          Invoke-WebRequest -Uri https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv-0.6.2.windows10.x86_64.cuda-11.x.zip-OutFile pplcv.zip
+          Expand-Archive pplcv.zip pplcv
           echo "PPLCV_DIR=$pwd\pplcv\lib\cmake\ppl" >> $env:GITHUB_ENV
       - name: Build
         run: |
