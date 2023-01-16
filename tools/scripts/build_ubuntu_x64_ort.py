@@ -17,7 +17,7 @@ def install_ort(dep_dir):
     os.chdir(dep_dir)
 
     # install python onnxruntime
-    os.system('python3 -m pip install onnxruntime==1.8.1')
+    os.system('python3 -m pip install onnxruntime==1.8.1 --user')
     # git clone
     if not os.path.exists('onnxruntime-linux-x64-1.8.1'):
         os.system(
