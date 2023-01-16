@@ -39,6 +39,8 @@ pipeline {
                 CODEBASE_ENVIRONMENT = "${params.codebase_list}"
             }
             steps {
+                echo CODEBASE_ENVIRONMENT
+                echo ${params.codebase_list}
                 bat """
                     @ECHO ON
                     echo CODEBASE_ENVIRONMENT
