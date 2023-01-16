@@ -1,20 +1,16 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Copyright (c) 2022 Graphcore Ltd. All rights reserved.
+from datetime import timedelta
 from typing import Any, Dict, Optional, Sequence, Union
 
+import model_runtime
+import numpy as np
+import popef
 import torch
-import onnx
 
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-
-import argparse
-from datetime import timedelta
-import numpy as np
-import model_runtime
-import popef
-import time
 
 
 @BACKEND_WRAPPER.register_module(Backend.IPU.value)
@@ -56,16 +52,16 @@ class IPUWrapper(BaseWrapper):
             timeout=timedelta(seconds=600),
             sleepTime=timedelta(seconds=1))
 
-        self.runner = model_runtime.ModelRunner(popef_file,
-                                                config=config)
+        self.runner = model_runtime.ModelRunner(popef_file, config=config)
 
         self.input_descriptions = self.runner.getExecuteInputs()
         self.input_view = model_runtime.InputMemoryView()
 
     def forward(self, inputs):
         for input_desc in self.input_descriptions:
-            self.input_view[input_desc.name] = inputs[input_desc.name].contiguous().numpy().astype(
-                popef.popefTypeToNumpyDType(input_desc.data_type))
+            self.input_view[input_desc.name] = inputs[
+                input_desc.name].contiguous().numpy().astype(
+                    popef.popefTypeToNumpyDType(input_desc.data_type))
 
         result = self.__ipu_execute()
 
@@ -74,9 +70,10 @@ class IPUWrapper(BaseWrapper):
         for output_desc in output_descriptions:
             out_shape = output_desc.shape
             out_shape[0] = out_shape[0] * self.bps
-            output_tensor = np.frombuffer(result[output_desc.name],
-                                          dtype=popef.popefTypeToNumpyDType(
-                output_desc.data_type)).reshape(out_shape)
+            output_tensor = np.frombuffer(
+                result[output_desc.name],
+                dtype=popef.popefTypeToNumpyDType(
+                    output_desc.data_type)).reshape(out_shape)
             outputs[output_desc.name] = torch.from_numpy(output_tensor)
 
         return outputs

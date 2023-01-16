@@ -79,4 +79,3 @@ target_link_libraries(mmdeploy_tests PRIVATE
     mmdeploy_transform
     mmdeploy_operation
     mmdeploy_opencv_utils)
-

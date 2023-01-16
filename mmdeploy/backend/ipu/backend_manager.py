@@ -4,9 +4,9 @@ import os
 from typing import Any, Optional, Sequence
 
 from mmdeploy.utils import get_backend_config
+from ..base import BACKEND_MANAGERS, BaseBackendManager
 # from mmdeploy.apis.ipu import onnx_to_popef
 from .converter import onnx_to_popef
-from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
 @BACKEND_MANAGERS.register('ipu')
@@ -42,10 +42,7 @@ class IPUManager(BaseBackendManager):
         else:
             bps = 1
         return IPUWrapper(
-            popef_file=backend_files[0],
-            bps=bps,
-            output_names=output_names
-        )
+            popef_file=backend_files[0], bps=bps, output_names=output_names)
 
     @classmethod
     def to_backend(cls,

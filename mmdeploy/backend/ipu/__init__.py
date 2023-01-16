@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .backend_manager import IPUManager
 import sys
+
+from .backend_manager import IPUManager
 
 
 def is_available():
@@ -14,8 +15,8 @@ def is_available():
         if 'onnx' in sys.modules.keys():
             del sys.modules['onnx']
             # del onnx
-            import popart
             import onnx
+            import popart
         else:
             import popart
 
@@ -31,8 +32,8 @@ __all__ = ['IPUManager']
 
 if is_available():
     try:
-        from .wrapper import IPUWrapper
         from .converter import onnx_to_popef
+        from .wrapper import IPUWrapper
         __all__ += ['IPUWrapper', 'onnx_to_popef']
     except Exception as e:
         print('ipu import error ', e)

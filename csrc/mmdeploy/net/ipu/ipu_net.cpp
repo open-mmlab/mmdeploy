@@ -69,7 +69,7 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
 IPUNet::~IPUNet() {}
 
 Result<void> IPUNet::Init(const Value& args) {
-  
+
   std::string popef_path = args["popef_path"].get<std::string>();
 
   batch_per_step = args["batches_per_step"].get<int>();
@@ -85,12 +85,12 @@ Result<void> IPUNet::Init(const Value& args) {
     input_desc[i].shape[0] *= batch_per_step;
     input_desc[i].size_in_bytes *= batch_per_step;
     MMDEPLOY_INFO("input desc shape {} ", input_desc[i].shape);
-  } 
+  }
 
   for (int i=0; i<output_desc.size(); i++){
     output_desc[i].shape[0] *= batch_per_step;
     output_desc[i].size_in_bytes *= batch_per_step;
-  } 
+  }
 
   input_memory = examples::allocateHostInputData(input_desc);
   output_memory = examples::allocateHostInputData(output_desc);
