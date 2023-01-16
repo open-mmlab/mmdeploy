@@ -4,66 +4,85 @@
 
 namespace mmdeploy::mmpose::_pose_tracker {
 
+static constexpr const float std_weight_position = 1. / 20;
+static constexpr const float std_weight_velocity = 1. / 160;
+
+float get_mean_scale(float scale_w, float scale_h) { return std::sqrt(scale_w * scale_h); }
+
 TrackingFilter::TrackingFilter(const Bbox& bbox, const vector<Point>& kpts,
                                const TrackingFilter::Params& center_params,
                                const TrackingFilter::Params& scale_params,
                                const TrackingFilter::Params& pts_params) {
+  auto center = get_center(bbox);
+  auto scale = get_scale(bbox);
+
+  auto mean_scale = get_mean_scale(scale[0], scale[1]);
+
   const auto n = kpts.size();
   pt_filters_.resize(n);
   for (int i = 0; i < n; ++i) {
     auto& f = pt_filters_[i];
     auto& p = pts_params;
     f.init(4, 2);
-    f.transitionMatrix = pts_trans();
-    f.measurementMatrix.at<float>(0, 0) = 1;
-    f.measurementMatrix.at<float>(1, 1) = 1;
-    f.measurementNoiseCov *= p.measure_sigma * p.measure_sigma;
-    f.processNoiseCov = pts_process_cov(p.process_sigma);
+    SetKeyPointTransitionMat(i);
+    SetKeyPointMeasurementMat(i);
+
+    SetKeyPointErrorCov(i,                                     //
+                        2 * std_weight_position * mean_scale,  //
+                        10 * std_weight_velocity * mean_scale);
     f.statePost.at<float>(0) = kpts[i].x;
     f.statePost.at<float>(1) = kpts[i].y;
   }
+
   {
-    // [x, y, u, v, w, h]
+    // [x, y, w, h, dx, dy, dw, dh]
     auto& f = bbox_filter_;
     auto& c = center_params;
     auto& s = scale_params;
-    f.init(6, 4);
-    f.transitionMatrix = bbox_trans();
-    f.measurementMatrix.at<float>(0, 0) = 1;
-    f.measurementMatrix.at<float>(1, 1) = 1;
-    f.measurementMatrix.at<float>(2, 4) = 1;
-    f.measurementMatrix.at<float>(3, 5) = 1;
-    f.measurementNoiseCov(cv::Rect(0, 0, 2, 2)) *= c.measure_sigma * c.measure_sigma;
-    f.measurementNoiseCov(cv::Rect(2, 2, 2, 2)) *= s.measure_sigma * s.measure_sigma;
-    f.processNoiseCov = bbox_process_cov(c.process_sigma, s.process_sigma);
-    f.statePost.at<float>(0) = get_center(bbox).x;
-    f.statePost.at<float>(1) = get_center(bbox).y;
-    f.statePost.at<float>(4) = get_scale(bbox)[0];
-    f.statePost.at<float>(5) = get_scale(bbox)[1];
+
+    f.init(8, 4);
+
+    SetBboxTransitionMat();
+    SetBboxMeasurementMat();
+
+    SetBboxErrorCov(2 * std_weight_position * mean_scale,  //
+                    10 * std_weight_velocity * mean_scale);
+
+    f.statePost.at<float>(0) = center.x;
+    f.statePost.at<float>(1) = center.y;
+    f.statePost.at<float>(2) = scale[0];
+    f.statePost.at<float>(3) = scale[1];
   }
 }
 
 std::pair<Bbox, Points> TrackingFilter::Predict() {
+  auto mean_scale = get_mean_scale(bbox_filter_.statePost.at<float>(2),  //
+                                   bbox_filter_.statePost.at<float>(3));
   const auto n = pt_filters_.size();
   Points pts(n);
   for (int i = 0; i < n; ++i) {
+    SetKeyPointProcessCov(i, std_weight_position * mean_scale, std_weight_velocity * mean_scale);
     auto mat = pt_filters_[i].predict();
     pts[i].x = mat.at<float>(0);
     pts[i].y = mat.at<float>(1);
   }
   Bbox bbox;
   {
+    SetBboxProcessCov(std_weight_position * mean_scale, std_weight_velocity * mean_scale);
     auto mat = bbox_filter_.predict();
     auto x = mat.ptr<float>();
-    bbox = get_bbox({x[0], x[1]}, {x[4], x[5]});
+    bbox = get_bbox({x[0], x[1]}, {x[2], x[3]});
   }
   return {bbox, pts};
 }
 
 std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& kpts) {
+  auto mean_scale = get_mean_scale(bbox_filter_.statePre.at<float>(2),  //
+                                   bbox_filter_.statePre.at<float>(3));
   const auto n = pt_filters_.size();
   Points corr_kpts(n);
   for (int i = 0; i < n; ++i) {
+    SetKeyPointMeasurementCov(i, std_weight_position * mean_scale);
     std::array<float, 2> m{kpts[i].x, kpts[i].y};
     auto mat = pt_filters_[i].correct(cv::Mat(m, false));
     corr_kpts[i].x = mat.at<float>(0);
@@ -71,17 +90,21 @@ std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& 
   }
   Bbox corr_bbox;
   {
+    SetBboxMeasurementCov(std_weight_position * mean_scale);
     auto c = get_center(bbox);
     auto s = get_scale(bbox);
     std::array<float, 4> m{c.x, c.y, s[0], s[1]};
     auto mat = bbox_filter_.correct(cv::Mat(m, false));
     auto x = mat.ptr<float>();
-    corr_bbox = get_bbox({x[0], x[1]}, {x[4], x[5]});
+    corr_bbox = get_bbox({x[0], x[1]}, {x[2], x[3]});
   }
   return {corr_bbox, corr_kpts};
 }
 
-float TrackingFilter::Distance(const Bbox& bbox) {
+float TrackingFilter::BboxDistance(const Bbox& bbox) {
+  auto mean_scale = get_mean_scale(bbox_filter_.statePre.at<float>(2),  //
+                                   bbox_filter_.statePre.at<float>(3));
+  SetBboxMeasurementCov(std_weight_position * mean_scale);
   auto c = get_center(bbox);
   auto s = get_scale(bbox);
   std::array<float, 4> m{c.x, c.y, s[0], s[1]};
@@ -90,52 +113,85 @@ float TrackingFilter::Distance(const Bbox& bbox) {
   cv::Mat sigma;
   cv::gemm(f.measurementMatrix * f.errorCovPre, f.measurementMatrix, 1, f.measurementNoiseCov, 1,
            sigma, cv::GEMM_2_T);
-  auto r = z - f.measurementMatrix * f.statePre;
-  cv::Mat d = r.t() * sigma.inv() * r + std::log(static_cast<float>(cv::determinant(sigma)));
-  //  MMDEPLOY_ERROR("{}", d.at<float>(0));
-  return 0;
+  cv::Mat r = z - f.measurementMatrix * f.statePre;
+  // ignore contribution of scales as it is unstable when inferred from key-points
+  r.at<float>(2) = 0;
+  r.at<float>(3) = 0;
+  cv::Mat d = r.t() * sigma.inv() * r;
+  return d.at<float>();
 }
 
-const cv::Mat& TrackingFilter::pts_trans() {
-  static const cv::Mat trans = [] {
-    cv::Mat m = cv::Mat::eye(4, 4, CV_32F);
-    m.at<float>(0, 2) = 1;
-    m.at<float>(1, 3) = 1;
-    return m;
-  }();
-  return trans;
+vector<float> TrackingFilter::KeyPointDistance(const Points& kpts) {
+  auto mean_scale = get_mean_scale(bbox_filter_.statePre.at<float>(2),  //
+                                   bbox_filter_.statePre.at<float>(3));
+
+  const auto n = pt_filters_.size();
+  vector<float> dists(n);
+  for (int i = 0; i < n; ++i) {
+    SetKeyPointMeasurementCov(i, std_weight_position * mean_scale);
+    std::array<float, 2> m{kpts[i].x, kpts[i].y};
+    cv::Mat z(m, false);
+    auto& f = pt_filters_[i];
+    cv::Mat sigma;
+    cv::gemm(f.measurementMatrix * f.errorCovPre, f.measurementMatrix, 1, f.measurementNoiseCov, 1,
+             sigma, cv::GEMM_2_T);
+    cv::Mat r = z - f.measurementMatrix * f.statePre;
+    cv::Mat d = r.t() * sigma.inv() * r;
+    dists[i] = d.at<float>();
+  }
+  return dists;
 }
 
-cv::Mat TrackingFilter::pts_process_cov(float sigma) {
-  static const cv::Mat proc_cov = [] {
-    cv::Mat m = cv::Mat::eye(4, 4, CV_32F);
-    cv::setIdentity(m(cv::Rect(0, 0, 2, 2)), .25f);
-    cv::setIdentity(m(cv::Rect(0, 2, 2, 2)), .50f);
-    cv::setIdentity(m(cv::Rect(2, 0, 2, 2)), .50f);
-    return m;
-  }();
-  return proc_cov * sigma;
+void TrackingFilter::SetBboxProcessCov(float sigma_p, float sigma_v) {
+  auto& m = bbox_filter_.processNoiseCov;
+  cv::setIdentity(m(cv::Rect(0, 0, 4, 4)), sigma_p * sigma_p);
+  cv::setIdentity(m(cv::Rect(4, 4, 4, 4)), sigma_v * sigma_v);
+}
+void TrackingFilter::SetBboxMeasurementCov(float sigma_p) {
+  auto& m = bbox_filter_.measurementNoiseCov;
+  cv::setIdentity(m, sigma_p * sigma_p);
+}
+void TrackingFilter::SetBboxErrorCov(float sigma_p, float sigma_v) {
+  auto& m = bbox_filter_.errorCovPost;
+  cv::setIdentity(m(cv::Rect(0, 0, 4, 4)), sigma_p * sigma_p);
+  cv::setIdentity(m(cv::Rect(4, 4, 4, 4)), sigma_v * sigma_v);
+}
+void TrackingFilter::SetBboxTransitionMat() {
+  auto& m = bbox_filter_.transitionMatrix;
+  cv::setIdentity(m(cv::Rect(4, 0, 4, 4)));  // with scale velocity
+  //  cv::setIdentity(m(cv::Rect(4, 0, 2, 2)));  // w/o scale velocity
+}
+void TrackingFilter::SetBboxMeasurementMat() {
+  auto& m = bbox_filter_.measurementMatrix;
+  cv::setIdentity(m(cv::Rect(0, 0, 4, 4)));
 }
 
-const cv::Mat& TrackingFilter::bbox_trans() {
-  static const cv::Mat trans = [] {
-    cv::Mat m = cv::Mat::eye(6, 6, CV_32F);
-    pts_trans().copyTo(m(cv::Rect(0, 0, 4, 4)));
-    return m;
-  }();
-  return trans;
+void TrackingFilter::SetKeyPointProcessCov(int index, float sigma_p, float sigma_v) {
+  auto& m = pt_filters_[index].processNoiseCov;
+  m.at<float>(0, 0) = sigma_p * sigma_p;
+  m.at<float>(1, 1) = sigma_p * sigma_p;
+  m.at<float>(2, 2) = sigma_v * sigma_v;
+  m.at<float>(3, 3) = sigma_v * sigma_v;
 }
-
-cv::Mat TrackingFilter::bbox_process_cov(float sigma_c, float sigma_s) {
-  static const cv::Mat proc_cov = [] {
-    cv::Mat m = cv::Mat::eye(6, 6, CV_32F);
-    pts_process_cov(1).copyTo(m(cv::Rect(0, 0, 4, 4)));
-    return m;
-  }();
-  auto m = proc_cov.clone();
-  m(cv::Rect(0, 0, 4, 4)) *= sigma_c * sigma_c;
-  cv::setIdentity(m(cv::Rect(4, 4, 2, 2)), sigma_s * sigma_s);
-  return m;
+void TrackingFilter::SetKeyPointMeasurementCov(int index, float sigma_p) {
+  auto& m = pt_filters_[index].measurementNoiseCov;
+  m.at<float>(0, 0) = sigma_p * sigma_p;
+  m.at<float>(1, 1) = sigma_p * sigma_p;
+}
+void TrackingFilter::SetKeyPointErrorCov(int index, float sigma_p, float sigma_v) {
+  auto& m = pt_filters_[index].errorCovPost;
+  m.at<float>(0, 0) = sigma_p * sigma_p;
+  m.at<float>(1, 1) = sigma_p * sigma_p;
+  m.at<float>(2, 2) = sigma_v * sigma_v;
+  m.at<float>(3, 3) = sigma_v * sigma_v;
+}
+void TrackingFilter::SetKeyPointTransitionMat(int index) {
+  auto& m = pt_filters_[index].transitionMatrix;
+  cv::setIdentity(m(cv::Rect(2, 0, 2, 2)));
+}
+void TrackingFilter::SetKeyPointMeasurementMat(int index) {
+  auto& m = pt_filters_[index].measurementMatrix;
+  cv::setIdentity(m(cv::Rect(0, 0, 2, 2)));
 }
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

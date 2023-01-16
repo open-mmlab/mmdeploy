@@ -1,3 +1,4 @@
+// Copyright (c) OpenMMLab. All rights reserved.
 
 #include "mmdeploy/pose_tracker.hpp"
 
@@ -10,13 +11,14 @@
 using std::vector;
 using namespace mmdeploy;
 
-void Visualize(cv::Mat& frame, const PoseTracker::Result& result, int size);
+cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size);
 
 int main(int argc, char* argv[]) {
   const auto device_name = argv[1];
   const auto det_model_path = argv[2];
   const auto pose_model_path = argv[3];
   const auto video_path = argv[4];
+
   if (argc != 5) {
     std::cerr << "usage:\n\tpose_tracker device_name det_model_path pose_model_path video_path\n";
   }
@@ -28,7 +30,7 @@ int main(int argc, char* argv[]) {
 
   PoseTracker::Params params;
   params->det_min_bbox_size = 100;
-  params->det_interval = 5;
+  params->det_interval = 1;
 
   std::array<float, 17> sigmas{0.026, 0.025, 0.025, 0.035, 0.035, 0.079, 0.079, 0.072, 0.072,
                                0.062, 0.062, 0.107, 0.107, 0.087, 0.087, 0.089, 0.089};
@@ -43,13 +45,15 @@ int main(int argc, char* argv[]) {
   }
 
   cv::Mat frame;
+  int frame_id = 0;
   while (true) {
     video >> frame;
     if (!frame.data) {
       break;
     }
     auto result = tracker.Apply(state, frame);
-    Visualize(frame, result, 1024);
+    auto vis = Visualize(frame, result, 1280);
+    cv::imwrite("pose_" + std::to_string(frame_id++) + ".jpg", vis, {cv::IMWRITE_JPEG_QUALITY, 90});
   }
 
   return 0;
@@ -58,8 +62,8 @@ int main(int argc, char* argv[]) {
 struct Skeleton {
   vector<std::pair<int, int>> skeleton;
   vector<cv::Scalar> palette;
-  vector<int> link_color_ids;
-  vector<int> point_color_ids;
+  vector<int> link_color;
+  vector<int> point_color;
 };
 
 const Skeleton& gCocoSkeleton() {
@@ -81,18 +85,22 @@ const Skeleton& gCocoSkeleton() {
   return inst;
 }
 
-void Visualize(cv::Mat& frame, const PoseTracker::Result& result, int size) {
+cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size) {
   auto& [skeleton, palette, link_color, point_color] = gCocoSkeleton();
   auto scale = (float)size / (float)std::max(frame.cols, frame.rows);
   if (scale != 1) {
     cv::resize(frame, frame, {}, scale, scale);
+  } else {
+    frame = frame.clone();
   }
+  auto draw_bbox = [&](std::array<float, 4> bbox, const cv::Scalar& color) {
+    std::for_each(bbox.begin(), bbox.end(), [&](auto& x) { x *= scale; });
+    cv::rectangle(frame, cv::Point2f(bbox[0], bbox[1]), cv::Point2f(bbox[2], bbox[3]), color);
+  };
   for (int i = 0; i < result->target_count; ++i) {
     vector<float> kpts(&result->keypoints[i]->x,
                        &result->keypoints[i]->x + result->keypoint_count * 2);
-    vector<float> bbox((float*)&result->bboxes[i], (float*)&result->bboxes[i] + 4);
     vector<float> scores(result->scores[i], result->scores[i] + result->keypoint_count);
-    std::for_each(bbox.end(), bbox.end(), [&](auto& x) { x *= scale; });
     std::for_each(kpts.begin(), kpts.end(), [&](auto& x) { x *= scale; });
     constexpr auto score_thr = .5f;
     vector<int> used(kpts.size());
@@ -111,7 +119,19 @@ void Visualize(cv::Mat& frame, const PoseTracker::Result& result, int size) {
         cv::circle(frame, p, 1, palette[point_color[i / 2]], 2, cv::LINE_AA);
       }
     }
+    if (1) {
+      draw_bbox((std::array<float, 4>&)result->bboxes[i], cv::Scalar(0, 255, 0));
+    }
+    if (result->reserved0) {
+      for (const auto& bbox : *(vector<std::array<float, 4>>*)result->reserved0) {
+        draw_bbox(bbox, cv::Scalar(0, 255, 255));
+      }
+    }
+    if (result->reserved1) {
+      for (const auto& bbox : *(vector<std::array<float, 4>>*)result->reserved1) {
+        draw_bbox(bbox, cv::Scalar(255, 0, 255));
+      }
+    }
   }
-  static int frame_id = 0;
-  cv::imwrite("pose_" + std::to_string(frame_id++) + ".jpg", frame, {cv::IMWRITE_JPEG_QUALITY, 90});
+  return frame;
 }

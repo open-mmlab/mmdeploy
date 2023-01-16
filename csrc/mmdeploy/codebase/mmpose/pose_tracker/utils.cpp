@@ -12,7 +12,7 @@ vector<std::tuple<int, int, float>> greedy_assignment(const vector<float>& score
   vector<std::tuple<int, int, float>> assignment;
   assignment.reserve(std::max(n_rows, n_cols));
   while (true) {
-    auto max_score = 0.f;
+    auto max_score = std::numeric_limits<float>::lowest();
     int max_row = -1;
     int max_col = -1;
     for (int i = 0; i < n_rows; ++i) {

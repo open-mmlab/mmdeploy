@@ -16,6 +16,9 @@ struct TrackerResult {
   std::vector<std::vector<float>> scores;
   std::vector<mmdeploy_rect_t> bboxes;
   std::vector<uint32_t> track_ids;
+  // debug info
+  std::vector<std::array<float, 4>> pose_input_bboxes;
+  std::vector<std::array<float, 4>> pose_output_bboxes;
 };
 
 inline void SetDefaultParams(mmdeploy_pose_tracker_param_t& p) {
@@ -41,7 +44,8 @@ inline void SetDefaultParams(mmdeploy_pose_tracker_param_t& p) {
   (std::array<float, 2>&)p.kf_key_points = {1, 1};
   (std::array<float, 3>&)p.smooth_bbox_center = {0.005, 0.5, 1.};
   (std::array<float, 3>&)p.smooth_bbox_scale = {0, 1, 0};
-  (std::array<float, 3>&)p.smooth_key_points = {0.005, 0.5, 1.};
+  //  (std::array<float, 3>&)p.smooth_key_points = {0.005, 0.5, 1.};
+  (std::array<float, 3>&)p.smooth_key_points = {0.005, 100, 1.};
 }
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

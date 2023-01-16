@@ -61,8 +61,8 @@ class Tracker {
                              const vector<int64_t>& prev_ids, vector<float>& similarity0,
                              vector<float>& similarity1);
 
-  std::pair<float, float> GetTrackPoseSimilarity(const Bbox& track_bbox, const Points& track_kpts,
-                                                 const Bbox& bbox, const Points& kpts) const;
+  std::array<float, 3> GetTrackPoseSimilarity(Track& track, const Bbox& bbox,
+                                              const Points& kpts) const;
 
   void CreateTrack(const Bbox& bbox, const Points& kpts, const Scores& scores);
 
@@ -84,7 +84,14 @@ class Tracker {
   std::vector<float> key_point_sigmas_;
   mmdeploy_pose_tracker_param_t params_;
 
+  vector<Bbox> pose_input_bboxes_;
+  vector<Bbox> pose_output_bboxes_;
+
   int64_t frame_id_ = 0;
+
+ public:
+  const vector<Bbox>& pose_input_bboxes() const noexcept { return pose_input_bboxes_; }
+  const vector<Bbox>& pose_output_bboxes() const noexcept { return pose_output_bboxes_; }
 };
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

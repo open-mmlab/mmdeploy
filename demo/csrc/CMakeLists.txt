@@ -41,7 +41,7 @@ add_example(rotated_detector c rotated_object_detection)
 add_example(video_recognizer c video_recognition)
 # TODO: figure out a better way
 # add_example("" c det_cls)
-# add_example("" c det_pose)
+ add_example("" cpp det_pose)
 
 if (MMDEPLOY_BUILD_SDK_CXX_API)
     add_example(classifier cpp classifier)

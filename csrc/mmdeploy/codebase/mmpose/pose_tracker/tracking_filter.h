@@ -6,7 +6,6 @@
 #include "opencv2/video/video.hpp"
 #include "pose_tracker/utils.h"
 
-
 namespace mmdeploy::mmpose::_pose_tracker {
 
 // use Kalman filter to estimate and predict true states
@@ -21,20 +20,24 @@ class TrackingFilter {
 
   std::pair<Bbox, Points> Predict();
 
-  float Distance(const Bbox& bbox);
+  vector<float> KeyPointDistance(const Points& kpts);
+
+  float BboxDistance(const Bbox& bbox);
 
   std::pair<Bbox, Points> Correct(const Bbox& bbox, const Points& kpts);
 
  private:
-  static const cv::Mat& pts_trans();
+  void SetBboxProcessCov(float sigma_p, float sigma_v);
+  void SetBboxMeasurementCov(float sigma_p);
+  void SetBboxErrorCov(float sigma_p, float sigma_v);
+  void SetBboxTransitionMat();
+  void SetBboxMeasurementMat();
 
-  static cv::Mat pts_process_cov(float sigma);
-
-  static const cv::Mat& bbox_trans();
-
-  static cv::Mat bbox_process_cov(float sigma_c, float sigma_s);
-
-
+  void SetKeyPointProcessCov(int index, float sigma_p, float sigma_v);
+  void SetKeyPointMeasurementCov(int index, float sigma_p);
+  void SetKeyPointErrorCov(int index, float sigma_p, float sigma_v);
+  void SetKeyPointTransitionMat(int index);
+  void SetKeyPointMeasurementMat(int index);
 
  private:
   std::vector<cv::KalmanFilter> pt_filters_;

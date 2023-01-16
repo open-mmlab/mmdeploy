@@ -22,9 +22,9 @@ class Track {
   void UpdateMissing();
   void Predict();
 
-  float Distance(const Bbox& bbox) {
-    return filter_.Distance(bbox);
-  }
+  float BboxDistance(const Bbox& bbox) { return filter_.BboxDistance(bbox); }
+
+  vector<float> KeyPointDistance(const Points& kpts) { return filter_.KeyPointDistance(kpts); }
 
   uint32_t track_id() const noexcept { return track_id_; }
   uint32_t missing() const noexcept { return missing_; }

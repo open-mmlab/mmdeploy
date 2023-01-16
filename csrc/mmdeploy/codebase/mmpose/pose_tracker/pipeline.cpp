@@ -103,6 +103,8 @@ Value TrackStep(const Value& poses, const Value& track_indices, Value state) noe
     result.bboxes.push_back({bbox[0], bbox[1], bbox[2], bbox[3]});
     result.track_ids.push_back(track->track_id());
   }
+  result.pose_input_bboxes = tracker.pose_input_bboxes();
+  result.pose_output_bboxes = tracker.pose_output_bboxes();
   return result;
 }
 REGISTER_SIMPLE_MODULE(pose_tracker::TrackStep, TrackStep);

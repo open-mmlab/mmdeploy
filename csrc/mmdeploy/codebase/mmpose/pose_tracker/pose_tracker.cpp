@@ -2,6 +2,7 @@
 
 #include "pose_tracker/pose_tracker.h"
 
+#include <array>
 #include <cmath>
 #include <numeric>
 
@@ -127,6 +128,8 @@ std::tuple<vector<Bbox>, vector<int64_t>> Tracker::ProcessBboxes(
     prev_ids = std::move(tmp_track_ids);
   }
 
+  pose_input_bboxes_ = bboxes;
+
   POSE_TRACKER_DEBUG("frame {}, bboxes after sort: {}", frame_id_, count());
   return {bboxes, prev_ids};
 }
@@ -145,6 +148,8 @@ void Tracker::TrackStep(vector<Points>& keypoints, vector<Scores>& scores,
     }
   }
 
+  pose_output_bboxes_ = bboxes;
+
   SuppressOverlappingPoses(keypoints, scores, bboxes, prev_ids, is_unused_bbox,
                            params_.pose_nms_thr);
   assert(is_unused_bbox.size() == bboxes.size());
@@ -161,7 +166,7 @@ void Tracker::TrackStep(vector<Points>& keypoints, vector<Scores>& scores,
     }
   }
   const auto assignment_visible =
-      greedy_assignment(similarity0, is_unused_bbox, is_unused_track, params_.track_visible_thr);
+      greedy_assignment(similarity0, is_unused_bbox, is_unused_track, -100);
   POSE_TRACKER_DEBUG("frame {}, assignment for visible {}", frame_id_, assignment_visible);
 
   // enable missing tracks in the #2 assignment
@@ -198,7 +203,7 @@ void Tracker::TrackStep(vector<Points>& keypoints, vector<Scores>& scores,
   }
 
   // diagnostic for missing tracks
-  //  DiagnosticMissingTracks(is_valid_tracks, is_valid_bboxes, similarity0, similarity1);
+  DiagnosticMissingTracks(is_unused_track, is_unused_bbox, similarity0, similarity1);
 
   RemoveMissingTracks();
 
@@ -246,17 +251,36 @@ void Tracker::GetDetectedObjects(const std::optional<Detections>& dets, vector<B
   }
 }
 
-std::pair<float, float> Tracker::GetTrackPoseSimilarity(const Bbox& track_bbox,
-                                                        const Points& track_kpts, const Bbox& bbox,
-                                                        const Points& kpts) const {
-  auto iou = intersection_over_union(track_bbox, bbox);
+std::array<float, 3> Tracker::GetTrackPoseSimilarity(Track& track, const Bbox& bbox,
+                                                     const Points& kpts) const {
+  static constexpr const std::array chi2inv95{0.f,     3.8415f, 5.9915f, 7.8147f, 9.4877f,
+                                              11.070f, 12.592f, 14.067f, 15.507f, 16.919f};
+  auto dists = track.KeyPointDistance(kpts);
+  float sum = 0.f;
+  int count = 0;
+  for (const auto& dist : dists) {
+    if (dist < chi2inv95[2]) {
+      sum += dist;
+      ++count;
+    }
+  }
+  auto count_thr =
+      params_.pose_min_keypoints >= 0 ? params_.pose_min_keypoints : (dists.size() + 1) / 2;
+  if (count >= count_thr) {
+    auto fcount = static_cast<float>(count);
+    sum = sum / fcount - fcount / static_cast<float>(dists.size());
+  } else {
+    sum = 1000;
+  }
+
+  auto iou = intersection_over_union(track.predicted_bbox(), bbox);
   if (key_point_sigmas_.empty()) {
-    return {iou, iou};
+    return {sum, iou, iou};
   }
   // asymmetric
-  auto oks =
-      object_keypoint_similarity(track_kpts, track_bbox, kpts, track_bbox, key_point_sigmas_);
-  return {oks, iou};
+  auto oks = object_keypoint_similarity(track.predicted_kpts(), track.predicted_bbox(), kpts,
+                                        track.predicted_bbox(), key_point_sigmas_);
+  return {sum, oks, iou};
 }
 
 void Tracker::GetSimilarityMatrices(const vector<Bbox>& bboxes, const vector<Points>& keypoints,
@@ -266,20 +290,20 @@ void Tracker::GetSimilarityMatrices(const vector<Bbox>& bboxes, const vector<Poi
   const auto n_cols = static_cast<int>(tracks_.size());
 
   // generate similarity matrix
-  similarity0.resize(n_rows * n_cols);
-  similarity1.resize(n_rows * n_cols);
+  similarity0 = vector<float>(n_rows * n_cols, -1000);
+  similarity1 = vector<float>(n_rows * n_cols, -1000);
   for (size_t i = 0; i < n_rows; ++i) {
     const auto& bbox = bboxes[i];
     const auto& kpts = keypoints[i];
     for (size_t j = 0; j < n_cols; ++j) {
-      const auto& track = tracks_[j];
-      if (prev_ids[i] != -1 && prev_ids[i] != track->track_id()) {
+      auto& track = *tracks_[j];
+      if (prev_ids[i] != -1 && prev_ids[i] != track.track_id()) {
         continue;
       }
       const auto index = i * n_cols + j;
-      std::tie(similarity0[index], similarity1[index]) =
-          GetTrackPoseSimilarity(track->predicted_bbox(), track->predicted_kpts(), bbox, kpts);
-      track->Distance(bbox);
+      auto [dist, s0, s1] = GetTrackPoseSimilarity(track, bbox, kpts);
+      similarity0[index] = -dist;
+      similarity1[index] = s1;
     }
   }
 }
@@ -321,20 +345,20 @@ void Tracker::DiagnosticMissingTracks(const vector<int>& is_unused_track,
   const auto n_rows = static_cast<int>(is_unused_bbox.size());
   for (int i = 0; i < is_unused_track.size(); ++i) {
     if (is_unused_track[i]) {
-      float best_oks = 0.f;
-      float best_iou = 0.f;
+      float best_s0 = 0.f;
+      float best_s1 = 0.f;
       for (int j = 0; j < is_unused_bbox.size(); ++j) {
         if (is_unused_bbox[j]) {
-          best_oks = std::max(similarity0[j * n_cols + i], best_oks);
-          best_iou = std::max(similarity1[j * n_cols + i], best_iou);
+          best_s0 = std::max(similarity0[j * n_cols + i], best_s0);
+          best_s1 = std::max(similarity1[j * n_cols + i], best_s1);
         }
       }
-      POSE_TRACKER_DEBUG("frame {}: track missing {}, best_oks={}, best_iou={}", frame_id_,
-                         tracks_[i]->track_id(), best_oks, best_iou);
+      POSE_TRACKER_DEBUG("frame {}: track missing {}, best_s0={}, best_s1={}", frame_id_,
+                         tracks_[i]->track_id(), best_s0, best_s1);
       ++missing;
     }
   }
-  if (missing) {
+  if (true || missing) {
     std::stringstream ss;
     ss << cv::Mat_<float>(n_rows, n_cols, const_cast<float*>(similarity0.data()));
     POSE_TRACKER_DEBUG("frame {}, similarity#0: \n{}", frame_id_, ss.str());

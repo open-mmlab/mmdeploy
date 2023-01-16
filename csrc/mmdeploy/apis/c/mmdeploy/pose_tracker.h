@@ -52,6 +52,8 @@ typedef struct mmdeploy_pose_tracker_result_t {
   uint32_t* track_ids;
   int32_t keypoint_count;
   int32_t target_count;
+  void* reserved0;
+  void* reserved1;
 } mmdeploy_pose_tracker_result_t;
 
 MMDEPLOY_API int mmdeploy_pose_tracker_default_params(mmdeploy_pose_tracker_param_t* params);

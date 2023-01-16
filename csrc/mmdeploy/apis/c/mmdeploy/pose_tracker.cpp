@@ -185,6 +185,9 @@ int mmdeploy_pose_tracker_get_result(mmdeploy_value_t output,
       }
       keypoints_ptr += p.target_count;
       scores_ptr += p.target_count;
+      // debug info
+      p.reserved0 = new std::vector(r.pose_input_bboxes);
+      p.reserved1 = new std::vector(r.pose_output_bboxes);
     }
 
     *results = result_data;
