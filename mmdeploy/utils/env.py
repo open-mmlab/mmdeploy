@@ -18,7 +18,10 @@ def get_library_version(lib):
     except Exception:
         version = None
     else:
-        version = lib.__version__
+        if hasattr(lib, '__version__'):
+            version = lib.__version__
+        else:
+            version = None
 
     return version
 

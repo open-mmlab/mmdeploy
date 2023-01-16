@@ -4,8 +4,7 @@ from mmcv.utils import collect_env as collect_base_env
 from mmcv.utils import get_git_hash
 
 import mmdeploy
-from mmdeploy.utils import (get_backend_version, get_codebase_version,
-                            get_root_logger)
+from mmdeploy.utils import get_codebase_version, get_root_logger
 
 
 def collect_env():

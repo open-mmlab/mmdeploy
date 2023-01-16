@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.backend.tensorrt import is_available, is_custom_ops_available
+from mmdeploy.backend.tensorrt import is_available
 from ..core import PIPELINE_MANAGER
 
-__all__ = ['is_available', 'is_custom_ops_available']
+__all__ = ['is_available']
 
 if is_available():
     from mmdeploy.backend.tensorrt import from_onnx as _from_onnx

@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Dict, Sequence, Union
+from typing import Any, Dict, Sequence, Union
 
-import h5py
 import numpy as np
 import pycuda.autoinit  # noqa:F401
 import pycuda.driver as cuda
@@ -25,13 +24,14 @@ class HDF5Calibrator(trt.IInt8Calibrator):
 
     def __init__(
             self,
-            calib_file: Union[str, h5py.File],
+            calib_file: Union[str, Any],
             input_shapes: Dict[str, Sequence[int]],
             model_type: str = 'end2end',
             device_id: int = 0,
             algorithm: trt.CalibrationAlgoType = DEFAULT_CALIBRATION_ALGORITHM,
             **kwargs):
         super().__init__()
+        import h5py
 
         if isinstance(calib_file, str):
             calib_file = h5py.File(calib_file, mode='r')

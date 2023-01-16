@@ -1,17 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-
 from .backend_manager import PPLNNManager
 
-
-def is_available():
-    """Check whether pplnn is installed.
-
-    Returns:
-        bool: True if pplnn package is installed.
-    """
-    return importlib.util.find_spec('pyppl') is not None
-
+_BackendManager = PPLNNManager
+is_available = _BackendManager.is_available
+build_wrapper = _BackendManager.build_wrapper
 
 __all__ = ['PPLNNManager']
 

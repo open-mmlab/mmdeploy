@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.11.0)
+project(MMDeploy VERSION 0.12.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -22,9 +22,9 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
-option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
+option(MMDEPLOY_SHARED_LIBS "build shared libs" OFF)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
-option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" OFF)
+option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" ON)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
 option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
@@ -73,8 +73,6 @@ endif ()
 
 if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/diagnostics:classic>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>) # /experimental:preprocessor on VS2017
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 endif ()
 

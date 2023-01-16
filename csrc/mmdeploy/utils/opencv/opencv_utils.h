@@ -18,6 +18,8 @@ MMDEPLOY_API cv::Mat Tensor2CVMat(const framework::Tensor& tensor);
 MMDEPLOY_API framework::Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format);
 MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
 
+MMDEPLOY_API Result<int> GetInterpolationMethod(const std::string_view& method);
+
 /**
  * @brief resize an image to specified size
  *
@@ -28,6 +30,9 @@ MMDEPLOY_API framework::Tensor CVMat2Tensor(const cv::Mat& mat);
  */
 MMDEPLOY_API cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                             const std::string& interpolation);
+
+MMDEPLOY_API cv::Mat WarpAffine(const cv::Mat& src, const cv::Mat& affine_matrix, int dst_height,
+                                int dst_width, int interpolation);
 
 /**
  * @brief crop an image
@@ -85,6 +90,16 @@ MMDEPLOY_API cv::Mat CvtColor(const cv::Mat& src, PixelFormat src_format, PixelF
  */
 MMDEPLOY_API cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right,
                          int border_type, float val);
+
+/**
+ * @param src
+ * @param crop_rect t, l, b, r
+ * @param target_size w, h
+ * @param pad_rect t, l, b, r
+ */
+MMDEPLOY_API cv::Mat CropResizePad(const cv::Mat& src, const std::vector<int>& crop_rect,
+                                   const std::vector<int>& target_size,
+                                   const std::vector<int>& pad_rect);
 
 /**
  * @brief compare two images
