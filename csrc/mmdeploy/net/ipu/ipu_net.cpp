@@ -66,7 +66,6 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
   }
 }
 
-// IPUNet::IPUNet() {}
 IPUNet::~IPUNet() {}
 
 Result<void> IPUNet::Init(const Value& args) {

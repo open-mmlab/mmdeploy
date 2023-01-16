@@ -93,7 +93,3 @@ class IPUWrapper(BaseWrapper):
         result = self.runner.executeAsync(self.input_view)
         result.wait()
         return result
-
-
-if __name__ == "__main__":
-    main()

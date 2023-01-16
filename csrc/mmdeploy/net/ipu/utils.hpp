@@ -11,8 +11,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/program_options.hpp>
-
 #include "mmdeploy/core/logger.h"
 
 #include <pvti/pvti.hpp>
@@ -21,59 +19,6 @@
 #include "model_runtime/SessionUtils.hpp"
 #include "model_runtime/Tensor.hpp"
 namespace examples {
-
-inline boost::program_options::variables_map parsePopefProgramOptions(
-    const char *example_desc, int argc, char *argv[]) {
-  using namespace boost::program_options;
-  variables_map vm;
-
-  try {
-    options_description desc{example_desc};
-    desc.add_options()("help,h", "Help screen")(
-        "popef,p",
-        value<std::vector<std::string>>()
-            ->required()
-            ->multitoken()
-            ->composing(),
-        "A collection of PopEF files containing the model.");
-
-    positional_options_description pos_desc;
-    pos_desc.add("popef", -1);
-
-    command_line_parser parser{argc, argv};
-    parser.options(desc).positional(pos_desc).allow_unregistered();
-    parsed_options parsed_options = parser.run();
-
-    store(parsed_options, vm);
-    notify(vm);
-    if (vm.count("help")) {
-      MMDEPLOY_INFO("parse popef option succeed");
-      exit(EXIT_SUCCESS);
-    }
-  } catch (const error &ex) {
-    MMDEPLOY_INFO(ex.what());
-    exit(EXIT_FAILURE);
-  }
-
-  return vm;
-}
-
-// Anchor filtering predicate - assigns "bind user callback" policy to
-// anchors loaded or saved in main_program or those that have their
-// programs usage list empty (no info about anchor programs in PopEF)
-inline model_runtime::AnchorCallbackPredicate filterMainOrEmpty(
-    std::shared_ptr<popef::Model> model) {
-  static constexpr auto acceptPolicy =
-      model_runtime::AnchorCallbackPolicy::BIND_USER_CB;
-  static constexpr auto rejectPolicy =
-      model_runtime::AnchorCallbackPolicy::BIND_EMPTY_CB;
-
-  using namespace model_runtime::predicate_factory::anchor_callbacks;
-  return orBind(acceptPolicy, rejectPolicy,
-                predProgramFlowMain(model->metadata.programFlow(), acceptPolicy,
-                                    rejectPolicy),
-                predProgramNotAssigned(acceptPolicy, rejectPolicy));
-}
 
 using HostMemory = std::unordered_map<std::string, model_runtime::TensorMemory>;
 

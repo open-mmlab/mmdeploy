@@ -12,7 +12,7 @@ $ docker run --ulimit memlock=-1:-1 --net=host --cap-add=IPC_LOCK --ipc=host --d
 1. install c++ dependencies
 $  apt-get install libopencv-dev libboost-all-dev gcc-7 g++-7 cmake
 2. install conda
-$  downlaod [anaconda](https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh)
+$  download [anaconda](https://repo.anaconda.com/archive/Anaconda3-2022.10-Linux-x86_64.sh)
    bash Anaconda3-2022.10-Linux-x86_64.sh
    source ~/.bashrc
 3. create python3.8 env
@@ -25,4 +25,4 @@ $ cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_S
 $ make -j$(nproc)
 
 ## 3、install ipu converter
-to fetch detailed ipu converter install guild, plese refer to https://docs.graphcore.ai/projects/poprt-user-guide/en/latest/installation.html
+to fetch detailed ipu converter install guide, plese refer to https://docs.graphcore.ai/projects/poprt-user-guide/en/latest/installation.html

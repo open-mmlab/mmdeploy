@@ -276,8 +276,6 @@ def main():
         show_result=args.show)
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
-    elif backend == Backend.IPU:
-        extra['batches_per_step'] = deploy_cfg.get('backend_config')['batches_per_step']
 
     # get backend inference result, try render
     create_process(
