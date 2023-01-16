@@ -1,12 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os
-from typing import Any, Optional, Sequence
+from typing import Any, Optional, Sequence, Callable
 
 from mmdeploy.utils import get_backend_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
-# from mmdeploy.apis.ipu import onnx_to_popef
 from .converter import onnx_to_popef
+import sys
 
 
 @BACKEND_MANAGERS.register('ipu')
@@ -43,6 +43,43 @@ class IPUManager(BaseBackendManager):
             bps = 1
         return IPUWrapper(
             popef_file=backend_files[0], bps=bps, output_names=output_names)
+
+    @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        """Check whether backend is installed.
+
+        Args:
+            with_custom_ops (bool): check custom ops exists.
+
+        Returns:
+            bool: True if backend package is installed.
+        """
+        try:
+            if 'onnx' in sys.modules.keys():
+                del sys.modules['onnx']
+                import popart
+            else:
+                import popart
+
+            deviceManager = popart.DeviceManager()
+            deviceManager.acquireAvailableDevice(1)
+            return True
+        except Exception as e:
+            print('IPU environment is not set', str(e))
+            return False
+
+    @classmethod
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
+        """Check current environment.
+
+        Returns:
+            str: Info about the environment.
+        """
+        available = cls.is_available()
+        available_info = 'Available' if available else 'NotAvailable'
+        info = f'IPU:\t{available_info}'
+        log_callback(info)
+        return info
 
     @classmethod
     def to_backend(cls,
