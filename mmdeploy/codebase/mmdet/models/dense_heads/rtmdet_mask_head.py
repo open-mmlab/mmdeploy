@@ -102,13 +102,13 @@ def rtmcondins_head__predict_by_feat(ctx,
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     mask_thr_binary = cfg.get('mask_thr_binary', 0.5)
 
-    return _nms_with_mask_static(self, priors, bboxes, scores, flatten_kernel_preds, 
+    return _nms_with_mask_static__tensorrt(self, priors, bboxes, scores, flatten_kernel_preds, 
                           mask_feat, max_output_boxes_per_class,
                           iou_threshold, score_threshold, pre_top_k,
                           keep_top_k, mask_thr_binary)
 
 
-def _nms_with_mask_static(self,
+def _nms_with_mask_static__onnxruntime(self,
                           priors: Tensor,
                           boxes: Tensor,
                           scores: Tensor,
@@ -192,6 +192,65 @@ def _nms_with_mask_static(self,
                                         mode='bilinear')#.squeeze(0)
     masks = mask_logits.sigmoid()
     return dets, labels, masks
+
+
+def _nms_with_mask_static__tensorrt(self,
+                          priors: Tensor,
+                          boxes: Tensor,
+                          scores: Tensor,
+                          kernels: Tensor,
+                          mask_feats: Tensor,
+                          max_output_boxes_per_class: int = 1000,
+                          iou_threshold: float = 0.5,
+                          score_threshold: float = 0.05,
+                          pre_top_k: int = -1,
+                          keep_top_k: int = -1,
+                          mask_thr_binary: float = 0.5):
+    """Wrapper for `multiclass_nms` with TensorRT.
+
+    Args:
+        ctx (ContextCaller): The context with additional information.
+        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        scores (Tensor): The detection scores of shape
+            [N, num_boxes, num_classes].
+        max_output_boxes_per_class (int): Maximum number of output
+            boxes per class of nms. Defaults to 1000.
+        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
+        score_threshold (float): score threshold of nms.
+            Defaults to 0.05.
+        pre_top_k (int): Number of top K boxes to keep before nms.
+            Defaults to -1.
+        keep_top_k (int): Number of top K boxes to keep after nms.
+            Defaults to -1.
+
+    Returns:
+        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
+            and `labels` of shape [N, num_det].
+    """
+    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
+    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
+        max_output_boxes_per_class, keep_top_k)
+    dets, labels, inds = TRTBatchedNMSop.apply(boxes, scores, int(scores.shape[-1]),
+                                         pre_top_k, keep_top_k, iou_threshold,
+                                         score_threshold, -1, True)
+    # inds shape: (batch, n_boxes)
+    # retain shape info
+    batch_size = boxes.size(0)
+
+    dets_shape = dets.shape
+    label_shape = labels.shape
+    dets = dets.reshape([batch_size, *dets_shape[1:]])
+    labels = labels.reshape([batch_size, *label_shape[1:]])
+    kernels = kernels[:, inds.reshape(-1), ...]
+    priors = priors[inds.reshape(-1), ...]
+    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0], priors)
+    stride = self.prior_generator.strides[0][0]
+    mask_logits = F.interpolate(mask_logits.unsqueeze(0),
+                                        scale_factor=stride,
+                                        mode='bilinear')#.squeeze(0)
+    masks = mask_logits.sigmoid()
+    return dets, labels, masks
+
 
 def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
     num_inst = priors.shape[0]
