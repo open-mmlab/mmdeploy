@@ -35,15 +35,9 @@ pipeline {
 
     stages {
         stage('Set Config') {
-            environment {
-                CODEBASE_ENVIRONMENT = "${params.codebase_list}"
-            }
             steps {
-                echo CODEBASE_ENVIRONMENT
-                echo ${params.codebase_list}
                 bat """
                     @ECHO ON
-                    echo CODEBASE_ENVIRONMENT
                     echo ${params.codebase_list}
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\win_set_config.ps1 -cblist '${params.codebase_list}' -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
                 """
