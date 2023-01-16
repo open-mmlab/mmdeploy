@@ -1018,6 +1018,13 @@ def deploee_runtime(backend: str):
     return runtime
 
 
+def get_device(backend: str, _input: str):
+    dev = _input
+    if backend == 'openvino' or backend == 'ncnn':
+        dev = 'cpu'
+    return dev
+
+
 def main():
     args = parse_args()
     set_start_method('spawn')
@@ -1198,6 +1205,9 @@ def main():
                     deploee_dict['runtime'].append(
                         deploee_runtime(backend_name))
 
+                    real_device = get_device(
+                        backend=backend_name, _input=args.device)
+
                     from mmdeploy.apis import build_task_processor
                     deploy_cfg_path = mmengine.Config.fromfile(
                         pipeline.get('deploy_config'))
@@ -1205,7 +1215,7 @@ def main():
                     task_processor = build_task_processor(
                         model_cfg=mmengine.Config.fromfile(model_cfg_path),
                         deploy_cfg=deploy_cfg_path,
-                        device=args.device)
+                        device=real_device)
 
                     preprocess = ''
                     postprocess = ''
@@ -1235,7 +1245,7 @@ def main():
                     # run cmd
                     success, data_dir = get_backend_result(
                         pipeline, model_cfg_path, checkpoint_path, work_dir,
-                        args.device, pytorch_metric, metric_info, report_dict,
+                        real_device, pytorch_metric, metric_info, report_dict,
                         test_type, logger, backend_file_name, report_txt_path,
                         metafile_dataset, model_name_origin, deploee_dict,
                         dump_sdk)

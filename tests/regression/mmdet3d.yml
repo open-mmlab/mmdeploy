@@ -92,6 +92,7 @@ models:
     metafile: configs/pointpillars/metafile.yml
     model_configs:
       - configs/pointpillars/pointpillars_hv_secfpn_sbn-all_8xb4-2x_nus-3d.py
+      - configs/pointpillars/pointpillars_hv_fpn_sbn-all_8xb4-2x_nus-3d.py
     pipelines:
       - *pipeline_ort_dynamic_nus_fp32
       - *pipeline_openvino_dynamic_nus_fp32_64x4
