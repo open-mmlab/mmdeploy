@@ -14,13 +14,12 @@ def is_available():
     try:
         if 'onnx' in sys.modules.keys():
             del sys.modules['onnx']
-            import onnx
             import popart
         else:
             import popart
 
         deviceManager = popart.DeviceManager()
-        device = deviceManager.acquireAvailableDevice(1)
+        deviceManager.acquireAvailableDevice(1)
         return True
     except Exception as e:
         print('IPU environment is not set', str(e))
