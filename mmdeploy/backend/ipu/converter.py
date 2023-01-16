@@ -23,6 +23,5 @@ def onnx_to_popef(onnx_path, ipu_config):
 
     # print('command ', command)
     if subprocess.call(command) != 0:
-        raise RuntimeError(
-            '\n\n!!! PopConverter compile command failed, please check the above trace for details.'
-        )
+        raise RuntimeError('\n\n!!! PopConverter compile command failed, \
+                please check the above trace for details.')

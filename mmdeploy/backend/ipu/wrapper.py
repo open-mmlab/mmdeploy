@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # Copyright (c) 2022 Graphcore Ltd. All rights reserved.
 from datetime import timedelta
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Optional, Sequence
 
 import model_runtime
 import numpy as np

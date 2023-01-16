@@ -14,7 +14,6 @@ def is_available():
     try:
         if 'onnx' in sys.modules.keys():
             del sys.modules['onnx']
-            # del onnx
             import onnx
             import popart
         else:
