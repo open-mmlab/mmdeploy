@@ -112,6 +112,7 @@ class BaseTask(metaclass=ABCMeta):
         from mmengine.registry import MODELS
 
         model = deepcopy(self.model_cfg.model)
+        model.pop('pretrained', None)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
         preprocess_cfg.update(
             deepcopy(self.model_cfg.get('data_preprocessor', {})))
