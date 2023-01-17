@@ -154,9 +154,9 @@ void Tracker::TrackStep(vector<Points>& keypoints, vector<Scores>& scores,
                            params_.pose_nms_thr);
   assert(is_unused_bbox.size() == bboxes.size());
 
-  vector<float> similarity0; // average mahalanobis dist - proportion of tracked key-points
-  vector<float> similarity1; // iou
-  vector<vector<bool>> gating; // key-point gating result
+  vector<float> similarity0;    // average mahalanobis dist - proportion of tracked key-points
+  vector<float> similarity1;    // iou
+  vector<vector<bool>> gating;  // key-point gating result
   GetSimilarityMatrices(bboxes, keypoints, prev_ids, similarity0, similarity1, gating);
 
   vector<int> is_unused_track(tracks_.size(), 1);
@@ -177,7 +177,7 @@ void Tracker::TrackStep(vector<Points>& keypoints, vector<Scores>& scores,
     }
   }
   const auto assignment_missing =
-      greedy_assignment(similarity1, is_unused_bbox, is_unused_track, params_.track_missing_thr);
+      greedy_assignment(similarity1, is_unused_bbox, is_unused_track, params_.track_iou_thr);
   POSE_TRACKER_DEBUG("frame {}, assignment for missing {}", frame_id_, assignment_missing);
 
   // update assigned tracks
@@ -227,7 +227,7 @@ void Tracker::GetTrackedObjects(vector<Bbox>& bboxes, vector<int64_t>& track_ids
       bbox = track->predicted_bbox();
     } else {
       bbox = keypoints_to_bbox(track->predicted_kpts(), track->scores(), frame_h_, frame_w_,
-                               params_.track_bbox_scale, params_.pose_kpt_thr,
+                               params_.pose_bbox_scale, params_.pose_kpt_thr,
                                params_.pose_min_keypoints);
     }
     if (bbox && get_area(*bbox) >= params_.pose_min_bbox_size * params_.pose_min_bbox_size) {
@@ -330,7 +330,7 @@ void Tracker::CreateTrack(const Bbox& bbox, const Points& kpts, const Scores& sc
 }
 
 std::optional<Bbox> Tracker::KeypointsToBbox(const Points& kpts, const Scores& scores) const {
-  return keypoints_to_bbox(kpts, scores, frame_h_, frame_w_, params_.track_bbox_scale,
+  return keypoints_to_bbox(kpts, scores, frame_h_, frame_w_, params_.pose_bbox_scale,
                            params_.pose_kpt_thr, params_.pose_min_keypoints);
 }
 

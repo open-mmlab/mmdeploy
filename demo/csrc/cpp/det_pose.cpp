@@ -28,17 +28,15 @@ int main(int argc, char* argv[]) {
   }
 
   using namespace mmdeploy;
-  // create context for holding the device handle
-  Context context(Device{device_name});
-  // create object detector
-  Detector detector(Model(det_model_path), context);
-  // create pose detector
-  PoseDetector pose(Model(pose_model_path), context);
+
+  Context context(Device{device_name});  // create context for holding the device handle
+  Detector detector(Model(det_model_path), context);   // create object detector
+  PoseDetector pose(Model(pose_model_path), context);  // create pose detector
 
   // apply detector
   auto dets = detector.Apply(img);
 
-  // filter detections and obtain bboxes for pose model
+  // filter detections and extract bboxes for pose model
   std::vector<mmdeploy_rect_t> bboxes;
   for (const auto& det : dets) {
     if (det.label_id == 0 && det.score > .6f) {

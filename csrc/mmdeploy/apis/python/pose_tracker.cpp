@@ -88,16 +88,14 @@ void Parse(const py::dict& dict, PoseTracker::Params& params, py::array_t<float>
       params->pose_min_keypoints = value.cast<int32_t>();
     } else if (name == "pose_min_bbox_size") {
       params->pose_min_bbox_size = value.cast<float>();
-    } else if (name == "track_nms_oks_thr") {
+    } else if (name == "pose_nms_thr") {
       params->pose_nms_thr = value.cast<float>();
     } else if (name == "track_kpt_thr") {
       params->pose_kpt_thr = value.cast<float>();
-    } else if (name == "track_oks_thr") {
-      params->track_visible_thr = value.cast<float>();
     } else if (name == "track_iou_thr") {
-      params->track_missing_thr = value.cast<float>();
-    } else if (name == "track_bbox_scale") {
-      params->track_bbox_scale = value.cast<float>();
+      params->track_iou_thr = value.cast<float>();
+    } else if (name == "pose_bbox_scale") {
+      params->pose_bbox_scale = value.cast<float>();
     } else if (name == "track_max_missing") {
       params->track_max_missing = value.cast<float>();
     } else if (name == "track_history_size") {
@@ -107,18 +105,12 @@ void Parse(const py::dict& dict, PoseTracker::Params& params, py::array_t<float>
       params->keypoint_sigmas = const_cast<float*>(sigmas.data());
       params->keypoint_sigmas_size = sigmas.size();
       MMDEPLOY_ERROR("array size {}", sigmas.size());
-    } else if (name == "kf_bbox_center") {
-      Copy(value, params->kf_bbox_center);
-    } else if (name == "kf_bbox_scale") {
-      Copy(value, params->kf_bbox_scale);
-    } else if (name == "kf_key_points") {
-      Copy(value, params->kf_key_points);
-    } else if (name == "smooth_bbox_center") {
-      Copy(value, params->smooth_bbox_center);
-    } else if (name == "smooth_bbox_scale") {
-      Copy(value, params->smooth_bbox_scale);
-    } else if (name == "smooth_key_points") {
-      Copy(value, params->smooth_key_points);
+    } else if (name == "std_weight_position") {
+      params->std_weight_position = value.cast<float>();
+    } else if (name == "std_weight_velocity") {
+      params->std_weight_velocity = value.cast<float>();
+    } else if (name == "smooth_params") {
+      Copy(value, params->smooth_params);
     } else {
       MMDEPLOY_ERROR("unused argument: {}", name);
     }

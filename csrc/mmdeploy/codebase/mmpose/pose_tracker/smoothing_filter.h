@@ -18,8 +18,7 @@ class SmoothingFilter {
     float fc_min;
     float fc_v;
   };
-  explicit SmoothingFilter(const Bbox& bbox, const Points& pts, const Params& center_param,
-                           const Params& scale_param, const Params& pts_param);
+  explicit SmoothingFilter(const Bbox& bbox, const Points& pts, const Params& params);
 
   std::pair<Bbox, Points> Step(const Bbox& bbox, const Points& kpts);
 
@@ -45,9 +44,7 @@ class SmoothingFilter {
   }
 
  private:
-  Params center_param_;
-  Params scale_param_;
-  Params pts_param_;
+  Params params_;
   std::vector<Point> pts_v_;
   std::vector<Point> pts_x_;
   std::array<Point, 1> center_v_;

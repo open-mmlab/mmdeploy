@@ -11,12 +11,8 @@ namespace mmdeploy::mmpose::_pose_tracker {
 // use Kalman filter to estimate and predict true states
 class TrackingFilter {
  public:
-  struct Params {
-    float measure_sigma;
-    float process_sigma;
-  };
-  TrackingFilter(const Bbox& bbox, const vector<Point>& kpts, const Params& center_params,
-                 const Params& scale_params, const Params& pts_params);
+  TrackingFilter(const Bbox& bbox, const vector<Point>& kpts, float std_weight_position,
+                 float std_weight_velocity);
 
   std::pair<Bbox, Points> Predict();
 
@@ -45,6 +41,8 @@ class TrackingFilter {
  private:
   std::vector<cv::KalmanFilter> pt_filters_;
   cv::KalmanFilter bbox_filter_;
+  float std_weight_position_;
+  float std_weight_velocity_;
 };
 
 }  // namespace mmdeploy::mmpose::_pose_tracker

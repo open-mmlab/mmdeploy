@@ -5,12 +5,8 @@
 namespace mmdeploy::mmpose::_pose_tracker {
 
 SmoothingFilter::SmoothingFilter(const Bbox& bbox, const Points& pts,
-                                 const SmoothingFilter::Params& center_param,
-                                 const SmoothingFilter::Params& scale_param,
-                                 const SmoothingFilter::Params& pts_param)
-    : center_param_(center_param),
-      scale_param_(scale_param),
-      pts_param_(pts_param),
+                                 const SmoothingFilter::Params& params)
+    : params_(params),
       pts_v_(pts.size()),
       pts_x_(pts),
       center_v_{},
@@ -22,15 +18,15 @@ std::pair<Bbox, Points> SmoothingFilter::Step(const Bbox& bbox, const Points& kp
   constexpr auto abs = [](const Point& p) { return std::sqrt(p.dot(p)); };
 
   // filter key-points
-  step<Point>(pts_x_, pts_v_, kpts, pts_param_, abs);
+  step<Point>(pts_x_, pts_v_, kpts, params_, abs);
 
   // filter bbox center
   std::array c{get_center(bbox)};
-  step<Point>(center_x_, center_v_, c, center_param_, abs);
+  step<Point>(center_x_, center_v_, c, params_, abs);
 
   // filter bbox scales
   auto s = get_scale(bbox);
-  step<float>(scale_x_, scale_v_, s, scale_param_, [](auto x) { return x; });
+  step<float>(scale_x_, scale_v_, s, params_, [](auto x) { return x; });
 
   return {get_bbox(center_x_[0], scale_x_), pts_x_};
 }

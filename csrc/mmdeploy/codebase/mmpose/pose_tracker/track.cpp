@@ -59,22 +59,12 @@ void Track::Add(const Bbox& bbox, const Points& kpts, const Scores& ss) {
 }
 
 TrackingFilter Track::CreateFilter(const Bbox& bbox, const Points& pts) {
-  return TrackingFilter(
-      bbox, pts,  //
-      TrackingFilter::Params{params_->kf_bbox_center[0], params_->kf_bbox_center[1]},
-      TrackingFilter::Params{params_->kf_bbox_scale[0], params_->kf_bbox_scale[1]},
-      TrackingFilter::Params{params_->kf_key_points[0], params_->kf_key_points[1]});
+  return {bbox, pts, params_->std_weight_position, params_->std_weight_velocity};
 }
 
 SmoothingFilter Track::CreateSmoother(const Bbox& bbox, const Points& pts) {
   return SmoothingFilter(
-      bbox, pts,
-      SmoothingFilter::Params{params_->smooth_bbox_center[0], params_->smooth_bbox_center[1],
-                              params_->smooth_bbox_center[2]},
-      SmoothingFilter::Params{params_->smooth_bbox_scale[0], params_->smooth_bbox_scale[1],
-                              params_->smooth_bbox_scale[2]},
-      SmoothingFilter::Params{params_->smooth_key_points[0], params_->smooth_key_points[1],
-                              params_->smooth_key_points[2]});
+      bbox, pts, {params_->smooth_params[0], params_->smooth_params[1], params_->smooth_params[2]});
 }
 
 }  // namespace mmdeploy::mmpose::_pose_tracker
