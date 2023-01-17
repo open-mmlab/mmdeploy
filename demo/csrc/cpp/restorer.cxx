@@ -22,8 +22,14 @@ int main(int argc, char* argv[]) {
 
   using namespace mmdeploy;
 
-  Restorer restorer{Model{model_path}, Device{device_name}};
+  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Context context(mmdeploy::Device(device_name, 0));
+  context.Add(profiler);
 
+  Restorer restorer{Model{model_path}, context};
+  for (int i = 0; i < 20; ++i) {
+    restorer.Apply(img);
+  }
   auto result = restorer.Apply(img);
 
   cv::Mat sr_img(result->height, result->width, CV_8UC3, result->data);

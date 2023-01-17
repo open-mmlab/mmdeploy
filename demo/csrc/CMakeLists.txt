@@ -29,16 +29,7 @@ function(add_example dep folder name)
     endif ()
 endfunction()
 
-add_example(classifier c image_classification)
-add_example(classifier c batch_image_classification)
-add_example(detector c object_detection)
-add_example(detector c batch_object_detection)
-add_example(segmentor c image_segmentation)
-add_example(restorer c image_restorer)
-add_example(text_detector c ocr)
-add_example(pose_detector c pose_detection)
-add_example(rotated_detector c rotated_object_detection)
-add_example(video_recognizer c video_recognition)
+
 # TODO: figure out a better way
 # add_example("" c det_cls)
 # add_example("" c det_pose)

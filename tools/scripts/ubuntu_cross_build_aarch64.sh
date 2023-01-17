@@ -11,12 +11,12 @@ good_nproc() {
 }
 
 install_tools() {
-  sudo apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+  apt install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
   aarch64-linux-gnu-g++ --version
   aarch64-linux-gnu-gcc --version
   aarch64-linux-gnu-ld --version
 
-  sudo apt install wget git git-lfs
+  apt install wget git git-lfs
 
   python3 -m pip install cmake==3.22.0
 

@@ -844,7 +844,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             test_pass=str(test_pass),
             report_txt_path=report_txt_path,
             codebase_name=codebase_name)
-    return convert_result, backend_output_path.absolute()
+    return convert_result, str(backend_output_path)
 
 
 def save_report(report_info: dict, report_save_path: Path,
@@ -983,7 +983,7 @@ def deploee_runtime(backend: str):
         if 'aarch' in arch:
             # jetson embedded device, for example: jetson-agx+jetpack4.6
             command = [
-                'bash', '-c', 'source scripts/jetson_variables.sh && env'
+                'bash', '-c', 'source tools/scripts/jetson_variables.sh && env'
             ]
 
             proc = subprocess.Popen(command, stdout=subprocess.PIPE)
@@ -1016,6 +1016,13 @@ def deploee_runtime(backend: str):
         runtime = 'ncnn' + ncnn.__version__.split('.')[-1]
 
     return runtime
+
+
+def get_device(backend: str, _input: str):
+    dev = _input
+    if backend == 'openvino' or backend == 'ncnn':
+        dev = 'cpu'
+    return dev
 
 
 def main():
@@ -1075,7 +1082,8 @@ def main():
             work_dir.joinpath(Path(deploy_yaml).stem + '_report.xlsx')
         report_txt_path = report_save_path.with_suffix('.txt')
         report_deploee_path = work_dir.joinpath(
-            'deploee_' + deploee_codebase).with_suffix('.xlsx')
+            'deploee_' + deploee_codebase + '_' +
+            '+'.join(args.backends)).with_suffix('.xlsx')
 
         report_dict = {
             'Model': [],
@@ -1097,7 +1105,7 @@ def main():
             'dataset': [],
             'codebase': [],
             'pth_url': [],
-            'data_dir': [],
+            'data_dir_relative': [],
             'runtime': [],
             'preprocess': [],
             'postprocess': [],
@@ -1197,6 +1205,9 @@ def main():
                     deploee_dict['runtime'].append(
                         deploee_runtime(backend_name))
 
+                    real_device = get_device(
+                        backend=backend_name, _input=args.device)
+
                     from mmdeploy.apis import build_task_processor
                     deploy_cfg_path = mmengine.Config.fromfile(
                         pipeline.get('deploy_config'))
@@ -1204,7 +1215,7 @@ def main():
                     task_processor = build_task_processor(
                         model_cfg=mmengine.Config.fromfile(model_cfg_path),
                         deploy_cfg=deploy_cfg_path,
-                        device=args.device)
+                        device=real_device)
 
                     preprocess = ''
                     postprocess = ''
@@ -1234,11 +1245,11 @@ def main():
                     # run cmd
                     success, data_dir = get_backend_result(
                         pipeline, model_cfg_path, checkpoint_path, work_dir,
-                        args.device, pytorch_metric, metric_info, report_dict,
+                        real_device, pytorch_metric, metric_info, report_dict,
                         test_type, logger, backend_file_name, report_txt_path,
                         metafile_dataset, model_name_origin, deploee_dict,
                         dump_sdk)
-                    deploee_dict['data_dir'].append(data_dir)
+                    deploee_dict['data_dir_relative'].append(data_dir)
                     deploee_dict['pass'].append(success)
 
         if len(report_dict.get('Model')) > 0:
