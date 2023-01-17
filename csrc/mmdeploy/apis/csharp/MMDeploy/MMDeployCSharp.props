@@ -1,0 +1,11 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<PropertyGroup>
+		<MMDeployNativeDlls>$(MSBuildThisFileDirectory)..\..\runtimes</MMDeployNativeDlls>
+	</PropertyGroup>
+	<ItemGroup Condition="$(TargetFrameworkVersion.StartsWith('v4')) Or $(TargetFramework.StartsWith('net4'))">
+		<Content Include="$(MMDeployNativeDlls)\win-x64\native\mmdeploy.dll">
+			<Link>mmdeploy.dll</Link>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+</Project>
