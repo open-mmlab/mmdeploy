@@ -75,7 +75,6 @@ class Tracker {
   void SummaryTracks();
 
  private:
-
   static constexpr const auto kInf = 1000.f;
 
   float frame_h_ = 0;
