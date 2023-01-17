@@ -230,10 +230,16 @@ void Tracker::GetTrackedObjects(vector<Bbox>& bboxes, vector<int64_t>& track_ids
                                params_.pose_bbox_scale, params_.pose_kpt_thr,
                                params_.pose_min_keypoints);
     }
-    if (bbox && get_area(*bbox) >= params_.pose_min_bbox_size * params_.pose_min_bbox_size) {
-      bboxes.push_back(*bbox);
-      track_ids.push_back(track->track_id());
-      types.push_back(track->missing() ? 0 : 2);
+    if (bbox) {
+      auto& b = *bbox;
+      cv::Rect_<float> img_rect(0, 0, frame_w_, frame_h_);
+      cv::Rect_<float> box_rect(b[0], b[1], b[2] - b[0], b[3] - b[1]);
+      auto roi = img_rect & box_rect;
+      if (roi.area() > 0 && get_area(b) > params_.pose_min_bbox_size * params_.pose_min_bbox_size) {
+        bboxes.push_back(*bbox);
+        track_ids.push_back(track->track_id());
+        types.push_back(track->missing() ? 0 : 2);
+      }
     }
   }
 }
