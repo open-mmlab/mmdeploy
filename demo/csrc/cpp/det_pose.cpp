@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
   auto poses = pose.Apply(img, bboxes);
 
   // visualize
-  Visualize(img, std::vector(poses.begin(), poses.end()), 1280);
+  Visualize(img, {poses.begin(), poses.end()}, 1280);
   cv::imwrite("det_pose_output.jpg", img);
 
   return 0;

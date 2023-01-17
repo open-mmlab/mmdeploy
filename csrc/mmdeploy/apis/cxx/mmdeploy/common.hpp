@@ -172,6 +172,16 @@ class Mat {
 template <typename T>
 class Result_ {
  public:
+  using value_type = T;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using reference = T&;
+  using const_reference = const T&;
+  using pointer = T*;
+  using const_pointer = const T*;
+  using iterator = T*;
+  using const_iterator = T*;
+
   Result_(size_t offset, size_t size, std::shared_ptr<T> data)
       : offset_(offset), size_(size), data_(std::move(data)) {}
 
