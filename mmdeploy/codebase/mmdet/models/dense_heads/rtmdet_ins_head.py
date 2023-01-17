@@ -2,29 +2,29 @@
 from typing import List, Optional
 
 import torch
+import torch.nn.functional as F
 from mmengine.config import ConfigDict
 from torch import Tensor
-import torch.nn.functional as F
 
-from mmdeploy.mmcv.ops import TRTBatchedNMSop, ONNXNMSop
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.rtmdet_ins_head.'
     'RTMDetInsHead.predict_by_feat')
-def rtmdet_ins_head__predict_by_feat(ctx,
-                                 self,
-                                 cls_scores: List[Tensor],
-                                 bbox_preds: List[Tensor],
-                                 kernel_preds: List[Tensor],
-                                 mask_feat: Tensor,
-                                 score_factors: Optional[List[Tensor]] = None,
-                                 batch_img_metas: Optional[List[dict]] = None,
-                                 cfg: Optional[ConfigDict] = None,
-                                 rescale: bool = False,
-                                 with_nms: bool = True):
+def rtmdet_ins_head__predict_by_feat(
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        kernel_preds: List[Tensor],
+        mask_feat: Tensor,
+        score_factors: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = False,
+        with_nms: bool = True):
     """Rewrite `predict_by_feat` of `RTMDet-Ins` for default backend.
     Rewrite this function to deploy model, transform network output for a
     batch into bbox predictions.
@@ -70,7 +70,8 @@ def rtmdet_ins_head__predict_by_feat(ctx,
         for bbox_pred in bbox_preds
     ]
     flatten_kernel_preds = [
-        kernel_pred.permute(0, 2, 3, 1).reshape(batch_size, -1, self.num_gen_params)
+        kernel_pred.permute(0, 2, 3, 1).reshape(batch_size, -1,
+                                                self.num_gen_params)
         for kernel_pred in kernel_preds
     ]
     flatten_cls_scores = torch.cat(flatten_cls_scores, dim=1).sigmoid()
@@ -87,6 +88,7 @@ def rtmdet_ins_head__predict_by_feat(ctx,
     mask = max_scores >= cfg.score_thr
     scores = flatten_cls_scores.where(mask, flatten_cls_scores.new_zeros(1))
 
+    ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
@@ -96,10 +98,11 @@ def rtmdet_ins_head__predict_by_feat(ctx,
     keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     mask_thr_binary = cfg.get('mask_thr_binary', 0.5)
 
-    return _nms_with_mask_static(self, priors, bboxes, scores, flatten_kernel_preds, 
-                          mask_feat, max_output_boxes_per_class,
-                          iou_threshold, score_threshold, pre_top_k,
-                          keep_top_k, mask_thr_binary)
+    return _nms_with_mask_static(self, priors, bboxes, scores,
+                                 flatten_kernel_preds, mask_feat,
+                                 max_output_boxes_per_class, iou_threshold,
+                                 score_threshold, pre_top_k, keep_top_k,
+                                 mask_thr_binary)
 
 
 def _nms_with_mask_static(self,
@@ -177,30 +180,31 @@ def _nms_with_mask_static(self,
     labels = labels[:, topk_inds, ...]
     kernels = kernels[:, topk_inds, ...]
     priors = priors[topk_inds, ...]
-    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0], priors)
+    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0],
+                                               priors)
     stride = self.prior_generator.strides[0][0]
-    mask_logits = F.interpolate(mask_logits.unsqueeze(0),
-                                        scale_factor=stride,
-                                        mode='bilinear')
+    mask_logits = F.interpolate(
+        mask_logits.unsqueeze(0), scale_factor=stride, mode='bilinear')
     masks = mask_logits.sigmoid()
     return dets, labels, masks
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmdet.models.dense_heads.rtmdet_ins_head._nms_with_mask_static', 
+    func_name='mmdeploy.mmdet.models.dense_heads.'
+    'rtmdet_ins_head._nms_with_mask_static',
     backend='tensorrt')
 def _nms_with_mask_static__tensorrt(self,
-                          priors: Tensor,
-                          boxes: Tensor,
-                          scores: Tensor,
-                          kernels: Tensor,
-                          mask_feats: Tensor,
-                          max_output_boxes_per_class: int = 1000,
-                          iou_threshold: float = 0.5,
-                          score_threshold: float = 0.05,
-                          pre_top_k: int = -1,
-                          keep_top_k: int = -1,
-                          mask_thr_binary: float = 0.5):
+                                    priors: Tensor,
+                                    boxes: Tensor,
+                                    scores: Tensor,
+                                    kernels: Tensor,
+                                    mask_feats: Tensor,
+                                    max_output_boxes_per_class: int = 1000,
+                                    iou_threshold: float = 0.5,
+                                    score_threshold: float = 0.05,
+                                    pre_top_k: int = -1,
+                                    keep_top_k: int = -1,
+                                    mask_thr_binary: float = 0.5):
     """Wrapper for `multiclass_nms` with TensorRT.
     Args:
         ctx (ContextCaller): The context with additional information.
@@ -223,9 +227,11 @@ def _nms_with_mask_static__tensorrt(self,
     boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
     keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
         max_output_boxes_per_class, keep_top_k)
-    dets, labels, inds = TRTBatchedNMSop.apply(boxes, scores, int(scores.shape[-1]),
-                                         pre_top_k, keep_top_k, iou_threshold,
-                                         score_threshold, -1, True)
+    dets, labels, inds = TRTBatchedNMSop.apply(boxes, scores,
+                                               int(scores.shape[-1]),
+                                               pre_top_k, keep_top_k,
+                                               iou_threshold, score_threshold,
+                                               -1, True)
     # inds shape: (batch, n_boxes)
     # retain shape info
     batch_size = boxes.size(0)
@@ -236,23 +242,24 @@ def _nms_with_mask_static__tensorrt(self,
     labels = labels.reshape([batch_size, *label_shape[1:]])
     kernels = kernels[:, inds.reshape(-1), ...]
     priors = priors[inds.reshape(-1), ...]
-    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0], priors)
+    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0],
+                                               priors)
     stride = self.prior_generator.strides[0][0]
-    mask_logits = F.interpolate(mask_logits.unsqueeze(0),
-                                        scale_factor=stride,
-                                        mode='bilinear')
+    mask_logits = F.interpolate(
+        mask_logits.unsqueeze(0), scale_factor=stride, mode='bilinear')
     masks = mask_logits.sigmoid()
     return dets, labels, masks
 
 
 def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
-    """decode mask with dynamic conv"""
+    """decode mask with dynamic conv."""
     num_inst = priors.shape[0]
     h, w = mask_feat.size()[-2:]
     if num_inst < 1:
-        return torch.empty(size=(num_inst, h, w),
-                            dtype=mask_feat.dtype,
-                            device=mask_feat.device)
+        return torch.empty(
+            size=(num_inst, h, w),
+            dtype=mask_feat.dtype,
+            device=mask_feat.device)
     if len(mask_feat.shape) < 4:
         mask_feat.unsqueeze(0)
     coord = self.prior_generator.single_level_grid_priors(
@@ -260,13 +267,12 @@ def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
     num_inst = priors.shape[0]
     points = priors[:, :2].reshape(-1, 1, 2)
     strides = priors[:, 2:].reshape(-1, 1, 2)
-    relative_coord = (points - coord).permute(
-        0, 2, 1) / (strides[..., 0].reshape(-1, 1, 1) * 8)
+    relative_coord = (points - coord).permute(0, 2, 1) / (
+        strides[..., 0].reshape(-1, 1, 1) * 8)
     relative_coord = relative_coord.reshape(num_inst, 2, h, w)
 
     mask_feat = torch.cat(
-        [relative_coord,
-            mask_feat.repeat(num_inst, 1, 1, 1)], dim=1)
+        [relative_coord, mask_feat.repeat(num_inst, 1, 1, 1)], dim=1)
     weights, biases = _parse_dynamic_params(self, kernels)
 
     n_layers = len(weights)
@@ -280,20 +286,20 @@ def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
     x = x.reshape(num_inst, h, w)
     return x
 
+
 def _parse_dynamic_params(self, flatten_kernels):
-    """split kernel head prediction to conv weight and bias"""
+    """split kernel head prediction to conv weight and bias."""
     n_inst = flatten_kernels.size(0)
     n_layers = len(self.weight_nums)
     params_splits = list(
-        torch.split_with_sizes(flatten_kernels,
-                                self.weight_nums + self.bias_nums,
-                                dim=1))
+        torch.split_with_sizes(
+            flatten_kernels, self.weight_nums + self.bias_nums, dim=1))
     weight_splits = params_splits[:n_layers]
     bias_splits = params_splits[n_layers:]
-    for l in range(n_layers):
-        if l < n_layers - 1:
-            weight_splits[l] = weight_splits[l].reshape(
+    for idx in range(n_layers):
+        if idx < n_layers - 1:
+            weight_splits[idx] = weight_splits[idx].reshape(
                 n_inst, self.dyconv_channels, -1)
         else:
-            weight_splits[l] = weight_splits[l].reshape(n_inst, 1, -1)
+            weight_splits[idx] = weight_splits[idx].reshape(n_inst, 1, -1)
     return weight_splits, bias_splits
