@@ -13,14 +13,61 @@ namespace cxx {
 class PoseTracker : public UniqueHandle<mmdeploy_pose_tracker_t> {
  public:
   using Result = Result_<mmdeploy_pose_tracker_target_t>;
+  class State;
+  class Params;
 
-  class State : public UniqueHandle<mmdeploy_pose_tracker_state_t> {
-   public:
-    explicit State(mmdeploy_pose_tracker_t pipeline, const mmdeploy_pose_tracker_param_t* params);
-    ~State();
-    State(State&&) noexcept = default;
-  };
+ public:
+  /**
+   * @brief Create pose tracker pipeline
+   * @param detect object detection model
+   * @param pose pose estimation model
+   * @param context execution context
+   */
+  PoseTracker(const Model& detect, const Model& pose, const Context& context) {
+    auto ec = mmdeploy_pose_tracker_create(detect, pose, context, &handle_);
+    if (ec != MMDEPLOY_SUCCESS) {
+      throw_exception(static_cast<ErrorCode>(ec));
+    }
+  }
+  ~PoseTracker() {
+    if (handle_) {
+      mmdeploy_pose_tracker_destroy(handle_);
+      handle_ = {};
+    }
+  }
+  PoseTracker(PoseTracker&&) noexcept = default;
 
+  /**
+   * @brief Create a tracker state corresponds to a video stream
+   * @param params params for creating the tracker state
+   * @return created tracker state
+   */
+  State CreateState(const Params& params);
+
+  /**
+   * @brief Apply pose tracker pipeline
+   * @param state tracker state
+   * @param frame input video frame
+   * @param detect control the use of detector
+   *   -1: use params.det_interval, 0: don't use detector, 1: force use detector
+   * @return
+   */
+  Result Apply(State& state, const Mat& frame, int detect = -1);
+
+  /**
+   * @brief batched version of Apply
+   * @param states
+   * @param frames
+   * @param detects
+   * @return
+   */
+  std::vector<Result> Apply(const Span<State>& states, const Span<const Mat>& frames,
+                            const Span<const int>& detects = {});
+
+ public:
+  /**
+   * see \ref mmdeploy/pose_tracker.h for detail
+   */
   class Params : public UniqueHandle<mmdeploy_pose_tracker_param_t*> {
    public:
     explicit Params() {
@@ -35,46 +82,26 @@ class PoseTracker : public UniqueHandle<mmdeploy_pose_tracker_t> {
     }
   };
 
- public:
-  PoseTracker(const Model& detect, const Model& pose, const Context& context);
-  ~PoseTracker();
-  PoseTracker(PoseTracker&&) noexcept = default;
-  State CreateState(const Params& params) {
-    return State(handle_, static_cast<mmdeploy_pose_tracker_param_t*>(params));
-  }
-  std::vector<Result> Apply(const Span<State>& states, const Span<const Mat>& frames,
-                            const Span<const int>& detects = {});
-  Result Apply(State& state, const Mat& frame, int detect = -1);
+  class State : public UniqueHandle<mmdeploy_pose_tracker_state_t> {
+   public:
+    explicit State(mmdeploy_pose_tracker_t pipeline, const mmdeploy_pose_tracker_param_t* params) {
+      auto ec = mmdeploy_pose_tracker_create_state(pipeline, params, &handle_);
+      if (ec != MMDEPLOY_SUCCESS) {
+        throw_exception(static_cast<ErrorCode>(ec));
+      }
+    }
+    ~State() {
+      if (handle_) {
+        mmdeploy_pose_tracker_destroy_state(handle_);
+        handle_ = {};
+      }
+    }
+    State(State&&) noexcept = default;
+  };
 };
 
-inline PoseTracker::State::State(mmdeploy_pose_tracker_t pipeline,
-                                 const mmdeploy_pose_tracker_param_t* params) {
-  auto ec = mmdeploy_pose_tracker_create_state(pipeline, params, &handle_);
-  if (ec != MMDEPLOY_SUCCESS) {
-    throw_exception(static_cast<ErrorCode>(ec));
-  }
-}
-
-inline PoseTracker::State::~State() {
-  if (handle_) {
-    mmdeploy_pose_tracker_destroy_state(handle_);
-    handle_ = {};
-  }
-}
-
-inline PoseTracker::PoseTracker(const mmdeploy::Model& detect, const mmdeploy::Model& pose,
-                                const mmdeploy::Context& context) {
-  auto ec = mmdeploy_pose_tracker_create(detect, pose, context, &handle_);
-  if (ec != MMDEPLOY_SUCCESS) {
-    throw_exception(static_cast<ErrorCode>(ec));
-  }
-}
-
-inline PoseTracker::~PoseTracker() {
-  if (handle_) {
-    mmdeploy_pose_tracker_destroy(handle_);
-    handle_ = {};
-  }
+inline PoseTracker::State PoseTracker::CreateState(const PoseTracker::Params& params) {
+  return State(handle_, static_cast<mmdeploy_pose_tracker_param_t*>(params));
 }
 
 inline std::vector<PoseTracker::Result> PoseTracker::Apply(const Span<State>& states,

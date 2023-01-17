@@ -23,11 +23,10 @@ int main(int argc, char* argv[]) {
   const auto pose_model_path = argv[3];
   const auto video_path = argv[4];
 
-  Context context(Device{device_name});
-  Profiler profiler("pose_tracker.perf");
-  context.Add(profiler);
-  PoseTracker tracker(Model(det_model_path), Model(pose_model_path), context);
+  // create pose tracker pipeline
+  PoseTracker tracker(Model(det_model_path), Model(pose_model_path), Context{Device{device_name}});
 
+  // set parameters
   PoseTracker::Params params;
   params->det_min_bbox_size = 100;
   params->det_interval = 1;
@@ -39,6 +38,7 @@ int main(int argc, char* argv[]) {
   params->keypoint_sigmas = sigmas.data();
   params->keypoint_sigmas_size = sigmas.size();
 
+  // create a tracker state for each video
   PoseTracker::State state = tracker.CreateState(params);
 
   cv::VideoCapture video(video_path);
@@ -53,7 +53,9 @@ int main(int argc, char* argv[]) {
     if (!frame.data) {
       break;
     }
+    // apply the pipeline with the tracker state and video frame
     auto result = tracker.Apply(state, frame);
+    // visualize the results
     auto vis = Visualize(frame, result, 1280, false);
     cv::imwrite("pose_" + std::to_string(frame_id++) + ".jpg", vis, {cv::IMWRITE_JPEG_QUALITY, 90});
   }

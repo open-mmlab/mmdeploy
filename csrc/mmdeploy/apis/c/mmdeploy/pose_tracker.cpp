@@ -97,7 +97,7 @@ void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t pipeline) {
   mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)pipeline);
 }
 
-int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_tpipeline,
+int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_t pipeline,
                                        const mmdeploy_pose_tracker_param_t* params,
                                        mmdeploy_pose_tracker_state_t* state) {
   try {

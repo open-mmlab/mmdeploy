@@ -1,5 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+/**
+ * @file pose_tracker.h
+ * @brief Pose tracker C API
+ */
+
 #ifndef MMDEPLOY_POSE_TRACKER_H
 #define MMDEPLOY_POSE_TRACKER_H
 
@@ -7,11 +12,6 @@
 #include "mmdeploy/detector.h"
 #include "mmdeploy/model.h"
 #include "mmdeploy/pose_detector.h"
-
-/**
- * @file pose_tracker.h
- * @brief Pose tracker C API
- */
 
 #ifdef __cplusplus
 extern "C" {
@@ -104,7 +104,7 @@ MMDEPLOY_API int mmdeploy_pose_tracker_create(mmdeploy_model_t det_model,
 MMDEPLOY_API void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t pipeline);
 
 /**
- * @brief Create a tracker state handle that corresponds to a video stream
+ * @brief Create a tracker state handle corresponds to a video stream
  * @param[in] pipeline handle of a pose tracker pipeline
  * @param[in] params params for creating the tracker state
  * @param[out] state handle of the created tracker state
