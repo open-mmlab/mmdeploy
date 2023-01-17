@@ -78,7 +78,7 @@ typedef struct mmdeploy_pose_tracker_target_t {
 
 /**
  * @brief Fill params with default parameters
- * @param[inout] params
+ * @param[in,out] params
  * @return status of the operation
  */
 MMDEPLOY_API int mmdeploy_pose_tracker_default_params(mmdeploy_pose_tracker_param_t* params);
