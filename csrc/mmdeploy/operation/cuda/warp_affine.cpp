@@ -1,4 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
+#include <array>
 
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/operation/vision.h"
