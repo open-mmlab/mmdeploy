@@ -8,6 +8,11 @@
 #include "mmdeploy/model.h"
 #include "mmdeploy/pose_detector.h"
 
+/**
+ * @file pose_tracker.h
+ * @brief Pose tracker C API
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -71,21 +76,65 @@ typedef struct mmdeploy_pose_tracker_target_t {
   uint32_t target_id;           // target id from internal tracker
 } mmdeploy_pose_tracker_target_t;
 
+/**
+ * @brief Fill params with default parameters
+ * @param[inout] params
+ * @return status of the operation
+ */
 MMDEPLOY_API int mmdeploy_pose_tracker_default_params(mmdeploy_pose_tracker_param_t* params);
 
+/**
+ * @brief Create pose tracker pipeline
+ * @param[in] det_model detection model object, created by \ref mmdeploy_model_create
+ * @param[in] pose_model pose model object
+ * @param[in] context context object describing execution environment (device, profiler, etc...),
+ * created by \ref mmdeploy_context_create
+ * @param[out] pipeline handle of the created pipeline
+ * @return status of the operation
+ */
 MMDEPLOY_API int mmdeploy_pose_tracker_create(mmdeploy_model_t det_model,
                                               mmdeploy_model_t pose_model,
                                               mmdeploy_context_t context,
                                               mmdeploy_pose_tracker_t* pipeline);
 
-MMDEPLOY_API void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t tracker);
+/**
+ * @brief Destroy pose tracker pipeline
+ * @param[in] pipeline
+ */
+MMDEPLOY_API void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t pipeline);
 
-MMDEPLOY_API int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_t tracker,
+/**
+ * @brief Create a tracker state handle that corresponds to a video stream
+ * @param[in] pipeline handle of a pose tracker pipeline
+ * @param[in] params params for creating the tracker state
+ * @param[out] state handle of the created tracker state
+ * @return status of the operation
+ */
+MMDEPLOY_API int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_t pipeline,
                                                     const mmdeploy_pose_tracker_param_t* params,
-                                                    mmdeploy_pose_tracker_state_t* tracker_state);
+                                                    mmdeploy_pose_tracker_state_t* state);
 
-MMDEPLOY_API void mmdeploy_pose_tracker_destroy_state(mmdeploy_pose_tracker_state_t tracker_state);
+/**
+ * @brief Destroy tracker state
+ * @param[in] state handle of the tracker state
+ */
+MMDEPLOY_API void mmdeploy_pose_tracker_destroy_state(mmdeploy_pose_tracker_state_t state);
 
+/**
+ * @brief Apply pose tracker pipeline, notice that this function supports batch operation by feeding
+ * arrays of size \p count to \p states, \p frames and \p use_detect
+ * @param[in] pipeline handle of a pose tracker pipeline
+ * @param[in] states tracker states handles, array of size \p count
+ * @param[in] frames input frames of size \p count
+ * @param[in] use_detect control the use of detector, array of size \p count
+ *   -1: use params.det_interval, 0: don't use detector, 1: force use detector
+ * @param[in] count batch size
+ * @param[out] results a linear buffer contains the tracked targets of input frames. Should be
+ * released by \ref mmdeploy_pose_tracker_release_result
+ * @param[out] result_count a linear buffer of size \p count contains the number of tracked
+ * targets of the frames. Should be released by \ref mmdeploy_pose_tracker_release_result
+ * @return status of the operation
+ */
 MMDEPLOY_API int mmdeploy_pose_tracker_apply(mmdeploy_pose_tracker_t pipeline,
                                              mmdeploy_pose_tracker_state_t* states,
                                              const mmdeploy_mat_t* frames,
@@ -93,6 +142,12 @@ MMDEPLOY_API int mmdeploy_pose_tracker_apply(mmdeploy_pose_tracker_t pipeline,
                                              mmdeploy_pose_tracker_target_t** results,
                                              int32_t** result_count);
 
+/**
+ * @brief Release result objects
+ * @param[in] results
+ * @param[in] result_count
+ * @param[in] count
+ */
 MMDEPLOY_API void mmdeploy_pose_tracker_release_result(mmdeploy_pose_tracker_target_t* results,
                                                        const int32_t* result_count, int count);
 

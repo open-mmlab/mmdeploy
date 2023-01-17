@@ -93,16 +93,16 @@ int mmdeploy_pose_tracker_create(mmdeploy_model_t det_model, mmdeploy_model_t po
   return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)pipeline);
 }
 
-void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t tracker) {
-  mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)tracker);
+void mmdeploy_pose_tracker_destroy(mmdeploy_pose_tracker_t pipeline) {
+  mmdeploy_pipeline_destroy((mmdeploy_pipeline_t)pipeline);
 }
 
-int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_t,
+int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_tpipeline,
                                        const mmdeploy_pose_tracker_param_t* params,
-                                       mmdeploy_pose_tracker_state_t* tracker_state) {
+                                       mmdeploy_pose_tracker_state_t* state) {
   try {
     auto create_fn = gRegistry<Module>().Create("pose_tracker::Create", Value()).value();
-    *tracker_state = reinterpret_cast<mmdeploy_pose_tracker_state_t>(new Value(
+    *state = reinterpret_cast<mmdeploy_pose_tracker_state_t>(new Value(
         create_fn->Process({const_cast<mmdeploy_pose_tracker_param_t*>(params)}).value()[0]));
     return MMDEPLOY_SUCCESS;
   } catch (const std::exception& e) {
@@ -113,8 +113,8 @@ int mmdeploy_pose_tracker_create_state(mmdeploy_pose_tracker_t,
   return MMDEPLOY_E_FAIL;
 }
 
-void mmdeploy_pose_tracker_destroy_state(mmdeploy_pose_tracker_state_t tracker_state) {
-  delete reinterpret_cast<Value*>(tracker_state);
+void mmdeploy_pose_tracker_destroy_state(mmdeploy_pose_tracker_state_t state) {
+  delete reinterpret_cast<Value*>(state);
 }
 
 int mmdeploy_pose_tracker_create_input(mmdeploy_pose_tracker_state_t* states,
@@ -126,7 +126,7 @@ int mmdeploy_pose_tracker_create_input(mmdeploy_pose_tracker_state_t* states,
     Value::Array trackers;
     for (int i = 0; i < batch_size; ++i) {
       images.push_back({{"ori_img", Cast(frames[i])}});
-      use_dets.emplace_back(use_detect[i]);
+      use_dets.emplace_back(use_detect ? use_detect[i] : -1);
       trackers.push_back(*reinterpret_cast<Value*>(states[i]));
     }
     *value = Take(Value{std::move(images), std::move(use_dets), std::move(trackers)});
