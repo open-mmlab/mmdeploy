@@ -60,7 +60,6 @@ std::tuple<Value, Value> ProcessBboxes(const Value& det_val, const Value& data,
     bbox_array.push_back({
         {"img", data["img"]},                                 // img
         {"bbox", {rect.x, rect.y, rect.width, rect.height}},  // bbox
-        {"rotation", 0.f}                                     // rotation
     });
   }
 
