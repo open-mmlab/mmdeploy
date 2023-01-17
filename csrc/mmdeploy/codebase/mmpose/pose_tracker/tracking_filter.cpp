@@ -75,7 +75,7 @@ std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& 
     if (!tracked.empty() && tracked[i]) {
       SetKeyPointMeasurementCov(i, std_weight_position_ * mean_scale);
       std::array<float, 2> m{kpts[i].x, kpts[i].y};
-      auto mat = pt_filters_[i].correct(cv::Mat(m, false));
+      auto mat = pt_filters_[i].correct(as_mat(m));
       corr_kpts[i].x = mat.at<float>(0);
       corr_kpts[i].y = mat.at<float>(1);
     } else {
@@ -89,7 +89,7 @@ std::pair<Bbox, Points> TrackingFilter::Correct(const Bbox& bbox, const Points& 
     auto c = get_center(bbox);
     auto s = get_scale(bbox);
     std::array<float, 4> m{c.x, c.y, s[0], s[1]};
-    auto mat = bbox_filter_.correct(cv::Mat(m, false));
+    auto mat = bbox_filter_.correct(as_mat(m));
     auto x = mat.ptr<float>();
     corr_bbox = get_bbox({x[0], x[1]}, {x[2], x[3]});
   }
@@ -103,7 +103,7 @@ float TrackingFilter::BboxDistance(const Bbox& bbox) {
   auto c = get_center(bbox);
   auto s = get_scale(bbox);
   std::array<float, 4> m{c.x, c.y, s[0], s[1]};
-  cv::Mat z(m, false);
+  cv::Mat z = as_mat(m);
   auto& f = bbox_filter_;
   cv::Mat sigma;
   cv::gemm(f.measurementMatrix * f.errorCovPre, f.measurementMatrix, 1, f.measurementNoiseCov, 1,
@@ -125,7 +125,7 @@ vector<float> TrackingFilter::KeyPointDistance(const Points& kpts) {
   for (int i = 0; i < n; ++i) {
     SetKeyPointMeasurementCov(i, std_weight_position_ * mean_scale);
     std::array<float, 2> m{kpts[i].x, kpts[i].y};
-    cv::Mat z(m, false);
+    cv::Mat z = as_mat(m);
     auto& f = pt_filters_[i];
     cv::Mat sigma;
     cv::gemm(f.measurementMatrix * f.errorCovPre, f.measurementMatrix, 1, f.measurementNoiseCov, 1,

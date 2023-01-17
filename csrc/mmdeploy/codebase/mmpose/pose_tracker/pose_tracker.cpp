@@ -376,7 +376,7 @@ void Tracker::DiagnosticMissingTracks(const vector<int>& is_unused_track,
     std::stringstream ss;
     ss << cv::Mat_<float>(n_rows, n_cols, const_cast<float*>(similarity0.data()));
     POSE_TRACKER_DEBUG("frame {}, similarity#0: \n{}", frame_id_, ss.str());
-    ss = {};
+    ss = std::stringstream{};
     ss << cv::Mat_<float>(n_rows, n_cols, const_cast<float*>(similarity1.data()));
     POSE_TRACKER_DEBUG("frame {}, similarity#1: \n{}", frame_id_, ss.str());
   }

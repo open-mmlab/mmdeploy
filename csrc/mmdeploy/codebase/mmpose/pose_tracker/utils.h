@@ -23,6 +23,12 @@ using Scores = vector<float>;
 
 #define POSE_TRACKER_DEBUG(...) MMDEPLOY_INFO(__VA_ARGS__)
 
+// opencv3 can't construct cv::Mat from std::array
+template <size_t N>
+cv::Mat as_mat(const std::array<float, N>& a) {
+  return cv::Mat_<float>(a.size(), 1, const_cast<float*>(a.data()));
+}
+
 // scale = 1.5, kpt_thr = 0.3
 std::optional<Bbox> keypoints_to_bbox(const Points& keypoints, const Scores& scores, float img_h,
                                       float img_w, float scale, float kpt_thr, int min_keypoints);
