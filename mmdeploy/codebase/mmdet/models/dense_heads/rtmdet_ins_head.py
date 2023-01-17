@@ -190,8 +190,8 @@ def _nms_with_mask_static(self,
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.mmdet.models.dense_heads.'
-    'rtmdet_ins_head._nms_with_mask_static',
+    func_name='mmdeploy.codebase.mmdet.models.'
+    'dense_heads.rtmdet_ins_head._nms_with_mask_static',
     backend='tensorrt')
 def _nms_with_mask_static__tensorrt(self,
                                     priors: Tensor,
