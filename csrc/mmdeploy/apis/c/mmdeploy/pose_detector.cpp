@@ -117,7 +117,7 @@ int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_coun
       } else {
         b = {0, 0, img.width(), img.height(), 1.0};
       }
-      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}, {"rotation", 0.f}});
+      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}});
     };
 
     for (int i = 0; i < mat_count; ++i) {
