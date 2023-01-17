@@ -58,7 +58,6 @@ def get_table(onnx_path: str,
     from ppq import QuantizationSettingFactory, TargetPlatform
     from ppq.api import export_ppq_graph, quantize_onnx_model
 
-
     def quantize_onnx():
         # settings for ncnn quantization
         quant_setting = QuantizationSettingFactory.default_setting()
@@ -66,7 +65,7 @@ def get_table(onnx_path: str,
         quant_setting.dispatcher = 'conservative'
 
         # quantize the model
-        quantized = quantize_onnx_model(
+        return quantize_onnx_model(
             onnx_import_file=onnx_path,
             calib_dataloader=dataloader,
             calib_steps=max(8, min(512, len(dataset))),
@@ -77,12 +76,13 @@ def get_table(onnx_path: str,
             device=device,
             verbose=1)
 
+    quantized = None
     if 'cuda' in device:
         from ppq.api import ENABLE_CUDA_KERNEL
         with ENABLE_CUDA_KERNEL():
-            quantize_onnx()
+            quantized = quantize_onnx()
     else:
-        quantize_onnx()
+        quantized = quantize_onnx()
 
     # export quantized graph and quant table
     export_ppq_graph(
