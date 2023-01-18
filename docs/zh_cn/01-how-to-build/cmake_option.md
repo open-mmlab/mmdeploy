@@ -104,7 +104,7 @@
 
 <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "coreml", "tvm"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "coreml", "tvm", "acl"}</td>
     <td>N/A</td>
     <td> <b>默认情况下，SDK不设置任何后端</b>, 因为它与应用场景高度相关。 当选择多个后端时， 中间使用分号隔开。比如，<pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     构建时，几乎每个后端，都需设置一些路径变量，用来查找依赖包。<br>
