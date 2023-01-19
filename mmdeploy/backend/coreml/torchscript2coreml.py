@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-from typing import Dict, Sequence, Union
+from typing import Dict, Optional, Sequence, Union
 
 import coremltools as ct
 import torch
@@ -52,9 +52,10 @@ def from_torchscript(torchscript_model: Union[str,
                      output_file_prefix: str,
                      input_names: Sequence[str],
                      output_names: Sequence[str],
-                     input_shapes: Dict,
+                     input_shapes: Dict[str, Dict],
+                     compute_precision: str = 'FLOAT32',
                      convert_to: str = 'neuralnetwork',
-                     fp16_mode: bool = False,
+                     minimum_deployment_target: Optional[str] = None,
                      skip_model_load: bool = True,
                      **kwargs):
     """Create a coreml engine from torchscript.
@@ -69,7 +70,7 @@ def from_torchscript(torchscript_model: Union[str,
             default_shape
         convert_to (str, optional): The converted model type, can be
             'neuralnetwork' or 'mlprogram'. Defaults to 'neuralnetwork'.
-        fp16_mode (bool, optional): Convert to fp16 model. Defaults to False.
+        minimum_deployment_target (bool, optional): minimum deploy target.
         skip_model_load (bool, optional): Skip model load. Defaults to True.
     """
 
@@ -98,10 +99,7 @@ def from_torchscript(torchscript_model: Union[str,
     if convert_to == 'neuralnetwork':
         compute_precision = None
     else:
-        if fp16_mode:
-            compute_precision = ct.precision.FLOAT16
-        else:
-            compute_precision = ct.precision.FLOAT32
+        compute_precision = ct.precision[compute_precision]
 
     mlmodel = ct.convert(
         model=torchscript_model,
@@ -109,8 +107,11 @@ def from_torchscript(torchscript_model: Union[str,
         outputs=outputs,
         compute_precision=compute_precision,
         convert_to=convert_to,
-        skip_model_load=False)
+        minimum_deployment_target=ct.target[minimum_deployment_target]
+        if minimum_deployment_target else None,
+        skip_model_load=skip_model_load)
 
     suffix = get_model_suffix(convert_to)
     output_path = output_file_prefix + suffix
+
     mlmodel.save(output_path)
