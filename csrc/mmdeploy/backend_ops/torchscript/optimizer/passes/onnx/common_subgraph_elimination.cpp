@@ -14,18 +14,6 @@ using torch::jit::HashNode;
 using torch::jit::Node;
 using torch::jit::Value;
 
-struct EqualNodeWithParams {
-  EqualNodeWithParams(std::unordered_map<std::string, Tensor>& params) : params_(params) {}
-
-  bool operator()(const Node* lhs, const Node* rhs) const {
-    auto lhs_inputs = lhs->inputs();
-    auto rhs_inputs = rhs->inputs();
-  }
-
- private:
-  std::unordered_map<std::string, Tensor>& params_;
-};
-
 struct CommonSubexpressionEliminator {
   using ParamMapType = std::unordered_map<std::string, std::pair<Tensor, Value*>>;
   CommonSubexpressionEliminator(std::shared_ptr<Graph> graph,
@@ -100,7 +88,6 @@ struct CommonSubexpressionEliminator {
 
       // Check for CSE opportunities in the parent block.
       auto parent_lookup = parent_lookup_fn(node);
-      auto g_out = node->owningGraph()->outputs();
       if (parent_lookup != nullptr) {
         changed = true;
         node->replaceAllUsesWith(parent_lookup);
