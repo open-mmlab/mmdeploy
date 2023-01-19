@@ -11,14 +11,13 @@ def parse_args():
         description='show how to use SDK Python API')
     parser.add_argument('device_name', help='name of device, cuda or cpu')
     parser.add_argument(
-        'det_model_path',
+        'det_model',
         help='path of mmdeploy SDK model dumped by model converter')
     parser.add_argument(
-        'pose_model_path',
+        'pose_model',
         help='path of mmdeploy SDK model dumped by model converter')
     parser.add_argument('video', help='video path or camera index')
-    parser.add_argument(
-        '--output_dir', help='output directory', default=None)
+    parser.add_argument('--output_dir', help='output directory', default=None)
     args = parser.parse_args()
     if args.video.isnumeric():
         args.video = int(args.video)
@@ -58,7 +57,7 @@ def visualize(frame, results, output_dir, frame_id, thr=0.5, resize=1280):
     if output_dir:
         cv2.imwrite(f'{output_dir}/{str(frame_id).zfill(6)}.jpg', img)
     else:
-        cv2.imshow("pose_tracker", img)
+        cv2.imshow('pose_tracker', img)
         return cv2.waitKey(1) != 'q'
     return True
 
@@ -69,10 +68,9 @@ def main():
     video = cv2.VideoCapture(args.video)
 
     tracker = PoseTracker(
-        det_model_path=args.det_model_path,
-        pose_model_path=args.pose_model_path,
-        device_name=args.device_name,
-    )
+        det_model=args.det_model,
+        pose_model=args.pose_model,
+        device_name=args.device_name)
 
     # optionally use OKS for keypoints similarity comparison
     coco_sigmas = [
