@@ -16,14 +16,16 @@ def parse_args():
     parser.add_argument(
         'pose_model_path',
         help='path of mmdeploy SDK model dumped by model converter')
-    parser.add_argument('video_path', help='path of input video')
+    parser.add_argument('video', help='video path or camera index')
     parser.add_argument(
-        '--output_dir', help='output directory', default='output')
+        '--output_dir', help='output directory', default=None)
     args = parser.parse_args()
+    if args.video.isnumeric():
+        args.video = int(args.video)
     return args
 
 
-def visualize(frame, results, filename, thr=0.5, resize=1280):
+def visualize(frame, results, output_dir, frame_id, thr=0.5, resize=1280):
     skeleton = [(15, 13), (13, 11), (16, 14), (14, 12), (11, 12), (5, 11),
                 (6, 12), (5, 6), (5, 7), (6, 8), (7, 9), (8, 10), (1, 2),
                 (0, 1), (0, 2), (1, 3), (2, 4), (3, 5), (4, 6)]
@@ -53,13 +55,18 @@ def visualize(frame, results, filename, thr=0.5, resize=1280):
         for kpt, show, color in zip(kpts, show, point_color):
             if show:
                 cv2.circle(img, kpt, 1, palette[color], 2, cv2.LINE_AA)
-    cv2.imwrite(filename, img)
+    if output_dir:
+        cv2.imwrite(f'{output_dir}/{str(frame_id).zfill(6)}.jpg', img)
+    else:
+        cv2.imshow("pose_tracker", img)
+        return cv2.waitKey(1) != 'q'
+    return True
 
 
 def main():
     args = parse_args()
 
-    video = cv2.VideoCapture(args.video_path)
+    video = cv2.VideoCapture(args.video)
 
     tracker = PoseTracker(
         det_model_path=args.det_model_path,
@@ -72,10 +79,11 @@ def main():
         0.026, 0.025, 0.025, 0.035, 0.035, 0.079, 0.079, 0.072, 0.072, 0.062,
         0.062, 0.107, 0.107, 0.087, 0.087, 0.089, 0.089
     ]
-    state = tracker.CreateState(
+    state = tracker.create_state(
         det_interval=1, det_min_bbox_size=100, keypoint_sigmas=coco_sigmas)
 
-    os.makedirs(args.output_dir, exist_ok=True)
+    if args.output_dir:
+        os.makedirs(args.output_dir, exist_ok=True)
 
     frame_id = 0
     while True:
@@ -83,8 +91,8 @@ def main():
         if not success:
             break
         results = tracker(state, frame, detect=-1)
-        visualize(frame, results,
-                  f'{args.output_dir}/{str(frame_id).zfill(6)}.jpg')
+        if not visualize(frame, results, args.output_dir, frame_id):
+            break
         frame_id += 1
 
 

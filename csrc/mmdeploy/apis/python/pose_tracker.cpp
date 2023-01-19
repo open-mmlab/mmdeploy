@@ -104,7 +104,6 @@ void Parse(const py::dict& dict, PoseTracker::Params& params, py::array_t<float>
       sigmas = value.cast<py::array_t<float>>();
       params->keypoint_sigmas = const_cast<float*>(sigmas.data());
       params->keypoint_sigmas_size = sigmas.size();
-      MMDEPLOY_ERROR("array size {}", sigmas.size());
     } else if (name == "std_weight_position") {
       params->std_weight_position = value.cast<float>();
     } else if (name == "std_weight_velocity") {
@@ -137,7 +136,7 @@ static PythonBindingRegisterer register_pose_tracker{[](py::module& m) {
           py::arg("state"), py::arg("frame"), py::arg("detect") = -1)
       .def("batch", &Apply, py::arg("states"), py::arg("frames"),
            py::arg("detects") = std::vector<int>{})
-      .def("CreateState", [](mmdeploy::PoseTracker* self, const py::kwargs& kwargs) {
+      .def("create_state", [](mmdeploy::PoseTracker* self, const py::kwargs& kwargs) {
         PoseTracker::Params params;
         py::array_t<float> sigmas;
         if (kwargs) {
