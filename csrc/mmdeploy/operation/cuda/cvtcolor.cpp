@@ -90,10 +90,11 @@ class CvtColorImpl : public CvtColor {
 
     auto height = src.height();
     auto width = src.width();
-    auto channels = src.channel();
-    auto stride = width * channels;
+    auto src_channels = src.channel();
+    auto src_stride = width * src_channels;
 
     Mat dst_mat(height, width, dst_fmt, src.type(), device());
+    auto dst_stride = width * dst_mat.channel();
 
     auto convert = [&](auto type) -> Result<void> {
       using T = typename decltype(type)::type;
@@ -101,8 +102,8 @@ class CvtColorImpl : public CvtColor {
       if (!converter) {
         return Status(eNotSupported);
       }
-      auto ret =
-          converter(cuda_stream, height, width, stride, src.data<T>(), stride, dst_mat.data<T>());
+      auto ret = converter(cuda_stream, height, width, src_stride, src.data<T>(), dst_stride,
+                           dst_mat.data<T>());
       if (ret != ppl::common::RC_SUCCESS) {
         return Status(eFail);
       }
