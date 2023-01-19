@@ -135,10 +135,10 @@ struct NetModule::Impl {
     return input_samples;
   }
 
-  void GetInputBatch(vector<vector<Tensor>> samples, vector<int> indices,
-                     vector<vector<vector<Tensor>>>& batch_tensors,
-                     vector<vector<TensorShape>>& batch_shapes,
-                     vector<vector<int>>& batch_sample_idxs) const {
+  void SaveBatch(vector<vector<Tensor>> samples, vector<int> indices,
+                 vector<vector<vector<Tensor>>>& batch_tensors,
+                 vector<vector<TensorShape>>& batch_shapes,
+                 vector<vector<int>>& batch_sample_idxs) const {
     if (auto maybe_batch_shape = InferBatchShape(samples)) {
       batch_shapes.push_back(maybe_batch_shape.value());
       batch_tensors.push_back(std::move(samples));
@@ -190,16 +190,16 @@ struct NetModule::Impl {
             indices.push_back(static_cast<int>(i));
           }
           if (indices.size() == max_batch_size_) {
-            GetInputBatch(std::move(samples), std::move(indices), batch_tensors, batch_shapes,
-                          batch_sample_idxs);
+            SaveBatch(std::move(samples), std::move(indices), batch_tensors, batch_shapes,
+                      batch_sample_idxs);
             samples = vector<vector<Tensor>>(inputs_.size());
             indices = {};
           }
         }
       }
       if (!indices.empty()) {
-        GetInputBatch(std::move(samples), std::move(indices), batch_tensors, batch_shapes,
-                      batch_sample_idxs);
+        SaveBatch(std::move(samples), std::move(indices), batch_tensors, batch_shapes,
+                  batch_sample_idxs);
       }
     }
   }
