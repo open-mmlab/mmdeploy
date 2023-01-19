@@ -63,6 +63,8 @@ class Model {
     model_.reset(model, [](auto p) { mmdeploy_model_destroy(p); });
   }
 
+  explicit Model(const std::string& path) : Model(path.c_str()) {}
+
   Model(const void* buffer, size_t size) {
     mmdeploy_model_t model{};
     auto ec = mmdeploy_model_create(buffer, static_cast<int>(size), &model);

@@ -4,27 +4,35 @@
 
 #include <iostream>
 
+#include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/videoio/videoio.hpp"
 
+struct Args {
+  std::string device;
+  std::string det_model;
+  std::string pose_model;
+  std::string video;
+  std::string output_dir;
+};
+
+Args ParseArgs(int argc, char* argv[]);
+
 using std::vector;
 using namespace mmdeploy;
 
-cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bool with_bbox);
+bool Visualize(cv::Mat frame, const PoseTracker::Result& result, int size,
+               const std::string& output_dir, int frame_id, bool with_bbox);
 
 int main(int argc, char* argv[]) {
-  if (argc != 5) {
-    std::cerr << "usage:\n\tpose_tracker device_name det_model_path pose_model_path video_path\n";
+  auto args = ParseArgs(argc, argv);
+  if (args.device.empty()) {
+    return 0;
   }
 
-  const auto device_name = argv[1];
-  const auto det_model_path = argv[2];
-  const auto pose_model_path = argv[3];
-  const auto video_path = argv[4];
-
   // create pose tracker pipeline
-  PoseTracker tracker(Model(det_model_path), Model(pose_model_path), Context{Device{device_name}});
+  PoseTracker tracker(Model(args.det_model), Model(args.pose_model), Context{Device{args.device}});
 
   // set parameters
   PoseTracker::Params params;
@@ -41,9 +49,14 @@ int main(int argc, char* argv[]) {
   // create a tracker state for each video
   PoseTracker::State state = tracker.CreateState(params);
 
-  cv::VideoCapture video(video_path);
+  cv::VideoCapture video;
+  if (args.video.size() == 1 && std::isdigit(args.video[0])) {
+    video.open(std::stoi(args.video));  // open by camera index
+  } else {
+    video.open(args.video);  // open video file
+  }
   if (!video.isOpened()) {
-    std::cerr << "failed to open video file: " << video_path << "\n";
+    std::cerr << "failed to open video: " << args.video << "\n";
   }
 
   cv::Mat frame;
@@ -56,8 +69,9 @@ int main(int argc, char* argv[]) {
     // apply the pipeline with the tracker state and video frame
     auto result = tracker.Apply(state, frame);
     // visualize the results
-    auto vis = Visualize(frame, result, 1280, false);
-    cv::imwrite("pose_" + std::to_string(frame_id++) + ".jpg", vis, {cv::IMWRITE_JPEG_QUALITY, 90});
+    if (!Visualize(frame, result, 1280, args.output_dir, frame_id++, false)) {
+      break;
+    }
   }
 
   return 0;
@@ -89,7 +103,8 @@ const Skeleton& gCocoSkeleton() {
   return inst;
 }
 
-cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bool with_bbox) {
+bool Visualize(cv::Mat frame, const PoseTracker::Result& result, int size,
+               const std::string& output_dir, int frame_id, bool with_bbox) {
   auto& [skeleton, palette, link_color, point_color] = gCocoSkeleton();
   auto scale = (float)size / (float)std::max(frame.cols, frame.rows);
   if (scale != 1) {
@@ -111,14 +126,14 @@ cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bo
       auto [u, v] = skeleton[i];
       if (scores[u] > score_thr && scores[v] > score_thr) {
         used[u] = used[v] = 1;
-        cv::Point p_u(kpts[u * 2], kpts[u * 2 + 1]);
-        cv::Point p_v(kpts[v * 2], kpts[v * 2 + 1]);
+        cv::Point2f p_u(kpts[u * 2], kpts[u * 2 + 1]);
+        cv::Point2f p_v(kpts[v * 2], kpts[v * 2 + 1]);
         cv::line(frame, p_u, p_v, palette[link_color[i]], 1, cv::LINE_AA);
       }
     }
     for (size_t i = 0; i < kpts.size(); i += 2) {
       if (used[i / 2]) {
-        cv::Point p(kpts[i], kpts[i + 1]);
+        cv::Point2f p(kpts[i], kpts[i + 1]);
         cv::circle(frame, p, 1, palette[point_color[i / 2]], 2, cv::LINE_AA);
       }
     }
@@ -126,5 +141,39 @@ cv::Mat Visualize(cv::Mat frame, const PoseTracker::Result& result, int size, bo
       draw_bbox((std::array<float, 4>&)r.bbox, cv::Scalar(0, 255, 0));
     }
   }
-  return frame;
+  if (output_dir.empty()) {
+    cv::imshow("pose_tracker", frame);
+    return cv::waitKey(1) != 'q';
+  }
+  auto join = [](const std::string& a, const std::string& b) {
+#if _MSC_VER
+    return a + "\\" + b;
+#else
+    return a + "/" + b;
+#endif
+  };
+  cv::imwrite(join(output_dir, std::to_string(frame_id) + ".jpg"), frame,
+              {cv::IMWRITE_JPEG_QUALITY, 90});
+  return true;
+}
+
+Args ParseArgs(int argc, char* argv[]) {
+  if (argc < 5 || argc > 6) {
+    std::cout << R"(Usage: pose_tracker device_name det_model pose_model video [output]
+  device_name  device name for execution, e.g. "cpu", "cuda"
+  det_model    object detection model path
+  pose_model   pose estimation model path
+  video        video path or camera index
+  output       output directory, will cv::imshow if omitted)";
+    return {};
+  }
+  Args args;
+  args.device = argv[1];
+  args.det_model = argv[2];
+  args.pose_model = argv[3];
+  args.video = argv[4];
+  if (argc == 6) {
+    args.output_dir = argv[5];
+  }
+  return args;
 }
