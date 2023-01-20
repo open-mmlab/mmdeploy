@@ -37,7 +37,8 @@ def process_model_config(model_cfg: mmcv.Config,
 
     # check whether input_shape is valid
     if input_shape is not None:
-        if 'crop_size' in cfg.data.test.pipeline[2]:
+        if len(cfg.data.test.pipeline) >= 3 and \
+                'crop_size' in cfg.data.test.pipeline[2]:
             crop_size = cfg.data.test.pipeline[2]['crop_size']
             if tuple(input_shape) != (crop_size, crop_size):
                 logger = get_root_logger()
