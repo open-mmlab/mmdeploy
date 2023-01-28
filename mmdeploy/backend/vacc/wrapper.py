@@ -133,24 +133,20 @@ class VACCWrapper(BaseWrapper):
     """vacc wrapper class for inference.
 
     Args:
-        lib (str): Path of a lib file.
-        graph (str): Path of a graph file.
-        param (str): Path of a param file.
-        deploy_cfg: deplot config.
+        model_info_json (str): Path of a model info json file.
+        vdsp_params_info_json (str): Path of a vdsp params info json file.
         output_names (Sequence[str] | None): Names of model outputs in order.
             Defaults to `None` and the wrapper will load the output names from
             vacc model.
     """
 
     def __init__(self,
-                 deploy_cfg,
+                 model_info_json,
+                 vdsp_params_info_json,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        backend_config = get_backend_config(deploy_cfg)
-        common_cfg = get_common_config(deploy_cfg)
-
-        self.model = VACCForward(common_cfg['model_info'], common_cfg['vdsp_params_info'])
+        self.model = VACCForward(model_info_json, vdsp_params_info_json)
 
         super().__init__(output_names)
 

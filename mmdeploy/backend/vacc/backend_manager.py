@@ -37,10 +37,14 @@ class VACCManager(BaseBackendManager):
 
         # For unittest deploy_config will not pass into _build_wrapper
         # function.
-        backend_config = get_backend_config(deploy_cfg)
+
+        common_cfg = get_common_config(deploy_cfg)
+        model_info_json = common_cfg['model_info']
+        vdsp_params_info_json = common_cfg['vdsp_params_info']
 
         return VACCWrapper(
-            deploy_cfg=deploy_cfg,
+            model_info_json=model_info_json,
+            vdsp_params_info_json=vdsp_params_info_json,
             output_names=output_names)
 
     @classmethod
