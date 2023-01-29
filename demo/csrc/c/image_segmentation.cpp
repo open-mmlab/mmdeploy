@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 
   cv::Mat color_mask = cv::Mat::zeros(result->height, result->width, CV_8UC3);
   int pos = 0;
+  int total = color_mask.rows * color_mask.cols;
   std::vector<int> idxs(result->classes);
   for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
     // output mask
@@ -69,12 +70,14 @@ int main(int argc, char* argv[]) {
     // output score
     if (result->score) {
       std::iota(idxs.begin(), idxs.end(), 0);
-      auto k = std::max_element(
-                   idxs.begin(), idxs.end(),
-                   [&](int i, int j) { return result->score[pos + i] < result->score[pos + j]; }) -
-               idxs.begin();
+      auto k =
+          std::max_element(idxs.begin(), idxs.end(),
+                           [&](int i, int j) {
+                             return result->score[i * total + pos] < result->score[j * total + pos];
+                           }) -
+          idxs.begin();
       *iter = palette[k];
-      pos += result->classes;
+      pos += 1;
     }
   }
 

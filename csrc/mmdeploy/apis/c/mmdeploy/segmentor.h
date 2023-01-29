@@ -23,7 +23,7 @@ typedef struct mmdeploy_segmentation_t {
   int* mask;     ///< segmentation mask of the input image, in which mask[i * width + j] indicates
                  ///< the label id of pixel at (i, j)
   float* score;  ///< segmentation score map of the input image, in which
-                 ///< score[i * width * k + j * k + k] indicates the score
+                 ///< score[height * width * k + i * width + j] indicates the score
                  ///< of class k at pixel (i, j)
 } mmdeploy_segmentation_t;
 

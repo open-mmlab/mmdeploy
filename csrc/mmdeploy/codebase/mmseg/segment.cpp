@@ -22,7 +22,7 @@ class ResizeMask : public MMSegmentation {
       classes_ = cfg["params"]["num_classes"].get<int>();
       with_argmax_ = cfg["params"].value("with_argmax", true);
       little_endian_ = IsLittleEndian();
-      ::mmdeploy::operation::Context ctx(device_, stream_);
+      ::mmdeploy::operation::Context ctx(Device("cpu"), stream_);
       permute_ = ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute>::Create();
     } catch (const std::exception &e) {
       MMDEPLOY_ERROR("no ['params']['num_classes'] is specified in cfg: {}", cfg);
@@ -55,15 +55,14 @@ class ResizeMask : public MMSegmentation {
     auto width = (int)mask.shape(3);
     auto input_height = preprocess_result["img_metas"]["ori_shape"][1].get<int>();
     auto input_width = preprocess_result["img_metas"]["ori_shape"][2].get<int>();
-    if (!with_argmax_) {
-      // (C, H, W) -> (H, W, C)
-      ::mmdeploy::operation::Context ctx(device_, stream_);
-      std::vector<int> axes = {0, 2, 3, 1};
-      permute_.Apply(mask, mask, axes);
-    }
     Device host{"cpu"};
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
-    OUTCOME_TRY(stream_.Wait());
+    if (!with_argmax_) {
+      // (C, H, W) -> (H, W, C)
+      ::mmdeploy::operation::Context ctx(host, stream_);
+      std::vector<int> axes = {0, 2, 3, 1};
+      permute_.Apply(host_tensor, host_tensor, axes);
+    }
 
     OUTCOME_TRY(auto cv_type, GetCvType(mask.data_type(), channel));
     cv::Mat mask_mat(height, width, cv_type, host_tensor.data());
@@ -88,6 +87,9 @@ class ResizeMask : public MMSegmentation {
       // score
       resized_score = cpu::Resize(mask_mat, input_height, input_width, "bilinear");
       tensor_score = cpu::CVMat2Tensor(resized_score);
+      std::vector<int> axes = {0, 3, 1, 2};
+      ::mmdeploy::operation::Context ctx(host, stream_);
+      permute_.Apply(tensor_score, tensor_score, axes);
     }
 
     SegmentorOutput output{tensor_mask, tensor_score, input_height, input_width, classes_};
