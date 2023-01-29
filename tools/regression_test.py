@@ -1011,10 +1011,6 @@ def deploee_runtime(backend: str):
             runtime = '{}+{}+{}+{}'.format(cuda_version, trt_version,
                                            cudnn_version, sm_version)
 
-    elif backend == 'ncnn':
-        import ncnn
-        runtime = 'ncnn' + ncnn.__version__.split('.')[-1]
-
     return runtime
 
 
