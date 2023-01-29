@@ -99,6 +99,7 @@ namespace image_segmentation
                     fixed (float* _score = output[0].Score)
                     {
                         float *score = _score;
+                        int total = output[0].Height * output[0].Width;
                         for (int i = 0; i < output[0].Height; i++)
                         {
                             for (int j = 0; j < output[0].Width; j++)
@@ -106,7 +107,7 @@ namespace image_segmentation
                                 List<Tuple<float, int>> scores = new List<Tuple<float, int>>();
                                 for (int k = 0; k < output[0].Classes; k++)
                                 {
-                                    scores.Add(new Tuple<float, int>(score[pos++], k));
+                                    scores.Add(new Tuple<float, int>(score[k * total + i * output[0].Width + j], k));
                                 }
                                 scores.Sort();
                                 data[0] = palette[scores[^1].Item2][0];

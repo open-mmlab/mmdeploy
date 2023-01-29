@@ -35,12 +35,13 @@ namespace MMDeploy
         public int Classes;
 
         /// <summary>
-        /// Mask data.
+        /// Mask data, mask[i * width + j] indicates the label id of pixel at (i, j).
         /// </summary>
         public int[] Mask;
 
         /// <summary>
-        /// Score data.
+        /// Score data, score[height * width * k + i * width + j] indicates the score
+        /// of class k at pixel (i, j).
         /// </summary>
         public float[] Score;
 
