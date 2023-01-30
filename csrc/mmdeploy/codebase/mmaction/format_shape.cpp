@@ -10,30 +10,47 @@ using namespace std;
 namespace mmdeploy::mmaction {
 
 FormatShape::FormatShape(const Value& args) {
-  auto input_format = args.value("input_format", std::string(""));
-  if (input_format != "NCHW" && input_format != "NCTHW") {
+  input_format_ = args.value("input_format", std::string(""));
+  if (input_format_ != "NCHW" && input_format_ != "NCTHW") {
     MMDEPLOY_ERROR("'input_format' should be 'NCHW' or 'NCTHW'");
     throw_exception(eInvalidArgument);
   }
-  format_ = operation::Managed<mmdeploy::mmaction::FormatShapeImpl>::Create(input_format);
-}
-
-FormatShapeImpl::FormatShapeImpl(const std::string_view& input_format) {
-  input_format_ = input_format;
   permute_ = ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute>::Create();
 }
 
-Result<void> FormatShapeImpl::apply(const std::vector<Tensor>& images, Tensor& output, int clip_len,
-                                    int num_clips) {
+Result<void> FormatShape::MergeInputs(const std::vector<Tensor>& images, Tensor& inputs) {
+  auto N = static_cast<int64_t>(images.size());
+  auto H = images[0].shape(1);
+  auto W = images[0].shape(2);
+  auto C = images[0].shape(3);
+  auto& device = operation::gContext().device();
+  auto& stream = operation::gContext().stream();
+
+  TensorDesc desc = {device, DataType::kFLOAT, {N, H, W, C}};
+  inputs = Tensor(desc);
+  auto offset = 0UL;
+  auto n_item = H * W * C;
+  auto copy_size = n_item * sizeof(float);
+  for (int i = 0; i < N; i++) {
+    auto src_buffer = images[i].buffer();
+    auto dst_buffer = inputs.buffer();
+    OUTCOME_TRY(stream.Copy(src_buffer, dst_buffer, copy_size, 0, offset));
+    offset += copy_size;
+  }
+  return success();
+}
+
+Result<void> FormatShape::Format(const std::vector<Tensor>& images, Tensor& output, int clip_len,
+                                 int num_clips) {
   Tensor inputs;
   OUTCOME_TRY(MergeInputs(images, inputs));
 
   // Tensor dst;
   if (input_format_ == "NCHW") {
-    OUTCOME_TRY(output, FormatNCHW(inputs, clip_len, num_clips));
+    OUTCOME_TRY(FormatNCHW(inputs, clip_len, num_clips, output));
   }
   if (input_format_ == "NCTHW") {
-    OUTCOME_TRY(output, FormatNCTHW(inputs, clip_len, num_clips));
+    OUTCOME_TRY(FormatNCTHW(inputs, clip_len, num_clips, output));
   }
 
   TensorShape expand_dim = output.shape();
@@ -43,34 +60,13 @@ Result<void> FormatShapeImpl::apply(const std::vector<Tensor>& images, Tensor& o
   return success();
 }
 
-Result<void> FormatShapeImpl::MergeInputs(const std::vector<Tensor>& images, Tensor& inputs) {
-  auto N = static_cast<int64_t>(images.size());
-  auto H = images[0].shape(1);
-  auto W = images[0].shape(2);
-  auto C = images[0].shape(3);
-
-  TensorDesc desc = {device(), DataType::kFLOAT, {N, H, W, C}};
-  inputs = Tensor(desc);
-  auto offset = 0UL;
-  auto n_item = H * W * C;
-  auto copy_size = n_item * sizeof(float);
-  for (int i = 0; i < N; i++) {
-    auto src_buffer = images[i].buffer();
-    auto dst_buffer = inputs.buffer();
-    OUTCOME_TRY(stream().Copy(src_buffer, dst_buffer, copy_size, 0, offset));
-    offset += copy_size;
-  }
+Result<void> FormatShape::FormatNCHW(Tensor& src, int clip_len, int num_clips, Tensor& dst) {
+  const vector<int> axes = {0, 3, 1, 2};
+  OUTCOME_TRY(permute_.Apply(src, dst, axes));
   return success();
 }
 
-Result<Tensor> FormatShapeImpl::FormatNCHW(Tensor& src, int clip_len, int num_clips) {
-  Tensor dst;
-  const vector<int> axes = {0, 3, 1, 2};
-  OUTCOME_TRY(permute_.Apply(src, dst, axes));
-  return dst;
-}
-
-Result<Tensor> FormatShapeImpl::FormatNCTHW(Tensor& src, int clip_len, int num_clips) {
+Result<void> FormatShape::FormatNCTHW(Tensor& src, int clip_len, int num_clips, Tensor& dst) {
   auto N = src.shape(0);
   auto H = src.shape(1);
   auto W = src.shape(2);
@@ -81,10 +77,9 @@ Result<Tensor> FormatShapeImpl::FormatNCTHW(Tensor& src, int clip_len, int num_c
   }
   int M = N / L;
   src.Reshape({M, L, H, W, C});
-  Tensor dst;
   const vector<int> axes = {0, 4, 1, 2, 3};
   OUTCOME_TRY(permute_.Apply(src, dst, axes));
-  return dst;
+  return success();
 }
 
 Result<void> FormatShape::Apply(Value& data) {
@@ -122,22 +117,12 @@ Result<void> FormatShape::Apply(Value& data) {
 
   Tensor dst;
   data = Value{};
-  OUTCOME_TRY(format_.Apply(images, dst, clip_len, num_clips));
+  OUTCOME_TRY(Format(images, dst, clip_len, num_clips));
   data["img"] = std::move(dst);
 
   return success();
 }
 
 MMDEPLOY_REGISTER_TRANSFORM(FormatShape);
-
-MMDEPLOY_DEFINE_REGISTRY(FormatShapeImpl);
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeImpl, (cpu, 0), [](const std::string& input_format) {
-  return std::make_unique<FormatShapeImpl>(input_format);
-});
-
-MMDEPLOY_REGISTER_FACTORY_FUNC(FormatShapeImpl, (cuda, 0), [](const std::string& input_format) {
-  return std::make_unique<FormatShapeImpl>(input_format);
-});
 
 }  // namespace mmdeploy::mmaction
