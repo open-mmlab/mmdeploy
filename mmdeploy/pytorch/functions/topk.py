@@ -68,3 +68,27 @@ def topk__tensorrt(ctx,
         k = TENSORRT_MAX_TOPK
 
     return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)
+
+
+@FUNCTION_REWRITER.register_rewriter(func_name='torch.topk', backend='coreml')
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.Tensor.topk', backend='coreml')
+def topk__coreml(ctx,
+                 input: torch.Tensor,
+                 k: int,
+                 dim: Optional[int] = None,
+                 largest: bool = True,
+                 sorted: bool = True):
+    """Rewrite `topk` for coreml backend.
+
+    Cast k to tensor and make sure k is smaller than input.shape[dim].
+    """
+
+    if dim is None:
+        dim = int(input.ndim - 1)
+    size = input.shape[dim]
+    if not isinstance(k, torch.Tensor):
+        k = torch.tensor(k, device=input.device, dtype=torch.long)
+    # Always keep topk op for dynamic input
+    k = torch.where(k < size, k, size)
+    return ctx.origin_func(input, k, dim=dim, largest=largest, sorted=sorted)

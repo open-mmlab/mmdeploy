@@ -718,7 +718,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         if calib_dataset_cfg is not None:
             cmd_lines += [f'--calib-dataset-cfg {calib_dataset_cfg}']
 
-    convert_log_path = backend_output_path.joinpath('convert.log')
+    convert_log_path = backend_output_path.joinpath('convert_log.txt')
     return_code = run_cmd(cmd_lines, convert_log_path)
     convert_result = return_code == 0
     logger.info(f'Got convert_result = {convert_result}')
@@ -740,7 +740,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         # test the model metric
         if backend_test:
             log_path = \
-                gen_log_path(backend_output_path, 'backend_test.log')
+                gen_log_path(backend_output_path, 'backend_test_log.txt')
             get_backend_fps_metric(
                 deploy_cfg_path=str(deploy_cfg_path),
                 model_cfg_path=model_cfg_path,
@@ -764,7 +764,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             if codebase_name in ['mmcls', 'mmaction']:
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
-            log_path = gen_log_path(backend_output_path, 'sdk_test.log')
+            log_path = gen_log_path(backend_output_path, 'sdk_test_log.txt')
             # sdk test
             get_backend_fps_metric(
                 deploy_cfg_path=str(sdk_config),

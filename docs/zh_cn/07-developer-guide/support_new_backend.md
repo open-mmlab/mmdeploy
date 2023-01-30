@@ -26,56 +26,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        TENSORRT = 'tensorrt'
    ```
 
-2. 在 `mmdeploy/backend/` 目录下添加相应的库(一个包括 `__init__.py` 的文件夹),例如， `mmdeploy/backend/tensorrt` 。在 `__init__.py` 中，必须有一个名为 `is_available` 的函数检查用户是否安装了后端库。如果检查通过，则将加载库的剩余文件。
-
-   **例子**:
-
-   ```Python
-   # mmdeploy/backend/tensorrt/__init__.py
-
-   def is_available():
-       return importlib.util.find_spec('tensorrt') is not None
-
-
-   if is_available():
-       from .utils import from_onnx, load, save
-       from .wrapper import TRTWrapper
-
-       __all__ = [
-           'from_onnx', 'save', 'load', 'TRTWrapper'
-       ]
-   ```
-
-3. 在 `configs/_base_/backends` 目录中创建一个配置文件(例如， `configs/_base_/backends/tensorrt.py` )。如果新后端引擎只是将“.onnx”文件作为输入，那么新的配置可以很简单,对应配置只需包含一个表示后端名称的字段(但也应该与 `mmdeploy/utils/constants.py` 中的名称相同)。
-
-   **例子**
-
-   ```python
-   backend_config = dict(type='tensorrt')
-   ```
-
-   但如果后端需要其他文件，则从“.onnx”文件转换为后端文件所需的参数也应包含在配置文件中。
-
-   **例子**
-
-   ```Python
-
-   backend_config = dict(
-       type='tensorrt',
-       common_config=dict(
-           fp16_mode=False, max_workspace_size=0))
-   ```
-
-   在拥有一个基本的后端配置文件后，您已经可以通过继承轻松构建一个完整的部署配置。有关详细信息，请参阅我们的[配置教程](../02-how-to-run/write_config.md)。下面是一个例子：
-
-   ```Python
-   _base_ = ['../_base_/backends/tensorrt.py']
-
-   codebase_config = dict(type='mmcls', task='Classification')
-   onnx_config = dict(input_shape=None)
-   ```
-
-4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，则需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数`onnx2backend`。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
+2. 在 `mmdeploy/backend/` 目录下添加相应的库(一个包括 `__init__.py` 的文件夹),例如， `mmdeploy/backend/tensorrt` 。如果新后端需要模型文件或权重文件而不是“.onnx”文件，则需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数`onnx2backend`。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
 
    **使用python脚本**
 
@@ -106,7 +57,82 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
    ```
 
-5. 在 `mmdeploy/apis` 中创建新后端库并声明对应 APIs
+   从 BackendManager 派生类，实现 `to_backend` 类方法。
+
+   **例子**
+
+   ```Python
+    @classmethod
+    def to_backend(cls,
+                   ir_files: Sequence[str],
+                   deploy_cfg: Any,
+                   work_dir: str,
+                   log_level: int = logging.INFO,
+                   device: str = 'cpu',
+                   **kwargs) -> Sequence[str]:
+        return ir_files
+   ```
+
+3. 创建一个 BaseBackendManager 的派生类，注册并实现对应接口
+
+   **例子**:
+
+   ```Python
+    # 注册 backend manager
+    # 该类派生自 BaseBackendManager
+    @BACKEND_MANAGERS.register('tensorrt')
+    class TensorRTManager(BaseBackendManager):
+
+        @classmethod
+        def is_available(cls, with_custom_ops: bool = False) -> bool:
+            ....
+
+
+        @classmethod
+        def get_version(cls) -> str:
+            ....
+
+        @classmethod
+        def to_backend(cls,
+                    ir_files: Sequence[str],
+                    work_dir: str,
+                    deploy_cfg: Any,
+                    log_level: int = logging.INFO,
+                    device: str = 'cpu',
+                    **kwargs) -> Sequence[str]:
+            ...
+   ```
+
+4. 在 `configs/_base_/backends` 目录中创建一个配置文件(例如， `configs/_base_/backends/tensorrt.py` )。如果新后端引擎只是将“.onnx”文件作为输入，那么新的配置可以很简单,对应配置只需包含一个表示后端名称的字段(但也应该与 `mmdeploy/utils/constants.py` 中的名称相同)。
+
+   **例子**
+
+   ```python
+   backend_config = dict(type='tensorrt')
+   ```
+
+   但如果后端需要其他文件，则从“.onnx”文件转换为后端文件所需的参数也应包含在配置文件中。
+
+   **例子**
+
+   ```Python
+
+   backend_config = dict(
+       type='tensorrt',
+       common_config=dict(
+           fp16_mode=False, max_workspace_size=0))
+   ```
+
+   在拥有一个基本的后端配置文件后，您已经可以通过继承轻松构建一个完整的部署配置。有关详细信息，请参阅我们的[配置教程](../02-how-to-run/write_config.md)。下面是一个例子：
+
+   ```Python
+   _base_ = ['../_base_/backends/tensorrt.py']
+
+   codebase_config = dict(type='mmcls', task='Classification')
+   onnx_config = dict(input_shape=None)
+   ```
+
+5. 在 `mmdeploy/apis/<backend>` 中添加希望给用户使用的 API
 
    **例子**
 
@@ -121,34 +147,6 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
        from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
                                                     get_output_model_file)
        __all__ += ['onnx2ncnn', 'get_output_model_file']
-   ```
-
-   然后根据需要使用这些 APIs 为 `tools/deploy.py` 添加相关转换代码
-
-   **例子**
-
-   ```Python
-   # tools/deploy.py
-   # ...
-       elif backend == Backend.NCNN:
-           from mmdeploy.apis.ncnn import is_available as is_available_ncnn
-
-           if not is_available_ncnn():
-               logging.error('ncnn support is not available.')
-               exit(-1)
-
-           from mmdeploy.apis.ncnn import onnx2ncnn, get_output_model_file
-
-           backend_files = []
-           for onnx_path in onnx_files:
-               create_process(
-                   f'mmdeploy_onnx2ncnn with {onnx_path}',
-                   target=onnx2ncnn,
-                   args=(onnx_path, args.work_dir),
-                   kwargs=dict(),
-                   ret_value=ret_value)
-               backend_files += get_output_model_file(onnx_path, args.work_dir)
-   # ...
    ```
 
 6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
@@ -210,13 +208,13 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
            self.sess.run_with_iobinding(io_binding)
    ```
 
-4. 从 `BackendManager` 派生接口类，实现 `build_wrapper` 静态方法
+4. 从 `BaseBackendManager` 派生接口类，实现 `build_wrapper` 静态方法
 
    **例子**
 
    ```Python
         @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeUtils(BaseBackendManager):
+        class ONNXRuntimeManager(BaseBackendManager):
 
             @classmethod
             def build_wrapper(cls,

@@ -1,7 +1,9 @@
+mmaction2<1.0.0
 mmcls>=0.21.0,<=0.22.1
 mmdet>=2.19.0,<=2.20.0
-mmedit
+mmdet3d<1.0.0
+mmedit<1.0.0
 mmocr>=0.3.0,<=0.4.1
 mmpose>=0.24.0,<=0.25.1
 mmrazor>=0.3.0
-mmsegmentation
+mmsegmentation<1.0.0

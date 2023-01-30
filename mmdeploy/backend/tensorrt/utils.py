@@ -139,14 +139,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             })
     """
 
-    import os
-    old_cuda_device = os.environ.get('CUDA_DEVICE', None)
-    os.environ['CUDA_DEVICE'] = str(device_id)
-    import pycuda.autoinit  # noqa:F401
-    if old_cuda_device is not None:
-        os.environ['CUDA_DEVICE'] = old_cuda_device
-    else:
-        os.environ.pop('CUDA_DEVICE')
+    if device_id != 0:
+        import os
+        old_cuda_device = os.environ.get('CUDA_DEVICE', None)
+        os.environ['CUDA_DEVICE'] = str(device_id)
+        import pycuda.autoinit  # noqa:F401
+        if old_cuda_device is not None:
+            os.environ['CUDA_DEVICE'] = old_cuda_device
+        else:
+            os.environ.pop('CUDA_DEVICE')
 
     load_tensorrt_plugin()
     # create builder and network

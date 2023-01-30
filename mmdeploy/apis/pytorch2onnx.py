@@ -3,13 +3,8 @@ import os.path as osp
 from typing import Any, Optional, Union
 
 import mmcv
-import torch
 
-from mmdeploy.apis.core.pipeline_manager import no_mp
-from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
-                            get_input_shape, get_onnx_config, load_config)
 from .core import PIPELINE_MANAGER
-from .onnx import export
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -49,6 +44,13 @@ def torch2onnx(img: Any,
             defaults to `None`.
         device (str): A string specifying device type, defaults to 'cuda:0'.
     """
+    import torch
+
+    from mmdeploy.apis.core.pipeline_manager import no_mp
+    from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
+                                get_input_shape, get_onnx_config, load_config)
+    from .onnx import export
+
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
     mmcv.mkdir_or_exist(osp.abspath(work_dir))

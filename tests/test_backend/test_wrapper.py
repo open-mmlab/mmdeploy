@@ -67,7 +67,7 @@ def generate_torchscript_file():
         context_info=context_info)
 
 
-def onnx2backend(backend, onnx_file):
+def ir2backend(backend, onnx_file, ts_file):
     if backend == Backend.TENSORRT:
         from mmdeploy.backend.tensorrt import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
@@ -143,107 +143,78 @@ def onnx2backend(backend, onnx_file):
             onnx_file, lib_file, shape=shape, dtype=dtype, tuner=tuner_dict)
         assert osp.exists(lib_file)
         return lib_file
+    elif backend == Backend.TORCHSCRIPT:
+        return ts_file
+    elif backend == Backend.COREML:
+        output_names = ['output']
+        from mmdeploy.backend.coreml.torchscript2coreml import (
+            from_torchscript, get_model_suffix)
+        backend_dir = tempfile.TemporaryDirectory().name
+        work_dir = backend_dir
+        torchscript_name = osp.splitext(osp.split(ts_file)[1])[0]
+        output_file_prefix = osp.join(work_dir, torchscript_name)
+        convert_to = 'mlprogram'
+        from_torchscript(
+            ts_file,
+            output_file_prefix,
+            input_names=input_names,
+            output_names=output_names,
+            input_shapes=dict(
+                input=dict(
+                    min_shape=[1, 3, 8, 8],
+                    default_shape=[1, 3, 8, 8],
+                    max_shape=[1, 3, 8, 8])),
+            convert_to=convert_to)
+
+        suffix = get_model_suffix(convert_to)
+        return output_file_prefix + suffix
+    else:
+        raise NotImplementedError(
+            f'Convert for {backend.value} has not been implemented.')
 
 
 def create_wrapper(backend, model_files):
-    if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import TRTWrapper
-        trt_model = TRTWrapper(model_files, output_names)
-        return trt_model
-    elif backend == Backend.ONNXRUNTIME:
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_model = ORTWrapper(model_files, 'cpu', output_names)
-        return ort_model
-    elif backend == Backend.PPLNN:
-        from mmdeploy.backend.pplnn import PPLNNWrapper
-        onnx_file, algo_file = model_files
-        pplnn_model = PPLNNWrapper(onnx_file, algo_file, 'cpu', output_names)
-        return pplnn_model
-    elif backend == Backend.NCNN:
-        from mmdeploy.backend.ncnn import NCNNWrapper
-        param_file, bin_file = model_files
-        ncnn_model = NCNNWrapper(param_file, bin_file, output_names)
-        return ncnn_model
-    elif backend == Backend.OPENVINO:
-        from mmdeploy.backend.openvino import OpenVINOWrapper
-        openvino_model = OpenVINOWrapper(model_files, output_names)
-        return openvino_model
-    elif backend == Backend.TORCHSCRIPT:
-        from mmdeploy.backend.torchscript import TorchscriptWrapper
-        torchscript_model = TorchscriptWrapper(
-            model_files, input_names=input_names, output_names=output_names)
-        return torchscript_model
+    from mmdeploy.backend.base import get_backend_manager
+    backend_mgr = get_backend_manager(backend.value)
+    deploy_cfg = None
+    if isinstance(model_files, str):
+        model_files = [model_files]
+
     elif backend == Backend.RKNN:
-        from mmdeploy.backend.rknn import RKNNWrapper
-        rknn_model = RKNNWrapper(
-            model_files,
-            common_config=dict(target_platform=target_platform),
-            output_names=output_names)
-        return rknn_model
-    elif backend == Backend.ASCEND:
-        from mmdeploy.backend.ascend import AscendWrapper
-        ascend_model = AscendWrapper(model_files)
-        return ascend_model
-    elif backend == Backend.TVM:
-        from mmdeploy.backend.tvm import TVMWrapper
-        tvm_model = TVMWrapper(model_files, output_names=output_names)
-        return tvm_model
-    else:
-        raise NotImplementedError(f'Unknown backend type: {backend.value}')
+        deploy_cfg = dict(
+            backend_config=dict(
+                common_config=dict(target_platform=target_platform)))
+    return backend_mgr.build_wrapper(
+        model_files,
+        input_names=input_names,
+        output_names=output_names,
+        deploy_cfg=deploy_cfg)
 
 
 def run_wrapper(backend, wrapper, input):
     if backend == Backend.TENSORRT:
         input = input.cuda()
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.ONNXRUNTIME:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.PPLNN:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.NCNN:
-        input = input.float()
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.OPENVINO:
-        results = wrapper({'input': input})['output']
-        results = results.detach().cpu()
-        return results
-    elif backend == Backend.TORCHSCRIPT:
-        results = wrapper({'input': input})['output']
-        return results
-    elif backend == Backend.RKNN:
-        results = wrapper({'input': input})
-    elif backend == Backend.ASCEND:
-        results = wrapper({'input': input})['output']
-        return results
-    elif backend == Backend.TVM:
-        results = wrapper({'input': input})['output']
-        return results
-    else:
-        raise NotImplementedError(f'Unknown backend type: {backend.value}')
+
+    results = wrapper({'input': input})
+
+    if backend != Backend.RKNN:
+        results = results['output']
+
+    results = results.detach().cpu()
+
+    return results
 
 
-ALL_BACKEND = [
-    Backend.TENSORRT, Backend.ONNXRUNTIME, Backend.PPLNN, Backend.NCNN,
-    Backend.OPENVINO, Backend.TORCHSCRIPT, Backend.ASCEND, Backend.RKNN,
-    Backend.TVM
-]
+ALL_BACKEND = list(Backend)
+ALL_BACKEND.remove(Backend.DEFAULT)
+ALL_BACKEND.remove(Backend.PYTORCH)
+ALL_BACKEND.remove(Backend.SDK)
 
 
 @pytest.mark.parametrize('backend', ALL_BACKEND)
 def test_wrapper(backend):
     check_backend(backend, True)
-    if backend == Backend.TORCHSCRIPT:
-        model_files = ts_file
-    else:
-        model_files = onnx2backend(backend, onnx_file)
+    model_files = ir2backend(backend, onnx_file, ts_file)
     assert model_files is not None
     wrapper = create_wrapper(backend, model_files)
     assert wrapper is not None

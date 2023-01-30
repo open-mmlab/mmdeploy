@@ -90,7 +90,7 @@ def install_pyncnn(dep_dir):
 
     # install
     os.chdir(ncnn_dir)
-    os.system('cd python && python -m pip install -e .')
+    os.system('cd python && python3 -m pip install -e . --user')
     ncnn_cmake_dir = os.path.join(ncnn_dir, 'build', 'install', 'lib', 'cmake',
                                   'ncnn')
     assert (os.path.exists(ncnn_cmake_dir))

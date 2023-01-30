@@ -14,7 +14,7 @@ from mmdeploy.utils import (get_backend_config, get_common_config,
 def onnx2rknn(onnx_model: str,
               output_path: str,
               deploy_cfg: Union[str, mmcv.Config],
-              model_cfg: Union[str, mmcv.Config],
+              model_cfg: Optional[Union[str, mmcv.Config]] = None,
               dataset_file: Optional[str] = None,
               **kwargs):
     """Convert ONNX to RKNN.
@@ -43,7 +43,7 @@ def onnx2rknn(onnx_model: str,
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
     # update norm value
-    if get_rknn_quantization(deploy_cfg) is True:
+    if get_rknn_quantization(deploy_cfg) is True and model_cfg is not None:
         transform = get_normalization(model_cfg)
         common_params.update(
             dict(
