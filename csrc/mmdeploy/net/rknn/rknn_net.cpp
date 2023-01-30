@@ -250,7 +250,7 @@ Result<void> RKNNNet::Forward() {
   for (uint32_t i = 0; i < output_tensors_.size(); ++i) {
     outputs[i].want_float = 1;
     outputs[i].is_prealloc = 1;  // use pre-allocated buffer in `output_tensors_`
-    outputs[i].index = 1;
+    outputs[i].index = i;
     outputs[i].buf = output_tensors_[i].data();
     outputs[i].size = output_tensors_[i].byte_size();
   }
