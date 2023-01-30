@@ -12,7 +12,7 @@ class PermuteImpl : public Permute {
   Result<void> apply(const Tensor& src, Tensor& dst, const std::vector<int>& axes) override {
     int ndim = src.shape().size();
     if (ndim != axes.size()) {
-      MMDEPLOY_ERROR("The size of axes should be equal of src, {} vs {}", axes.size(), ndim);
+      MMDEPLOY_ERROR("The size of axes should be equal to src, {} vs {}", axes.size(), ndim);
       return Status(eInvalidArgument);
     }
 
