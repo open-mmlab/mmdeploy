@@ -1,10 +1,12 @@
 # VACC Backend
+
 - cmake 3.10.0+
 - gcc/g++ 7.5.0
 - llvm 9.0.1
 - ubuntu 18.04
 
 ## PCIE
+
 ### 1.package
 
 - dkms (>=1.95)
@@ -16,54 +18,54 @@
 
 查看是否有瀚博推理卡：`lspci -d:0100`
 
+1. 环境准备
 
- 1. 环境准备
+   ```bash
+   sudo apt-get install dkms dpkg python2 python3
+   ```
 
-    ```bash
-    sudo apt-get install dkms dpkg python2 python3
-    ```
+2. driver安装
 
- 2. driver安装
+   ```bash
+   sudo dpkg -i vastai-pci_xx.xx.xx.xx_xx.deb
+   ```
 
-    ```bash
-    sudo dpkg -i vastai-pci_xx.xx.xx.xx_xx.deb
-    ```
+3. 查看安装
 
- 3. 查看安装
+   ```bash
+   # 1.查看deb包是否安装成功
+   dpkg --status vastai-pci-xxx
 
-    ```bash
-    # 1.查看deb包是否安装成功
-    dpkg --status vastai-pci-xxx
+   #output
+   Package: vastai-pci-dkms
+   Status: install ok installed
+   ……
+   Version: xx.xx.xx.xx
+   Provides: vastai-pci-modules (= xx.xx.xx.xx)
+   Depends: dkms (>= 1.95)
+   Description: vastai-pci driver in DKMS format.
 
-    #output
-    Package: vastai-pci-dkms
-    Status: install ok installed
-    ……
-    Version: xx.xx.xx.xx
-    Provides: vastai-pci-modules (= xx.xx.xx.xx)
-    Depends: dkms (>= 1.95)
-    Description: vastai-pci driver in DKMS format.
+   # 2.查看驱动是否已加载到内核
+   lsmod | grep vastai_pci
 
-    # 2.查看驱动是否已加载到内核
-    lsmod | grep vastai_pci
+   #output
+   vastai_pci        xxx  x
+   ```
 
-    #output
-    vastai_pci        xxx  x
-    ```
+4. 升级驱动
 
- 4. 升级驱动
+   ```bash
+   sudo dpkg -i vastai-pci_dkms_xx.xx.xx.xx_xx.deb
+   ```
 
-    ```bash
-    sudo dpkg -i vastai-pci_dkms_xx.xx.xx.xx_xx.deb
-    ```
+5. 卸载驱动
 
- 5. 卸载驱动
-
-    ```bash
-    sudo dpkg -r vastai-pci_dkms_xx.xx.xx.xx_xx
-    ```
+   ```bash
+   sudo dpkg -r vastai-pci_dkms_xx.xx.xx.xx_xx
+   ```
 
 ### 2.reboot pcie
+
 ```bash
 sudo chmod 666 /dev/kchar:0 && sudo echo reboot > /dev/kchar:0
 ```

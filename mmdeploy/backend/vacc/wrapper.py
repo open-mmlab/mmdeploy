@@ -1,21 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
-from typing import Dict, Optional, Sequence, Union, Iterable, Generator
-
-import json
-import torch
-import numpy as np
 import ctypes
+import json
 from queue import Queue
 from threading import Event, Thread
+from typing import Dict, Generator, Iterable, Optional, Sequence, Union
+
+import numpy as np
+import torch
 import vacl_stream
 import vaststream
 
 from mmdeploy.utils import Backend, get_root_logger
-from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
 
+
 class VACCForward:
+
     def __init__(
         self,
         model_info: Union[str, Dict[str, str]],
@@ -36,27 +36,30 @@ class VACCForward:
 
         balance_mode = 0
 
-        def callback(output_description, ulOutPointerArray, ulArraySize, user_data_ptr):
-            user_data = ctypes.cast(user_data_ptr, ctypes.POINTER(vacl_stream.StreamInfo))
+        def callback(output_description, ulOutPointerArray, ulArraySize,
+                     user_data_ptr):
+            user_data = ctypes.cast(user_data_ptr,
+                                    ctypes.POINTER(vacl_stream.StreamInfo))
             input_id = output_description.contents.input_id
 
             device_ddr = self.input_dict.pop(input_id)
             self.vast_stream.free_data_on_device(device_ddr, self.device_id)
 
             model_name = user_data.contents.model_name
-            stream_output_list = self.vast_stream.stream_get_stream_output(model_name, ulOutPointerArray, ulArraySize)
+            stream_output_list = self.vast_stream.stream_get_stream_output(
+                model_name, ulOutPointerArray, ulArraySize)
             heatmap = np.squeeze(stream_output_list[0])
-            
+
             num_outputs = self.vast_stream.get_output_num_per_batch(model_name)
             heatmap_shape = []
             for i in range(num_outputs):
-                _, shape = self.vast_stream.get_output_shape_by_index(model_name, i)
+                _, shape = self.vast_stream.get_output_shape_by_index(
+                    model_name, i)
                 ndims = shape.ndims
                 _shape = []
                 for i in range(ndims):
                     _shape.append(shape.shapes[i])
                 heatmap_shape.append(_shape)
-
             '''
             ndims = shape.ndims
             heatmap_shape = []
@@ -94,10 +97,10 @@ class VACCForward:
         return input_id
 
     def get_output_num(self):
-        num_outputs = self.vast_stream.get_output_num_per_batch(self.vast_stream.model_name)
+        num_outputs = self.vast_stream.get_output_num_per_batch(
+            self.vast_stream.model_name)
         return num_outputs
 
-    
     def extract(self, image: Union[str, np.ndarray]) -> str:
         input_id = self.__start_extract(image)
         self.event_dict[input_id].wait()
@@ -105,7 +108,10 @@ class VACCForward:
         del self.event_dict[input_id]
         return result
 
-    def extract_batch(self, images: Iterable[Union[str, np.ndarray]]) -> Generator[str, None, None]:
+    def extract_batch(
+        self,
+        images: Iterable[Union[str,
+                               np.ndarray]]) -> Generator[str, None, None]:
         queue = Queue(20)
 
         def input_thread():
@@ -161,7 +167,7 @@ class VACCWrapper(BaseWrapper):
 
     def forward(self, inputs: Dict[str,
                                    torch.Tensor]) -> Dict[str, torch.Tensor]:
-        
+
         input_list = list(inputs.values())
         batch_size = input_list[0].size(0)
         logger = get_root_logger()
@@ -169,7 +175,8 @@ class VACCWrapper(BaseWrapper):
             logger.warning(
                 f'vacc only support batch_size = 1, but given {batch_size}')
 
-        outputs = dict([name, [None] * batch_size] for name in self.output_names)
+        outputs = dict([name, [None] * batch_size]
+                       for name in self.output_names)
 
         for batch_id in range(batch_size):
             output = []
@@ -181,12 +188,17 @@ class VACCWrapper(BaseWrapper):
                 for result in results:
                     output_num = result[0]
                     if output_num == 1:
-                        output.append(np.reshape(np.array(result[2]).astype(np.float32), result[1][0])[0])
+                        output.append(
+                            np.reshape(
+                                np.array(result[2]).astype(np.float32),
+                                result[1][0])[0])
                     else:
                         outputs_ = []
                         outputs = {}
                         for index in range(output_num):
-                            out = np.reshape(result[2][index].astype(np.float32), result[1][index])
+                            out = np.reshape(
+                                result[2][index].astype(np.float32),
+                                result[1][index])
                             outputs_.append(torch.from_numpy(out))
                         outputs['output'] = outputs_
                         return outputs
@@ -199,4 +211,3 @@ class VACCWrapper(BaseWrapper):
             else:
                 outputs[name] = torch.stack(output_tensor)
         return outputs
-

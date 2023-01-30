@@ -1,10 +1,12 @@
 # VACC Backend
+
 - cmake 3.10.0+
 - gcc/g++ 7.5.0
 - llvm 9.0.1
 - ubuntu 18.04
 
 ## PCIE
+
 ### 1.package
 
 - dkms (>=1.95)
@@ -16,52 +18,52 @@
 
 Check if there is a vacc card：`lspci -d:0100`
 
+1. Requirements
 
- 1. Requirements
+   ```bash
+   sudo apt-get install dkms dpkg python2 python3
+   ```
 
-    ```bash
-    sudo apt-get install dkms dpkg python2 python3
-    ```
+2. install driver
 
- 2. install driver
+   ```bash
+   sudo dpkg -i vastai-pci_xx.xx.xx.xx_xx.deb
+   ```
 
-    ```bash
-    sudo dpkg -i vastai-pci_xx.xx.xx.xx_xx.deb
-    ```
+3. Verify installation
 
- 3. Verify installation
+   ```bash
+   dpkg --status vastai-pci-xxx
 
-    ```bash
-    dpkg --status vastai-pci-xxx
+   #output
+   Package: vastai-pci-dkms
+   Status: install ok installed
+   ……
+   Version: xx.xx.xx.xx
+   Provides: vastai-pci-modules (= xx.xx.xx.xx)
+   Depends: dkms (>= 1.95)
+   Description: vastai-pci driver in DKMS format.
 
-    #output
-    Package: vastai-pci-dkms
-    Status: install ok installed
-    ……
-    Version: xx.xx.xx.xx
-    Provides: vastai-pci-modules (= xx.xx.xx.xx)
-    Depends: dkms (>= 1.95)
-    Description: vastai-pci driver in DKMS format.
+   lsmod | grep vastai_pci
 
-    lsmod | grep vastai_pci
+   #output
+   vastai_pci        xxx  x
+   ```
 
-    #output
-    vastai_pci        xxx  x
-    ```
+4. Upgrade driver
 
- 4. Upgrade driver
+   ```bash
+   sudo dpkg -i vastai-pci_dkms_xx.xx.xx.xx_xx.deb
+   ```
 
-    ```bash
-    sudo dpkg -i vastai-pci_dkms_xx.xx.xx.xx_xx.deb
-    ```
+5. Uninstall driver
 
- 5. Uninstall driver
-
-    ```bash
-    sudo dpkg -r vastai-pci_dkms_xx.xx.xx.xx_xx
-    ```
+   ```bash
+   sudo dpkg -r vastai-pci_dkms_xx.xx.xx.xx_xx
+   ```
 
 ### 2.reboot pcie
+
 ```bash
 sudo chmod 666 /dev/kchar:0 && sudo echo reboot > /dev/kchar:0
 ```

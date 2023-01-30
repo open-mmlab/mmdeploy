@@ -1,19 +1,21 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import logging
-from copy import deepcopy
-from typing import Optional, Sequence
-
 import os.path as osp
+from copy import deepcopy
+
 import h5py
 import tqdm
 from mmengine import Config
+
 from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_root_logger, load_config
+
 
 def get_tensor_func(model, input_data):
     input_data = model.data_preprocessor(input_data)
     return input_data['inputs']
+
 
 def get_quant(deploy_cfg: Config,
               model_cfg: Config,
@@ -31,7 +33,6 @@ def get_quant(deploy_cfg: Config,
     calib_dataloader['batch_size'] = 1
 
     dataloader = task_processor.build_dataloader(calib_dataloader)
-    data_preprocessor = task_processor.build_data_preprocessor()
     output_quant_dataset_path = osp.join(work_dir, 'calib_data.h5')
 
     with h5py.File(output_quant_dataset_path, mode='w') as file:
@@ -43,13 +44,18 @@ def get_quant(deploy_cfg: Config,
             # input_data = data_preprocessor(input_data)['inputs'].numpy()
             input_data = get_tensor_func(model, input_data).numpy()
             calib_data_shape = input_data.shape
-            assert model_shape[2] >= calib_data_shape[2] and model_shape[3] >= calib_data_shape[3], f"vacc backend model shape is {tuple(model_shape[2:])}, the calib_data shape {calib_data_shape[2:]} is bigger"
+            assert model_shape[2] >= calib_data_shape[2] and model_shape[
+                3] >= calib_data_shape[
+                    3], f'vacc backend model shape is {tuple(model_shape[2:])}, \
+                        the calib_data shape {calib_data_shape[2:]} is bigger'
+
             input_data_group.create_dataset(
                 str(data_id),
                 shape=input_data.shape,
                 compression='gzip',
                 compression_opts=4,
                 data=input_data)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -59,7 +65,7 @@ def parse_args():
     parser.add_argument('--shape-dict', help='Input model shape')
     parser.add_argument('--checkpoint-path', help='checkpoint path')
     parser.add_argument('--work-dir', help='Output quant dataset dir')
-    
+
     parser.add_argument(
         '--log-level',
         help='set log level',
@@ -68,6 +74,7 @@ def parse_args():
     args = parser.parse_args()
 
     return args
+
 
 def main():
     args = parse_args()

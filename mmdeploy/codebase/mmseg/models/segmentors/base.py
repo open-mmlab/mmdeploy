@@ -33,7 +33,7 @@ def base_segmentor__forward(self,
         return inputs
 
     inputs = __mark_input(inputs)
-    
+
     ctx = FUNCTION_REWRITER.get_context()
     if data_samples is None:
         data_samples = [SegDataSample()]

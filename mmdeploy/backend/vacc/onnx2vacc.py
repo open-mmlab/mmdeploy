@@ -2,21 +2,16 @@
 import os
 import os.path as osp
 import tempfile
-from subprocess import call
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 import mmengine
-import multiprocessing
 import onnx
 import tvm
-import vacc
-from vacc import quantize
 import tvm.relay as relay
+import vacc
 
-from mmdeploy.utils import (get_common_config, get_normalization, get_calib_config,
-                            get_onnx_config, get_partition_config,
-                            get_quantization_config, get_root_logger, load_config)
-from mmdeploy.utils.config_utils import get_backend_config
+from mmdeploy.utils import get_common_config, load_config
+
 
 def from_onnx(onnx_model: str,
               output_path: str,
@@ -24,7 +19,6 @@ def from_onnx(onnx_model: str,
               deploy_cfg: Union[str, mmengine.Config],
               dataset_file: Optional[str] = None,
               **kwargs):
-
     """Convert ONNX to VACC.
 
     Args:
@@ -36,7 +30,6 @@ def from_onnx(onnx_model: str,
             None.
     """
 
-    logger = get_root_logger()
     # load deploy_cfg if necessary
     deploy_cfg = load_config(deploy_cfg)[0]
 
@@ -45,7 +38,7 @@ def from_onnx(onnx_model: str,
         onnx.save(onnx_model, onnx_path)
     else:
         onnx_path = onnx_model
-    
+
     target = tvm.target.vacc()
     common_params = get_common_config(deploy_cfg)
 
@@ -56,34 +49,39 @@ def from_onnx(onnx_model: str,
     shape_dict = model_input['shape']
     mod, params = relay.frontend.from_onnx(model, shape_dict)
 
-    func = mod["main"]
+    func = mod['main']
     mod = relay.Module.from_expr(func)
-    
+
     if quant_mode == 'int8':
-        import h5py
         import random
-        data = h5py.File(osp.join(output_path, 'calib_data.h5'), 'r')['calib_data']['input']
+
+        import h5py
+        data = h5py.File(osp.join(output_path, 'calib_data.h5'),
+                         'r')['calib_data']['input']
         calib_data = []
 
         index = list(range(len(data)))
         random.shuffle(index)
         for i in index[:1000]:
-            calib_data.append({list(shape_dict.keys())[0]: tvm.nd.array(data[str(i)][:].astype("float32"))})
-        
+            calib_data.append({
+                list(shape_dict.keys())[0]:
+                tvm.nd.array(data[str(i)][:].astype('float32'))
+            })
+
         with vacc.quantize.qconfig(
-                    calibrate_mode = model_input.get('qconfig', {}).get('calibrate_mode', 'percentile'),
-                    skip_conv_layers = model_input.get('qconfig', {}).get('skip_conv_layers', []),
-                    weight_scale = model_input.get('qconfig', {}).get('weight_scale', 'max'),
-                    quantize_per_channel= model_input.get('qconfig', {}).get('per_channel', False)
-                ):
+                calibrate_mode=model_input.get('qconfig',
+                                               {}).get('calibrate_mode',
+                                                       'percentile'),
+                skip_conv_layers=model_input.get('qconfig', {}).get(
+                    'skip_conv_layers', []),
+                weight_scale=model_input.get('qconfig',
+                                             {}).get('weight_scale', 'max'),
+                quantize_per_channel=model_input.get('qconfig', {}).get(
+                    'per_channel', False)):
 
-            qmod = vacc.quantize.quantize(
-                mod,
-                params,
-                calib_data
-            )
+            qmod = vacc.quantize.quantize(mod, params, calib_data)
 
-        qmod = qmod["main"]
+        qmod = qmod['main']
         mod = relay.Module.from_expr(qmod)
         params = None
 
@@ -91,9 +89,17 @@ def from_onnx(onnx_model: str,
     else:
         data_type = 0
 
-    with tvm.build_config(data_type = data_type, data_transport_mode= model_input.get('qconfig', {}).get('data_transmode', 1), mem_inplace=True,cluster_mode = model_input.get('qconfig', {}).get('cluster_mode', 0)):
-        with relay.build_config(opt_level=2, stream_mode = True, enable_float_to_half= True):
-            graph, lib, params = relay.build(mod= mod, target = target, params= params)
+    with tvm.build_config(
+            data_type=data_type,
+            data_transport_mode=model_input.get('qconfig',
+                                                {}).get('data_transmode', 1),
+            mem_inplace=True,
+            cluster_mode=model_input.get('qconfig', {}).get('cluster_mode',
+                                                            0)):
+        with relay.build_config(
+                opt_level=2, stream_mode=True, enable_float_to_half=True):
+            graph, lib, params = relay.build(
+                mod=mod, target=target, params=params)
 
     save_dir = '-'.join([common_params['name'], quant_mode])
     model_name = common_params['name']
@@ -101,16 +107,21 @@ def from_onnx(onnx_model: str,
     if not osp.exists(output_root):
         os.makedirs(output_root)
 
-    libpath = os.path.join(output_root, model_name + ".so")
+    libpath = os.path.join(output_root, model_name + '.so')
     lib.export_library(libpath)
 
-    graph_json_path = os.path.join(output_root, model_name + ".json")
-    with open(graph_json_path, "w") as fo:
-        fo.write(graph)
+    graph_json_path = os.path.join(output_root, model_name + '.json')
+    with open(graph_json_path, 'w') as f:
+        f.write(graph)
 
-    param_path = os.path.join(output_root, model_name + ".params")
-    with open(param_path, "wb") as fo:
-        fo.write(relay.save_param_dict(params))
+    param_path = os.path.join(output_root, model_name + '.params')
+    with open(param_path, 'wb') as f:
+        f.write(relay.save_param_dict(params))
 
-    assert osp.exists(os.path.join(output_root, model_name + ".params")), 'onnx2vacc failed'
-    return [os.path.join(output_root, model_name + ".so"), os.path.join(output_root, model_name + ".json"), os.path.join(output_root, model_name + ".params")]
+    assert osp.exists(os.path.join(output_root,
+                                   model_name + '.params')), 'onnx2vacc failed'
+    return [
+        os.path.join(output_root, model_name + '.so'),
+        os.path.join(output_root, model_name + '.json'),
+        os.path.join(output_root, model_name + '.params')
+    ]

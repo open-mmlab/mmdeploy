@@ -603,6 +603,7 @@ class NCNNEnd2EndModel(End2EndModel):
         dets = torch.cat([boxes, scores], dim=2)
         return dets, labels.to(torch.int32)
 
+
 @__BACKEND_MODEL.register_module('vacc_det')
 class VACCDetModel(End2EndModel):
 
@@ -613,7 +614,7 @@ class VACCDetModel(End2EndModel):
             {backend.value}'
 
         super(VACCDetModel, self).__init__(backend, backend_files, device,
-                                               deploy_cfg, **kwargs)
+                                           deploy_cfg, **kwargs)
         # load cfg if necessary
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
@@ -624,6 +625,7 @@ class VACCDetModel(End2EndModel):
                 mode: str = 'predict',
                 **kwargs) -> Any:
         """The model forward.
+
         Args:
             inputs (torch.Tensor): The input tensors
             data_samples (List[BaseDataElement], optional): The data samples.
@@ -639,7 +641,6 @@ class VACCDetModel(End2EndModel):
         for i in range(len(ret)):
             data_samples[i].pred_instances = ret[i]
         return data_samples
-
 
     def predict(self, imgs: Tensor, *args, **kwargs) -> List:
         """Implement forward test.
@@ -680,6 +681,7 @@ class VACCDetModel(End2EndModel):
         else:
             raise NotImplementedError(f'{head_cfg.type} not supported yet.')
         return ret
+
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
