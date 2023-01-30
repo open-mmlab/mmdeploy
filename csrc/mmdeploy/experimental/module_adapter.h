@@ -71,15 +71,9 @@ Result<Value> Invoke(F&& f, const Value& args) {
 }
 
 template <typename F>
-Result<Value> Invoke(F* f, const Value& args) {
-  return Invoke(*f, args);
-}
-
-template <typename F>
 Result<Value> Invoke(const std::unique_ptr<F>& f, const Value& args) {
   return Invoke(*f, args);
 }
-
 template <typename F>
 Result<Value> Invoke(const std::shared_ptr<F>& f, const Value& args) {
   return Invoke(*f, args);
