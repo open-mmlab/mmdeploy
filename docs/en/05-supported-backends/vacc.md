@@ -14,25 +14,24 @@
 - python2
 - python3
 
-查看是否有瀚博推理卡：`lspci -d:0100`
+Check if there is a vacc card：`lspci -d:0100`
 
 
- 1. 环境准备
+ 1. Requirements
 
     ```bash
     sudo apt-get install dkms dpkg python2 python3
     ```
 
- 2. driver安装
+ 2. install driver
 
     ```bash
     sudo dpkg -i vastai-pci_xx.xx.xx.xx_xx.deb
     ```
 
- 3. 查看安装
+ 3. Verify installation
 
     ```bash
-    # 1.查看deb包是否安装成功
     dpkg --status vastai-pci-xxx
 
     #output
@@ -44,20 +43,19 @@
     Depends: dkms (>= 1.95)
     Description: vastai-pci driver in DKMS format.
 
-    # 2.查看驱动是否已加载到内核
     lsmod | grep vastai_pci
 
     #output
     vastai_pci        xxx  x
     ```
 
- 4. 升级驱动
+ 4. Upgrade driver
 
     ```bash
     sudo dpkg -i vastai-pci_dkms_xx.xx.xx.xx_xx.deb
     ```
 
- 5. 卸载驱动
+ 5. Uninstall driver
 
     ```bash
     sudo dpkg -r vastai-pci_dkms_xx.xx.xx.xx_xx

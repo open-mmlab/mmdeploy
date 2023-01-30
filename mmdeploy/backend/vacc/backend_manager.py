@@ -132,8 +132,6 @@ class VACCManager(BaseBackendManager):
         backend_files = []
         for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
             model_input = copy.deepcopy(model_inputs[model_id])
-            # pre_fix_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            # output_path = osp.join(work_dir, pre_fix_name)
             model_file = from_onnx(onnx_path, work_dir, model_input, deploy_cfg)
             backend_files += model_file
 

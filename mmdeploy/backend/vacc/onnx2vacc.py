@@ -47,9 +47,7 @@ def from_onnx(onnx_model: str,
         onnx_path = onnx_model
     
     target = tvm.target.vacc()
-    # calib_params = get_calib_config(deploy_cfg)
     common_params = get_common_config(deploy_cfg)
-    # onnx_params = get_onnx_config(deploy_cfg)
 
     quant_mode = model_input.get('qconfig', {}).get('dtype', 'fp16')
     assert quant_mode in ['int8', 'fp16'], quant_mode + ' not support now'
