@@ -43,6 +43,7 @@ Value config_template() {
     },
     {
       "type": "Cond",
+      "name": "cond",
       "input": ["use_det", "data"],
       "output": "dets",
       "body": {
@@ -53,6 +54,7 @@ Value config_template() {
     },
     {
       "type": "Task",
+      "name": "process_bboxes",
       "module": "pose_tracker::ProcessBboxes",
       "input": ["dets", "data", "state"],
       "output": ["rois", "track_ids"]
@@ -66,6 +68,7 @@ Value config_template() {
     },
     {
       "type": "Task",
+      "name": "track_step",
       "module": "pose_tracker::TrackStep",
       "scheduler": "pool",
       "input": ["keypoints", "track_ids", "state"],

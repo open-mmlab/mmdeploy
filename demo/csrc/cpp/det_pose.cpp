@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
   auto poses = pose.Apply(img, bboxes);
 
   // visualize
-  Visualize(img, {poses.begin(), poses.end()}, 1280);
-  cv::imwrite("det_pose_output.jpg", img);
+  auto vis = Visualize(img, {poses.begin(), poses.end()}, 1280);
+  cv::imwrite("det_pose_output.jpg", vis);
 
   return 0;
 }
