@@ -618,6 +618,29 @@ class VACCDetModel(End2EndModel):
         model_cfg = load_config(model_cfg)[0]
         self.model_cfg = model_cfg
 
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+        Returns:
+            Any: Model output.
+        """
+        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
+        inputs = inputs.contiguous()
+        outputs = self.predict(inputs)
+        ret = self._get_bboxes(outputs[0], [i.metainfo for i in data_samples])
+        for i in range(len(ret)):
+            data_samples[i].pred_instances = ret[i]
+        return data_samples
+
+
     def predict(self, imgs: Tensor, *args, **kwargs) -> List:
         """Implement forward test.
 
@@ -628,13 +651,35 @@ class VACCDetModel(End2EndModel):
             list[Tensor]: dets of shape [N, num_det, 5] and
                 class labels of shape [N, num_det].
         """
-        _, _, H, W = imgs.shape
         outputs = self.wrapper({self.input_name: imgs})
-        for key, item in outputs.items():
-            if item is None:
-                return torch.zeros(1, 0, 5), torch.zeros(1, 0)
-        
-        return torch.zeros(1, 0, 5), torch.zeros(1, 0)
+        outputs = [i for i in outputs.values()]
+        return outputs
+
+    def _get_bboxes(self, outputs, img_metas):
+        from mmdet.registry import MODELS
+        head_cfg = self.model_cfg._cfg_dict.model.bbox_head
+        head = MODELS.build(head_cfg)
+        if head_cfg.type == 'YOLOXHead':
+            divisor = round(len(outputs) / 3)
+            ret = head.predict_by_feat(
+                outputs[:divisor],
+                outputs[divisor:2 * divisor],
+                outputs[2 * divisor:], [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        elif head_cfg.type == 'YOLOV3Head':
+            ret = head.predict_by_feat(
+                outputs, [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
+            divisor = round(len(outputs) / 2)
+            ret = head.predict_by_feat(
+                outputs[:divisor],
+                outputs[divisor:],
+                img_metas=img_metas[0],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        else:
+            raise NotImplementedError(f'{head_cfg.type} not supported yet.')
+        return ret
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):

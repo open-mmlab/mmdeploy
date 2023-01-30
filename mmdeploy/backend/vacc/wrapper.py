@@ -14,8 +14,6 @@ import vaststream
 from mmdeploy.utils import Backend, get_root_logger
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from mmdeploy.utils import get_onnx_config, get_common_config
-from mmdeploy.utils.config_utils import get_backend_config
 
 class VACCForward:
     def __init__(
@@ -185,11 +183,11 @@ class VACCWrapper(BaseWrapper):
                     if output_num == 1:
                         output.append(np.reshape(np.array(result[2]).astype(np.float32), result[1][0])[0])
                     else:
-                        outputs_ = {}
+                        outputs_ = []
                         outputs = {}
                         for index in range(output_num):
                             out = np.reshape(result[2][index].astype(np.float32), result[1][index])
-                            outputs_[index] = torch.from_numpy(out)
+                            outputs_.append(torch.from_numpy(out))
                         outputs['output'] = outputs_
                         return outputs
             output = np.array(output)
