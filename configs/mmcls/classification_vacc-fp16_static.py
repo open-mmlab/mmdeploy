@@ -2,7 +2,6 @@ _base_ = ['./classification_static.py', '../_base_/backends/vacc.py']
 
 backend_config = dict(
     common_config=dict(
-        name='mobilenetv2',
         model_info='/path/to/model_info.json',
         vdsp_params_info='/path/to/vdsp_params_info.json'
     ),
