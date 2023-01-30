@@ -61,7 +61,7 @@ class ResizeMask : public MMSegmentation {
       // (C, H, W) -> (H, W, C)
       ::mmdeploy::operation::Context ctx(host, stream_);
       std::vector<int> axes = {0, 2, 3, 1};
-      permute_.Apply(host_tensor, host_tensor, axes);
+      OUTCOME_TRY(permute_.Apply(host_tensor, host_tensor, axes));
     }
 
     OUTCOME_TRY(auto cv_type, GetCvType(mask.data_type(), channel));
@@ -89,7 +89,7 @@ class ResizeMask : public MMSegmentation {
       tensor_score = cpu::CVMat2Tensor(resized_score);
       std::vector<int> axes = {0, 3, 1, 2};
       ::mmdeploy::operation::Context ctx(host, stream_);
-      permute_.Apply(tensor_score, tensor_score, axes);
+      OUTCOME_TRY(permute_.Apply(tensor_score, tensor_score, axes));
     }
 
     SegmentorOutput output{tensor_mask, tensor_score, input_height, input_width, classes_};

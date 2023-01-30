@@ -22,6 +22,14 @@ class PermuteImpl : public Permute {
       MMDEPLOY_ERROR("The size of axes should be equal of src, {} vs {}", axes.size(), ndim);
       return Status(eInvalidArgument);
     }
+    std::vector<int> axes_vis(ndim, 0);
+    for (const auto& x : axes) {
+      if (x >= ndim || axes_vis[x]) {
+        MMDEPLOY_ERROR("Invalid axes");
+        return Status(eInvalidArgument);
+      }
+      axes_vis[x] = 1;
+    }
 
     Tensor dst_tensor(src.desc());
     auto src_dims = src.shape();
