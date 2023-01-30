@@ -127,7 +127,7 @@ static PythonBindingRegisterer register_pose_tracker{[](py::module& m) {
                  mmdeploy::Model(det_model_path), mmdeploy::Model(pose_model_path),
                  mmdeploy::Context(mmdeploy::Device(device_name, device_id)));
            }),
-           py::arg("det_model_path"), py::arg("pose_model_path"), py::arg("device_name"),
+           py::arg("det_model"), py::arg("pose_model"), py::arg("device_name"),
            py::arg("device_id") = 0)
       .def(
           "__call__",
