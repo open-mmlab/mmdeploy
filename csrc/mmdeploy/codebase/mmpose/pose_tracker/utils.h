@@ -5,6 +5,7 @@
 
 #include <array>
 #include <numeric>
+#include <optional>
 #include <vector>
 
 #include "mmdeploy/core/utils/formatter.h"
