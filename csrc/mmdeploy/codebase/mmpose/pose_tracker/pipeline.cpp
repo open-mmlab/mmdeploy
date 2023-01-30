@@ -108,9 +108,10 @@ Value TrackStep(const Value& poses, const Value& track_indices, Value state) noe
 }
 REGISTER_SIMPLE_MODULE(pose_tracker::TrackStep, TrackStep);
 
-REGISTER_SIMPLE_MODULE(pose_tracker::Create, [](mmdeploy_pose_tracker_param_t* param) {
-  auto v = make_pointer(Tracker{*param});
-  return v;
-});
+// MSVC toolset v143 keeps ICEing when using a lambda here
+static Value CreateTracker(mmdeploy_pose_tracker_param_t* param) {
+  return make_pointer(Tracker{*param});
+}
+REGISTER_SIMPLE_MODULE(pose_tracker::Create, CreateTracker);
 
 }  // namespace mmdeploy::mmpose::_pose_tracker
