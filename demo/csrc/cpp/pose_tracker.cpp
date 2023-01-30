@@ -164,7 +164,8 @@ Args ParseArgs(int argc, char* argv[]) {
   det_model    object detection model path
   pose_model   pose estimation model path
   video        video path or camera index
-  output       output directory, will cv::imshow if omitted)";
+  output       output directory, will cv::imshow if omitted
+)";
     return {};
   }
   Args args;

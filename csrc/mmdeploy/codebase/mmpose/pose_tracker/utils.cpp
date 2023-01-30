@@ -2,6 +2,8 @@
 
 #include "pose_tracker/utils.h"
 
+#include <optional>
+
 namespace mmdeploy::mmpose::_pose_tracker {
 
 vector<std::tuple<int, int, float>> greedy_assignment(const vector<float>& scores,
