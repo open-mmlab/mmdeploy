@@ -51,4 +51,3 @@ repos:
     hooks:
     -   id: check-copyright
         args: ["csrc", "mmdeploy", "tests", "demo", "tools"]
-        
