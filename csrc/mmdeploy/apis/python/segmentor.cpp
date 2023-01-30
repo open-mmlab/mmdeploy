@@ -47,7 +47,7 @@ class PySegmentor {
       }
       if (segm[i].score != nullptr) {
         rets[i] = {
-            {segm[i].height, segm[i].width, segm[i].classes},                // shape
+            {segm[i].classes, segm[i].height, segm[i].width},                // shape
             segm[i].score,                                                   // score
             py::capsule(new Sptr(holder),                                    // handle
                         [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
