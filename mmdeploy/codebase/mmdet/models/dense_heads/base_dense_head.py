@@ -131,6 +131,7 @@ def base_dense_head__get_bbox(ctx,
             else:
                 max_scores, _ = nms_pre_score[..., :-1].max(-1)
             _, topk_inds = max_scores.topk(pre_topk)
+
             bbox_pred, scores, score_factors = gather_topk(
                 bbox_pred,
                 scores,

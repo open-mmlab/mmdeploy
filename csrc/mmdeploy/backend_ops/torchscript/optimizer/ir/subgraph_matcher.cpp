@@ -61,8 +61,8 @@ class SubgraphMatcher::SubgraphMatcherImpl {
   std::unordered_map<const Node*, Node*> nodes_map_;
   std::unordered_map<const Value*, Value*> values_map_;
 
-  const MatchAttribute match_attribute_;
   const Graph& pattern_;
+  const MatchAttribute match_attribute_;
   const Node* anchor_ = nullptr;
 };
 

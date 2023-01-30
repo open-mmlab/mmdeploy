@@ -53,7 +53,6 @@ void RemoveRedundantCast(Node* node) {
 }
 
 void ONNXPeephole(Block* block) {
-  auto graph = block->owningGraph();
   auto it = block->nodes().begin();
   while (it != block->nodes().end()) {
     auto node = *it;

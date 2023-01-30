@@ -1,14 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
-from typing import Dict, List, Union
+from typing import Dict, Optional, Sequence, Union
 
 import coremltools as ct
-import mmcv
 import torch
 
-from mmdeploy.utils import (get_common_config, get_model_inputs,
-                            get_root_logger, load_config)
-from mmdeploy.utils.config_utils import get_ir_config
+from mmdeploy.utils import get_root_logger
 
 try:
     # user might need ops from torchvision
@@ -50,24 +46,23 @@ def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
     return ct.TensorType(shape=shape, name=name)
 
 
-def from_torchscript(model_id: int,
-                     torchscript_model: Union[str,
+def from_torchscript(torchscript_model: Union[str,
                                               torch.jit.RecursiveScriptModule],
-                     output_file_prefix: str, deploy_cfg: Union[str,
-                                                                mmcv.Config],
-                     backend_files: List[str], **kwargs):
+                     output_file_prefix: str,
+                     input_names: Sequence[str],
+                     output_names: Sequence[str],
+                     input_shapes: Dict[str, Dict],
+                     compute_precision: str = 'FLOAT32',
+                     convert_to: str = 'neuralnetwork',
+                     minimum_deployment_target: Optional[str] = None,
+                     skip_model_load: bool = False):
     """Create a coreml engine from torchscript.
 
     Args:
-         model_id (int): Index of input model.
         torchscript_model (Union[str, torch.jit.RecursiveScriptModule]):
             The torchscript model to be converted.
         output_file_prefix (str): The output file prefix.
-        deploy_cfg (str | mmcv.Config): Deployment config.
-        backend_files (List[str]):
-            Backend files used by deployment for testing pipeline
     """
-
     try:
         from mmdeploy.backend.torchscript import get_ops_path
         torch.ops.load_library(get_ops_path())
@@ -80,40 +75,22 @@ def from_torchscript(model_id: int,
     if isinstance(torchscript_model, str):
         torchscript_model = torch.jit.load(torchscript_model)
 
-    deploy_cfg = load_config(deploy_cfg)[0]
-
-    common_params = get_common_config(deploy_cfg)
-    model_params = get_model_inputs(deploy_cfg)[model_id]
-
-    final_params = common_params
-    final_params.update(model_params)
-
-    ir_config = get_ir_config(deploy_cfg)
-
-    input_names = ir_config.get('input_names', [])
-    input_shapes = final_params['input_shapes']
     inputs = []
 
     for name in input_names:
         shape = create_shape(name, input_shapes[name])
         inputs.append(shape)
 
-    output_names = ir_config.get('output_names', [])
     outputs = []
 
     for name in output_names:
         outputs.append(ct.TensorType(name=name))
 
-    convert_to = deploy_cfg.backend_config.convert_to
     if convert_to == 'neuralnetwork':
         # Compute precision must be None for neuralnetwork conversion
         compute_precision = None
     else:
-        compute_precision = ct.precision[final_params.get(
-            'compute_precision', 'FLOAT32')]
-
-    minimum_deployment_target = final_params.get('minimum_deployment_target',
-                                                 None)
+        compute_precision = ct.precision[compute_precision]
 
     mlmodel = ct.convert(
         model=torchscript_model,
@@ -123,9 +100,8 @@ def from_torchscript(model_id: int,
         convert_to=convert_to,
         minimum_deployment_target=ct.target[minimum_deployment_target]
         if minimum_deployment_target else None,
-        skip_model_load=final_params.get('skip_model_load', False))
+        skip_model_load=skip_model_load)
 
     suffix = get_model_suffix(convert_to)
     output_path = output_file_prefix + suffix
-    backend_files.append(output_path)
     mlmodel.save(output_path)

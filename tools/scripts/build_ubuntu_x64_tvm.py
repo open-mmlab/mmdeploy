@@ -82,7 +82,7 @@ def install_tvm(dep_dir):
 
     # install dependency
     os.system(
-        """ python3 -m pip install xgboost decorator psutil scipy attrs tornado """  # noqa: E501
+        """ python3 -m pip install xgboost decorator psutil scipy attrs tornado --user """  # noqa: E501
     )
 
     return tvm_dir
