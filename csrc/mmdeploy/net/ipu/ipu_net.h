@@ -3,7 +3,6 @@
 #ifndef MMDEPLOY_SRC_NET_IPU_NET_H_
 #define MMDEPLOY_SRC_NET_IPU_NET_H_
 
-#include <boost/program_options.hpp>
 #include <iostream>
 #include <memory>
 #include <model_runtime/ModelRunner.hpp>
