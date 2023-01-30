@@ -4,8 +4,8 @@ repos:
     hooks:
       - id: flake8
         args: ["--exclude=*/client/inference_pb2.py,*/client/inference_pb2_grpc.py"]
-  - repo: https://github.com/zhouzaida/isort
-    rev: 5.12.1
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.10.1
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/mirrors-yapf
@@ -51,3 +51,4 @@ repos:
     hooks:
     -   id: check-copyright
         args: ["csrc", "mmdeploy", "tests", "demo", "tools"]
+        
