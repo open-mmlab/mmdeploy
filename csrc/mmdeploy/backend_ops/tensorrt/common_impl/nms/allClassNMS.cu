@@ -69,8 +69,10 @@ __device__ float jaccardOverlap(const Bbox<T_BBOX> &bbox1, const Bbox<T_BBOX> &b
 
 template <typename T_SCORE, typename T_BBOX, int TSIZE>
 __global__ void
+#ifdef __CUDA_ARCH__
 #if __CUDA_ARCH__ == 620 || __CUDA_ARCH__ == 530
 __launch_bounds__(512)
+#endif
 #endif
     allClassNMS_kernel(const int num, const int num_classes, const int num_preds_per_class,
                        const int top_k, const float nms_threshold, const bool share_location,
@@ -210,7 +212,7 @@ pluginStatus_t allClassNMS_gpu(cudaStream_t stream, const int num, const int num
       (T_SCORE *)afterNMS_scores, (int *)afterNMS_index_array, flipXY);
 
   cudaError_t code = cudaGetLastError();
-  CUASSERT(code)
+  CUASSERT(code);
   CSC(code, STATUS_FAILURE);
   return STATUS_SUCCESS;
 }
