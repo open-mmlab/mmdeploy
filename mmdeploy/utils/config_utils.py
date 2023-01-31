@@ -83,7 +83,8 @@ def register_codebase(codebase: str) -> Codebase:
     return Codebase.get(codebase)
 
 
-def get_codebase(deploy_cfg: Union[str, mmengine.Config]) -> Codebase:
+def get_codebase(deploy_cfg: Union[str, mmengine.Config],
+                 model_cfg=None) -> Codebase:
     """Get the codebase from the config.
 
     Args:
@@ -92,6 +93,11 @@ def get_codebase(deploy_cfg: Union[str, mmengine.Config]) -> Codebase:
     Returns:
         Codebase : An enumeration denotes the codebase type.
     """
+    if model_cfg is not None:
+        model_cfg: dict = model_cfg['model']
+        if model_cfg.get('_scope_', None) == 'mmrazor'\
+                or model_cfg['type'].startswith('mmrazor.'):
+            return register_codebase('mmrazor')
     codebase_config = get_codebase_config(deploy_cfg)
     assert 'type' in codebase_config, 'The codebase config of deploy config'\
         'requires a "type" field'
