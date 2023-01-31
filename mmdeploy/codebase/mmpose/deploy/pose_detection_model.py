@@ -103,6 +103,8 @@ class End2EndModel(BaseBackendModel):
         if codec.type == 'SimCCLabel':
             batch_pred_x, batch_pred_y = batch_outputs
             preds = self.head.decode((batch_pred_x, batch_pred_y))
+        elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
+            preds = self.head.decode(batch_outputs)
         else:
             preds = self.head.decode(batch_outputs[0])
         results = self.pack_result(preds, data_samples)
