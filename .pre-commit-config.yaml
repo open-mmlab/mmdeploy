@@ -5,7 +5,7 @@ repos:
       - id: flake8
         args: ["--exclude=*/client/inference_pb2.py,*/client/inference_pb2_grpc.py"]
   - repo: https://github.com/PyCQA/isort
-    rev: 5.12.0
+    rev: 5.11.5
     hooks:
       - id: isort
   - repo: https://github.com/pre-commit/mirrors-yapf
