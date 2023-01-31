@@ -2,9 +2,8 @@
 
 #include "mmdeploy/segmentor.hpp"
 
-#include <fstream>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
+#include <opencv2/imgcodecs.hpp>
 #include <random>
 #include <string>
 #include <vector>
@@ -24,23 +23,31 @@ vector<cv::Vec3b> gen_palette(int num_classes) {
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  image_segmentation device_name model_path image_path\n");
+  if (argc < 4) {
+    std::cerr << "usage:" << std::endl
+              << "  ./segmentor device_name sdk_model_path "
+                 "image_path [--profile]"
+              << std::endl;
     return 1;
   }
   auto device_name = argv[1];
   auto model_path = argv[2];
   auto image_path = argv[3];
+  auto profile = argc > 4 ? std::string("--profile") == argv[argc - 1] : false;
+
+  mmdeploy::Context context(mmdeploy::Device{device_name});
+  mmdeploy::Profiler profiler("profiler.bin");
+  if (profile) {
+    context.Add(profiler);
+  }
+
+  mmdeploy::Segmentor segmentor{mmdeploy::Model{model_path}, context};
+
   cv::Mat img = cv::imread(image_path);
   if (!img.data) {
     fprintf(stderr, "failed to load image: %s\n", image_path);
     return 1;
   }
-
-  using namespace mmdeploy;
-
-  Segmentor segmentor{Model{model_path}, Device{device_name}};
-
   auto result = segmentor.Apply(img);
 
   auto palette = gen_palette(result->classes + 1);

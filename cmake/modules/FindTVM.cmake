@@ -1,4 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+if (TARGET tvm_runtime)
+    return()
+endif ()
 
 if (NOT DEFINED TVM_DIR)
     set(TVM_DIR $ENV{TVM_DIR})

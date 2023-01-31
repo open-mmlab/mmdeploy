@@ -1,5 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+if (TARGET nvinfer)
+    return ()
+endif ()
+
 if (NOT DEFINED TENSORRT_DIR)
     set(TENSORRT_DIR $ENV{TENSORRT_DIR})
 endif ()

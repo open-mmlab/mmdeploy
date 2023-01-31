@@ -1,5 +1,5 @@
 #include <fstream>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
+#include <opencv2/imgcodecs.hpp>
 #include <string>
 
 #include "mmdeploy/classifier.h"
