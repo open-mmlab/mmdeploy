@@ -8,9 +8,9 @@
 #ifndef MMDEPLOY_CLASSIFIER_H
 #define MMDEPLOY_CLASSIFIER_H
 
-#include "common.h"
-#include "executor.h"
-#include "model.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
+#include "mmdeploy/model.h"
 
 #ifdef __cplusplus
 extern "C" {

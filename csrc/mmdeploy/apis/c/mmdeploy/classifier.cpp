@@ -1,17 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "classifier.h"
+#include "mmdeploy/classifier.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmcls/mmcls.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 using namespace std;

@@ -1,17 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "text_detector.h"
+#include "mmdeploy/text_detector.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
 #include "mmdeploy/codebase/mmocr/mmocr.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "model.h"
-#include "pipeline.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/model.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
