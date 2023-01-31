@@ -94,7 +94,7 @@
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "tvm"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "tvm", "acl"}</td>
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
