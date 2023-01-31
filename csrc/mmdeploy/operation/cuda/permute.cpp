@@ -24,7 +24,7 @@ class PermuteImpl : public Permute {
     }
     std::vector<int> axes_vis(ndim, 0);
     for (const auto& x : axes) {
-      if (x >= ndim || axes_vis[x]) {
+      if (x < 0 || x >= ndim || axes_vis[x]) {
         MMDEPLOY_ERROR("Invalid axes");
         return Status(eInvalidArgument);
       }
