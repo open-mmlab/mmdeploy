@@ -67,6 +67,7 @@ __device__ float jaccardOverlap(const Bbox<T_BBOX> &bbox1, const Bbox<T_BBOX> &b
 
 /********** new NMS for only score and index array **********/
 
+// clang-format off
 template <typename T_SCORE, typename T_BBOX, int TSIZE>
 __global__ void
 #ifdef __CUDA_ARCH__
@@ -74,13 +75,14 @@ __global__ void
 __launch_bounds__(512)
 #endif
 #endif
-    allClassNMS_kernel(const int num, const int num_classes, const int num_preds_per_class,
-                       const int top_k, const float nms_threshold, const bool share_location,
-                       const bool isNormalized,
-                       T_BBOX *bbox_data,  // bbox_data should be float to preserve
-                                           // location information
-                       T_SCORE *beforeNMS_scores, int *beforeNMS_index_array,
-                       T_SCORE *afterNMS_scores, int *afterNMS_index_array, bool flipXY = false) {
+allClassNMS_kernel(const int num, const int num_classes, const int num_preds_per_class,
+                    const int top_k, const float nms_threshold, const bool share_location,
+                    const bool isNormalized,
+                    T_BBOX *bbox_data,  // bbox_data should be float to preserve
+                                        // location information
+                    T_SCORE *beforeNMS_scores, int *beforeNMS_index_array,
+                    T_SCORE *afterNMS_scores, int *afterNMS_index_array, bool flipXY = false) {
+  // clang-format on
   //__shared__ bool kept_bboxinfo_flag[CAFFE_CUDA_NUM_THREADS * TSIZE];
   __shared__ bool kept_bboxinfo_flag[TSIZE * BS];
   for (int i = 0; i < num; i++) {
