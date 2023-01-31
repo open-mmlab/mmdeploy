@@ -11,12 +11,12 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_link_libraries(${PROJECT_NAME} INTERFACE mmdeploy::core)
 set(_tasks ${MMDEPLOY_TASKS} pipeline)
 foreach (task ${_tasks})
-target_link_libraries(mmdeploy_${task} INTERFACE ${PROJECT_NAME})
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${task}.hpp
-        DESTINATION include/mmdeploy)
+    target_link_libraries(mmdeploy_${task} INTERFACE ${PROJECT_NAME})
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${task}.hpp
+            DESTINATION include/mmdeploy)
 endforeach ()
 if (TARGET mmdeploy)
-target_link_libraries(mmdeploy INTERFACE ${PROJECT_NAME})
+    target_link_libraries(mmdeploy INTERFACE ${PROJECT_NAME})
 endif ()
 mmdeploy_export(${PROJECT_NAME})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
