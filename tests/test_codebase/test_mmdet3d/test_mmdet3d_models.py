@@ -127,18 +127,6 @@ def centerpoint(model_cfg):
     return model
 
 
-# @pytest.fixture
-# def centerpoint_head(model_cfg):
-#     from mmdet3d.models import builder
-#     model_cfg = copy.deepcopy(model_cfg)
-#     model_cfg.centerpoint_model.pts_bbox_head.test_cfg = model_cfg.\
-#         centerpoint_model.test_cfg
-#     head = builder.build_head(model_cfg.centerpoint_model.pts_bbox_head)
-#     head.requires_grad_(False)
-#     head.cpu().eval()
-#     return head
-
-
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_centerpoint(backend_type: Backend, model_cfg, centerpoint):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
