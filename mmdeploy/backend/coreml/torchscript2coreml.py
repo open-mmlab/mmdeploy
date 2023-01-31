@@ -68,10 +68,12 @@ def from_torchscript(torchscript_model: Union[str,
         output_names (Sequence[str]): The output names of the model.
         input_shapes (Dict): The input shapes include max_shape, min_shape and
             default_shape
-        compute_precision (str): The model precision, default `FLOAT32`.
+        compute_precision (str): The model precision,
+            FLOAT16 or FLOAT32, see coremltools.precision, default `FLOAT32`.
         convert_to (str): The converted model type, can be
             'neuralnetwork' or 'mlprogram'. Defaults to 'neuralnetwork'.
         minimum_deployment_target (str, optional): minimum deploy target.
+            iOS15, iOS16, etc., see coremltools.target
         skip_model_load (bool, optional): Skip model load. Defaults to True.
     """
 
