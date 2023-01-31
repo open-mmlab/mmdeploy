@@ -1,9 +1,9 @@
-#include "common.h"
+#include "mmdeploy/common.h"
 
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/profiler.h"
+#include "mmdeploy/executor_internal.h"
 
 mmdeploy_value_t mmdeploy_value_copy(mmdeploy_value_t value) {
   if (!value) {
