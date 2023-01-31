@@ -1,17 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "pose_detector.h"
+#include "mmdeploy/pose_detector.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmpose/mmpose.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -117,7 +117,7 @@ int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_coun
       } else {
         b = {0, 0, img.width(), img.height(), 1.0};
       }
-      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}, {"rotation", 0.f}});
+      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}});
     };
 
     for (int i = 0; i < mat_count; ++i) {

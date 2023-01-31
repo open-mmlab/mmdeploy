@@ -8,9 +8,9 @@
 #ifndef MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_
 #define MMDEPLOY_SRC_APIS_C_TEXT_RECOGNIZER_H_
 
-#include "common.h"
-#include "executor.h"
-#include "text_detector.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
+#include "mmdeploy/text_detector.h"
 
 #ifdef __cplusplus
 extern "C" {

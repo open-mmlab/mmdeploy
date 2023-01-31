@@ -290,6 +290,20 @@ cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right, int bo
   return dst;
 }
 
+cv::Mat CropResizePad(const cv::Mat& src, const std::vector<int>& crop_rect,
+                      const std::vector<int>& target_size, const std::vector<int>& pad_rect) {
+  int width = target_size[0] + pad_rect[1] + pad_rect[3];
+  int height = target_size[1] + pad_rect[0] + pad_rect[2];
+  cv::Mat dst = cv::Mat::zeros(height, width, src.type());
+  if (crop_rect[2] - crop_rect[0] + 1 > 0 && crop_rect[3] - crop_rect[1] + 1 > 0) {
+    cv::Rect roi1 = {crop_rect[1], crop_rect[0], crop_rect[3] - crop_rect[1] + 1,
+                     crop_rect[2] - crop_rect[0] + 1};
+    cv::Rect roi2 = {pad_rect[1], pad_rect[0], target_size[0], target_size[1]};
+    cv::resize(src(roi1), dst(roi2), {target_size[0], target_size[1]});
+  }
+  return dst;
+}
+
 bool Compare(const cv::Mat& src1, const cv::Mat& src2, float threshold) {
   cv::Mat _src1, _src2, diff;
   src1.convertTo(_src1, CV_32FC(src1.channels()));

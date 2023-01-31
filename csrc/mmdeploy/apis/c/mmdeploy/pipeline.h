@@ -3,8 +3,8 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_PIPELINE_H_
 #define MMDEPLOY_CSRC_APIS_C_PIPELINE_H_
 
-#include "common.h"
-#include "executor.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
 
 #ifdef __cplusplus
 extern "C" {
