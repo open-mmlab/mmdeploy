@@ -1,16 +1,16 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "restorer.h"
+#include "mmdeploy/restorer.h"
 
-#include "common_internal.h"
-#include "executor_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmedit/mmedit.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mpl/structure.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 

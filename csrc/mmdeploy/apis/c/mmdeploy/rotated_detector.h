@@ -8,9 +8,9 @@
 #ifndef MMDEPLOY_SRC_APIS_C_ROTATED_DETECTOR_H_
 #define MMDEPLOY_SRC_APIS_C_ROTATED_DETECTOR_H_
 
-#include "common.h"
-#include "executor.h"
-#include "model.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
+#include "mmdeploy/model.h"
 
 #ifdef __cplusplus
 extern "C" {

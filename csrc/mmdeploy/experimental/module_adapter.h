@@ -9,7 +9,7 @@
 
 namespace mmdeploy {
 
-namespace module_detail {
+namespace module_adapter {
 
 template <typename T>
 struct is_tuple : std::false_type {};
@@ -20,16 +20,13 @@ struct is_tuple<std::tuple<Ts...>> : std::true_type {};
 template <typename T>
 inline constexpr auto is_tuple_v = is_tuple<T>::value;
 
-template <typename Ret, typename... Args>
+template <typename... Args>
 struct InvokeImpl {
-  template <typename F, typename... Ts>
-  static Result<Value> apply(F&& f, const Value& params, Ts&&... ts) {
-    std::tuple<uncvref_t<Args>...> args;
+  template <typename F>
+  static Result<Value> apply(F&& f, const Value& args) {
     try {
-      from_value(params, args);
-      auto ret = apply_impl(std::forward<F>(f), std::move(args), std::index_sequence_for<Args...>{},
-                            std::forward<Ts>(ts)...);
-      return make_ret_val(std::move(ret));
+      using ArgsType = std::tuple<uncvref_t<Args>...>;
+      return make_ret_val(std::apply((F &&) f, from_value<ArgsType>(args)));
     } catch (const std::exception& e) {
       MMDEPLOY_ERROR("unhandled exception: {}", e.what());
       return Status(eFail);
@@ -38,15 +35,9 @@ struct InvokeImpl {
     }
   }
 
-  template <typename F, typename Tuple, size_t... Is, typename... Ts>
-  static decltype(auto) apply_impl(F&& f, Tuple&& tuple, std::index_sequence<Is...>, Ts&&... ts) {
-    return std::invoke(std::forward<F>(f), std::forward<Ts>(ts)...,
-                       std::get<Is>(std::forward<Tuple>(tuple))...);
-  }
-
   template <typename T, typename T0 = uncvref_t<T>>
   static Result<Value> make_ret_val(T&& ret) {
-    if constexpr (module_detail::is_tuple_v<T0>) {
+    if constexpr (is_tuple_v<T0>) {
       return to_value(std::forward<T>(ret));
     } else if constexpr (is_result_v<T0>) {
       return ret ? make_ret_val(std::forward<T>(ret).value()) : std::forward<T>(ret).as_failure();
@@ -56,60 +47,49 @@ struct InvokeImpl {
   }
 };
 
-// function pointer
+// match function pointer
 template <typename Ret, typename... Args>
 Result<Value> Invoke(Ret (*f)(Args...), const Value& args) {
-  return InvokeImpl<Ret, Args...>::apply(f, args);
+  return InvokeImpl<Args...>::apply(f, args);
 }
 
-// member function pointer
-template <typename Ret, typename C0, typename C1, typename... Args>
-Result<Value> Invoke(Ret (C0::*f)(Args...) const, C1* inst, const Value& args) {
-  return InvokeImpl<Ret, Args...>::apply(f, args, inst);
+// match member function pointer `&C::operator()`
+template <typename Ret, typename C, typename F, typename... Args>
+Result<Value> Invoke(Ret (C::*)(Args...) const, const F& f, const Value& args) {
+  return InvokeImpl<Args...>::apply(f, args);
 }
-template <typename Ret, typename C0, typename C1, typename... Args>
-Result<Value> Invoke(Ret (C0::*f)(Args...), C1* inst, const Value& args) {
-  return InvokeImpl<Ret, Args...>::apply(f, args, inst);
+template <typename Ret, typename C, typename F, typename... Args>
+Result<Value> Invoke(Ret (C::*)(Args...), F& f, const Value& args) {
+  return InvokeImpl<Args...>::apply(f, args);
 }
 
-// function object
-template <typename T, typename C = std::remove_reference_t<T>,
+// match function object
+template <typename F, typename C = std::remove_reference_t<F>,
           typename = std::void_t<decltype(&C::operator())>>
-Result<Value> Invoke(T&& t, const Value& args) {
-  return Invoke(&C::operator(), &t, args);
+Result<Value> Invoke(F&& f, const Value& args) {
+  return Invoke(&C::operator(), (F &&) f, args);
 }
 
-template <typename T>
-struct IsPointer : std::false_type {};
-template <typename R, typename... Args>
-struct IsPointer<R (*)(Args...)> : std::false_type {};
-template <typename T>
-struct IsPointer<std::shared_ptr<T>> : std::true_type {};
-template <typename T, typename D>
-struct IsPointer<std::unique_ptr<T, D>> : std::true_type {};
-template <typename T>
-struct IsPointer<T*> : std::true_type {};
+template <typename F>
+Result<Value> Invoke(const std::unique_ptr<F>& f, const Value& args) {
+  return Invoke(*f, args);
+}
+template <typename F>
+Result<Value> Invoke(const std::shared_ptr<F>& f, const Value& args) {
+  return Invoke(*f, args);
+}
 
-template <typename T, typename SFINAE = void>
-struct AccessPolicy {
-  static constexpr auto apply = [](auto& x) -> decltype(auto) { return x; };
-};
-template <typename T>
-struct AccessPolicy<T, std::enable_if_t<IsPointer<T>::value>> {
-  static constexpr auto apply = [](auto& x) -> decltype(auto) { return *x; };
-};
-
-template <typename T, typename A = AccessPolicy<T>>
+template <typename Func>
 class Task : public Module {
  public:
-  explicit Task(T task) : task_(std::move(task)) {}
+  explicit Task(Func func) : func_(std::move(func)) {}
 
   Result<Value> Process(const Value& arg) override {
-    return module_detail::Invoke(A::apply(task_), arg);
+    return ::mmdeploy::module_adapter::Invoke(func_, arg);
   }
 
  private:
-  T task_;
+  Func func_;
 };
 
 template <typename T>
@@ -122,11 +102,10 @@ auto MakeTask(T&& x) {
   return Task(std::forward<T>(x));
 }
 
-}  // namespace module_detail
+}  // namespace module_adapter
 
-using module_detail::CreateTask;
-
-using module_detail::MakeTask;
+using module_adapter::CreateTask;
+using module_adapter::MakeTask;
 
 }  // namespace mmdeploy
 
