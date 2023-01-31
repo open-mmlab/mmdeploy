@@ -218,7 +218,8 @@ def main():
         dataset_file = tempfile.NamedTemporaryFile(suffix='.txt').name
         with open(dataset_file, 'w') as f:
             f.writelines([osp.abspath(args.img)])
-        quantization_cfg.setdefault('dataset', dataset_file)
+        if quantization_cfg.get('dataset', None) is None:
+            quantization_cfg['dataset'] = dataset_file
     if backend == Backend.ASCEND:
         # TODO: Add this to backend manager in the future
         if args.dump_info:
