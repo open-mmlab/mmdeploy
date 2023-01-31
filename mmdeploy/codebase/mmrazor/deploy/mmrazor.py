@@ -61,7 +61,6 @@ class ModelCompress(BaseTask):
                  deploy_cfg: Config,
                  device: str,
                  experiment_name: str = 'BaseTask'):
-
         super().__init__(model_cfg, deploy_cfg, device, experiment_name)
         self.origin_model_cfg = self.revert_model_cfg(model_cfg)
         self.base_task = build_task_processor(self.origin_model_cfg,
