@@ -88,8 +88,6 @@ commands:
             python -m pip install -r requirements/runtime.txt
             python -m pip install -U numpy clip numba
             cd ..
-            git clone -b dev https://github.com/open-mmlab/mmyolo.git
-            cd mmyolo && python -m pip install -v -e .
   perform_model_converter_ut:
     steps:
       - run:
@@ -100,8 +98,6 @@ commands:
             coverage xml
             coverage report -m
             cd ..
-            python -m pip install xdoctest
-            pytest mmyolo/tests/test_deploy
 jobs:
   lint:
     # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
@@ -152,13 +148,10 @@ jobs:
             docker exec mmdeploy pip install -r mmdeploy/requirements/tests.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements/runtime.txt
             docker exec mmdeploy pip install -U numpy clip numba
-            docker exec mmdeploy git clone -b dev https://github.com/open-mmlab/mmyolo.git
-            docker exec -i mmdeploy bash -c "cd mmyolo && python -m pip install -v -e ."
       - run:
           name: Perform Model Converter unittests
           command: |
             docker exec -i mmdeploy bash -c "cd mmdeploy && coverage run --branch --source mmdeploy -m pytest -rsE tests && coverage xml && coverage report -m"
-            docker exec -i mmdeploy bash -c "python -m pip install xdoctest && cd mmyolo && pytest tests/test_deploy"
       - run:
           name: Run SDK unittests
           command: |

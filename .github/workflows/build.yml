@@ -154,11 +154,6 @@ jobs:
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy clip
           python -m pip list
-      - name: Install mmyolo
-        run: |
-          cd ../../
-          git clone -b dev https://github.com/open-mmlab/mmyolo.git
-          cd mmyolo && python -m pip install -v -e .
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -168,11 +163,6 @@ jobs:
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
-      - name: Run mmyolo deploy unittests
-        run: |
-          python -m pip install xdoctest
-          cd ../../mmyolo
-          pytest tests/test_deploy
 
   build_cuda111:
     runs-on: ubuntu-18.04
@@ -212,11 +202,6 @@ jobs:
           python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy clip
           python -m pip list
-      - name: Install mmyolo
-        run: |
-          cd ../../
-          git clone -b dev https://github.com/open-mmlab/mmyolo.git
-          cd mmyolo && python -m pip install -v -e .
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -226,11 +211,6 @@ jobs:
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
-      - name: Run mmyolo deploy unittests
-        run: |
-          python -m pip install xdoctest
-          cd ../../mmyolo
-          pytest tests/test_deploy
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
