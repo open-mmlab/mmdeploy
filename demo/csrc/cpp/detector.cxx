@@ -1,69 +1,56 @@
 #include "mmdeploy/detector.hpp"
 
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <string>
 
+#include "utils/argparse.h"
+#include "utils/mediaio.h"
+#include "utils/visualize.h"
+
+DEFINE_ARG_string(model, "Object detection model path");
+DEFINE_ARG_string(input, "Path to input image, video, camera index or image list (.txt)");
+DEFINE_string(device, "cpu", "Device name, e.g. cpu, cuda");
+
+DEFINE_string(output, "detection_%04d.jpg", "Output image, video path, format string or SHOW");
+DEFINE_int32(output_size, 1024, "Long-edge of output frames");
+DEFINE_int32(delay, 0, "Delay passed to `cv::waitKey` when using `cv::imshow`");
+
+DEFINE_double(det_thr, 0.5, "Detection score threshold");
+
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  object_detection device_name model_path image_path\n");
-    return 1;
-  }
-  auto device_name = argv[1];
-  auto model_path = argv[2];
-  auto image_path = argv[3];
-  cv::Mat img = cv::imread(image_path);
-  if (!img.data) {
-    fprintf(stderr, "failed to load image: %s\n", image_path);
-    return 1;
+  if (!utils::ParseArguments(argc, argv)) {
+    return -1;
   }
 
-  mmdeploy::Model model(model_path);
-  mmdeploy::Detector detector(model, mmdeploy::Device{device_name, 0});
+  // utils for handling input/output of images/videos
+  utils::mediaio::Input input(ARGS_input);
+  utils::mediaio::Output output(FLAGS_output, FLAGS_delay);
+  // util for visualization
+  utils::Visualize v(FLAGS_output_size);
 
-  auto dets = detector.Apply(img);
+  /// ! construct a detector instance
+  mmdeploy::Detector detector(mmdeploy::Model(ARGS_model), mmdeploy::Device{FLAGS_device, 0});
 
-  fprintf(stdout, "bbox_count=%d\n", (int)dets.size());
+  for (const cv::Mat& img : input) {
+    /// ! apply detector on the image
+    mmdeploy::Detector::Result dets = detector.Apply(img);
 
-  for (int i = 0; i < dets.size(); ++i) {
-    const auto& box = dets[i].bbox;
-    const auto& mask = dets[i].mask;
-
-    fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
-            i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
-
-    // skip detections with invalid bbox size (bbox height or width < 1)
-    if ((box.right - box.left) < 1 || (box.bottom - box.top) < 1) {
-      continue;
+    // visualize detection results
+    auto sess = v.get_session(img);
+    for (const mmdeploy_detection_t& det : dets) {
+      auto& bbox = det.bbox;
+      auto bbox_w = bbox.right - bbox.left;
+      auto bbox_h = bbox.bottom - bbox.top;
+      if (bbox_w > 1 && bbox_h > 1 && det.score > FLAGS_det_thr) {  // filter bboxes
+        sess.add_det(det.bbox, det.label_id, det.score, det.mask);
+      }
     }
 
-    // skip detections less than specified score threshold
-    if (dets[i].score < 0.3) {
-      continue;
+    // write visualization to output
+    if (!output.write(sess.get())) {
+      // user request exit
+      break;
     }
-
-    // generate mask overlay if model exports masks
-    if (mask != nullptr) {
-      fprintf(stdout, "mask %d, height=%d, width=%d\n", i, mask->height, mask->width);
-
-      cv::Mat imgMask(mask->height, mask->width, CV_8UC1, &mask->data[0]);
-      auto x0 = std::max(std::floor(box.left) - 1, 0.f);
-      auto y0 = std::max(std::floor(box.top) - 1, 0.f);
-      cv::Rect roi((int)x0, (int)y0, mask->width, mask->height);
-
-      // split the RGB channels, overlay mask to a specific color channel
-      cv::Mat ch[3];
-      split(img, ch);
-      int col = 0;  // int col = i % 3;
-      cv::bitwise_or(imgMask, ch[col](roi), ch[col](roi));
-      merge(ch, 3, img);
-    }
-
-    cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
-                  cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
   }
-
-  cv::imwrite("output_detection.png", img);
 
   return 0;
 }

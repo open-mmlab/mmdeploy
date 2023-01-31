@@ -4,110 +4,69 @@
 
 #include "mmdeploy/detector.hpp"
 #include "mmdeploy/pose_detector.hpp"
-#include "opencv2/imgcodecs/imgcodecs.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
+#include "utils/argparse.h"
+#include "utils/mediaio.h"
+#include "utils/visualize.h"
 
-using std::vector;
+DEFINE_ARG_string(det_model, "Object detection model path");
+DEFINE_ARG_string(pose_model, "Pose estimation model path");
+DEFINE_ARG_string(input, "Path to input image, video, camera index or image list (.txt)");
 
-cv::Mat Visualize(cv::Mat frame, const std::vector<mmdeploy_pose_detection_t>& poses, int size);
+DEFINE_string(device, "cpu", "Device name, e.g. \"cpu\", \"cuda\"");
+DEFINE_string(output, "det_pose_%04d.jpg",
+              "Output image, video path or format string; use `cv::imshow` if empty");
+DEFINE_int32(output_size, 1024, "ong-edge of output frames");
+DEFINE_int32(delay, 0, "Delay passed to `cv::waitKey` when using `cv::imshow`");
+
+DEFINE_int32(det_label, 0, "Detection label use for pose estimation");
+DEFINE_double(det_thr, 0.5, "Detection score threshold");
+DEFINE_double(det_min_bbox_size, -1, "Detection minimum bbox size");
+
+DEFINE_double(pose_thr, 0, "Pose key-point threshold");
 
 int main(int argc, char* argv[]) {
-  const auto device_name = argv[1];
-  const auto det_model_path = argv[2];
-  const auto pose_model_path = argv[3];
-  const auto image_path = argv[4];
-
-  if (argc != 5) {
-    std::cerr << "usage:\n\tpose_tracker device_name det_model_path pose_model_path image_path\n";
-    return -1;
-  }
-  auto img = cv::imread(image_path);
-  if (!img.data) {
-    std::cerr << "failed to load image: " << image_path << "\n";
+  if (!utils::ParseArguments(argc, argv)) {
     return -1;
   }
 
-  using namespace mmdeploy;
+  utils::mediaio::Input input(ARGS_input);
+  utils::mediaio::Output output(FLAGS_output, FLAGS_delay);
 
-  Context context(Device{device_name});  // create context for holding the device handle
-  Detector detector(Model(det_model_path), context);   // create object detector
-  PoseDetector pose(Model(pose_model_path), context);  // create pose detector
+  utils::Visualize v(FLAGS_output_size);
 
-  // apply detector
-  auto dets = detector.Apply(img);
+  mmdeploy::Device device{FLAGS_device};
+  mmdeploy::Detector detector(mmdeploy::Model(ARGS_det_model), device);   // create object detector
+  mmdeploy::PoseDetector pose(mmdeploy::Model(ARGS_pose_model), device);  // create pose detector
 
-  // filter detections and extract bboxes for pose model
-  std::vector<mmdeploy_rect_t> bboxes;
-  for (const auto& det : dets) {
-    if (det.label_id == 0 && det.score > .6f) {
-      bboxes.push_back(det.bbox);
+  for (const cv::Mat& img : input) {
+    // apply detector
+    mmdeploy::Detector::Result dets = detector.Apply(img);
+
+    // filter detections and extract bboxes for pose model
+    std::vector<mmdeploy_rect_t> bboxes;
+    for (const mmdeploy_detection_t& det : dets) {
+      if (det.label_id == FLAGS_det_label && det.score > FLAGS_det_thr) {
+        bboxes.push_back(det.bbox);
+      }
+    }
+
+    // apply pose detector
+    mmdeploy::PoseDetector::Result poses = pose.Apply(img, bboxes);
+
+    assert(bboxes.size() == poses.size());
+
+    // visualize
+    auto sess = v.get_session(img);
+    for (size_t i = 0; i < bboxes.size(); ++i) {
+      // draw bounding boxes
+      sess.add_bbox(bboxes[i], -1, -1);
+      // draw pose key-points
+      sess.add_pose(poses[i].point, poses[i].score, poses[i].length, FLAGS_pose_thr);
+    }
+
+    if (!output.write(sess.get())) {
+      break;
     }
   }
-  // apply pose detector
-  auto poses = pose.Apply(img, bboxes);
-
-  // visualize
-  auto vis = Visualize(img, {poses.begin(), poses.end()}, 1280);
-  cv::imwrite("det_pose_output.jpg", vis);
-
   return 0;
-}
-
-struct Skeleton {
-  vector<std::pair<int, int>> skeleton;
-  vector<cv::Scalar> palette;
-  vector<int> link_color;
-  vector<int> point_color;
-};
-
-const Skeleton& gCocoSkeleton() {
-  static const Skeleton inst{
-      {
-          {15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
-          {5, 6},   {5, 7},   {6, 8},   {7, 9},   {8, 10},  {1, 2},  {0, 1},
-          {0, 2},   {1, 3},   {2, 4},   {3, 5},   {4, 6},
-      },
-      {
-          {255, 128, 0},   {255, 153, 51},  {255, 178, 102}, {230, 230, 0},   {255, 153, 255},
-          {153, 204, 255}, {255, 102, 255}, {255, 51, 255},  {102, 178, 255}, {51, 153, 255},
-          {255, 153, 153}, {255, 102, 102}, {255, 51, 51},   {153, 255, 153}, {102, 255, 102},
-          {51, 255, 51},   {0, 255, 0},     {0, 0, 255},     {255, 0, 0},     {255, 255, 255},
-      },
-      {0, 0, 0, 0, 7, 7, 7, 9, 9, 9, 9, 9, 16, 16, 16, 16, 16, 16, 16},
-      {16, 16, 16, 16, 16, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0},
-  };
-  return inst;
-}
-
-cv::Mat Visualize(cv::Mat frame, const vector<mmdeploy_pose_detection_t>& poses, int size) {
-  auto& [skeleton, palette, link_color, point_color] = gCocoSkeleton();
-  auto scale = (float)size / (float)std::max(frame.cols, frame.rows);
-  if (scale != 1) {
-    cv::resize(frame, frame, {}, scale, scale);
-  } else {
-    frame = frame.clone();
-  }
-  for (const auto& pose : poses) {
-    vector<float> kpts(&pose.point[0].x, &pose.point[pose.length - 1].y + 1);
-    vector<float> scores(pose.score, pose.score + pose.length);
-    std::for_each(kpts.begin(), kpts.end(), [&](auto& x) { x *= scale; });
-    constexpr auto score_thr = .5f;
-    vector<int> used(kpts.size());
-    for (size_t i = 0; i < skeleton.size(); ++i) {
-      auto [u, v] = skeleton[i];
-      if (scores[u] > score_thr && scores[v] > score_thr) {
-        used[u] = used[v] = 1;
-        cv::Point p_u(kpts[u * 2], kpts[u * 2 + 1]);
-        cv::Point p_v(kpts[v * 2], kpts[v * 2 + 1]);
-        cv::line(frame, p_u, p_v, palette[link_color[i]], 1, cv::LINE_AA);
-      }
-    }
-    for (size_t i = 0; i < kpts.size(); i += 2) {
-      if (used[i / 2]) {
-        cv::Point p(kpts[i], kpts[i + 1]);
-        cv::circle(frame, p, 1, palette[point_color[i / 2]], 2, cv::LINE_AA);
-      }
-    }
-  }
-  return frame;
 }

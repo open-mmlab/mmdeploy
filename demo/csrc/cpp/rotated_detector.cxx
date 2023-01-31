@@ -1,51 +1,43 @@
 
 #include "mmdeploy/rotated_detector.hpp"
 
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/imgproc.hpp>
-#include <string>
+#include "utils/argparse.h"
+#include "utils/mediaio.h"
+#include "utils/visualize.h"
+
+DEFINE_ARG_string(model, "Detection model path");
+DEFINE_ARG_string(input, "Path to input image, video, camera index or image list (.txt)");
+DEFINE_string(device, "cpu", "Device name, e.g. cpu, cuda");
+
+DEFINE_string(output, "detector_%04d.jpg", "Output image, video path, format string or SHOW");
+DEFINE_int32(output_size, 1024, "Long-edge of output frames");
+DEFINE_int32(delay, 0, "timeout for user input when showing images");
+
+DEFINE_double(det_thr, 0.5, "Detection score threshold");
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  oriented_object_detection device_name model_path image_path\n");
-    return 1;
-  }
-  auto device_name = argv[1];
-  auto model_path = argv[2];
-  auto image_path = argv[3];
-  cv::Mat img = cv::imread(image_path);
-  if (!img.data) {
-    fprintf(stderr, "failed to load image: %s\n", image_path);
-    return 1;
+  if (!utils::ParseArguments(argc, argv)) {
+    return -1;
   }
 
-  mmdeploy::Model model(model_path);
-  mmdeploy::RotatedDetector detector(model, mmdeploy::Device{device_name, 0});
+  mmdeploy::Model model(ARGS_model);
+  mmdeploy::RotatedDetector detector(model, mmdeploy::Device{FLAGS_device, 0});
 
-  auto dets = detector.Apply(img);
+  utils::mediaio::Input input(ARGS_input);
+  utils::mediaio::Output output(FLAGS_output, FLAGS_delay);
 
-  for (const auto& det : dets) {
-    if (det.score < 0.1) {
-      continue;
+  utils::Visualize v(FLAGS_output_size);
+
+  for (const cv::Mat& img : input) {
+    mmdeploy::RotatedDetector::Result dets = detector.Apply(img);
+    auto sess = v.get_session(img);
+    for (const mmdeploy_rotated_detection_t& det : dets) {
+      if (det.score > FLAGS_det_thr) {
+        sess.add_rotated_det(det.rbbox, det.label_id, det.score);
+      }
     }
-    auto& rbbox = det.rbbox;
-    float xc = rbbox[0];
-    float yc = rbbox[1];
-    float w = rbbox[2];
-    float h = rbbox[3];
-    float ag = rbbox[4];
-    float wx = w / 2 * std::cos(ag);
-    float wy = w / 2 * std::sin(ag);
-    float hx = -h / 2 * std::sin(ag);
-    float hy = h / 2 * std::cos(ag);
-    cv::Point p1 = {int(xc - wx - hx), int(yc - wy - hy)};
-    cv::Point p2 = {int(xc + wx - hx), int(yc + wy - hy)};
-    cv::Point p3 = {int(xc + wx + hx), int(yc + wy + hy)};
-    cv::Point p4 = {int(xc - wx + hx), int(yc - wy + hy)};
-    cv::drawContours(img, std::vector<std::vector<cv::Point>>{{p1, p2, p3, p4}}, -1, {0, 255, 0},
-                     2);
+    output.write(sess.get());
   }
-  cv::imwrite("output_rotated_detection.png", img);
 
   return 0;
 }

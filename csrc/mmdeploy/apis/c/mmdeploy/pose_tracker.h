@@ -36,7 +36,7 @@ typedef struct mmdeploy_pose_tracker_param_t {
   int32_t pose_max_num_bboxes;
   // threshold for visible key-points, default = 0.5
   float pose_kpt_thr;
-  // min number of key-points for valid poses, default = -1
+  // min number of key-points for valid poses (-1 indicates ceil(n_kpts/2)), default = -1
   int32_t pose_min_keypoints;
   // scale for expanding key-points to bbox, default = 1.25
   float pose_bbox_scale;
