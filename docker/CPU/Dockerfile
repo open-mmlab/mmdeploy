@@ -77,6 +77,7 @@ RUN git clone https://github.com/Tencent/ncnn.git &&\
     git submodule update --init &&\
     mkdir -p build && cd build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_SYSTEM_GLSLANG=ON -DNCNN_BUILD_EXAMPLES=ON -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=ON -DNCNN_BUILD_BENCHMARK=ON -DNCNN_BUILD_TESTS=ON .. &&\
+    make -j$(nproc) &&\
     make -j8 && make install &&\
     cd /root/workspace/ncnn &&\
     pip3 install .
