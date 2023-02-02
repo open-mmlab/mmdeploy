@@ -75,7 +75,9 @@ sudo chmod 666 /dev/kchar:0 && sudo echo reboot > /dev/kchar:0
 ### step.1
 
 ```bash
-pip install -r requirements.txt
+pip install torch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0
+pip install onnx==1.10.0， tqdm==4.64.1
+pip install h5py==3.8.0
 ```
 
 ### step.2
