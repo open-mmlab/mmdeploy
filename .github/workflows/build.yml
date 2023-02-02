@@ -232,6 +232,20 @@ jobs:
           echo "ONNXRUNTIME_DIR=C:\DEPS\onnxruntime-win-x64-1.8.1" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "OPENCV_DIR=C:\DEPS\opencv\4.6.0\build\x64\vc15\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Build
+        echo "----------------------- env -----------------------------"
+        echo $env:MMDEPLOY_DIR
+        echo $env:CUDA_PATH
+        echo $env:CUDA_PATH_V11_3
+        echo $env:PPLCV_DIR
+        echo $env:TENSORRT_DIR
+        echo $env:CUDNN_DIR
+        echo $env:ONNXRUNTIME_DIR
+        echo $env:OPENCV_DIR
+        echo "----------------------- env -----------------------------"
+        echo $env:GITHUB_PATH
+        echo "----------------------- env -----------------------------"
+        echo "----------------------- env -----------------------------"
+
         run: |
           mkdir build
           cd build
