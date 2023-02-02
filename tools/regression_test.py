@@ -316,7 +316,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                     pytorch_metric.update(_metrics[ds])
                 if ds == dataset:
                     pytorch_metric.update(_metrics)
-        else:
+        if pytorch_metric == dict():
             pytorch_metric.update(_metrics)
         task_name = metafile_metric['Task']
         if task_name not in using_task:
