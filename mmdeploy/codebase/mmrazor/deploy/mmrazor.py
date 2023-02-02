@@ -92,3 +92,22 @@ class Razor(BaseTask):
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
         raise NotImplementedError()
+
+    def build_pytorch_model(self,
+                            model_checkpoint: Optional[str] = None,
+                            cfg_options: Optional[Dict] = None,
+                            **kwargs) -> torch.nn.Module:
+        model = super().build_pytorch_model(model_checkpoint, cfg_options,
+                                            **kwargs)
+        if hasattr(model, '_razor_divisor'):
+            import json
+
+            from mmrazor.utils import print_log
+            from projects.cores.expandable_modules.unit import \
+                expand_static_model
+            divisor = getattr(model, '_razor_divisor')
+            structure = expand_static_model(model, divisor)
+
+            print_log(f'make divisible: {json.dumps(structure,indent=4)}')
+
+        return model
