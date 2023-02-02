@@ -8,7 +8,7 @@ import mmengine
 import onnx
 import tvm
 import tvm.relay as relay
-import vacc
+from vacc import quantize
 
 from mmdeploy.utils import get_common_config, load_config
 
@@ -68,7 +68,7 @@ def from_onnx(onnx_model: str,
                 tvm.nd.array(data[str(i)][:].astype('float32'))
             })
 
-        with vacc.quantize.qconfig(
+        with quantize.qconfig(
                 calibrate_mode=model_input.get('qconfig',
                                                {}).get('calibrate_mode',
                                                        'percentile'),
@@ -79,7 +79,7 @@ def from_onnx(onnx_model: str,
                 quantize_per_channel=model_input.get('qconfig', {}).get(
                     'per_channel', False)):
 
-            qmod = vacc.quantize.quantize(mod, params, calib_data)
+            qmod = quantize.quantize(mod, params, calib_data)
 
         qmod = qmod['main']
         mod = relay.Module.from_expr(qmod)
