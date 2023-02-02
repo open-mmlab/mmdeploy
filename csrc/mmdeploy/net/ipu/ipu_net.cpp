@@ -69,13 +69,16 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
 IPUNet::~IPUNet() {}
 
 Result<void> IPUNet::Init(const Value& args) {
-  std::string popef_path = args["popef_path"].get<std::string>();
+  auto& context = args["context"];
+  auto name = args["name"].get<std::string>();
+  auto model = context["model"].get<Model>();
+  OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  batch_per_step = args["batches_per_step"].get<int>();
+  batch_per_step = config.batches_per_step;
 
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
-  model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
+  model_runner = std::make_unique<model_runtime::ModelRunner>(config.net, mconfig);
 
   input_desc = model_runner->getExecuteInputs();
   output_desc = model_runner->getExecuteOutputs();
