@@ -199,7 +199,8 @@ class VideoRecognition(BaseTask):
             scale = short_edge_length // 224.
             img_scale = min(max(scale, 0.3), 3.0)
             text_cfg = {
-                'positions': np.array([(img_scale * 5, ) * 2]).astype(np.int32),
+                'positions':
+                np.array([(img_scale * 5, ) * 2]).astype(np.int32),
                 'font_sizes': int(img_scale * 7),
                 'font_families': 'monospace',
                 'colors': 'white',
