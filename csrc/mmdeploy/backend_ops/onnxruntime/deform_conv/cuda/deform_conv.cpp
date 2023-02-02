@@ -51,6 +51,9 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   const int64_t group = group_;
   const cublasHandle_t cublas_handle = cublas_handle_;
 
+  cudaStream_t stream = reinterpret_cast<cudaStream_t>(ort_.KernelContext_GetGPUComputeStream(context));
+  cudaStreamSynchronize(stream);
+
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
   const float *input_data =
       reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
@@ -109,20 +112,18 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   }
   cudaMemset(workspace, 0, workspace_size);
 
-  auto stream = reinterpret_cast<cudaStream_t>(ort_.KernelContext_GetGPUComputeStream(context));
-
   switch (data_type) {
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
       deform_conv<float>((float *)input_data, (float *)filter_data, (float *)offset_data, (float *)output_ptr, workspace,
                          batch_size, in_channels, in_height, in_width, out_channels, kernel_width, kernel_height,
-                         stride_height, stride_width, padding_height, padding_width, dilation_height,
-                         dilation_width, group, deformable_group, im2col_step, cublas_handle, stream);
+                         stride_width, stride_height, padding_width, padding_height, dilation_width, dilation_height,
+                         group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT16:
       deform_conv<__half>((__half *)input_data, (__half *)filter_data, (__half *)offset_data, (__half *)output_ptr, workspace,
                          batch_size, in_channels, in_height, in_width, out_channels, kernel_width, kernel_height,
-                         stride_height, stride_width, padding_height, padding_width, dilation_height,
-                         dilation_width, group, deformable_group, im2col_step, cublas_handle, stream);
+                         stride_width, stride_height, padding_width, padding_height, dilation_width, dilation_height,
+                         group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     default:
       cudaFree(workspace);
