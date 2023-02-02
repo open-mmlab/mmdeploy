@@ -123,7 +123,8 @@ def main():
 
     # load the model of the backend
     model = task_processor.build_backend_model(
-        args.model, task_processor.update_data_preprocessor)
+        args.model,
+        data_preprocessor_updater=task_processor.update_data_preprocessor)
     destroy_model = model.destroy
     is_device_cpu = (args.device == 'cpu')
 
