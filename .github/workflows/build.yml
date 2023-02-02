@@ -226,7 +226,7 @@ jobs:
           echo "CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "CUDA_PATH_V11_3=$env:CUDA_PATH" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "PPLCV_DIR=C:\DEPS\pplcv.cu11" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "PPLCV_DIR=C:\DEPS\ppl.cv.cu11" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "TENSORRT_DIR=C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "CUDNN_DIR=C:\DEPS\cudnn\cudnn-11.3-v8.2.1.32" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "ONNXRUNTIME_DIR=C:\DEPS\onnxruntime-win-x64-1.8.1" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
