@@ -76,8 +76,9 @@ sudo chmod 666 /dev/kchar:0 && sudo echo reboot > /dev/kchar:0
 
 ```bash
 pip install torch==1.8.0 torchvision==0.9.0 torchaudio==0.8.0
-pip install onnx==1.10.0， tqdm==4.64.1
+pip install onnx==1.10.0 tqdm==4.64.1
 pip install h5py==3.8.0
+pip install decorator==5.1.1 scipy==1.7.3
 ```
 
 ### step.2
