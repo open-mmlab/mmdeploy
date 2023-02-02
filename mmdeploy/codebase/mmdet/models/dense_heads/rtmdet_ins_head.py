@@ -4,6 +4,7 @@ from typing import List, Optional
 import torch
 import torch.nn.functional as F
 from mmengine.config import ConfigDict
+from packaging import version
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
@@ -136,7 +137,9 @@ def _nms_with_mask_static(self,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
             and `labels` of shape [N, num_det].
     """
-    max_output_boxes_per_class = torch.LongTensor([max_output_boxes_per_class])
+    if version.parse(torch.__version__) < version.parse('1.13.0'):
+        max_output_boxes_per_class = torch.LongTensor(
+            [max_output_boxes_per_class])
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
 
