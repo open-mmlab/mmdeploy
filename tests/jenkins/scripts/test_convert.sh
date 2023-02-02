@@ -75,12 +75,12 @@ for codebase in ${codebase_list[@]}; do
                 --name ${container_name} \
                 ${docker_image} /bin/bash
         )
-        echo "container_id=${container_id}"
         nohup docker exec ${container_id} bash -c "git clone --depth 1 --branch ${mmdeploy_branch} --recursive ${repo_url} &&\
         /root/workspace/jenkins/scripts/docker_exec_convert_gpu.sh ${codebase} ${config_filename}" >${log_dir}/${codebase}_log.txt 2>&1 &
         wait
         docker stop $container_id
         echo "${codebase} convert finish!"
+        echo "container_id=${container_id}"
         # cat ${log_dir}/${codebase}_log.txt
         echo "查看日志: ${log_url}/${codebase}_log.txt"
         echo "查看任务运行结果: ${log_url}/${codebase}/ \n"
