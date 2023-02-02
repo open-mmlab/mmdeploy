@@ -346,6 +346,10 @@ class PoseDetection(BaseTask):
                 params['modulate_kernel'] = self.model_cfg.kernel_sizes[-1]
             elif codec.type == 'SimCCLabel':
                 component = 'SimCCLabelDecode'
+            elif codec.type == 'RegressionLabel':
+                component = 'DeepposeRegressionHeadDecode'
+            elif codec.type == 'IntegralRegressionLabel':
+                component = 'DeepposeRegressionHeadDecode'
             else:
                 raise RuntimeError(f'Unsupported codecs type: {codec.type}')
         postprocess = dict(params=params, type=component)

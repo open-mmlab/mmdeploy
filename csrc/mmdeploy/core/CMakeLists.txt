@@ -19,10 +19,9 @@ else ()
     endif ()
     set(SPDLOG_LIB spdlog::spdlog)
     mmdeploy_export(spdlog)
-    if (MMDEPLOY_BUILD_SDK_CXX_API)
-        install(DIRECTORY ${MMDEPLOY_SPDLOG_DIR}/include/spdlog
-                DESTINATION include/mmdeploy/third_party)
-    endif ()
+
+    install(DIRECTORY ${MMDEPLOY_SPDLOG_DIR}/include/spdlog
+            DESTINATION include/mmdeploy/third_party)
 endif ()
 
 set(SRCS
@@ -54,21 +53,24 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
         )
 
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} PUBLIC
+            $<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor;/Zc:__cplusplus>)
+endif ()
+
 if (MMDEPLOY_STATUS_USE_STACKTRACE)
     include(${CMAKE_SOURCE_DIR}/cmake/stacktrace.cmake)
 else ()
     target_compile_definitions(${PROJECT_NAME} PUBLIC -DMMDEPLOY_STATUS_USE_SOURCE_LOCATION=1)
 endif ()
 
-if (MMDEPLOY_BUILD_SDK_CXX_API)
-    target_include_directories(${PROJECT_NAME} PUBLIC
-            $<INSTALL_INTERFACE:include>
-            $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
-            $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>)
-    if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
-        target_include_directories(spdlog INTERFACE
-                $<INSTALL_INTERFACE:include/mmdeploy/third_party>)
-    endif ()
+target_include_directories(${PROJECT_NAME} PUBLIC
+        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>)
+if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
+    target_include_directories(spdlog INTERFACE
+            $<INSTALL_INTERFACE:include/mmdeploy/third_party>)
 endif ()
 
 target_link_libraries(${PROJECT_NAME} PUBLIC ${SPDLOG_LIB})
@@ -80,14 +82,12 @@ endif ()
 
 add_library(mmdeploy::core ALIAS ${PROJECT_NAME})
 
-if (MMDEPLOY_BUILD_SDK_CXX_API)
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/core
-            DESTINATION include/mmdeploy
-            FILES_MATCHING PATTERN "*.h")
-    install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
-            DESTINATION include/mmdeploy/third_party/outcome)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/core
+        DESTINATION include/mmdeploy
+        FILES_MATCHING PATTERN "*.h")
+install(FILES ${CMAKE_SOURCE_DIR}/third_party/outcome/outcome-experimental.hpp
+        DESTINATION include/mmdeploy/third_party/outcome)
 
-    install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/experimental
-            DESTINATION include/mmdeploy
-            FILES_MATCHING PATTERN "*.h")
-endif ()
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/csrc/mmdeploy/experimental
+        DESTINATION include/mmdeploy
+        FILES_MATCHING PATTERN "*.h")

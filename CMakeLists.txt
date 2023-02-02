@@ -22,12 +22,11 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
-option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
+option(MMDEPLOY_SHARED_LIBS "build shared libs" OFF)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
-option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" OFF)
+option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" ON)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
-option(MMDEPLOY_BUILD_SDK_CXX_API "build SDK C++ API" OFF)
 option(MMDEPLOY_BUILD_SDK_CSHARP_API "build SDK C# API support" OFF)
 option(MMDEPLOY_BUILD_SDK_JAVA_API "build SDK JAVA API" OFF)
 option(MMDEPLOY_BUILD_EXAMPLES "build examples" OFF)
@@ -73,8 +72,6 @@ endif ()
 
 if (MSVC)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/diagnostics:classic>)
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:preprocessor>) # /experimental:preprocessor on VS2017
-    add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/Zc:__cplusplus>)
     add_compile_options($<$<COMPILE_LANGUAGE:CXX>:/wd4251>)
 endif ()
 

@@ -65,8 +65,7 @@ class AddBboxField {
       auto _box = from_value<std::vector<float>>(dets["bbox"]);
       rect = cv::Rect(cv::Rect2f(cv::Point2f(_box[0], _box[1]), cv::Point2f(_box[2], _box[3])));
     }
-    return Value{
-        {"ori_img", _img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}, {"rotation", 0.f}};
+    return Value{{"ori_img", _img}, {"bbox", {rect.x, rect.y, rect.width, rect.height}}};
   }
 };
 
