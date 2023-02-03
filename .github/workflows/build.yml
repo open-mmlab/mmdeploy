@@ -277,6 +277,13 @@ jobs:
             echo "--------------------------------------------------"
             echo $env:GITHUB_PATH
             echo "**************************************************"
+            $env:path = "$env:CUDA_PATH\lib;" + $env:path
+            $env:path = "$env:OPENCV_DIR\build\x64\vc15\lib;" + $env:path
+            $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
+            $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+            echo "--------------------------------------------------"
+            echo $env:path
+            echo "--------------------------------------------------"
             mkdir mmdeploy_test_resources\transform
             cp .\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
             .\build\bin\Release\mmdeploy_tests.exe
