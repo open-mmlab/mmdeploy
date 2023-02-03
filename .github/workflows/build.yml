@@ -267,18 +267,19 @@ jobs:
           cmake --install . --config Release
       - name: Perform SDK Unittests
         run: |
-            echo "$env:CUDA_PATH\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            echo "$env:CUDNN_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
             echo "$env:OPENCV_DIR\build\x64\vc15\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
             echo "$env:ONNXRUNTIME_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
             echo "$env:TENSORRT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-
+            echo "$env:TENSORRT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
             echo "--------------------------------------------------"
             echo $env:path
             echo "--------------------------------------------------"
             echo $env:GITHUB_PATH
             echo "**************************************************"
             $env:path = "$env:CUDA_PATH\lib;" + $env:path
-            $env:path = "$env:OPENCV_DIR\build\x64\vc15\lib;" + $env:path
+            $env:path = "$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
             $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
             $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
             echo "--------------------------------------------------"
