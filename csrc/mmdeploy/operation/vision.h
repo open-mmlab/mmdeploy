@@ -92,6 +92,11 @@ class CropResizePad : public Operation {
 };
 
 MMDEPLOY_DECLARE_REGISTRY(CropResizePad, unique_ptr<CropResizePad>());
+class Permute : public Operation {
+ public:
+  virtual Result<void> apply(const Tensor& src, Tensor& dst, const std::vector<int>& axes) = 0;
+};
+MMDEPLOY_DECLARE_REGISTRY(Permute, unique_ptr<Permute>());
 
 }  // namespace mmdeploy::operation
 

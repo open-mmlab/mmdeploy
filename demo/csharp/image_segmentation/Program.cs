@@ -75,21 +75,50 @@ namespace image_segmentation
             unsafe
             {
                 byte* data = colorMask.DataPointer;
-                fixed (int* _label = output[0].Mask)
+                if (output[0].Mask.Length > 0)
                 {
-                    int* label = _label;
-                    for (int i = 0; i < output[0].Height; i++)
+                    fixed (int* _label = output[0].Mask)
                     {
-                        for (int j = 0; j < output[0].Width; j++)
+                        int* label = _label;
+                        for (int i = 0; i < output[0].Height; i++)
                         {
-                            data[0] = palette[*label][0];
-                            data[1] = palette[*label][1];
-                            data[2] = palette[*label][2];
-                            data += 3;
-                            label++;
+                            for (int j = 0; j < output[0].Width; j++)
+                            {
+                                data[0] = palette[*label][0];
+                                data[1] = palette[*label][1];
+                                data[2] = palette[*label][2];
+                                data += 3;
+                                label++;
+                            }
                         }
                     }
                 }
+                else
+                {
+                    int pos = 0;
+                    fixed (float* _score = output[0].Score)
+                    {
+                        float *score = _score;
+                        int total = output[0].Height * output[0].Width;
+                        for (int i = 0; i < output[0].Height; i++)
+                        {
+                            for (int j = 0; j < output[0].Width; j++)
+                            {
+                                List<Tuple<float, int>> scores = new List<Tuple<float, int>>();
+                                for (int k = 0; k < output[0].Classes; k++)
+                                {
+                                    scores.Add(new Tuple<float, int>(score[k * total + i * output[0].Width + j], k));
+                                }
+                                scores.Sort();
+                                data[0] = palette[scores[^1].Item2][0];
+                                data[1] = palette[scores[^1].Item2][1];
+                                data[2] = palette[scores[^1].Item2][2];
+                                data += 3;
+                            }
+                        }
+                    }
+                }
+
             }
             colorMask = imgs[0] * 0.5 + colorMask * 0.5;
 
