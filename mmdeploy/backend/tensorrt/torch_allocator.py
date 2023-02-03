@@ -56,7 +56,7 @@ class TorchAllocator(trt.IGpuAllocator):
         if memory not in self.mems:
             return False
 
-        if hasattr(torch.cuda, "caching_allocator_delete"):
+        if hasattr(torch.cuda, 'caching_allocator_delete'):
             torch.cuda.caching_allocator_delete(memory)
         self.mems.discard(memory)
         return True
