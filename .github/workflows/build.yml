@@ -3,7 +3,7 @@ name: build
 on: [push, pull_request]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
 #  build_cpu_model_convert:
@@ -222,29 +222,42 @@ jobs:
       OPENCV_DIR: C:\DEPS\opencv\4.6.0
       ONNXRUNTIME_DIR: C:\DEPS\onnxruntime-win-x64-1.8.1
       TENSORRT_DIR: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2
+    defaults:
+      run:
+        shell: pwsh
+    strategy:
+      matrix:
+        python-version: [3.9]
+        torch: [1.10.0]
+        mmcv: [1.4.2]
+        include:
+          - torch: 1.10.0
+            cuda_version: cu113
+            torch_version: torch1.10
+            torchvision: 0.11.0
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - name: Install python dependencies
+        run: |
+          echo $env:AGENT_TOOLSDIRECTORY
+          echo $env:RUNNER_TOOL_CACHE
+          echo $env:ACTIONS_STEP_DEBUG
+          conda info -e
+          conda create -p $pwd\test_env --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
+          conda activate $pwd\test_env
+          $env:path = "$pwd\test_env;" + $env:path
+          echo "-----"
+          echo $env:path
+          python -V
+          python -m pip install openmim
+          python -m mim install "mmcv-full==${{matrix.mmcv}}"
+          python -m pip install -r requirements.txt
+          python -m pip list
       - name: Build
         run: |
-          echo "MMDEPLOY_DIR=$pwd" >> $env:GITHUB_ENV
-          echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "----------------------- env -----------------------------"
-          echo $env:MMDEPLOY_DIR
-          echo $env:CUDA_PATH
-          echo $env:CUDA_PATH_V11_3
-          echo $env:PPLCV_DIR
-          echo $env:TENSORRT_DIR
-          echo $env:CUDNN_DIR
-          echo $env:ONNXRUNTIME_DIR
-          echo $env:OPENCV_DIR
-          echo "----------------------- env -----------------------------"
-          echo $env:GITHUB_PATH
-          echo "----------------------- env -----------------------------"
-          echo "----------------------- env -----------------------------"
-
           mkdir build
           cd build
           cmake ..  -A x64 -T v142 `
@@ -267,25 +280,42 @@ jobs:
           cmake --install . --config Release
       - name: Perform SDK Unittests
         run: |
-            echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "$env:CUDNN_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "$env:OPENCV_DIR\build\x64\vc15\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "$env:ONNXRUNTIME_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "$env:TENSORRT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "$env:TENSORRT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-            echo "--------------------------------------------------"
-            echo $env:path
-            echo "--------------------------------------------------"
-            echo $env:GITHUB_PATH
-            echo "**************************************************"
-            $env:path = "$env:CUDA_PATH\bin;" + $env:path
-            $env:path = "$env:CUDNN_DIR\bin;" + $env:path
-            $env:path = "$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
-            $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
-            $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
-            echo "--------------------------------------------------"
-            echo $env:path
-            echo "--------------------------------------------------"
-            mkdir mmdeploy_test_resources\transform
-            cp .\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
-            .\build\bin\Release\mmdeploy_tests.exe
+          echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$env:CUDNN_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$env:OPENCV_DIR\build\x64\vc15\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$env:ONNXRUNTIME_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$env:TENSORRT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "$env:TENSORRT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "--------------------------------------------------"
+          echo $env:path
+          echo "--------------------------------------------------"
+          echo $env:GITHUB_PATH
+          echo "**************************************************"
+          $env:path = "$env:CUDA_PATH\bin;" + $env:path
+          $env:path = "$env:CUDNN_DIR\bin;" + $env:path
+          $env:path = "$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
+          $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
+          $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
+          echo "--------------------------------------------------"
+          echo $env:path
+          echo "--------------------------------------------------"
+          mkdir mmdeploy_test_resources\transform
+          cp .\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
+          .\build\bin\Release\mmdeploy_tests.exe
+      - name: Install mmdeploy converter
+        run: |
+          python -m pip install -e .
+          python .\tools\check_env.py
+      - name: Install mmdeploy converter
+        run: |
+          echo "--------------------------------------------------"
+          echo $env:path
+          echo "--------------------------------------------------"
+          env:path = "$pwd\build\install\bin;" + $env:path
+          coverage run --branch --source mmdeploy -m pytest -rsE tests
+          coverage xml
+          coverage report -m
+      - name: Destroy conda env
+        if: success() || failure()
+        run: |
+          conda env remove -n test_env
