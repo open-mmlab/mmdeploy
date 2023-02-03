@@ -53,11 +53,10 @@ class TorchAllocator(trt.IGpuAllocator):
         Returns:
             bool: deallocate success.
         """
-        logger = get_root_logger()
-        logger.debug(f'deallocate {memory} with TorchAllocator.')
         if memory not in self.mems:
             return False
 
-        torch.cuda.caching_allocator_delete(memory)
+        if hasattr(torch.cuda, "caching_allocator_delete"):
+            torch.cuda.caching_allocator_delete(memory)
         self.mems.discard(memory)
         return True
