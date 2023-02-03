@@ -7,5 +7,5 @@ _base_ = [
 # This will result in an incorrect scale_factor!
 # The input shape will be automatically inferred
 # from the model's test_pipeline config.
-# onnx_config = dict(input_shape=(640, 640))
+onnx_config = dict(input_shape=None)
 codebase_config = dict(post_processing=dict(export_postprocess_mask=True))
