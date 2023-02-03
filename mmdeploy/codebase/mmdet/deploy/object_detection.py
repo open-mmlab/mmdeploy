@@ -68,7 +68,7 @@ def process_model_config(model_cfg: Config,
         # for static exporting
         if input_shape is not None:
             if transform.type == 'Resize':
-                pipeline[i].keep_ratio = False
+                # pipeline[i].keep_ratio = False
                 pipeline[i].scale = tuple(input_shape)
             if transform.type in ('YOLOv5KeepRatioResize', 'LetterResize'):
                 pipeline[i].scale = tuple(input_shape)
