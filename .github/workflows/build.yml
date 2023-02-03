@@ -279,6 +279,7 @@ jobs:
             echo $env:GITHUB_PATH
             echo "**************************************************"
             $env:path = "$env:CUDA_PATH\lib;" + $env:path
+            $env:path = "$env:CUDNN_DIR\lib;" + $env:path
             $env:path = "$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
             $env:path = "$env:ONNXRUNTIME_DIR\lib;" + $env:path
             $env:path = "$env:TENSORRT_DIR\lib;" + $env:path
