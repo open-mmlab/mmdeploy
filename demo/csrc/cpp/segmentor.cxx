@@ -3,6 +3,7 @@
 #include "mmdeploy/segmentor.hpp"
 
 #include <fstream>
+#include <numeric>
 #include <opencv2/imgcodecs/imgcodecs.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <random>
@@ -47,8 +48,25 @@ int main(int argc, char* argv[]) {
 
   cv::Mat color_mask = cv::Mat::zeros(result->height, result->width, CV_8UC3);
   int pos = 0;
+  int total = color_mask.rows * color_mask.cols;
+  std::vector<int> idxs(result->classes);
   for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
-    *iter = palette[result->mask[pos++]];
+    // output mask
+    if (result->mask) {
+      *iter = palette[result->mask[pos++]];
+    }
+    // output score
+    if (result->score) {
+      std::iota(idxs.begin(), idxs.end(), 0);
+      auto k =
+          std::max_element(idxs.begin(), idxs.end(),
+                           [&](int i, int j) {
+                             return result->score[pos + i * total] < result->score[pos + j * total];
+                           }) -
+          idxs.begin();
+      *iter = palette[k];
+      pos += 1;
+    }
   }
 
   img = img * 0.5 + color_mask * 0.5;

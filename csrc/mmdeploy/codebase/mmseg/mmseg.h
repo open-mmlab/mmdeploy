@@ -12,10 +12,11 @@ namespace mmdeploy::mmseg {
 
 struct SegmentorOutput {
   Tensor mask;
+  Tensor score;
   int height;
   int width;
   int classes;
-  MMDEPLOY_ARCHIVE_MEMBERS(mask, height, width, classes);
+  MMDEPLOY_ARCHIVE_MEMBERS(mask, score, height, width, classes);
 };
 
 MMDEPLOY_DECLARE_CODEBASE(MMSegmentation, mmseg);

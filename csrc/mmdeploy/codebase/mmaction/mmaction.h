@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_SRC_CODEBASE_MMACTION_MMACTION_H_
-#define MMDEPLOY_SRC_CODEBASE_MMACTION_MMACTION_H_
+#ifndef MMDEPLOY_CODEBASE_MMACTION_MMACTION_H_
+#define MMDEPLOY_CODEBASE_MMACTION_MMACTION_H_
 
 #include "mmdeploy/codebase/common.h"
 #include "mmdeploy/core/device.h"
