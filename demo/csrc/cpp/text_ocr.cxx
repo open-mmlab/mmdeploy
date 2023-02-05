@@ -12,8 +12,8 @@ DEFINE_ARG_string(reg_model, "Text recognition model path");
 DEFINE_ARG_string(input, "Path to input image, video, camera index or image list (.txt)");
 DEFINE_string(device, "cpu", "Device name, e.g. cpu, cuda");
 
-DEFINE_string(output, "segmentation_%04d.jpg", "Output image, video path, format string or SHOW");
-DEFINE_int32(output_size, 1024, "Long-edge of output frames");
+DEFINE_string(output, "text_ocr_%04d.jpg", "Output image, video path, format string or SHOW");
+DEFINE_int32(output_size, 0, "Long-edge of output frames");
 DEFINE_int32(delay, 0, "Delay passed to `cv::waitKey` when using `cv::imshow`");
 
 using mmdeploy::TextDetector;

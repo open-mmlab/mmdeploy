@@ -28,24 +28,41 @@ class Visualize {
     }
 
     void add_label(int label_id, float score) {
-      static constexpr const int font_face = cv::FONT_HERSHEY_SIMPLEX;
-      static constexpr const int thickness = 1;
-      static constexpr const double font_scale = 0.5;
-      int baseline = 0;
-      std::stringstream ss;
-      ss << std::to_string(label_id) << ": " << std::setw(6) << std::fixed << score * 100;
-      auto text_size = cv::getTextSize(ss.str(), font_face, font_scale, thickness, &baseline);
-      offset_ += text_size.height;
-      cv::Point origin(0, offset_);
-      cv::rectangle(img_, origin + cv::Point(0, thickness),
-                    origin + cv::Point(text_size.width, -text_size.height), cv::Scalar{},
-                    cv::FILLED);
-      cv::putText(img_, ss.str(), origin, font_face, font_scale, cv::Scalar::all(255), thickness,
-                  cv::LINE_8);
-      offset_ += thickness;
+      offset_ +=
+          add_text(to_text(label_id, score), {1, (float)offset_}, .5f * (img_.rows + img_.cols)) +
+          2;
     }
 
-    // TODO: show label & score
+    int add_text(const std::string& text, const cv::Point2f& origin, float size) {
+      static constexpr const int font_face = cv::FONT_HERSHEY_SIMPLEX;
+      static constexpr const int thickness = 1;
+      static constexpr const auto max_font_scale = .5f;
+      static constexpr const auto min_font_scale = .25f;
+      float font_scale = 1;
+      if (size < 20) {
+        font_scale = min_font_scale;
+      } else if (size > 200) {
+        font_scale = max_font_scale;
+      } else {
+        font_scale = min_font_scale + (size - 20) / (200 - 20) * (max_font_scale - min_font_scale);
+      }
+      int baseline{};
+      auto text_size = cv::getTextSize(text, font_face, font_scale, thickness, &baseline);
+      cv::Rect rect(origin + cv::Point2f(0, text_size.height + 2 * thickness),
+                    origin + cv::Point2f(text_size.width, 0));
+      rect &= cv::Rect({}, img_.size());
+      img_(rect) *= .35f;
+      cv::putText(img_, text, origin + cv::Point2f(0, text_size.height), font_face, font_scale,
+                  cv::Scalar::all(255), thickness, cv::LINE_AA);
+      return text_size.height;
+    }
+
+    static std::string to_text(int label_id, float score) {
+      std::stringstream ss;
+      ss << label_id << ": " << std::fixed << std::setprecision(1) << score * 100;
+      return ss.str();
+    }
+
     template <typename Mask>
     void add_det(const mmdeploy_rect_t& rect, int label_id, float score, const Mask* mask) {
       add_bbox(rect, label_id, score);
@@ -64,19 +81,25 @@ class Visualize {
       }
     }
 
-    // TODO: show label & score
     void add_bbox(const mmdeploy_rect_t& rect, int label_id, float score) {
+      if (label_id >= 0 && score > 0) {
+        auto area = std::max(0.f, (rect.right - rect.left) * (rect.bottom - rect.top));
+        add_text(to_text(label_id, score), {rect.left, rect.top}, std::sqrt(area * scale_));
+      }
       cv::rectangle(img_, cv::Point2f(rect.left, rect.top), cv::Point2f(rect.right, rect.bottom),
                     cv::Scalar(0, 255, 0));
     }
 
-    // TODO: show text
     void add_text_det(mmdeploy_point_t bbox[4], float score, const char* text, size_t text_size) {
-      std::vector<cv::Point2f> poly_points;
+      std::vector<cv::Point> poly_points;
+      cv::Point2f center{};
       for (int i = 0; i < 4; ++i) {
         poly_points.emplace_back(bbox[i].x * scale_, bbox[i].y * scale_);
+        center += cv::Point2f(poly_points.back());
       }
-      cv::polylines(img_, poly_points, true, cv::Scalar{0, 255, 0});
+      cv::polylines(img_, poly_points, true, cv::Scalar{0, 255, 0}, 1, cv::LINE_AA);
+      auto area = cv::contourArea(poly_points);
+      add_text(std::string(text, text + text_size), center / 4, std::sqrt(area));
     }
 
     void add_rotated_det(const float bbox[5], int label_id, float score) {
@@ -109,7 +132,7 @@ class Visualize {
       if (color_mask.size() != img_.size()) {
         cv::resize(color_mask, color_mask, img_.size(), 0., 0.);
       }
-      img_ = img_ * 0.5 + color_mask * 0.5;
+      cv::addWeighted(img_, .5, color_mask, .5, 0., img_);
     }
 
     void add_pose(const mmdeploy_point_t* pts, const float* scores, int32_t pts_size, double thr) {
@@ -141,11 +164,11 @@ class Visualize {
    private:
     Visualize& v_;
     float scale_{1};
-    int offset_{};
+    int offset_{1};
     cv::Mat img_;
   };
 
-  explicit Visualize(int size) : size_(size) {}
+  explicit Visualize(int size = 0) : size_(size) {}
 
   Session get_session(const cv::Mat& frame) { return Session(*this, frame); }
 

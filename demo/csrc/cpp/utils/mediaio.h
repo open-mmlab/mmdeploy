@@ -90,6 +90,53 @@ class InputIterator {
   Input* input_{};
 };
 
+class BatchInputIterator {
+ public:
+  using iterator_category = std::input_iterator_tag;
+  using difference_type = std::ptrdiff_t;
+  using reference = std::vector<cv::Mat>&;
+  using value_type = reference;
+  using pointer = void;
+
+ public:
+  BatchInputIterator() = default;
+  BatchInputIterator(InputIterator iter, InputIterator end, size_t batch_size)
+      : iter_(std::move(iter)), end_(std::move(end)), batch_size_(batch_size) {
+    next();
+  }
+
+  BatchInputIterator& operator++() {
+    next();
+    return *this;
+  }
+
+  reference operator*() { return data_; }
+
+  friend bool operator==(const BatchInputIterator& a, const BatchInputIterator& b) {
+    return &a == &b || a.is_end() == b.is_end();
+  }
+
+  friend bool operator!=(const BatchInputIterator& a, const BatchInputIterator& b) {
+    return !(a == b);
+  }
+
+ private:
+  void next() {
+    data_.clear();
+    for (size_t i = 0; i < batch_size_ && ++iter_ != end_; ++i) {
+      data_.push_back(*iter_);
+    }
+  }
+
+  bool is_end() const { return data_.empty(); }
+
+ private:
+  InputIterator iter_;
+  InputIterator end_;
+  size_t batch_size_{1};
+  std::vector<cv::Mat> data_;
+};
+
 class Input {
  public:
   explicit Input(const std::string& path, MediaType type = MediaType::kUnknown)
@@ -152,6 +199,19 @@ class Input {
     }
     return img;
   }
+
+  class Batch {
+   public:
+    Batch(Input& input, size_t batch_size) : input_(&input), batch_size_(batch_size) {}
+    BatchInputIterator begin() { return {input_->begin(), input_->end(), batch_size_}; }
+    BatchInputIterator end() { return {}; }  // NOLINT
+
+   private:
+    Input* input_{};
+    size_t batch_size_{1};
+  };
+
+  Batch batch(size_t batch_size) { return {*this, batch_size}; }
 
  private:
   static bool try_image(const std::string& path) { return cv::imread(path).data; }

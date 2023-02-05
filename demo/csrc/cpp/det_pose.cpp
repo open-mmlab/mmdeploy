@@ -58,9 +58,7 @@ int main(int argc, char* argv[]) {
     // visualize
     auto sess = v.get_session(img);
     for (size_t i = 0; i < bboxes.size(); ++i) {
-      // draw bounding boxes
       sess.add_bbox(bboxes[i], -1, -1);
-      // draw pose key-points
       sess.add_pose(poses[i].point, poses[i].score, poses[i].length, FLAGS_pose_thr);
     }
 

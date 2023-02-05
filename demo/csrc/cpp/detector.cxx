@@ -11,7 +11,7 @@ DEFINE_ARG_string(input, "Path to input image, video, camera index or image list
 DEFINE_string(device, "cpu", "Device name, e.g. cpu, cuda");
 
 DEFINE_string(output, "detection_%04d.jpg", "Output image, video path, format string or SHOW");
-DEFINE_int32(output_size, 1024, "Long-edge of output frames");
+DEFINE_int32(output_size, 0, "Long-edge of output frames");
 DEFINE_int32(delay, 0, "Delay passed to `cv::waitKey` when using `cv::imshow`");
 
 DEFINE_double(det_thr, 0.5, "Detection score threshold");
