@@ -110,6 +110,7 @@ class AscendRoiExtractor(Function):
     @staticmethod
     def symbolic(g, *args):
         """Symbolic function for creating onnx op."""
+        args = args[:-1]
         aligned = args[-1]
         featmap_strides = [1 / stride for stride in args[-2]]
         finest_scale = args[-3]
@@ -137,20 +138,26 @@ class AscendRoiExtractor(Function):
     @staticmethod
     def forward(ctx, *args):
         """Run forward."""
-        # aligned = args[-1]
-        featmap_strides = args[-2]
-        # finest_scale = args[-3]
-        # roi_scale_factor = args[-4]
-        # sampling_ratio = args[-5]
-        output_size = args[-7]
-        inputs = args[:len(featmap_strides)]
-        rois = args[len(featmap_strides)]
+        dummy_output = args[-1]
+        args = args[:-1]
 
-        num_proposals = rois.shape[0]
-        channel = inputs[0].shape[1]
+        if dummy_output is not None:
+            return dummy_output
+        else:
+            # aligned = args[-1]
+            featmap_strides = args[-2]
+            # finest_scale = args[-3]
+            # roi_scale_factor = args[-4]
+            # sampling_ratio = args[-5]
+            output_size = args[-7]
+            inputs = args[:len(featmap_strides)]
+            rois = args[len(featmap_strides)]
 
-        return rois.new_zeros(
-            (num_proposals, channel, output_size[1], output_size[0]))
+            num_proposals = rois.shape[0]
+            channel = inputs[0].shape[1]
+
+            return rois.new_zeros(
+                (num_proposals, channel, output_size[1], output_size[0]))
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -183,9 +190,12 @@ def single_roi_extractor__forward__ascend(ctx,
         roi_scale_factor = 1.0
 
     featmap_strides = [float(s) for s in featmap_strides]
+
+    origin_output = ctx.origin_func(self, feats, rois, roi_scale_factor)
     return AscendRoiExtractor.apply(*feats, rois, out_size, pool_mode,
                                     sampling_ratio, roi_scale_factor,
-                                    finest_scale, featmap_strides, aligned)
+                                    finest_scale, featmap_strides, aligned,
+                                    origin_output)
 
 
 @FUNCTION_REWRITER.register_rewriter(

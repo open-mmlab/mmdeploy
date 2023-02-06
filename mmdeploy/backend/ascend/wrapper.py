@@ -393,6 +393,7 @@ class AscendWrapper(BaseWrapper):
             self.__ascend_execute()
 
             for binding in self._model_desc.outputs:
+                tensor = outputs[binding.name]
                 self._copy_buffer_to_tensor(
                     self._output.buffers[binding.index], tensor)
 
