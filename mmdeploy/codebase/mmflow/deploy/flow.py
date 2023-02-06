@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
-import warnings
 from typing import Any, Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmcv
@@ -10,7 +9,7 @@ from mmcv.parallel import collate, scatter
 from torch.utils.data import Dataset
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.utils import Task, get_input_shape
+from mmdeploy.utils import Task
 from .mmflow import MMFLOW_TASK
 
 
@@ -129,7 +128,6 @@ class Flow(BaseTask):
             raise AssertionError('imgs must be strings or numpy arrays')
 
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
-
         test_pipeline = Compose(cfg.pipeline)
         valid_masks = []
         data_list = []
@@ -148,7 +146,6 @@ class Flow(BaseTask):
         data_list.append(data)
         valid_masks.append(valid)
         data = collate(data_list, samples_per_gpu=len(data_list))
-
         # just get the actual data from DataContainer
         data['img_metas'] = data['img_metas'].data[0]
         data['imgs'] = data['imgs'].data[0]
@@ -156,6 +153,7 @@ class Flow(BaseTask):
             data = scatter(data, [self.device])[0]
         return data, data['imgs']
 
+    # TODO
     def visualize(self,
                   model: torch.nn.Module,
                   image: Union[str, np.ndarray],
@@ -176,32 +174,13 @@ class Flow(BaseTask):
             show_result (bool): Whether to show result in windows, defaults
                 to `False`.
         """
-        if len(result.shape) == 4:
-            result = result[0]
+        pass
 
-        with torch.no_grad():
-            result = result.transpose(1, 2, 0)
-            result = np.clip(result, 0, 1)[:, :, ::-1]
-            result = (result * 255.0).round()
-
-            output_file = None if show_result else output_file
-
-            if show_result:
-                int_result = result.astype(np.uint8)
-                mmcv.imshow(int_result, window_name, 0)
-            if output_file is not None:
-                mmcv.imwrite(result, output_file)
-
-        if not (show_result or output_file):
-            warnings.warn(
-                'show_result==False and output_file is not specified, only '
-                'result image will be returned')
-            return result
-
+    # TODO
     @staticmethod
     def run_inference(model: torch.nn.Module,
                       model_inputs: Dict[str, torch.Tensor]) -> list:
-        """Run inference once for a super resolution model of mmedit.
+        """Run inference once for a super resolution model of mmflow.
 
         Args:
             model (nn.Module): Input model.
@@ -211,10 +190,7 @@ class Flow(BaseTask):
         Returns:
             list: The predictions of model inference.
         """
-        result = model(model_inputs['lq'])
-        if not isinstance(result[0], np.ndarray):
-            result = [result[0].detach().cpu().numpy()]
-        return result
+        pass
 
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
@@ -228,6 +204,7 @@ class Flow(BaseTask):
         """
         raise NotImplementedError
 
+    # TODO
     @staticmethod
     def get_tensor_from_input(input_data: Dict[str, Any]) -> torch.Tensor:
         """Get input tensor from input data.
@@ -238,8 +215,9 @@ class Flow(BaseTask):
         Returns:
             torch.Tensor: An image in `Tensor`.
         """
-        return input_data['lq']
+        pass
 
+    # TODO
     @staticmethod
     def evaluate_outputs(model_cfg,
                          outputs: list,
@@ -269,14 +247,7 @@ class Flow(BaseTask):
             log_file (str | None): The file to write the evaluation results.
                 Defaults to `None` and the results will only print on stdout.
         """
-        from mmcv.utils import get_logger
-        logger = get_logger('test', log_file=log_file)
-        if out:
-            logger.debug(f'writing results to {out}')
-            mmcv.dump(outputs, out)
-
-        # if json_file is not None:
-        #     mmcv.dump(stats, json_file, indent=4)
+        pass
 
     def get_preprocess(self) -> Dict:
         """Get the preprocess information for SDK.
@@ -284,11 +255,7 @@ class Flow(BaseTask):
         Return:
             dict: Composed of the preprocess information.
         """
-        input_shape = get_input_shape(self.deploy_cfg)
-        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
-        preprocess = model_cfg.pipeline
-
-        return preprocess
+        raise NotImplementedError
 
     def get_postprocess(self) -> Dict:
         """Get the postprocess information for SDK.
@@ -296,7 +263,7 @@ class Flow(BaseTask):
         Return:
             dict: Nonthing for super resolution.
         """
-        return dict()
+        raise NotImplementedError
 
     def get_model_name(self) -> str:
         """Get the model name.

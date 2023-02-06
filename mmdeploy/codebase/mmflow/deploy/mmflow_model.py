@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 import mmcv
 import numpy as np
@@ -104,9 +104,10 @@ class End2EndModel(BaseBackendModel):
         outputs = [out.detach().cpu().numpy() for out in outputs]
         return outputs
 
+    # TODO
     def evaluate(self, output: Union[torch.Tensor, np.ndarray],
                  gt: torch.Tensor):
-        """Evaluation function implemented in mmedit.
+        """Evaluation function implemented in mmflow.
 
         Args:
             output (torch.Tensor | np.ndarray): Model output with
@@ -116,42 +117,7 @@ class End2EndModel(BaseBackendModel):
         Returns:
             dict: Evaluation results.
         """
-        crop_border = self.test_cfg.crop_border
-
-        if isinstance(output, np.ndarray):
-            output = torch.from_numpy(output)
-
-        eval_result = dict()
-        for metric in self.test_cfg.metrics:
-            eval_result[metric] = self.allowed_metrics[metric](output, gt,
-                                                               crop_border)
-        return eval_result
-
-    def test_post_process(self,
-                          outputs: List[np.ndarray],
-                          lq: torch.Tensor,
-                          gt: Optional[torch.Tensor] = None):
-        """Get evaluation results by post-processing model outputs.
-
-        Args:
-            output (list[np.ndarray]) : The output high resolution image.
-            lq (torch.Tensor): The input low-quality image of the model.
-            gt (torch.Tensor): The ground truth of input image, default is
-                `None`.
-
-        Returns:
-            dict: Evaluation results.
-        """
-        if self.test_cfg is not None and self.test_cfg.get('metrics', None):
-            assert gt is not None, (
-                'evaluation with metrics must have gt images.')
-            results = dict(eval_result=self.evaluate(outputs[0], gt))
-        else:
-            results = dict(lq=lq.cpu(), output=outputs)
-            if gt is not None:
-                results['gt'] = gt.cpu()
-
-        return results
+        pass
 
     def show_result(self, *args, **kwargs):
         raise NotImplementedError
@@ -159,8 +125,9 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmedit format."""
+    """SDK inference class, converts SDK output to mmflow format."""
 
+    # TODO
     def forward(self,
                 lq: torch.Tensor,
                 gt: Optional[torch.Tensor] = None,
