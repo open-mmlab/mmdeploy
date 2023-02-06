@@ -3,11 +3,14 @@
 #ifndef MMDEPLOY_VISUALIZE_H
 #define MMDEPLOY_VISUALIZE_H
 
+#include <algorithm>
 #include <iomanip>
+#include <numeric>
 #include <vector>
 
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
+#include "palette.h"
 #include "skeleton.h"
 
 namespace utils {
@@ -20,17 +23,27 @@ class Visualize {
       if (v_.size_) {
         scale_ = (float)v_.size_ / (float)std::max(frame.cols, frame.rows);
       }
-      if (scale_ != 1) {
-        cv::resize(frame, img_, {}, scale_, scale_);
+      cv::Mat img;
+      if (v.background_ == "black") {
+        img = cv::Mat::zeros(frame.size(), CV_8UC3);
       } else {
-        img_ = frame.clone();
+        img = frame;
+        if (img.channels() == 1) {
+          cv::cvtColor(img, img, cv::COLOR_GRAY2BGR);
+        }
       }
+      if (scale_ != 1) {
+        cv::resize(img, img, {}, scale_, scale_);
+      } else if (img.data == frame.data) {
+        img = img.clone();
+      }
+      img_ = std::move(img);
     }
 
-    void add_label(int label_id, float score) {
-      offset_ +=
-          add_text(to_text(label_id, score), {1, (float)offset_}, .5f * (img_.rows + img_.cols)) +
-          2;
+    void add_label(int label_id, float score, int index) {
+      printf("label: %d, label_id: %d, score: %.4f\n", index, label_id, score);
+      auto size = .5f * static_cast<float>(img_.rows + img_.cols);
+      offset_ += add_text(to_text(label_id, score), {1, (float)offset_}, size) + 2;
     }
 
     int add_text(const std::string& text, const cv::Point2f& origin, float size) {
@@ -38,7 +51,7 @@ class Visualize {
       static constexpr const int thickness = 1;
       static constexpr const auto max_font_scale = .5f;
       static constexpr const auto min_font_scale = .25f;
-      float font_scale = 1;
+      float font_scale{};
       if (size < 20) {
         font_scale = min_font_scale;
       } else if (size > 200) {
@@ -64,33 +77,54 @@ class Visualize {
     }
 
     template <typename Mask>
-    void add_det(const mmdeploy_rect_t& rect, int label_id, float score, const Mask* mask) {
-      add_bbox(rect, label_id, score);
+    void add_det(const mmdeploy_rect_t& rect, int label_id, float score, const Mask* mask,
+                 int index) {
+      printf("bbox %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n", index,
+             rect.left, rect.top, rect.right, rect.bottom, label_id, score);
       if (mask) {
-        cv::Mat mask_img(mask->height, mask->width, CV_8UC1, const_cast<char*>(mask->data));
-        auto x0 = std::max(std::floor(rect.left) - 1, 0.f);
-        auto y0 = std::max(std::floor(rect.top) - 1, 0.f);
-        cv::Rect roi((int)x0, (int)y0, mask->width, mask->height);
+        fprintf(stdout, "mask %d, height=%d, width=%d\n", index, mask->height, mask->width);
+        auto x0 = (int)std::max(std::floor(rect.left) - 1, 0.f);
+        auto y0 = (int)std::max(std::floor(rect.top) - 1, 0.f);
+        add_instance_mask({x0, y0}, rand(), mask->data, mask->height, mask->width);
+      }
+      add_bbox(rect, label_id, score);
+    }
 
-        // split the RGB channels, overlay mask to a specific color channel
-        cv::Mat ch[3]{};
-        cv::split(img_, ch);
-        int col = 0;  // int col = i % 3;
-        cv::bitwise_or(mask_img, ch[col](roi), ch[col](roi));
-        merge(ch, 3, img_);
+    void add_instance_mask(const cv::Point& origin, int color_id, const char* mask_data, int mask_h,
+                           int mask_w, float alpha = .5f) {
+      auto color = v_.palette_.data[color_id % v_.palette_.data.size()];
+      auto x_end = std::min(origin.x + mask_w, img_.cols);
+      auto y_end = std::min(origin.y + mask_h, img_.rows);
+      auto img_data = img_.ptr<cv::Vec3b>();
+      for (int i = origin.y; i < y_end; ++i) {
+        for (int j = origin.x; j < x_end; ++j) {
+          if (mask_data[(i - origin.y) * mask_w + (j - origin.x)]) {
+            img_data[i * img_.cols + j] = img_data[i * img_.cols + j] * (1 - alpha) + color * alpha;
+          }
+        }
       }
     }
 
-    void add_bbox(const mmdeploy_rect_t& rect, int label_id, float score) {
+    void add_bbox(mmdeploy_rect_t rect, int label_id, float score) {
+      rect.left *= scale_;
+      rect.right *= scale_;
+      rect.top *= scale_;
+      rect.bottom *= scale_;
       if (label_id >= 0 && score > 0) {
         auto area = std::max(0.f, (rect.right - rect.left) * (rect.bottom - rect.top));
-        add_text(to_text(label_id, score), {rect.left, rect.top}, std::sqrt(area * scale_));
+        add_text(to_text(label_id, score), {rect.left, rect.top}, std::sqrt(area));
       }
       cv::rectangle(img_, cv::Point2f(rect.left, rect.top), cv::Point2f(rect.right, rect.bottom),
                     cv::Scalar(0, 255, 0));
     }
 
-    void add_text_det(mmdeploy_point_t bbox[4], float score, const char* text, size_t text_size) {
+    void add_text_det(mmdeploy_point_t bbox[4], float score, const char* text, size_t text_size,
+                      int index) {
+      printf("bbox[%d]: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)\n", index,  //
+             bbox[0].x, bbox[0].y,                                                         //
+             bbox[1].x, bbox[1].y,                                                         //
+             bbox[2].x, bbox[2].y,                                                         //
+             bbox[3].x, bbox[3].y);
       std::vector<cv::Point> poly_points;
       cv::Point2f center{};
       for (int i = 0; i < 4; ++i) {
@@ -98,15 +132,18 @@ class Visualize {
         center += cv::Point2f(poly_points.back());
       }
       cv::polylines(img_, poly_points, true, cv::Scalar{0, 255, 0}, 1, cv::LINE_AA);
-      auto area = cv::contourArea(poly_points);
-      add_text(std::string(text, text + text_size), center / 4, std::sqrt(area));
+      if (text) {
+        auto area = cv::contourArea(poly_points);
+        fprintf(stdout, "text[%d]: %s\n", index, text);
+        add_text(std::string(text, text + text_size), center / 4, std::sqrt(area));
+      }
     }
 
     void add_rotated_det(const float bbox[5], int label_id, float score) {
-      float xc = bbox[0];
-      float yc = bbox[1];
-      float w = bbox[2];
-      float h = bbox[3];
+      float xc = bbox[0] * scale_;
+      float yc = bbox[1] * scale_;
+      float w = bbox[2] * scale_;
+      float h = bbox[3] * scale_;
       float ag = bbox[4];
       float wx = w / 2 * std::cos(ag);
       float wy = w / 2 * std::sin(ag);
@@ -116,27 +153,51 @@ class Visualize {
       cv::Point2f p2{xc + wx - hx, yc + wy - hy};
       cv::Point2f p3{xc + wx + hx, yc + wy + hy};
       cv::Point2f p4{xc - wx + hx, yc - wy + hy};
+      cv::Point2f c = .25f * (p1 + p2 + p3 + p4);
       cv::drawContours(
           img_,
           std::vector<std::vector<cv::Point>>{{p1 * scale_, p2 * scale_, p3 * scale_, p4 * scale_}},
           -1, {0, 255, 0}, 2);
+      add_text(to_text(label_id, score), c, std::sqrt(w * h));
     }
 
-    // TODO: handle score output
     void add_mask(int height, int width, int n_classes, const int* mask, const float* score) {
       cv::Mat color_mask = cv::Mat::zeros(height, width, CV_8UC3);
-      int pos = 0;
-      for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
-        *iter = v_.palette_[mask[pos++] % v_.palette_.size()];
+      auto n_pix = color_mask.total();
+
+      // compute top 1 idx if score (CHW) is available
+      cv::Mat_<int> top;
+      if (!mask && score) {
+        top = cv::Mat_<int>::zeros(height, width);
+        for (auto c = 1; c < n_classes; ++c) {
+          top.forEach([&](int& x, const int* idx) {
+            auto offset = idx[0] * width + idx[1];
+            if (score[c * n_pix + offset] > score[x * n_pix + offset]) {
+              x = c;
+            }
+          });
+        }
+        mask = top.ptr<int>();
       }
-      if (color_mask.size() != img_.size()) {
-        cv::resize(color_mask, color_mask, img_.size(), 0., 0.);
+
+      if (mask) {
+        // palette look-up
+        color_mask.forEach<cv::Vec3b>([&](cv::Vec3b& x, const int* idx) {
+          auto& palette = v_.palette_.data;
+          x = palette[mask[idx[0] * width + idx[1]] % palette.size()];
+        });
+
+        if (color_mask.size() != img_.size()) {
+          cv::resize(color_mask, color_mask, img_.size());
+        }
+
+        // blend mask and background image
+        cv::addWeighted(img_, .5, color_mask, .5, 0., img_);
       }
-      cv::addWeighted(img_, .5, color_mask, .5, 0., img_);
     }
 
     void add_pose(const mmdeploy_point_t* pts, const float* scores, int32_t pts_size, double thr) {
-      auto& skel = v_.skel_;
+      auto& skel = v_.skeleton_;
       std::vector<int> used(pts_size);
       std::vector<int> is_end_point(pts_size);
       for (size_t i = 0; i < skel.links.size(); ++i) {
@@ -168,18 +229,21 @@ class Visualize {
     cv::Mat img_;
   };
 
-  explicit Visualize(int size = 0) : size_(size) {}
+  explicit Visualize(int size = 0) : size_(size) { palette_ = Palette::get(32); }
 
   Session get_session(const cv::Mat& frame) { return Session(*this, frame); }
 
-  void set_skeleton(const Skeleton& skel) { skel_ = skel; }
+  void set_skeleton(const Skeleton& skeleton) { skeleton_ = skeleton; }
 
-  void set_palette(const std::vector<cv::Vec3b>& palette) { palette_ = palette; }
+  void set_palette(const Palette& palette) { palette_ = palette; }
+
+  void set_background(const std::string& background) { background_ = background; }
 
  private:
   friend Session;
-  Skeleton skel_;
-  std::vector<cv::Vec3b> palette_;
+  Skeleton skeleton_;
+  Palette palette_;
+  std::string background_;
   int size_{};
 };
 

@@ -1,25 +1,5 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#ifndef MMDEPLOY_POSE_TRACKER_UTILS_HPP
-#define MMDEPLOY_POSE_TRACKER_UTILS_HPP
-
-#include <iostream>
-#include <map>
-
-#include "mmdeploy/pose_tracker.hpp"
-#include "utils/argparse.h"
-
-DEFINE_ARG_string(det_model, "object detection model path");
-DEFINE_ARG_string(pose_model, "pose estimation model path");
-DEFINE_ARG_string(input, "input video path or camera index");
-
-DEFINE_string(device, "cpu", "Device name, e.g. \"cpu\", \"cuda\"");
-DEFINE_string(output, "", "Output video path or format string; use `cv::imshow` if empty");
-DEFINE_int32(output_size, 0, "Long-edge of output frames");
-DEFINE_int32(delay, 1, "Delay passed to `cv::waitKey` when using `cv::imshow`");
-
-DEFINE_string(skeleton, "coco", "Path to skeleton data");
-
 DEFINE_int32(det_interval, 1, "Detection interval");
 DEFINE_int32(det_label, 0, "Detection label use for pose estimation");
 DEFINE_double(det_thr, 0.5, "Detection score threshold");
@@ -57,5 +37,3 @@ void InitTrackerParams(mmdeploy::PoseTracker::Params& params) {
   params->track_iou_thr = FLAGS_track_iou_thr;
   params->track_max_missing = FLAGS_track_max_missing;
 }
-
-#endif  // MMDEPLOY_POSE_TRACKER_UTILS_HPP

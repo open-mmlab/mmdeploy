@@ -73,22 +73,36 @@ class ArgParse {
 
   bool _Parse(int argc, char* argv[]) {
     int arg_idx{-1};
-    std::vector<const char*> args(infos_.size());
+    std::vector<std::string> args(infos_.size());
     for (int i = 1; i < argc; ++i) {
       if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
         return false;
       }
       if (argv[i][0] == '-' && argv[i][1] == '-') {
+        // parse flag key-value pair (--x=y or --x y)
+        int eq{-1};
+        for (int k = 2; argv[i][k]; ++k) {
+          if (argv[i][k] == '=') {
+            eq = k;
+            break;
+          }
+        }
+        std::string key;
+        std::string val;
+        if (eq >= 0) {
+          key = std::string(argv[i] + 2, argv[i] + eq);
+          val = std::string(argv[i] + eq + 1);
+        } else {
+          key = std::string(argv[i] + 2);
+          if (i < argc - 1) {
+            val = argv[++i];
+          }
+        }
         bool found{};
         for (int j = 0; j < infos_.size(); ++j) {
           auto& flag = infos_[j];
-          auto name = "--" + flag.name;
-          if (strncmp(argv[i], name.c_str(), name.size()) == 0) {
-            if (argv[i][name.size()] == '=') {
-              args[j] = argv[i] + name.size() + 1;
-            } else if (i + 1 < argc) {
-              args[j] = argv[++i];
-            }
+          if (key == flag.name) {
+            args[j] = val;
             found = true;
             break;
           }
@@ -128,7 +142,7 @@ class ArgParse {
     }
 
     for (int i = 0; i < infos_.size(); ++i) {
-      if (args[i]) {
+      if (!args[i].empty()) {
         try {
           parse_str(infos_[i], args[i]);
         } catch (...) {

@@ -13,7 +13,7 @@
 namespace utils {
 namespace mediaio {
 
-enum class MediaType { kUnknown, kImage, kVideo, kImageList, kWebcam, kFmtStr, kShow };
+enum class MediaType { kUnknown, kImage, kVideo, kImageList, kWebcam, kFmtStr, kDisable };
 
 namespace detail {
 
@@ -292,12 +292,12 @@ class OutputIterator {
 
 class Output {
  public:
-  explicit Output(const std::string& path, int delay, MediaType type = MediaType::kUnknown)
-      : path_(path), type_(type), delay_(delay) {
+  explicit Output(const std::string& path, int show, MediaType type = MediaType::kUnknown)
+      : path_(path), type_(type), show_(show) {
     if (type_ == MediaType::kUnknown) {
       auto ext = detail::get_extension(path);
       if (path_.empty()) {
-        type_ = MediaType::kShow;
+        type_ = MediaType::kDisable;
       } else if (detail::is_image(ext)) {
         if (detail::is_fmtstr(path)) {
           type_ = MediaType::kFmtStr;
@@ -315,6 +315,8 @@ class Output {
   bool write(const cv::Mat& frame) {
     bool exit = false;
     switch (type_) {
+      case MediaType::kDisable:
+        break;
       case MediaType::kImage:
         cv::imwrite(path_, frame);
         break;
@@ -327,13 +329,13 @@ class Output {
       case MediaType::kVideo:
         write_video(frame);
         break;
-      case MediaType::kShow:
-        cv::imshow("", frame);
-        exit = cv::waitKey(delay_) == 'q';
-        break;
       default:
         std::cout << "unsupported output media type\n";
         assert(0);
+    }
+    if (show_ >= 0) {
+      cv::imshow("", frame);
+      exit = cv::waitKey(show_) == 'q';
     }
     ++frame_id_;
     return !exit;
@@ -344,7 +346,7 @@ class Output {
  private:
   void write_video(const cv::Mat& frame) {
     if (!video_.isOpened()) {
-      video_.open(path_, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 30, frame.size());
+      video_.open(path_, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 30, frame.size());
     }
     video_ << frame;
   }
@@ -352,7 +354,7 @@ class Output {
  private:
   std::string path_;
   MediaType type_{MediaType::kUnknown};
-  int delay_{1};
+  int show_{1};
   size_t frame_id_{0};
   cv::VideoWriter video_;
 };
