@@ -20,7 +20,7 @@ DEFINE_string(skeleton, "coco", R"(Path to skeleton data or name of predefined s
 DEFINE_string(background, "default",
               R"(Output background, "default": original image, "black": black background)");
 
-#include "pose_tracker_params.inc"
+#include "pose_tracker_params.h"
 
 int main(int argc, char* argv[]) {
   if (!utils::ParseArguments(argc, argv)) {
