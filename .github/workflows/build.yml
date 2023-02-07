@@ -261,12 +261,14 @@ jobs:
           echo "$env:TENSORRT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "$env:TENSORRT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "$pwd\build\install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Output "::add-path::$env:CONDA_PY_ROOT;$env:CUDA_PATH\bin"
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
           echo "env:path=$env:path"
           echo "env:PATH=$env:PATH"
           echo "GITHUB_PATH=$env:GITHUB_PATH"
           echo "--------------------- Update env:GITHUB_PATH -----------------------------"
+          python -V
       - name: Install python dependencies
         run: |
           echo "--------------------------------------------------"
