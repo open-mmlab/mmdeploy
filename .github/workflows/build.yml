@@ -214,20 +214,6 @@ jobs:
 
   build_cuda113-windows:
     runs-on: [self-hosted, win10-3080]
-    permissions:
-      actions: write
-      checks: write
-      contents: write
-      deployments: write
-      id-token: write
-      issues: write
-      discussions: write
-      packages: write
-      pages: write
-      pull-requests: write
-      repository-projects: write
-      security-events: write
-      statuses: write
     env:
       CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3
       CUDA_PATH_V11_3: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3

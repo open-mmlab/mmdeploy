@@ -48,6 +48,8 @@ jobs:
 
       - name: Test update GITHUB_PATH
         continue-on-error: true
+        env:
+          GITHUB_PATH: D:\testdir;$env:path
         run: |
           echo ">>>>>>>>>>>>>>>>>>>>>> before >>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           echo "env:path=$env:path"
