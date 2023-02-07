@@ -22,7 +22,7 @@ using Points = vector<cv::Point2f>;
 using Score = float;
 using Scores = vector<float>;
 
-#define POSE_TRACKER_DEBUG(...) MMDEPLOY_INFO(__VA_ARGS__)
+#define POSE_TRACKER_DEBUG(...) MMDEPLOY_DEBUG(__VA_ARGS__)
 
 // opencv3 can't construct cv::Mat from std::array
 template <size_t N>
