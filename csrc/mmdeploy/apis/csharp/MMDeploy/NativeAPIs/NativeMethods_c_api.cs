@@ -9,6 +9,37 @@ namespace MMDeploy
     /// </summary>
     internal static partial class NativeMethods
     {
+        #region common.h
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_context_create(out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_context_create_by_device(string deviceName, int deviceId,
+            out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void mmdeploy_context_destroy(IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_context_add(IntPtr handle, int type, string name,
+            IntPtr obj);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_device_create(string device_name, int device_id,
+            out IntPtr device);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void mmdeploy_device_destroy(IntPtr device);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_profiler_create(string path, out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe void mmdeploy_profiler_destroy(IntPtr handle);
+        #endregion
+
+        #region scheduler.h
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe void* mmdeploy_executor_create_thread();
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe void* mmdeploy_executor_create_thread_pool(int num_threads);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void mmdeploy_scheduler_destroy(IntPtr handle);
+        #endregion
+
         #region model.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int mmdeploy_model_create_by_path(string path, out IntPtr handle);
@@ -36,6 +67,27 @@ namespace MMDeploy
             int count);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void mmdeploy_pose_detector_destroy(IntPtr handle);
+        #endregion
+
+        #region pose_tracker.h
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_pose_tracker_create(IntPtr det_model, IntPtr pose_model,
+            IntPtr context, out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_pose_tracker_destroy(IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_pose_tracker_default_params(IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_pose_tracker_create_state(IntPtr pipeline,
+            PoseTracker.Params param, out IntPtr state);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void mmdeploy_pose_tracker_destroy_state(IntPtr state);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe int mmdeploy_pose_tracker_apply(IntPtr handle, IntPtr* state,
+            Mat* mats, int* useDet, int count, CPoseTrack** results, int** resultCount);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe void mmdeploy_pose_tracker_release_result(CPoseTrack* results,
+            int* resultCount, int count);
         #endregion
 
         #region classifier.h
