@@ -174,9 +174,13 @@ struct NetModule::Impl {
     // cluster samples by concatenated shapes
     vector<int> shape_idxs(concat_shapes.size());
     std::iota(shape_idxs.begin(), shape_idxs.end(), 0);
-    auto cmp = [&concat_shapes](int i, int j) { return concat_shapes[i] == concat_shapes[j]; };
-    std::sort(shape_idxs.begin(), shape_idxs.end(), cmp);
-    shape_idxs.erase(std::unique(shape_idxs.begin(), shape_idxs.end(), cmp), shape_idxs.end());
+    std::sort(shape_idxs.begin(), shape_idxs.end(),
+              [&concat_shapes](int i, int j) { return concat_shapes[i] < concat_shapes[j]; });
+    shape_idxs.erase(std::unique(shape_idxs.begin(), shape_idxs.end(),
+                                 [&concat_shapes](int i, int j) {
+                                   return concat_shapes[i] == concat_shapes[j];
+                                 }),
+                     shape_idxs.end());
 
     // generate batches of samples with equal shapes, limit the batch size by max_batch_size_
     for (const auto ref_shape_idx : shape_idxs) {
