@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
 #  build_cpu_model_convert:
@@ -254,6 +255,13 @@ jobs:
           python -m pip list
       - name: Build
         run: |
+          echo "$env:CONDA_PY_ENV" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "--------------------------------------------------"
+          echo "PATH=$PATH"
+          echo "env:path=$env:path"
+          echo "env:PATH=$env:PATH"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "--------------------------------------------------"
           $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           mkdir build
           cd build
@@ -285,6 +293,9 @@ jobs:
           .\build\bin\Release\mmdeploy_tests.exe
       - name: Install mmdeploy converter
         run: |
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
+
           python -m pip install -e .
           python .\tools\check_env.py
       - name: Install mmdeploy converter
