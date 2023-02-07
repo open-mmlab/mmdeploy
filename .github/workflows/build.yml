@@ -241,42 +241,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Setup Env
-        run: |
-          conda info
-          conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
-          conda activate $env:CONDA_PY_ENV
-          $env:path = "$env:CONDA_PY_ENV;" + $env:path
-          python -V
-          ls $env:CONDA_PY_ENV
-          echo "--------------------------------------------------"
-          echo "PATH=$PATH"
-          echo "env:path=$env:path"
-          echo "env:PATH=$env:PATH"
-          echo "GITHUB_PATH=$env:GITHUB_PATH"
-          echo "--------------------- Update env:GITHUB_PATH -----------------------------"
-          echo "$env:CONDA_PY_ROOT" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:CUDA_PATH\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:CUDNN_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:OPENCV_DIR\build\x64\vc15\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:ONNXRUNTIME_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:TENSORRT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:TENSORRT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$pwd\build\install\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          echo "$env:CONDA_PY_ROOT;$env:CUDA_PATH\bin" >> $env:GITHUB_PATH
-          echo "--------------------------------------------------"
-          echo "PATH=$PATH"
-          echo "env:path=$env:path"
-          echo "env:PATH=$env:PATH"
-          echo "GITHUB_PATH=$env:GITHUB_PATH"
-          echo "--------------------- Update env:GITHUB_PATH -----------------------------"
-          python -V
       - name: Setup Python Environment
         run: |
           conda info
           conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
           conda activate $env:CONDA_PY_ENV
-          $env:path = "$env:CUDA_PATH\bin;" + $env:path
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           python -V
           python -m pip install openmim
           python -m mim install "mmcv-full==${{matrix.mmcv}}"
@@ -307,6 +277,9 @@ jobs:
           cmake --install . --config Release
       - name: Perform SDK Unittests
         run: |
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
+
           mkdir mmdeploy_test_resources\transform
           cp .\demo\resources\human-pose.jpg mmdeploy_test_resources\transform
           .\build\bin\Release\mmdeploy_tests.exe
@@ -316,6 +289,8 @@ jobs:
           python .\tools\check_env.py
       - name: Install mmdeploy converter
         run: |
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
           echo "env:path=$env:path"
