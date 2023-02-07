@@ -247,7 +247,7 @@ jobs:
           conda info
           conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
           conda activate $env:CONDA_PY_ENV
-          # $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           python -V
           python -m pip install openmim
           python -m mim install "mmcv-full==${{matrix.mmcv}}"
@@ -283,7 +283,7 @@ jobs:
             -DCUDNN_DIR="$env:CUDNN_DIR"
           cmake --build . --config Release -- /m
           cmake --install . --config Release
-      - name: Perform SDK Unittests
+      - name: Run SDK Unittests
         run: |
           $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
@@ -293,13 +293,15 @@ jobs:
           .\build\bin\Release\mmdeploy_tests.exe
       - name: Install mmdeploy converter
         run: |
+          conda activate $env:CONDA_PY_ENV
           $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
 
           python -m pip install -e .
           python .\tools\check_env.py
-      - name: Install mmdeploy converter
+      - name: Run SDK Unittests
         run: |
+          conda activate $env:CONDA_PY_ENV
           $env:path = "$env:CONDA_PY_ENV;$env:CONDA_PY_ENV\Scripts;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
           echo "--------------------------------------------------"
