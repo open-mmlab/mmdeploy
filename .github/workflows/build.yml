@@ -231,7 +231,7 @@ jobs:
       #PYTHON_DIR: D:\actions-runner\_work\_temp\Python
     defaults:
       run:
-        shell: pwsh
+        shell: powershell
     strategy:
       matrix:
         python-version: [3.8]
