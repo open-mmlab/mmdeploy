@@ -107,6 +107,23 @@ namespace MMDeploy
         public static extern void mmdeploy_classifier_destroy(IntPtr handle);
         #endregion
 
+        #region rotated_detector.h
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_rotated_detector_create(IntPtr model,
+            string deviceName, int deviceId, out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int mmdeploy_rotated_detector_create_by_path(string modelPath,
+            string deviceName, int deviceId, out IntPtr handle);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe int mmdeploy_rotated_detector_apply(IntPtr handle, Mat* mats,
+            int matCount, RDetect** results, int** resultCount);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern unsafe void mmdeploy_rotated_detector_release_result(RDetect* results,
+            int* resultCount);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern void mmdeploy_rotated_detector_destroy(IntPtr handle);
+        #endregion
+
         #region detector.h
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern int mmdeploy_detector_create(IntPtr model, string deviceName,

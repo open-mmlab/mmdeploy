@@ -17,7 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ocr_recognition", "ocr_reco
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pose_detection", "pose_detection\pose_detection.csproj", "{10E3B87C-7544-4F4D-90A3-65D5654CBF94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pose_tracking", "pose_tracking\pose_tracking.csproj", "{42FC54A1-73D5-429D-AF5E-09BAEC4F0D9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "pose_tracking", "pose_tracking\pose_tracking.csproj", "{42FC54A1-73D5-429D-AF5E-09BAEC4F0D9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rotated_detection", "rotated_detection\rotated_detection.csproj", "{1957C2D2-F6D1-4E28-920C-2B7DE98EAF50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{42FC54A1-73D5-429D-AF5E-09BAEC4F0D9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{42FC54A1-73D5-429D-AF5E-09BAEC4F0D9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{42FC54A1-73D5-429D-AF5E-09BAEC4F0D9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1957C2D2-F6D1-4E28-920C-2B7DE98EAF50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1957C2D2-F6D1-4E28-920C-2B7DE98EAF50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1957C2D2-F6D1-4E28-920C-2B7DE98EAF50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1957C2D2-F6D1-4E28-920C-2B7DE98EAF50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
