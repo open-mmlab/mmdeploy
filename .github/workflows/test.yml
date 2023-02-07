@@ -80,3 +80,7 @@ jobs:
           echo "env:path=$env:path"
           echo "GITHUB_PATH=$env:GITHUB_PATH"
           echo "GITHUB_ENV=$env:GITHUB_ENV"
+      - name: test Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
