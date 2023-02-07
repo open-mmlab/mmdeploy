@@ -1,0 +1,80 @@
+name: build
+
+on: [push, pull_request]
+
+permissions: write-all
+
+jobs:
+  test:
+    runs-on: [self-hosted, win10-3080]
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      id-token: write
+      issues: write
+      discussions: write
+      packages: write
+      pages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write
+    env:
+      CUDA_PATH: C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3
+      CUDNN_DIR: C:\DEPS\cudnn\cudnn-11.3-v8.2.1.32
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Test update GITHUB_ENV
+        continue-on-error: true
+        run: |
+          echo ">>>>>>>>>>>>>>>>>>>>>> before >>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+          echo "PYTHON_DIR=$pwd\py_root" >> $env:GITHUB_ENV
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 1 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+          echo "PYTHON_DIR=$pwd\py_root" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 2 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+      - name: Test update GITHUB_PATH
+        continue-on-error: true
+        run: |
+          echo ">>>>>>>>>>>>>>>>>>>>>> before >>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+          echo "$pwd\py_root;" >> $env:GITHUB_PATH
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 1 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+          echo "$pwd\py_root;" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 2 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+
+          $env:path =  "$pwd\py_root;" + $env:path
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 3 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
+      - name: Test variable in next step
+        continue-on-error: true
+        run: |
+          echo "<<<<<<<<<<<<<<<<<<<<<< method 1 >><<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "GITHUB_ENV=$env:GITHUB_ENV"
