@@ -264,6 +264,8 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(const OrtApi& api,
 
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
+  // init Gemm Operator
+  initGemm(ort_);
 }
 
 MMCVDeformConvKernel::~MMCVDeformConvKernel() {
