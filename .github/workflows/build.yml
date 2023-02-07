@@ -227,12 +227,11 @@ jobs:
       ONNXRUNTIME_DIR: C:\DEPS\onnxruntime-win-x64-1.8.1
       TENSORRT_DIR: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2
       TENSORRT_VERSION: 8.2.3.0
+      GITHUB_PATH: D:\actions-runner\_work\_temp\Python
       #PYTHON_DIR: D:\actions-runner\_work\_temp\Python
     defaults:
       run:
         shell: pwsh
-        env:
-          GITHUB_PATH: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2\bin
     strategy:
       matrix:
         python-version: [3.8]
