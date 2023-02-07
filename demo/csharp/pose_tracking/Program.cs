@@ -28,13 +28,13 @@ namespace pose_tracking
                 new Scalar(255, 0, 0),     new Scalar(255, 255, 255),
             };
 
-            public static List<int> LinkColor = new List<int> 
-            { 
-                0, 0, 0, 0, 7, 7, 7, 9, 9, 9, 9, 9, 16, 16, 16, 16, 16, 16, 16 
+            public static List<int> LinkColor = new List<int>
+            {
+                0, 0, 0, 0, 7, 7, 7, 9, 9, 9, 9, 9, 16, 16, 16, 16, 16, 16, 16
             };
-            
+
             public static List<int> PointColor = new List<int>
-            { 
+            {
                 16, 16, 16, 16, 16, 9, 9, 9, 9, 9, 9, 0, 0, 0, 0, 0, 0
             };
         }
@@ -48,7 +48,7 @@ namespace pose_tracking
             var point_color = CocoSkeleton.PointColor;
 
             float scale = (float)size / (float)Math.Max(frame.Cols, frame.Rows);
-            if (scale != 1) { 
+            if (scale != 1) {
                 Cv2.Resize(frame, frame, new Size(), scale, scale);
             }
             else

@@ -12,7 +12,7 @@ namespace MMDeploy
         }
 
         /// <summary>
-        /// Create thred pool scheduler.
+        /// Create thread pool scheduler.
         /// </summary>
         /// <param name="num_threads">thread number.</param>
         /// <returns>scheduler.</returns>
