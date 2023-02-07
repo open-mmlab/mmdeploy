@@ -255,7 +255,7 @@ jobs:
           python -m pip list
       - name: Build
         run: |
-          echo "$env:CONDA_PY_ENV" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          # echo "$env:CONDA_PY_ENV" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
           echo "env:path=$env:path"
@@ -300,7 +300,7 @@ jobs:
           python .\tools\check_env.py
       - name: Install mmdeploy converter
         run: |
-          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:CONDA_PY_ENV;$env:CONDA_PY_ENV\Scripts;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
@@ -311,6 +311,14 @@ jobs:
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          env_vars: OS,PYTHON,CPLUS
+          name: codecov-umbrella
+          fail_ci_if_error: false
       - name: Destroy conda env
         if: success() || failure()
         run: |
