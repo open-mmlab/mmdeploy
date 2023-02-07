@@ -55,8 +55,9 @@ inline Palette Palette::get(const std::string& path) {
     return p;
   }
   std::ifstream ifs(path);
-  if (ifs.is_open()) {
-    assert(0 && "Failed to open palette file.");
+  if (!ifs.is_open()) {
+    std::cout << "error: failed to open palette data file: " << path << "\n";
+    std::abort();
   }
   Palette p;
   int n = 0;

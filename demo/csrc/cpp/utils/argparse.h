@@ -108,7 +108,8 @@ class ArgParse {
           }
         }
         if (!found) {
-          std::cout << "error: unknown option: " << argv[i] << std::endl;
+          std::cout << "error: unknown option: " << key << std::endl;
+          return false;
         }
       } else {
         for (arg_idx++; arg_idx < infos_.size(); ++arg_idx) {

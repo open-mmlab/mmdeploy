@@ -52,7 +52,8 @@ inline Skeleton Skeleton::get(const std::string& path) {
   }
   std::ifstream ifs(path);
   if (!ifs.is_open()) {
-    assert(0 && "Failed to open skeleton file");
+    std::cout << "error: failed to open skeleton data file: " << path << "\n";
+    std::abort();
   }
   Skeleton skel;
   int n = 0;

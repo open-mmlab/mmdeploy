@@ -123,7 +123,7 @@ class BatchInputIterator {
  private:
   void next() {
     data_.clear();
-    for (size_t i = 0; i < batch_size_ && ++iter_ != end_; ++i) {
+    for (size_t i = 0; i < batch_size_ && iter_ != end_; ++i, ++iter_) {
       data_.push_back(*iter_);
     }
   }
