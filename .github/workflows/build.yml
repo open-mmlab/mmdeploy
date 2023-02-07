@@ -223,7 +223,7 @@ jobs:
       OPENCV_DIR: C:\DEPS\opencv\4.6.0
       ONNXRUNTIME_DIR: C:\DEPS\onnxruntime-win-x64-1.8.1
       TENSORRT_DIR: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2
-      CONDA_PY_ENV: D:\actions-runner\_work\mmdeploy\mmdeploy\py
+      CONDA_PY_ENV: D:\actions-runner\_work\_temp\Python
     defaults:
       run:
         shell: pwsh
@@ -253,6 +253,18 @@ jobs:
           python -m mim install "mmcv-full==${{matrix.mmcv}}"
           python -m pip install -r requirements.txt
           python -m pip list
+      - name: Install mmdeploy converter
+        run: |
+          conda activate $env:CONDA_PY_ENV
+          ls $env:CONDA_PY_ENV
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;$pwd\build\install\bin" + $env:path
+          echo "--------------------------------------------------"
+          echo "env:path=$env:path"
+          echo "GITHUB_PATH=$env:GITHUB_PATH"
+          echo "--------------------------------------------------"
+          python -m pip install -e .
+          python .\tools\check_env.py
       - name: Build
         run: |
           # echo "$env:CONDA_PY_ENV" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
