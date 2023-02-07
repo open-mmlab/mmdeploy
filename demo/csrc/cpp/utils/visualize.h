@@ -157,7 +157,7 @@ class Visualize {
       cv::drawContours(
           img_,
           std::vector<std::vector<cv::Point>>{{p1 * scale_, p2 * scale_, p3 * scale_, p4 * scale_}},
-          -1, {0, 255, 0}, 2);
+          -1, {0, 255, 0}, 2, cv::LINE_AA);
       add_text(to_text(label_id, score), c, std::sqrt(w * h));
     }
 
