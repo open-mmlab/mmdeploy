@@ -247,7 +247,7 @@ jobs:
           conda info
           conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
           conda activate $env:CONDA_PY_ENV
-          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
+          # $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           python -V
           python -m pip install openmim
           python -m mim install "mmcv-full==${{matrix.mmcv}}"
