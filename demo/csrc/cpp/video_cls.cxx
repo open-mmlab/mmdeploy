@@ -3,8 +3,8 @@
 #include <string>
 
 #include "mmdeploy/video_recognizer.hpp"
-#include "opencv2/imgcodecs/imgcodecs.hpp"
 #include "opencv2/videoio.hpp"
+#include "utils/argparse.h"
 
 void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
                   std::vector<mmdeploy::Mat>& clips, int clip_len, int frame_interval = 1,
@@ -57,14 +57,14 @@ void SampleFrames(const char* video_path, std::map<int, cv::Mat>& buffer,
   }
 }
 
+DEFINE_ARG_string(model, "Model path");
+DEFINE_ARG_string(video, "Input video path");
+DEFINE_string(device, "cpu", R"(Device name, e.g. "cpu", "cuda")");
+
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  video_cls device_name model_path video_path\n");
-    return 1;
+  if (!utils::ParseArguments(argc, argv)) {
+    return -1;
   }
-  auto device_name = argv[1];
-  auto model_path = argv[2];
-  auto video_path = argv[3];
 
   int clip_len = 1;
   int frame_interval = 1;
@@ -73,10 +73,10 @@ int main(int argc, char* argv[]) {
   std::map<int, cv::Mat> buffer;
   std::vector<mmdeploy::Mat> clips;
   mmdeploy::VideoSampleInfo clip_info = {clip_len, num_clips};
-  SampleFrames(video_path, buffer, clips, clip_len, frame_interval, num_clips);
+  SampleFrames(ARGS_video.c_str(), buffer, clips, clip_len, frame_interval, num_clips);
 
-  mmdeploy::Model model(model_path);
-  mmdeploy::VideoRecognizer recognizer(model, mmdeploy::Device{device_name, 0});
+  mmdeploy::Model model(ARGS_model);
+  mmdeploy::VideoRecognizer recognizer(model, mmdeploy::Device{FLAGS_device});
 
   auto res = recognizer.Apply(clips, clip_info);
 
