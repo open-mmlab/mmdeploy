@@ -31,6 +31,21 @@ static std::string get_extension(const std::string& path) {
   return {};
 }
 
+int ext2fourcc(const std::string& ext) {
+  auto get_fourcc = [](const char* s) { return cv::VideoWriter::fourcc(s[0], s[1], s[2], s[3]); };
+  static std::map<std::string, int> ext2fourcc{
+      {".mp4", get_fourcc("mp4v")},
+      {".avi", get_fourcc("DIVX")},
+      {".mkv", get_fourcc("X264")},
+      {".wmv", get_fourcc("WMV3")},
+  };
+  auto it = ext2fourcc.find(ext);
+  if (it != ext2fourcc.end()) {
+    return it->second;
+  }
+  return get_fourcc("DIVX");
+}
+
 static bool is_video(const std::string& ext) {
   static const std::set<std::string> es{".mp4", ".avi", ".mkv", ".webm", ".mov", ".mpg", ".wmv"};
   return es.count(ext);
@@ -294,17 +309,17 @@ class Output {
  public:
   explicit Output(const std::string& path, int show, MediaType type = MediaType::kUnknown)
       : path_(path), type_(type), show_(show) {
+    ext_ = detail::get_extension(path);
     if (type_ == MediaType::kUnknown) {
-      auto ext = detail::get_extension(path);
       if (path_.empty()) {
         type_ = MediaType::kDisable;
-      } else if (detail::is_image(ext)) {
+      } else if (detail::is_image(ext_)) {
         if (detail::is_fmtstr(path)) {
           type_ = MediaType::kFmtStr;
         } else {
           type_ = MediaType::kImage;
         }
-      } else if (detail::is_video(ext)) {
+      } else if (detail::is_video(ext_)) {
         type_ = MediaType::kVideo;
       } else {
         std::cout << "unknown file type: " << path << "\n";
@@ -346,13 +361,16 @@ class Output {
  private:
   void write_video(const cv::Mat& frame) {
     if (!video_.isOpened()) {
-      video_.open(path_, cv::VideoWriter::fourcc('m', 'p', '4', 'v'), 30, frame.size());
+      open_video(frame.size());
     }
     video_ << frame;
   }
 
+  void open_video(const cv::Size& size) { video_.open(path_, detail::ext2fourcc(ext_), 30, size); }
+
  private:
   std::string path_;
+  std::string ext_;
   MediaType type_{MediaType::kUnknown};
   int show_{1};
   size_t frame_id_{0};
