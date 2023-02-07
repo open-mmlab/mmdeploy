@@ -154,8 +154,8 @@ class BatchInputIterator {
 
 class Input {
  public:
-  explicit Input(const std::string& path, MediaType type = MediaType::kUnknown)
-      : path_(path), type_(type) {
+  explicit Input(const std::string& path, bool flip = false, MediaType type = MediaType::kUnknown)
+      : path_(path), flip_(flip), type_(type) {
     if (type_ == MediaType::kUnknown) {
       auto ext = detail::get_extension(path);
       if (detail::is_image(ext)) {
@@ -211,6 +211,9 @@ class Input {
           std::cerr << "failed to load image: " << path << "\n";
         }
       }
+    }
+    if (flip_ && !img.empty()) {
+      cv::flip(img, img, 1);
     }
     return img;
   }
@@ -270,8 +273,9 @@ class Input {
   }
 
  private:
-  MediaType type_{MediaType::kUnknown};
   std::string path_;
+  bool flip_{};
+  MediaType type_{MediaType::kUnknown};
   std::vector<std::string> items_;
   cv::VideoCapture cap_;
   size_t index_{};
@@ -350,7 +354,7 @@ class Output {
     }
     if (show_ >= 0) {
       cv::imshow("", frame);
-      exit = cv::waitKey(show_) == 'q';
+      exit = cv::waitKey(show_) == 27;  // ESC
     }
     ++frame_id_;
     return !exit;
@@ -385,4 +389,5 @@ OutputIterator& OutputIterator::operator=(const cv::Mat& frame) {
 
 }  // namespace mediaio
 }  // namespace utils
+
 #endif  // MMDEPLOY_MEDIAIO_H
