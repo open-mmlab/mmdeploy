@@ -191,8 +191,8 @@ struct NetModule::Impl {
         if (concat_shapes[i] == ref_shape) {
           for (size_t j = 0; j < inputs_.size(); ++j) {
             samples[j].push_back(input_samples[j][i]);
-            indices.push_back(static_cast<int>(i));
           }
+          indices.push_back(static_cast<int>(i));
           if (indices.size() == max_batch_size_) {
             SaveBatch(std::move(samples), std::move(indices), batch_tensors, batch_shapes,
                       batch_sample_idxs);
