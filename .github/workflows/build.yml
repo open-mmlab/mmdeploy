@@ -246,6 +246,8 @@ jobs:
           conda info
           conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
           conda activate $env:CONDA_PY_ENV
+          $env:path = "$env:CONDA_PY_ENV;" + $env:path
+          python -V
           ls $env:CONDA_PY_ENV
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
@@ -269,14 +271,12 @@ jobs:
           echo "GITHUB_PATH=$env:GITHUB_PATH"
           echo "--------------------- Update env:GITHUB_PATH -----------------------------"
           python -V
-      - name: Install python dependencies
+      - name: Setup Python Environment
         run: |
-          echo "--------------------------------------------------"
-          echo "PATH=$PATH"
-          echo "env:path=$env:path"
-          echo "env:PATH=$env:PATH"
-          echo "GITHUB_PATH=$env:GITHUB_PATH"
-          echo "--------------------- Update env:GITHUB_PATH -----------------------------"
+          conda info
+          conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
+          conda activate $env:CONDA_PY_ENV
+          $env:path = "$env:CUDA_PATH\bin;" + $env:path
           python -V
           python -m pip install openmim
           python -m mim install "mmcv-full==${{matrix.mmcv}}"
@@ -284,6 +284,7 @@ jobs:
           python -m pip list
       - name: Build
         run: |
+          $env:path = "$env:CONDA_PY_ENV;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin" + $env:path
           mkdir build
           cd build
           cmake ..  -A x64 -T v142 `
