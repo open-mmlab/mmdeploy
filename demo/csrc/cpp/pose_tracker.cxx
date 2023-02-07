@@ -14,6 +14,7 @@ DEFINE_string(device, "cpu", "Device name, e.g. \"cpu\", \"cuda\"");
 DEFINE_string(output, "", "Output video path or format string");
 
 DEFINE_int32(output_size, 0, "Long-edge of output frames");
+DEFINE_int32(flip, 0, "Set to 1 for flipping the input horizontally");
 DEFINE_int32(show, 1, "Delay passed to `cv::waitKey` when using `cv::imshow`; -1: disable");
 
 DEFINE_string(skeleton, "coco", R"(Path to skeleton data or name of predefined skeletons: "coco")");
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
   // create a tracker state for each video
   mmdeploy::PoseTracker::State state = tracker.CreateState(params);
 
-  utils::mediaio::Input input(ARGS_input);
+  utils::mediaio::Input input(ARGS_input, FLAGS_flip);
   utils::mediaio::Output output(FLAGS_output, FLAGS_show);
 
   utils::Visualize v(FLAGS_output_size);
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
 
     // write to output stream
     if (!output.write(sess.get())) {
-      // user requested exit by pressing 'q'
+      // user requested exit by pressing ESC
       break;
     }
   }
