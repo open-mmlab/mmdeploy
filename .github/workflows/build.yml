@@ -266,7 +266,6 @@ jobs:
           python -V
       - name: Test 2
         continue-on-error: true
-        permission: write
         run: |
           echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>"
           echo "env:path=$env:path"
