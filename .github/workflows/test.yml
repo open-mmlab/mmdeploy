@@ -4,6 +4,10 @@ on: [push, pull_request]
 
 permissions: write-all
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: [self-hosted, win10-3080]
@@ -84,3 +88,4 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
