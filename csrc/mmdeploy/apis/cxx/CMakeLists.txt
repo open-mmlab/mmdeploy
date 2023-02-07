@@ -24,4 +24,5 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
         FILES_MATCHING
         PATTERN "*.cxx"
+        PATTERN "*.h"
         )
