@@ -128,12 +128,6 @@ namespace MMDeploy
             /// <param name="array">keypoint sigmas.</param>
             public void SetKeypointSigmas(float[] array)
             {
-                if (this.KeypointSigmas == null)
-                {
-                    Console.WriteLine("null");
-                    Console.WriteLine(array.Length);
-                }
-
                 this.KeypointSigmasSize = array.Length;
                 this.KeypointSigmas = Marshal.AllocHGlobal(sizeof(float) * array.Length);
                 Marshal.Copy(array, 0, this.KeypointSigmas, array.Length);
