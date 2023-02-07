@@ -222,6 +222,7 @@ jobs:
       OPENCV_DIR: C:\DEPS\opencv\4.6.0
       ONNXRUNTIME_DIR: C:\DEPS\onnxruntime-win-x64-1.8.1
       TENSORRT_DIR: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2
+      CONDA_PY_ENV: D:\actions-runner\_work\mmdeploy\mmdeploy\py
     defaults:
       run:
         shell: pwsh
@@ -242,11 +243,10 @@ jobs:
           submodules: 'recursive'
       - name: Setup Env
         run: |
-          echo "CONDA_PY_ROOT=$pwd\test_env" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           conda info
-          conda create -p "$env:CONDA_PY_ROOT" --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
-          conda activate "$env:CONDA_PY_ROOT"
-          ls "$env:CONDA_PY_ROOT"
+          conda create -p $env:CONDA_PY_ENV --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
+          conda activate $env:CONDA_PY_ENV
+          ls $env:CONDA_PY_ENV
           echo "--------------------------------------------------"
           echo "PATH=$PATH"
           echo "env:path=$env:path"
@@ -325,4 +325,4 @@ jobs:
       - name: Destroy conda env
         if: success() || failure()
         run: |
-          conda env remove -p "$env:CONDA_PY_ROOT"
+          conda env remove -p $env:CONDA_PY_ENV
