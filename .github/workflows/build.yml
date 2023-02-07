@@ -223,8 +223,6 @@ jobs:
       ONNXRUNTIME_DIR: C:\DEPS\onnxruntime-win-x64-1.8.1
       TENSORRT_DIR: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2
       TENSORRT_VERSION: 8.2.3.0
-      GITHUB_PATH: D:\actions-runner\_work\_temp\Python
-      #PYTHON_DIR: D:\actions-runner\_work\_temp\Python
     defaults:
       run:
         shell: pwsh
@@ -246,8 +244,8 @@ jobs:
       - name: Setup Python Environment
         run: |
           conda info
-          conda create -p $pwd:temp_py --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
-          $env:path = "$pwd:temp_py;$env:CUDA_PATH\bin;" + $env:path
+          conda create -p $pwd\temp_py --clone cuda11.3-cudnn8.2-py38-torch1.10 -y
+          $env:path = "$pwd\temp_py;$env:CUDA_PATH\bin;$env:CUDNN_DIR\bin;" + $env:path
           python -V
           python -m pip install $env:TENSORRT_DIR\python\tensorrt-$env:TENSORRT_VERSION-cp38-none-win_amd64.whl
           python -m pip install openmim
@@ -293,7 +291,7 @@ jobs:
           .\build\bin\Release\mmdeploy_tests.exe
       - name: Install mmdeploy converter
         run: |
-          $env:path = "$pwd:temp_py;" + $env:path
+          $env:path = "$pwd\temp_py;" + $env:path
           $env:path = "$env:CUDA_PATH\bin;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;" + $env:path
           $env:path = "$pwd\build\install\bin;" + $env:path
@@ -301,7 +299,7 @@ jobs:
           python .\tools\check_env.py
       - name: Run Converter Unittests
         run: |
-          $env:path = "$pwd:temp_py;$pwd:temp_py\Scripts;" + $env:path
+          $env:path = "$pwd\temp_py;$pwd\temp_py\Scripts;" + $env:path
           $env:path = "$env:CUDA_PATH\bin;$env:CUDNN_DIR\bin;$env:OPENCV_DIR\build\x64\vc15\bin;" + $env:path
           $env:path = "$env:ONNXRUNTIME_DIR\lib;$env:TENSORRT_DIR\bin;$env:TENSORRT_DIR\lib;" + $env:path
           $env:path = "$pwd\build\install\bin;" + $env:path
@@ -325,4 +323,4 @@ jobs:
       - name: Destroy conda env
         if: success() || failure()
         run: |
-          conda env remove -p $pwd:temp_py
+          conda env remove -p $pwd\temp_py
