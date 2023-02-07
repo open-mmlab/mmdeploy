@@ -88,4 +88,5 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          architecture: x64
+          token: ${{ secrets.GITHUB_TOKEN }}
