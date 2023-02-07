@@ -74,6 +74,7 @@ class ArgParse {
   bool _Parse(int argc, char* argv[]) {
     int arg_idx{-1};
     std::vector<std::string> args(infos_.size());
+    std::vector<int> used(infos_.size());
     for (int i = 1; i < argc; ++i) {
       if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
         return false;
@@ -103,7 +104,7 @@ class ArgParse {
           auto& flag = infos_[j];
           if (key == flag.name) {
             args[j] = val;
-            found = true;
+            found = used[j] = 1;
             break;
           }
         }
@@ -115,6 +116,7 @@ class ArgParse {
         for (arg_idx++; arg_idx < infos_.size(); ++arg_idx) {
           if (!infos_[arg_idx].is_flag) {
             args[arg_idx] = argv[i];
+            used[arg_idx] = 1;
             break;
           }
         }
@@ -143,7 +145,7 @@ class ArgParse {
     }
 
     for (int i = 0; i < infos_.size(); ++i) {
-      if (!args[i].empty()) {
+      if (used[i]) {
         try {
           parse_str(infos_[i], args[i]);
         } catch (...) {
