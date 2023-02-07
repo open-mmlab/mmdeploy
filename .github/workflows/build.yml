@@ -231,8 +231,8 @@ jobs:
     defaults:
       run:
         shell: pwsh
-      env:
-        GITHUB_PATH: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2\bin
+        env:
+          GITHUB_PATH: C:\DEPS\tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2\bin
     strategy:
       matrix:
         python-version: [3.8]
