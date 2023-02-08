@@ -34,7 +34,7 @@ $CMAKE_BUILD_TYPE = "Release"
 # possible values:
 # - "trt": tensorrt
 # - "ort": onnxruntime
-# multiple backends should be seperated by ; like "trt;ort"
+# multiple backends should be separated by ; like "trt;ort"
 $MMDEPLOY_TARGET_BACKENDS = "trt"
 
 # onnxruntime config, valid if "ort" in MMDEPLOY_TARGET_BACKENDS
@@ -95,7 +95,7 @@ $MMDEPLOY_BUILD_EXAMPLES = "OFF"
 # - "cpu": cpu
 # - "cuda": gpu
 # - "acl": atlas
-# multiple backends should be seperated by ; like "cpu;cuda"
+# multiple backends should be separated by ; like "cpu;cuda"
 $MMDEPLOY_TARGET_DEVICES = "cpu;cuda"
 
 
@@ -111,12 +111,12 @@ $opencvCustomFolder = ""
 
 # pplcv root dir, if specified, will use user defined pplcv
 # thr root dir should contains lib and include folder.
-$pplcvCustomFolder = "C:\Deps\ppl.cv\pplcv-build\install"
+$pplcvCustomFolder = ""
 
 # codebase config
 # possible values:
 # - ["mmcls", "mmdet", "mmseg", "mmpose", "mmocr", "mmedit", "mmrotate", "mmaction"]
-# multiple backends should be seperated by ; like "mmcls;mmdet"
+# multiple backends should be separated by ; like "mmcls;mmdet"
 $MMDEPLOY_CODEBASES = "all"
 
 
@@ -181,7 +181,7 @@ function Start-DownloadWithRetry {
         }
         catch {
             $attemptTime = [math]::Round(($(Get-Date) - $downloadAttemptStartTime).TotalSeconds, 2)
-            Write-Warning "There is an error encounterd after $attemptTime seconds during package downloading:`n $_"
+            Write-Warning "There is an error encountered after $attemptTime seconds during package downloading:`n $_"
             $Retries--
 
             if ($Retries -eq 0) {
@@ -500,7 +500,7 @@ function Set-Environment {
     # [environment path]
     param ()
     if (-Not (Test-Path $envFile)) {
-        Write-Error "Can't find env.txt in $pwd, Please first download depencencies"
+        Write-Error "Can't find env.txt in $pwd, Please first download dependencies"
     }
     $env_content = Get-Content $envFile
 
@@ -595,7 +595,7 @@ function Install-Dependences {
     }
 
     if (-Not (Test-Path $envFile)) {
-        Write-Error "Can't find env.txt in $pwd, Please first download depencencies"
+        Write-Error "Can't find env.txt in $pwd, Please first download dependencies"
     }
     $env_content = Get-Content $envFile
     Write-Host "Install Dependences to executable folder"
