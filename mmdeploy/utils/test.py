@@ -17,6 +17,11 @@ from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import (IR, Backend, get_backend, get_dynamic_axes,
                             get_ir_config, get_onnx_config)
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
 
 def backend_checker(backend: Backend, require_plugin: bool = False):
     """A decorator which checks if a backend is available.
@@ -189,12 +194,6 @@ class SwitchBackendWrapper:
         self._recover_class = recover_class
 
     def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, trace):
-        self.recover()
-
-    def set(self, **kwargs):
         """Replace attributes in backend wrappers with dummy items."""
         obj = self._recover_class
         self.init = obj.__init__
@@ -203,10 +202,9 @@ class SwitchBackendWrapper:
         obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
         obj.forward = SwitchBackendWrapper.BackendWrapper.forward
         obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
-        for k, v in kwargs.items():
-            setattr(obj, k, v)
+        return self
 
-    def recover(self):
+    def __exit__(self, type, value, trace):
         """Recover to original class."""
         assert self.init is not None and \
             self.forward is not None,\
@@ -215,6 +213,11 @@ class SwitchBackendWrapper:
         obj.__init__ = self.init
         obj.forward = self.forward
         obj.__call__ = self.call
+
+    def set(self, **kwargs):
+        obj = self._recover_class
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
@@ -239,8 +242,7 @@ def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
         if isinstance(actual[i], (list, np.ndarray)):
             actual[i] = torch.tensor(actual[i])
         try:
-            torch.testing.assert_allclose(
-                actual[i], expected[i], rtol=1e-03, atol=1e-05)
+            torch_assert_close(actual[i], expected[i], rtol=1e-03, atol=1e-05)
         except AssertionError as error:
             if tolerate_small_mismatch:
                 assert '(0.00%)' in str(error), str(error)
@@ -417,6 +419,19 @@ def get_backend_outputs(ir_file_path: str,
     if backend == Backend.TENSORRT:
         device = 'cuda'
         model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
+        input_shapes = dict(
+            (k, dict(min_shape=v.shape, max_shape=v.shape, opt_shape=v.shape))
+            for k, v in model_inputs.items())
+        model_inputs_cfg = deploy_cfg['backend_config'].get(
+            'model_inputs', [dict(input_shapes=input_shapes)])
+        if len(model_inputs_cfg) < 1:
+            model_inputs_cfg = [dict(input_shapes=input_shapes)]
+
+        if 'input_shapes' not in model_inputs_cfg[0]:
+            model_inputs_cfg[0]['input_shapes'] = input_shapes
+
+        deploy_cfg['backend_config']['model_inputs'] = model_inputs_cfg
+
     elif backend == Backend.OPENVINO:
         input_info = {
             name: value.shape

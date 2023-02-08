@@ -1,56 +1,29 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
-from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mmcv
 import numpy as np
 import pytest
 import torch
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Backend, Codebase, Task, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-try:
-    import_codebase(Codebase.MMPOSE)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMPOSE.value} is not installed.', allow_module_level=True)
-
 model_cfg_path = 'tests/test_codebase/test_mmpose/data/model.py'
-model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
-    dict(
-        backend_config=dict(type='onnxruntime'),
-        codebase_config=dict(type='mmpose', task='PoseDetection'),
-        onnx_config=dict(
-            type='onnx',
-            export_params=True,
-            keep_initializers_as_inputs=False,
-            opset_version=11,
-            save_file='end2end.onnx',
-            input_names=['input'],
-            output_names=['output'],
-            input_shape=None)))
-
-onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
-img_shape = (192, 256)
-heatmap_shape = (48, 64)
-# mmpose.apis.inference.LoadImage uses opencv, needs float32 in
-# cv2.cvtColor.
-img = np.random.rand(*img_shape, 3).astype(np.float32)
-num_output_channels = model_cfg['data_cfg']['num_output_channels']
 
 
-def test_create_input():
-    deploy_cfg = mmcv.Config(
+@pytest.fixture(scope='module')
+def model_cfg():
+    return load_config(model_cfg_path)[0]
+
+
+@pytest.fixture(scope='module')
+def deploy_cfg():
+    return mmcv.Config(
         dict(
-            backend_config=dict(type=Backend.ONNXRUNTIME.value),
-            codebase_config=dict(
-                type=Codebase.MMPOSE.value, task=Task.POSE_DETECTION.value),
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmpose', task='PoseDetection'),
             onnx_config=dict(
                 type='onnx',
                 export_params=True,
@@ -60,69 +33,87 @@ def test_create_input():
                 input_names=['input'],
                 output_names=['output'],
                 input_shape=None)))
-    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
-    inputs = task_processor.create_input(img, input_shape=img_shape)
-    assert isinstance(inputs, tuple) and len(inputs) == 2
 
 
-def test_init_pytorch_model():
+@pytest.fixture(scope='module')
+def task_processor(model_cfg, deploy_cfg):
+    return build_task_processor(model_cfg, deploy_cfg, 'cpu')
+
+
+img_shape = (192, 256)
+heatmap_shape = (48, 64)
+
+
+# mmpose.apis.inference.LoadImage uses opencv, needs float32 in
+# cv2.cvtColor.
+@pytest.fixture(scope='module')
+def img():
+    return np.random.rand(*img_shape, 3).astype(np.float32)
+
+
+@pytest.fixture(scope='module')
+def model_inputs(task_processor, img):
+    return task_processor.create_input(img, input_shape=img_shape)
+
+
+def test_create_input(model_inputs):
+    assert isinstance(model_inputs, tuple) and len(model_inputs) == 2
+
+
+def test_init_pytorch_model(task_processor):
     from mmpose.models.detectors.base import BasePose
     model = task_processor.init_pytorch_model(None)
     assert isinstance(model, BasePose)
 
 
-@pytest.fixture
-def backend_model():
+@pytest.fixture(scope='module')
+def backend_model(task_processor, model_cfg):
     from mmdeploy.backend.onnxruntime import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-    wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'output': torch.rand(1, num_output_channels, *heatmap_shape),
-    })
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        num_output_channels = model_cfg['data_cfg']['num_output_channels']
+        wrapper.set(
+            outputs={
+                'output': torch.rand(1, num_output_channels, *heatmap_shape),
+            })
 
-    yield task_processor.init_backend_model([''])
-
-    wrapper.recover()
+        yield task_processor.init_backend_model([''])
 
 
 def test_init_backend_model(backend_model):
     assert isinstance(backend_model, torch.nn.Module)
 
 
-def test_run_inference(backend_model):
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
+def test_run_inference(backend_model, task_processor, model_inputs):
+    input_dict, _ = model_inputs
     results = task_processor.run_inference(backend_model, input_dict)
     assert results is not None
 
 
-def test_visualize(backend_model):
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
+def test_visualize(backend_model, task_processor, model_inputs, img, tmp_path):
+    input_dict, _ = model_inputs
     results = task_processor.run_inference(backend_model, input_dict)
-    with TemporaryDirectory() as dir:
-        filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
-        assert os.path.exists(filename)
+    filename = str(tmp_path / 'tmp.jpg')
+    task_processor.visualize(backend_model, img, results[0], filename, '')
+    assert os.path.exists(filename)
 
 
-def test_get_tensor_from_input():
+def test_get_tensor_from_input(task_processor):
     input_data = {'img': torch.ones(3, 4, 5)}
     inputs = task_processor.get_tensor_from_input(input_data)
     assert torch.equal(inputs, torch.ones(3, 4, 5))
 
 
-def test_get_partition_cfg():
-    try:
+def test_get_partition_cfg(task_processor):
+    with pytest.raises(NotImplementedError):
         _ = task_processor.get_partition_cfg(partition_type='')
-    except NotImplementedError:
-        pass
 
 
-def test_get_model_name():
+def test_get_model_name(task_processor):
     model_name = task_processor.get_model_name()
     assert isinstance(model_name, str) and model_name is not None
 
 
-def test_build_dataset_and_dataloader():
+def test_build_dataset_and_dataloader(task_processor, model_cfg):
     from torch.utils.data import DataLoader, Dataset
     dataset = task_processor.build_dataset(
         dataset_cfg=model_cfg, dataset_type='test')
@@ -131,7 +122,7 @@ def test_build_dataset_and_dataloader():
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
 
 
-def test_single_gpu_test_and_evaluate():
+def test_single_gpu_test_and_evaluate(task_processor, model_cfg):
     from mmcv.parallel import MMDataParallel
     dataset = task_processor.build_dataset(
         dataset_cfg=model_cfg, dataset_type='test')

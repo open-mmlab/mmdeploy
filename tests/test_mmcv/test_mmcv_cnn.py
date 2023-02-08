@@ -13,6 +13,7 @@ def test_multiheadattention_ncnn():
     from mmcv.cnn.bricks.transformer import MultiheadAttention
     embed_dims, num_heads = 12, 2
     model = MultiheadAttention(embed_dims, num_heads, batch_first=True)
+    model.eval()
     query = torch.rand(1, 3, embed_dims)
 
     deploy_cfg = mmcv.Config(

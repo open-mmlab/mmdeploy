@@ -6,17 +6,16 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_onnx_model,
                                  get_rewrite_outputs)
 
 try:
-    import_codebase(Codebase.MMDET)
-except ImportError:
-    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
 
 
 @backend_checker(Backend.TENSORRT)
@@ -75,10 +74,7 @@ def test_multiclass_nms_static():
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 @pytest.mark.parametrize('add_ctr_clamp', [True, False])
-@pytest.mark.parametrize('clip_border,max_shape',
-                         [(False, None), (True, torch.tensor([100, 200]))])
-def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool,
-                    clip_border: bool, max_shape: tuple):
+def test_delta2bbox(backend_type: Backend, add_ctr_clamp: bool):
     check_backend(backend_type)
     deploy_cfg = mmcv.Config(
         dict(
@@ -319,7 +315,7 @@ def test__anchorgenerator__single_level_grid_priors():
     # test forward
     with RewriterContext({}, backend_type):
         wrap_output = wrapped_func(x)
-        torch.testing.assert_allclose(output, wrap_output)
+        torch_assert_close(output, wrap_output)
 
     onnx_prefix = tempfile.NamedTemporaryFile().name
 

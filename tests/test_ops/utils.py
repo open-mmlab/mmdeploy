@@ -5,7 +5,6 @@ import tempfile
 
 import mmcv
 import onnx
-import pytest
 import torch
 
 import mmdeploy.apis.tensorrt as trt_apis
@@ -13,8 +12,8 @@ from mmdeploy.utils import Backend
 from mmdeploy.utils.test import assert_allclose, check_backend
 
 
-@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestOnnxRTExporter:
+    __test__ = False
 
     def __init__(self):
         self.backend_name = 'onnxruntime'
@@ -70,8 +69,8 @@ class TestOnnxRTExporter:
         assert_allclose(model_outputs, onnx_outputs, tolerate_small_mismatch)
 
 
-@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestTensorRTExporter:
+    __test__ = False
 
     def __init__(self):
         self.backend_name = 'tensorrt'
@@ -158,8 +157,8 @@ class TestTensorRTExporter:
         assert_allclose(model_outputs, trt_outputs, tolerate_small_mismatch)
 
 
-@pytest.mark.skip(reason='This a not test class but a utility class.')
 class TestNCNNExporter:
+    __test__ = False
 
     def __init__(self):
         self.backend_name = 'ncnn'

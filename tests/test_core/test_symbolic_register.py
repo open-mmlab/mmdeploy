@@ -35,8 +35,8 @@ def create_custom_module():
     del mmdeploy.TestFunc
 
 
-def test_symbolic_rewriter():
-    test_func = mmdeploy.TestFunc.apply
+@pytest.fixture(scope='module')
+def register_custom_rewriter():
 
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc', backend='ncnn')
     @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
@@ -53,6 +53,17 @@ def test_symbolic_rewriter():
         'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
     def symbolic_cummax(symbolic_wrapper, g, input, dim):
         return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
+
+    yield
+
+    SYMBOLIC_REWRITER._registry.remove_record(symbolic_testfunc_default)
+    SYMBOLIC_REWRITER._registry.remove_record(symbolic_testfunc_tensorrt)
+    SYMBOLIC_REWRITER._registry.remove_record(symbolic_cummax)
+
+
+@pytest.mark.usefixtures('register_custom_rewriter')
+def test_symbolic_rewriter():
+    test_func = mmdeploy.TestFunc.apply
 
     class TestModel(torch.nn.Module):
 
@@ -99,17 +110,9 @@ def test_symbolic_rewriter():
     assert nodes[1].domain == 'mmdeploy'
 
 
+@pytest.mark.usefixtures('register_custom_rewriter')
 def test_unregister():
     test_func = mmdeploy.TestFunc.apply
-
-    @SYMBOLIC_REWRITER.register_symbolic('mmdeploy.TestFunc')
-    def symbolic_testfunc_default(symbolic_wrapper, g, x, val):
-        return g.op('mmdeploy::symbolic_testfunc_default', x, val_i=val)
-
-    @SYMBOLIC_REWRITER.register_symbolic(
-        'cummax', is_pytorch=True, arg_descriptors=['v', 'i'])
-    def symbolic_cummax(symbolic_wrapper, g, input, dim):
-        return g.op('mmdeploy::cummax_default', input, dim_i=dim, outputs=2)
 
     class TestModel(torch.nn.Module):
 

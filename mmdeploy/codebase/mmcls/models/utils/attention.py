@@ -143,7 +143,6 @@ def shift_window_msa__forward__default(ctx, self, query, hw_shape):
     'mmcls.models.utils.ShiftWindowMSA.get_attn_mask',
     extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
 def shift_window_msa__get_attn_mask__default(ctx,
-                                             self,
                                              hw_shape,
                                              window_size,
                                              shift_size,
