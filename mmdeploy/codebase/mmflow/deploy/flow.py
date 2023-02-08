@@ -176,7 +176,6 @@ class Flow(BaseTask):
         """
         pass
 
-    # TODO
     @staticmethod
     def run_inference(model: torch.nn.Module,
                       model_inputs: Dict[str, torch.Tensor]) -> list:
@@ -190,7 +189,10 @@ class Flow(BaseTask):
         Returns:
             list: The predictions of model inference.
         """
-        pass
+        result = model(test_mode=True, **model_inputs)
+        if not isinstance(result[0], np.ndarray):
+            result = [result[0].detach().cpu().numpy()]
+        return result
 
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
