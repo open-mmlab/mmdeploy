@@ -109,6 +109,10 @@ $opencvVersion = "4.5.5"
 # use custom opencv, the folder should contain OpenCVConfig.cmake
 $opencvCustomFolder = ""
 
+# pplcv root dir, if specified, will use user defined pplcv
+# thr root dir should contains lib and include folder.
+$pplcvCustomFolder = "C:\Deps\ppl.cv\pplcv-build\install"
+
 # codebase config
 # possible values:
 # - ["mmcls", "mmdet", "mmseg", "mmpose", "mmocr", "mmedit", "mmrotate", "mmaction"]
@@ -411,8 +415,16 @@ function Get-Cudnn {
 function Get-Pplcv {
     param (
         [ValidateSet("10.2", "11.x")]
-        [string] $CudaVerion
+        [string] $CudaVerion,
+        [string] $CustomFolder = ""
     )
+    if ($CustomFolder -ne "") {
+        Write-Host "Using custom pplcv $CustomFolder"
+        # set variable
+        $pplcvDir = [IO.Path]::Combine($CustomFolder, "lib", "cmake", "ppl")
+        $EnvVars["pplcv_DIR"] = $pplcvDir
+        return;
+    }
     # download
     $pplcvCu102url = [DownloadItem]::new(
         "https://github.com/irexyc/mmdeploy-ci-resource/releases/download/pplcv/pplcv-0.6.2.windows10.x86_64.cuda-10.2.zip",
@@ -476,7 +488,7 @@ function Get-Dependences {
 
     # pplcv if use cuda device
     if ($MMDEPLOY_TARGET_DEVICES.Contains("cuda")) {
-        Get-Pplcv -CudaVerion $cudaVersion
+        Get-Pplcv -CudaVerion $cudaVersion -CustomFolder $pplcvCustomFolder
     }
 
     # opencv
