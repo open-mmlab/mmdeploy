@@ -1,6 +1,4 @@
-_base_ = [
-    '../_base_/opticalflow_static.py', '../../_base_/backends/tensorrt.py'
-]
+_base_ = ['./opticalflow_static.py', '../_base_/backends/tensorrt.py']
 
 onnx_config = dict(input_shape=[440, 1024])
 backend_config = dict(
