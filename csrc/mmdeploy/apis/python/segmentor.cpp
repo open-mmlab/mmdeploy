@@ -37,12 +37,22 @@ class PySegmentor {
 
     std::vector<py::array> rets(mats.size());
     for (size_t i = 0; i < mats.size(); ++i) {
-      rets[i] = {
-          {segm[i].height, segm[i].width},                                 // shape
-          segm[i].mask,                                                    // data
-          py::capsule(new Sptr(holder),                                    // handle
-                      [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
-      };
+      if (segm[i].mask != nullptr) {
+        rets[i] = {
+            {segm[i].height, segm[i].width},                                 // shape
+            segm[i].mask,                                                    // mask
+            py::capsule(new Sptr(holder),                                    // handle
+                        [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+        };
+      }
+      if (segm[i].score != nullptr) {
+        rets[i] = {
+            {segm[i].classes, segm[i].height, segm[i].width},                // shape
+            segm[i].score,                                                   // score
+            py::capsule(new Sptr(holder),                                    // handle
+                        [](void* p) { delete reinterpret_cast<Sptr*>(p); })  //
+        };
+      }
     }
     return rets;
   }

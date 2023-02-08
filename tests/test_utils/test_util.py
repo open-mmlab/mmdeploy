@@ -417,15 +417,15 @@ def test_AdvancedEnum():
 
 @pytest.mark.skipif(
     not importlib.util.find_spec('mmedit'), reason='requires mmedit')
-def test_export_info():
-    with tempfile.TemporaryDirectory() as dir:
-        export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')
-        deploy_json = os.path.join(dir, 'deploy.json')
-        pipeline_json = os.path.join(dir, 'pipeline.json')
-        detail_json = os.path.join(dir, 'detail.json')
-        assert os.path.exists(pipeline_json)
-        assert os.path.exists(detail_json)
-        assert os.path.exists(deploy_json)
+def test_export_info(tmp_path):
+    dir = str(tmp_path)
+    export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')
+    deploy_json = os.path.join(dir, 'deploy.json')
+    pipeline_json = os.path.join(dir, 'pipeline.json')
+    detail_json = os.path.join(dir, 'detail.json')
+    assert os.path.exists(pipeline_json)
+    assert os.path.exists(detail_json)
+    assert os.path.exists(deploy_json)
 
 
 def wrap_target():

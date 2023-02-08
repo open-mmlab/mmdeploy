@@ -1,11 +1,11 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "executor.h"
+#include "mmdeploy/executor.h"
 
-#include "common.h"
-#include "common_internal.h"
-#include "executor_internal.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/execution/when_all_value.h"
+#include "mmdeploy/executor_internal.h"
 
 using namespace mmdeploy;
 

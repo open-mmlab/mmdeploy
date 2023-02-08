@@ -43,12 +43,6 @@
     <td>OFF</td>
     <td>Switch to build MMDeploy SDK python package</td>
   </tr>
-  <tr>
-    <td>MMDEPLOY_BUILD_SDK_CXX_API</td>
-    <td>{ON, OFF}</td>
-    <td>OFF</td>
-    <td>Build C++ SDK API</td>
-  </tr>
 
 <tr>
     <td>MMDEPLOY_BUILD_SDK_CSHARP_API</td>
@@ -100,7 +94,7 @@
   </tr>
   <tr>
     <td>MMDEPLOY_TARGET_BACKENDS</td>
-    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "tvm"}</td>
+    <td>{"trt", "ort", "pplnn", "ncnn", "openvino", "torchscript", "snpe", "tvm", "acl"}</td>
     <td>N/A</td>
     <td>Enabling inference engine. <b>By default, no target inference engine is set, since it highly depends on the use case.</b> When more than one engine are specified, it has to be set with a semicolon separated list of inference backend names, e.g. <pre><code>-DMMDEPLOY_TARGET_BACKENDS="trt;ort;pplnn;ncnn;openvino"</code></pre>
     After specifying the inference engine, it's package path has to be passed to cmake as follows, <br>
@@ -119,9 +113,9 @@
 <pre><code>-DInferenceEngine_DIR=${INTEL_OPENVINO_DIR}/deployment_tools/inference_engine/share</code></pre>
     6. <b>torchscript</b>: TorchScript. <code>Torch_DIR</code> is needed.
 <pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
-Currently, <b>The Model Converter supports torchscript, but SDK doesn't</b>.<br>
     7. <b>snpe</b>: qcom snpe. <code>SNPE_ROOT</code> must existed in the environment variable because of C/S mode.<br>
-    8. <b>coreml</b>: CoreML. <code>Torch_DIR</code> is required. <code>Torch_DIR</code>。 <br>
+    8. <b>coreml</b>: CoreML. <code>Torch_DIR</code> is required.
+<pre><code>-DTorch_DIR=${Torch_DIR}</code></pre>
     9. <b>TVM</b>: TVM. <code>TVM_DIR</code> is required. <pre><code>-DTVM_DIR=${TVM_DIR}</code></pre>
    </td>
   </tr>

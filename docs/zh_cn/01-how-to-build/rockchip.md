@@ -234,7 +234,6 @@ mkdir -p build && cd build
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
 -DMMDEPLOY_BUILD_SDK=ON \
--DMMDEPLOY_BUILD_SDK_CXX_API=ON \
 -DMMDEPLOY_BUILD_EXAMPLES=ON \
 -DMMDEPLOY_TARGET_BACKENDS="rknn" \
 -DRKNPU_DEVICE_DIR=${RKNPU_DIR}/rknn/rknn_api/librknn_api \
@@ -281,7 +280,6 @@ export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DOpenCV_DIR=${OpenCV_AARCH64_INSTALL_DIR}/lib/cmake/opencv4

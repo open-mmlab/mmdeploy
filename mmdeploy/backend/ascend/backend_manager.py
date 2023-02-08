@@ -85,7 +85,8 @@ class AscendManager(BaseBackendManager):
 
         om_files = []
         for model_id, onnx_path in enumerate(ir_files):
-            om_path = osp.splitext(onnx_path)[0] + '.om'
+            om_name = osp.splitext(osp.split(onnx_path)[1])[0] + '.om'
+            om_path = osp.join(work_dir, om_name)
             from_onnx(onnx_path, work_dir, model_inputs[model_id])
             om_files.append(om_path)
         backend_files = om_files

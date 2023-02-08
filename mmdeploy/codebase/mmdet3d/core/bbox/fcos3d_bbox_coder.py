@@ -8,7 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.core.bbox.coders.fcos3d_bbox_coder.FCOS3DBBoxCoder.decode_yaw')
-def decode_yaw(ctx, self, bbox, centers2d, dir_cls, dir_offset, cam2img):
+def decode_yaw(ctx, bbox, centers2d, dir_cls, dir_offset, cam2img):
     """Decode yaw angle and change it from local to global.i. Rewrite this func
     to use slice instead of the original operation.
     Args:

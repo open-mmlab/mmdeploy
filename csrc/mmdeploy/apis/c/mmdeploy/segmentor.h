@@ -8,20 +8,23 @@
 #ifndef MMDEPLOY_SEGMENTOR_H
 #define MMDEPLOY_SEGMENTOR_H
 
-#include "common.h"
-#include "executor.h"
-#include "model.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
+#include "mmdeploy/model.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct mmdeploy_segmentation_t {
-  int height;   ///< height of \p mask that equals to the input image's height
-  int width;    ///< width of \p mask that equals to the input image's width
-  int classes;  ///< the number of labels in \p mask
-  int* mask;    ///< segmentation mask of the input image, in which mask[i * width + j] indicates
-                ///< the label id of pixel at (i, j)
+  int height;    ///< height of \p mask that equals to the input image's height
+  int width;     ///< width of \p mask that equals to the input image's width
+  int classes;   ///< the number of labels in \p mask
+  int* mask;     ///< segmentation mask of the input image, in which mask[i * width + j] indicates
+                 ///< the label id of pixel at (i, j), this field might be null
+  float* score;  ///< segmentation score map of the input image in CHW format, in which
+                 ///< score[height * width * k + i * width + j] indicates the score
+                 ///< of class k at pixel (i, j), this field might be null
 } mmdeploy_segmentation_t;
 
 typedef struct mmdeploy_segmentor* mmdeploy_segmentor_t;
