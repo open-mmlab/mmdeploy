@@ -21,6 +21,8 @@ class ORTWrapper(BaseWrapper):
          output_names (Sequence[str] | None): Names of model outputs in order.
             Defaults to `None` and the wrapper will load the output names from
             model.
+         enable_trt (bool): Whether to enable TensorRT inferencing engine.
+            Defaults to `False`.
 
      Examples:
          >>> from mmdeploy.backend.onnxruntime import ORTWrapper
@@ -36,7 +38,8 @@ class ORTWrapper(BaseWrapper):
     def __init__(self,
                  onnx_file: str,
                  device: str,
-                 output_names: Optional[Sequence[str]] = None):
+                 output_names: Optional[Sequence[str]] = None,
+                 enable_trt: bool = False):
         # get the custom op path
         ort_custom_op_path = get_ops_path()
         session_options = ort.SessionOptions()
@@ -53,6 +56,8 @@ class ORTWrapper(BaseWrapper):
         providers = ['CPUExecutionProvider'] \
             if device == 'cpu' else \
             [('CUDAExecutionProvider', {'device_id': device_id})]
+        if enable_trt:
+            providers.append(('TensorrtExecutionProvider', {'device_id': device_id}))
         sess = ort.InferenceSession(
             onnx_file, session_options, providers=providers)
         if output_names is None:
