@@ -207,6 +207,7 @@ def remove_identity(model: onnx.ModelProto):
 
     remove_nodes(model, is_identity)
 
+
 def remove_imports(model: onnx.ModelProto):
     """Remove useless imports from an ONNX model.
 
