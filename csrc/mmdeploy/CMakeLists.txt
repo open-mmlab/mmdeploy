@@ -18,4 +18,8 @@ if (MMDEPLOY_BUILD_SDK)
     add_subdirectory(net)
     add_subdirectory(codebase)
     add_subdirectory(apis)
+
+    if (TRITON_MMDEPLOY_BACKEND)
+        add_subdirectory(triton)
+    endif ()
 endif ()
