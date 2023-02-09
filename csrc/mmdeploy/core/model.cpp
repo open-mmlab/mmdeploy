@@ -72,6 +72,10 @@ Result<std::string> Model::ReadFile(const std::string& file_path) noexcept {
   return impl_->ReadFile(file_path);
 }
 
+Result<Value> Model::ReadConfig(const string& config_path) noexcept {
+  return impl_->ReadConfig(config_path);
+}
+
 MMDEPLOY_DEFINE_REGISTRY(ModelImpl);
 
 }  // namespace mmdeploy::framework

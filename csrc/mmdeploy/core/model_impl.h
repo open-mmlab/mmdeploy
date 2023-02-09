@@ -32,6 +32,8 @@ class ModelImpl {
    */
   virtual Result<std::string> ReadFile(const std::string& file_path) const = 0;
 
+  virtual Result<Value> ReadConfig(const std::string& config_path) const = 0;
+
   /**
    * @brief get meta information of an sdk model
    * @return SDK model's meta information
