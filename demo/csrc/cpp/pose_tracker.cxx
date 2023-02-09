@@ -17,7 +17,8 @@ DEFINE_int32(output_size, 0, "Long-edge of output frames");
 DEFINE_int32(flip, 0, "Set to 1 for flipping the input horizontally");
 DEFINE_int32(show, 1, "Delay passed to `cv::waitKey` when using `cv::imshow`; -1: disable");
 
-DEFINE_string(skeleton, "coco", R"(Path to skeleton data or name of predefined skeletons: "coco")");
+DEFINE_string(skeleton, "coco",
+              R"(Path to skeleton data or name of predefined skeletons: "coco", "coco-wholebody")");
 DEFINE_string(background, "default",
               R"(Output background, "default": original image, "black": black background)");
 
