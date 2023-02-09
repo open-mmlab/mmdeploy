@@ -198,6 +198,11 @@ class Visualize {
 
     void add_pose(const mmdeploy_point_t* pts, const float* scores, int32_t pts_size, double thr) {
       auto& skel = v_.skeleton_;
+      if (skel.point_colors.size() != pts_size) {
+        std::cout << "error: mismatched number of keypoints: " << skel.point_colors.size() << " vs "
+                  << pts_size << ", skip pose visualization.\n";
+        return;
+      }
       std::vector<int> used(pts_size);
       std::vector<int> is_end_point(pts_size);
       for (size_t i = 0; i < skel.links.size(); ++i) {
