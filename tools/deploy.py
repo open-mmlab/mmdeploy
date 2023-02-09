@@ -307,16 +307,6 @@ def main():
     if backend == Backend.SNPE:
         extra['uri'] = args.uri
 
-    if backend == Backend.VACC:
-        from mmdeploy.utils import get_common_config
-        deploy_cfg, model_cfg = load_config(deploy_cfg_path, model_cfg_path)
-        common_cfg = get_common_config(deploy_cfg)
-
-        if common_cfg['model_info'] is None or common_cfg[
-                'vdsp_params_info'] is None:
-            logger.info('All process success.')
-            return
-
     # get backend inference result, try render
     create_process(
         f'visualize {backend.value} model',

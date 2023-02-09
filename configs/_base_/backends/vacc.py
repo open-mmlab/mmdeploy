@@ -1,6 +1,6 @@
 backend_config = dict(
     type='vacc',
-    common_config=dict(name='end2end', model_info=None, vdsp_params_info=None),
+    common_config=dict(name='end2end'),
     model_inputs=[
         dict(
             shape=dict(input=[1, 3, 224, 224]),
@@ -12,5 +12,6 @@ backend_config = dict(
                 per_channel=False,
                 cluster_mode=0,
                 skip_conv_layers=[],
+                calib_num=1000,
             ))
     ])

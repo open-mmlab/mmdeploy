@@ -35,14 +35,19 @@ class VACCManager(BaseBackendManager):
         # For unittest deploy_config will not pass into _build_wrapper
         # function.
 
-        common_cfg = get_common_config(deploy_cfg)
-        model_info_json = common_cfg['model_info']
-        vdsp_params_info_json = common_cfg['vdsp_params_info']
+        try:
+            common_cfg = get_common_config(deploy_cfg)
+            vdsp_params_info = common_cfg['vdsp_params_info']
 
-        return VACCWrapper(
-            model_info_json=model_info_json,
-            vdsp_params_info_json=vdsp_params_info_json,
-            output_names=output_names)
+            return VACCWrapper(
+                lib_file=backend_files[0],
+                graph_file=backend_files[1],
+                param_file=backend_files[2],
+                vdsp_params_info=vdsp_params_info,
+                output_names=output_names)
+        except Exception:
+            print('Build model process success, wrapper process stopped')
+            exit(0)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -113,7 +118,6 @@ class VACCManager(BaseBackendManager):
             Sequence[str]: Backend files.
         """
         logger = get_root_logger()
-
         import copy
 
         from . import is_available
@@ -127,12 +131,14 @@ class VACCManager(BaseBackendManager):
 
         from .onnx2vacc import from_onnx
         model_inputs = get_model_inputs(deploy_cfg)
+        common_params = get_common_config(deploy_cfg)
+        model_name = common_params['name']
 
         backend_files = []
         for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
             model_input = copy.deepcopy(model_inputs[model_id])
             model_file = from_onnx(onnx_path, work_dir, model_input,
-                                   deploy_cfg)
+                                   model_name)
             backend_files += model_file
 
         return backend_files

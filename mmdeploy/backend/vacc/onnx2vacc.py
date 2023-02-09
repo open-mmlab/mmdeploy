@@ -1,22 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-import tempfile
-from typing import Optional, Union
+from typing import Optional
 
-import mmengine
 import onnx
 import tvm
 import tvm.relay as relay
 from vacc import quantize
 
-from mmdeploy.utils import get_common_config, load_config
-
 
 def from_onnx(onnx_model: str,
               output_path: str,
               model_input: dict,
-              deploy_cfg: Union[str, mmengine.Config],
+              model_name: str,
               dataset_file: Optional[str] = None,
               **kwargs):
     """Convert ONNX to VACC.
@@ -24,30 +20,18 @@ def from_onnx(onnx_model: str,
     Args:
         onnx_model (str): Input onnx model.
         output_path (str): File path to save VACC model.
-        deploy_cfg (str | mmengine.Config): The path or content of config.
-        model_cfg (str | mmengine.Config): The path or content of model config.
+        model_name (str): model name.
         dataset_file (str | None): The dataset file for quatization. Default to
             None.
     """
 
-    # load deploy_cfg if necessary
-    deploy_cfg = load_config(deploy_cfg)[0]
-
-    if not isinstance(onnx_model, str):
-        onnx_path = tempfile.NamedTemporaryFile(suffix='.onnx').name
-        onnx.save(onnx_model, onnx_path)
-    else:
-        onnx_path = onnx_model
-
     target = tvm.target.vacc()
-    common_params = get_common_config(deploy_cfg)
 
     quant_mode = model_input.get('qconfig', {}).get('dtype', 'fp16')
     assert quant_mode in ['int8', 'fp16'], quant_mode + ' not support now'
 
-    model = onnx.load(onnx_path)
     shape_dict = model_input['shape']
-    mod, params = relay.frontend.from_onnx(model, shape_dict)
+    mod, params = relay.frontend.from_onnx(onnx.load(onnx_model), shape_dict)
 
     func = mod['main']
     mod = relay.Module.from_expr(func)
@@ -62,7 +46,8 @@ def from_onnx(onnx_model: str,
 
         index = list(range(len(data)))
         random.shuffle(index)
-        for i in index[:1000]:
+        calib_num = model_input.get('qconfig', {}).get('calib_num', 1000)
+        for i in index[:calib_num]:
             calib_data.append({
                 list(shape_dict.keys())[0]:
                 tvm.nd.array(data[str(i)][:].astype('float32'))
@@ -101,8 +86,7 @@ def from_onnx(onnx_model: str,
             graph, lib, params = relay.build(
                 mod=mod, target=target, params=params)
 
-    save_dir = '-'.join([common_params['name'], quant_mode])
-    model_name = common_params['name']
+    save_dir = '-'.join([model_name, quant_mode])
     output_root = osp.join(output_path, save_dir)
     if not osp.exists(output_root):
         os.makedirs(output_root)

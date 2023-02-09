@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import ctypes
 import json
+import os
 from queue import Queue
 from threading import Event, Thread
 from typing import Dict, Generator, Iterable, Optional, Sequence, Union
@@ -60,12 +61,6 @@ class VACCForward:
                 for i in range(ndims):
                     _shape.append(shape.shapes[i])
                 heatmap_shape.append(_shape)
-            '''
-            ndims = shape.ndims
-            heatmap_shape = []
-            for i in range(ndims):
-                heatmap_shape.append(shape.shapes[i])
-            '''
             self.result_dict[input_id] = (num_outputs, heatmap_shape, heatmap)
             self.event_dict[input_id].set()
 
@@ -145,12 +140,37 @@ class VACCWrapper(BaseWrapper):
     """
 
     def __init__(self,
-                 model_info_json,
-                 vdsp_params_info_json,
+                 lib_file: str,
+                 graph_file: str,
+                 param_file: str,
+                 vdsp_params_info: dict,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        self.model = VACCForward(model_info_json, vdsp_params_info_json)
+        father_path = os.path.abspath(
+            os.path.dirname(lib_file) + os.path.sep + '.')
+
+        model_info = {
+            'model_name': 'model',
+            'model_lib_path': lib_file,
+            'model_graph_path': graph_file,
+            'model_params_path': param_file,
+            'hw_config_file': None
+        }
+
+        model_info_json = json.dumps(model_info)
+        with open(os.path.join(father_path, 'model_info.json'),
+                  'w') as json_file:
+            json_file.write(model_info_json)
+
+        vdsp_params_info_json = json.dumps(vdsp_params_info)
+        with open(os.path.join(father_path, 'vdsp_param_info.json'),
+                  'w') as json_file:
+            json_file.write(vdsp_params_info_json)
+
+        self.model = VACCForward(
+            os.path.join(father_path, 'model_info.json'),
+            os.path.join(father_path, 'vdsp_param_info.json'))
 
         super().__init__(output_names)
 
