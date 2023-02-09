@@ -207,7 +207,6 @@ def remove_identity(model: onnx.ModelProto):
 
     remove_nodes(model, is_identity)
 
-
 def remove_imports(model: onnx.ModelProto):
     """Remove useless imports from an ONNX model.
 
@@ -222,8 +221,8 @@ def remove_imports(model: onnx.ModelProto):
     for node in model.graph.node:
         if hasattr(node, 'module') and (node.module not in dst_domain):
             dst_domain.append(node.module)
-    src_domains = [oi.domain for oi in model.opset_import]
+    src_domains = [oi for oi in model.opset_import]
     for i, src_domain in enumerate(src_domains):
-        if src_domain not in dst_domain:
+        if src_domain.domain not in dst_domain:
             logger.info(f'remove opset_import {src_domain}')
-            model.opset_import.pop(i)
+            model.opset_import.remove(src_domain)
