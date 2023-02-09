@@ -7,7 +7,10 @@ onnx_config = dict(
         'input': {
             0: 'batch',
         },
-        'output': {
+        'simcc_x': {
+            0: 'batch'
+        },
+        'simcc_y': {
             0: 'batch'
         }
     })
