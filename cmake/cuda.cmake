@@ -31,7 +31,7 @@ if (MSVC)
         string(REGEX REPLACE ".*v[0-9]+\\.([0-9]+).*" "\\1" _MINOR $ENV{CUDA_PATH})
         if (NOT (${CMAKE_VS_PLATFORM_TOOLSET_CUDA} STREQUAL "${_MAJOR}.${_MINOR}"))
             message(FATAL_ERROR "Auto detected cuda version ${CMAKE_VS_PLATFORM_TOOLSET_CUDA}"
-                " is mismatch with ENV{CUDA_PATH} $ENV{CUDA_PATH}. Plese modify CUDA_PATH"
+                " is mismatch with ENV{CUDA_PATH} $ENV{CUDA_PATH}. Please modify CUDA_PATH"
                 " to match ${CMAKE_VS_PLATFORM_TOOLSET_CUDA} or specify cuda toolset by"
                 " cmake -T cuda=/path/to/cuda ..")
         endif ()
