@@ -164,9 +164,13 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     parser = trt.OnnxParser(network, logger)
 
     if isinstance(onnx_model, str):
-        onnx_model = onnx.load(onnx_model)
+        parse_valid = parser.parse_from_file(onnx_model)
+    elif isinstance(onnx_model, onnx.ModelProto):
+        parse_valid = parser.parse(onnx_model.SerializeToString())
+    else:
+        raise TypeError('Unsupported onnx model type!')
 
-    if not parser.parse(onnx_model.SerializeToString()):
+    if not parse_valid:
         error_msgs = ''
         for error in range(parser.num_errors):
             error_msgs += f'{parser.get_error(error)}\n'
