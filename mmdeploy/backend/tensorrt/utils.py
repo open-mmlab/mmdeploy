@@ -97,6 +97,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               fp16_mode: bool = False,
               int8_mode: bool = False,
               int8_param: Optional[dict] = None,
+              explicit_quant_mode: bool = False,
               device_id: int = 0,
               log_level: trt.Logger.Severity = trt.Logger.ERROR,
               **kwargs) -> trt.ICudaEngine:
@@ -169,6 +170,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
+
+    if explicit_quant_mode:
+        config.setFlag(trt.BuilderFlag.kINT8)
 
     if hasattr(config, 'set_memory_pool_limit'):
         config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE,
