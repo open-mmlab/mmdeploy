@@ -38,11 +38,11 @@ Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format) {
 }
 
 cv::Mat Mat2CVMat(const Mat& mat) {
-  std::map<DataType, int> type_mapper{{DataType::kFLOAT, CV_32F},
-                                      {DataType::kHALF, CV_16U},
-                                      {DataType::kINT8, CV_8U},
-                                      {DataType::kINT32, CV_32S}};
-  auto type = CV_MAKETYPE(type_mapper[mat.type()], mat.channel());
+  static const std::map<DataType, int> type_mapper{{DataType::kFLOAT, CV_32F},
+                                                   {DataType::kHALF, CV_16U},
+                                                   {DataType::kINT8, CV_8U},
+                                                   {DataType::kINT32, CV_32S}};
+  auto type = CV_MAKETYPE(type_mapper.at(mat.type()), mat.channel());
   auto format = mat.pixel_format();
   if (PixelFormat::kBGR == format || PixelFormat::kRGB == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
