@@ -11,7 +11,10 @@ ARG PPLCV_VERSION=0.7.0
 # backends
 ARG ONNXRUNTIME_VERSION=1.8.1
 ARG PPLNN_VERSION=0.8.1
-ARG NCNN_VERSION=20220721
+ARG NCNN_VERSION=20221128
+ARG TENSORRT_VERSION=8.2.3.0
+# tensorrt tar file url
+ARG TENSORRT_URL
 
 # Whether to change pip source to aliyun
 ARG USE_SRC_INSIDE=true
@@ -22,7 +25,8 @@ WORKDIR /root/workspace
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
 ENV CUDA_VERSION=11.3
-ENV PYTHON_VERSION=3.8
+ENV CUDA_INT=113
+
 ### change the system source for installing libs
 RUN if [ ${USE_SRC_INSIDE} ] ; \
     then \
@@ -79,6 +83,7 @@ RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682
     /opt/conda/bin/pip install onnxruntime-gpu==${ONNXRUNTIME_VERSION} &&\
     /opt/conda/bin/pip install openvino-dev[onnx] pycuda openmim cmake &&\
     /opt/conda/bin/pip install opencv-python==${OPENCV_VERSION} opencv-python-headless==${OPENCV_VERSION} opencv-contrib-python==${OPENCV_VERSION}
+    /opt/conda/bin/pip install torch==${TORCH_VERSION}+cu${CUDA_INT} torchvision==${TORCHVISION_VERSION}+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html && \
 
 # create env
 ENV PATH=/opt/conda/bin:$PATH
@@ -123,15 +128,11 @@ RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-pu
 ENV pplcv_DIR=/root/workspace/ppl.cv/cuda-build/install/lib/cmake/ppl
 
 ### install tensorrt
-RUN wget http://${HOST}/TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz && \
-    tar -zxvf TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz &&\
-    ln -sf /root/workspace/TensorRT-8.4.1.5 /root/workspace/TensorRT
-    /opt/conda/bin/pip install TensorRT-8.2.5.1/python/tensorrt-8.2.5.1-cp38-none-linux_x86_64.whl && \
-    wget http://${HOST}/TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz && \
-    tar -zxvf TensorRT-8.4.1.5.Linux.x86_64-gnu.cuda-11.6.cudnn8.4.tar.gz &&\
-    /opt/conda/bin/pip install pycuda
+RUN wget $TENSORRT_URL -C /root/workspace && \
+    tar -zxvf /root/workspace/TensorRT-${TENSORRT_VERSION}*.tar.gz &&\
+    ln -sf /root/workspace/TensorRT-${TENSORRT_VERSION} /root/workspace/TensorRT  &&\
+    export PY_VERSION=$(/opt/conda/bin/python -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}') && \
+    /opt/conda/bin/pip install /root/workspace/TensorRT/python/tensorrt-*-cp${PY_VERSION}-none-linux_x86_64.whl
 
-ENV TENSORRT_DIR=/root/workspace/TensorRT-8.2.5.1
+ENV TENSORRT_DIR=/root/workspace/TensorRT
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
-
-ENV LD_LIBRARY_PATH=/usr/local/cuda-${CUDA}/lib64/:$LD_LIBRARY_PATH
