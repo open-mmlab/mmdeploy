@@ -1,34 +1,51 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <algorithm>
-#include <sstream>
 
 #include "mmdeploy/core/device.h"
-#include "mmdeploy/core/model.h"
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/device_utils.h"
-#include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/core/value.h"
-#include "mmdeploy/experimental/module_adapter.h"
 #include "base.h"
+#include "mmocr.h"
 
 namespace mmdeploy::mmocr {
 
 using std::string;
 using std::vector;
 
-class CTCConvertor : public BaseConvertor {
+class AttnConvertor : public BaseConvertor {
  public:
-  explicit CTCConvertor(const Value& cfg) : BaseConvertor(cfg) {
+  explicit AttnConvertor(const Value& cfg) : BaseConvertor(cfg) {
+    auto model = cfg["context"]["model"].get<Model>();
+    if (!cfg.contains("params")) {
+      MMDEPLOY_ERROR("'params' is required, but it's not in the config");
+      throw_exception(eInvalidArgument);
+    }
     auto& _cfg = cfg["params"];
-    // CTCConverter
-    idx2char_.insert(begin(idx2char_), "<BLK>");
 
+    // unknwon
     if (_cfg.value("with_unknown", false)) {
       unknown_idx_ = static_cast<int>(idx2char_.size());
       idx2char_.emplace_back("<UKN>");
     }
+
+    // BOS/EOS
+    constexpr char start_end_token[] = "<BOS/EOS>";
+    constexpr char padding_token[] = "<PAD>";
+    start_idx_ = static_cast<int>(idx2char_.size());
+    end_idx_ = start_idx_;
+    idx2char_.emplace_back(start_end_token);
+    if (!_cfg.value("start_end_same", true)) {
+      end_idx_ = static_cast<int>(idx2char_.size());
+      idx2char_.emplace_back(start_end_token);
+    }
+
+    // padding
+    padding_idx_ = static_cast<int>(idx2char_.size());
+    idx2char_.emplace_back(padding_token);
+
+    model_ = model;
   }
 
   Result<Value> operator()(const Value& _data, const Value& _prob) {
@@ -60,43 +77,32 @@ class CTCConvertor : public BaseConvertor {
     return make_pointer(to_value(output));
   }
 
-  static std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
+  std::pair<vector<int>, vector<float> > Tensor2Idx(const float* data, int w, int c,
                                                            float valid_ratio) {
     auto decode_len = std::min(w, static_cast<int>(std::ceil(w * valid_ratio)));
     vector<int> indexes;
     indexes.reserve(decode_len);
     vector<float> scores;
     scores.reserve(decode_len);
-    vector<float> prob(c);
-    int prev = blank_idx_;
+
     for (int t = 0; t < decode_len; ++t, data += c) {
-      softmax(data, prob.data(), c);
-      auto iter = max_element(begin(prob), end(prob));
-      auto index = static_cast<int>(iter - begin(prob));
-      if (index != blank_idx_ && index != prev) {
-        indexes.push_back(index);
-        scores.push_back(*iter);
-      }
-      prev = index;
+      auto iter = std::max_element(data, data + c);
+      auto index = static_cast<int>(iter - data);
+      if (index == padding_idx_) continue;
+      if (index == end_idx_) break;
+      indexes.push_back(index);
+      scores.push_back(*iter);
     }
+
     return {indexes, scores};
   }
 
-  // TODO: move softmax & top-k into model
-  static void softmax(const float* src, float* dst, int n) {
-    auto max_val = *std::max_element(src, src + n);
-    float sum{};
-    for (int i = 0; i < n; ++i) {
-      dst[i] = std::exp(src[i] - max_val);
-      sum += dst[i];
-    }
-    for (int i = 0; i < n; ++i) {
-      dst[i] /= sum;
-    }
-  }
-
+private:
+  int start_idx_{-1};
+  int end_idx_{-1};
+  int padding_idx_{-1};
 };
 
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, CTCConvertor);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMOCR, AttnConvertor);
 
 }  // namespace mmdeploy::mmocr
