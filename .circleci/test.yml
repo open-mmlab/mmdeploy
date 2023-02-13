@@ -245,7 +245,7 @@ jobs:
       - run:
           name: Convert model
           command: |
-            bash mmdeploy/.circleci/scripts/linux/convert_onnxruntime.sh mmcls mmdeploy-models/mmcls/onnxruntime
+            bash mmdeploy/.circleci/scripts/linux/test_full_pipeline.sh ort cpu
       - run:
           name: Inference model by SDK
           command: |
