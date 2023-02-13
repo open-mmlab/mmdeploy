@@ -3,6 +3,8 @@
 #ifndef MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_TEXT_RECOGNIZER_HPP_
 #define MMDEPLOY_CSRC_MMDEPLOY_APIS_CXX_TEXT_RECOGNIZER_HPP_
 
+#include <numeric>
+
 #include "mmdeploy/common.hpp"
 #include "mmdeploy/text_detector.hpp"
 #include "mmdeploy/text_recognizer.h"
@@ -40,9 +42,12 @@ class TextRecognizer : public NonMovable {
     const TextDetection* p_bboxes{};
     const int* p_bbox_count{};
 
+    auto n_total_bboxes = static_cast<int>(images.size());
+
     if (!bboxes.empty()) {
       p_bboxes = bboxes.data();
       p_bbox_count = bbox_count.data();
+      n_total_bboxes = std::accumulate(bbox_count.begin(), bbox_count.end(), 0);
     }
 
     TextRecognition* results{};
@@ -53,7 +58,7 @@ class TextRecognizer : public NonMovable {
       throw_exception(static_cast<ErrorCode>(ec));
     }
 
-    std::shared_ptr<TextRecognition> data(results, [count = images.size()](auto p) {
+    std::shared_ptr<TextRecognition> data(results, [count = n_total_bboxes](auto p) {
       mmdeploy_text_recognizer_release_result(p, count);
     });
 
