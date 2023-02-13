@@ -57,7 +57,7 @@ class ORTWrapper(BaseWrapper):
             providers.append(('CUDAExecutionProvider', {
                 'device_id': device_id
             }))
-            if 'TensorRTExecutionProvider' in ort.get_available_providers():
+            if 'TensorrtExecutionProvider' in ort.get_available_providers():
                 providers.append(('TensorrtExecutionProvider', {
                     'device_id': device_id
                 }))
