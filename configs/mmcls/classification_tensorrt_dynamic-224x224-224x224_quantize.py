@@ -43,4 +43,4 @@ quantizer=dict(
     )
 )
 
-checkpoint='/nvme/humu/experiments/ptq_openvino_r50/model_ptq_deploy.pth'
+checkpoint='/mnt/petrelfs/humu/mmrazor/work_dirs/ptq_tensorrt_resnet18_8xb32_in1k_calib32xb32/model_ptq_deploy.pth'
