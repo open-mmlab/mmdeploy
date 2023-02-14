@@ -50,17 +50,16 @@ class ORTWrapper(BaseWrapper):
             logger.warning('The library of onnxruntime custom ops does '
                            f'not exist: {ort_custom_op_path}')
         device_id = parse_device_id(device)
-        providers = []
-        if device == 'cpu':
-            providers.append('CPUExecutionProvider')
-        else:
-            providers.append(('CUDAExecutionProvider', {
+        providers = ['CPUExecutionProvider']
+        if 'cuda' in device:
+            providers.insert(0, ('CUDAExecutionProvider', {
                 'device_id': device_id
             }))
             if 'TensorrtExecutionProvider' in ort.get_available_providers():
-                providers.append(('TensorrtExecutionProvider', {
+                providers.insert(0, ('TensorrtExecutionProvider', {
                     'device_id': device_id
                 }))
+
         sess = ort.InferenceSession(
             onnx_file, session_options, providers=providers)
         if output_names is None:
