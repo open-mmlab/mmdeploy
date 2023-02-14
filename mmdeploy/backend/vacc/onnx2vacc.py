@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-from typing import Optional
 
 import onnx
 import tvm
@@ -9,12 +8,8 @@ import tvm.relay as relay
 from vacc import quantize
 
 
-def from_onnx(onnx_model: str,
-              output_path: str,
-              model_input: dict,
-              model_name: str,
-              dataset_file: Optional[str] = None,
-              **kwargs):
+def from_onnx(onnx_model: str, output_path: str, model_input: dict,
+              model_name: str, **kwargs):
     """Convert ONNX to VACC.
 
     Args:
