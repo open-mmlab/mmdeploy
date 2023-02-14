@@ -29,6 +29,7 @@ else ()
     message(FATAL_ERROR "Cannot find TensorRT libs")
 endif ()
 
+include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(TENSORRT DEFAULT_MSG TENSORRT_INCLUDE_DIR
         TENSORRT_LIBRARY)
 if (NOT TENSORRT_FOUND)
