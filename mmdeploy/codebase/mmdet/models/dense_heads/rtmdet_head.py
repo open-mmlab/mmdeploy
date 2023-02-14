@@ -83,10 +83,7 @@ def rtmdet_head__predict_by_feat(self,
     br_x = (priors[..., 0] + flatten_bbox_preds[..., 2])
     br_y = (priors[..., 1] + flatten_bbox_preds[..., 3])
     bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
-    # directly multiply score factor and feed to nms
-    max_scores, _ = torch.max(flatten_cls_scores, 1)
-    mask = max_scores >= cfg.score_thr
-    scores = flatten_cls_scores.where(mask, flatten_cls_scores.new_zeros(1))
+    scores = flatten_cls_scores
     if not with_nms:
         return bboxes, scores
 
