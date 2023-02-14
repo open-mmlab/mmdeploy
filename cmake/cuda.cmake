@@ -11,6 +11,37 @@ if (MSVC OR (NOT DEFINED CMAKE_CUDA_RUNTIME_LIBRARY))
     set(CUDA_USE_STATIC_CUDA_RUNTIME OFF)
 endif ()
 
+if (MSVC)
+    # no plugin in BuildCustomizations and no specify cuda toolset
+    if (NOT CMAKE_VS_PLATFORM_TOOLSET_CUDA)
+        message(FATAL_ERROR "Please install CUDA MSBuildExtensions")
+    endif ()
+
+    if (CMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR)
+        # find_package(CUDA) required ENV{CUDA_PATH}
+        set(ENV{CUDA_PATH} ${CMAKE_VS_PLATFORM_TOOLSET_CUDA_CUSTOM_DIR})
+    else ()
+        # we use CUDA_PATH and ignore nvcc.exe
+        # cmake will import highest cuda props version, which may not equal to CUDA_PATH
+        if (NOT (DEFINED ENV{CUDA_PATH}))
+            message(FATAL_ERROR "Please set CUDA_PATH environment variable")
+        endif ()
+
+        string(REGEX REPLACE ".*v([0-9]+)\\..*" "\\1" _MAJOR $ENV{CUDA_PATH})
+        string(REGEX REPLACE ".*v[0-9]+\\.([0-9]+).*" "\\1" _MINOR $ENV{CUDA_PATH})
+        if (NOT (${CMAKE_VS_PLATFORM_TOOLSET_CUDA} STREQUAL "${_MAJOR}.${_MINOR}"))
+            message(FATAL_ERROR "Auto detected cuda version ${CMAKE_VS_PLATFORM_TOOLSET_CUDA}"
+                " is mismatch with ENV{CUDA_PATH} $ENV{CUDA_PATH}. Please modify CUDA_PATH"
+                " to match ${CMAKE_VS_PLATFORM_TOOLSET_CUDA} or specify cuda toolset by"
+                " cmake -T cuda=/path/to/cuda ..")
+        endif ()
+
+        if (NOT (DEFINED ENV{CUDA_PATH_V${_MAJOR}_${_MINOR}}))
+            message(FATAL_ERROR "Please set CUDA_PATH_V${_MAJOR}_${_MINOR} environment variable")
+        endif ()
+    endif ()
+endif ()
+
 # nvcc compiler settings
 find_package(CUDA REQUIRED)
 
