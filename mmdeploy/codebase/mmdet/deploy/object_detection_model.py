@@ -660,23 +660,9 @@ class VACCDetModel(End2EndModel):
         from mmdet.registry import MODELS
         head_cfg = self.model_cfg._cfg_dict.model.bbox_head
         head = MODELS.build(head_cfg)
-        if head_cfg.type == 'YOLOXHead':
-            divisor = round(len(outputs) / 3)
-            ret = head.predict_by_feat(
-                outputs[:divisor],
-                outputs[divisor:2 * divisor],
-                outputs[2 * divisor:], [dict(scale_factor=None)],
-                cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        elif head_cfg.type == 'YOLOV3Head':
+        if head_cfg.type == 'YOLOV3Head':
             ret = head.predict_by_feat(
                 outputs, [dict(scale_factor=None)],
-                cfg=self.model_cfg._cfg_dict.model.test_cfg)
-        elif head_cfg.type in ('RetinaHead', 'SSDHead', 'FSAFHead'):
-            divisor = round(len(outputs) / 2)
-            ret = head.predict_by_feat(
-                outputs[:divisor],
-                outputs[divisor:],
-                img_metas=img_metas[0],
                 cfg=self.model_cfg._cfg_dict.model.test_cfg)
         else:
             raise NotImplementedError(f'{head_cfg.type} not supported yet.')
