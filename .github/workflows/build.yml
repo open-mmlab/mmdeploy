@@ -157,7 +157,7 @@ jobs:
           python3 -V
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python3 -m pip install openmim
-          python3 -m mim install "mmcv-full==1.5.2"
+          python3 -m mim install "mmcv-full==1.5.0"
           python3 -m pip install -r requirements.txt
           python3 -m pip install numpy pycuda clip
           python3 -m pip list
