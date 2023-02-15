@@ -244,7 +244,7 @@ def main():
 
             if quant_mode == 'int8':
                 create_process(
-                    'vacc quant dataste',
+                    'vacc quant dataset',
                     target=get_quant,
                     args=(deploy_cfg, model_cfg, shape_dict, checkpoint_path,
                           args.work_dir, args.device),
