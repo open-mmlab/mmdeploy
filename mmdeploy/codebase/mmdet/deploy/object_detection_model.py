@@ -254,7 +254,7 @@ class End2EndModel(BaseBackendModel):
                 else:
                     masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
-                if rescale and masks.shape[0] != 0:
+                if export_postprocess_mask and rescale and masks.shape[0] != 0:
                     masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0),
                         size=[
