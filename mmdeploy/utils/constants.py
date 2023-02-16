@@ -29,6 +29,7 @@ class Task(AdvancedEnum):
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
     VIDEO_RECOGNITION = 'VideoRecognition'
+    INPAINTING = 'Inpainting'
 
 
 class Codebase(AdvancedEnum):
