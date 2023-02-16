@@ -23,5 +23,11 @@ add_jar(${PROJECT_NAME} SOURCES
         mmdeploy/TextRecognizer.java
         mmdeploy/Restorer.java
         mmdeploy/PoseDetector.java
+        mmdeploy/Context.java
+        mmdeploy/Device.java
+        mmdeploy/Model.java
+        mmdeploy/Profiler.java
+        mmdeploy/Scheduler.java
+        mmdeploy/PoseTracker.java
         OUTPUT_NAME mmdeploy
         OUTPUT_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
