@@ -138,7 +138,6 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
-    from functools import partial
     if device_id != 0:
         import os
         old_cuda_device = os.environ.get('CUDA_DEVICE', None)
@@ -152,7 +151,6 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     load_tensorrt_plugin()
     # create builder and network
     logger = trt.Logger(log_level)
-    trtlogger = partial(logger.log, log_level)
     builder = trt.Builder(logger)
 
     # TODO: use TorchAllocator as builder.gpu_allocator
@@ -163,6 +161,9 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     # parse onnx
     parser = trt.OnnxParser(network, logger)
+
+    # switch trt logger to mmdeploy logger
+    logger = get_root_logger()
 
     if isinstance(onnx_model, str):
         parse_valid = parser.parse_from_file(onnx_model)
@@ -206,18 +207,18 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     if config.add_optimization_profile(profile) < 0:
-        trtlogger(f'Invalid optimization profile {profile}.')
+        logger.warning(f'Invalid optimization profile {profile}.')
 
     if fp16_mode:
         if not getattr(builder, 'platform_has_fast_fp16', True):
-            trtlogger('Platform does not has fast native fp16.')
+            logger.warning('Platform does not has fast native fp16.')
         if version.parse(trt.__version__) < version.parse('8'):
             builder.fp16_mode = fp16_mode
         config.set_flag(trt.BuilderFlag.FP16)
 
     if int8_mode:
         if not getattr(builder, 'platform_has_fast_int8', True):
-            trtlogger('Platform does not has fast native int8.')
+            logger.warning('Platform does not has fast native int8.')
         from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
         assert int8_param is not None
