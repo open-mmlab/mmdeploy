@@ -14,7 +14,7 @@ from mmdeploy.utils.test import SwitchBackendWrapper
 
 @pytest.fixture(scope='module')
 def model_cfg():
-    cfg = 'tests/test_codebase/test_mmedit/data/model.py'
+    cfg = 'tests/test_codebase/test_mmedit/data/inpainting_model.py'
     return load_config(cfg)[0]
 
 
@@ -103,7 +103,8 @@ def test_build_dataset(task_processor):
     data = dict(
         test=dict(
             type='ImgInpaintingDataset',
-            ann_file='tests/test_codebase/test_mmedit/ann_file.txt',
+            ann_file='tests/test_codebase/test_mmedit/data/ann_file.txt',
+            data_prefix='tests/test_codebase/test_mmedit/data',
             pipeline=[
                 dict(type='LoadImageFromFile', key='gt_img'),
                 dict(type='LoadMask')
