@@ -116,27 +116,24 @@ public class PoseTrack {
         Device device = new Device(deviceName, 0);
         Context context = new Context();
         context.add(0, device.device_);
+        System.out.printf("Before try\n");
         try {
             poseTracker = new PoseTracker(detModel.model_, poseModel.model_, context.context_);
-            float[] smoothParam = new float[] {0.007f, 1, 1};
-            float[] keypointSigmas = new float[] {0.026f, 0.025f, 0.025f, 0.035f, 0.035f, 0.079f, 0.079f, 0.072f, 0.072f,
-                              0.062f, 0.062f, 0.107f, 0.107f, 0.087f, 0.087f, 0.089f, 0.089f};
-            // PoseTracker.Params params = new PoseTracker.Params(1, 0, 0.5f, -1, 0.7f, -1, 0.5f, -1, 1.25f, -1, 0.5f, keypointSigmas, 17, 0.4f, 10, 1, 0.05f, 0.00625f, smoothParam, 0);
+            System.out.printf("After build pose tracker\n");
             PoseTracker.Params params = poseTracker.initParams();
+            System.out.printf("debugging params poseMaxNumBboxes before set: %d\n", params.poseMaxNumBboxes);
             params.detMinBboxSize = 100;
             params.detInterval = 1;
             params.poseMaxNumBboxes = 6;
-            params = poseTracker.setParams(params.handle, params);
-            // setParamValue must contains handle.
-            long paramsHandle = params.handle;
-            long stateHandle = poseTracker.createState(paramsHandle);
+            long stateHandle = poseTracker.createState(params);
+            System.out.printf("After create state\n");
             VideoCapture cap = new VideoCapture(videoPath);
             if (!cap.isOpened()) {
                 System.out.printf("failed to open video: %s", videoPath);
             }
             int frameID = 0;
             org.opencv.core.Mat frame = new org.opencv.core.Mat();
-
+            System.out.printf("After open video\n");
             while (true)
             {
                 cap.read(frame);

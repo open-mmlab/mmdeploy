@@ -22,7 +22,7 @@ void Java_mmdeploy_PoseTracker_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t* params) {
   auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
-  auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[FJ)V");
+  auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[F)V");
 
   jfloatArray keypointSigmas = env->NewFloatArray(params->keypoint_sigmas_size);
   env->SetFloatArrayRegion(keypointSigmas, 0, params->keypoint_sigmas_size, (jfloat *)params->keypoint_sigmas);
@@ -35,13 +35,13 @@ jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t* params) {
                               (jfloat)params->pose_bbox_scale, (jfloat)params->pose_min_bbox_size, (jfloat)params->pose_nms_thr,
                               keypointSigmas, (jint)params->keypoint_sigmas_size, (jfloat)params->track_iou_thr, (jint)params->track_max_missing,
                               (jint)params->track_history_size, (jfloat)params->std_weight_position, (jfloat)params->std_weight_velocity,
-                              smoothParams, (jlong)params);
+                              smoothParams);
   return param;
 }
 
 void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t* params, jobject customParam) {
   auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
-  auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[FJ)V");
+  auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[F)V");
 
   jfieldID fieldID_detInterval = env->GetFieldID(param_cls, "detInterval", "I");
   jint detInterval = env->GetIntField(customParam, fieldID_detInterval);
@@ -114,15 +114,11 @@ jobject Java_mmdeploy_PoseTracker_setDefaultParams(JNIEnv *env, jobject) {
   return param_cpp_to_java(env, &params);
 }
 
-jobject Java_mmdeploy_PoseTracker_setCustomParams(JNIEnv *env, jobject, jlong paramsHandle, jobject customParams) {
-  mmdeploy_pose_tracker_param_t* params = (mmdeploy_pose_tracker_param_t*) paramsHandle;
-  param_java_to_cpp(env, params, customParams);
-  return param_cpp_to_java(env, params);
-}
-
-jlong Java_mmdeploy_PoseTracker_createState(JNIEnv *, jobject, jlong pipeline, jlong params) {
+jlong Java_mmdeploy_PoseTracker_createState(JNIEnv * env, jobject, jlong pipeline, jobject paramsObject) {
   mmdeploy_pose_tracker_state_t state{};
-  auto ec = mmdeploy_pose_tracker_create_state((mmdeploy_pose_tracker_t)pipeline, (mmdeploy_pose_tracker_param_t*) params, &state);
+  mmdeploy_pose_tracker_param_t params{};
+  param_java_to_cpp(env, &params, paramsObject);
+  auto ec = mmdeploy_pose_tracker_create_state((mmdeploy_pose_tracker_t)pipeline, &params, &state);
   if (ec) {
     MMDEPLOY_ERROR("failed to create pose tracker state, code = {}", ec);
   }

@@ -26,10 +26,10 @@ JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroy
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    createState
- * Signature: (JJ)J
+ * Signature: (JLmmdeploy/PoseTracker/Params;)J
  */
 JNIEXPORT jlong JNICALL Java_mmdeploy_PoseTracker_createState
-  (JNIEnv *, jobject, jlong, jlong);
+  (JNIEnv *, jobject, jlong, jobject);
 
 /*
  * Class:     mmdeploy_PoseTracker
@@ -46,14 +46,6 @@ JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroyState
  */
 JNIEXPORT jobject JNICALL Java_mmdeploy_PoseTracker_setDefaultParams
   (JNIEnv *, jobject);
-
-/*
- * Class:     mmdeploy_PoseTracker
- * Method:    setCustomParams
- * Signature: (JLmmdeploy/PoseTracker/Params;)Lmmdeploy/PoseTracker/Params;
- */
-JNIEXPORT jobject JNICALL Java_mmdeploy_PoseTracker_setCustomParams
-  (JNIEnv *, jobject, jlong, jobject);
 
 /*
  * Class:     mmdeploy_PoseTracker

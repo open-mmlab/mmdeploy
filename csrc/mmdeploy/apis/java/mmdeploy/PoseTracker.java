@@ -7,7 +7,6 @@ public class PoseTracker {
 
     private final long handle;
     private long stateHandle;
-    private long paramsHandle;
 
     public static class Result {
         public PointF[] keypoints;
@@ -42,11 +41,10 @@ public class PoseTracker {
         public float stdWeightPosition;
         public float stdWeightVelocity;
         public float[] smoothParams;
-        public long handle;
         public Params(int detInterval, int detLabel, float detThr, float detMinBboxSize, float detNmsThr, int poseMaxNumBboxes,
                     float poseKptThr, int poseMinKeypoints, float poseBboxScale, float poseMinBboxSize, float poseNmsThr, float[] keypointSigmas,
                     int keypointSigmasSize, float trackIouThr, int trackMaxMissing, int trackHistorySize, float stdWeightPosition, float stdWeightVelocity,
-                    float[] smoothParams, long handle) {
+                    float[] smoothParams) {
                         this.detInterval = detInterval;
                         this.detLabel = detLabel;
                         this.detThr = detThr;
@@ -58,15 +56,20 @@ public class PoseTracker {
                         this.poseBboxScale = poseBboxScale;
                         this.poseMinBboxSize = poseMinBboxSize;
                         this.poseNmsThr = poseNmsThr;
-                        this.keypointSigmas = keypointSigmas;
+                        this.keypointSigmas = new float[keypointSigmasSize];
+                        for (int i = 0; i < keypointSigmasSize; i++) {
+                            this.keypointSigmas[i] = keypointSigmas[i];
+                        }
                         this.keypointSigmasSize = keypointSigmasSize;
                         this.trackIouThr = trackIouThr;
                         this.trackMaxMissing = trackMaxMissing;
                         this.trackHistorySize = trackHistorySize;
                         this.stdWeightPosition = stdWeightPosition;
                         this.stdWeightVelocity = stdWeightVelocity;
-                        this.smoothParams = smoothParams;
-                        this.handle = handle;
+                        this.smoothParams = new float[3];
+                        for (int i = 0; i < 3; i++) {
+                            this.smoothParams[i] = smoothParams[i];
+                        }
                     }
     }
 
@@ -74,18 +77,12 @@ public class PoseTracker {
         handle = create(detect, pose, context);
     }
 
-    public Params setParams(long handle, Params customParams) {
-        Params params = setCustomParams(handle, customParams);
-        return params;
-    }
-
     public Params initParams() {
         Params params = setDefaultParams();
-        paramsHandle = params.handle;
         return params;
     }
 
-    public long createState(long params) {
+    public long createState(Params params) {
         stateHandle = createState(handle, params);
         return stateHandle;
     }
@@ -122,13 +119,11 @@ public class PoseTracker {
 
     private native void destroy(long handle);
 
-    private native long createState(long pipeline, long params);
+    private native long createState(long pipeline, Params params);
 
     private native void destroyState(long state);
 
     public native Params setDefaultParams();
-
-    public native Params setCustomParams(long paramsHandle, Params customParams);
 
     private native Result[] apply(long handle, long[] states, Mat[] frames, int[] detects);
 }
