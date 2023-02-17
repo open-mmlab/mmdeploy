@@ -394,7 +394,7 @@ int main(int argc, char* argv[]) {
   Device device(device_name);
   Context context(device);
 
-  Profiler profiler("/deploee-tmp/profile.bin");
+  Profiler profiler("/tmp/profile.bin");
   context.Add(profiler);
   PoseTracker tracker(Model(det_model_path), Model(pose_model_path), context);
   auto state = tracker.CreateState();

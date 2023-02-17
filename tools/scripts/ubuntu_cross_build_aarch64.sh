@@ -75,6 +75,8 @@ build_mmdeploy() {
     -DMMDEPLOY_TARGET_DEVICES="cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
     -Dncnn_DIR=/tmp/ncnn-aarch64/lib/cmake/ncnn \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
+    -DMMDEPLOY_BUILD_SDK=ON \
     -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4
 
   good_nproc

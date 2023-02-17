@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 
   using namespace mmdeploy;
 
-  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Profiler profiler{"/tmp/profile.bin"};
   mmdeploy::Context context(mmdeploy::Device(device_name, 0));
   context.Add(profiler);
 

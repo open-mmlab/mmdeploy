@@ -1,5 +1,5 @@
 h5py
-mmcv
+mmcv>=2.0.0rc1
 mmengine
 onnx>=1.8.0
 opencv-python==4.5.4.60

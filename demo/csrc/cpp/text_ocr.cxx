@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
   using namespace mmdeploy;
 
   Context context(Device(device_name, 0));
-  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Profiler profiler{"/tmp/profile.bin"};
   context.Add(profiler);
 
   TextDetector detector{Model(det_model_path), context};

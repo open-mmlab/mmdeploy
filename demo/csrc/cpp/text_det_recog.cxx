@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
   auto config = from_json<Value>(config_json);
 
   Context context(Device(device_name, 0));
-  mmdeploy::Profiler profiler{"/deploee-tmp/profile.bin"};
+  mmdeploy::Profiler profiler{"/tmp/profile.bin"};
   context.Add(profiler);
 
   auto thread_pool = Scheduler::ThreadPool(4);
