@@ -21,7 +21,7 @@ void Java_mmdeploy_PoseTracker_destroy(JNIEnv *, jobject, jlong handle) {
 }
 
 jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t* params) {
-  auto param_cls = env->FindClass("mmdeploy/PoseTracker$Param");
+  auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
   auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[FJ)V");
 
   jfloatArray keypointSigmas = env->NewFloatArray(params->keypoint_sigmas_size);
@@ -40,7 +40,7 @@ jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t* params) {
 }
 
 void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t* params, jobject customParam) {
-  auto param_cls = env->FindClass("mmdeploy/PoseTracker$Param");
+  auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
   auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[FJ)V");
 
   jfieldID fieldID_detInterval = env->GetFieldID(param_cls, "detInterval", "I");
