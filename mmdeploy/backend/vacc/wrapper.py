@@ -132,7 +132,9 @@ class VACCWrapper(BaseWrapper):
     """vacc wrapper class for inference.
 
     Args:
-        model_info_json (str): Path of a model info json file.
+        lib_file (str): Path of a model lib file.
+        graph_file (str): Path of a model graph file.
+        param_file (str): Path of a model param file.
         vdsp_params_info_json (str): Path of a vdsp params info json file.
         output_names (Sequence[str] | None): Names of model outputs in order.
             Defaults to `None` and the wrapper will load the output names from
@@ -147,7 +149,7 @@ class VACCWrapper(BaseWrapper):
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
-        father_path = os.path.abspath(
+        parent_path = os.path.abspath(
             os.path.dirname(lib_file) + os.path.sep + '.')
 
         model_info = {
@@ -159,18 +161,18 @@ class VACCWrapper(BaseWrapper):
         }
 
         model_info_json = json.dumps(model_info)
-        with open(os.path.join(father_path, 'model_info.json'),
+        with open(os.path.join(parent_path, 'model_info.json'),
                   'w') as json_file:
             json_file.write(model_info_json)
 
         vdsp_params_info_json = json.dumps(vdsp_params_info)
-        with open(os.path.join(father_path, 'vdsp_param_info.json'),
+        with open(os.path.join(parent_path, 'vdsp_param_info.json'),
                   'w') as json_file:
             json_file.write(vdsp_params_info_json)
 
         self.model = VACCForward(
-            os.path.join(father_path, 'model_info.json'),
-            os.path.join(father_path, 'vdsp_param_info.json'))
+            os.path.join(parent_path, 'model_info.json'),
+            os.path.join(parent_path, 'vdsp_param_info.json'))
 
         super().__init__(output_names)
 
@@ -178,7 +180,7 @@ class VACCWrapper(BaseWrapper):
     def get_backend_file_count() -> int:
         """Return the count of backend file(s)
 
-        ncnn needs a .param file and a .bin file. So the count is 2.
+        vacc needs a .params file/a .json file/a .so file. So the count is 3.
 
         Returns:
             int: The count of required backend file(s).

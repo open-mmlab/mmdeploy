@@ -15,9 +15,8 @@ def from_onnx(onnx_model: str, output_path: str, model_input: dict,
     Args:
         onnx_model (str): Input onnx model.
         output_path (str): File path to save VACC model.
+        model_input (dict): model input config.
         model_name (str): model name.
-        dataset_file (str | None): The dataset file for quatization. Default to
-            None.
     """
 
     target = tvm.target.vacc()
