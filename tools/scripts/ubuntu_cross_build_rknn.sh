@@ -128,7 +128,8 @@ build_mmdeploy_with_rknpu2() {
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
+    -DMMDEPLOY_SHARED_LIBS=ON
 
   good_nproc
   jobs=$?
