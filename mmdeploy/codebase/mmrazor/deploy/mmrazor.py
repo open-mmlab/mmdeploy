@@ -31,11 +31,12 @@ class MMRazor(MMCodebase):
     @classmethod
     def build_task_processor(cls, model_cfg: Config, deploy_cfg: Config,
                              device: str):
-        return Razor(model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
+        return Pruning(
+            model_cfg=model_cfg, deploy_cfg=deploy_cfg, device=device)
 
 
-@MMRAZOR_TASK.register_module(Task.RAZOR.value)
-class Razor(BaseTask):
+@MMRAZOR_TASK.register_module(Task.PRUNING.value)
+class Pruning(BaseTask):
 
     def __init__(self,
                  model_cfg: Config,
@@ -102,11 +103,11 @@ class Razor(BaseTask):
         if hasattr(model, '_razor_divisor'):
             import json
 
+            from mmrazor.models.utils.expandable_utils import \
+                make_channel_divisible
             from mmrazor.utils import print_log
-            from projects.cores.expandable_modules.unit import \
-                expand_static_model
             divisor = getattr(model, '_razor_divisor')
-            structure = expand_static_model(model, divisor)
+            structure = make_channel_divisible(model, divisor)
 
             print_log(f'make divisible: {json.dumps(structure,indent=4)}')
 
