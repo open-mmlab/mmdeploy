@@ -331,6 +331,6 @@ jobs:
       - name: Destroy conda env
         if: success() || failure()
         run: |
-          conda env remove -p $pwd\temp_py
-          Remove-Item -LiteralPath "$pwd\temp_py" -Force -Recurse
+          conda env remove -p $pwd\tmp_env
+          Remove-Item -LiteralPath "$pwd\tmp_env" -Force -Recurse
           Remove-Item -LiteralPath "$pwd\build" -Force -Recurse

@@ -19,13 +19,12 @@ param(
 $MMDeploy_DIR="$PSScriptRoot\..\..\.."
 Set-Location $MMDeploy_DIR
 
-$model_cfg="resnet18_8xb32_in1k.py"
-$checkpoint="resnet18_8xb32_in1k_20210831-fbbb1da6.pth"
+$work_dir="work_dir"
+New-Item -Path $work_dir, .\data -ItemType Directory -Force
+$model_cfg="$work_dir\resnet18_8xb32_in1k.py"
+$checkpoint="$work_dir\resnet18_8xb32_in1k_20210831-fbbb1da6.pth"
 $sdk_cfg="configs\mmcls\classification_sdk_dynamic.py"
 $input_img="tests\data\tiger.jpeg"
-$work_dir="work_dir"
-New-Item $work_dir -ItemType Directory
-New-Item .\data -ItemType Directory
 
 python -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
 
@@ -107,7 +106,5 @@ python tools\profiler.py `
   --shape 224x224
 
 # remove temp data
-Remove-Item -LiteralPath "$pwd\data" -Force -Recurse
-Remove-Item -LiteralPath "$work_dir" -Force -Recurse
-
+Remove-Item -Path "$pwd\data", "$work_dir" -Force -Recurse
 Write-Host "All done"

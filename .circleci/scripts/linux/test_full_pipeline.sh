@@ -6,15 +6,16 @@ set -e
 backend=${1:-ort}
 device=${2:-cpu}
 current_dir=$(cd `dirname $0`; pwd)
-mmdeploy_dir=$current_dir/../../../
+mmdeploy_dir=$current_dir/../../..
 cd $mmdeploy_dir
 
-model_cfg=../resnet18_8xb32_in1k.py
-checkpoint=../resnet18_8xb32_in1k_20210831-fbbb1da6.pth
+work_dir=$mmdeploy_dir/work_dir
+mkdir -p $work_dir $mmdeploy_dir/data
+
+model_cfg=$work_dir/resnet18_8xb32_in1k.py
+checkpoint=$work_dir/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
 input_img=tests/data/tiger.jpeg
-work_dir=work_dir
-mkdir -p $work_dir data
 
 python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
 
