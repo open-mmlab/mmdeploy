@@ -131,11 +131,11 @@ class ModelCompress(BaseTask):
         if hasattr(model, '_razor_divisor'):
             import json
 
+            from mmrazor.models.utils.expandable_utils import \
+                make_channel_divisible
             from mmrazor.utils import print_log
-            from projects.cores.expandable_modules.unit import \
-                expand_static_model
             divisor = getattr(model, '_razor_divisor')
-            structure = expand_static_model(model, divisor)
+            structure = make_channel_divisible(model, divisor)
 
             print_log(f'make divisible: {json.dumps(structure,indent=4)}')
 
