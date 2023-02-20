@@ -9,12 +9,14 @@ current_dir=$(cd `dirname $0`; pwd)
 mmdeploy_dir=$current_dir/../../../
 cd $mmdeploy_dir
 
-python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest ../
 model_cfg=../resnet18_8xb32_in1k.py
 checkpoint=../resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
 input_img=tests/data/tiger.jpeg
 work_dir=work_dir
+mkdir -p $work_dir data
+
+python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
 
 if [ $backend == "ort" ]; then
     deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
@@ -33,8 +35,6 @@ echo "model_cfg=$model_cfg"
 echo "checkpoint=$checkpoint"
 echo "device=$device"
 echo "------------------------------------------------------------------------------------------------------------"
-
-mkdir -p $work_dir
 
 python3 tools/deploy.py \
   $deploy_cfg \
@@ -88,3 +88,6 @@ python3 tools/profiler.py \
   --device $device \
   --batch-size 8 \
   --shape 224x224
+
+rm -rf $work_dir $pwd/data
+echo "All done"

@@ -7,7 +7,7 @@ A helper script to test tools of MMDeploy Converter on windows.
     -Device: support cpu, cuda, cuda:0
 
 .EXAMPLE
-PS> .\test_converter_tools.ps1 -Backend ort -Device cpu
+PS> .circleci/scripts/linux/test_full_pipeline.sh -Backend ort -Device cpu
 #>
 
 param(
@@ -17,11 +17,8 @@ param(
 )
 
 $MMDeploy_DIR="$PSScriptRoot\..\..\.."
-echo $MMDeploy_DIR
-
 Set-Location $MMDeploy_DIR
 
-python -m mim download mmcls --config resnet18_8xb32_in1k --dest .
 $model_cfg="resnet18_8xb32_in1k.py"
 $checkpoint="resnet18_8xb32_in1k_20210831-fbbb1da6.pth"
 $sdk_cfg="configs\mmcls\classification_sdk_dynamic.py"
@@ -29,6 +26,8 @@ $input_img="tests\data\tiger.jpeg"
 $work_dir="work_dir"
 New-Item $work_dir -ItemType Directory
 New-Item .\data -ItemType Directory
+
+python -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
 
 if ($Backend -eq "ort") {
     $deploy_cfg="configs\mmcls\classification_onnxruntime_dynamic.py"
@@ -41,13 +40,12 @@ if ($Backend -eq "ort") {
     Exit
 }
 
-Write-Host "------------------------------------------------------------------------------------------------------------"
+Write-Host "--------------------------------------"
 Write-Host "deploy_cfg=$deploy_cfg"
 Write-Host "$model_cfg=$model_cfg"
 Write-Host "$checkpoint=$checkpoint"
 Write-Host "device=$device"
-Write-Host "------------------------------------------------------------------------------------------------------------"
-
+Write-Host "--------------------------------------"
 
 python tools\deploy.py `
   $deploy_cfg `
@@ -107,5 +105,9 @@ python tools\profiler.py `
   --device $device `
   --batch-size 8 `
   --shape 224x224
+
+# remove temp data
+Remove-Item -LiteralPath "$pwd\data" -Force -Recurse
+Remove-Item -LiteralPath "$work_dir" -Force -Recurse
 
 Write-Host "All done"
