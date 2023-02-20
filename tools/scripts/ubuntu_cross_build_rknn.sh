@@ -102,7 +102,8 @@ build_mmdeploy_with_rknpu() {
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU_DEVICE_DIR="${RKNPU_DIR}"/rknn/rknn_api/librknn_api \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
+    -DMMDEPLOY_SHARED_LIBS=ON
 
   good_nproc
   jobs=$?
