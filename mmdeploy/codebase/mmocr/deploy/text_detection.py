@@ -31,6 +31,9 @@ def process_model_config(model_cfg: mmengine.Config,
         mmengine.Config: the model config after processing.
     """
     pipeline = model_cfg.test_dataloader.dataset.pipeline
+    if isinstance(imgs[0], np.ndarray):
+        # set loading pipeline type
+        pipeline[0].type = 'LoadImageFromNDArray'
 
     for i, transform in enumerate(pipeline):
         if transform.type == 'PackTextDetInputs':
