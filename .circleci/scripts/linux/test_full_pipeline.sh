@@ -25,6 +25,9 @@ if [ $backend == "ort" ]; then
 elif [ $backend == "trt" ]; then
     deploy_cfg=configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
     model=$work_dir/end2end.engine
+elif [ $backend == "ncnn" ]; then
+    deploy_cfg=configs/mmcls/classification_ncnn_static.py
+    model="$work_dir/end2end.param $work_dir/end2end.bin"
 else
   echo "Unsupported Backend=$backend"
   exit
@@ -45,6 +48,14 @@ python3 tools/deploy.py \
   --device $device \
   --work-dir $work_dir \
   --dump-info
+
+if [ $backend == "trt" ]; then
+    echo "Running onnx2tensorrt"
+    python3 tools/onnx2tensorrt.py \
+    $deploy_cfg \
+    $work_dir/end2end.onnx \
+    $work_dir/temp
+fi
 
 # prepare dataset
 wget -P data/ https://github.com/open-mmlab/mmdeploy/files/9401216/imagenet-val100.zip
@@ -90,5 +101,4 @@ python3 tools/profiler.py \
   --batch-size 8 \
   --shape 224x224
 
-rm -rf $work_dir $pwd/data
 echo "All done"

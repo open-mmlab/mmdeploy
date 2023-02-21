@@ -106,5 +106,5 @@ python tools\profiler.py `
   --shape 224x224
 
 # remove temp data
-Remove-Item -Path "$pwd\data", "$work_dir" -Force -Recurse
+Remove-Item -Path "$work_dir" -Force -Recurse
 Write-Host "All done"

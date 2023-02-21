@@ -237,7 +237,7 @@ jobs:
           apt update && apt install unzip
           python3 -V
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim mmengine
+          python3 -m pip install openmim
           python3 -m pip install -r requirements.txt -r requirements/backends.txt
           python3 -m mim install -r requirements/codebases.txt
           python3 -m pip install numpy pycuda clip
