@@ -16,7 +16,7 @@ class TestEnd2EndModel:
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeEditor can use ORTWrapper inside itself
         from mmdeploy.backend.onnxruntime import ORTWrapper
-        from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
+        from mmdeploy.codebase.mmedit.deploy.inpainting_model import \
             End2EndModel
 
         # simplify backend inference
@@ -35,11 +35,14 @@ class TestEnd2EndModel:
 
     def test_forward(self, end2end_model):
         masked_img = np.random.rand(3, 32, 32)
-        mask = np.random.randint(0, 2, (32, 32))
+        mask = np.random.randint(0, 2, (1, 32, 32))
 
         results = end2end_model.forward(masked_img, mask, test_mode=False)
         assert results is not None
 
         results = end2end_model.forward(
-            masked_img, mask, test_mode=True, gt=torch.tensor(results[0]))
+            masked_img,
+            torch.tensor(mask),
+            test_mode=True,
+            gt_img=torch.tensor(results[0]))
         assert results is not None

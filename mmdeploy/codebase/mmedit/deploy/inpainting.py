@@ -33,8 +33,7 @@ def process_model_config(model_cfg: Config,
     config = load_config(model_cfg)[0].copy()
     load_from_file = isinstance(imgs[0], str)
     if not load_from_file:
-        # Remove 'LoadImageFromFile' and 'LoadMask'
-        config.test_pipeline.pop(1)
+        # Remove 'LoadImageFromFile'
         config.test_pipeline.pop(0)
 
     is_static_cfg = input_shape is not None
