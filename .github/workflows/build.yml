@@ -219,10 +219,10 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-  build_cuda113:
+  build_cuda113_linux:
     runs-on: [self-hosted, linux-3090]
     container:
-      image: runningleon814/mmdeploy-base:ubuntu20.04-cuda11.3-cudnn8.2-python3-torch1.10.0
+      image: runningleon814/mmdeploy-base:20.04-cu11.3
       options: "--gpus=all --ipc=host"
       #volumes:
       #  - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
@@ -270,7 +270,7 @@ jobs:
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           bash .circleci/scripts/linux/test_full_pipeline.sh trt cuda
 
-  build_cuda113-windows:
+  build_cuda113_windows:
     runs-on: [self-hosted, win10-3080]
     env:
       BASE_ENV: cuda11.3-cudnn8.2-py3.8-torch1.10
