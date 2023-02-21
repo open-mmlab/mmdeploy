@@ -1,4 +1,4 @@
-<project name="PoseTrack" basedir="." default="rebuild-run">
+<project name="JavaDemo" basedir="." default="rebuild-run">
 
     <property name="src.dir"     value="src"/>
 
@@ -13,7 +13,7 @@
     <property name="classes.dir" value="${build.dir}/classes"/>
     <property name="jar.dir"     value="${build.dir}/jar"/>
 
-    <property name="main-class"  value="${ant.project.name}"/>
+    <property name="main-class"  value="${taskName}"/>
 
 
     <target name="clean">
@@ -27,7 +27,7 @@
 
     <target name="jar" depends="compile">
         <mkdir dir="${jar.dir}"/>
-        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+        <jar destfile="${jar.dir}/${taskName}.jar" basedir="${classes.dir}">
             <manifest>
                 <attribute name="Main-Class" value="${main-class}"/>
             </manifest>
@@ -39,9 +39,9 @@
             <sysproperty key="java.library.path" path="${ocvLibDir}"/>
             <classpath>
                 <path refid="classpath"/>
-                <path location="${jar.dir}/${ant.project.name}.jar"/>
+                <path location="${jar.dir}/${taskName}.jar"/>
             </classpath>
-            <arg line="${device} ${detModel} ${poseModel} ${videoPath}" />
+            <arg line="${command}" />
         </java>
     </target>
 
