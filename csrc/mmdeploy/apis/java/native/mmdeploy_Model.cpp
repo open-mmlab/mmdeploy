@@ -9,8 +9,7 @@
 jlong Java_mmdeploy_Model_create(JNIEnv *env, jobject, jstring path) {
   auto model_path = env->GetStringUTFChars(path, nullptr);
   mmdeploy_model_t model{};
-  auto ec =
-      mmdeploy_model_create_by_path(model_path, &model);
+  auto ec = mmdeploy_model_create_by_path(model_path, &model);
   env->ReleaseStringUTFChars(path, model_path);
   if (ec) {
     MMDEPLOY_ERROR("failed to create model, code = {}", ec);

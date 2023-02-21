@@ -12,24 +12,21 @@ extern "C" {
  * Method:    create
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Context_create
-  (JNIEnv *, jobject);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Context_create(JNIEnv *, jobject);
 
 /*
  * Class:     mmdeploy_Context
  * Method:    add
  * Signature: (JILjava/lang/String;J)I
  */
-JNIEXPORT jint JNICALL Java_mmdeploy_Context_add
-  (JNIEnv *, jobject, jlong, jint, jstring, jlong);
+JNIEXPORT jint JNICALL Java_mmdeploy_Context_add(JNIEnv *, jobject, jlong, jint, jstring, jlong);
 
 /*
  * Class:     mmdeploy_Context
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Context_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_Context_destroy(JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

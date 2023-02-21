@@ -12,24 +12,21 @@ extern "C" {
  * Method:    createThreadPool
  * Signature: (I)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThreadPool
-  (JNIEnv *, jclass, jint);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThreadPool(JNIEnv *, jclass, jint);
 
 /*
  * Class:     mmdeploy_Scheduler
  * Method:    createThread
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThread
-  (JNIEnv *, jclass);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThread(JNIEnv *, jclass);
 
 /*
  * Class:     mmdeploy_Scheduler
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Scheduler_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_Scheduler_destroy(JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

@@ -6,9 +6,11 @@
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
-jlong Java_mmdeploy_PoseTracker_create(JNIEnv *env, jobject, jlong detModel, jlong poseModel, jlong context) {
+jlong Java_mmdeploy_PoseTracker_create(JNIEnv *env, jobject, jlong detModel, jlong poseModel,
+                                       jlong context) {
   mmdeploy_pose_tracker_t pose_tracker{};
-  auto ec = mmdeploy_pose_tracker_create((mmdeploy_model_t)detModel, (mmdeploy_model_t)poseModel, (mmdeploy_context_t)context, &pose_tracker);
+  auto ec = mmdeploy_pose_tracker_create((mmdeploy_model_t)detModel, (mmdeploy_model_t)poseModel,
+                                         (mmdeploy_context_t)context, &pose_tracker);
   if (ec) {
     MMDEPLOY_ERROR("failed to create pose tracker, code = {}", ec);
   }
@@ -20,26 +22,29 @@ void Java_mmdeploy_PoseTracker_destroy(JNIEnv *, jobject, jlong handle) {
   mmdeploy_pose_tracker_destroy((mmdeploy_pose_tracker_t)handle);
 }
 
-jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t* params) {
+jobject param_cpp_to_java(JNIEnv *env, mmdeploy_pose_tracker_param_t *params) {
   auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
   auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[F)V");
 
   jfloatArray keypointSigmas = env->NewFloatArray(params->keypoint_sigmas_size);
-  env->SetFloatArrayRegion(keypointSigmas, 0, params->keypoint_sigmas_size, (jfloat *)params->keypoint_sigmas);
+  env->SetFloatArrayRegion(keypointSigmas, 0, params->keypoint_sigmas_size,
+                           (jfloat *)params->keypoint_sigmas);
   jfloatArray smoothParams = env->NewFloatArray(3);
   env->SetFloatArrayRegion(smoothParams, 0, 3, (jfloat *)params->smooth_params);
 
-  auto param = env->NewObject(param_cls, param_ctor, (jint)params->det_interval, (jint)params->det_label,
-                              (jfloat)params->det_thr, (jfloat)params->det_min_bbox_size, (jfloat)params->det_nms_thr,
-                              (jint)params->pose_max_num_bboxes, (jfloat)params->pose_kpt_thr, (jint)params->pose_min_keypoints,
-                              (jfloat)params->pose_bbox_scale, (jfloat)params->pose_min_bbox_size, (jfloat)params->pose_nms_thr,
-                              keypointSigmas, (jint)params->keypoint_sigmas_size, (jfloat)params->track_iou_thr, (jint)params->track_max_missing,
-                              (jint)params->track_history_size, (jfloat)params->std_weight_position, (jfloat)params->std_weight_velocity,
-                              smoothParams);
+  auto param = env->NewObject(
+      param_cls, param_ctor, (jint)params->det_interval, (jint)params->det_label,
+      (jfloat)params->det_thr, (jfloat)params->det_min_bbox_size, (jfloat)params->det_nms_thr,
+      (jint)params->pose_max_num_bboxes, (jfloat)params->pose_kpt_thr,
+      (jint)params->pose_min_keypoints, (jfloat)params->pose_bbox_scale,
+      (jfloat)params->pose_min_bbox_size, (jfloat)params->pose_nms_thr, keypointSigmas,
+      (jint)params->keypoint_sigmas_size, (jfloat)params->track_iou_thr,
+      (jint)params->track_max_missing, (jint)params->track_history_size,
+      (jfloat)params->std_weight_position, (jfloat)params->std_weight_velocity, smoothParams);
   return param;
 }
 
-void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t* params, jobject customParam) {
+void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t *params, jobject customParam) {
   auto param_cls = env->FindClass("mmdeploy/PoseTracker$Params");
   auto param_ctor = env->GetMethodID(param_cls, "<init>", "(IIFFFIFIFFF[FIFIIFF[F)V");
 
@@ -78,7 +83,8 @@ void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t* params, jobje
   params->pose_nms_thr = (float)poseNmsThr;
   jfieldID fieldID_keypointSigmas = env->GetFieldID(param_cls, "keypointSigmas", "[F");
   auto keypointSigmasObj = env->GetObjectField(customParam, fieldID_keypointSigmas);
-  float* keypointSigmas = (float*)env->GetFloatArrayElements((jfloatArray)keypointSigmasObj, nullptr);
+  float *keypointSigmas =
+      (float *)env->GetFloatArrayElements((jfloatArray)keypointSigmasObj, nullptr);
   params->keypoint_sigmas = keypointSigmas;
   env->ReleaseFloatArrayElements((jfloatArray)keypointSigmasObj, keypointSigmas, JNI_ABORT);
   jfieldID fieldID_keypointSigmasSize = env->GetFieldID(param_cls, "keypointSigmasSize", "I");
@@ -101,7 +107,7 @@ void param_java_to_cpp(JNIEnv *env, mmdeploy_pose_tracker_param_t* params, jobje
   params->std_weight_velocity = stdWeightVelocity;
   jfieldID fieldID_smoothParams = env->GetFieldID(param_cls, "smoothParams", "[F");
   auto smoothParamsObj = env->GetObjectField(customParam, fieldID_smoothParams);
-  float* smoothParams = (float*)env->GetFloatArrayElements((jfloatArray)smoothParamsObj, nullptr);
+  float *smoothParams = (float *)env->GetFloatArrayElements((jfloatArray)smoothParamsObj, nullptr);
   params->smooth_params[0] = smoothParams[0];
   params->smooth_params[1] = smoothParams[1];
   params->smooth_params[2] = smoothParams[2];
@@ -114,7 +120,8 @@ jobject Java_mmdeploy_PoseTracker_setDefaultParams(JNIEnv *env, jobject) {
   return param_cpp_to_java(env, &params);
 }
 
-jlong Java_mmdeploy_PoseTracker_createState(JNIEnv * env, jobject, jlong pipeline, jobject paramsObject) {
+jlong Java_mmdeploy_PoseTracker_createState(JNIEnv *env, jobject, jlong pipeline,
+                                            jobject paramsObject) {
   mmdeploy_pose_tracker_state_t state{};
   mmdeploy_pose_tracker_param_t params{};
   param_java_to_cpp(env, &params, paramsObject);
@@ -130,18 +137,23 @@ void Java_mmdeploy_PoseTracker_destroyState(JNIEnv *, jobject, jlong state) {
   mmdeploy_pose_tracker_destroy_state((mmdeploy_pose_tracker_state_t)state);
 }
 
-jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong handle, jlongArray states, jobjectArray frames, jintArray detects) {
+jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong handle,
+                                             jlongArray states, jobjectArray frames,
+                                             jintArray detects) {
   return With(env, frames, [&](const mmdeploy_mat_t imgs[], int size) {
     mmdeploy_pose_tracker_target_t *results{};
     int *result_count{};
     auto states_array = env->GetLongArrayElements(states, nullptr);
     auto detects_array = env->GetIntArrayElements(detects, nullptr);
-    auto ec = mmdeploy_pose_tracker_apply((mmdeploy_pose_tracker_t)handle, (mmdeploy_pose_tracker_state_t*)states_array, imgs, (int32_t*) detects_array, size, &results, &result_count);
+    auto ec = mmdeploy_pose_tracker_apply((mmdeploy_pose_tracker_t)handle,
+                                          (mmdeploy_pose_tracker_state_t *)states_array, imgs,
+                                          (int32_t *)detects_array, size, &results, &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply pose tracker, code = {}", ec);
     }
     auto result_cls = env->FindClass("mmdeploy/PoseTracker$Result");
-    auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[FLmmdeploy/Rect;I)V");
+    auto result_ctor =
+        env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[FLmmdeploy/Rect;I)V");
     auto total = std::accumulate(result_count, result_count + size, 0);
     auto array = env->NewObjectArray(total, result_cls, nullptr);
     auto pointf_cls = env->FindClass("mmdeploy/PointF");
@@ -156,12 +168,14 @@ jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong ha
         env->SetObjectArrayElement(keypoint_array, j, keypointj);
       }
       auto score_array = env->NewFloatArray(results[i].keypoint_count);
-      env->SetFloatArrayRegion(score_array, 0, results[i].keypoint_count, (jfloat *)results[i].scores);
+      env->SetFloatArrayRegion(score_array, 0, results[i].keypoint_count,
+                               (jfloat *)results[i].scores);
       auto rect = env->NewObject(rect_cls, rect_ctor, (jfloat)results[i].bbox.left,
                                  (jfloat)results[i].bbox.top, (jfloat)results[i].bbox.right,
                                  (jfloat)results[i].bbox.bottom);
       auto target_id = results[i].target_id;
-      auto res = env->NewObject(result_cls, result_ctor, keypoint_array, score_array, rect, (int)target_id);
+      auto res = env->NewObject(result_cls, result_ctor, keypoint_array, score_array, rect,
+                                (int)target_id);
       env->SetObjectArrayElement(array, i, res);
     }
     env->ReleaseLongArrayElements(states, states_array, 0);

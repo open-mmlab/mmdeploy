@@ -12,16 +12,14 @@ extern "C" {
  * Method:    create
  * Signature: (Ljava/lang/String;I)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Device_create
-  (JNIEnv *, jobject, jstring, jint);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Device_create(JNIEnv *, jobject, jstring, jint);
 
 /*
  * Class:     mmdeploy_Device
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Device_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_Device_destroy(JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

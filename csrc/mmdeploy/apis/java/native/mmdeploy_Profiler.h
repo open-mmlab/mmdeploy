@@ -12,16 +12,14 @@ extern "C" {
  * Method:    create
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Profiler_create
-  (JNIEnv *, jobject, jstring);
+JNIEXPORT jlong JNICALL Java_mmdeploy_Profiler_create(JNIEnv *, jobject, jstring);
 
 /*
  * Class:     mmdeploy_Profiler
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_Profiler_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_Profiler_destroy(JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus
 }

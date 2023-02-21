@@ -12,48 +12,43 @@ extern "C" {
  * Method:    create
  * Signature: (JJJ)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_PoseTracker_create
-  (JNIEnv *, jobject, jlong, jlong, jlong);
+JNIEXPORT jlong JNICALL Java_mmdeploy_PoseTracker_create(JNIEnv *, jobject, jlong, jlong, jlong);
 
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    destroy
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroy
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroy(JNIEnv *, jobject, jlong);
 
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    createState
  * Signature: (JLmmdeploy/PoseTracker/Params;)J
  */
-JNIEXPORT jlong JNICALL Java_mmdeploy_PoseTracker_createState
-  (JNIEnv *, jobject, jlong, jobject);
+JNIEXPORT jlong JNICALL Java_mmdeploy_PoseTracker_createState(JNIEnv *, jobject, jlong, jobject);
 
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    destroyState
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroyState
-  (JNIEnv *, jobject, jlong);
+JNIEXPORT void JNICALL Java_mmdeploy_PoseTracker_destroyState(JNIEnv *, jobject, jlong);
 
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    setDefaultParams
  * Signature: ()Lmmdeploy/PoseTracker/Params;
  */
-JNIEXPORT jobject JNICALL Java_mmdeploy_PoseTracker_setDefaultParams
-  (JNIEnv *, jobject);
+JNIEXPORT jobject JNICALL Java_mmdeploy_PoseTracker_setDefaultParams(JNIEnv *, jobject);
 
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    apply
  * Signature: (J[J[Lmmdeploy/Mat;[I)[Lmmdeploy/PoseTracker/Result;
  */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_PoseTracker_apply
-  (JNIEnv *, jobject, jlong, jlongArray, jobjectArray, jintArray);
+JNIEXPORT jobjectArray JNICALL Java_mmdeploy_PoseTracker_apply(JNIEnv *, jobject, jlong, jlongArray,
+                                                               jobjectArray, jintArray);
 
 #ifdef __cplusplus
 }
