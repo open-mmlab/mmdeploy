@@ -11,6 +11,7 @@
 #include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/serialization.h"
 #include "mmdeploy/core/types.h"
+#include "mmdeploy/core/value.h"
 
 namespace mmdeploy {
 
@@ -72,6 +73,8 @@ class MMDEPLOY_API Model {
    * @return the content of file on success
    */
   Result<std::string> ReadFile(const std::string& file_path) noexcept;
+
+  Result<Value> ReadConfig(const std::string& config_path) noexcept;
 
   /**
    * @brief get meta information of the model

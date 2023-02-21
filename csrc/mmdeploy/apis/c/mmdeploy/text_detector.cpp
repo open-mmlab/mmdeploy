@@ -16,22 +16,6 @@
 using namespace std;
 using namespace mmdeploy;
 
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"name", "detector"},
-    {"type", "Inference"},
-    {"params", {{"model", model}}},
-    {"input", {"img"}},
-    {"output", {"dets"}}
-  };
-  // clang-format on
-}
-
-}  // namespace
-
 int mmdeploy_text_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                   mmdeploy_text_detector_t* detector) {
   mmdeploy_context_t context{};
@@ -46,8 +30,7 @@ int mmdeploy_text_detector_create(mmdeploy_model_t model, const char* device_nam
 
 int mmdeploy_text_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                      mmdeploy_text_detector_t* detector) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)detector);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)detector);
 }
 
 int mmdeploy_text_detector_create_by_path(const char* model_path, const char* device_name,

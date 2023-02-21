@@ -16,23 +16,7 @@
 using namespace std;
 using namespace mmdeploy;
 
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"name", "segmentor"},
-    {"type", "Inference"},
-    {"params", {{"model", model}}},
-    {"input", {"img"}},
-    {"output", {"mask"}}
-  };
-  // clang-format on
-}
-
 using ResultType = mmdeploy::Structure<mmdeploy_segmentation_t, mmdeploy::framework::Buffer>;
-
-}  // namespace
 
 int mmdeploy_segmentor_create(mmdeploy_model_t model, const char* device_name, int device_id,
                               mmdeploy_segmentor_t* segmentor) {
@@ -83,8 +67,7 @@ void mmdeploy_segmentor_destroy(mmdeploy_segmentor_t segmentor) {
 
 int mmdeploy_segmentor_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                  mmdeploy_segmentor_t* segmentor) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)segmentor);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)segmentor);
 }
 
 int mmdeploy_segmentor_create_input(const mmdeploy_mat_t* mats, int mat_count,
