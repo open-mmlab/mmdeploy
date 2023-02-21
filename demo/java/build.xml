@@ -41,7 +41,7 @@
                 <path refid="classpath"/>
                 <path location="${jar.dir}/${ant.project.name}.jar"/>
             </classpath>
-            <arg line="cpu /home/PJLAB/hanrui/Downloads/mv_another_mobile/rtmdet-nano-20221229-ncnn-fp16 /home/PJLAB/hanrui/Downloads/mv_another_mobile/rtmpose-tiny-ncnn-20230126-static-fp16-exp-norm /home/PJLAB/hanrui/Downloads/mv_another_mobile/cxk.mp4" />
+            <arg line="${device} ${detModel} ${poseModel} ${videoPath}" />
         </java>
     </target>
 
