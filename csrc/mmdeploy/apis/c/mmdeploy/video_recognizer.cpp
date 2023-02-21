@@ -20,30 +20,6 @@
 
 using namespace mmdeploy;
 
-namespace {
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"type", "Pipeline"},
-    {"input", {"video"}},
-    {
-      "tasks", {
-        {
-          {"name", "Video Recognizer"},
-          {"type", "Inference"},
-          {"input", "video"},
-          {"output", "label"},
-          {"params", {{"model", std::move(model)}}},
-        }
-      }
-    },
-    {"output", "label"},
-  };
-  // clang-format on
-}
-
-}  // namespace
-
 int mmdeploy_video_recognizer_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                      mmdeploy_video_recognizer_t* recognizer) {
   mmdeploy_context_t context{};
@@ -101,8 +77,7 @@ void mmdeploy_video_recognizer_destroy(mmdeploy_video_recognizer_t recognizer) {
 
 int mmdeploy_video_recognizer_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                         mmdeploy_video_recognizer_t* recognizer) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)recognizer);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)recognizer);
 }
 
 int mmdeploy_video_recognizer_create_input(const mmdeploy_mat_t* images,
