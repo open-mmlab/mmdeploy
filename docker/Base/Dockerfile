@@ -1,4 +1,9 @@
-FROM nvidia/cuda:11.3.0-cudnn8-devel-ubuntu20.04
+ARG CUDA_INT=113
+
+FROM nvidia/cuda:11.3.0-cudnn8-devel-ubuntu20.04 AS cuda-113
+FROM nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04 AS cuda-102
+
+FROM cuda-${CUDA_INT} AS final
 
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
@@ -20,8 +25,6 @@ WORKDIR /root/workspace
 
 ENV DEBIAN_FRONTEND=nointeractive
 ENV FORCE_CUDA="1"
-ENV CUDA_VERSION=11.3
-ENV CUDA_INT=113
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         apt-utils \
@@ -33,7 +36,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         wget \
         libopencv-dev \
         libprotobuf-dev protobuf-compiler \
-        cmake \
         unzip \
         python3-dev python3-pip \
     && rm -rf /var/lib/apt/lists/*
@@ -47,8 +49,10 @@ ENV PYTHON_VERSION_SHORT=38
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
     tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz && \
     wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    tar -zxvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz && rm onnxruntime-*.tgz &&\
-    python3 -m pip install --no-cache-dir --upgrade pip &&\
+    tar -xzvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz && rm onnxruntime-*.tgz &&\
+    wget https://github.com/Kitware/CMake/releases/download/v3.25.2/cmake-3.25.2-linux-x86_64.tar.gz &&\
+    tar -xzvf cmake-3.25.2-linux-x86_64.tar.gz && rm cmake-*.tar.gz && mv cmake-* cmake &&\
+    python3 -m pip install --no-cache-dir --upgrade pip setuptools &&\
     python3 -m pip install --no-cache-dir onnxruntime-gpu==${ONNXRUNTIME_VERSION} &&\
     python3 -m pip install --no-cache-dir openvino openvino-dev[onnx] &&\
     python3 -m pip install --no-cache-dir opencv-python==${OPENCV_VERSION} opencv-python-headless==${OPENCV_VERSION} opencv-contrib-python==${OPENCV_VERSION} &&\
@@ -56,7 +60,7 @@ RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682
 
 # create env
 ENV JAVA_HOME=/root/workspace/jdk-18
-ENV PATH=$JAVA_HOME/bin:$PATH
+ENV PATH=$JAVA_HOME/bin:/root/workspace/cmake/bin:$PATH
 ENV ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ENV LD_LIBRARY_PATH=${ONNXRUNTIME_DIR}/lib:$LD_LIBRARY_PATH
