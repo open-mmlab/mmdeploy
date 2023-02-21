@@ -2,7 +2,7 @@
 
     <property name="src.dir"     value="src"/>
 
-    <property name="lib.dir"     value="${ocvJarDir}"/>
+    <property name="lib.dir"     value="${jarDir}"/>
     <property name="mmdeploy.dir"  value="../../csrc/mmdeploy/apis/java"/>
     <path id="classpath">
         <fileset dir="${lib.dir}" includes="**/*.jar"/>
@@ -36,7 +36,7 @@
 
     <target name="run" depends="jar">
         <java fork="true" classname="${main-class}">
-            <sysproperty key="java.library.path" path="${ocvLibDir}"/>
+            <sysproperty key="java.library.path" path="${libDir}"/>
             <classpath>
                 <path refid="classpath"/>
                 <path location="${jar.dir}/${taskName}.jar"/>

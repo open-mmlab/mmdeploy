@@ -1,22 +1,27 @@
 # Usage
 
-**step 1.** Compile Utils with Java APIs.
+**step 1.** Compile Java API classes.
 
 ```
-cd demo/java
-javac --class-path ../../csrc/mmdeploy/apis/java/ Utils.java
+cd ../../csrc/mmdeploy/apis/java
+javac mmdeploy/*.java
 cd ../..
 ```
 
-**step 2.** Run the demo in the console.
+**step 2.** Build the demo java project by Ant.
 
 Use **ImageClassification** as example.
 
-First, you should set your model path and image path to `${MODEL_PATH}` and `${IMAGE_PATH}`. And then follow the bash codes.
+First, you should set your mmdeploy path, opencv path, model path and image path to `${MMDeploy_DIR}`, `${OPENCV_DIR}` `${MODEL_PATH}` and `${IMAGE_PATH}`. And then follow the bash codes.
 
 ```bash
 export TASK=ImageClassification
-export LD_LIBRARY_PATH=${PWD}/build/lib:${LD_LIBRARY_PATH}
-cd demo/java
-java -cp ../../csrc/mmdeploy/apis/java:./ ${TASK}.java cpu ${MODEL_PATH} ${IMAGE_PATH}
+export ARGS=${TASK}.java\ cpu\ ${MODEL_PATH}\ ${IMAGE_PATH}
+ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDeploy_DIR}/build/lib -Dcommand=${ARGS}
+```
+
+As for **PoseTrack**, the ARGS format should be changed to:
+
+```bash
+export ARGS=${TASK}.java\ cpu\ ${DET_MODEL_PATH}\  ${POSE_MODEL_PATH}\ ${VIDEO_PATH}
 ```
