@@ -13,6 +13,8 @@ import org.opencv.core.*;
 import org.opencv.imgproc.*;
 import org.opencv.imgcodecs.*;
 import org.opencv.highgui.*;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,6 +24,11 @@ import java.io.IOException;
 import java.lang.Math;
 
 public class PoseTrack {
+    static {
+        System.loadLibrary("opencv_java455");
+        System.loadLibrary("opencv_video");
+        System.out.printf("debugging whether native_library_name: %s\n", Core.NATIVE_LIBRARY_NAME);
+    }
     public static boolean Visualize(org.opencv.core.Mat frame, PoseTracker.Result[] results, int size,
         int frame_id, boolean with_bbox){
         int skeleton[][] = {{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
@@ -97,6 +104,8 @@ public class PoseTrack {
     }
     public static void main(String[] args) {
         // Parse arguments
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
         if (args.length < 4 || args.length > 5) {
             System.out.println("usage:\njava PoseTracker device_name det_model pose_model video [output]");
             return;
