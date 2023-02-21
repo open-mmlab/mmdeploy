@@ -25,9 +25,7 @@ import java.lang.Math;
 
 public class PoseTrack {
     static {
-        System.loadLibrary("opencv_java455");
-        System.loadLibrary("opencv_video");
-        System.out.printf("debugging whether native_library_name: %s\n", Core.NATIVE_LIBRARY_NAME);
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
     public static boolean Visualize(org.opencv.core.Mat frame, PoseTracker.Result[] results, int size,
         int frame_id, boolean with_bbox){
@@ -54,7 +52,6 @@ public class PoseTrack {
         {
             frame = frame.clone();
         }
-
         for (int i = 0; i < results.length; i++)
         {
             PoseTracker.Result pt = results[i];
@@ -99,7 +96,7 @@ public class PoseTrack {
                 }
             }
 
-            HighGui.imshow("Linear Blend", frame);
+            HighGui.imshow("Pose Track", frame);
             return HighGui.waitKey(1) != 'q';
     }
     public static void main(String[] args) {
@@ -125,27 +122,22 @@ public class PoseTrack {
         Device device = new Device(deviceName, 0);
         Context context = new Context();
         context.add(0, device.device_);
-        System.out.printf("Before try\n");
         try {
             poseTracker = new PoseTracker(detModel.model_, poseModel.model_, context.context_);
-            System.out.printf("After build pose tracker\n");
             PoseTracker.Params params = poseTracker.initParams();
-            System.out.printf("debugging params poseMaxNumBboxes before set: %d\n", params.poseMaxNumBboxes);
-            params.detMinBboxSize = 100;
-            params.detInterval = 1;
+            params.detInterval = 5;
             params.poseMaxNumBboxes = 6;
             long stateHandle = poseTracker.createState(params);
-            System.out.printf("After create state\n");
             VideoCapture cap = new VideoCapture(videoPath);
             if (!cap.isOpened()) {
                 System.out.printf("failed to open video: %s", videoPath);
             }
             int frameID = 0;
             org.opencv.core.Mat frame = new org.opencv.core.Mat();
-            System.out.printf("After open video\n");
             while (true)
             {
                 cap.read(frame);
+                System.out.printf("After read frame %d\n", frameID);
                 if (frame.empty())
                 {
                     break;
@@ -153,7 +145,6 @@ public class PoseTrack {
                 Mat mat = Utils.cvMatToMat(frame);
                 // process
                 PoseTracker.Result[] result = poseTracker.apply(stateHandle, mat, -1);
-
                 // visualize
                 if (!Visualize(frame, result, 1280, frameID++, true))
                 {

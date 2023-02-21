@@ -140,16 +140,15 @@ jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong ha
     if (ec) {
       MMDEPLOY_ERROR("failed to apply pose tracker, code = {}", ec);
     }
-    env->ReleaseLongArrayElements(states, states_array, 0);
-    env->ReleaseIntArrayElements(detects, detects_array, 0);
     auto result_cls = env->FindClass("mmdeploy/PoseTracker$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[FLmmdeploy/Rect;I)V");
-    auto array = env->NewObjectArray(size, result_cls, nullptr);
+    auto total = std::accumulate(result_count, result_count + size, 0);
+    auto array = env->NewObjectArray(total, result_cls, nullptr);
     auto pointf_cls = env->FindClass("mmdeploy/PointF");
     auto pointf_ctor = env->GetMethodID(pointf_cls, "<init>", "(FF)V");
     auto rect_cls = env->FindClass("mmdeploy/Rect");
     auto rect_ctor = env->GetMethodID(rect_cls, "<init>", "(FFFF)V");
-    for (int i = 0; i < size; ++i) {
+    for (int i = 0; i < total; ++i) {
       auto keypoint_array = env->NewObjectArray(results[i].keypoint_count, pointf_cls, nullptr);
       for (int j = 0; j < results[i].keypoint_count; ++j) {
         auto keypointj = env->NewObject(pointf_cls, pointf_ctor, (jfloat)results[i].keypoints[j].x,
@@ -165,6 +164,8 @@ jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong ha
       auto res = env->NewObject(result_cls, result_ctor, keypoint_array, score_array, rect, (int)target_id);
       env->SetObjectArrayElement(array, i, res);
     }
+    env->ReleaseLongArrayElements(states, states_array, 0);
+    env->ReleaseIntArrayElements(detects, detects_array, 0);
     mmdeploy_pose_tracker_release_result(results, result_count, size);
     return array;
   });
