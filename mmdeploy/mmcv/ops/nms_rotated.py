@@ -45,8 +45,9 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
                 _, order = _scores.sort(0, descending=True)
                 dets_sorted = _boxes.index_select(0, order)
                 box_inds = ext_module.nms_rotated(_boxes, _scores, order,
-                                                  dets_sorted, iou_threshold,
-                                                  0)
+                                                  dets_sorted,
+                                                  _boxes.new_empty(1),
+                                                  iou_threshold, 0)
                 box_inds = valid_inds[box_inds]
                 batch_inds = torch.zeros_like(box_inds) + batch_id
                 cls_inds = torch.zeros_like(box_inds) + cls_id
