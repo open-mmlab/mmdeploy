@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-project(model)
+project(mmdeploy_model)
 
 set(MODEL_NAMES "directory_model")
 if (${MMDEPLOY_ZIP_MODEL})

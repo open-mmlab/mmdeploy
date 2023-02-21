@@ -38,7 +38,7 @@ Value config_template(const Model& model) {
           {"type", "Inference"},
           {"input", "patches"},
           {"output", "texts"},
-          {"params", {{"model", std::move(model)}}},
+          {"params", {{"model", model}}},
         }
       }
     },
