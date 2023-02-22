@@ -1,14 +1,14 @@
 # Usage
 
-**step 1.** Check Java API classes existance.
+**step 1.** Check Java API classes existence.
 
-Please check the existance of `*.class` in `${MMDEPLOY_DIR}/csrc/mmdeploy/apis/java/mmdeploy`.
+Please check the existence of `*.class` in `${MMDEPLOY_DIR}/csrc/mmdeploy/apis/java/mmdeploy`.
 
-If there is no existance of `*.class`, please follow this [tutorial](../../csrc/mmdeploy/apis/java/README.md) to build Java class.
+If there is no existence of `*.class`, please follow this [tutorial](../../csrc/mmdeploy/apis/java/README.md) to build Java class.
 
 **step 2.** Install Apache Ant for building Java demo.
 
-Please check the Apache Ant existance using `ant --h` in the command line.
+Please check the Apache Ant existence using `ant --h` in the command line.
 
 If there is no Apache Ant installed, please follow the command below.
 
@@ -29,8 +29,8 @@ If your Ant are not installed to `/usr/share/ant` folder, you can use
 ```
 whereis ant
 ```
-to check your specific `ANT_HOME` and `PATH` variable.
 
+to check your specific `ANT_HOME` and `PATH` variable.
 
 **step 3.** Build OpenCV jar package (PoseTracker only).
 

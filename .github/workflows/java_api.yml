@@ -54,7 +54,7 @@ jobs:
           javac mmdeploy/*.java
           popd
           pushd demo/java
-          javac -classpath ../../csrc/mmdeploy/apis/java/ Utils.java
+          javac -classpath ../../csrc/mmdeploy/apis/java/ src/Utils.java
           popd
       - name: Install mmdeploy with onnxruntime backend and java api
         run: |
