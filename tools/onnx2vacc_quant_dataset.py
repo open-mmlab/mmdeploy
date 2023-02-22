@@ -3,6 +3,7 @@ import argparse
 import logging
 import os.path as osp
 from copy import deepcopy
+from typing import Optional, Sequence
 
 import h5py
 import tqdm
@@ -17,6 +18,39 @@ def get_tensor_func(model, input_data):
     return input_data['inputs']
 
 
+def process_model_config(model_cfg: Config,
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (Config): The model config.
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        Config: the model config after processing.
+    """
+
+    cfg = model_cfg.copy()
+
+    pipeline = cfg.test_pipeline
+
+    for i, transform in enumerate(pipeline):
+        # for static exporting
+        if transform.type == 'Resize':
+            pipeline[i].keep_ratio = False
+            pipeline[i].scale = tuple(input_shape)
+        if transform.type in ('YOLOv5KeepRatioResize', 'LetterResize'):
+            pipeline[i].scale = tuple(input_shape)
+
+    pipeline = [
+        transform for transform in pipeline
+        if transform.type != 'LoadAnnotations'
+    ]
+    cfg.test_pipeline = pipeline
+    return cfg
+
+
 def get_quant(deploy_cfg: Config,
               model_cfg: Config,
               shape_dict: dict,
@@ -26,6 +60,8 @@ def get_quant(deploy_cfg: Config,
               dataset_type: str = 'val'):
 
     model_shape = list(shape_dict.values())[0]
+    model_cfg = process_model_config(model_cfg,
+                                     (model_shape[3], model_shape[2]))
 
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
     model = task_processor.build_pytorch_model(checkpoint_path)
