@@ -5,17 +5,17 @@ public class Model {
         System.loadLibrary("mmdeploy_java");
     }
 
-    public final long model_;
+    public final long modelHandle;
 
     public Model(String path) {
-        model_ = create(path);
+        modelHandle = create(path);
     }
 
     public void release() {
-        destroy(model_);
+        destroy(modelHandle);
     }
 
     private native long create(String path);
 
-    private native void destroy(long model_);
+    private native void destroy(long modelHandle);
 }

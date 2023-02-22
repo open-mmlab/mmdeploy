@@ -5,19 +5,19 @@ public class Profiler {
         System.loadLibrary("mmdeploy_java");
     }
 
-    public final long profiler_;
+    public final long profilerHandle;
     private String path_;
 
     public Profiler(String path) {
         path_ = path;
-        profiler_ = create(path);
+        profilerHandle = create(path);
     }
 
     public void release() {
-        destroy(profiler_);
+        destroy(profilerHandle);
     }
 
     private native long create(String path);
 
-    private native void destroy(long profiler_);
+    private native void destroy(long profilerHandle);
 }

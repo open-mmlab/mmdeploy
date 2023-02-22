@@ -3,7 +3,6 @@ import mmdeploy.DataType;
 import mmdeploy.Mat;
 
 import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
 import org.opencv.imgcodecs.*; // imread, imwrite, etc
 
 import javax.imageio.ImageIO;
@@ -27,8 +26,7 @@ public class Utils {
     {
         byte[] dataPointer = new byte[cvMat.rows() * cvMat.cols() * cvMat.channels() * (int)cvMat.elemSize()];
         cvMat.get(0, 0, dataPointer);
-        Mat mat = new Mat(cvMat.rows(), cvMat.cols(), cvMat.channels(),
-                             PixelFormat.BGR, DataType.INT8, dataPointer);
-        return mat;
+        return new Mat(cvMat.rows(), cvMat.cols(), cvMat.channels(),
+                PixelFormat.BGR, DataType.INT8, dataPointer);
     }
 }

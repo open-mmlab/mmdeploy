@@ -5,29 +5,29 @@ public class Scheduler {
         System.loadLibrary("mmdeploy_java");
     }
 
-    private static long scheduler_;
+    private static long schedulerHandle;
 
     public Scheduler(long scheduler) {
-        scheduler_ = scheduler;
+        schedulerHandle = scheduler;
     }
 
     public static long threadPool(int numThreads) {
-        scheduler_ = createThreadPool(numThreads);
-        return scheduler_;
+        schedulerHandle = createThreadPool(numThreads);
+        return schedulerHandle;
     }
 
     public static long thread() {
-        scheduler_ = createThread();
-        return scheduler_;
+        schedulerHandle = createThread();
+        return schedulerHandle;
     }
 
     public void release() {
-        destroy(scheduler_);
+        destroy(schedulerHandle);
     }
 
     private static native long createThreadPool(int numThreads);
 
     private static native long createThread();
 
-    private native void destroy(long scheduler_);
+    private native void destroy(long schedulerHandle);
 }

@@ -5,22 +5,22 @@ public class Context {
         System.loadLibrary("mmdeploy_java");
     }
 
-    public final long context_;
+    public final long contextHandle;
 
     public Context() {
-        context_ = create();
+        contextHandle = create();
     }
 
     public void add(int contextType, String name, long handle) {
-        add(context_, contextType, name, handle);
+        add(contextHandle, contextType, name, handle);
     }
 
     public void add(int contextType, long handle) {
-        add(context_, contextType, "", handle);
+        add(contextHandle, contextType, "", handle);
     }
 
     public void release() {
-        destroy(context_);
+        destroy(contextHandle);
     }
 
     private native long create();

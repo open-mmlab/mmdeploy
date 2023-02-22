@@ -1,4 +1,3 @@
-import mmdeploy.PoseTracker;
 import mmdeploy.PixelFormat;
 import mmdeploy.PointF;
 import mmdeploy.DataType;
@@ -7,14 +6,13 @@ import mmdeploy.Model;
 import mmdeploy.Device;
 import mmdeploy.Context;
 import mmdeploy.Profiler;
+import mmdeploy.PoseTracker.*;
 
 import org.opencv.videoio.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 import org.opencv.imgcodecs.*;
 import org.opencv.highgui.*;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -23,12 +21,12 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
-public class PoseTrack {
+public class PoseTracker {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
-    public static boolean Visualize(org.opencv.core.Mat frame, PoseTracker.Result[] results, int size,
-        int frame_id, boolean with_bbox){
+    public static boolean Visualize(org.opencv.core.Mat frame, mmdeploy.PoseTracker.Result[] results, int size,
+        int frameID, boolean withBbox){
         int skeleton[][] = {{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
                 {5, 6}, {5, 7}, {6, 8}, {7, 9}, {8, 10}, {1, 2}, {0, 1},
                 {0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}};
@@ -54,7 +52,7 @@ public class PoseTrack {
         }
         for (int i = 0; i < results.length; i++)
         {
-            PoseTracker.Result pt = results[i];
+            mmdeploy.PoseTracker.Result pt = results[i];
             for (int j = 0; j < pt.keypoints.length; j++)
             {
                 PointF p = pt.keypoints[j];
@@ -62,18 +60,18 @@ public class PoseTrack {
                 p.y *= scale;
                 pt.keypoints[j] = p;
             }
-            float score_thr = 0.5f;
+            float scoreThr = 0.5f;
             int used[] = new int[pt.keypoints.length * 2];
             for (int j = 0; j < skeleton.length; j++)
             {
                 int u = skeleton[j][0];
                 int v = skeleton[j][1];
-                if (pt.scores[u] > score_thr && pt.scores[v] > score_thr)
+                if (pt.scores[u] > scoreThr && pt.scores[v] > scoreThr)
                 {
                     used[u] = used[v] = 1;
-                    Point p_u = new Point(pt.keypoints[u].x, pt.keypoints[u].y);
-                    Point p_v = new Point(pt.keypoints[v].x, pt.keypoints[v].y);
-                    Imgproc.line(frame, p_u, p_v, palette[linkColor[j]], 1);
+                    Point pointU = new Point(pt.keypoints[u].x, pt.keypoints[u].y);
+                    Point pointV = new Point(pt.keypoints[v].x, pt.keypoints[v].y);
+                    Imgproc.line(frame, pointU, pointV, palette[linkColor[j]], 1);
                 }
             }
             for (int j = 0; j < pt.keypoints.length; j++)
@@ -84,7 +82,7 @@ public class PoseTrack {
                     Imgproc.circle(frame, p, 1, palette[pointColor[j]], 2);
                 }
             }
-            if (with_bbox)
+            if (withBbox)
             {
                 float bbox[] = {pt.bbox.left, pt.bbox.top, pt.bbox.right, pt.bbox.bottom};
                 for (int j = 0; j < 4; j++)
@@ -101,10 +99,8 @@ public class PoseTrack {
     }
     public static void main(String[] args) {
         // Parse arguments
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
         if (args.length < 4 || args.length > 5) {
-            System.out.println("usage:\njava PoseTracker device_name det_model pose_model video [output]");
+            System.out.println("usage:\n-Dcommand needs deviceName detModel poseModel videoPath [outputDir]");
             return;
         }
         String deviceName = args[0];
@@ -116,15 +112,15 @@ public class PoseTrack {
         }
 
         // create pose tracker
-        PoseTracker poseTracker = null;
+        mmdeploy.PoseTracker poseTracker = null;
         Model detModel = new Model(detModelPath);
         Model poseModel = new Model(poseModelPath);
         Device device = new Device(deviceName, 0);
         Context context = new Context();
-        context.add(0, device.device_);
+        context.add(0, device.deviceHandle);
         try {
-            poseTracker = new PoseTracker(detModel.model_, poseModel.model_, context.context_);
-            PoseTracker.Params params = poseTracker.initParams();
+            poseTracker = new mmdeploy.PoseTracker(detModel.modelHandle, poseModel.modelHandle, context.contextHandle);
+            mmdeploy.PoseTracker.Params params = poseTracker.initParams();
             params.detInterval = 5;
             params.poseMaxNumBboxes = 6;
             long stateHandle = poseTracker.createState(params);
@@ -137,14 +133,14 @@ public class PoseTrack {
             while (true)
             {
                 cap.read(frame);
-                System.out.printf("After read frame %d\n", frameID);
+                System.out.printf("processing frame %d\n", frameID);
                 if (frame.empty())
                 {
                     break;
                 }
                 Mat mat = Utils.cvMatToMat(frame);
                 // process
-                PoseTracker.Result[] result = poseTracker.apply(stateHandle, mat, -1);
+                mmdeploy.PoseTracker.Result[] result = poseTracker.apply(stateHandle, mat, -1);
                 // visualize
                 if (!Visualize(frame, result, 1280, frameID++, true))
                 {
