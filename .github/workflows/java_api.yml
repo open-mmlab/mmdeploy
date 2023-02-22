@@ -67,7 +67,7 @@ jobs:
           pushd opencv
           mkdir -p build && pushd build
           cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
-          make -j8 && make install
+          make -j8 && sudo make install
           popd
           export OPENCV_DIR=${PWD}
           popd
