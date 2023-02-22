@@ -222,7 +222,7 @@ jobs:
   build_cuda113_linux:
     runs-on: [self-hosted, linux-3090]
     container:
-      image: runningleon814/mmdeploy-base:20.04-cu11.3
+      image: runningleon814/mmdeploy-base:ubuntu20.04-cuda11.3
       options: "--gpus=all --ipc=host"
       #volumes:
       #  - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
