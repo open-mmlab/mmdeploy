@@ -1,5 +1,7 @@
 _base_ = ['./segmentation_static.py', '../_base_/backends/vacc.py']
 
+onnx_config = dict(input_shape=[512, 512])
+
 backend_config = dict(model_inputs=[
     dict(shape=dict(input=[1, 3, 512, 512]), qconfig=dict(dtype='int8'))
 ])
