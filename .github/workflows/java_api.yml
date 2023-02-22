@@ -53,7 +53,8 @@ jobs:
       - name: Install ant
         run: |
           sudo apt-get install ant
-          whereis ant
+          export ANT_HOME=/usr/share/ant
+          export PATH=${ANT_HOME}/bin:${PATH}
       - name: Build opencv java
         run: |
           export OPENCV_VERSION=4.7.0
@@ -67,7 +68,7 @@ jobs:
           pushd opencv
           mkdir -p build && pushd build
           cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
-          make -j8 && sudo make install
+          make -j32 && sudo make install
           popd
           export OPENCV_DIR=${PWD}
           popd
@@ -86,5 +87,7 @@ jobs:
           popd
       - name: Test javademo
         run: |
+          pushd demo/java
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
           python .github/scripts/test_java_demo.py
+          popd
