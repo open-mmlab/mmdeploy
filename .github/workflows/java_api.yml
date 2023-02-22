@@ -35,6 +35,8 @@ jobs:
         run: |
           wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz
           tar xvf openjdk-18_linux-x64_bin.tar.gz
+          export JAVA_HOME=${PWD}/jdk-18
+          export PATH=${JAVA_HOME}/bin:${PATH}
       - name: gcc-multilib
         run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install onnxruntime
@@ -48,6 +50,28 @@ jobs:
       - name: Install opencv
         run: |
           sudo apt-get install libopencv-dev
+      - name: Install ant
+        run: |
+          sudo apt-get install ant
+          whereis ant
+      - name: Build opencv java
+        run: |
+          export OPENCV_VERSION=4.7.0
+          export JAVA_AWT_INCLUDE_PATH=${JAVA_HOME}
+          export JAVA_AWT_LIBRARY=${JAVA_HOME}
+          export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
+          export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
+          export JAVA_JVM_LIBRARY=${JAVA_HOME}
+
+          git clone -b ${OPENCV_VERSION} https://github.com/opencv/opencv.git
+          pushd opencv
+          mkdir -p build && pushd build
+          cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
+          make -j8 && make install
+          popd
+          export OPENCV_DIR=${PWD}
+          popd
+
       - name: Build java class
         run: |
           pushd csrc/mmdeploy/apis/java
@@ -62,8 +86,5 @@ jobs:
           popd
       - name: Test javademo
         run: |
-          export JAVA_HOME=${PWD}/jdk-18
-          export PATH=${JAVA_HOME}/bin:${PATH}
           export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
-          java --version
           python .github/scripts/test_java_demo.py
