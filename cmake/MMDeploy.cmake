@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-function (mmdeploy_export NAME)
+function (mmdeploy_export_impl NAME)
     set(_LIB_DIR lib)
     if (MSVC)
         set(_LIB_DIR bin)
@@ -21,6 +21,13 @@ macro(mmdeploy_add_net NAME)
         mmdeploy_add_module(${NAME} ${ARGN})
     endif ()
 endmacro()
+
+function (mmdeploy_export NAME)
+    if (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        mmdeploy_export_impl(${NAME})
+    endif ()
+endfunction ()
+
 
 function (mmdeploy_add_library NAME)
     # EXCLUDE: exclude from registering & exporting
