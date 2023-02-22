@@ -1,27 +1,73 @@
 # Usage
 
-**step 1.** Compile Java API classes.
+**step 1.** Check Java API classes existance.
+
+Please check the existance of `*.class` in `${MMDEPLOY_DIR}/csrc/mmdeploy/apis/java/mmdeploy`.
+
+If there is no existance of `*.class`, please follow this [tutorial](../../csrc/mmdeploy/apis/java/README.md) to build Java class.
+
+**step 2.** Install Apache Ant for building Java demo.
+
+Please check the Apache Ant existance using `ant --h` in the command line.
+
+If there is no Apache Ant installed, please follow the command below.
 
 ```
-cd ../../csrc/mmdeploy/apis/java
-javac mmdeploy/*.java
-cd ../..
+sudo apt-get update
+sudo apt-get install ant
 ```
 
-**step 2.** Build the demo java project by Ant.
+Set environment variable
+
+```
+export ANT_HOME=/usr/share/ant
+export PATH=${ANT_HOME}/bin:${PATH}
+```
+
+If your Ant are not installed to `/usr/share/ant` folder, you can use
+
+```
+whereis ant
+```
+to check your specific `ANT_HOME` and `PATH` variable.
+
+
+**step 3.** Build OpenCV jar package (PoseTracker only).
+
+PoseTracker demo needs OpenCV Java, if you are interested in PoseTracker demo, you need to build OpenCV jar package first.
+
+Using OpenCV-4.7.0 as example:
+
+```
+export OPENCV_VERSION=4.7.0
+export JAVA_AWT_INCLUDE_PATH=${JAVA_HOME}
+export JAVA_AWT_LIBRARY=${JAVA_HOME}
+export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
+export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
+export JAVA_JVM_LIBRARY=${JAVA_HOME}
+
+git clone -b ${OPENCV_VERSION} https://github.com/opencv/opencv.git
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
+make -j8 && make install
+```
+
+**step 4.** Build the demo Java project by Ant.
 
 Use **ImageClassification** as example.
 
-First, you should set your mmdeploy path, opencv path, model path and image path to `${MMDeploy_DIR}`, `${OPENCV_DIR}` `${MODEL_PATH}` and `${IMAGE_PATH}`. And then follow the bash codes.
+First, you should set your mmdeploy path, opencv path, model path and image path to `${MMDEPLOY_DIR}`, `${OPENCV_DIR}`, `${MODEL_PATH}` and `${IMAGE_PATH}`. And then follow the bash codes.
 
 ```bash
 export TASK=ImageClassification
 export ARGS=${TASK}.java\ cpu\ ${MODEL_PATH}\ ${IMAGE_PATH}
-ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDeploy_DIR}/build/lib -Dcommand=${ARGS}
+ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDEPLOY_DIR}/build/lib -Dcommand=${ARGS}
 ```
 
-As for **PoseTrack**, the ARGS format should be changed to:
+As for **PoseTracker**, you should execute:
 
 ```bash
+export TASK=PoseTracker
 export ARGS=${TASK}.java\ cpu\ ${DET_MODEL_PATH}\  ${POSE_MODEL_PATH}\ ${VIDEO_PATH}
+ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDEPLOY_DIR}/build/lib -Dcommand=${ARGS}
 ```
