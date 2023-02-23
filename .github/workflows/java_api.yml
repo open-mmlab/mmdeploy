@@ -91,6 +91,6 @@ jobs:
       - name: Test javademo
         run: |
           pushd demo/java
-          export LD_LIBRARY_PATH=/build/lib:${LD_LIBRARY_PATH}
-          python .github/scripts/test_java_demo.py
+          export LD_LIBRARY_PATH=../../build/lib:${LD_LIBRARY_PATH}
+          python ../../.github/scripts/test_java_demo.py
           popd
