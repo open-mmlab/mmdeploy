@@ -24,6 +24,8 @@ foreach (task_name ${MMDEPLOY_TASKS})
 endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
+# disable MMDEPLOY_CXX_USE_OPENCV in apis/cxx/mmdeploy/common.hpp
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_CXX_USE_OPENCV=0)
 
 # https://github.com/pybind/pybind11/issues/1604
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
