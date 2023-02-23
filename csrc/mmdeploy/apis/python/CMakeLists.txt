@@ -30,9 +30,13 @@ if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(${PROJECT_NAME} PRIVATE -fsized-deallocation)
 endif ()
 
-mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
-mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
-target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
+if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
+else ()
+    mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
+    mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
+    target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
+endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
