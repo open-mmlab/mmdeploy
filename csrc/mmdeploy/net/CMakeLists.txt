@@ -59,7 +59,7 @@ if (MMDEPLOY_DYNAMIC_BACKEND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/loader.cpp.in
         ${_LOADER_PATH})
-    if (NOT WIN32)
+    if (NOT (WIN32 OR APPLE))
         SET(_DL_LIB dl)
     endif ()
 endif ()
