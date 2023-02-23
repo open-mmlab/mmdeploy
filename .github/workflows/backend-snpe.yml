@@ -47,7 +47,7 @@ jobs:
           export SNPE_ROOT=/home/runner/work/mmdeploy/mmdeploy/snpe-1.59.0.3230
           export LD_LIBRARY_PATH=${SNPE_ROOT}/lib/x86_64-linux-clang:${LD_LIBRARY_PATH}
           export MMDEPLOY_SNPE_X86_CI=1
-          cmake .. -DCMAKE_CXX_COMPILER=g++-7    -DMMDEPLOY_SHARED_LIBS=ON   -DMMDEPLOY_BUILD_SDK=ON       -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF  -DMMDEPLOY_TARGET_DEVICES=cpu       -DMMDEPLOY_TARGET_BACKENDS=snpe  -DMMDEPLOY_CODEBASES=all
+          cmake .. -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_TARGET_BACKENDS=snpe
           make -j2
           make install
           pushd install/example
