@@ -228,8 +228,5 @@ class VACCWrapper(BaseWrapper):
             for name in self.output_names:
                 outputs[name][batch_id] = torch.from_numpy(output[0])
         for name, output_tensor in outputs.items():
-            if None in output_tensor:
-                outputs[name] = None
-            else:
-                outputs[name] = torch.stack(output_tensor)
+            outputs[name] = torch.stack(output_tensor)
         return outputs
