@@ -38,7 +38,7 @@ class YOLOV3Head : public YOLOHead {
                                    int a) const override;
 };
 
-class YOLOV5Head : public YOLOHead {
+class YOLOv5Head : public YOLOHead {
  public:
   using YOLOHead::YOLOHead;
   std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride,
