@@ -8,9 +8,8 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 def base_decode_head__cls_seg__vacc(self, feat):
     """Classify each pixel."""
 
-    if self.dropout is not None:
-        feat = self.dropout(feat)
-    feat = self.conv_seg(feat)
+    ctx = FUNCTION_REWRITER.get_context()
+    feat = ctx.origin_func(self, feat)
 
     # mark seg_maps
     @mark('seg_maps', outputs=['output'])
