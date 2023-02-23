@@ -610,8 +610,8 @@ class VACCDetModel(End2EndModel):
     def __init__(self, backend: Backend, backend_files: Sequence[str],
                  device: str, model_cfg: Union[str, Config],
                  deploy_cfg: Union[str, Config], **kwargs):
-        assert backend == Backend.VACC, f'only supported vacc, but give \
-            {backend.value}'
+        assert backend == Backend.VACC, 'only supported vacc, but give ' \
+            f'{backend.value}'
 
         super(VACCDetModel, self).__init__(backend, backend_files, device,
                                            deploy_cfg, **kwargs)

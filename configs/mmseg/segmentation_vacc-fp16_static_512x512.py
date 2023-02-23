@@ -34,6 +34,8 @@ partition_config = dict(
         dict(
             save_file='model.onnx',
             start=['segmentor_forward:output'],
+            # 'decode_head' will skip `ArgMax`
+            # 'seg_maps' will skip `Resize` and `ArgMax`
             end=['decode_head:input'],
             output_names=['feat'])
     ])
