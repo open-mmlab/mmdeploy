@@ -59,7 +59,11 @@ if (MMDEPLOY_DYNAMIC_BACKEND)
     configure_file(
         ${CMAKE_SOURCE_DIR}/cmake/loader.cpp.in
         ${_LOADER_PATH})
+    if (NOT WIN32)
+        SET(_DL_LIB dl)
+    endif ()
 endif ()
 
 mmdeploy_add_module(${PROJECT_NAME} net_module.cpp ${_LOADER_PATH})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${_DL_LIB})
 add_library(mmdeploy::net_module ALIAS ${PROJECT_NAME})
