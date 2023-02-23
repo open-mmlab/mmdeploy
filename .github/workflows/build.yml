@@ -222,7 +222,7 @@ jobs:
   build_cuda113_linux:
     runs-on: [self-hosted, linux-3090]
     container:
-      image: runningleon814/mmdeploy-base:ubuntu20.04-cuda11.3
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
       options: "--gpus=all --ipc=host"
       #volumes:
       #  - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
@@ -237,10 +237,8 @@ jobs:
           apt update && apt install unzip
           python3 -V
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim
-          python3 -m pip install -r requirements.txt -r requirements/backends.txt
-          python3 -m mim install -r requirements/codebases.txt
-          python3 -m pip install numpy pycuda clip
+          python3 -m pip install openmim numpy pycuda clip
+          python3 -m pip install -r requirements.txt
           python3 -m pip list
       - name: Build SDK
         run: |
@@ -268,6 +266,8 @@ jobs:
       - name: Test TensorRT pipeline
         run: |
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
+          export LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
+          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
           bash .circleci/scripts/linux/test_full_pipeline.sh trt cuda
 
   build_cuda113_windows:
