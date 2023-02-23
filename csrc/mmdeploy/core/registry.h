@@ -129,6 +129,9 @@ class Registry : public Registry<void> {
   using Signature = GetSignature<Tag>;
   using CreatorType = Creator<Signature>;
 
+  // Fixes https://github.com/open-mmlab/mmdeploy/issues/1796
+  Registry() : Registry<void>{} {}
+
   bool Add(CreatorType& creator) & { return AddCreator(creator); }
 
   CreatorType* Get(const string_view& name, int version) & {
