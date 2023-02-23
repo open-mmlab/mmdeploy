@@ -55,7 +55,7 @@ jobs:
           sudo apt-get install ant
           export ANT_HOME=/usr/share/ant
           export PATH=${ANT_HOME}/bin:${PATH}
-      - name: Build opencv java
+      - name: Prepare opencv java
         run: |
           export OPENCV_VERSION=4.7.0
           export JAVA_AWT_INCLUDE_PATH=${JAVA_HOME}

@@ -83,7 +83,7 @@ def main():
         task = params['task']
         configs = params['configs']
         input_type = params['input_type']
-        java_command = task + '.java cpu '
+        java_command = '\"' + task + '.java cpu '
         for config in configs:
             model_url = config
             os.system('wget {} && tar xvf {}'.format(model_url,
@@ -92,12 +92,14 @@ def main():
             java_command += model_dir
         if input_type == 'image':
             java_command += (' /home/runner/work/mmdeploy/mmdeploy/demo' +
-                             '/resources/human-pose.jpg')
+                             '/resources/human-pose.jpg\"')
         elif input_type == 'video':
             os.system(
                 'wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4'  # noqa: E501
             )
-            java_command += 'dance.mp4'
+            java_command += 'dance.mp4\"'
+        else:
+            java_command += '\"'
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
             '-DlibDir=${OPENCV_DIR}/build/lib:/home/runner/work/mmdeploy/build'

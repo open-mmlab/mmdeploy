@@ -70,6 +70,6 @@ As for **PoseTracker**, you should execute:
 ```bash
 cd demo/java
 export TASK=PoseTracker
-export ARGS=${TASK}.java\ cpu\ ${DET_MODEL_PATH}\  ${POSE_MODEL_PATH}\ ${VIDEO_PATH}
-ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDEPLOY_DIR}/build/lib -Dcommand=${ARGS}
+export ARGS="${TASK}.java\ cpu\ ${DET_MODEL_PATH}\  ${POSE_MODEL_PATH}\ ${VIDEO_PATH}"
+ant -DtaskName=${TASK} -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:${MMDEPLOY_DIR}/build/lib -Dcommand="${ARGS}"
 ```
