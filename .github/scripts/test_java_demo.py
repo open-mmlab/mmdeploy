@@ -100,6 +100,7 @@ def main():
             java_command += 'dance.mp4\"'
         else:
             java_command += '\"'
+        os.system('echo ${OPENCV_DIR}')
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
             '-DlibDir=${OPENCV_DIR}/build/lib:/home/runner/work/mmdeploy/build'

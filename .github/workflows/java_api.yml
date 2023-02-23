@@ -74,6 +74,7 @@ jobs:
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/libopencv_java470.so
           popd
           export OPENCV_DIR=${PWD}
+          echo $OPENCV_DIR
           popd
 
       - name: Build java class
@@ -91,6 +92,7 @@ jobs:
       - name: Test javademo
         run: |
           pushd demo/java
+          export OPENCV_DIR=/home/runner/work/opencv
           export LD_LIBRARY_PATH=../../build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py
           popd
