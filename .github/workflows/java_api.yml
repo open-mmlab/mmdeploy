@@ -47,7 +47,7 @@ jobs:
           export ONNXRUNTIME_DIR=${PWD}
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
           popd
-      - name: Install opencv
+      - name: Install OpenCV
         run: |
           sudo apt-get install libopencv-dev
       - name: Install ant
@@ -55,15 +55,28 @@ jobs:
           sudo apt-get install ant
           export ANT_HOME=/usr/share/ant
           export PATH=${ANT_HOME}/bin:${PATH}
-      - name: Prepare opencv java
+      - name: Build Java class
         run: |
+          pushd csrc/mmdeploy/apis/java
+          javac mmdeploy/*.java
+          popd
+      - name: Install mmdeploy with onnxruntime backend and Java API
+        run: |
+          mkdir -p build && pushd build
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
+          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
+          make install
+          popd
+      - name: Prepare OpenCV Java and test Java demo
+        run: |
+          echo ${JAVA_HOME}
           export OPENCV_VERSION=4.7.0
           export JAVA_AWT_INCLUDE_PATH=${JAVA_HOME}
           export JAVA_AWT_LIBRARY=${JAVA_HOME}
           export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
           export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
           export JAVA_JVM_LIBRARY=${JAVA_HOME}
-
+          pushd /home/runner/work
           git clone -b ${OPENCV_VERSION} https://github.com/opencv/opencv.git
           pushd opencv
           mkdir -p build && pushd build
@@ -73,24 +86,10 @@ jobs:
           mkdir -p lib && pushd lib
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/libopencv_java470.so
           popd
+          popd
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR
-          popd
-
-      - name: Build java class
-        run: |
-          pushd csrc/mmdeploy/apis/java
-          javac mmdeploy/*.java
-          popd
-      - name: Install mmdeploy with onnxruntime backend and java api
-        run: |
-          mkdir -p build && pushd build
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
-          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
-          make install
-          popd
-      - name: Test javademo
-        run: |
+          popd && popd
           pushd demo/java
           export OPENCV_DIR=/home/runner/work/opencv
           export LD_LIBRARY_PATH=../../build/lib:${LD_LIBRARY_PATH}
