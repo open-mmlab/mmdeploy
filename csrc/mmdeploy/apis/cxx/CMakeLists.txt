@@ -8,7 +8,6 @@ target_include_directories(${PROJECT_NAME} INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
-target_link_libraries(${PROJECT_NAME} INTERFACE mmdeploy::core)
 set(_tasks ${MMDEPLOY_TASKS} pipeline)
 foreach (task ${_tasks})
     target_link_libraries(mmdeploy_${task} INTERFACE ${PROJECT_NAME})
@@ -16,6 +15,21 @@ foreach (task ${_tasks})
             DESTINATION include/mmdeploy)
 endforeach ()
 if (TARGET mmdeploy)
+    target_include_directories(${PROJECT_NAME} INTERFACE
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/outcome>
+            $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
+            )
+    target_include_directories(${PROJECT_NAME} INTERFACE
+            $<INSTALL_INTERFACE:include>
+            $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
+            $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>
+            )
+    if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
+        target_include_directories(${PROJECT_NAME} INTERFACE
+                $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/spdlog/include>
+                $<INSTALL_INTERFACE:include/mmdeploy/third_party>)
+    endif ()
     target_link_libraries(mmdeploy INTERFACE ${PROJECT_NAME})
 endif ()
 mmdeploy_export(${PROJECT_NAME})
