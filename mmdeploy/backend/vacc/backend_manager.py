@@ -47,7 +47,7 @@ class VACCManager(BaseBackendManager):
                 output_names=output_names)
         except Exception:
             print('Build model process success, wrapper process stopped')
-            exit(0)
+            exit(1)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
