@@ -169,6 +169,7 @@ def build_mmdeploy(cfg, mmdeploy_dir, dist_dir=None):
         # build cmd
         build_cmd = 'cmake --build . -- -j$(nproc) && cmake --install .'
         _call_command(build_cmd, build_dir)
+        _remove_if_exist(osp.join(build_dir, 'lib'))
 
     # build wheel
     bdist_cmd = _create_bdist_cmd(cfg, c_ext=False, dist_dir=dist_dir)
