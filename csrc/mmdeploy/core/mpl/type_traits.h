@@ -3,6 +3,7 @@
 #ifndef MMDEPLOY_SRC_CORE_MPL_TYPE_TRAITS_H_
 #define MMDEPLOY_SRC_CORE_MPL_TYPE_TRAITS_H_
 
+#include <cstdint>
 #include <type_traits>
 
 namespace mmdeploy {
