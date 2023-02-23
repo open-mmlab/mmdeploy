@@ -159,16 +159,14 @@ def export(model: torch.nn.Module,
             except CheckerError:
                 pass
 
-            from mmdeploy.core import OpenVinoQuantizeExportor
-
-            exporter = OpenVinoQuantizeExportor(symbolic_output_path,
-                                                output_path)
+            from mmdeploy.core import OpenVinoQuantizeExportor, TensorRTExplicitExporter
+            backend_mapping = {
+                'openvino': OpenVinoQuantizeExportor,
+                'tensorrt': TensorRTExplicitExporter
+            }
+            exporter_cls = backend_mapping[quantizer.backend]
+            exporter = exporter_cls(symbolic_output_path, output_path)
             exporter.export()
-            
-            # import shutil
-            # src_path = '/tmp/humu/mqbench_remove.onnx'
-            # shutil.copyfile(src_path, output_path)
-            # print('######### finished replacing onnx ##########')
 
         else:
 

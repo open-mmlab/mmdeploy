@@ -135,15 +135,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
-
-    import os
-    old_cuda_device = os.environ.get('CUDA_DEVICE', None)
-    os.environ['CUDA_DEVICE'] = str(device_id)
-    import pycuda.autoinit  # noqa:F401
-    if old_cuda_device is not None:
-        os.environ['CUDA_DEVICE'] = old_cuda_device
-    else:
-        os.environ.pop('CUDA_DEVICE')
+    if device_id != 0:
+        import os
+        old_cuda_device = os.environ.get('CUDA_DEVICE', None)
+        os.environ['CUDA_DEVICE'] = str(device_id)
+        import pycuda.autoinit  # noqa:F401
+        if old_cuda_device is not None:
+            os.environ['CUDA_DEVICE'] = old_cuda_device
+        else:
+            os.environ.pop('CUDA_DEVICE')
 
     load_tensorrt_plugin()
     # create builder and network
@@ -170,9 +170,6 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         builder.max_workspace_size = max_workspace_size
 
     config = builder.create_builder_config()
-
-    if explicit_quant_mode:
-        config.setFlag(trt.BuilderFlag.kINT8)
 
     if hasattr(config, 'set_memory_pool_limit'):
         config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE,
@@ -209,16 +206,20 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     if int8_mode:
         if not getattr(builder, 'platform_has_fast_int8', True):
             logger.warning('Platform does not has fast native int8.')
-        from .calib_utils import HDF5Calibrator
+        
         config.set_flag(trt.BuilderFlag.INT8)
-        assert int8_param is not None
-        config.int8_calibrator = HDF5Calibrator(
-            int8_param['calib_file'],
-            input_shapes,
-            model_type=int8_param['model_type'],
-            device_id=device_id,
-            algorithm=int8_param.get(
-                'algorithm', trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
+        if explicit_quant_mode:
+            config.int8_calibrator = None
+        else:
+            from .calib_utils import HDF5Calibrator
+            assert int8_param is not None
+            config.int8_calibrator = HDF5Calibrator(
+                int8_param['calib_file'],
+                input_shapes,
+                model_type=int8_param['model_type'],
+                device_id=device_id,
+                algorithm=int8_param.get(
+                    'algorithm', trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
         if version.parse(trt.__version__) < version.parse('8'):
             builder.int8_mode = int8_mode
             builder.int8_calibrator = config.int8_calibrator

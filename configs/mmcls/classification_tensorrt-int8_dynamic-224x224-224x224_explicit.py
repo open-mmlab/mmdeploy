@@ -4,6 +4,7 @@ onnx_config = dict(input_shape=[224, 224])
 backend_config = dict(
     common_config=dict(
         max_workspace_size=1 << 30,
+        int8_mode=True,
         explicit_quant_mode=True),
     model_inputs=[
         dict(
@@ -25,7 +26,7 @@ global_qconfig=dict(
         is_symmetry=True,
         is_symmetric_range=True),
     a_qscheme=dict(
-        qdtype='quint8',
+        qdtype='qint8',
         bit=8,
         is_symmetry=True,
         averaging_constant=0.1),

@@ -57,6 +57,7 @@ class BaseQuantizeExportor():
 
         self.export_path = export_path
         self._init_mappings_from_onnx(self.onnx_model)
+        # import pdb;pdb.set_trace()
 
         self.optimizer.remove_fake_pad_op(self.onnx_model, self.name2data,
                                           self.input2node, self.output2node)
@@ -142,6 +143,7 @@ class BaseQuantizeExportor():
             if remove and constant.name not in removed:
                 self.onnx_model.graph.node.remove(constant)
                 removed.add(constant.name)
+    
     def export(self, onnx_path):
         pass
 

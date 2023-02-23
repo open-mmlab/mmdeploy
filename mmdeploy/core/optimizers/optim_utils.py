@@ -7,7 +7,7 @@ from onnx import numpy_helper
 
 
 class ONNXOptimUtils():
-
+    
     @classmethod
     def map_name_and_data(cls, onnx_model):
         params = {}
@@ -49,6 +49,31 @@ class ONNXOptimUtils():
                 input2node[input_name].append([node, idx])
         return input2node
 
+    @classmethod
+    def get_constant(cls, name, onnx_model):
+        for node in onnx_model.graph.node:
+            if node.op_type == 'Constant':
+                if node.output[0] == name:
+                    return numpy_helper.to_array(node.attribute[0].t).tolist()
+                
+    @classmethod
+    def get_initializer(cls, initializer_name, onnx_model):
+        return numpy_helper.to_array(onnx_model.initializer[initializer_name][0])
+    
+    @classmethod
+    def get_tensor_producer(cls, output_name, output2node):
+        if output_name not in output2node:
+            return 'INPUT_TOKEN'
+        return output2node[output_name]
+
+    @classmethod
+    def get_tensor_consumer(self, input_name, input2node):
+        if input_name not in input2node:
+            return ['OUTPUT_TOKEN']
+        return input2node[input_name]
+
+    
+    
     @classmethod
     def remove_node_from_onnx(cls, node, onnx_model):
         onnx_model.graph.node.remove(node)
@@ -151,7 +176,7 @@ class ONNXOptimUtils():
         num_nodes = len(_onnx_model.graph.node)
 
         sorted_nodes = list()
-
+    
         while len(sorted_nodes) < num_nodes:
             find_new_node = False
             for i in range(num_nodes):
