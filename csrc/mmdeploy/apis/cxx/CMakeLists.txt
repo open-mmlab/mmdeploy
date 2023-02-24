@@ -31,6 +31,8 @@ if (TARGET mmdeploy)
                 $<INSTALL_INTERFACE:include/mmdeploy/third_party>)
     endif ()
     target_link_libraries(mmdeploy INTERFACE ${PROJECT_NAME})
+else ()
+    target_link_libraries(${PROJECT_NAME} INTERFACE mmdeploy::core)
 endif ()
 mmdeploy_export(${PROJECT_NAME})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
