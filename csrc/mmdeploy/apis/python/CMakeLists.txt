@@ -24,15 +24,21 @@ foreach (task_name ${MMDEPLOY_TASKS})
 endforeach ()
 
 pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
+# disable MMDEPLOY_CXX_USE_OPENCV in apis/cxx/mmdeploy/common.hpp
+target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_CXX_USE_OPENCV=0)
 
 # https://github.com/pybind/pybind11/issues/1604
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     target_compile_options(${PROJECT_NAME} PRIVATE -fsized-deallocation)
 endif ()
 
-mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
-mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
-target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
+if (MMDEPLOY_BUILD_SDK_MONOLITHIC)
+    target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
+else ()
+    mmdeploy_load_static(${PROJECT_NAME} MMDeployStaticModules)
+    mmdeploy_load_dynamic(${PROJECT_NAME} MMDeployDynamicModules)
+    target_link_libraries(${PROJECT_NAME} PRIVATE MMDeployLibs)
+endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
