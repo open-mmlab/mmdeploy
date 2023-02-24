@@ -41,6 +41,10 @@ class Pad : public Transform {
     } else {
       pad_val_ = 0.0f;
     }
+
+    logical_or_val_ = args.value("logical_or_val", 0);
+    add_pix_val_ = args.value("add_pix_val", 0);
+
     pad_to_square_ = args.value("pad_to_square", false);
     padding_mode_ = args.value("padding_mode", std::string("constant"));
     orientation_agnostic_ = args.value("orientation_agnostic", false);
@@ -89,6 +93,16 @@ class Pad : public Transform {
         data["pad_size_divisor"] = size_divisor_;
         data["pad_fixed_size"].push_back(pad_h);
         data["pad_fixed_size"].push_back(pad_w);
+      } else if (logical_or_val_ > 0) {
+        int pad_h = (height | logical_or_val_) + add_pix_val_;
+        int pad_w = (width | logical_or_val_) + add_pix_val_;
+        int offset_h = pad_h / 2 - height / 2;
+        int offset_w = pad_w / 2 - width / 2;
+        padding = {offset_w, offset_h, pad_w - width - offset_w, pad_h - height - offset_h};
+        data["border"].push_back(offset_h);
+        data["border"].push_back(offset_w);
+        data["border"].push_back(offset_h + height);
+        data["border"].push_back(offset_w + width);
       } else {
         output_tensor = tensor;
         data["pad_fixed_size"].push_back(height);
@@ -124,6 +138,8 @@ class Pad : public Transform {
   operation::Managed<operation::Pad> pad_;
   std::array<int, 2> size_;
   int size_divisor_;
+  int logical_or_val_;
+  int add_pix_val_;
   float pad_val_;
   bool pad_to_square_;
   bool orientation_agnostic_;
