@@ -6,7 +6,7 @@ ENV BACKUP_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/usr/local/cuda/compat:$LD_LIBRARY_PATH
 
 # build mmdeploy
-RUN git clone --recursive -b v$MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy.git &&\
+RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy.git &&\
     export Torch_DIR=$(python3 -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')") &&\
     mkdir -p mmdeploy/build && cd mmdeploy/build &&\
     cmake .. \

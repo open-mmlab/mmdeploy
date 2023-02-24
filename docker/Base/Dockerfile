@@ -81,6 +81,7 @@ ENV PYTHONPATH=/root/workspace/ppl.nn/install/lib:$PYTHONPATH
 
 ### build ncnn
 RUN git clone --depth 1 --branch ${NCNN_VERSION} --recursive https://github.com/Tencent/ncnn.git &&\
+    python3 -m pip install pybind11 &&\
     mkdir ncnn/build && cd ncnn/build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX=../install .. &&\
     make -j $(nproc) && make install &&\
