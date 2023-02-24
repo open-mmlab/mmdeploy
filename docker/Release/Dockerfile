@@ -27,6 +27,7 @@ RUN git clone --recursive -b v$MMDEPLOY_VERSION --depth 1 https://github.com/ope
     python3 -m pip install -r requirements.txt &&\
     python3 -m pip install -e .
 
-ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/install/lib:${BACKUP_LD_LIBRARY_PATH}"
-ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
-ENV PATH="/root/workspace/mmdeploy/install/bin:${PATH}"
+ENV mmdeploy_DIR="/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy"
+ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
+ENV PATH="/root/workspace/mmdeploy/build/bin:${PATH}"
+ENV PYTHONPATH="/root/workspace/mmdeploy/build/lib:${PYTHONPATH}"

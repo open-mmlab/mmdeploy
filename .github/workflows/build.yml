@@ -239,6 +239,7 @@ jobs:
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python3 -m pip install openmim numpy pycuda clip
           python3 -m pip install -r requirements.txt
+          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
           python3 -m pip list
       - name: Build SDK
         run: |
@@ -257,7 +258,9 @@ jobs:
               -Dncnn_DIR=${ncnn_DIR} \
               -DTorch_DIR=${Torch_DIR} \
               -DMMDEPLOY_CODEBASES=all
+
           make -j$(nproc) && make install
+          ls lib
       - name: Install converter
         run: |
           rm -rf .eggs && python3 -m pip install -e .
@@ -267,7 +270,6 @@ jobs:
         run: |
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
-          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
           bash .circleci/scripts/linux/test_full_pipeline.sh trt cuda
 
   build_cuda113_windows:
