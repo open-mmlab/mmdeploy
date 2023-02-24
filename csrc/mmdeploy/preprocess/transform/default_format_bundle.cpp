@@ -36,7 +36,9 @@ class DefaultFormatBundle : public Transform {
         }
       }
       if (!data.contains("scale_factor")) {
-        data["scale_factor"].push_back(1.0);
+        for (int i = 0; i < 4; ++i) {
+          data["scale_factor"].push_back(1.0);
+        }
       }
       if (!data.contains("img_norm_cfg")) {
         int channel = tensor.shape()[3];
