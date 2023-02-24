@@ -1,0 +1,36 @@
+name: build-docker
+
+on:
+  push:
+    branches:
+      - 'dev-1.x'
+  pull_request:
+    branches:
+      - 'dev-1.x'
+
+jobs:
+  docker:
+    runs-on: [self-hosted, linux-3090]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Test
+        run: |
+          git log
+          echo '${{ secrets.DOCKERHUB_USERNAME }}'
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: '${{ secrets.DOCKERHUB_USERNAME }}'
+          password: '${{ secrets.DOCKERHUB_TOKEN }}'
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./docker/Release/
+          build-args: MMDEPLOY_VERSION=dev-1.x
+          push: false
+          tags: openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy-latest
