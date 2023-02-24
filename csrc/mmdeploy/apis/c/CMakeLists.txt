@@ -80,8 +80,14 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     set_target_properties(mmdeploy PROPERTIES
             VERSION ${MMDEPLOY_VERSION}
             SOVERSION ${MMDEPLOY_VERSION_MAJOR})
-    set_target_properties(mmdeploy PROPERTIES
-            INSTALL_RPATH "\$ORIGIN"
-            BUILD_RPATH "\$ORIGIN")
+    if (APPLE)
+            set_target_properties(mmdeploy PROPERTIES
+                    INSTALL_RPATH "@loader_path"
+                    BUILD_RPATH "@loader_path")
+    else ()
+            set_target_properties(mmdeploy PROPERTIES
+                    INSTALL_RPATH "\$ORIGIN"
+                    BUILD_RPATH "\$ORIGIN")
+    endif ()
     mmdeploy_export(mmdeploy)
 endif ()
