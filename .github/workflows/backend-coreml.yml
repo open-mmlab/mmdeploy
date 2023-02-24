@@ -65,7 +65,7 @@ jobs:
             -DTorch_DIR=$GITHUB_WORKSPACE/libtorch-install/share/cmake/Torch \
             -DMMDEPLOY_TARGET_BACKENDS="coreml" \
             -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON \
-            -DMMDEPLOY_SHARED_LIBS=OFF
+            -DMMDEPLOY_SHARED_LIBS=OFF \
             -DMMDEPLOY_BUILD_EXAMPLES=ON
           cmake --build . -j 3
           cmake --build . --target install
