@@ -84,11 +84,9 @@ RUN git clone --depth 1 --branch ${NCNN_VERSION} --recursive https://github.com/
     mkdir ncnn/build && cd ncnn/build &&\
     cmake -DNCNN_VULKAN=OFF -DNCNN_PYTHON=ON -DNCNN_BUILD_TOOLS=OFF -DCMAKE_INSTALL_PREFIX=../install .. &&\
     make -j $(nproc) && make install &&\
-    cd .. && rm -rf ./build &&\
-    python3 -m pip install -e ./python
+    cd .. && python3 -m pip install . && rm -rf ./build
 
 ENV ncnn_DIR=/root/workspace/ncnn/install/lib/cmake/ncnn
-ENV PYTHONPATH=/root/workspace/ncnn/python:$PYTHONPATH
 
 ### install ppl.cv
 RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git  &&\
