@@ -67,7 +67,7 @@ jobs:
           cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
           make install
           echo $PWD
-          find /home/runner/work/mmdeploy/build/lib/libmmdeploy_java.so
+          find /home/runner/work/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
           popd
       - name: Prepare OpenCV Java and test Java demo
         run: |
@@ -92,9 +92,9 @@ jobs:
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR
           popd && popd
-          find /home/runner/work/mmdeploy/build/lib/libmmdeploy_java.so
+          find /home/runner/work/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
           pushd demo/java
           export OPENCV_DIR=/home/runner/work/opencv
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/build/lib:${LD_LIBRARY_PATH}
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py
           popd
