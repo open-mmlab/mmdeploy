@@ -8,7 +8,7 @@ If there is no existence of `*.class`, please follow this [tutorial](../../csrc/
 
 **step 2.** Install Apache Ant for building Java demo.
 
-Please check the Apache Ant existence using `ant --h` in the command line.
+Please check the Apache Ant existence using `ant -h` in the command line.
 
 If there is no Apache Ant installed, please follow the command below.
 
@@ -46,7 +46,7 @@ export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
 export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
 export JAVA_JVM_LIBRARY=${JAVA_HOME}
 
-git clone -b ${OPENCV_VERSION} https://github.com/opencv/opencv.git
+wget https://github.com/opencv/opencv/archive/4.7.0.zip
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
 make -j8 && make install
