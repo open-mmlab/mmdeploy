@@ -90,6 +90,7 @@ jobs:
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR
           popd && popd
+          find /home/runner/work/mmdeploy/build/lib/libmmdeploy_java.so
           pushd demo/java
           export OPENCV_DIR=/home/runner/work/opencv
           export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/build/lib:${LD_LIBRARY_PATH}
