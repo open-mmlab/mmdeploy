@@ -1,12 +1,6 @@
 # Usage
 
-**step 1.** Check Java API classes existence.
-
-Please check the existence of `*.class` in `${MMDEPLOY_DIR}/csrc/mmdeploy/apis/java/mmdeploy`.
-
-If there is no existence of `*.class`, please follow this [tutorial](../../csrc/mmdeploy/apis/java/README.md) to build Java class.
-
-**step 2.** Install Apache Ant for building Java demo.
+**step 1.** Install Apache Ant.
 
 Please check the Apache Ant existence using `ant -h` in the command line.
 
@@ -24,15 +18,7 @@ export ANT_HOME=/usr/share/ant
 export PATH=${ANT_HOME}/bin:${PATH}
 ```
 
-If your Ant are not installed to `/usr/share/ant` folder, you can use
-
-```
-whereis ant
-```
-
-to check your specific `ANT_HOME` and `PATH` variable.
-
-**step 3.** Build OpenCV jar package (PoseTracker only).
+**step 2.** Build OpenCV jar package (PoseTracker only).
 
 PoseTracker demo needs OpenCV Java, if you are interested in PoseTracker demo, you need to build OpenCV jar package first.
 
@@ -47,12 +33,19 @@ export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
 export JAVA_JVM_LIBRARY=${JAVA_HOME}
 
 wget https://github.com/opencv/opencv/archive/4.7.0.zip
+unzip 4.7.0.zip && rm -rf 4.7.0.zip && cd opencv-4.7.0
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
 make -j8 && make install
 ```
 
-**step 4.** Build the demo Java project by Ant.
+**step 3.** Build MMDeploy Java API.
+
+Please check the existence of `*.class` in `${MMDEPLOY_DIR}/csrc/mmdeploy/apis/java/mmdeploy`.
+
+If there is no existence of `*.class`, please follow this [tutorial](../../csrc/mmdeploy/apis/java/README.md) to build Java class.
+
+**step 4.** Build demo.
 
 Use **ImageClassification** as example.
 
