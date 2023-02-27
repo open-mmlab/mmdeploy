@@ -107,6 +107,9 @@ pipeline {
     stages {
         stage('Set Config') {
             agent { label params.EXEC_NODE }
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
             steps {
                 sh "cp ~/mmdeploy/tests/jenkins/conf/${params.CONFIG} ~/mmdeploy/tests/jenkins/conf/tmp.config"
                 sh "chmod 777 ~/mmdeploy/tests/jenkins/conf/tmp.config"
@@ -124,6 +127,9 @@ pipeline {
             }
         }
         stage('Regression') {
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
             parallel {
                 stage('Build') {
                     agent { label params.EXEC_NODE }
@@ -166,31 +172,37 @@ pipeline {
                     }
                 }
 
+               
+            }
+        }
+        stage('Tear Down') {
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
+            agent { label params.EXEC_NODE }
+            steps {
+                sh "rm -f tests/jenkins/conf/tmp.config"
+            }
+        }
+
+        stage('Prebuild All') {
+            when {
+                expression { return params.PREBUILD_ALL }
+            }
+            parallel {
                 stage('Prebuild In 2080') {
                     agent { deploy_linux_2080 }
-                    when {
-                        expression { return params.PREBUILD_ALL }
-                    }
                     steps {
-                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-102_master_full-test.config'"
                     }
                 }
 
                 stage('Prebuild In 3090') {
                     agent { deploy_linux_3090 }
-                    when {
-                        expression { return params.PREBUILD_ALL }
-                    }
                     steps {
-                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-3090_cuda-113_master_full-test.config'"
                     }
-                }                
-            }
-        }
-        stage('Tear Down') {
-            agent { label params.EXEC_NODE }
-            steps {
-                sh "rm -f tests/jenkins/conf/tmp.config"
+                } 
             }
         }
     }
