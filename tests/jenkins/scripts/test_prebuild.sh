@@ -48,7 +48,7 @@ else
     exit 1
 fi
 
-container_name=convert-${codebase}-${time_snap}
+container_name=convert-${codebase}-${time_snap}-${cuda_version}
 
 container_name=openmmlab${repo_version}-prebuild-$(date +%Y%m%d%H%M)
 container_id=$(
