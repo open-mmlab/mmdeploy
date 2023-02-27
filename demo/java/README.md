@@ -32,8 +32,8 @@ export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
 export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
 export JAVA_JVM_LIBRARY=${JAVA_HOME}
 
-wget https://github.com/opencv/opencv/archive/4.7.0.zip
-unzip 4.7.0.zip && rm -rf 4.7.0.zip && cd opencv-4.7.0
+wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
+unzip ${OPENCV_VERSION}.zip && rm -rf ${OPENCV_VERSION}.zip && cd opencv-${OPENCV_VERSION}
 mkdir -p build && cd build
 cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_JAVA=ON ..
 make -j8 && make install

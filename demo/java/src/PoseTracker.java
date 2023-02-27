@@ -1,6 +1,7 @@
 import mmdeploy.PixelFormat;
 import mmdeploy.PointF;
 import mmdeploy.DataType;
+import mmdeploy.ContextType;
 import mmdeploy.Mat;
 import mmdeploy.Model;
 import mmdeploy.Device;
@@ -117,7 +118,7 @@ public class PoseTracker {
         Model poseModel = new Model(poseModelPath);
         Device device = new Device(deviceName, 0);
         Context context = new Context();
-        context.add(0, device.deviceHandle);
+        context.add(ContextType.DEVICE.ordinal(), device.deviceHandle);
         try {
             poseTracker = new mmdeploy.PoseTracker(detModel.modelHandle, poseModel.modelHandle, context.contextHandle);
             mmdeploy.PoseTracker.Params params = poseTracker.initParams();

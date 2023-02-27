@@ -31,6 +31,7 @@ jint Java_mmdeploy_Context_add(JNIEnv *env, jobject, jlong context_, jint contex
                          nullptr, (mmdeploy_profiler_t)handle);
   } else {
     MMDEPLOY_ERROR("wrong context type, got {}", (int)contextType);
+    return MMDEPLOY_E_NOT_SUPPORTED;
   }
   env->ReleaseStringUTFChars(name, object_name);
   return 0;
