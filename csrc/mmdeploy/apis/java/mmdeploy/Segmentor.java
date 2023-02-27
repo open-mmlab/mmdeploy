@@ -12,11 +12,13 @@ public class Segmentor {
         public int width;
         public int classes;
         public int[] mask;
-        public Result(int height, int width, int classes, int [] mask) {
+        public float[] score;
+        public Result(int height, int width, int classes, int [] mask, float [] score) {
             this.height = height;
             this.width = width;
             this.classes = classes;
             this.mask = mask;
+            this.score = score;
         }
     }
 

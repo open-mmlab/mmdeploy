@@ -29,5 +29,6 @@ add_jar(${PROJECT_NAME} SOURCES
         mmdeploy/Profiler.java
         mmdeploy/Scheduler.java
         mmdeploy/PoseTracker.java
+        mmdeploy/RotatedDetector.java
         OUTPUT_NAME mmdeploy
         OUTPUT_DIR ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
