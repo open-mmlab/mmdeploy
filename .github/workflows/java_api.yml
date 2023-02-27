@@ -85,9 +85,8 @@ jobs:
           mkdir -p bin && pushd bin
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv-470.jar
           popd
-          mkdir -p lib && pushd lib
-          wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/libopencv_java470.so
-          popd
+          wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv470-lib.tar
+          tar -xf opencv470-lib.tar -C ./
           popd
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR
