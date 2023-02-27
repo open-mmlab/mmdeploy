@@ -39,6 +39,10 @@ pipeline {
             name: 'EXEC_UNITTEST',
             defaultValue: false,
         )
+        booleanParam(
+            name: 'PREBUILD_ALL',
+            defaultValue: false,
+        )
         string(
             name: 'repo_url',
             defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
@@ -161,6 +165,26 @@ pipeline {
                         sh "tests/jenkins/scripts/test_ut.sh 'tmp.config'"
                     }
                 }
+
+                stage('Prebuild In 2080') {
+                    agent { deploy_linux_2080 }
+                    when {
+                        expression { return params.PREBUILD_ALL }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
+                    }
+                }
+
+                stage('Prebuild In 3090') {
+                    agent { deploy_linux_3090 }
+                    when {
+                        expression { return params.PREBUILD_ALL }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
+                    }
+                }                
             }
         }
         stage('Tear Down') {
