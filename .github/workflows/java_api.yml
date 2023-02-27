@@ -87,6 +87,8 @@ jobs:
           popd
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv470-lib.tar
           tar -xf opencv470-lib.tar -C ./
+          find lib/libopencv_java470.so
+          find lib/libopencv_ml.so.407
           popd
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR

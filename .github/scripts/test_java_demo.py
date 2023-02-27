@@ -43,7 +43,7 @@ PARAMS = [
     },
     {
         'task':
-        'TextDetection',
+        'Ocr',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dbnet.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'  # noqa: E501
@@ -83,13 +83,13 @@ def main():
         task = params['task']
         configs = params['configs']
         input_type = params['input_type']
-        java_command = '\"cpu '
+        java_command = '\"cpu'
         for config in configs:
             model_url = config
             os.system('wget {} && tar xvf {}'.format(model_url,
                                                      model_url.split('/')[-1]))
             model_dir = model_url.split('/')[-1].split('.')[0]
-            java_command += model_dir
+            java_command += (' ' + model_dir)
         if input_type == 'image':
             java_command += (' /home/runner/work/mmdeploy/mmdeploy/demo' +
                              '/resources/human-pose.jpg\"')
@@ -97,7 +97,7 @@ def main():
             os.system(
                 'wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4'  # noqa: E501
             )
-            java_command += 'dance.mp4\"'
+            java_command += ' dance.mp4\"'
         else:
             java_command += '\"'
         print(f'java_command: {java_command}')
