@@ -48,7 +48,7 @@ else
     exit 1
 fi
 
-container_name=openmmlab${repo_version}-prebuild-cuda${cuda_version}-$(date +%Y%m%d%H%M)
+container_name=openmmlab${repo_version}-prebuild-${cuda_version}-$(date +%Y%m%d%H%M)
 container_id=$(
     docker run \
         --gpus all \
