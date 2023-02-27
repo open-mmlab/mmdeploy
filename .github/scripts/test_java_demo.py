@@ -69,6 +69,15 @@ PARAMS = [
         ],
         'input_type':
         'video'
+    },
+    {
+        'task':
+        'RotatedDetection',
+        'configs': [
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'  # noqa: E501
+        ],
+        'input_type':
+        'image'
     }
 ]
 
@@ -104,8 +113,7 @@ def main():
         else:
             java_command += '\"'
         print(f'java_command: {java_command}')
-        os.system(
-            'find /home/runner/work/opencv/build/lib/libopencv_java470.so')
+        os.system('ls /home/runner/work/opencv/build/lib')
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
             '-DlibDir=${OPENCV_DIR}/build/lib:/home/runner/work/mmdeploy/' +
