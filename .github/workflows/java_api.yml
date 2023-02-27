@@ -96,6 +96,6 @@ jobs:
           find /home/runner/work/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
           pushd demo/java
           export OPENCV_DIR=/home/runner/work/opencv
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH}
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:/home/runner/work/opencv/build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py
           popd
