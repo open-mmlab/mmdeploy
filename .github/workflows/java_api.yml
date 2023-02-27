@@ -92,6 +92,6 @@ jobs:
           popd && popd
           pushd demo/java
           export OPENCV_DIR=/home/runner/work/opencv
-          export LD_LIBRARY_PATH=../../build/lib:${LD_LIBRARY_PATH}
+          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py
           popd
