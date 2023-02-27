@@ -8,12 +8,21 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <fstream>
 
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/utils/formatter.h"
+#include "mmdeploy/core/utils/filesystem.h"
+#include "mmdeploy/archive/json_archive.h"
+
 
 namespace mmdeploy::framework {
+
+struct ipu_params_t {
+  int batches_per_step;
+  MMDEPLOY_ARCHIVE_MEMBERS(batches_per_step);
+};
 
 mmdeploy::DataType IPUNet::ipu_type_convert(const popef::DataType& ipu_type) {
   mmdeploy::DataType mtype;
@@ -74,11 +83,23 @@ Result<void> IPUNet::Init(const Value& args) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  batch_per_step = config.batches_per_step;
+  std::string ipu_json_path =
+      (fs::path(model.GetModelPath()) / config.net).string() +  "/ipu_params.json";
+
+  OUTCOME_TRY(auto param_json, model.ReadFile(ipu_json_path));
+  ipu_params_t param;
+  from_json(nlohmann::json::parse(param_json), param);
+
+  batch_per_step = param.batches_per_step;
+  // batch_per_step = 1;  //hard code here for testing
 
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
-  model_runner = std::make_unique<model_runtime::ModelRunner>(config.net, mconfig);
+  
+  std::string popef_path =
+      (fs::path(model.GetModelPath()) / config.net ).string()+"/executable.popef";
+  MMDEPLOY_INFO("popef path {} ", popef_path);
+  model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
 
   input_desc = model_runner->getExecuteInputs();
   output_desc = model_runner->getExecuteOutputs();
