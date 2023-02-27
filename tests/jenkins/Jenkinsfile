@@ -41,7 +41,7 @@ pipeline {
         )
         booleanParam(
             name: 'PREBUILD_ALL',
-            description: '勾选此项后,其他参数和选项均不再生效,只执行预编译任务'
+            description: '勾选此项后,其他参数和选项均不再生效,只执行预编译任务',
             defaultValue: false,
         )
         string(
