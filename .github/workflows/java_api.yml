@@ -51,8 +51,6 @@ jobs:
       - name: Install ant
         run: |
           sudo apt-get install ant
-          export ANT_HOME=/usr/share/ant
-          export PATH=${ANT_HOME}/bin:${PATH}
       - name: Build Java class
         run: |
           pushd csrc/mmdeploy/apis/java
