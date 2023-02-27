@@ -191,14 +191,14 @@ pipeline {
             }
             parallel {
                 stage('Prebuild In 2080') {
-                    agent { deploy_linux_2080 }
+                    agent { label deploy_linux_2080 }
                     steps {
                         sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-102_master_full-test.config'"
                     }
                 }
 
                 stage('Prebuild In 3090') {
-                    agent { deploy_linux_3090 }
+                    agent { label deploy_linux_3090 }
                     steps {
                         sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-3090_cuda-113_master_full-test.config'"
                     }
