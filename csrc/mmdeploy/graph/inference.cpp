@@ -41,7 +41,7 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
   }
   pipeline_config["context"] = context;
 
-  MMDEPLOY_INFO("{}", pipeline_config);
+  MMDEPLOY_DEBUG("{}", pipeline_config);
 
   OUTCOME_TRY(auto pipeline_builder, Builder::CreateFromConfig(pipeline_config));
   OUTCOME_TRY(auto node, pipeline_builder->Build());

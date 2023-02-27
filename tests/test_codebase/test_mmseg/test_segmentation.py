@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import os
-from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import Any
 
 import mmcv
@@ -10,40 +9,49 @@ import pytest
 import torch
 from torch.utils.data import DataLoader
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase, load_config
+from mmdeploy.utils import load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper
 
-try:
-    import_codebase(Codebase.MMSEG)
-except ImportError:
-    pytest.skip(f'{Codebase.MMSEG} is not installed.', allow_module_level=True)
-
 model_cfg_path = 'tests/test_codebase/test_mmseg/data/model.py'
-model_cfg = load_config(model_cfg_path)[0]
-deploy_cfg = mmcv.Config(
-    dict(
-        backend_config=dict(type='onnxruntime'),
-        codebase_config=dict(type='mmseg', task='Segmentation'),
-        onnx_config=dict(
-            type='onnx',
-            export_params=True,
-            keep_initializers_as_inputs=False,
-            opset_version=11,
-            input_shape=None,
-            input_names=['input'],
-            output_names=['output'])))
 
-onnx_file = NamedTemporaryFile(suffix='.onnx').name
-task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+
+@pytest.fixture(scope='module')
+def model_cfg():
+    return load_config(model_cfg_path)[0]
+
+
+@pytest.fixture(scope='module')
+def deploy_cfg():
+    return mmcv.Config(
+        dict(
+            backend_config=dict(type='onnxruntime'),
+            codebase_config=dict(type='mmseg', task='Segmentation'),
+            onnx_config=dict(
+                type='onnx',
+                export_params=True,
+                keep_initializers_as_inputs=False,
+                opset_version=11,
+                input_shape=None,
+                input_names=['input'],
+                output_names=['output'])))
+
+
+@pytest.fixture(scope='module')
+def task_processor(model_cfg, deploy_cfg):
+    return build_task_processor(model_cfg, deploy_cfg, 'cpu')
+
+
 img_shape = (32, 32)
-img = np.random.rand(*img_shape, 3)
+
+
+@pytest.fixture(scope='module')
+def img():
+    return np.random.rand(*img_shape, 3)
 
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
-def test_init_pytorch_model(from_mmrazor: Any):
+def test_init_pytorch_model(from_mmrazor: Any, task_processor, deploy_cfg):
     from mmseg.models.segmentors.base import BaseSegmentor
     if from_mmrazor is False:
         _task_processor = task_processor
@@ -72,58 +80,56 @@ def test_init_pytorch_model(from_mmrazor: Any):
     assert isinstance(model, BaseSegmentor)
 
 
-@pytest.fixture
-def backend_model():
+@pytest.fixture(scope='module')
+def backend_model(task_processor):
     from mmdeploy.backend.onnxruntime import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-    wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'output': torch.rand(1, 1, *img_shape),
-    })
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(outputs={
+            'output': torch.rand(1, 1, *img_shape),
+        })
 
-    yield task_processor.init_backend_model([''])
-
-    wrapper.recover()
+        yield task_processor.init_backend_model([''])
 
 
 def test_init_backend_model(backend_model):
     assert isinstance(backend_model, torch.nn.Module)
 
 
-def test_create_input():
-    inputs = task_processor.create_input(img, input_shape=img_shape)
-    assert isinstance(inputs, tuple) and len(inputs) == 2
+@pytest.fixture(scope='module')
+def model_inputs(task_processor, img):
+    return task_processor.create_input(img, input_shape=img_shape)
 
 
-def test_run_inference(backend_model):
+def test_create_input(model_inputs):
+    assert isinstance(model_inputs, tuple) and len(model_inputs) == 2
+
+
+def test_run_inference(backend_model, task_processor, img):
     input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
     results = task_processor.run_inference(backend_model, input_dict)
     assert results is not None
 
 
-def test_visualize(backend_model):
-    input_dict, _ = task_processor.create_input(img, input_shape=img_shape)
+def test_visualize(backend_model, task_processor, model_inputs, img, tmp_path):
+    input_dict, _ = model_inputs
     results = task_processor.run_inference(backend_model, input_dict)
-    with TemporaryDirectory() as dir:
-        filename = dir + 'tmp.jpg'
-        task_processor.visualize(backend_model, img, results[0], filename, '')
-        assert os.path.exists(filename)
+    filename = str(tmp_path / 'tmp.jpg')
+    task_processor.visualize(backend_model, img, results[0], filename, '')
+    assert os.path.exists(filename)
 
 
-def test_get_tensort_from_input():
+def test_get_tensort_from_input(task_processor):
     input_data = {'img': [torch.ones(3, 4, 5)]}
     inputs = task_processor.get_tensor_from_input(input_data)
     assert torch.equal(inputs, torch.ones(3, 4, 5))
 
 
-def test_get_partition_cfg():
-    try:
+def test_get_partition_cfg(task_processor):
+    with pytest.raises(NotImplementedError):
         _ = task_processor.get_partition_cfg(partition_type='')
-    except NotImplementedError:
-        pass
 
 
-def test_build_dataset_and_dataloader():
+def test_build_dataset_and_dataloader(task_processor, model_cfg):
     from torch.utils.data import DataLoader, Dataset
     dataset = task_processor.build_dataset(
         dataset_cfg=model_cfg, dataset_type='test')
@@ -132,7 +138,7 @@ def test_build_dataset_and_dataloader():
     assert isinstance(dataloader, DataLoader), 'Failed to build dataloader'
 
 
-def test_single_gpu_test_and_evaluate():
+def test_single_gpu_test_and_evaluate(task_processor, model_cfg):
     from mmcv.parallel import MMDataParallel
 
     # Prepare dataloader

@@ -1,25 +1,28 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
+
 import mmcv
 import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task, load_config
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
-try:
-    import_codebase(Codebase.MMDET3D)
-except ImportError:
-    pytest.skip(
-        f'{Codebase.MMDET3D} is not installed.', allow_module_level=True)
-model_cfg = load_config(
-    'tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
-monodet_model_cfg = load_config(
-    'tests/test_codebase/test_mmdet3d/data/monodet_model_cfg.py')[0]
+
+@pytest.fixture(scope='module')
+def model_cfg():
+    return load_config('tests/test_codebase/test_mmdet3d/data/model_cfg.py')[0]
 
 
-def get_pillar_encoder():
+@pytest.fixture(scope='module')
+def monodet_model_cfg():
+    return load_config(
+        'tests/test_codebase/test_mmdet3d/data/monodet_model_cfg.py')[0]
+
+
+@pytest.fixture
+def pillar_encoder():
     from mmdet3d.models.voxel_encoders import PillarFeatureNet
     model = PillarFeatureNet(
         in_channels=4,
@@ -32,21 +35,23 @@ def get_pillar_encoder():
         norm_cfg=dict(type='BN1d', eps=1e-3, momentum=0.01),
         mode='max')
     model.requires_grad_(False)
+    model.cpu().eval()
     return model
 
 
-def get_pointpillars_scatter():
+@pytest.fixture
+def pointpillars_scatter():
     from mmdet3d.models.middle_encoders import PointPillarsScatter
     model = PointPillarsScatter(in_channels=64, output_shape=(16, 16))
     model.requires_grad_(False)
+    model.cpu().eval()
     return model
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_pillar_encoder(backend_type: Backend):
+def test_pillar_encoder(backend_type: Backend, pillar_encoder):
     check_backend(backend_type, True)
-    model = get_pillar_encoder()
-    model.cpu().eval()
+    model = pillar_encoder
 
     deploy_cfg = mmcv.Config(
         dict(
@@ -81,10 +86,9 @@ def test_pillar_encoder(backend_type: Backend):
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_pointpillars_scatter(backend_type: Backend):
+def test_pointpillars_scatter(backend_type: Backend, pointpillars_scatter):
     check_backend(backend_type, True)
-    model = get_pointpillars_scatter()
-    model.cpu().eval()
+    model = pointpillars_scatter
 
     deploy_cfg = mmcv.Config(
         dict(
@@ -113,30 +117,22 @@ def test_pointpillars_scatter(backend_type: Backend):
             model_output.shape, rewrite_output.shape, rtol=1e-03, atol=1e-03)
 
 
-def get_centerpoint():
+@pytest.fixture
+def centerpoint(model_cfg):
     from mmdet3d.models.detectors.centerpoint import CenterPoint
 
     model = CenterPoint(**model_cfg.centerpoint_model)
     model.requires_grad_(False)
+    model.cpu().eval()
     return model
 
 
-def get_centerpoint_head():
-    from mmdet3d.models import builder
-    model_cfg.centerpoint_model.pts_bbox_head.test_cfg = model_cfg.\
-        centerpoint_model.test_cfg
-    head = builder.build_head(model_cfg.centerpoint_model.pts_bbox_head)
-    head.requires_grad_(False)
-    return head
-
-
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_centerpoint(backend_type: Backend):
+def test_centerpoint(backend_type: Backend, model_cfg, centerpoint):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
     from mmdeploy.core import RewriterContext
     check_backend(backend_type, True)
-    model = get_centerpoint()
-    model.cpu().eval()
+    model = centerpoint
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -159,21 +155,22 @@ def test_centerpoint(backend_type: Backend):
     assert rewrite_outputs is not None
 
 
-def get_pointpillars_nus():
+@pytest.fixture
+def pointpillars_nus(model_cfg):
     from mmdet3d.models.detectors import MVXFasterRCNN
 
     model = MVXFasterRCNN(**model_cfg.pointpillars_nus_model)
     model.requires_grad_(False)
+    model.cpu().eval()
     return model
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_pointpillars_nus(backend_type: Backend):
+def test_pointpillars_nus(backend_type: Backend, model_cfg, pointpillars_nus):
     from mmdeploy.codebase.mmdet3d.deploy.voxel_detection import VoxelDetection
     from mmdeploy.core import RewriterContext
     check_backend(backend_type, True)
-    model = get_pointpillars_nus()
-    model.cpu().eval()
+    model = pointpillars_nus
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),
@@ -196,22 +193,24 @@ def test_pointpillars_nus(backend_type: Backend):
     assert outputs is not None
 
 
-def get_fcos3d():
+@pytest.fixture
+def fcos3d(monodet_model_cfg):
     from mmdet3d.models.detectors import FCOSMono3D
-    monodet_model_cfg.model.pop('type')
-    model = FCOSMono3D(**monodet_model_cfg.model)
+    cfg = copy.deepcopy(monodet_model_cfg)
+    cfg.model.pop('type')
+    model = FCOSMono3D(**cfg.model)
     model.requires_grad_(False)
+    model.cpu().eval()
     return model
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def test_fcos3d(backend_type: Backend):
+def test_fcos3d(backend_type: Backend, monodet_model_cfg, fcos3d):
     from mmdeploy.codebase.mmdet3d.deploy.monocular_detection import \
         MonocularDetection
     from mmdeploy.core import RewriterContext
     check_backend(backend_type, True)
-    model = get_fcos3d()
-    model.cpu().eval()
+    model = fcos3d
     deploy_cfg = mmcv.Config(
         dict(
             backend_config=dict(type=backend_type.value),

@@ -126,7 +126,7 @@ cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                const std::string& interpolation) {
   cv::Mat dst(dst_height, dst_width, src.type());
   auto method = GetInterpolationMethod(interpolation).value();
-  cv::resize(src, dst, dst.size(), method);
+  cv::resize(src, dst, dst.size(), 0, 0, method);
   return dst;
 }
 
@@ -295,10 +295,12 @@ cv::Mat CropResizePad(const cv::Mat& src, const std::vector<int>& crop_rect,
   int width = target_size[0] + pad_rect[1] + pad_rect[3];
   int height = target_size[1] + pad_rect[0] + pad_rect[2];
   cv::Mat dst = cv::Mat::zeros(height, width, src.type());
-  cv::Rect roi1 = {crop_rect[1], crop_rect[0], crop_rect[3] - crop_rect[1] + 1,
-                   crop_rect[2] - crop_rect[0] + 1};
-  cv::Rect roi2 = {pad_rect[1], pad_rect[0], target_size[0], target_size[1]};
-  cv::resize(src(roi1), dst(roi2), {target_size[0], target_size[1]});
+  if (crop_rect[2] - crop_rect[0] + 1 > 0 && crop_rect[3] - crop_rect[1] + 1 > 0) {
+    cv::Rect roi1 = {crop_rect[1], crop_rect[0], crop_rect[3] - crop_rect[1] + 1,
+                     crop_rect[2] - crop_rect[0] + 1};
+    cv::Rect roi2 = {pad_rect[1], pad_rect[0], target_size[0], target_size[1]};
+    cv::resize(src(roi1), dst(roi2), {target_size[0], target_size[1]});
+  }
   return dst;
 }
 

@@ -21,15 +21,17 @@ class CropResizePadImpl : public CropResizePad {
     Tensor dst_tensor(desc);
     cudaMemsetAsync(dst_tensor.data<uint8_t>(), 0, dst_tensor.byte_size(), cuda_stream);
 
-    if (src.data_type() == DataType::kINT8) {
-      OUTCOME_TRY(
-          ResizeDispatch<uint8_t>(src, crop_rect, target_size, pad_rect, dst_tensor, cuda_stream));
-    } else if (src.data_type() == DataType::kFLOAT) {
-      OUTCOME_TRY(
-          ResizeDispatch<float>(src, crop_rect, target_size, pad_rect, dst_tensor, cuda_stream));
-    } else {
-      MMDEPLOY_ERROR("unsupported data type {}", src.data_type());
-      return Status(eNotSupported);
+    if (crop_rect[2] - crop_rect[0] + 1 > 0 && crop_rect[3] - crop_rect[1] + 1 > 0) {
+      if (src.data_type() == DataType::kINT8) {
+        OUTCOME_TRY(ResizeDispatch<uint8_t>(src, crop_rect, target_size, pad_rect, dst_tensor,
+                                            cuda_stream));
+      } else if (src.data_type() == DataType::kFLOAT) {
+        OUTCOME_TRY(
+            ResizeDispatch<float>(src, crop_rect, target_size, pad_rect, dst_tensor, cuda_stream));
+      } else {
+        MMDEPLOY_ERROR("unsupported data type {}", src.data_type());
+        return Status(eNotSupported);
+      }
     }
 
     dst = std::move(dst_tensor);

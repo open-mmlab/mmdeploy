@@ -1,17 +1,17 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "segmentor.h"
+#include "mmdeploy/segmentor.h"
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmseg/mmseg.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/mpl/structure.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
@@ -119,10 +119,17 @@ int mmdeploy_segmentor_get_result(mmdeploy_value_t output, mmdeploy_segmentation
       results_ptr->height = segmentor_output.height;
       results_ptr->width = segmentor_output.width;
       results_ptr->classes = segmentor_output.classes;
-      auto mask_size = results_ptr->height * results_ptr->width;
       auto& mask = segmentor_output.mask;
-      results_ptr->mask = mask.data<int>();
-      buffers[i] = mask.buffer();
+      auto& score = segmentor_output.score;
+      results_ptr->mask = nullptr;
+      results_ptr->score = nullptr;
+      if (mask.shape().size()) {
+        results_ptr->mask = mask.data<int>();
+        buffers[i] = mask.buffer();
+      } else {
+        results_ptr->score = score.data<float>();
+        buffers[i] = score.buffer();
+      }
     }
 
     *results = results_data;

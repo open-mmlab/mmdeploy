@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import pytest
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER, RewriterContext
@@ -6,73 +7,89 @@ from mmdeploy.core.rewriters.function_rewriter import FunctionRewriter
 from mmdeploy.core.rewriters.rewriter_utils import collect_env
 from mmdeploy.utils.constants import IR, Backend
 
+try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
 
-def test_function_rewriter():
 
-    x = torch.tensor([1, 2, 3, 4, 5])
-    y = torch.tensor([2, 4, 6, 8, 10])
+@pytest.fixture(scope='module')
+def register_test_rewriter():
 
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.mul', backend='tensorrt')
     @FUNCTION_REWRITER.register_rewriter(
         func_name='torch.add', backend='tensorrt')
-    def sub_func(rewriter, x, y):
-        assert hasattr(rewriter, 'cfg')
-        assert hasattr(rewriter, 'origin_func')
+    def sub_func(ctx, x, y):
+        assert hasattr(ctx, 'cfg')
+        assert hasattr(ctx, 'origin_func')
         return x - y
+
+    # test different config
+    @FUNCTION_REWRITER.register_rewriter(
+        func_name='torch.Tensor.div', backend='default')
+    def mul_func_class(ctx, x, y):
+        return x * y
+
+    # test origin_func
+    @FUNCTION_REWRITER.register_rewriter(
+        func_name='torch.sub', backend='default')
+    def origin_sub_func(ctx, x, y, **kwargs):
+        return ctx.origin_func(x, y, **kwargs) + 1
+
+    yield
+
+    del FUNCTION_REWRITER._origin_functions[-1]
+    FUNCTION_REWRITER._registry.remove_record(sub_func)
+    FUNCTION_REWRITER._registry.remove_record(mul_func_class)
+    FUNCTION_REWRITER._registry.remove_record(origin_sub_func)
+
+
+@pytest.mark.usefixtures('register_test_rewriter')
+def test_function_rewriter():
+
+    x = torch.tensor([1, 2, 3, 4, 5])
+    y = torch.tensor([2, 4, 6, 8, 10])
 
     cfg = dict()
     with RewriterContext(cfg, backend='tensorrt'):
         result = torch.add(x, y)
         # replace add with sub
-        torch.testing.assert_allclose(result, x - y)
+        torch_assert_close(result, x - y)
         result = torch.mul(x, y)
         # replace add with sub
-        torch.testing.assert_allclose(result, x - y)
+        torch_assert_close(result, x - y)
 
     result = torch.add(x, y)
     # recovery origin function
-    torch.testing.assert_allclose(result, x + y)
+    torch_assert_close(result, x + y)
 
     with RewriterContext(cfg):
         result = torch.add(x, y)
         # replace should not happen with wrong backend
-        torch.testing.assert_allclose(result, x + y)
-
-    # test different config
-    @FUNCTION_REWRITER.register_rewriter(
-        func_name='torch.Tensor.add', backend='default')
-    def mul_func_class(rewriter, x, y):
-        return x * y
+        torch_assert_close(result, x + y)
 
     with RewriterContext(cfg, backend='tensorrt'):
-        result = x.add(y)
-        # replace add with multi
-        torch.testing.assert_allclose(result, x * y)
+        result = x.div(y)
+        # replace div with multi
+        torch_assert_close(result, x * y)
 
     result = x.add(y)
     # recovery origin function
-    torch.testing.assert_allclose(result, x + y)
+    torch_assert_close(result, x + y)
 
     with RewriterContext(cfg):
-        result = x.add(y)
-        # replace add with multi
-        torch.testing.assert_allclose(result, x * y)
-
-    # test origin_func
-    @FUNCTION_REWRITER.register_rewriter(
-        func_name='torch.add', backend='default')
-    def origin_add_func(rewriter, x, y, **kwargs):
-        return rewriter.origin_func(x, y, **kwargs) + 1
+        result = x.div(y)
+        # replace div with multi
+        torch_assert_close(result, x * y)
 
     with RewriterContext(cfg):
-        result = torch.add(x, y)
+        result = torch.sub(x, y)
         # replace with origin + 1
-        torch.testing.assert_allclose(result, x + y + 1)
+        torch_assert_close(result, x - y + 1)
 
     # remove torch.add
-    del FUNCTION_REWRITER._origin_functions[-1]
-    torch.testing.assert_allclose(torch.add(x, y), x + y)
+    torch_assert_close(torch.sub(x, y), x - y)
 
 
 def test_rewrite_empty_function():

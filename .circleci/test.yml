@@ -217,7 +217,6 @@ jobs:
              -DMMDEPLOY_BUILD_TEST=ON `
              -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
              -DMMDEPLOY_BUILD_EXAMPLES=ON `
-             -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
              -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
              -DMMDEPLOY_TARGET_BACKENDS="ort" `
              -DOpenCV_DIR="$env:OPENCV_PACKAGE_DIR"

@@ -4,28 +4,25 @@ import numpy as np
 import pytest
 import torch
 
-from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext
-from mmdeploy.utils import Backend, Codebase
+from mmdeploy.utils import Backend
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
-
-try:
-    import_codebase(Codebase.MMCLS)
-except ImportError:
-    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
 
 input = torch.rand(1)
 
 
-def get_invertedresidual_model():
+@pytest.fixture(scope='module')
+def invertedresidual_model():
     from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
     model = InvertedResidual(16, 16)
 
     model.requires_grad_(False)
+    model.eval()
     return model
 
 
-def get_vit_model():
+@pytest.fixture(scope='module')
+def vit_model():
     from mmcls.models.classifiers.image import ImageClassifier
     model = ImageClassifier(
         backbone={
@@ -58,6 +55,7 @@ def get_vit_model():
         },
     )
     model.requires_grad_(False)
+    model.eval()
 
     return model
 
@@ -115,10 +113,11 @@ def test_multilabel_cls_head():
 @pytest.mark.parametrize(
     'backend_type',
     [Backend.ONNXRUNTIME, Backend.TENSORRT, Backend.NCNN, Backend.OPENVINO])
-def test_shufflenetv2_backbone__forward(backend_type: Backend):
+def test_shufflenetv2_backbone__forward(backend_type: Backend,
+                                        invertedresidual_model):
 
     check_backend(backend_type, True)
-    model = get_invertedresidual_model()
+    model = invertedresidual_model
     model.cpu().eval()
     if backend_type.value == 'tensorrt':
         deploy_cfg = mmcv.Config(
@@ -163,11 +162,11 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
 
 
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
-def test_vision_transformer_backbone__forward(backend_type: Backend):
+def test_vision_transformer_backbone__forward(backend_type: Backend,
+                                              vit_model):
 
     check_backend(backend_type, True)
-    model = get_vit_model()
-    model.eval()
+    model = vit_model.eval()
 
     deploy_cfg = mmcv.Config(
         dict(

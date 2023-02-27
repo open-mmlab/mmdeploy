@@ -4,6 +4,7 @@ import tempfile
 from multiprocessing import Process
 
 import mmcv
+import pytest
 
 from mmdeploy.apis import create_calib_input_data
 
@@ -11,7 +12,8 @@ calib_file = tempfile.NamedTemporaryFile(suffix='.h5').name
 ann_file = 'tests/data/annotation.json'
 
 
-def get_end2end_deploy_cfg():
+@pytest.fixture
+def deploy_cfg():
     deploy_cfg = mmcv.Config(
         dict(
             onnx_config=dict(
@@ -53,14 +55,15 @@ def get_end2end_deploy_cfg():
     return deploy_cfg
 
 
-def get_partition_deploy_cfg():
-    deploy_cfg = get_end2end_deploy_cfg()
+@pytest.fixture
+def partition_deploy_cfg(deploy_cfg):
     deploy_cfg._cfg_dict['partition_config'] = dict(
         type='two_stage', apply_marks=True)
     return deploy_cfg
 
 
-def get_model_cfg():
+@pytest.fixture
+def model_cfg():
     dataset_type = 'CustomDataset'
     data_root = 'tests/data/'
     img_norm_cfg = dict(
@@ -169,10 +172,8 @@ def get_model_cfg():
     return model_cfg
 
 
-def run_test_create_calib_end2end():
+def run_test_create_calib_end2end(deploy_cfg, model_cfg):
     import h5py
-    model_cfg = get_model_cfg()
-    deploy_cfg = get_end2end_deploy_cfg()
     create_calib_input_data(
         calib_file,
         deploy_cfg,
@@ -194,18 +195,19 @@ def run_test_create_calib_end2end():
 # new process.
 
 
-def test_create_calib_end2end():
-    p = Process(target=run_test_create_calib_end2end)
+def test_create_calib_end2end(deploy_cfg, model_cfg):
+    p = Process(
+        target=run_test_create_calib_end2end,
+        kwargs=dict(deploy_cfg=deploy_cfg, model_cfg=model_cfg))
     try:
         p.start()
     finally:
         p.join()
 
 
-def run_test_create_calib_parittion():
+def run_test_create_calib_parittion(partition_deploy_cfg, model_cfg):
     import h5py
-    model_cfg = get_model_cfg()
-    deploy_cfg = get_partition_deploy_cfg()
+    deploy_cfg = partition_deploy_cfg
     create_calib_input_data(
         calib_file,
         deploy_cfg,
@@ -227,8 +229,11 @@ def run_test_create_calib_parittion():
             assert calib_data[partition_name][input_names[i]]['0'] is not None
 
 
-def test_create_calib_parittion():
-    p = Process(target=run_test_create_calib_parittion)
+def test_create_calib_parittion(partition_deploy_cfg, model_cfg):
+    p = Process(
+        target=run_test_create_calib_parittion,
+        kwargs=dict(
+            partition_deploy_cfg=partition_deploy_cfg, model_cfg=model_cfg))
     try:
         p.start()
     finally:

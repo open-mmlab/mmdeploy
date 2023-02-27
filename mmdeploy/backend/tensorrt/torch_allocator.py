@@ -13,6 +13,7 @@ class TorchAllocator(trt.IGpuAllocator):
 
         self.device_id = device_id
         self.mems = set()
+        self.caching_delete = torch._C._cuda_cudaCachingAllocator_raw_delete
 
     def __del__(self):
         """destructor."""
@@ -53,11 +54,9 @@ class TorchAllocator(trt.IGpuAllocator):
         Returns:
             bool: deallocate success.
         """
-        logger = get_root_logger()
-        logger.debug(f'deallocate {memory} with TorchAllocator.')
         if memory not in self.mems:
             return False
 
-        torch.cuda.caching_allocator_delete(memory)
+        self.caching_delete(memory)
         self.mems.discard(memory)
         return True

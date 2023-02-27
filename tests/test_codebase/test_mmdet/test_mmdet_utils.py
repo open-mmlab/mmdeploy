@@ -1,16 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmcv
 import numpy as np
-import pytest
 import torch
-
-from mmdeploy.codebase import import_codebase
-from mmdeploy.utils import Codebase
-
-try:
-    import_codebase(Codebase.MMDET)
-except ImportError:
-    pytest.skip(f'{Codebase.MMDET} is not installed.', allow_module_level=True)
 
 from mmdeploy.codebase.mmdet.deploy import (clip_bboxes,
                                             get_post_processing_params,
@@ -45,22 +36,20 @@ def test_pad_with_value_if_necessary():
     assert np.allclose(padded_x.sum(), x.sum(), rtol=1e-03, atol=1e-05)
 
 
-config_with_mmdet_params = mmcv.Config(
-    dict(
-        codebase_config=dict(
-            type='mmdet',
-            task='ObjectDetection',
-            post_processing=dict(
-                score_threshold=0.05,
-                iou_threshold=0.5,
-                max_output_boxes_per_class=200,
-                pre_top_k=-1,
-                keep_top_k=100,
-                background_label_id=-1,
-            ))))
-
-
 def test_get_mmdet_params():
+    config_with_mmdet_params = mmcv.Config(
+        dict(
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                ))))
     assert get_post_processing_params(config_with_mmdet_params) == dict(
         score_threshold=0.05,
         iou_threshold=0.5,
