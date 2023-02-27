@@ -49,7 +49,7 @@ PARAMS = [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'  # noqa: E501
         ],
         'input_type':
-        'image'
+        'text-image'
     },
     {
         'task':
@@ -93,6 +93,9 @@ def main():
         if input_type == 'image':
             java_command += (' /home/runner/work/mmdeploy/mmdeploy/demo' +
                              '/resources/human-pose.jpg\"')
+        elif input_type == 'text-image':
+            java_command += (' /home/runner/work/mmdeploy/mmdeploy/demo' +
+                             '/resources/text_det.jpg\"')
         elif input_type == 'video':
             os.system(
                 'wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4'  # noqa: E501
@@ -101,6 +104,8 @@ def main():
         else:
             java_command += '\"'
         print(f'java_command: {java_command}')
+        os.system(
+            'find /home/runner/work/opencv/build/lib/libopencv_java470.so')
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
             '-DlibDir=${OPENCV_DIR}/build/lib:/home/runner/work/mmdeploy/' +
