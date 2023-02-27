@@ -69,7 +69,8 @@ wait
 docker stop $container_id
 cp -rf $prebuild_log/* $prebuild_archive_dir/
 
-echo "查看日志: ${log_file}"
+echo "查看日志: ${log_url}/${log_file}"
+echo "预编译文件: ${log_url}/${prebuild_log}"
 
 echo "end_time-$(date +%Y%m%d%H%M)"
 time_end=$(date +%s)
