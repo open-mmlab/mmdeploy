@@ -113,7 +113,7 @@ def main():
         else:
             java_command += '\"'
         print(f'java_command: {java_command}')
-        os.system('ls /home/runner/work/opencv/build/lib')
+        os.system('ls /usr/lib/x86_64-linux-gnu')
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
             '-DlibDir=${OPENCV_DIR}/build/lib:/home/runner/work/mmdeploy/' +
