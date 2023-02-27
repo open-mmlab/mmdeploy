@@ -54,7 +54,6 @@ jobs:
         run: |
           sudo apt-get install ant
           export ANT_HOME=/usr/share/ant
-          export PATH=${ANT_HOME}/bin:${PATH}
       - name: Build Java class
         run: |
           pushd csrc/mmdeploy/apis/java
@@ -63,11 +62,11 @@ jobs:
       - name: Install mmdeploy with onnxruntime backend and Java API
         run: |
           mkdir -p build && pushd build
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
+          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/mmdeploy/mmdeploy/ncnn/install/lib/:$LD_LIBRARY_PATH
           cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=~/work/mmdeploy/mmdeploy/onnxruntime-linux-x64-1.8.1  ..
           make install
           echo $PWD
-          find /home/runner/work/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
+          find $GITHUB_WORKSPACE/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
           popd
       - name: Prepare OpenCV Java and test Java demo
         run: |
@@ -78,25 +77,22 @@ jobs:
           export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
           export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
           export JAVA_JVM_LIBRARY=${JAVA_HOME}
-          pushd /home/runner/work
-          git clone -b ${OPENCV_VERSION} https://github.com/opencv/opencv.git
-          pushd opencv
+          pushd $GITHUB_WORKSPACE
+          mkdir opencv && pushd opencv
           mkdir -p build && pushd build
           mkdir -p bin && pushd bin
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv-470.jar
           popd
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv470-lib.tar
           tar -xf opencv470-lib.tar -C ./
-          find lib/libopencv_java470.so
-          find lib/libopencv_ml.so.407
           popd
           export OPENCV_DIR=${PWD}
           echo $OPENCV_DIR
           popd && popd
-          find /home/runner/work/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
+          find $GITHUB_WORKSPACE/mmdeploy/mmdeploy/build/lib/libmmdeploy_java.so
           pushd demo/java
           sudo apt-get install libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libavcodec-dev libavformat-dev libswscale-dev
-          export OPENCV_DIR=/home/runner/work/opencv
-          export LD_LIBRARY_PATH=/home/runner/work/mmdeploy/mmdeploy/build/lib:/home/runner/work/opencv/build/lib:${LD_LIBRARY_PATH}
+          export OPENCV_DIR=$GITHUB_WORKSPACE/opencv
+          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/mmdeploy/mmdeploy/build/lib:$GITHUB_WORKSPACE/opencv/build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py
           popd
