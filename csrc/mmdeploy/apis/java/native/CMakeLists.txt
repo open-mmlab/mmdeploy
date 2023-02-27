@@ -20,7 +20,8 @@ mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
         mmdeploy_Device.cpp
         mmdeploy_Model.cpp
         mmdeploy_Profiler.cpp
-        mmdeploy_Scheduler.cpp)
+        mmdeploy_Scheduler.cpp
+        mmdeploy_RotatedDetector.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${JNI_INCLUDE_DIRS})
