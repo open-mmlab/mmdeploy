@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from mmseg.structures import SegDataSample
 
-from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
 
 
@@ -26,6 +26,14 @@ def base_segmentor__forward(self,
     Returns:
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
+
+    # mark seg_input
+    @mark('segmentor_forward', outputs=['input'])
+    def __mark_input(inputs):
+        return inputs
+
+    inputs = __mark_input(inputs)
+
     ctx = FUNCTION_REWRITER.get_context()
     if data_samples is None:
         data_samples = [SegDataSample()]
