@@ -40,21 +40,21 @@ jobjectArray Java_mmdeploy_Segmentor_apply(JNIEnv *env, jobject thiz, jlong hand
     jintArray jmask;
     jfloatArray jscore;
     for (int i = 0; i < size; ++i) {
-      int* mask = results[i].mask;
-      float* score = results[i].score;
+      int *mask = results[i].mask;
+      float *score = results[i].score;
       if (results[i].mask) {
         jmask = env->NewIntArray(results[i].height * results[i].width);
         env->SetIntArrayRegion(jmask, 0, results[i].width * results[i].height, (const jint *)mask);
-      }
-      else {
+      } else {
         jmask = env->NewIntArray(0);
         env->SetIntArrayRegion(jmask, 0, 0, nullptr);
       }
       if (results[i].score) {
         jscore = env->NewFloatArray(results[i].classes * results[i].height * results[i].width);
-        env->SetFloatArrayRegion(jscore, 0, results[i].classes * results[i].height * results[i].width, (const jfloat *)score);
-      }
-      else {
+        env->SetFloatArrayRegion(jscore, 0,
+                                 results[i].classes * results[i].height * results[i].width,
+                                 (const jfloat *)score);
+      } else {
         jscore = env->NewFloatArray(0);
         env->SetFloatArrayRegion(jscore, 0, 0, nullptr);
       }
