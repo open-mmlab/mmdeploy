@@ -26,7 +26,7 @@ class TestVoxelDetectionModel:
     @classmethod
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -88,7 +88,7 @@ def test_build_voxel_detection_model():
                 output_names=['cls_score', 'bbox_pred', 'dir_cls_pred']),
             codebase_config=dict(type=Codebase.MMDET3D.value)))
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference

@@ -8,7 +8,7 @@ from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam
 
 @dataclass
 class ONNXIRParam(BaseIRParam):
-    """ONNX IR params.
+    """ONNX IR param.
 
     Args:
         args (Any): The arguments of the model.
@@ -48,7 +48,7 @@ class ONNXIRParam(BaseIRParam):
         assert self.opset_version >= 7, 'opset version < 7 is not supported.'
 
 
-@IR_MANAGERS.register('onnx', params=ONNXIRParam)
+@IR_MANAGERS.register('onnx', param=ONNXIRParam)
 class ONNXManager(BaseIRManager):
     """ONNX IR Manager."""
 
@@ -133,7 +133,7 @@ class ONNXManager(BaseIRManager):
 
         Args:
             model (Any): The model to be exported.
-            params (ONNXIRParam): The packed export parameter.
+            param (ONNXIRParam): The packed export parameter.
         """
         from mmdeploy.utils import get_root_logger
         logger = get_root_logger()

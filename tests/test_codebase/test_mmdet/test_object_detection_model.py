@@ -46,7 +46,7 @@ class TestEnd2EndModel:
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -95,7 +95,7 @@ class TestMaskEnd2EndModel:
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -239,7 +239,7 @@ def test_build_object_detection_model(partition_type):
             type=partition_type,
             partition_cfg=[dict(output_names=[])])
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference

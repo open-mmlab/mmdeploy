@@ -26,7 +26,7 @@ class TestEnd2EndModel:
     @classmethod
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -65,7 +65,7 @@ def test_build_pose_detection_model():
     model_cfg = load_config(model_cfg_path)[0]
     deploy_cfg = generate_mmpose_deploy_config()
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference

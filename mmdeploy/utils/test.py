@@ -147,7 +147,7 @@ class SwitchBackendWrapper:
     """A switcher for backend wrapper for unit tests.
     Examples:
         >>> from mmdeploy.utils.test import SwitchBackendWrapper
-        >>> from mmdeploy.backend.onnxruntime import ORTWrapper
+        >>> from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         >>> with SwitchBackendWrapper(ORTWrapper) as wrapper:
         >>>     wrapper.set(ORTWrapper, outputs=outputs)
         >>>     ...

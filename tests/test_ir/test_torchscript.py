@@ -50,7 +50,7 @@ class TestTorchScriptManager:
 
     def test_build_param(self, dummy_args, file_name):
         assert isinstance(
-            TorchScriptManager.build_params(
+            TorchScriptManager.build_param(
                 args=dummy_args, file_name=file_name), TorchScriptIRParam)
 
     def test_is_available(self):

@@ -769,7 +769,7 @@ def test_gather(backend,
     assert importlib.util.find_spec('onnxruntime') is not None, 'onnxruntime \
          not installed.'
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_model = ORTWrapper(
         gather_model.SerializeToString(),
         device='cpu',

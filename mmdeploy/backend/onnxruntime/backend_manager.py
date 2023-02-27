@@ -1,40 +1,48 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import logging
 import os.path as osp
-from typing import Any, Callable, Optional, Sequence
+import shutil
+from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, Sequence
 
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.ir.onnx import ONNXIRParam
+from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 
-@BACKEND_MANAGERS.register('onnxruntime')
+@dataclass
+class ONNXRuntimeBackendParam(BaseBackendParam):
+    """Base backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        device (str): The device used to perform the inference. Default to cpu.
+    """
+    _default_postfix = '.onnx'
+
+
+@BACKEND_MANAGERS.register(
+    'onnxruntime', param=ONNXRuntimeBackendParam, ir_param=ONNXIRParam)
 class ONNXRuntimeManager(BaseBackendManager):
 
     @classmethod
     def build_wrapper(cls,
-                      backend_files: Sequence[str],
+                      model_path: str,
                       device: str = 'cpu',
-                      input_names: Optional[Sequence[str]] = None,
-                      output_names: Optional[Sequence[str]] = None,
-                      deploy_cfg: Optional[Any] = None,
-                      **kwargs):
+                      output_names: Optional[Sequence[str]] = None):
         """Build the wrapper for the backend model.
 
         Args:
             backend_files (Sequence[str]): Backend files.
             device (str, optional): The device info. Defaults to 'cpu'.
-            input_names (Optional[Sequence[str]], optional): input names.
-                Defaults to None.
             output_names (Optional[Sequence[str]], optional): output names.
                 Defaults to None.
-            deploy_cfg (Optional[Any], optional): The deploy config. Defaults
-                to None.
         """
 
         from .wrapper import ORTWrapper
         return ORTWrapper(
-            onnx_file=backend_files[0],
-            device=device,
-            output_names=output_names)
+            onnx_file=model_path, device=device, output_names=output_names)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -140,3 +148,53 @@ class ONNXRuntimeManager(BaseBackendManager):
             Sequence[str]: Backend files.
         """
         return ir_files
+
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: BaseBackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            ir_model (str): The ir model path to perform the export.
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        save_path = osp.join(param.work_dir, param.file_name)
+        if osp.abspath(save_path) != osp.abspath(ir_model):
+            shutil.copy(ir_model, save_path)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: ONNXRuntimeBackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            param (ONNXRuntimeBackendParam): Packed backend parameter.
+        """
+        assert isinstance(param, ONNXRuntimeBackendParam)
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        model_path = osp.join(param.work_dir, param.file_name)
+        output_names = param.output_names
+        if len(output_names) == 0:
+            output_names = None
+        return cls.build_wrapper(
+            model_path, device=param.device, output_names=output_names)
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: List[str] = None,
+                                **kwargs) -> ONNXRuntimeBackendParam:
+        """Build param from deploy config.
+
+        Args:
+            config (Any): The deploy config.
+            work_dir (str): work directory of the parameters.
+            backend_files (List[str]): The backend files of the model.
+
+        Returns:
+            BaseBackendParam: The packed backend parameter.
+        """
+        return ONNXRuntimeBackendParam(
+            work_dir=work_dir, file_name=backend_files[0], **kwargs)

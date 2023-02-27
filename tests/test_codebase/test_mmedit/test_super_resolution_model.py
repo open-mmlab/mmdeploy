@@ -23,7 +23,7 @@ class TestEnd2EndModel:
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeEditor can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference

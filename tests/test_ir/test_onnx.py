@@ -61,7 +61,7 @@ class TestONNXManager:
 
     def test_build_param(self, dummy_args, file_name):
         assert isinstance(
-            ONNXManager.build_params(args=dummy_args, file_name=file_name),
+            ONNXManager.build_param(args=dummy_args, file_name=file_name),
             ONNXIRParam)
 
     def test_is_available(self):

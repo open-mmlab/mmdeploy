@@ -61,7 +61,7 @@ class TestOnnxRTExporter:
         else:
             model_outputs = list(model_outputs)
 
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         onnx_model = ORTWrapper(onnx_file_path, 'cpu', output_names)
         with torch.no_grad():
             onnx_outputs = onnx_model.forward(

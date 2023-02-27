@@ -27,7 +27,7 @@ class TestEnd2EndModel:
     @classmethod
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -101,7 +101,7 @@ def test_build_segmentation_model():
         dict(data=dict(test={'type': 'CityscapesDataset'})))
     deploy_cfg = generate_mmseg_deploy_config()
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference

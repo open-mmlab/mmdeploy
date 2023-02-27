@@ -62,8 +62,16 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
         if backend_mgr is None:
             raise NotImplementedError(
                 f'Unsupported backend type: {backend.value}')
-        return backend_mgr.build_wrapper(backend_files, device, input_names,
-                                         output_names, deploy_cfg, **kwargs)
+
+        param = backend_mgr.build_param_from_config(
+            deploy_cfg,
+            work_dir='',
+            backend_files=backend_files,
+            input_names=input_names)
+        param.input_names = input_names
+        param.output_names = output_names
+        param.device = device
+        return backend_mgr.build_wrapper_from_param(param)
 
     def destroy(self):
         if hasattr(self, 'wrapper') and hasattr(self.wrapper, 'destroy'):

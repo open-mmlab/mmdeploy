@@ -61,7 +61,7 @@ class BaseIRParam:
 class BaseIRManager(metaclass=ABCMeta):
     """Abstract interface of ir manager."""
 
-    build_params = BaseIRParam
+    build_param = BaseIRParam
 
     @classmethod
     def export(cls, model: Any, *args, **kwargs):
@@ -71,10 +71,10 @@ class BaseIRManager(metaclass=ABCMeta):
             f'{cls.__qualname__} has not been implemented.')
 
     @classmethod
-    def export_from_param(cls, model, params: BaseIRParam):
+    def export_from_param(cls, model, param: BaseIRParam):
         """export model to ir by param."""
         raise NotImplementedError(
-            'class method: `export_from_params` of '
+            'class method: `export_from_param` of '
             f'{cls.__qualname__} has not been implemented.')
 
     @classmethod
@@ -93,8 +93,8 @@ class IRManagerRegistry:
 
     def register(self,
                  name: str,
-                 params: Any,
-                 enum_name: Optional[str] = None):
+                 enum_name: Optional[str] = None,
+                 param: Any = None):
         """register ir manager.
 
         Args:
@@ -125,8 +125,9 @@ class IRManagerRegistry:
             self._module_dict[name] = cls
 
             cls.ir_name = name
-            cls.build_params = params
-            params._manager = cls
+            cls.build_param = param
+            if param is not None:
+                param._manager = cls
 
             return cls
 

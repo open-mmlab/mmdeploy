@@ -26,7 +26,7 @@ class TestEnd2EndModel:
     @classmethod
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
@@ -107,7 +107,7 @@ def test_build_classification_model():
             onnx_config=dict(output_names=['outputs']),
             codebase_config=dict(type='mmcls')))
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference

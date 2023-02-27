@@ -41,7 +41,7 @@ video = 'tests/test_codebase/test_mmaction/data/video/demo.mp4'
 
 @pytest.fixture
 def backend_model():
-    from mmdeploy.backend.onnxruntime import ORTWrapper
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(outputs={
