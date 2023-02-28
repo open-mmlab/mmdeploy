@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 import re
+from argparse import ArgumentParser
 from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence
@@ -20,8 +21,6 @@ class TensorRTBackendParam(BaseBackendParam):
         input_shapes (ShapeType): The Default shape of the inputs.
         min_shapes (ShapeType): The minimal shape of the inputs.
         max_shapes (ShapeType): The maximal shape of the inputs.
-        input_names (List[str]): Names of the inputs.
-        output_names (List[str]): Names of the outputs.
         device (str): Device used to perform inference.
         fp16_mode (bool): Enable fp16 mode.
         int8_mode (bool): Enable int8 quantization. Can be co-exist with
@@ -308,3 +307,51 @@ class TensorRTManager(BaseBackendManager):
         ret = TensorRTBackendParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)
         return ret
+
+    @classmethod
+    def parse_args(cls,
+                   parser: ArgumentParser,
+                   args: Optional[List[str]] = None):
+        """Parse console arguments.
+
+        Args:
+            parser (ArgumentParser): The parser used to parse arguments.
+            args (Optional[List[str]], optional): Arguments to be parsed. If
+                not given, arguments from console will be parsed.
+        """
+
+        # parse args
+        sub_parsers = parser.add_subparsers(
+            title='action',
+            description='Please select the action you want to perform.',
+            dest='_action')
+
+        # export model
+        export_parser = sub_parsers.add_parser(
+            name='convert', help='convert TensorRT engine from ONNX model.')
+        export_parser.add_argument(
+            '--onnx-path', required=True, help='ONNX model path.')
+        TensorRTBackendParam.add_arguments(export_parser)
+
+        parsed_args = parser.parse_args(args)
+        yield parsed_args
+
+        # perform action
+        action = parsed_args._action
+
+        if action == 'convert':
+            # convert model
+            param = TensorRTBackendParam(
+                work_dir=parsed_args.work_dir,
+                file_name=parsed_args.file_name,
+                device=parsed_args.device,
+                min_shapes=parsed_args.min_shapes,
+                input_shapes=parsed_args.input_shapes,
+                max_shapes=parsed_args.max_shapes,
+                max_workspace_size=parsed_args.max_workspace_size,
+                fp16_mode=parsed_args.fp16_mode,
+                int8_mode=parsed_args.int8_mode,
+                int8_algorithm=parsed_args.int8_algorithm,
+                quanti_data=parsed_args.quanti_data)
+
+            cls.to_backend_from_param(parsed_args.onnx_path, param)

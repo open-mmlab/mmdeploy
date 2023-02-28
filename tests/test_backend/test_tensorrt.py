@@ -107,3 +107,30 @@ class TestTensorRTManager:
         param = backend_mgr.build_param(work_dir='', file_name=backend_model)
         wrapper = backend_mgr.build_wrapper_from_param(param)
         self._test_forward(wrapper, inputs, outputs)
+
+    def test_parse_args(self, backend_mgr, onnx_model, tmp_path,
+                        input_shape_dict):
+        # make input shapes
+        input_shapes = []
+        for name, shape in input_shape_dict.items():
+            shape = 'x'.join(str(i) for i in shape)
+            input_shapes.append(f'{name}:{shape}')
+        input_shapes = ','.join(input_shapes)
+
+        save_path = str(tmp_path / 'tmp.engine')
+
+        # make args
+        args = ['convert']
+        args += ['--onnx-path', onnx_model]
+        args += ['--work-dir', '/']
+        args += ['--file-name', save_path]
+        args += ['--input-shapes', input_shapes]
+
+        parser = argparse.ArgumentParser()
+        generator = backend_mgr.parse_args(parser, args=args)
+
+        try:
+            next(generator)
+            next(generator)
+        except StopIteration:
+            assert osp.exists(save_path)

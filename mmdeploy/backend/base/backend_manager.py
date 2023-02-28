@@ -6,7 +6,7 @@ import re
 from abc import ABCMeta
 from argparse import Action, ArgumentParser
 from collections import OrderedDict
-from dataclasses import dataclass, field, fields
+from dataclasses import MISSING, dataclass, field, fields
 from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
                     Union)
 
@@ -299,7 +299,7 @@ class BaseBackendParam:
             cls_field = field_map[name]
 
             dtype = cls_field.type
-            if cls_field.default is not None:
+            if cls_field.default is not MISSING:
                 default = cls_field.default
             elif isinstance(cls_field.default_factory, Callable):
                 default = cls_field.default_factory()
@@ -422,8 +422,8 @@ class BaseBackendManager(metaclass=ABCMeta):
             args (Optional[List[str]], optional): Arguments to be parsed. If
                 not given, arguments from console will be parsed.
         """
-        parsed_args = parser.parse_args(args)
-        yield parsed_args
+        raise NotImplementedError(
+            f'parse_args of {cls.__name__} has not been implemented.')
 
     @classmethod
     def main(cls):
