@@ -39,22 +39,21 @@ jobs:
           wget https://github.com/irexyc/mmdeploy-ci-resource/releases/download/libtorch/libtorch-osx-arm64-1.8.0.tar.gz
           mkdir $GITHUB_WORKSPACE/libtorch-install
           tar xf libtorch-osx-arm64-1.8.0.tar.gz -C $GITHUB_WORKSPACE/libtorch-install
-      - name: build
+      - name: build-static-lib
         run: |
           mkdir build && cd build
           cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64" \
             -DCMAKE_SYSTEM_PROCESSOR="arm64" \
             -DMMDEPLOY_BUILD_SDK=ON \
-            -DMMDEPLOY_TARGET_DEVICES="cpu" \
-            -DMMDEPLOY_CODEBASES=all \
             -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4 \
             -DTorch_DIR=$GITHUB_WORKSPACE/libtorch-install/share/cmake/Torch \
             -DMMDEPLOY_TARGET_BACKENDS="coreml" \
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
+            -DMMDEPLOY_BUILD_SDK_MONOLITHIC=OFF \
             -DMMDEPLOY_SHARED_LIBS=OFF
           cmake --build . -j 3
           cmake --build . --target install
-      - name: build-shared
+      - name: build-monolithic-lib
         run: |
           mkdir build-shared && cd build-shared
           cmake .. -DCMAKE_OSX_ARCHITECTURES="arm64" \
@@ -65,7 +64,8 @@ jobs:
             -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4 \
             -DTorch_DIR=$GITHUB_WORKSPACE/libtorch-install/share/cmake/Torch \
             -DMMDEPLOY_TARGET_BACKENDS="coreml" \
-            -DMMDEPLOY_BUILD_EXAMPLES=ON \
-            -DMMDEPLOY_SHARED_LIBS=ON
+            -DMMDEPLOY_BUILD_SDK_MONOLITHIC=ON \
+            -DMMDEPLOY_SHARED_LIBS=OFF \
+            -DMMDEPLOY_BUILD_EXAMPLES=ON
           cmake --build . -j 3
           cmake --build . --target install

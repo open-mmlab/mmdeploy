@@ -48,12 +48,9 @@ jobs:
           cmake .. \
             -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/riscv64-linux-gnu.cmake \
             -DMMDEPLOY_BUILD_SDK=ON \
-            -DMMDEPLOY_SHARED_LIBS=ON \
             -DMMDEPLOY_BUILD_EXAMPLES=ON \
-            -DMMDEPLOY_TARGET_DEVICES="cpu" \
             -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
             -Dncnn_DIR=$GITHUB_WORKSPACE/ncnn-install/lib/cmake/ncnn/ \
-            -DMMDEPLOY_CODEBASES=all \
             -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4
           make -j$(nproc)
           make install
