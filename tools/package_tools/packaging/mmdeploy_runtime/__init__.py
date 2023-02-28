@@ -23,6 +23,6 @@ CURDIR = os.path.realpath(os.path.dirname(__file__))
 for lib in glob.iglob(os.path.join(CURDIR, '*.so*')):
     try_load(lib)
 
-from .mmdeploy_python import *  # noqa
+from .mmdeploy_runtime import *  # noqa
 
 __all__ = ['__version__']

@@ -1,15 +1,16 @@
 # MMEditing Deployment
 
-- [Installation](#installation)
-  - [Install mmedit](#install-mmedit)
-  - [Install mmdeploy](#install-mmdeploy)
-- [Convert model](#convert-model)
-  - [Convert super resolution model](#convert-super-resolution-model)
-- [Model specification](#model-specification)
-- [Model inference](#model-inference)
-  - [Backend model inference](#backend-model-inference)
-  - [SDK model inference](#sdk-model-inference)
-- [Supported models](#supported-models)
+- [MMEditing Deployment](#mmediting-deployment)
+  - [Installation](#installation)
+    - [Install mmedit](#install-mmedit)
+    - [Install mmdeploy](#install-mmdeploy)
+  - [Convert model](#convert-model)
+    - [Convert super resolution model](#convert-super-resolution-model)
+  - [Model specification](#model-specification)
+  - [Model inference](#model-inference)
+    - [Backend model inference](#backend-model-inference)
+    - [SDK model inference](#sdk-model-inference)
+  - [Supported models](#supported-models)
 
 ______________________________________________________________________
 
@@ -163,7 +164,7 @@ task_processor.visualize(
 You can also perform SDK model inference like following,
 
 ```python
-from mmdeploy_python import Restorer
+from mmdeploy_runtime import Restorer
 import cv2
 
 img = cv2.imread('./demo/resources/face.png')

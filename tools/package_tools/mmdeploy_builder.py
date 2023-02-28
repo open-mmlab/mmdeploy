@@ -321,7 +321,7 @@ def create_mmdeploy(cfg: Dict, work_dir: str):
     _call_command(bdist_cmd, MMDEPLOY_DIR)
 
 
-def create_mmdeploy_python(cfg: Dict, work_dir: str):
+def create_mmdeploy_runtime(cfg: Dict, work_dir: str):
     cmake_cfg = cfg['cmake_cfg']
     if cmake_cfg['MMDEPLOY_BUILD_SDK'] == 'OFF' or \
             cmake_cfg['MMDEPLOY_BUILD_SDK_PYTHON_API'] == 'OFF':
@@ -333,14 +333,14 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         python_major = _version.major
         python_minor = _version.minor
         # create sdk python api wheel
-        sdk_python_package_dir = osp.join(work_dir, '.mmdeploy_python')
+        sdk_python_package_dir = osp.join(work_dir, '.mmdeploy_runtime')
         _copy(PACKAGING_DIR, sdk_python_package_dir)
         _copy(
             osp.join(MMDEPLOY_DIR, 'mmdeploy', 'version.py'),
-            osp.join(sdk_python_package_dir, 'mmdeploy_python', 'version.py'),
+            osp.join(sdk_python_package_dir, 'mmdeploy_runtime', 'version.py'),
         )
 
-        # build mmdeploy_python
+        # build mmdeploy_runtime
         python_executable = shutil.which('python')\
             .replace('mmdeploy-3.6', f'mmdeploy-{python_version}')
         cmake_options = [
@@ -367,7 +367,7 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
 
         # copy api lib
         python_api_lib_path = []
-        lib_patterns = ['*mmdeploy_python*.so', '*mmdeploy_python*.pyd']
+        lib_patterns = ['*mmdeploy_runtime*.so', '*mmdeploy_runtime*.pyd']
         for pattern in lib_patterns:
             python_api_lib_path.extend(
                 glob(
@@ -376,7 +376,7 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
                 ))
         _copy(
             python_api_lib_path[0],
-            osp.join(sdk_python_package_dir, 'mmdeploy_python'),
+            osp.join(sdk_python_package_dir, 'mmdeploy_runtime'),
         )
         _remove_if_exist(osp.join(MMDEPLOY_DIR, 'build_python'))
 
@@ -394,20 +394,20 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
             files = glob(osp.join(search_dir, pattern))
             for file in files:
                 _copy(file, osp.join(sdk_python_package_dir,
-                                     'mmdeploy_python'))
+                                     'mmdeploy_runtime'))
 
         # copy onnxruntime
         if 'ort' in cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']:
             copy_onnxruntime(
-                cfg, osp.join(sdk_python_package_dir, 'mmdeploy_python'))
+                cfg, osp.join(sdk_python_package_dir, 'mmdeploy_runtime'))
 
         # bdist
-        sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_python')
+        sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_runtime')
         cfg['bdist_tags'] = {'python_tag': f'cp{python_major}{python_minor}'}
         bdist_cmd = _create_bdist_cmd(cfg, c_ext=True, dist_dir=sdk_wheel_dir)
         if 'cuda' in cmake_cfg['MMDEPLOY_TARGET_DEVICES']:
             bdist_cmd += ' --use-gpu'
-        _call_command(bdist_cmd, '.mmdeploy_python')
+        _call_command(bdist_cmd, '.mmdeploy_runtime')
         _remove_if_exist(sdk_python_package_dir)
 
 
@@ -450,7 +450,7 @@ def create_sdk(cfg: Dict, work_dir: str):
 def create_package(cfg: Dict, work_dir: str):
     create_mmdeploy(cfg, work_dir)
     create_sdk(cfg, work_dir)
-    create_mmdeploy_python(cfg, work_dir)
+    create_mmdeploy_runtime(cfg, work_dir)
 
 
 def parse_args():

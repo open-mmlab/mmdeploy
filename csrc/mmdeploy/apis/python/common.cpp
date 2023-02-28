@@ -165,7 +165,7 @@ static PythonBindingRegisterer register_scheduler{[](py::module& m) {
 
 }  // namespace mmdeploy::python
 
-PYBIND11_MODULE(mmdeploy_python, m) {
+PYBIND11_MODULE(mmdeploy_runtime, m) {
   for (const auto& f : mmdeploy::python::gPythonBindings()) {
     f(m);
   }

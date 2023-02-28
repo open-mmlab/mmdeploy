@@ -9,8 +9,8 @@ except ImportError:
     from distutils.core import find_packages, setup
 
 CURDIR = os.path.realpath(os.path.dirname(__file__))
-version_file = osp.join(CURDIR, 'mmdeploy_python', 'version.py')
-package_name = 'mmdeploy_python'
+version_file = osp.join(CURDIR, 'mmdeploy_runtime', 'version.py')
+package_name = 'mmdeploy_runtime'
 
 
 def get_version():
@@ -33,9 +33,9 @@ def parse_arg_remove_boolean(argv, arg_name):
 
 
 if parse_arg_remove_boolean(sys.argv, '--use-gpu'):
-    package_name = package_name + '-gpu'
+    package_name = package_name + '_gpu'
     if sys.platform == 'win32':
-        with open('mmdeploy_python/_win_dll_path.py', 'a') as f:
+        with open('mmdeploy_runtime/_win_dll_path.py', 'a') as f:
             code = \
                 'import os\n' \
                 'import sys\n\n' \
@@ -62,5 +62,5 @@ if __name__ == '__main__':
         packages=find_packages(),
         include_package_data=True,
         platforms=get_platform_name(),
-        package_data={'mmdeploy_python': ['*.so*', '*.pyd', '*.pdb']},
+        package_data={'mmdeploy_runtime': ['*.so*', '*.pyd', '*.pdb']},
         license='Apache License 2.0')
