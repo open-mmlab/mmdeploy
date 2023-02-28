@@ -6,62 +6,78 @@ import os
 
 PARAMS = [
     {
-        'task': 'ImageClassification',
+        'task':
+        'ImageClassification',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/resnet.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     },
     {
-        'task': 'ObjectDetection',
+        'task':
+        'ObjectDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     },
     {
-        'task': 'ImageSegmentation',
+        'task':
+        'ImageSegmentation',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     },
     {
-        'task': 'ImageRestorer',
+        'task':
+        'ImageRestorer',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     },
     {
-        'task': 'Ocr',
+        'task':
+        'Ocr',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dbnet.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'  # noqa: E501
         ],
-        'input_type': 'text-image'
+        'input_type':
+        'text-image'
     },
     {
-        'task': 'PoseDetection',
+        'task':
+        'PoseDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     },
     {
-        'task': 'PoseTracker',
+        'task':
+        'PoseTracker',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar'  # noqa: E501
         ],
-        'input_type': 'video'
+        'input_type':
+        'video'
     },
     {
-        'task': 'RotatedDetection',
+        'task':
+        'RotatedDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'  # noqa: E501
         ],
-        'input_type': 'image'
+        'input_type':
+        'image'
     }
 ]
 
@@ -97,10 +113,10 @@ def main():
         else:
             java_command += '\"'
         print(f'java_command: {java_command}')
-        os.system(
-            'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
-            '-DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/../../'
-            + 'mmdeploy/mmdeploy/build/lib -Dcommand=' + java_command)
+        os.system('ant -DtaskName=' + task +
+                  ' -DjarDir=${OPENCV_DIR}/build/bin ' +
+                  '-DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/../../' +
+                  'mmdeploy/mmdeploy/build/lib -Dcommand=' + java_command)
 
 
 if __name__ == '__main__':

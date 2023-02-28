@@ -4,5 +4,5 @@ public enum ContextType {
     DEVICE,
     SCHEDULER,
     MODEL,
-    PROFILER;
+    PROFILER
 }
