@@ -43,7 +43,6 @@ jobs:
           tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
           export ONNXRUNTIME_DIR=${PWD}/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-          popd
       - name: Install OpenCV
         run: |
           sudo apt-get install libopencv-dev
