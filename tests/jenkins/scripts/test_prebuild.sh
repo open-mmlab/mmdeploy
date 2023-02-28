@@ -28,9 +28,9 @@ time_snap=$(date +%Y%m%d%H%M)
 time_start=$(date +%s)
 
 prebuild_archive_dir=/data2/shared/prebuilt-mmdeploy/${docker_image}/${date_snap}/${time_snap}
-prebuild_log=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}
+prebuild_log=/data2/regression_log/prebuild_log/${date_snap}/${time_snap}/${cuda_version}
 mkdir -p -m 777 ${prebuild_log} ${prebuild_archive_dir}
-chmod 777 ${prebuild_log}/.. ${prebuild_archive_dir}/..
+chmod 777 ${prebuild_log}/.. ${prebuild_log}/../.. ${prebuild_archive_dir}/..
 
 log_file=$prebuild_log/exec_prebuild_log.txt
 
