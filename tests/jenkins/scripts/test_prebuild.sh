@@ -70,7 +70,7 @@ docker stop $container_id
 cp -rf $prebuild_log/* $prebuild_archive_dir/
 
 echo "查看日志: ${log_url}/exec_prebuild_log.txt"
-echo "查看预编译文件: ${log_url}}"
+echo "查看预编译文件: ${log_url}"
 
 echo "end_time-$(date +%Y%m%d%H%M)"
 time_end=$(date +%s)
