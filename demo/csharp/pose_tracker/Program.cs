@@ -39,16 +39,20 @@ namespace pose_tracker
             };
         }
 
-        static bool Visualize(OpenCvSharp.Mat frame, PoseTrackerOutput result, int size,
+        static bool Visualize(OpenCvSharp.Mat frame, PoseTrackerOutput result, int long_edge,
             int frame_id, bool with_bbox)
         {
             var skeleton = CocoSkeleton.Skeleton;
             var palette = CocoSkeleton.Palette;
             var link_color = CocoSkeleton.LinkColor;
             var point_color = CocoSkeleton.PointColor;
-
-            float scale = (float)size / (float)Math.Max(frame.Cols, frame.Rows);
-            if (scale != 1) {
+            float scale = 1;
+            if (long_edge != 0)
+            {
+                scale = (float)long_edge / (float)Math.Max(frame.Cols, frame.Rows);
+            }
+            if (scale != 1)
+            {
                 Cv2.Resize(frame, frame, new Size(), scale, scale);
             }
             else
@@ -186,7 +190,7 @@ namespace pose_tracker
                 PoseTrackerOutput result = tracker.Apply(state, mat);
 
                 // visualize
-                if (!Visualize(frame, result, 1280, frame_id++, true))
+                if (!Visualize(frame, result, 0, frame_id++, true))
                 {
                     break;
                 }
