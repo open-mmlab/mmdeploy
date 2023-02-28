@@ -88,7 +88,7 @@ jobs:
           popd && popd
           find $GITHUB_WORKSPACE/build/lib/libmmdeploy_java.so
           pushd demo/java
-          sudo apt-get install libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libavcodec-dev libavformat-dev libswscale-dev
+          sudo apt-get install ffmpeg libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libavcodec-dev libavformat-dev libswscale-dev
           export OPENCV_DIR=$GITHUB_WORKSPACE/../../opencv
           export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/build/lib:$GITHUB_WORKSPACE/../../opencv/build/lib:${LD_LIBRARY_PATH}
           python ../../.github/scripts/test_java_demo.py

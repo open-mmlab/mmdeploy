@@ -99,8 +99,8 @@ def main():
         print(f'java_command: {java_command}')
         os.system(
             'ant -DtaskName=' + task + ' -DjarDir=${OPENCV_DIR}/build/bin ' +
-            '-DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/../../mmdeploy/'
-            + 'mmdeploy/build/lib -Dcommand=' + java_command)
+            '-DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/../../'
+            + 'mmdeploy/mmdeploy/build/lib -Dcommand=' + java_command)
 
 
 if __name__ == '__main__':
