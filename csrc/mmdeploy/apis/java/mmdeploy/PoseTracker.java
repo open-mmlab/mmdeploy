@@ -56,20 +56,14 @@ public class PoseTracker {
                         this.poseBboxScale = poseBboxScale;
                         this.poseMinBboxSize = poseMinBboxSize;
                         this.poseNmsThr = poseNmsThr;
-                        this.keypointSigmas = new float[keypointSigmasSize];
-                        for (int i = 0; i < keypointSigmasSize; i++) {
-                            this.keypointSigmas[i] = keypointSigmas[i];
-                        }
+                        this.keypointSigmas = keypointSigmas.clone();
                         this.keypointSigmasSize = keypointSigmasSize;
                         this.trackIouThr = trackIouThr;
                         this.trackMaxMissing = trackMaxMissing;
                         this.trackHistorySize = trackHistorySize;
                         this.stdWeightPosition = stdWeightPosition;
                         this.stdWeightVelocity = stdWeightVelocity;
-                        this.smoothParams = new float[3];
-                        for (int i = 0; i < 3; i++) {
-                            this.smoothParams[i] = smoothParams[i];
-                        }
+                        this.smoothParams = smoothParams.clone();
                     }
     }
 
