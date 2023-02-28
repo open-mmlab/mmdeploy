@@ -10,12 +10,23 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/02/28
+ * @description: this is a class for Ocr java demo.
+ */
 public class Ocr {
 
+    /** The main function for Ocr Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param detModelPath: the text detection model path.
+     * @param recModelPath: the text recognition model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 4) {
-            System.out.println("usage:\njava TextDetection deviceName detModelPath recModelPath imagePath");
+            System.out.println("usage:\njava Ocr deviceName detModelPath recModelPath imagePath");
             return;
         }
         String deviceName = args[0];

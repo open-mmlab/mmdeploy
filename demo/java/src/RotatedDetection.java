@@ -13,8 +13,18 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/02/28
+ * @description: this is a class for RotatedDetection java demo.
+ */
 public class RotatedDetection {
 
+    /** The main function for RotatedDetection Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param modelPath: the rotated detection model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {

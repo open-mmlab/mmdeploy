@@ -21,10 +21,23 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/02/28
+ * @description: this is a class for PoseTracker java demo.
+ */
 public class PoseTracker {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
+    /** This function visualize the PoseTracker results.
+     * @param frame: a video frame
+     * @param results: results of PoseTracker
+     * @param size: image size
+     * @param frameID: the frame index in the video
+     * @param withBbox: draw the person bbox or not
+     * @return: whether the quit keyboard input received
+     */
     public static boolean Visualize(org.opencv.core.Mat frame, mmdeploy.PoseTracker.Result[] results, int size,
         int frameID, boolean withBbox){
         int skeleton[][] = {{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
@@ -98,19 +111,23 @@ public class PoseTracker {
             // Press any key to quit.
             return HighGui.waitKey(5) == -1;
     }
+
+    /** The main function for PoseTracker Java demo.
+     * @param deviceName: the device name of PoseTracker
+     * @param detModelPath: the person detection model path
+     * @param poseModelPath: the pose estimation model path
+     * @param videoPath: the video path
+     */
     public static void main(String[] args) {
         // Parse arguments
-        if (args.length < 4 || args.length > 5) {
-            System.out.println("usage:\n-Dcommand needs deviceName detModel poseModel videoPath [outputDir]");
+        if (args.length != 4) {
+            System.out.println("usage:\n-Dcommand needs deviceName detModel poseModel videoPath");
             return;
         }
         String deviceName = args[0];
         String detModelPath = args[1];
         String poseModelPath = args[2];
         String videoPath = args[3];
-        if (args.length == 5) {
-            String outputDir = args[4];
-        }
 
         // create pose tracker
         mmdeploy.PoseTracker poseTracker = null;

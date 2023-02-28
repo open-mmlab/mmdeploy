@@ -12,8 +12,18 @@ import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/02/28
+ * @description: this is a class for ObjectDetection java demo.
+ */
 public class ObjectDetection {
 
+    /** The main function for ObjectDetection Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param modelPath: the object detection model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {
