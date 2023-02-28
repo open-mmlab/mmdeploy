@@ -1,7 +1,7 @@
 import mmdeploy.PixelFormat;
+import mmdeploy.ContextType;
 import mmdeploy.PointF;
 import mmdeploy.DataType;
-import mmdeploy.ContextType;
 import mmdeploy.Mat;
 import mmdeploy.Model;
 import mmdeploy.Device;
@@ -95,8 +95,9 @@ public class PoseTracker {
                 }
             }
 
-            HighGui.imshow("Pose Track", frame);
-            return HighGui.waitKey(1) != 'q';
+            HighGui.imshow("Pose Tracker", frame);
+            // Press any key to quit.
+            return HighGui.waitKey(5) == -1;
     }
     public static void main(String[] args) {
         // Parse arguments
@@ -128,6 +129,7 @@ public class PoseTracker {
             VideoCapture cap = new VideoCapture(videoPath);
             if (!cap.isOpened()) {
                 System.out.printf("failed to open video: %s", videoPath);
+                System.exit(1);
             }
             int frameID = 0;
             org.opencv.core.Mat frame = new org.opencv.core.Mat();
@@ -137,6 +139,7 @@ public class PoseTracker {
                 System.out.printf("processing frame %d\n", frameID);
                 if (frame.empty())
                 {
+                    HighGui.destroyWindow("Pose Tracker");
                     break;
                 }
                 Mat mat = Utils.cvMatToMat(frame);
@@ -148,7 +151,6 @@ public class PoseTracker {
                     break;
                 }
             }
-
         } catch (Exception e) {
             System.out.println("exception: " + e.getMessage());
         } finally {
@@ -156,6 +158,7 @@ public class PoseTracker {
             if (poseTracker != null) {
                 poseTracker.release();
             }
+            System.exit(0);
         }
     }
 }
