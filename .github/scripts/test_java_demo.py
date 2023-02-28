@@ -10,36 +10,28 @@ PARAMS = [
         'ImageClassification',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/resnet.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     },
     {
         'task':
         'ObjectDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     },
     {
         'task':
         'ImageSegmentation',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     },
     {
         'task':
         'ImageRestorer',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     },
     {
         'task':
@@ -47,18 +39,14 @@ PARAMS = [
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dbnet.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'  # noqa: E501
-        ],
-        'input_type':
-        'text-image'
+        ]
     },
     {
         'task':
         'PoseDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     },
     {
         'task':
@@ -66,18 +54,14 @@ PARAMS = [
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar',  # noqa: E501
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar'  # noqa: E501
-        ],
-        'input_type':
-        'video'
+        ]
     },
     {
         'task':
         'RotatedDetection',
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'  # noqa: E501
-        ],
-        'input_type':
-        'image'
+        ]
     }
 ]
 
@@ -91,7 +75,6 @@ def main():
     for params in PARAMS:
         task = params['task']
         configs = params['configs']
-        input_type = params['input_type']
         java_command = '\"cpu'
         for config in configs:
             model_url = config
@@ -99,13 +82,16 @@ def main():
                                                      model_url.split('/')[-1]))
             model_dir = model_url.split('/')[-1].split('.')[0]
             java_command += (' ' + model_dir)
-        if input_type == 'image':
+        if task in [
+                'ImageClassification', 'ObjectDetection', 'ImageSegmentation',
+                'ImageRestorer', 'PoseDetection', 'RotatedDetection'
+        ]:
             java_command += (' $GITHUB_WORKSPACE/demo' +
                              '/resources/human-pose.jpg\"')
-        elif input_type == 'text-image':
+        elif task in ['Ocr']:
             java_command += (' $GITHUB_WORKSPACE/demo' +
                              '/resources/text_det.jpg\"')
-        elif input_type == 'video':
+        elif task in ['PoseTracker']:
             os.system(
                 'wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4'  # noqa: E501
             )
