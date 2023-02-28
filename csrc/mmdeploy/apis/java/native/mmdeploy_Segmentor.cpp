@@ -16,6 +16,7 @@ jlong Java_mmdeploy_Segmentor_create(JNIEnv *env, jobject, jstring modelPath, js
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create segmentor, code = {}", ec);
+    return -1;
   }
   return (jlong)segmentor;
 }
@@ -27,11 +28,12 @@ void Java_mmdeploy_Segmentor_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_Segmentor_apply(JNIEnv *env, jobject thiz, jlong handle,
                                            jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_segmentation_t *results{};
     auto ec = mmdeploy_segmentor_apply((mmdeploy_segmentor_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply segmentor, code = {}", ec);
+      return NULL;
     }
 
     auto result_cls = env->FindClass("mmdeploy/Segmentor$Result");

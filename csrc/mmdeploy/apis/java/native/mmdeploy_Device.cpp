@@ -13,6 +13,7 @@ jlong Java_mmdeploy_Device_create(JNIEnv *env, jobject, jstring name, jint index
   env->ReleaseStringUTFChars(name, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create device, code = {}", ec);
+    return -1;
   }
   return (jlong)device;
 }

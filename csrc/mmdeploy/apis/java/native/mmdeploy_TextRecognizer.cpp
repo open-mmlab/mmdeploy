@@ -17,6 +17,7 @@ jlong Java_mmdeploy_TextRecognizer_create(JNIEnv *env, jobject, jstring modelPat
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create text recognizer, code = {}", ec);
+    return -1;
   }
   return (jlong)text_recognizer;
 }
@@ -28,12 +29,13 @@ void Java_mmdeploy_TextRecognizer_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong handle,
                                                 jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_text_recognition_t *results{};
     auto ec =
         mmdeploy_text_recognizer_apply((mmdeploy_text_recognizer_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply text recognizer, code = {}", ec);
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/TextRecognizer$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([C[F)V");

@@ -13,6 +13,7 @@ jlong Java_mmdeploy_Profiler_create(JNIEnv *env, jobject, jstring path) {
   env->ReleaseStringUTFChars(path, profiler_path);
   if (ec) {
     MMDEPLOY_ERROR("failed to create profiler, code = {}", ec);
+    return -1;
   }
   return (jlong)profiler;
 }

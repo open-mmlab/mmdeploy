@@ -13,6 +13,7 @@ jlong Java_mmdeploy_Model_create(JNIEnv *env, jobject, jstring path) {
   env->ReleaseStringUTFChars(path, model_path);
   if (ec) {
     MMDEPLOY_ERROR("failed to create model, code = {}", ec);
+    return -1;
   }
   return (jlong)model;
 }
