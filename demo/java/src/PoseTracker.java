@@ -30,6 +30,7 @@ public class PoseTracker {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
     }
+
     /** This function visualize the PoseTracker results.
      * @param frame: a video frame
      * @param results: results of PoseTracker
