@@ -70,7 +70,7 @@ def generate_torchscript_file():
 
 def ir2backend(backend, onnx_file, ts_file):
     if backend == Backend.TENSORRT:
-        from mmdeploy.backend.tensorrt import from_onnx
+        from mmdeploy.backend.tensorrt.utils import from_onnx
         backend_file = tempfile.NamedTemporaryFile(suffix='.engine').name
         from_onnx(
             onnx_file,

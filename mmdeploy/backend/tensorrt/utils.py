@@ -96,7 +96,7 @@ def search_cuda_version() -> str:
 
 
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
-              output_file_prefix: str,
+              output_path: str,
               input_shapes: Dict[str, Sequence[int]],
               max_workspace_size: int = 0,
               fp16_mode: bool = False,
@@ -109,7 +109,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     Args:
         onnx_model (str or onnx.ModelProto): Input onnx model to convert from.
-        output_file_prefix (str): The path to save the output ncnn file.
+        output_path (str): The path to save the output engine file.
         input_shapes (Dict[str, Sequence[int]]): The min/opt/max shape of
             each input.
         max_workspace_size (int): To set max workspace size of TensorRT engine.
@@ -118,7 +118,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             Defaults to `False`.
         int8_mode (bool): Specifying whether to enable int8 mode.
             Defaults to `False`.
-        int8_param (dict): A dict of parameter  int8 mode. Defaults to `None`.
+        int8_param (dict): A dict of int8 mode parameters. Defaults to `None`.
         device_id (int): Choice the device to create engine. Defaults to `0`.
         log_level (trt.Logger.Severity): The log level of TensorRT. Defaults to
             `trt.Logger.ERROR`.
@@ -242,7 +242,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
 
     assert engine is not None, 'Failed to create TensorRT engine'
 
-    save(engine, output_file_prefix + '.engine')
+    save(engine, output_path)
     return engine
 
 

@@ -151,7 +151,7 @@ class TestTensorRTExporter:
         else:
             model_outputs = [data.cpu().float() for data in model_outputs]
 
-        from mmdeploy.backend.tensorrt import TRTWrapper
+        from mmdeploy.backend.tensorrt.wrapper import TRTWrapper
         trt_model = TRTWrapper(trt_file_path, output_names)
         trt_outputs = trt_model(dict(zip(input_names, input_list)))
         trt_outputs = [trt_outputs[i].float().cpu() for i in output_names]

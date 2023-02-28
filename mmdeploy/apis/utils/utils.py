@@ -93,12 +93,33 @@ def to_backend(backend_name: str,
     Returns:
         Sequence[str]: Backend files.
     """
+    import os.path as osp
+    from copy import deepcopy
+
     from mmdeploy.backend.base import get_backend_manager
+    from mmdeploy.utils import get_model_inputs
     backend_mgr = get_backend_manager(backend_name)
-    return backend_mgr.to_backend(
-        ir_files=ir_files,
-        work_dir=work_dir,
-        deploy_cfg=deploy_cfg,
-        log_level=log_level,
-        device=device,
-        **kwargs)
+
+    model_inputs = get_model_inputs(deploy_cfg)
+    assert len(model_inputs) == 0 or len(model_inputs) == len(ir_files)
+    backend_files = []
+    for idx, ir_file in enumerate(ir_files):
+        if len(model_inputs) > 0:
+            curr_deploy_cfg = deepcopy(deploy_cfg)
+            curr_deploy_cfg['backend_config']['model_inputs'] = [
+                model_inputs[idx]
+            ]
+        else:
+            curr_deploy_cfg = deploy_cfg
+
+        file_name = osp.splitext(osp.split(ir_file)[1])[0]
+        param = backend_mgr.build_param_from_config(
+            curr_deploy_cfg, work_dir=work_dir, backend_files=[file_name])
+
+        backend_mgr.to_backend_from_param(ir_file, param)
+        backend_file = param.get_model_files()
+        if isinstance(backend_file, str):
+            backend_file = [backend_file]
+        backend_files += backend_file
+
+    return backend_files

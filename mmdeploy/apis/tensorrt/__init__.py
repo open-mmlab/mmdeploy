@@ -5,8 +5,8 @@ from ..core import PIPELINE_MANAGER
 __all__ = ['is_available']
 
 if is_available():
-    from mmdeploy.backend.tensorrt import from_onnx as _from_onnx
-    from mmdeploy.backend.tensorrt import load, save
+    from mmdeploy.backend.tensorrt.utils import from_onnx as _from_onnx
+    from mmdeploy.backend.tensorrt.utils import load, save
     from_onnx = PIPELINE_MANAGER.register_pipeline()(_from_onnx)
     __all__ += ['from_onnx', 'save', 'load']
     try:

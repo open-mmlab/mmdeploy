@@ -7,7 +7,8 @@ from abc import ABCMeta
 from argparse import Action, ArgumentParser
 from collections import OrderedDict
 from dataclasses import dataclass, field, fields
-from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
+                    Union)
 
 from mmdeploy.utils.docstring_parser import inspect_docstring_arguments
 
@@ -88,6 +89,10 @@ class BaseBackendParam:
         input_names (List[str]): Names of the inputs.
         output_names (List[str]): Names of the outputs.
         device (str): Device used to perform inference.
+        quanti_data (Union[Iterable, str]): Iterable object to provide the
+            quantization data. Each iteration gives a dict of input name and
+            correspond tensor.
+        uri (str): The uri of remote device.
     """
     _default_postfix = ''
     _file_name = None
@@ -101,6 +106,8 @@ class BaseBackendParam:
     input_names: List[str] = field(default_factory=list)
     output_names: List[str] = field(default_factory=list)
     device: str = 'cpu'
+    quanti_data: Union[Iterable, str] = None
+    uri: str = None
 
     def fix_param(self):
         """Fix shapes and names in the parameter."""
@@ -225,6 +232,11 @@ class BaseBackendParam:
 
         self._file_name = val
 
+    def get_model_files(self) -> Union[str, List[str]]:
+        """get model files."""
+        raise NotImplementedError(
+            f'get_model_files has not implemented for {type(self).__name__}')
+
     @classmethod
     def get_manager(cls):
         """Get backend manager."""
@@ -248,7 +260,7 @@ class BaseBackendParam:
                 action = 'store_false'
             else:
                 action = 'store_true'
-            parser.add_argument(arg_name, type=bool, action=action, help=desc)
+            parser.add_argument(arg_name, action=action, help=desc)
         elif dtype == ShapeType:
             action = ShapeTypeAction \
                 if name == 'input_shapes' else ShapePlaceHolderAction
@@ -287,10 +299,12 @@ class BaseBackendParam:
             cls_field = field_map[name]
 
             dtype = cls_field.type
-            if cls_field.default is None:
+            if cls_field.default is not None:
                 default = cls_field.default
-            else:
+            elif isinstance(cls_field.default_factory, Callable):
                 default = cls_field.default_factory()
+            else:
+                default = None
 
             cls.add_argument(
                 parser, name, dtype=dtype, default=default, desc=desc)

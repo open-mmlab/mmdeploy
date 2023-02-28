@@ -1,37 +1,85 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import os.path as osp
-from typing import Any, Callable, Optional, Sequence
+import re
+from collections import OrderedDict
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Sequence
 
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.ir.onnx import ONNXIRParam
+from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 
-@BACKEND_MANAGERS.register('tensorrt')
+@dataclass
+class TensorRTBackendParam(BaseBackendParam):
+    """TensorRT backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        input_shapes (ShapeType): The Default shape of the inputs.
+        min_shapes (ShapeType): The minimal shape of the inputs.
+        max_shapes (ShapeType): The maximal shape of the inputs.
+        input_names (List[str]): Names of the inputs.
+        output_names (List[str]): Names of the outputs.
+        device (str): Device used to perform inference.
+        fp16_mode (bool): Enable fp16 mode.
+        int8_mode (bool): Enable int8 quantization. Can be co-exist with
+            fp16 mode.
+        int8_algorithm (str): The quantization algorithm, choice from
+            [`entropy`, `maxmin`]
+        quanti_data (Union[Iterable, str]): Iterable object to provide the
+            quantization data. Each iteration gives a dict of input name and
+            correspond tensor.
+        max_workspace_size (int): Extra workspace size required by the model.
+            default to 1Gb.
+    """
+    _default_postfix = '.onnx'
+
+    device: str = 'cuda'
+    fp16_mode: bool = False
+    int8_mode: bool = False
+    int8_algorithm: str = 'entropy'
+    max_workspace_size: int = 1 << 30
+
+    def get_model_files(self) -> str:
+        """get the model files."""
+        assert isinstance(self.work_dir, str), ('Expect string work_dir, '
+                                                f'got {self.work_dir}')
+        assert isinstance(self.file_name, str), ('Expect string file_name, '
+                                                 f'got {self.file_name}')
+        return osp.join(self.work_dir, self.file_name)
+
+    def check_param(self):
+        """check param validation."""
+        super().check_param()
+
+        if self.int8_mode:
+            if self.int8_algorithm not in ['entropy', 'maxmin']:
+                raise ValueError(
+                    f'Unsupported int8 algorithm: {self.int8_algorithm}')
+
+
+@BACKEND_MANAGERS.register(
+    'tensorrt', param=TensorRTBackendParam, ir_param=ONNXIRParam)
 class TensorRTManager(BaseBackendManager):
 
     @classmethod
-    def build_wrapper(cls,
-                      backend_files: Sequence[str],
-                      device: str = 'cpu',
-                      input_names: Optional[Sequence[str]] = None,
-                      output_names: Optional[Sequence[str]] = None,
-                      deploy_cfg: Optional[Any] = None,
-                      **kwargs):
+    def build_wrapper(
+        cls,
+        engine_path: str,
+        output_names: Optional[Sequence[str]] = None,
+    ):
         """Build the wrapper for the backend model.
 
         Args:
-            backend_files (Sequence[str]): Backend files.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            input_names (Optional[Sequence[str]], optional): input names.
-                Defaults to None.
+            engine_path (str): TensorRT engine file.
             output_names (Optional[Sequence[str]], optional): output names.
                 Defaults to None.
-            deploy_cfg (Optional[Any], optional): The deploy config. Defaults
-                to None.
         """
 
         from .wrapper import TRTWrapper
-        return TRTWrapper(engine=backend_files[0], output_names=output_names)
+        return TRTWrapper(engine=engine_path, output_names=output_names)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -85,54 +133,178 @@ class TensorRTManager(BaseBackendManager):
 
     @classmethod
     def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   deploy_cfg: Any,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+                   ir_path: str,
+                   save_path: str,
+                   input_shapes: Dict[str, Sequence],
+                   min_shapes: Optional[Dict[str, Sequence]] = None,
+                   max_shapes: Optional[Dict[str, Sequence]] = None,
+                   max_workspace_size: int = 0,
+                   fp16_mode: bool = False,
+                   int8_mode: bool = False,
+                   int8_param: Optional[dict] = None,
+                   device_id: int = 0,
+                   log_level: Any = None):
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be saved in this directory.
-            deploy_cfg (Any): The deploy config.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
-            device (str, optional): The device type. Defaults to 'cpu'.
-        Returns:
-            Sequence[str]: Backend files.
+            ir_path (str or onnx.ModelProto): Input ir model to convert from.
+            save_path (str): The path to save the output model.
+            input_shapes (Dict[str, Sequence]): The input shapes of
+                each input.
+            min_shapes (Dict[str, Sequence]): The min shapes of each input.
+            max_shapes (Dict[str, Sequence]): The max shapes of each input.
+            max_workspace_size (int): To set max workspace size of TensorRT
+                engine. some tactics and layers need large workspace.
+            fp16_mode (bool): Specifying whether to enable fp16 mode.
+                Defaults to `False`.
+            int8_mode (bool): Specifying whether to enable int8 mode.
+                Defaults to `False`.
+            int8_param (dict): A dict of parameter  int8 mode
+            device_id (int): Choice the device to create engine
+            log_level (trt.Logger.Severity): The log level of TensorRT.
         """
-        import os.path as osp
+        import tensorrt as trt
 
-        from mmdeploy.utils import get_model_inputs, get_partition_config
-        model_params = get_model_inputs(deploy_cfg)
-        partition_cfgs = get_partition_config(deploy_cfg)
-        assert len(model_params) == len(ir_files)
+        from .utils import from_onnx
+        if log_level is None:
+            log_level = trt.Logger.ERROR
 
-        from . import is_available
-        assert is_available(), (
-            'TensorRT is not available,'
-            ' please install TensorRT and build TensorRT custom ops first.')
+        # fill shapes
+        if min_shapes is None:
+            min_shapes = input_shapes
+        if max_shapes is None:
+            max_shapes = input_shapes
 
-        from .onnx2tensorrt import onnx2tensorrt
-        backend_files = []
-        for model_id, model_param, onnx_path in zip(
-                range(len(ir_files)), model_params, ir_files):
-            onnx_name = osp.splitext(osp.split(onnx_path)[1])[0]
-            save_file = model_param.get('save_file', onnx_name + '.engine')
+        merged_shapes = OrderedDict()
+        for name, val in input_shapes.items():
+            if name not in min_shapes:
+                min_shapes[name] = val
+            if name not in max_shapes:
+                max_shapes[name] = val
 
-            partition_type = 'end2end' if partition_cfgs is None \
-                else onnx_name
-            onnx2tensorrt(
-                work_dir,
-                save_file,
-                model_id,
-                deploy_cfg,
-                onnx_path,
-                device=device,
-                partition_type=partition_type)
+            merged_shapes[name] = dict(
+                opt_shape=val,
+                min_shape=min_shapes[name],
+                max_shape=max_shapes[name])
 
-            backend_files.append(osp.join(work_dir, save_file))
+        # export model
+        from_onnx(
+            ir_path,
+            save_path,
+            input_shapes=merged_shapes,
+            max_workspace_size=max_workspace_size,
+            fp16_mode=fp16_mode,
+            int8_mode=int8_mode,
+            int8_param=int8_param,
+            device_id=device_id,
+            log_level=log_level)
 
-        return backend_files
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: TensorRTBackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            ir_model (str): The ir model path to perform the export.
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        param.check_param()
+
+        assert isinstance(
+            param, TensorRTBackendParam), ('Expect TensorRTBackendParam '
+                                           f'get {type(param)}')
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        save_path = osp.join(param.work_dir, param.file_name)
+        input_shapes = param.input_shapes
+        min_shapes = param.min_shapes
+        max_shapes = param.max_shapes
+        max_workspace_size = param.max_workspace_size
+        fp16_mode = param.fp16_mode
+        int8_mode = param.int8_mode
+        device = param.device
+
+        m = re.match(r'^(cuda|CUDA)(:(?P<device_id>[0-9]+))?$', device)
+        assert m is not None, f'Unsupported device {device}'
+        device_id = m.groupdict().get('device_id', 0)
+
+        # TODO: refactor TensorRT quantization
+        int8_param = dict(
+            calib_file=param.quanti_data,
+            model_type='end2end',
+            algorithm=param.int8_algorithm)
+
+        cls.to_backend(
+            ir_model,
+            save_path,
+            input_shapes=input_shapes,
+            min_shapes=min_shapes,
+            max_shapes=max_shapes,
+            max_workspace_size=max_workspace_size,
+            fp16_mode=fp16_mode,
+            int8_mode=int8_mode,
+            int8_param=int8_param,
+            device_id=device_id)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: TensorRTBackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            param (TensorRTBackendParam): Packed backend parameter.
+        """
+        assert isinstance(param, TensorRTBackendParam)
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        model_path = osp.join(param.work_dir, param.file_name)
+        output_names = param.output_names
+        if len(output_names) == 0:
+            output_names = None
+        return cls.build_wrapper(model_path, output_names=output_names)
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: List[str] = None,
+                                **kwargs) -> TensorRTBackendParam:
+        """Build param from deploy config.
+
+        Args:
+            config (Any): The deploy config.
+            work_dir (str): work directory of the parameters.
+            backend_files (List[str]): The backend files of the model.
+
+        Returns:
+            BaseBackendParam: The packed backend parameter.
+        """
+        from mmdeploy.utils import get_common_config, get_model_inputs
+        common_config = get_common_config(config)
+        model_inputs = get_model_inputs(config)
+
+        # get shapes
+        assert len(model_inputs) == 1, ('Can not create param with '
+                                        'len(model_inputs) > 1')
+        shapes = model_inputs[0].get('input_shapes', {})
+        min_shapes = OrderedDict()
+        max_shapes = OrderedDict()
+        input_shapes = OrderedDict()
+        for name, vals in shapes.items():
+            min_shapes[name] = vals.get('min_shape', [])
+            input_shapes[name] = vals.get('opt_shape', [])
+            max_shapes[name] = vals.get('max_shape', [])
+
+        # others
+        max_workspace_size = common_config.get('max_workspace_size', 0)
+        fp16_mode = common_config.get('fp16_mode', False)
+        int8_mode = common_config.get('int8_mode', False)
+
+        kwargs.setdefault('min_shapes', min_shapes)
+        kwargs.setdefault('max_shapes', max_shapes)
+        kwargs.setdefault('input_shapes', input_shapes)
+        kwargs.setdefault('max_workspace_size', max_workspace_size)
+        kwargs.setdefault('fp16_mode', fp16_mode)
+        kwargs.setdefault('int8_mode', int8_mode)
+
+        ret = TensorRTBackendParam(
+            work_dir=work_dir, file_name=backend_files[0], **kwargs)
+        return ret

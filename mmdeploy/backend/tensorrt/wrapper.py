@@ -67,7 +67,7 @@ class TRTWrapper(BaseWrapper):
         output_names should be the same as onnx model.
 
     Examples:
-        >>> from mmdeploy.backend.tensorrt import TRTWrapper
+        >>> from mmdeploy.backend.tensorrt.wrapper import TRTWrapper
         >>> engine_file = 'resnet.engine'
         >>> model = TRTWrapper(engine_file)
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224))

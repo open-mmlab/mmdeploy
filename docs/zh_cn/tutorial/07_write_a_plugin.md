@@ -490,7 +490,7 @@ engine = from_onnx(
             opt_shape=[1, 1, 512, 512],
             max_shape=[1, 1, 1024, 1024])))
 
-from mmdeploy.backend.tensorrt import TRTWrapper
+from mmdeploy.backend.tensorrt.wrapper import TRTWrapper
 
 trt_model = TRTWrapper('srcnn3.engine', ['output'])
 

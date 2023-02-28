@@ -11,7 +11,7 @@ from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 @dataclass
 class ONNXRuntimeBackendParam(BaseBackendParam):
-    """Base backend parameters.
+    """ONNX Runtime backend parameters.
 
     Args:
         work_dir (str): The working directory.
@@ -20,6 +20,14 @@ class ONNXRuntimeBackendParam(BaseBackendParam):
         device (str): The device used to perform the inference. Default to cpu.
     """
     _default_postfix = '.onnx'
+
+    def get_model_files(self) -> str:
+        """get the model files."""
+        assert isinstance(self.work_dir, str), ('Expect string work_dir, '
+                                                f'got {self.work_dir}')
+        assert isinstance(self.file_name, str), ('Expect string file_name, '
+                                                 f'got {self.file_name}')
+        return osp.join(self.work_dir, self.file_name)
 
 
 @BACKEND_MANAGERS.register(
@@ -34,7 +42,7 @@ class ONNXRuntimeManager(BaseBackendManager):
         """Build the wrapper for the backend model.
 
         Args:
-            backend_files (Sequence[str]): Backend files.
+            model_path (str): ONNX model file.
             device (str, optional): The device info. Defaults to 'cpu'.
             output_names (Optional[Sequence[str]], optional): output names.
                 Defaults to None.

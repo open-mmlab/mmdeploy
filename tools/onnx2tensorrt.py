@@ -2,8 +2,7 @@
 import argparse
 import logging
 
-from mmdeploy.backend.tensorrt import from_onnx
-from mmdeploy.backend.tensorrt.utils import get_trt_log_level
+from mmdeploy.backend.tensorrt.utils import from_onnx, get_trt_log_level
 from mmdeploy.utils import (get_common_config, get_model_inputs,
                             get_root_logger, load_config)
 
