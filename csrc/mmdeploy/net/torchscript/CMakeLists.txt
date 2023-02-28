@@ -8,7 +8,7 @@ if (MMDEPLOY_TORCHSCRIPT_SDK_BACKEND)
     find_package(Torch REQUIRED)
     find_package(TorchVision QUIET)
 
-    mmdeploy_add_module(${PROJECT_NAME} torch_net.cpp)
+    mmdeploy_add_net(${PROJECT_NAME} torch_net.cpp)
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
             ${TORCH_LIBRARIES})

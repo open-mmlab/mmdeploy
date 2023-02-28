@@ -1,15 +1,37 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include <Windows.h>
-
+#include <string>
 #include <cstdio>
+
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <dlfcn.h>
+#endif
+
+#ifdef _WIN32
+#define LIBPREFIX ""
+#define LIBSUFFIX ".dll"
+#elif defined(__APPLE__)
+#define LIBPREFIX "lib"
+#define LIBSUFFIX ".dylib"
+#else
+#define LIBPREFIX "lib"
+#define LIBSUFFIX ".so"
+#endif
 
 namespace mmdeploy {
 namespace {
 
 void* mmdeploy_load_library(const char* name) {
   fprintf(stderr, "loading %s ...\n", name);
-  auto handle = LoadLibraryA(name);
+
+#ifdef _WIN32
+  auto handle = LoadLibraryExA(name, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+#else
+  auto handle = dlopen(name, RTLD_NOW | RTLD_GLOBAL);
+#endif
+
   if (!handle) {
     fprintf(stderr, "failed to load library %s\n", name);
     return nullptr;
@@ -26,7 +48,8 @@ class Loader {
         @_MMDEPLOY_DYNAMIC_MODULES@
     };
     for (const auto name : modules) {
-      mmdeploy_load_library(name);
+      std::string libname = std::string{} + LIBPREFIX + name + LIBSUFFIX;
+      mmdeploy_load_library(libname.c_str());
     }
   }
 };
