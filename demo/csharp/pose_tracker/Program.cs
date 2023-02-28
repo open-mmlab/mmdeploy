@@ -4,7 +4,7 @@ using OpenCvSharp;
 using MMDeploy;
 using System.Linq;
 
-namespace pose_tracking
+namespace pose_tracker
 {
     internal class Program
     {
@@ -125,7 +125,7 @@ namespace pose_tracking
 
         static void PrintHelperMessage()
         {
-            string message = "usage:\n pose_tracking device det_model pose_model video";
+            string message = "usage:\n pose_tracker device det_model pose_model video";
             Console.WriteLine(message);
         }
 
