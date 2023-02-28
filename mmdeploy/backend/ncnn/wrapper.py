@@ -23,7 +23,7 @@ class NCNNWrapper(BaseWrapper):
             ncnn model.
 
     Examples:
-        >>> from mmdeploy.backend.ncnn import NCNNWrapper
+        >>> from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
         >>> import torch
         >>>
         >>> param_file = 'model.params'

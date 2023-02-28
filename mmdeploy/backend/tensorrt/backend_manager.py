@@ -249,7 +249,7 @@ class TensorRTManager(BaseBackendManager):
         """Export to backend with packed backend parameter.
 
         Args:
-            param (TensorRTBackendParam): Packed backend parameter.
+            param (BaseBackendParam): Packed backend parameter.
         """
         assert isinstance(param, TensorRTBackendParam)
         assert isinstance(param.work_dir, str)

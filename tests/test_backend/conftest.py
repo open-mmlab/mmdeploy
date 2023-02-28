@@ -95,3 +95,20 @@ def onnx_model_dynamic_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
         dynamic_axes=dynamic_axes_2i)
 
     yield tmp_path
+
+
+@pytest.fixture
+def assert_forward():
+    try:
+        from torch.testing import assert_close as torch_assert_close
+    except Exception:
+        from torch.testing import assert_allclose as torch_assert_close
+
+    def _impl(model, inputs, gts):
+        outputs = model(inputs)
+        for name in outputs:
+            out = outputs[name]
+            gt = gts[name]
+            torch_assert_close(out, gt)
+
+    return _impl

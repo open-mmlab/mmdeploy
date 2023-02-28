@@ -6,13 +6,11 @@ import pytest
 
 from mmdeploy.backend.tensorrt import TensorRTBackendParam, TensorRTManager
 
-try:
-    from torch.testing import assert_close as torch_assert_close
-except Exception:
-    from torch.testing import assert_allclose as torch_assert_close
+if not TensorRTManager.is_available():
+    pytest.skip('backend not available')
 
 
-class TestTensorrtBackendParam:
+class TestBackendParam:
 
     def test_check_param(self):
         with pytest.raises(ValueError):
@@ -35,16 +33,7 @@ class TestTensorrtBackendParam:
         assert getattr(args, 'max_workspace_size', None) == 1024
 
 
-class TestTensorRTManager:
-
-    def _test_forward(self, wrapper, inputs, gts):
-        outputs = wrapper(inputs)
-        for name in outputs:
-            out = outputs[name]
-            gt = gts[name]
-            torch_assert_close(out, gt)
-
-    _trt = pytest.importorskip('tensorrt')
+class TestManager:
 
     @pytest.fixture(scope='class')
     def backend_mgr(self):
@@ -98,15 +87,16 @@ class TestTensorRTManager:
         backend_mgr.to_backend_from_param(onnx_model, param)
         assert osp.exists(save_path)
 
-    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs):
+    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs,
+                           assert_forward):
         wrapper = backend_mgr.build_wrapper(backend_model)
-        self._test_forward(wrapper, inputs, outputs)
+        assert_forward(wrapper, inputs, outputs)
 
     def test_build_wrapper_from_param(self, backend_mgr, backend_model, inputs,
-                                      outputs):
+                                      outputs, assert_forward):
         param = backend_mgr.build_param(work_dir='', file_name=backend_model)
         wrapper = backend_mgr.build_wrapper_from_param(param)
-        self._test_forward(wrapper, inputs, outputs)
+        assert_forward(wrapper, inputs, outputs)
 
     def test_parse_args(self, backend_mgr, onnx_model, tmp_path,
                         input_shape_dict):

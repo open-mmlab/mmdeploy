@@ -258,7 +258,7 @@ class TestNCNNEnd2EndModel:
     @classmethod
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.ncnn import NCNNWrapper
+        from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
         ncnn_apis.__dict__.update({'NCNNWrapper': NCNNWrapper})
 
         # simplify backend inference

@@ -75,6 +75,17 @@ class ShapePlaceHolderAction(Action):
 ShapeType = Dict[str, Sequence[int]]
 
 
+class dataclass_property(property):
+
+    def __set__(self, obj, value):
+        if isinstance(value, property):
+            # dataclasses tries to set a default and uses the
+            # getattr(cls, name). But the real default will come
+            # from: `_attr = field(..., default=...)`.
+            return
+        super().__set__(obj, value)
+
+
 @dataclass
 class BaseBackendParam:
     """Base backend parameters.
@@ -99,7 +110,7 @@ class BaseBackendParam:
     _manager = None
 
     work_dir: str = None
-    file_name: str = None
+    file_name: str
     min_shapes: ShapeType = field(default_factory=OrderedDict)
     input_shapes: ShapeType = field(default_factory=OrderedDict)
     max_shapes: ShapeType = field(default_factory=OrderedDict)
@@ -108,6 +119,24 @@ class BaseBackendParam:
     device: str = 'cpu'
     quanti_data: Union[Iterable, str] = None
     uri: str = None
+
+    @dataclass_property
+    def file_name(self) -> str:
+        """file_name getter."""
+        return self._file_name
+
+    @file_name.setter
+    def file_name(self, val) -> None:
+        """file_name setter."""
+        if val is not None and osp.splitext(val)[1] == '':
+            val = val + self._default_postfix
+
+        self._file_name = val
+
+    def get_model_files(self) -> Union[str, List[str]]:
+        """get model files."""
+        raise NotImplementedError(
+            f'get_model_files has not implemented for {type(self).__name__}')
 
     def fix_param(self):
         """Fix shapes and names in the parameter."""
@@ -218,24 +247,6 @@ class BaseBackendParam:
                         f'input shape:{input_shape}\n',
                         f'max shape:{max_shape}',
                     )
-
-    @property
-    def file_name(self) -> str:
-        """file_name getter."""
-        return self._file_name
-
-    @file_name.setter
-    def file_name(self, val) -> None:
-        """file_name setter."""
-        if self.file_name is not None and osp.splitext(val)[1] == '':
-            val = val + self._default_postfix
-
-        self._file_name = val
-
-    def get_model_files(self) -> Union[str, List[str]]:
-        """get model files."""
-        raise NotImplementedError(
-            f'get_model_files has not implemented for {type(self).__name__}')
 
     @classmethod
     def get_manager(cls):

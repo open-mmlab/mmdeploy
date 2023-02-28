@@ -214,7 +214,7 @@ class TestNCNNExporter:
             model_output.float() for model_output in model_outputs
         ]
 
-        from mmdeploy.backend.ncnn import NCNNWrapper
+        from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
         ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)
         ncnn_outputs = ncnn_model(dict(zip(input_names, inputs_list)))
         ncnn_outputs = [ncnn_outputs[name] for name in output_names]
@@ -241,9 +241,9 @@ class TestNCNNExporter:
             onnx.save_model(model, onnx_file_path)
 
             from mmdeploy.backend.ncnn import from_onnx
-            from_onnx(onnx_file_path, os.path.join(save_dir, model_name))
+            from_onnx(onnx_file_path, ncnn_param_path, ncnn_bin_path)
 
-            from mmdeploy.backend.ncnn import NCNNWrapper
+            from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
             ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path,
                                      output_names)
 

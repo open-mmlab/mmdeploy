@@ -5,22 +5,11 @@ import pytest
 
 from mmdeploy.backend.onnxruntime import ONNXRuntimeManager
 
-try:
-    from torch.testing import assert_close as torch_assert_close
-except Exception:
-    from torch.testing import assert_allclose as torch_assert_close
+if not ONNXRuntimeManager.is_available():
+    pytest.skip('backend not available')
 
 
-class TestONNXRuntimeManager:
-
-    def _test_forward(self, wrapper, inputs, gts):
-        outputs = wrapper(inputs)
-        for name in outputs:
-            out = outputs[name]
-            gt = gts[name]
-            torch_assert_close(out, gt)
-
-    _ort = pytest.importorskip('onnxruntime')
+class TestManager:
 
     @pytest.fixture(scope='class')
     def backend_mgr(self):
@@ -48,12 +37,13 @@ class TestONNXRuntimeManager:
         backend_mgr.to_backend_from_param(backend_model, param)
         assert osp.exists(save_path)
 
-    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs):
+    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs,
+                           assert_forward):
         wrapper = backend_mgr.build_wrapper(backend_model, 'cpu')
-        self._test_forward(wrapper, inputs, outputs)
+        assert_forward(wrapper, inputs, outputs)
 
     def test_build_wrapper_from_param(self, backend_mgr, backend_model, inputs,
-                                      outputs):
+                                      outputs, assert_forward):
         param = backend_mgr.build_param(work_dir='', file_name=backend_model)
         wrapper = backend_mgr.build_wrapper_from_param(param)
-        self._test_forward(wrapper, inputs, outputs)
+        assert_forward(wrapper, inputs, outputs)
