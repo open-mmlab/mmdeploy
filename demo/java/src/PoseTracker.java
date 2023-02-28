@@ -137,7 +137,7 @@ public class PoseTracker {
         Context context = new Context();
         context.add(device);
         try {
-            poseTracker = new mmdeploy.PoseTracker(detModel.modelHandle, poseModel.modelHandle, context.contextHandle);
+            poseTracker = new mmdeploy.PoseTracker(detModel, poseModel, context);
             mmdeploy.PoseTracker.Params params = poseTracker.initParams();
             params.detInterval = 5;
             params.poseMaxNumBboxes = 6;
