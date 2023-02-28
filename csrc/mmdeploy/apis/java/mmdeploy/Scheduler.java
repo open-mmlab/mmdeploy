@@ -21,6 +21,10 @@ public class Scheduler {
         return schedulerHandle;
     }
 
+    public long handle() {
+        return schedulerHandle;
+    }
+
     public void release() {
         destroy(schedulerHandle);
     }

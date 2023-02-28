@@ -5,7 +5,7 @@ public class Device {
         System.loadLibrary("mmdeploy_java");
     }
 
-    public final long deviceHandle;
+    private final long deviceHandle;
     private String deviceName;
     private int deviceIndex;
 
@@ -21,6 +21,10 @@ public class Device {
 
     public int index() {
         return deviceIndex;
+    }
+
+    public long handle() {
+        return deviceHandle;
     }
 
     public void release() {

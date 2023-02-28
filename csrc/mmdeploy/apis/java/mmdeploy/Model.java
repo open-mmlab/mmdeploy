@@ -5,7 +5,7 @@ public class Model {
         System.loadLibrary("mmdeploy_java");
     }
 
-    public final long modelHandle;
+    private final long modelHandle;
 
     public Model(String path) {
         modelHandle = create(path);
@@ -13,6 +13,10 @@ public class Model {
 
     public void release() {
         destroy(modelHandle);
+    }
+
+    public long handle() {
+        return modelHandle;
     }
 
     private native long create(String path);
