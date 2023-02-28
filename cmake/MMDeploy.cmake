@@ -12,6 +12,15 @@ function (mmdeploy_export NAME)
             RUNTIME DESTINATION bin)
 endfunction ()
 
+macro(mmdeploy_add_net NAME)
+    if (MMDEPLOY_DYNAMIC_BACKEND)
+        mmdeploy_add_library(${NAME} SHARED ${ARGN})
+        target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
+        set(BACKEND_LIB_NAMES ${BACKEND_LIB_NAMES} ${PROJECT_NAME} PARENT_SCOPE)
+    else ()
+        mmdeploy_add_module(${NAME} ${ARGN})
+    endif ()
+endmacro()
 
 function (mmdeploy_add_library NAME)
     # EXCLUDE: exclude from registering & exporting

@@ -4,7 +4,7 @@ project(mmdeploy_trt_net)
 
 include(${CMAKE_SOURCE_DIR}/cmake/tensorrt.cmake)
 
-mmdeploy_add_module(${PROJECT_NAME} trt_net.cpp)
+mmdeploy_add_net(${PROJECT_NAME} trt_net.cpp)
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${TENSORRT_INCLUDE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CUDNN_DIR}/include)
