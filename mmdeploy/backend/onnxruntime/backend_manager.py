@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
 import os.path as osp
 import shutil
 from dataclasses import dataclass
@@ -138,24 +137,17 @@ class ONNXRuntimeManager(BaseBackendManager):
         return info
 
     @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+    def to_backend(cls, onnx_path: str, save_path: str):
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be saved in this directory.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
-            device (str, optional): The device type. Defaults to 'cpu'.
+            onnx_path (str): The intermediate representation files.
+            save_path (str): The save path of onnx path.
         Returns:
             Sequence[str]: Backend files.
         """
-        return ir_files
+        if osp.abspath(save_path) != osp.abspath(onnx_path):
+            shutil.copy(onnx_path, save_path)
 
     @classmethod
     def to_backend_from_param(cls, ir_model: str, param: BaseBackendParam):
@@ -168,8 +160,7 @@ class ONNXRuntimeManager(BaseBackendManager):
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         save_path = osp.join(param.work_dir, param.file_name)
-        if osp.abspath(save_path) != osp.abspath(ir_model):
-            shutil.copy(ir_model, save_path)
+        cls.to_backend(ir_model, save_path)
 
     @classmethod
     def build_wrapper_from_param(cls, param: ONNXRuntimeParam):

@@ -79,8 +79,8 @@ def dynamic_axes_2i():
 
 
 @pytest.fixture(scope='module')
-def onnx_model_static_2i2o(tmp_path, torch_model_2i2o, dummy_x, dummy_y,
-                           input_names_2i, output_names_2i2o):
+def onnx_model_static_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
+                           output_names_2i2o):
     torch = pytest.importorskip('torch')
     tmp_path = NamedTemporaryFile(suffix='.onnx').name
     torch.onnx.export(
@@ -103,6 +103,16 @@ def onnx_model_dynamic_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
         input_names=input_names_2i,
         output_names=output_names_2i2o,
         dynamic_axes=dynamic_axes_2i)
+
+    yield tmp_path
+
+
+@pytest.fixture(scope='module')
+def torchscript_model2i2o(torch_model_2i2o, dummy_x, dummy_y):
+    torch = pytest.importorskip('torch')
+    tmp_path = NamedTemporaryFile(suffix='.pth').name
+    jit_model = torch.jit.trace(torch_model_2i2o, (dummy_x, dummy_y))
+    torch.jit.save(jit_model, tmp_path)
 
     yield tmp_path
 

@@ -4,9 +4,10 @@ import os.path as osp
 
 import pytest
 
-from mmdeploy.backend.tensorrt import TensorRTManager, TensorRTParam
+from mmdeploy.backend.tensorrt import TensorRTManager as backend_mgr
+from mmdeploy.backend.tensorrt import TensorRTParam
 
-if not TensorRTManager.is_available():
+if not backend_mgr.is_available():
     pytest.skip('backend not available')
 
 
@@ -35,10 +36,6 @@ class TestBackendParam:
 class TestManager:
 
     @pytest.fixture(scope='class')
-    def backend_mgr(self):
-        yield TensorRTManager
-
-    @pytest.fixture(scope='class')
     def inputs(self, input_dict_2i):
         torch = pytest.importorskip('torch')
         if not torch.cuda.is_available():
@@ -55,10 +52,6 @@ class TestManager:
         yield cuda_outputs
 
     @pytest.fixture(scope='class')
-    def param(self, backend_mgr):
-        backend_mgr.build_param(work_dir='')
-
-    @pytest.fixture(scope='class')
     def input_shape_dict(self, input_shape_dict_2i):
         yield input_shape_dict_2i
 
@@ -67,8 +60,7 @@ class TestManager:
         yield onnx_model_dynamic_2i2o
 
     @pytest.fixture(scope='class')
-    def backend_model(self, backend_mgr, input_shape_dict,
-                      onnx_model_dynamic_2i2o):
+    def backend_model(self, input_shape_dict, onnx_model_dynamic_2i2o):
         from tempfile import NamedTemporaryFile
         save_path = NamedTemporaryFile(suffix='.engine').name
         backend_mgr.to_backend(onnx_model_dynamic_2i2o, save_path,
@@ -78,27 +70,26 @@ class TestManager:
     def test_to_backend(self, backend_model):
         assert osp.exists(backend_model)
 
-    def test_to_backend_from_param(self, backend_mgr, tmp_path,
-                                   input_shape_dict, onnx_model):
+    def test_to_backend_from_param(self, tmp_path, input_shape_dict,
+                                   onnx_model):
         save_path = str(tmp_path / 'tmp.engine')
         param = backend_mgr.build_param(
             work_dir='', file_name=save_path, input_shapes=input_shape_dict)
         backend_mgr.to_backend_from_param(onnx_model, param)
         assert osp.exists(save_path)
 
-    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs,
+    def test_build_wrapper(self, backend_model, inputs, outputs,
                            assert_forward):
         wrapper = backend_mgr.build_wrapper(backend_model)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_build_wrapper_from_param(self, backend_mgr, backend_model, inputs,
-                                      outputs, assert_forward):
+    def test_build_wrapper_from_param(self, backend_model, inputs, outputs,
+                                      assert_forward):
         param = backend_mgr.build_param(work_dir='', file_name=backend_model)
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, backend_mgr, onnx_model, tmp_path,
-                        input_shape_dict):
+    def test_parse_args(self, onnx_model, tmp_path, input_shape_dict):
         # make input shapes
         input_shapes = []
         for name, shape in input_shape_dict.items():

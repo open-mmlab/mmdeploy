@@ -8,8 +8,3 @@ is_available = _BackendManager.is_available
 build_wrapper = _BackendManager.build_wrapper
 
 __all__ = ['get_ops_path', 'ops_available', 'TorchScriptManager']
-
-if is_available():
-    from .wrapper import TorchscriptWrapper
-
-    __all__ += ['TorchscriptWrapper']

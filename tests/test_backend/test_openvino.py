@@ -5,9 +5,10 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from mmdeploy.backend.openvino import OpenVINOManager, OpenVINOParam
+from mmdeploy.backend.openvino import OpenVINOManager as backend_mgr
+from mmdeploy.backend.openvino import OpenVINOParam
 
-if not OpenVINOManager.is_available():
+if not backend_mgr.is_available():
     pytest.skip('backend not available')
 
 
@@ -22,10 +23,6 @@ class TestBackendParam:
 
 
 class TestManager:
-
-    @pytest.fixture(scope='class')
-    def backend_mgr(self):
-        yield OpenVINOManager
 
     @pytest.fixture(scope='class')
     def inputs(self, input_dict_2i):
@@ -48,8 +45,7 @@ class TestManager:
         yield onnx_model_dynamic_2i2o
 
     @pytest.fixture(scope='class')
-    def backend_model(self, backend_mgr, onnx_model, input_shape_dict,
-                      output_names):
+    def backend_model(self, onnx_model, input_shape_dict, output_names):
         with TemporaryDirectory() as tmp_dir:
             param_path = osp.join(tmp_dir, 'tmp.xml')
             bin_path = osp.join(tmp_dir, 'tmp.bin')
@@ -65,7 +61,7 @@ class TestManager:
         for path in backend_model:
             assert osp.exists(path)
 
-    def test_to_backend_from_param(self, backend_mgr, onnx_model):
+    def test_to_backend_from_param(self, onnx_model):
         with TemporaryDirectory() as work_dir:
             param = backend_mgr.build_param(work_dir=work_dir, file_name='tmp')
             backend_mgr.to_backend_from_param(onnx_model, param)
@@ -74,21 +70,20 @@ class TestManager:
             assert osp.exists(param_path)
             assert osp.exists(bin_path)
 
-    def test_build_wrapper(self, backend_mgr, backend_model, inputs, outputs,
+    def test_build_wrapper(self, backend_model, inputs, outputs,
                            assert_forward):
         wrapper = backend_mgr.build_wrapper(*backend_model)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_build_wrapper_from_param(self, backend_mgr, backend_model, inputs,
-                                      outputs, assert_forward):
+    def test_build_wrapper_from_param(self, backend_model, inputs, outputs,
+                                      assert_forward):
         param_path, bin_path = backend_model
         param = backend_mgr.build_param(
             work_dir='', file_name=param_path, bin_name=bin_path)
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, backend_mgr, onnx_model, input_shape_dict,
-                        output_names):
+    def test_parse_args(self, onnx_model, input_shape_dict, output_names):
         # make input shapes
         input_shapes = []
         for name, shape in input_shape_dict.items():

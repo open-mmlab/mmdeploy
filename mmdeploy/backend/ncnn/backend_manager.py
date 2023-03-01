@@ -220,7 +220,7 @@ class NCNNManager(BaseBackendManager):
         from mmdeploy.utils import get_backend_config
         backend_cfg = get_backend_config(config)
         use_vulkan = backend_cfg.get('use_vulkan', False)
-        kwargs = dict(work_dir=work_dir, use_vulkan=use_vulkan)
+        kwargs.update(dict(work_dir=work_dir, use_vulkan=use_vulkan))
 
         backend_files = [] if backend_files is None else backend_files
         if len(backend_files) > 0:

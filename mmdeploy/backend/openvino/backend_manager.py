@@ -218,11 +218,11 @@ class OpenVINOManager(BaseBackendManager):
         input_info = get_input_info_from_cfg(config)
         mo_options = get_mo_options_from_cfg(config)
         mo_options = mo_options.get_options()
-        kwargs = dict(
-            work_dir=work_dir,
-            input_shapes=input_info,
-            output_names=output_names,
-            mo_options=mo_options)
+
+        kwargs.setdefault('work_dir', work_dir)
+        kwargs.setdefault('input_shapes', input_info)
+        kwargs.setdefault('output_names', output_names)
+        kwargs.setdefault('mo_options', mo_options)
 
         backend_files = [] if backend_files is None else backend_files
         if len(backend_files) > 0:
