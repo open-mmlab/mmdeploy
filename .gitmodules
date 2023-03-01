@@ -7,6 +7,6 @@
 [submodule "third_party/spdlog"]
 	path = third_party/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "tabulate"]
+[submodule "third_party/tabulate"]
 	path = third_party/tabulate
 	url = git@github.com:p-ranav/tabulate.git
