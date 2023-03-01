@@ -36,6 +36,7 @@ jobjectArray Java_mmdeploy_RotatedDetector_apply(JNIEnv *env, jobject thiz, jlon
                                               &results, &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply rotated detector, code = {}", ec);
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/RotatedDetector$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "(IF[F)V");
