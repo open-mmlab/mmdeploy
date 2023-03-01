@@ -65,7 +65,7 @@ public class Context {
         return contextHandle;
     }
 
-    private native long ();
+    private native long create();
 
     public native int add(long context, int contextType, String name, long handle);
 
