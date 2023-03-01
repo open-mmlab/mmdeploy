@@ -36,11 +36,19 @@ public class ImageSegmentation {
 
         try {
             segmentor = new Segmentor(modelPath, deviceName, 0);
+            if (segmentor == -1) {
+                System.out.println("Create Segmentor failed.");
+                System.exit(1);
+            }
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply segmentor
             Segmentor.Result[] result = segmentor.apply(img);
+            if (result == null) {
+                System.out.println("Apply Segmentor failed.");
+                System.exit(1);
+            }
 
             // print results
             for (Segmentor.Result value : result) {

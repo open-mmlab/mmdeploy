@@ -135,10 +135,18 @@ public class PoseTracker {
         Model detModel = new Model(detModelPath);
         Model poseModel = new Model(poseModelPath);
         Device device = new Device(deviceName, 0);
+        if (detModel.handle() == -1 || poseModel.handle() == -1 || device.handle() == -1) {
+            System.out.println("failed to create model or device");
+            System.exit(1);
+        }
         Context context = new Context();
         context.add(device);
         try {
             poseTracker = new mmdeploy.PoseTracker(detModel, poseModel, context);
+            if (poseTracker == -1) {
+                System.out.println("Create poseTracker failed.");
+                System.exit(1);
+            }
             mmdeploy.PoseTracker.Params params = poseTracker.initParams();
             params.detInterval = 5;
             params.poseMaxNumBboxes = 6;
@@ -162,6 +170,10 @@ public class PoseTracker {
                 Mat mat = Utils.cvMatToMat(frame);
                 // process
                 mmdeploy.PoseTracker.Result[] result = poseTracker.apply(stateHandle, mat, -1);
+                if (result == null) {
+                    System.out.println("Apply PoseTracker failed.");
+                    System.exit(1);
+                }
                 // visualize
                 if (!Visualize(frame, result, 1280, frameID++, true))
                 {

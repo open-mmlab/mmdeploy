@@ -32,15 +32,23 @@ public class PoseDetection {
         String imagePath = args[2];
 
         // create pose estimator
-        PoseDetector pose_estimator = null;
+        PoseDetector poseEstimator = null;
 
         try {
-            pose_estimator = new PoseDetector(modelPath, deviceName, 0);
+            poseEstimator = new PoseDetector(modelPath, deviceName, 0);
+            if (poseEstimator == -1) {
+                System.out.println("Create PoseEstimator failed.");
+                System.exit(1);
+            }
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply pose estimator
-            PoseDetector.Result[] result = pose_estimator.apply(img);
+            PoseDetector.Result[] result = poseEstimator.apply(img);
+            if (result == null) {
+                System.out.println("Apply PoseEstimator failed.");
+                System.exit(1);
+            }
 
             // print results
             for (PoseDetector.Result value : result) {
@@ -52,8 +60,8 @@ public class PoseDetection {
             System.out.println("exception: " + e.getMessage());
         } finally {
             // release pose estimator
-            if (pose_estimator != null) {
-                pose_estimator.release();
+            if (poseEstimator != null) {
+                poseEstimator.release();
             }
         }
     }

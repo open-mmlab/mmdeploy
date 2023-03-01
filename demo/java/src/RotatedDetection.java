@@ -39,12 +39,20 @@ public class RotatedDetection {
         RotatedDetector rotatedDetector = null;
         try {
             rotatedDetector = new RotatedDetector(modelPath, deviceName, 0);
+            if (rotatedDetector == -1) {
+                System.out.println("Create rotatedDetector failed.");
+                System.exit(1);
+            }
             // load image
             BufferedImage srcImg = ImageIO.read(new File(imagePath));
             Mat img = Utils.bufferedImage2Mat(srcImg);
 
             // apply rotated detector
             RotatedDetector.Result[] result = rotatedDetector.apply(img);
+            if (result == null) {
+                System.out.println("Apply RotatedDetector failed.");
+                System.exit(1);
+            }
             // print results
             Graphics ghandle = srcImg.createGraphics();
             for (int i = 0; i < result.length; i++) {
