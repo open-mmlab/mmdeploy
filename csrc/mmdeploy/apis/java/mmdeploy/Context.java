@@ -1,6 +1,11 @@
+
 package mmdeploy;
 
-/** @description: the Context class. */
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/03/01
+ * @description: the Context class.
+ */
 public class Context {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -8,7 +13,11 @@ public class Context {
 
     private final long contextHandle;
 
-    /** @description: ContextType. */
+    /**
+     * @author: hanrui1sensetime
+     * @createDate: 2023/03/01
+     * @description: ContextType.
+    */
     public enum ContextType {
         DEVICE,
         STREAM,
@@ -20,7 +29,7 @@ public class Context {
 
     /** Initializes a new instance of the Context class. */
     public Context() {
-        contextHandle = ();
+        contextHandle = create();
     }
 
     /** Add Model to the Context.
