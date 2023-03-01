@@ -5,6 +5,8 @@ set -e
 ip=${1}
 port=${2:8585}
 
+date_today=`date +'%Y%m%d'`
+
 # create http server
 nohup python3 -m http.server --directory /data2/shared/nvidia $port > tmp.log 2>&1
 
@@ -19,6 +21,8 @@ docker build ./docker/Base/ -t openmmlab/mmdeploy:$TAG \
     --build-arg TENSORRT_URL=${TENSORRT_URL} \
     --build-arg TENSORRT_VERSION=${TENSORRT_VERSION}
 
+docker tag openmmlab/mmdeploy:$TAG openmmlab/mmdeploy:${TAG}-${date_today}
+
 # test docker image
 docker run --gpus=all -itd \
   -v /data2/benchmark:/root/workspace/openmmlab-data \
@@ -26,6 +30,8 @@ docker run --gpus=all -itd \
   -v ~/mmdeploy:/root/workspace/mmdeploy \
   openmmlab/mmdeploy:$TAG
 
+
 # push to docker hub
 docker login
 docker push openmmlab/mmdeploy:$TAG
+docker push openmmlab/mmdeploy:$TAG-${date_today}
