@@ -129,7 +129,7 @@ class Registry : public Registry<void> {
   using Signature = GetSignature<Tag>;
   using CreatorType = Creator<Signature>;
 
-  // Workaround for gcc-10.2 (https://github.com/open-mmlab/mmdeploy/issues/1796)
+  // workaround for gcc-10.2 (https://github.com/open-mmlab/mmdeploy/issues/1796)
   Registry() : Registry<void>{} {}
 
   bool Add(CreatorType& creator) & { return AddCreator(creator); }
