@@ -5,12 +5,12 @@ import shutil
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
-from mmdeploy.ir.onnx import ONNXIRParam
+from mmdeploy.ir.onnx import ONNXParam
 from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 
 @dataclass
-class ONNXRuntimeBackendParam(BaseBackendParam):
+class ONNXRuntimeParam(BaseBackendParam):
     """ONNX Runtime backend parameters.
 
     Args:
@@ -31,7 +31,7 @@ class ONNXRuntimeBackendParam(BaseBackendParam):
 
 
 @BACKEND_MANAGERS.register(
-    'onnxruntime', param=ONNXRuntimeBackendParam, ir_param=ONNXIRParam)
+    'onnxruntime', param=ONNXRuntimeParam, ir_param=ONNXParam)
 class ONNXRuntimeManager(BaseBackendManager):
 
     @classmethod
@@ -172,13 +172,13 @@ class ONNXRuntimeManager(BaseBackendManager):
             shutil.copy(ir_model, save_path)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: ONNXRuntimeBackendParam):
+    def build_wrapper_from_param(cls, param: ONNXRuntimeParam):
         """Export to backend with packed backend parameter.
 
         Args:
-            param (ONNXRuntimeBackendParam): Packed backend parameter.
+            param (ONNXRuntimeParam): Packed backend parameter.
         """
-        assert isinstance(param, ONNXRuntimeBackendParam)
+        assert isinstance(param, ONNXRuntimeParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -193,7 +193,7 @@ class ONNXRuntimeManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: List[str] = None,
-                                **kwargs) -> ONNXRuntimeBackendParam:
+                                **kwargs) -> ONNXRuntimeParam:
         """Build param from deploy config.
 
         Args:
@@ -204,5 +204,5 @@ class ONNXRuntimeManager(BaseBackendManager):
         Returns:
             BaseBackendParam: The packed backend parameter.
         """
-        return ONNXRuntimeBackendParam(
+        return ONNXRuntimeParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)

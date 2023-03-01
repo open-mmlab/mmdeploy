@@ -15,7 +15,8 @@ class OpenVINOWrapper(BaseWrapper):
     """OpenVINO wrapper for inference in CPU.
 
     Args:
-        ir_model_file (str): Input OpenVINO IR model file.
+        model_path (str): Input OpenVINO IR model file.
+        bin_path (str): Input OpenVINO weight file.
         output_names (Sequence[str] | None): Names of model outputs in order.
             Defaults to `None` and the wrapper will load the output names from
             model.
@@ -24,22 +25,25 @@ class OpenVINOWrapper(BaseWrapper):
         >>> from mmdeploy.backend.openvino import OpenVINOWrapper
         >>> import torch
         >>>
-        >>> ir_model_file = 'model.xml'
-        >>> model = OpenVINOWrapper(ir_model_file)
+        >>> model_path = 'model.xml'
+        >>> bin_path = 'bin.xml'
+        >>> model = OpenVINOWrapper(model_path)
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224, device='cpu'))
         >>> outputs = model(inputs)
         >>> print(outputs)
     """
 
     def __init__(self,
-                 ir_model_file: str,
+                 model_path: str,
+                 bin_path: Optional[str] = None,
                  output_names: Optional[Sequence[str]] = None,
                  **kwargs):
 
         from openvino.inference_engine import IECore
         self.ie = IECore()
-        bin_path = osp.splitext(ir_model_file)[0] + '.bin'
-        self.net = self.ie.read_network(ir_model_file, bin_path)
+        if bin_path is None:
+            bin_path = osp.splitext(model_path)[0] + '.bin'
+        self.net = self.ie.read_network(model_path, bin_path)
         for input in self.net.input_info.values():
             batch_size = input.input_data.shape[0]
             dims = len(input.input_data.shape)

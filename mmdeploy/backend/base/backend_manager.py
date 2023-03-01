@@ -277,6 +277,9 @@ class BaseBackendParam:
                 if name == 'input_shapes' else ShapePlaceHolderAction
             parser.add_argument(
                 arg_name, action=action, nargs='+', default=default, help=desc)
+        elif dtype == List[str]:
+            parser.add_argument(
+                arg_name, type=str, nargs='+', default=default, help=desc)
         else:
             parser.add_argument(
                 arg_name, type=dtype, default=default, help=desc)

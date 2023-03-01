@@ -5,13 +5,13 @@ from argparse import ArgumentParser
 from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
-from mmdeploy.ir.onnx import ONNXIRParam
+from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
                     dataclass_property)
 
 
 @dataclass
-class NCNNBackendParam(BaseBackendParam):
+class NCNNParam(BaseBackendParam):
     """NCNN backend parameters.
 
     Args:
@@ -58,8 +58,7 @@ class NCNNBackendParam(BaseBackendParam):
         return param_file_path, bin_file_path
 
 
-@BACKEND_MANAGERS.register(
-    'ncnn', param=NCNNBackendParam, ir_param=ONNXIRParam)
+@BACKEND_MANAGERS.register('ncnn', param=NCNNParam, ir_param=ONNXParam)
 class NCNNManager(BaseBackendManager):
 
     @classmethod
@@ -172,14 +171,14 @@ class NCNNManager(BaseBackendManager):
         from_onnx(onnx_path, param_path, bin_path)
 
     @classmethod
-    def to_backend_from_param(cls, ir_model: str, param: NCNNBackendParam):
+    def to_backend_from_param(cls, ir_model: str, param: NCNNParam):
         """Export to backend with packed backend parameter.
 
         Args:
             ir_model (str): The ir model path to perform the export.
             param (BaseBackendParam): Packed backend parameter.
         """
-        assert isinstance(param, NCNNBackendParam)
+        assert isinstance(param, NCNNParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -189,7 +188,7 @@ class NCNNManager(BaseBackendManager):
         cls.to_backend(ir_model, model_path, bin_path)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: NCNNBackendParam):
+    def build_wrapper_from_param(cls, param: NCNNParam):
         """Export to backend with packed backend parameter.
 
         Args:
@@ -207,7 +206,7 @@ class NCNNManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: Sequence[str] = None,
-                                **kwargs) -> NCNNBackendParam:
+                                **kwargs) -> NCNNParam:
         """Build param from deploy config.
 
         Args:
@@ -228,7 +227,7 @@ class NCNNManager(BaseBackendManager):
             kwargs['file_name'] = backend_files[0]
         if len(backend_files) > 1:
             kwargs['bin_name'] = backend_files[1]
-        return NCNNBackendParam(**kwargs)
+        return NCNNParam(**kwargs)
 
     @classmethod
     def parse_args(cls,
@@ -253,7 +252,7 @@ class NCNNManager(BaseBackendManager):
             name='convert', help='convert ncnn model from ONNX model.')
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
-        NCNNBackendParam.add_arguments(export_parser)
+        NCNNParam.add_arguments(export_parser)
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
@@ -263,7 +262,7 @@ class NCNNManager(BaseBackendManager):
 
         if action == 'convert':
             # convert model
-            param = NCNNBackendParam(
+            param = NCNNParam(
                 work_dir=parsed_args.work_dir,
                 file_name=parsed_args.file_name,
                 bin_name=parsed_args.bin_name,

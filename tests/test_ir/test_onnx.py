@@ -4,7 +4,7 @@ import os.path as osp
 
 import pytest
 
-from mmdeploy.ir.onnx import ONNXIRParam, ONNXManager
+from mmdeploy.ir.onnx import ONNXManager, ONNXParam
 
 
 @pytest.fixture(scope='class')
@@ -32,7 +32,7 @@ def dummy_args():
 
 @pytest.fixture
 def dummy_param(dummy_args, tmp_path, file_name):
-    return ONNXIRParam(
+    return ONNXParam(
         args=dummy_args,
         work_dir=str(tmp_path),
         file_name=file_name,
@@ -42,7 +42,7 @@ def dummy_param(dummy_args, tmp_path, file_name):
 
 @pytest.mark.skipif(
     importlib.util.find_spec('torch') is None, reason='PyTorch is required.')
-class TestONNXIRParam:
+class TestONNXParam:
 
     def test_file_name(self, dummy_param, file_name):
         assert dummy_param.file_name == f'{file_name}.onnx'
@@ -62,7 +62,7 @@ class TestONNXManager:
     def test_build_param(self, dummy_args, file_name):
         assert isinstance(
             ONNXManager.build_param(args=dummy_args, file_name=file_name),
-            ONNXIRParam)
+            ONNXParam)
 
     def test_is_available(self):
         assert ONNXManager.is_available()

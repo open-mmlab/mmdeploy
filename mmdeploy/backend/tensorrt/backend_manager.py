@@ -6,12 +6,12 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Sequence
 
-from mmdeploy.ir.onnx import ONNXIRParam
+from mmdeploy.ir.onnx import ONNXParam
 from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 
 @dataclass
-class TensorRTBackendParam(BaseBackendParam):
+class TensorRTParam(BaseBackendParam):
     """TensorRT backend parameters.
 
     Args:
@@ -59,8 +59,7 @@ class TensorRTBackendParam(BaseBackendParam):
                     f'Unsupported int8 algorithm: {self.int8_algorithm}')
 
 
-@BACKEND_MANAGERS.register(
-    'tensorrt', param=TensorRTBackendParam, ir_param=ONNXIRParam)
+@BACKEND_MANAGERS.register('tensorrt', param=TensorRTParam, ir_param=ONNXParam)
 class TensorRTManager(BaseBackendManager):
 
     @classmethod
@@ -199,7 +198,7 @@ class TensorRTManager(BaseBackendManager):
             log_level=log_level)
 
     @classmethod
-    def to_backend_from_param(cls, ir_model: str, param: TensorRTBackendParam):
+    def to_backend_from_param(cls, ir_model: str, param: TensorRTParam):
         """Export to backend with packed backend parameter.
 
         Args:
@@ -208,9 +207,8 @@ class TensorRTManager(BaseBackendManager):
         """
         param.check_param()
 
-        assert isinstance(
-            param, TensorRTBackendParam), ('Expect TensorRTBackendParam '
-                                           f'get {type(param)}')
+        assert isinstance(param, TensorRTParam), ('Expect TensorRTParam '
+                                                  f'get {type(param)}')
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         save_path = osp.join(param.work_dir, param.file_name)
@@ -245,13 +243,13 @@ class TensorRTManager(BaseBackendManager):
             device_id=device_id)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: TensorRTBackendParam):
+    def build_wrapper_from_param(cls, param: TensorRTParam):
         """Export to backend with packed backend parameter.
 
         Args:
             param (BaseBackendParam): Packed backend parameter.
         """
-        assert isinstance(param, TensorRTBackendParam)
+        assert isinstance(param, TensorRTParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -265,7 +263,7 @@ class TensorRTManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: List[str] = None,
-                                **kwargs) -> TensorRTBackendParam:
+                                **kwargs) -> TensorRTParam:
         """Build param from deploy config.
 
         Args:
@@ -304,7 +302,7 @@ class TensorRTManager(BaseBackendManager):
         kwargs.setdefault('fp16_mode', fp16_mode)
         kwargs.setdefault('int8_mode', int8_mode)
 
-        ret = TensorRTBackendParam(
+        ret = TensorRTParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)
         return ret
 
@@ -331,7 +329,7 @@ class TensorRTManager(BaseBackendManager):
             name='convert', help='convert TensorRT engine from ONNX model.')
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
-        TensorRTBackendParam.add_arguments(export_parser)
+        TensorRTParam.add_arguments(export_parser)
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
@@ -341,7 +339,7 @@ class TensorRTManager(BaseBackendManager):
 
         if action == 'convert':
             # convert model
-            param = TensorRTBackendParam(
+            param = TensorRTParam(
                 work_dir=parsed_args.work_dir,
                 file_name=parsed_args.file_name,
                 device=parsed_args.device,

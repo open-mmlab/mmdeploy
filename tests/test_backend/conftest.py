@@ -64,6 +64,16 @@ def output_dict_2i2o(output_2i2o, output_names_2i2o):
 
 
 @pytest.fixture(scope='module')
+def input_shape_dict_2i(input_dict_2i):
+    yield dict((name, val.shape) for name, val in input_dict_2i.items())
+
+
+@pytest.fixture(scope='module')
+def output_shape_dict_2i2o(output_dict_2i2o):
+    yield dict((name, val.shape) for name, val in output_dict_2i2o.items())
+
+
+@pytest.fixture(scope='module')
 def dynamic_axes_2i():
     yield dict(x={0: 'b', 2: 'h', 3: 'w'}, y={0: 'b', 2: 'h', 3: 'w'})
 

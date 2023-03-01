@@ -4,7 +4,7 @@ import os.path as osp
 
 import pytest
 
-from mmdeploy.ir.torchscript import TorchScriptIRParam, TorchScriptManager
+from mmdeploy.ir.torchscript import TorchScriptManager, TorchScriptParam
 
 
 @pytest.fixture(scope='class')
@@ -32,13 +32,13 @@ def dummy_args():
 
 @pytest.fixture
 def dummy_param(dummy_args, tmp_path, file_name):
-    return TorchScriptIRParam(
+    return TorchScriptParam(
         args=dummy_args, work_dir=str(tmp_path), file_name=file_name)
 
 
 @pytest.mark.skipif(
     importlib.util.find_spec('torch') is None, reason='PyTorch is required.')
-class TestTorchScriptIRParam:
+class TestTorchScriptParam:
 
     def test_file_name(self, dummy_param, file_name):
         assert dummy_param.file_name == f'{file_name}.pth'
@@ -51,7 +51,7 @@ class TestTorchScriptManager:
     def test_build_param(self, dummy_args, file_name):
         assert isinstance(
             TorchScriptManager.build_param(
-                args=dummy_args, file_name=file_name), TorchScriptIRParam)
+                args=dummy_args, file_name=file_name), TorchScriptParam)
 
     def test_is_available(self):
         assert TorchScriptManager.is_available()

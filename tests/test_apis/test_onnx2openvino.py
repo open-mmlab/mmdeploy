@@ -53,7 +53,7 @@ def get_outputs(pytorch_model, openvino_model_path, input, input_name,
                 output_name):
     output_pytorch = pytorch_model(input).numpy()
 
-    from mmdeploy.backend.openvino import OpenVINOWrapper
+    from mmdeploy.backend.openvino.wrapper import OpenVINOWrapper
     openvino_model = OpenVINOWrapper(openvino_model_path)
     openvino_output = openvino_model({input_name: input})[output_name]
 

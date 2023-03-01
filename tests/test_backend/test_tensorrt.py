@@ -4,7 +4,7 @@ import os.path as osp
 
 import pytest
 
-from mmdeploy.backend.tensorrt import TensorRTBackendParam, TensorRTManager
+from mmdeploy.backend.tensorrt import TensorRTManager, TensorRTParam
 
 if not TensorRTManager.is_available():
     pytest.skip('backend not available')
@@ -14,13 +14,12 @@ class TestBackendParam:
 
     def test_check_param(self):
         with pytest.raises(ValueError):
-            param = TensorRTBackendParam(
-                int8_mode=True, int8_algorithm='invalid')
+            param = TensorRTParam(int8_mode=True, int8_algorithm='invalid')
             param.check_param()
 
     def test_parse_args(self):
         parser = argparse.ArgumentParser()
-        TensorRTBackendParam.add_arguments(parser)
+        TensorRTParam.add_arguments(parser)
         args = parser.parse_args([
             '--fp16-mode', '--int8-mode', '--int8-algorithm', 'maxmin',
             '--max-workspace-size', '1024'
@@ -60,8 +59,8 @@ class TestManager:
         backend_mgr.build_param(work_dir='')
 
     @pytest.fixture(scope='class')
-    def input_shape_dict(self, input_shape, input_names_2i):
-        yield dict(zip(input_names_2i, [input_shape] * 2))
+    def input_shape_dict(self, input_shape_dict_2i):
+        yield input_shape_dict_2i
 
     @pytest.fixture(scope='class')
     def onnx_model(self, onnx_model_dynamic_2i2o):

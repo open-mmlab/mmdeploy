@@ -8,7 +8,7 @@ from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam
 
 
 @dataclass
-class TorchScriptIRParam(BaseIRParam):
+class TorchScriptParam(BaseIRParam):
     """TorchScript IR param.
 
     Args:
@@ -35,7 +35,7 @@ class TorchScriptIRParam(BaseIRParam):
     check_tolerance: float = 1e-05
 
 
-@IR_MANAGERS.register('onnx', param=TorchScriptIRParam)
+@IR_MANAGERS.register('onnx', param=TorchScriptParam)
 class TorchScriptManager(BaseIRManager):
     """TorchScript IR Manager."""
 
@@ -95,20 +95,20 @@ class TorchScriptManager(BaseIRManager):
             const_args=const_args)
 
     @classmethod
-    def export_from_param(cls, model: Any, param: TorchScriptIRParam):
+    def export_from_param(cls, model: Any, param: TorchScriptParam):
         """Export model to given ir.
 
         Examples:
             >>> from mmdeploy.ir.torchscript import export_from_param
             >>>
             >>> model = create_model()
-            >>> param = TorchScriptIRParam(...)
+            >>> param = TorchScriptParam(...)
             >>>
             >>> export_from_param(model, param)
 
         Args:
             model (Any): The model to be exported.
-            param (TorchScriptIRParam): The packed export parameter.
+            param (TorchScriptParam): The packed export parameter.
         """
 
         from mmdeploy.utils import get_root_logger

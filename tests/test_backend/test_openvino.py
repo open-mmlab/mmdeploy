@@ -5,27 +5,27 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from mmdeploy.backend.ncnn import NCNNManager, NCNNParam
+from mmdeploy.backend.openvino import OpenVINOManager, OpenVINOParam
 
-if not NCNNManager.is_available():
+if not OpenVINOManager.is_available():
     pytest.skip('backend not available')
 
 
 class TestBackendParam:
 
     def test_get_model_files(self):
-        param = NCNNParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.param'
+        param = OpenVINOParam(work_dir='', file_name='tmp')
+        assert param.file_name == 'tmp.xml'
         assert param.bin_name == 'tmp.bin'
 
-        assert param.get_model_files() == ('tmp.param', 'tmp.bin')
+        assert param.get_model_files() == ('tmp.xml', 'tmp.bin')
 
 
 class TestManager:
 
     @pytest.fixture(scope='class')
     def backend_mgr(self):
-        yield NCNNManager
+        yield OpenVINOManager
 
     @pytest.fixture(scope='class')
     def inputs(self, input_dict_2i):
@@ -36,15 +36,28 @@ class TestManager:
         yield output_dict_2i2o
 
     @pytest.fixture(scope='class')
+    def input_shape_dict(self, input_shape_dict_2i):
+        yield input_shape_dict_2i
+
+    @pytest.fixture(scope='class')
+    def output_names(self, output_names_2i2o):
+        yield output_names_2i2o
+
+    @pytest.fixture(scope='class')
     def onnx_model(self, onnx_model_dynamic_2i2o):
         yield onnx_model_dynamic_2i2o
 
     @pytest.fixture(scope='class')
-    def backend_model(self, backend_mgr, onnx_model):
+    def backend_model(self, backend_mgr, onnx_model, input_shape_dict,
+                      output_names):
         with TemporaryDirectory() as tmp_dir:
-            param_path = osp.join(tmp_dir, 'tmp.param')
+            param_path = osp.join(tmp_dir, 'tmp.xml')
             bin_path = osp.join(tmp_dir, 'tmp.bin')
-            backend_mgr.to_backend(onnx_model, param_path, bin_path)
+            backend_mgr.to_backend(
+                onnx_model,
+                param_path,
+                input_info=input_shape_dict,
+                output_names=output_names)
 
             yield param_path, bin_path
 
@@ -74,14 +87,24 @@ class TestManager:
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, backend_mgr, onnx_model):
+    def test_parse_args(self, backend_mgr, onnx_model, input_shape_dict,
+                        output_names):
+        # make input shapes
+        input_shapes = []
+        for name, shape in input_shape_dict.items():
+            shape = 'x'.join(str(i) for i in shape)
+            input_shapes.append(f'{name}:{shape}')
+        input_shapes = ','.join(input_shapes)
+
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.param'
+            param_name = 'tmp.xml'
             # make args
             args = ['convert']
             args += ['--onnx-path', onnx_model]
             args += ['--work-dir', work_dir]
             args += ['--file-name', param_name]
+            args += ['--output-names', *output_names]
+            args += ['--input-shapes', input_shapes]
 
             parser = argparse.ArgumentParser()
             generator = backend_mgr.parse_args(parser, args=args)
