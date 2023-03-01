@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: PixelFormat.
-*/
+/** @description: PixelFormat. */
 public enum PixelFormat {
     BGR(0),
     RGB(1),

@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of PoseDetector.
- */
+/** @description: the Java API class of PoseDetector. */
 public class PoseDetector {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class PoseDetector {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single pose estimation result of a picture.
-    */
+    /** @description: Single pose estimation result of a picture. */
     public static class Result {
 
         /** Points. */

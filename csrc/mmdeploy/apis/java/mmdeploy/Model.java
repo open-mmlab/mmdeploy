@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Model class.
- */
+/** @description: the Model class. */
 public class Model {
     static {
         System.loadLibrary("mmdeploy_java");

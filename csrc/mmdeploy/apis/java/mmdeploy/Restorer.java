@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of Restorer.
- */
+/** @description: the Java API class of Restorer. */
 public class Restorer {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class Restorer {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single image restore result of a picture.
-    */
+    /** @description: Single image restore result of a picture. */
     public static class Result {
 
         /** Result mat. */

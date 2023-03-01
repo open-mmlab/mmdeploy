@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Profiler class.
- */
+/** @description: the Profiler class. */
 public class Profiler {
     static {
         System.loadLibrary("mmdeploy_java");

@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Rect class.
- */
+/** @description: the Rect class. */
 public class Rect {
 
     /** left coordinate. */

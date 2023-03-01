@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Java API class of RotatedDetector.
- */
+/** @description: the Java API class of RotatedDetector. */
 public class RotatedDetector {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class RotatedDetector {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single rotated detection result of a picture.
-    */
+    /** @description: Single rotated detection result of a picture. */
     public static class Result {
 
         /** Label ID. */

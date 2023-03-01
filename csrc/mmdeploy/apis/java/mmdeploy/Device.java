@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Device class.
- */
+/** @description: the Device class. */
 public class Device {
     static {
         System.loadLibrary("mmdeploy_java");

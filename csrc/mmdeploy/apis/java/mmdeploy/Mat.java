@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: Mat.
-*/
+/** @description: Mat. */
 public class Mat {
 
     /** Shape. */

@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of TextRecognizer.
- */
+/** @description: the Java API class of TextRecognizer. */
 public class TextRecognizer {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class TextRecognizer {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single text recognition result of a picture.
-    */
+    /** @description: Single text recognition result of a picture. */
     public static class Result {
 
         /** Text. */

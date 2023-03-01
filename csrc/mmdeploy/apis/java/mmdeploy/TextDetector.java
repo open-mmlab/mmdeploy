@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of TextDetector.
- */
+/** @description: the Java API class of TextDetector. */
 public class TextDetector {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class TextDetector {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single text detection result of a picture.
-    */
+    /** @description: Single text detection result of a picture. */
     public static class Result {
 
         /** Bbox. */

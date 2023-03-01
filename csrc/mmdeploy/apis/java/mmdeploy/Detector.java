@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of Detector.
- */
+/** @description: the Java API class of Detector. */
 public class Detector {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class Detector {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single detection result of a picture.
-    */
+    /** @description: Single detection result of a picture. */
     public static class Result {
 
         /** Bbox class id. */

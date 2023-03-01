@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: the Java API class of Classifier.
- */
+/** @description: the Java API class of Classifier. */
 public class Classifier {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -12,11 +8,7 @@ public class Classifier {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single classification result of a picture.
-    */
+    /** @description: Single classification result of a picture. */
     public static class Result {
 
         /** Class id. */

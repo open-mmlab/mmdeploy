@@ -7,11 +7,7 @@ public class Segmentor {
 
     private final long handle;
 
-    /**
-     * @author: hanrui1sensetime
-     * @createDate: 2023/02/28
-     * @description: Single image segmentation result of a picture.
-    */
+    /** @description: Single image segmentation result of a picture. */
     public static class Result {
 
         /** Height. */

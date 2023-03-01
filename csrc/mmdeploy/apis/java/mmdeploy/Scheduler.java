@@ -1,10 +1,6 @@
 package mmdeploy;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/03/01
- * @description: the Scheduler class.
- */
+/** @description: the Scheduler class. */
 public class Scheduler {
     static {
         System.loadLibrary("mmdeploy_java");
