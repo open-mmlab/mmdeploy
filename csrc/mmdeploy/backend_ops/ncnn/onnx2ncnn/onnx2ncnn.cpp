@@ -2200,6 +2200,8 @@ int main(int argc, char** argv) {
       }
       fprintf(pp, " 4=%d", keepdims);
       fprintf(pp, " 5=1");
+      // Force set Reduction for FP32, FP16 may exceed for some models.
+      fprintf(pp, " 31=15");
     } else if (op == "Reorg") {
       int stride = get_node_attr_i(node, "stride", 1);
       fprintf(pp, " 0=%d", stride);

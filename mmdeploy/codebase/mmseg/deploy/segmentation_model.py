@@ -152,6 +152,39 @@ class RKNNModel(End2EndModel):
         return self.pack_result(batch_outputs[0], data_samples)
 
 
+@__BACKEND_MODEL.register_module('vacc_seg')
+class VACCModel(End2EndModel):
+    """SDK inference class, converts VACC output to mmseg format."""
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict'):
+        """Run forward inference.
+
+        Args:
+            inputs (Tensor): Inputs with shape (N, C, H, W).
+            data_samples (list[:obj:`SegDataSample`]): The seg data
+                samples. It usually includes information such as
+                `metainfo` and `gt_sem_seg`. Default to None.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        if inputs.device != torch.device(self.device):
+            get_root_logger().warning(f'expect input device {self.device}'
+                                      f' but get {inputs.device}.')
+        inputs = inputs.to(self.device)
+        batch_outputs = self.wrapper({self.input_name: inputs})
+        batch_outputs = [
+            output.argmax(dim=1, keepdim=True)
+            for output in batch_outputs.values()
+        ]
+        return self.pack_result(batch_outputs[0], data_samples)
+
+
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmseg format."""

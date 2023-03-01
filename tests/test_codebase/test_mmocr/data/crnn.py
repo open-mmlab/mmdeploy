@@ -55,6 +55,10 @@ img_norm_cfg = dict(mean=[127], std=[127])
 
 test_pipeline = [
     dict(
+        type='LoadImageFromFile',
+        color_type='grayscale',
+        file_client_args=dict(backend='disk')),
+    dict(
         type='RescaleToHeight',
         height=32,
         min_width=32,

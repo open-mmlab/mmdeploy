@@ -140,11 +140,13 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             })
     """
 
+    if int8_mode or device_id != 0:
+        import pycuda.autoinit  # noqa:F401
+
     if device_id != 0:
         import os
         old_cuda_device = os.environ.get('CUDA_DEVICE', None)
         os.environ['CUDA_DEVICE'] = str(device_id)
-        import pycuda.autoinit  # noqa:F401
         if old_cuda_device is not None:
             os.environ['CUDA_DEVICE'] = old_cuda_device
         else:

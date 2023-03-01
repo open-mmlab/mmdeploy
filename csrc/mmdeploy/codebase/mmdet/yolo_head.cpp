@@ -208,7 +208,7 @@ std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box
   return std::array<float, 4>{box_x, box_y, box_w, box_h};
 }
 
-std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
+std::array<float, 4> YOLOv5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h,
                                              float stride,
                                              const std::vector<std::vector<float>>& anchor, int j,
                                              int i, int a) const {
@@ -224,6 +224,6 @@ std::array<float, 4> YOLOV5Head::yolo_decode(float box_x, float box_y, float box
 }
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV3Head);
-MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOV5Head);
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, YOLOv5Head);
 
 }  // namespace mmdeploy::mmdet
