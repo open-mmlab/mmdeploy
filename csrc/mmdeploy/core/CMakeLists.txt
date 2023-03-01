@@ -51,6 +51,7 @@ target_include_directories(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/concurrentqueue>
         # TODO: remove dependency of `json`
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/json>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/third_party/tabulate/include>
         )
 
 if (MSVC)
@@ -67,7 +68,8 @@ endif ()
 target_include_directories(${PROJECT_NAME} PUBLIC
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:include/mmdeploy/third_party/outcome>
-        $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>)
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/json>
+        $<INSTALL_INTERFACE:include/mmdeploy/third_party/tabulate/include>)
 if (NOT MMDEPLOY_SPDLOG_EXTERNAL)
     target_include_directories(spdlog INTERFACE
             $<INSTALL_INTERFACE:include/mmdeploy/third_party>)

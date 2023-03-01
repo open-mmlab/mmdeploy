@@ -4,6 +4,8 @@
 
 #include <iomanip>
 
+#include "tabulate/table.hpp"
+
 namespace mmdeploy {
 namespace profiler {
 
@@ -80,6 +82,15 @@ void Profiler::Release() {
                .count()
         << "\n";
   }
+  tabulate::Table table;
+
+  table.add_row({"name", "occupy", "usage", "n_call", "t_mean", "t_50%", "t_90%"});
+  // Color header cells
+  for (size_t i = 0; i < 7; ++i) {
+    table[0][i].format().width(10).font_style({tabulate::FontStyle::bold});
+  }
+
+  std::cout << table << std::endl;
 }
 
 }  // namespace profiler
