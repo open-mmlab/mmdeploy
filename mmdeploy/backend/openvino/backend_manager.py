@@ -58,7 +58,10 @@ class OpenVINOParam(BaseBackendParam):
         return param_file_path, bin_file_path
 
 
-@BACKEND_MANAGERS.register('openvino', param=OpenVINOParam, ir_param=ONNXParam)
+_BackendParam = OpenVINOParam
+
+
+@BACKEND_MANAGERS.register('openvino', param=_BackendParam, ir_param=ONNXParam)
 class OpenVINOManager(BaseBackendManager):
 
     @classmethod
@@ -153,14 +156,14 @@ class OpenVINOManager(BaseBackendManager):
                 mo_options=mo_options)
 
     @classmethod
-    def to_backend_from_param(cls, ir_model: str, param: OpenVINOParam):
+    def to_backend_from_param(cls, ir_model: str, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
             ir_model (str): The ir model path to perform the export.
             param (BaseBackendParam): Packed backend parameter.
         """
-        assert isinstance(param, OpenVINOParam)
+        assert isinstance(param, _BackendParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -181,7 +184,7 @@ class OpenVINOManager(BaseBackendManager):
             mo_options=mo_options)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: OpenVINOParam):
+    def build_wrapper_from_param(cls, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
@@ -199,7 +202,7 @@ class OpenVINOManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: Sequence[str] = None,
-                                **kwargs) -> OpenVINOParam:
+                                **kwargs) -> _BackendParam:
         """Build param from deploy config.
 
         Args:
@@ -229,7 +232,7 @@ class OpenVINOManager(BaseBackendManager):
             kwargs['file_name'] = backend_files[0]
         if len(backend_files) > 1:
             kwargs['bin_name'] = backend_files[1]
-        return OpenVINOParam(**kwargs)
+        return _BackendParam(**kwargs)
 
     @classmethod
     def parse_args(cls,
@@ -245,26 +248,26 @@ class OpenVINOManager(BaseBackendManager):
 
         # parse args
         sub_parsers = parser.add_subparsers(
-            title='action',
-            description='Please select the action you want to perform.',
-            dest='_action')
+            title='command',
+            description='Please select the command you want to perform.',
+            dest='_command')
 
         # export model
         export_parser = sub_parsers.add_parser(
-            name='convert', help='convert ncnn model from ONNX model.')
+            name='convert', help='convert model from ONNX model.')
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
-        OpenVINOParam.add_arguments(export_parser)
+        _BackendParam.add_arguments(export_parser)
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
 
-        # perform action
-        action = parsed_args._action
+        # perform command
+        command = parsed_args._command
 
-        if action == 'convert':
+        if command == 'convert':
             # convert model
-            param = OpenVINOParam(
+            param = _BackendParam(
                 work_dir=parsed_args.work_dir,
                 file_name=parsed_args.file_name,
                 bin_name=parsed_args.bin_name,

@@ -58,34 +58,11 @@ class NCNNParam(BaseBackendParam):
         return param_file_path, bin_file_path
 
 
-@BACKEND_MANAGERS.register('ncnn', param=NCNNParam, ir_param=ONNXParam)
+_BackendParam = NCNNParam
+
+
+@BACKEND_MANAGERS.register('ncnn', param=_BackendParam, ir_param=ONNXParam)
 class NCNNManager(BaseBackendManager):
-
-    @classmethod
-    def build_wrapper(cls,
-                      param_path: str,
-                      bin_path: str,
-                      output_names: Optional[Sequence[str]] = None,
-                      use_vulkan: bool = False):
-        """Build the wrapper for the backend model.
-
-        Args:
-            param_path (str): ncnn parameter file path.
-            bin_path (str): ncnn bin file path.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-            use_vulkan (str): Perform inference with vulkan.
-        """
-        from .wrapper import NCNNWrapper
-
-        # For unittest deploy_config will not pass into _build_wrapper
-        # function.
-        return NCNNWrapper(
-            param_file=param_path,
-            bin_file=bin_path,
-            output_names=output_names,
-            use_vulkan=use_vulkan)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -171,14 +148,14 @@ class NCNNManager(BaseBackendManager):
         from_onnx(onnx_path, param_path, bin_path)
 
     @classmethod
-    def to_backend_from_param(cls, ir_model: str, param: NCNNParam):
+    def to_backend_from_param(cls, ir_model: str, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
             ir_model (str): The ir model path to perform the export.
             param (BaseBackendParam): Packed backend parameter.
         """
-        assert isinstance(param, NCNNParam)
+        assert isinstance(param, _BackendParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -188,7 +165,33 @@ class NCNNManager(BaseBackendManager):
         cls.to_backend(ir_model, model_path, bin_path)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: NCNNParam):
+    def build_wrapper(cls,
+                      param_path: str,
+                      bin_path: str,
+                      output_names: Optional[Sequence[str]] = None,
+                      use_vulkan: bool = False):
+        """Build the wrapper for the backend model.
+
+        Args:
+            param_path (str): ncnn parameter file path.
+            bin_path (str): ncnn bin file path.
+            device (str, optional): The device info. Defaults to 'cpu'.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+            use_vulkan (str): Perform inference with vulkan.
+        """
+        from .wrapper import NCNNWrapper
+
+        # For unittest deploy_config will not pass into _build_wrapper
+        # function.
+        return NCNNWrapper(
+            param_file=param_path,
+            bin_file=bin_path,
+            output_names=output_names,
+            use_vulkan=use_vulkan)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
@@ -206,7 +209,7 @@ class NCNNManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: Sequence[str] = None,
-                                **kwargs) -> NCNNParam:
+                                **kwargs) -> _BackendParam:
         """Build param from deploy config.
 
         Args:
@@ -227,7 +230,7 @@ class NCNNManager(BaseBackendManager):
             kwargs['file_name'] = backend_files[0]
         if len(backend_files) > 1:
             kwargs['bin_name'] = backend_files[1]
-        return NCNNParam(**kwargs)
+        return _BackendParam(**kwargs)
 
     @classmethod
     def parse_args(cls,
@@ -243,26 +246,26 @@ class NCNNManager(BaseBackendManager):
 
         # parse args
         sub_parsers = parser.add_subparsers(
-            title='action',
-            description='Please select the action you want to perform.',
-            dest='_action')
+            title='command',
+            description='Please select the command you want to perform.',
+            dest='_command')
 
         # export model
         export_parser = sub_parsers.add_parser(
-            name='convert', help='convert ncnn model from ONNX model.')
+            name='convert', help='convert model from ONNX model.')
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
-        NCNNParam.add_arguments(export_parser)
+        _BackendParam.add_arguments(export_parser)
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
 
-        # perform action
-        action = parsed_args._action
+        # perform command
+        command = parsed_args._command
 
-        if action == 'convert':
+        if command == 'convert':
             # convert model
-            param = NCNNParam(
+            param = _BackendParam(
                 work_dir=parsed_args.work_dir,
                 file_name=parsed_args.file_name,
                 bin_name=parsed_args.bin_name,

@@ -29,8 +29,11 @@ class ONNXRuntimeParam(BaseBackendParam):
         return osp.join(self.work_dir, self.file_name)
 
 
+_BackendParam = ONNXRuntimeParam
+
+
 @BACKEND_MANAGERS.register(
-    'onnxruntime', param=ONNXRuntimeParam, ir_param=ONNXParam)
+    'onnxruntime', param=_BackendParam, ir_param=ONNXParam)
 class ONNXRuntimeManager(BaseBackendManager):
 
     @classmethod
@@ -163,13 +166,13 @@ class ONNXRuntimeManager(BaseBackendManager):
         cls.to_backend(ir_model, save_path)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: ONNXRuntimeParam):
+    def build_wrapper_from_param(cls, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
-            param (ONNXRuntimeParam): Packed backend parameter.
+            param (_BackendParam): Packed backend parameter.
         """
-        assert isinstance(param, ONNXRuntimeParam)
+        assert isinstance(param, _BackendParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -184,7 +187,7 @@ class ONNXRuntimeManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: List[str] = None,
-                                **kwargs) -> ONNXRuntimeParam:
+                                **kwargs) -> _BackendParam:
         """Build param from deploy config.
 
         Args:
@@ -195,5 +198,5 @@ class ONNXRuntimeManager(BaseBackendManager):
         Returns:
             BaseBackendParam: The packed backend parameter.
         """
-        return ONNXRuntimeParam(
+        return _BackendParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)

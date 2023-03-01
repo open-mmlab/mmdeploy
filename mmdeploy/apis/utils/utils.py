@@ -104,7 +104,7 @@ def to_backend(backend_name: str,
     assert len(model_inputs) == 0 or len(model_inputs) == len(ir_files)
     backend_files = []
     for idx, ir_file in enumerate(ir_files):
-        if len(model_inputs) > 0:
+        if isinstance(model_inputs, (list, tuple)) and len(model_inputs) > 0:
             curr_deploy_cfg = deepcopy(deploy_cfg)
             curr_deploy_cfg['backend_config']['model_inputs'] = [
                 model_inputs[idx]

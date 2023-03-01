@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.fixture(scope='module')
-def torch_model_2i2o():
+def dummy_torch_model():
     torch = pytest.importorskip('torch')
 
     class DummyModel(torch.nn.Module):
@@ -39,8 +39,8 @@ def input_2i(dummy_x, dummy_y):
 
 
 @pytest.fixture(scope='module')
-def output_2i2o(torch_model_2i2o, dummy_x, dummy_y):
-    yield torch_model_2i2o(dummy_x, dummy_y)
+def output_2i2o(dummy_torch_model, dummy_x, dummy_y):
+    yield dummy_torch_model(dummy_x, dummy_y)
 
 
 @pytest.fixture(scope='module')
@@ -79,12 +79,12 @@ def dynamic_axes_2i():
 
 
 @pytest.fixture(scope='module')
-def onnx_model_static_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
+def onnx_model_static_2i2o(dummy_torch_model, dummy_x, dummy_y, input_names_2i,
                            output_names_2i2o):
     torch = pytest.importorskip('torch')
     tmp_path = NamedTemporaryFile(suffix='.onnx').name
     torch.onnx.export(
-        torch_model_2i2o, (dummy_x, dummy_y),
+        dummy_torch_model, (dummy_x, dummy_y),
         tmp_path,
         input_names=input_names_2i,
         output_names=output_names_2i2o)
@@ -93,12 +93,13 @@ def onnx_model_static_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
 
 
 @pytest.fixture(scope='module')
-def onnx_model_dynamic_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
-                            output_names_2i2o, dynamic_axes_2i):
+def onnx_model_dynamic_2i2o(dummy_torch_model, dummy_x, dummy_y,
+                            input_names_2i, output_names_2i2o,
+                            dynamic_axes_2i):
     torch = pytest.importorskip('torch')
     tmp_path = NamedTemporaryFile(suffix='.onnx').name
     torch.onnx.export(
-        torch_model_2i2o, (dummy_x, dummy_y),
+        dummy_torch_model, (dummy_x, dummy_y),
         tmp_path,
         input_names=input_names_2i,
         output_names=output_names_2i2o,
@@ -108,10 +109,10 @@ def onnx_model_dynamic_2i2o(torch_model_2i2o, dummy_x, dummy_y, input_names_2i,
 
 
 @pytest.fixture(scope='module')
-def torchscript_model2i2o(torch_model_2i2o, dummy_x, dummy_y):
+def torchscript_model2i2o(dummy_torch_model, dummy_x, dummy_y):
     torch = pytest.importorskip('torch')
     tmp_path = NamedTemporaryFile(suffix='.pth').name
-    jit_model = torch.jit.trace(torch_model_2i2o, (dummy_x, dummy_y))
+    jit_model = torch.jit.trace(dummy_torch_model, (dummy_x, dummy_y))
     torch.jit.save(jit_model, tmp_path)
 
     yield tmp_path

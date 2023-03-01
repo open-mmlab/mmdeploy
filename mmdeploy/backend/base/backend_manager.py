@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import importlib
-import logging
 import os.path as osp
 import re
 from abc import ABCMeta
@@ -331,12 +330,6 @@ class BaseBackendManager(metaclass=ABCMeta):
     build_param = BaseBackendParam
 
     @classmethod
-    def build_wrapper(cls, *args, **kwargs):
-        """Build the wrapper for the backend model."""
-        raise NotImplementedError(
-            f'build_wrapper has not been implemented for `{cls.__name__}`')
-
-    @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
         """Check whether backend is installed.
 
@@ -380,24 +373,11 @@ class BaseBackendManager(metaclass=ABCMeta):
         return info
 
     @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   deploy_cfg: Any,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+    def to_backend(cls, ir_path, *args, **kwargs):
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be saved in this directory.
-            deploy_cfg (Any): The deploy config.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
-            device (str, optional): The device type. Defaults to 'cpu'.
-        Returns:
-            Sequence[str]: Backend files.
+            ir_path (str): The intermediate representation files.
         """
         raise NotImplementedError(
             f'to_backend has not been implemented for `{cls.__name__}`')
@@ -413,6 +393,12 @@ class BaseBackendManager(metaclass=ABCMeta):
         raise NotImplementedError(
             'to_backend_from_param has not been implemented for '
             f'`{cls.__name__}`')
+
+    @classmethod
+    def build_wrapper(cls, *args, **kwargs):
+        """Build the wrapper for the backend model."""
+        raise NotImplementedError(
+            f'build_wrapper has not been implemented for `{cls.__name__}`')
 
     @classmethod
     def build_wrapper_from_param(cls, param: BaseBackendParam):

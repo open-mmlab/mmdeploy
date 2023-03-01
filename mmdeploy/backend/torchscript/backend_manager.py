@@ -31,8 +31,11 @@ class TorchJITParam(BaseBackendParam):
         return osp.join(self.work_dir, self.file_name)
 
 
+_BackendParam = TorchJITParam
+
+
 @BACKEND_MANAGERS.register(
-    'torchscript', param=TorchJITParam, ir_param=TorchScriptParam)
+    'torchscript', param=_BackendParam, ir_param=TorchScriptParam)
 class TorchScriptManager(BaseBackendManager):
 
     @classmethod
@@ -131,13 +134,13 @@ class TorchScriptManager(BaseBackendManager):
         cls.to_backend(ir_model, save_path)
 
     @classmethod
-    def build_wrapper_from_param(cls, param: TorchJITParam):
+    def build_wrapper_from_param(cls, param: _BackendParam):
         """Export to backend with packed backend parameter.
 
         Args:
-            param (TorchJITParam): Packed backend parameter.
+            param (_BackendParam): Packed backend parameter.
         """
-        assert isinstance(param, TorchJITParam)
+        assert isinstance(param, _BackendParam)
         assert isinstance(param.work_dir, str)
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
@@ -151,7 +154,7 @@ class TorchScriptManager(BaseBackendManager):
                                 config: Any,
                                 work_dir: str,
                                 backend_files: List[str] = None,
-                                **kwargs) -> TorchJITParam:
+                                **kwargs) -> _BackendParam:
         """Build param from deploy config.
 
         Args:
@@ -167,5 +170,5 @@ class TorchScriptManager(BaseBackendManager):
         input_names = ir_config.get('input_names', [])
         output_names = ir_config.get('output_names', [])
         kwargs.update(dict(input_names=input_names, output_names=output_names))
-        return TorchJITParam(
+        return _BackendParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)

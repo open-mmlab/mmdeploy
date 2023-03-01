@@ -131,7 +131,8 @@ def ir2backend(backend, onnx_file, ts_file):
         from_onnx(onnx_file, work_dir, model_inputs)
         return backend_file
     elif backend == Backend.TVM:
-        from mmdeploy.backend.tvm import from_onnx, get_library_ext
+        from mmdeploy.backend.tvm import get_library_ext
+        from mmdeploy.backend.tvm.onnx2tvm import from_onnx
         ext = get_library_ext()
         lib_file = tempfile.NamedTemporaryFile(suffix=ext).name
         shape = {'input': test_img.shape}
