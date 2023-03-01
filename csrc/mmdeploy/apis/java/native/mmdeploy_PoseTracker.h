@@ -45,10 +45,10 @@ JNIEXPORT jobject JNICALL Java_mmdeploy_PoseTracker_setDefaultParams(JNIEnv *, j
 /*
  * Class:     mmdeploy_PoseTracker
  * Method:    apply
- * Signature: (J[J[Lmmdeploy/Mat;[I)[Lmmdeploy/PoseTracker/Result;
+ * Signature: (J[J[Lmmdeploy/Mat;[I[I)[Lmmdeploy/PoseTracker/Result;
  */
 JNIEXPORT jobjectArray JNICALL Java_mmdeploy_PoseTracker_apply(JNIEnv *, jobject, jlong, jlongArray,
-                                                               jobjectArray, jintArray);
+                                                               jobjectArray, jintArray, jintArray);
 
 #ifdef __cplusplus
 }

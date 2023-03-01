@@ -13,7 +13,6 @@ jlong Java_mmdeploy_PoseTracker_create(JNIEnv *env, jobject, jlong detModel, jlo
                                          (mmdeploy_context_t)context, &pose_tracker);
   if (ec) {
     MMDEPLOY_ERROR("failed to create pose tracker, code = {}", ec);
-    return -1;
   }
   return (jlong)pose_tracker;
 }
@@ -129,7 +128,6 @@ jlong Java_mmdeploy_PoseTracker_createState(JNIEnv *env, jobject, jlong pipeline
   auto ec = mmdeploy_pose_tracker_create_state((mmdeploy_pose_tracker_t)pipeline, &params, &state);
   if (ec) {
     MMDEPLOY_ERROR("failed to create pose tracker state, code = {}", ec);
-    return -1;
   }
   return (jlong)state;
 }
@@ -141,8 +139,8 @@ void Java_mmdeploy_PoseTracker_destroyState(JNIEnv *, jobject, jlong state) {
 
 jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong handle,
                                              jlongArray states, jobjectArray frames,
-                                             jintArray detects) {
-  return With(env, frames, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
+                                             jintArray detects, jintArray counts) {
+  return With(env, frames, [&](const mmdeploy_mat_t imgs[], int size) {
     mmdeploy_pose_tracker_target_t *results{};
     int *result_count{};
     auto states_array = env->GetLongArrayElements(states, nullptr);
@@ -152,7 +150,6 @@ jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong ha
                                           (int32_t *)detects_array, size, &results, &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply pose tracker, code = {}", ec);
-      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/PoseTracker$Result");
     auto result_ctor =
@@ -181,6 +178,11 @@ jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong ha
                                 (int)target_id);
       env->SetObjectArrayElement(array, i, res);
     }
+    auto counts_array = env->GetIntArrayElements(counts, nullptr);
+    for (int i = 0; i < size; ++i) {
+      counts_array[i] = result_count[i];
+    }
+    env->ReleaseIntArrayElements(counts, counts_array, 0);
     env->ReleaseLongArrayElements(states, states_array, 0);
     env->ReleaseIntArrayElements(detects, detects_array, 0);
     mmdeploy_pose_tracker_release_result(results, result_count, size);
