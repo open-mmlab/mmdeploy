@@ -21,11 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.Math;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: this is a class for PoseTracker java demo.
- */
+/** @description: this is a class for PoseTracker java demo. */
 public class PoseTracker {
     static {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);

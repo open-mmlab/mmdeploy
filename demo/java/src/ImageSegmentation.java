@@ -9,11 +9,7 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: this is a class for ImageSegmentation java demo.
- */
+/** @description: this is a class for ImageSegmentation java demo. */
 public class ImageSegmentation {
 
     /** The main function for ImageSegmentation Java demo.

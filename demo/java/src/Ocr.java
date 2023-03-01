@@ -10,11 +10,7 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: this is a class for Ocr java demo.
- */
+/** @description: this is a class for Ocr java demo. */
 public class Ocr {
 
     /** The main function for Ocr Java demo.

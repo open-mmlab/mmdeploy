@@ -12,11 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.*;
 
-/**
- * @author: hanrui1sensetime
- * @createDate: 2023/02/28
- * @description: this is a util class for java demo.
- */
+/** @description: this is a util class for java demo. */
 public class Utils {
     /** This function loads the image by path.
      * @param path: the image path.
