@@ -1,5 +1,10 @@
 package mmdeploy;
 
+/**
+ * @author: hanrui1sensetime
+ * @createDate: 2023/03/01
+ * @description: the Profiler class.
+ */
 public class Profiler {
     static {
         System.loadLibrary("mmdeploy_java");
@@ -7,14 +12,21 @@ public class Profiler {
 
     private final long profilerHandle;
 
+    /** Initialize a new instance of the Profiler class.
+     * @param path: profiler path.
+    */
     public Profiler(String path) {
         profilerHandle = create(path);
     }
 
+    /** Release the instance of Profiler. */
     public void release() {
         destroy(profilerHandle);
     }
 
+    /** Get profiler handle.
+     * @return: profiler handle.
+    */
     public long handle() {
         return profilerHandle;
     }
