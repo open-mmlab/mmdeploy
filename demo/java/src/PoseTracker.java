@@ -160,7 +160,6 @@ public class PoseTracker {
                 System.out.printf("processing frame %d\n", frameID);
                 if (frame.empty())
                 {
-                    HighGui.destroyWindow("Pose Tracker");
                     break;
                 }
                 Mat mat = Utils.cvMatToMat(frame);
