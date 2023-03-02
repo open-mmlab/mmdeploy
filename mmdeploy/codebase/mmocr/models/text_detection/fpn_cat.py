@@ -59,7 +59,7 @@ def fpnc__forward__tensorrt(ctx, self, inputs, **kwargs):
         for i, out in enumerate(outs):
             enhanced_feature.append(attention[:, i:i + 1] * outs[i])
         out = torch.cat(enhanced_feature, dim=1)
-    
+
     if self.conv_after_concat:
         out = self.out_conv(out)
 
