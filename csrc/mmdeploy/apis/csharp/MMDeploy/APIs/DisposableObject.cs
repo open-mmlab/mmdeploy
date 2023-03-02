@@ -92,5 +92,11 @@ namespace MMDeploy
                 throw new Exception(result.ToString());
             }
         }
+
+        /// <summary>
+        /// Gets internal handle.
+        /// </summary>
+        /// <param name="obj">instance.</param>
+        public static implicit operator IntPtr(DisposableObject obj) => obj._handle;
     }
 }
