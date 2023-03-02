@@ -4,7 +4,8 @@ import re
 from argparse import ArgumentParser
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
+                    Union)
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
@@ -54,7 +55,7 @@ class TensorRTParam(BaseBackendParam):
         super().check_param()
 
         if self.int8_mode:
-            if self.int8_algorithm not in ['entropy', 'maxmin']:
+            if self.int8_algorithm.lower() not in ['entropy', 'minmax']:
                 raise ValueError(
                     f'Unsupported int8 algorithm: {self.int8_algorithm}')
 
@@ -142,7 +143,8 @@ class TensorRTManager(BaseBackendManager):
                    max_workspace_size: int = 0,
                    fp16_mode: bool = False,
                    int8_mode: bool = False,
-                   int8_param: Optional[dict] = None,
+                   int8_algorithm: str = 'entropy',
+                   calib_data: Optional[Union[str, Iterable]] = None,
                    device_id: int = 0,
                    log_level: Any = None):
         """Convert intermediate representation to given backend.
@@ -160,7 +162,9 @@ class TensorRTManager(BaseBackendManager):
                 Defaults to `False`.
             int8_mode (bool): Specifying whether to enable int8 mode.
                 Defaults to `False`.
-            int8_param (dict): A dict of parameter  int8 mode
+            int8_algorithm (str): algorithm used to perform the calibration.
+            calib_data (Iterable|str): An iterable object to provide the input
+                data. Or qual name of the object.
             device_id (int): Choice the device to create engine
             log_level (trt.Logger.Severity): The log level of TensorRT.
         """
@@ -187,6 +191,22 @@ class TensorRTManager(BaseBackendManager):
                 opt_shape=val,
                 min_shape=min_shapes[name],
                 max_shape=max_shapes[name])
+
+        int8_param = dict()
+        if int8_mode:
+            if int8_algorithm.lower() == 'entropy':
+                int8_algo = trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2
+            elif int8_algorithm.lower() == 'minmax':
+                int8_algo = trt.CalibrationAlgoType.MINMAX_CALIBRATION
+            else:
+                raise ValueError(
+                    f'Unsupported int8 algorithm: {int8_algorithm}')
+
+            if isinstance(calib_data, str):
+                from ..base import get_obj_by_qualname
+                calib_data = get_obj_by_qualname(calib_data)
+
+            int8_param = dict(calib_file=calib_data, algorithm=int8_algo)
 
         # export model
         from_onnx(
@@ -227,12 +247,6 @@ class TensorRTManager(BaseBackendManager):
         assert m is not None, f'Unsupported device {device}'
         device_id = m.groupdict().get('device_id', 0)
 
-        # TODO: refactor TensorRT quantization
-        int8_param = dict(
-            calib_file=param.quanti_data,
-            model_type='end2end',
-            algorithm=param.int8_algorithm)
-
         cls.to_backend(
             ir_model,
             save_path,
@@ -242,7 +256,8 @@ class TensorRTManager(BaseBackendManager):
             max_workspace_size=max_workspace_size,
             fp16_mode=fp16_mode,
             int8_mode=int8_mode,
-            int8_param=int8_param,
+            int8_algorithm=param.int8_algorithm,
+            calib_data=param.quanti_data,
             device_id=device_id)
 
     @classmethod
@@ -277,7 +292,8 @@ class TensorRTManager(BaseBackendManager):
         Returns:
             BaseBackendParam: The packed backend parameter.
         """
-        from mmdeploy.utils import get_common_config, get_model_inputs
+        from mmdeploy.utils import (get_calib_config, get_common_config,
+                                    get_model_inputs)
         common_config = get_common_config(config)
         model_inputs = get_model_inputs(config)
 
@@ -304,6 +320,17 @@ class TensorRTManager(BaseBackendManager):
         kwargs.setdefault('max_workspace_size', max_workspace_size)
         kwargs.setdefault('fp16_mode', fp16_mode)
         kwargs.setdefault('int8_mode', int8_mode)
+
+        if int8_mode:
+            calib_config = get_calib_config(config)
+            if calib_config is not None and calib_config.get(
+                    'create_calib', False):
+                from .calib_utils import create_h5pydata_generator
+                assert 'calib_file' in calib_config
+                calib_path = osp.join(work_dir, calib_config['calib_file'])
+                calib_data = create_h5pydata_generator(calib_path,
+                                                       input_shapes)
+                kwargs.setdefault('quanti_data', calib_data)
 
         ret = _BackendParam(
             work_dir=work_dir, file_name=backend_files[0], **kwargs)

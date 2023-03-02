@@ -114,7 +114,10 @@ def to_backend(backend_name: str,
 
         file_name = osp.splitext(osp.split(ir_file)[1])[0]
         param = backend_mgr.build_param_from_config(
-            curr_deploy_cfg, work_dir=work_dir, backend_files=[file_name])
+            curr_deploy_cfg,
+            work_dir=work_dir,
+            backend_files=[file_name],
+            device=device)
 
         backend_mgr.to_backend_from_param(ir_file, param)
         backend_file = param.get_model_files()

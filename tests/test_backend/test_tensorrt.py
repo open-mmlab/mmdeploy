@@ -78,6 +78,22 @@ class TestManager:
         backend_mgr.to_backend_from_param(onnx_model, param)
         assert osp.exists(save_path)
 
+    def test_to_backend_from_param_quanti(self, tmp_path, input_shape_dict,
+                                          onnx_model, inputs):
+
+        def _quanti_data():
+            yield inputs
+
+        save_path = str(tmp_path / 'tmp.engine')
+        param = backend_mgr.build_param(
+            work_dir='',
+            file_name=save_path,
+            input_shapes=input_shape_dict,
+            int8_mode=True,
+            quanti_data=_quanti_data())
+        backend_mgr.to_backend_from_param(onnx_model, param)
+        assert osp.exists(save_path)
+
     def test_build_wrapper(self, backend_model, inputs, outputs,
                            assert_forward):
         wrapper = backend_mgr.build_wrapper(backend_model)
