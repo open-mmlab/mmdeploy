@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Callable, Dict, Optional, Union
+from typing import Dict, Iterable, Optional, Union
 
 import onnx
 from tvm.relay.frontend import from_onnx as relay_from_onnx
@@ -20,7 +20,8 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               dtype: Union[str, Dict] = 'float32',
               tuner: Optional[Union[TVMTunerBase, Dict]] = None,
               qconfig: Optional[Union[QConfig, Dict]] = None,
-              dataset: Optional[Callable] = None):
+              dataset: Optional[Iterable] = None,
+              device: str = 'llvm'):
     """Convert ONNX model to tvm lib.
 
     Args:
@@ -30,12 +31,16 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             Defaults to False.
         bytecode_file (str, optional): output bytecode path for virtual
             machine. Defaults to ''.
-        shape (Optional[Dict], optional): The input shape directory. Defaults
+        shape (Optional[Dict], optional): The input shape dictionary. Defaults
             to None.
         dtype (Union[str, Dict], optional): The input data type dictionary.
             Defaults to 'float32'.
         tuner (Optional[Union[TVMTunerBase, Dict]], optional): The tuner
             config. Defaults to None.
+        qconfig (QConfig): `relay.quantize.QConfig` instance.
+        dataset (Any): Calibration dataset. Iterable object of
+            `Dict[str, ndarray]`
+        device (str): Device use to create quantization dataset.
 
     Return:
         lib: The converted tvm lib
@@ -43,7 +48,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             None if use_vm==False.
 
     Examples:
-        >>> from mmdeploy.backend.tvm import from_onnx
+        >>> from mmdeploy.backend.tvm.onnx2tvm import from_onnx
         >>> onnx_path = 'model.onnx'
         >>> output_file = 'model.so'
         >>> shape = {'input':[1,3,224,224]}
@@ -73,15 +78,20 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
             qconfig = create_qconfig(**qconfig)
 
         with qconfig:
-            mod = quantize(mod, params, dataset)
+            from .quantize import IteratorDataset
+            iter_dataset = IteratorDataset(dataset, device)
+            mod = quantize(mod, params, iter_dataset())
 
     if tuner is None:
         # use default tuner
-        tuner = dict(type='DefaultTuner', target=Target('llvm'))
+        tuner = dict(type='DefaultTuner', target=Target(device))
 
     if not issubclass(type(tuner), TVMTunerBase):
         tuner['use_vm'] = use_vm
+        tuner['target'] = Target(device)
         tuner = build_tvm_tuner(tuner)
+
+    tuner._target = Target(device)
 
     logger.info(f'Tuning with {type(tuner).__name__} .')
     tuner.tune(mod, params)

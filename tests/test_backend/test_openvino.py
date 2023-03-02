@@ -9,7 +9,7 @@ from mmdeploy.backend.openvino import OpenVINOManager as backend_mgr
 from mmdeploy.backend.openvino import OpenVINOParam
 
 if not backend_mgr.is_available():
-    pytest.skip('backend not available')
+    pytest.skip('backend not available', allow_module_level=True)
 
 
 class TestBackendParam:

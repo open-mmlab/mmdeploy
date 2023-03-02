@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import importlib
 import os.path as osp
 import re
 from argparse import ArgumentParser
@@ -8,6 +9,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
                     Union)
 
 from mmdeploy.ir.onnx import ONNXParam
+from mmdeploy.utils import get_root_logger
 from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 
@@ -325,7 +327,7 @@ class TensorRTManager(BaseBackendManager):
             calib_config = get_calib_config(config)
             if calib_config is not None and calib_config.get(
                     'create_calib', False):
-                from .calib_utils import create_h5pydata_generator
+                from ..base import create_h5pydata_generator
                 assert 'calib_file' in calib_config
                 calib_path = osp.join(work_dir, calib_config['calib_file'])
                 calib_data = create_h5pydata_generator(calib_path,
@@ -347,6 +349,7 @@ class TensorRTManager(BaseBackendManager):
             args (Optional[List[str]], optional): Arguments to be parsed. If
                 not given, arguments from console will be parsed.
         """
+        logger = get_root_logger()
 
         # parse args
         sub_parsers = parser.add_subparsers(
@@ -360,12 +363,25 @@ class TensorRTManager(BaseBackendManager):
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
         _BackendParam.add_arguments(export_parser)
+        export_parser.add_argument(
+            '--custom-modules', type=str, nargs='*', help='ONNX model path.')
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
 
         # perform command
         command = parsed_args._command
+
+        custom_modules = parsed_args.custom_modules
+        custom_modules = [] if custom_modules is None else custom_modules
+
+        for qualname in custom_modules:
+            try:
+                importlib.import_module(qualname)
+                logger.info(f'Import custom module: {qualname}')
+            except Exception as e:
+                logger.warning('Failed to import custom module: '
+                               f'{qualname} with error: {e}')
 
         if command == 'convert':
             # convert model

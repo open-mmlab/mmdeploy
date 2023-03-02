@@ -9,7 +9,7 @@ from mmdeploy.backend.pplnn import PPLNNManager as backend_mgr
 from mmdeploy.backend.pplnn import PPLNNParam
 
 if not backend_mgr.is_available():
-    pytest.skip('backend not available')
+    pytest.skip('backend not available', allow_module_level=True)
 
 
 class TestBackendParam:
@@ -80,7 +80,7 @@ class TestManager:
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, onnx_model, input_shape_dict):
+    def test_parse_args(self, onnx_model):
         with TemporaryDirectory() as work_dir:
             param_name = 'tmp.param'
             # make args

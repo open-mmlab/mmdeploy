@@ -8,7 +8,7 @@ from mmdeploy.backend.tensorrt import TensorRTManager as backend_mgr
 from mmdeploy.backend.tensorrt import TensorRTParam
 
 if not backend_mgr.is_available():
-    pytest.skip('backend not available')
+    pytest.skip('backend not available', allow_module_level=True)
 
 
 class TestBackendParam:

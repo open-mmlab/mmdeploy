@@ -6,7 +6,7 @@ import pytest
 from mmdeploy.backend.onnxruntime import ONNXRuntimeManager as backend_mgr
 
 if not backend_mgr.is_available():
-    pytest.skip('backend not available')
+    pytest.skip('backend not available', allow_module_level=True)
 
 
 class TestManager:

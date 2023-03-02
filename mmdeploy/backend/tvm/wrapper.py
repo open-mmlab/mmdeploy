@@ -24,7 +24,7 @@ class TVMWrapper(BaseWrapper):
 
 
     Examples:
-        >>> from mmdeploy.backend.tvm import TVMWrapper
+        >>> from mmdeploy.backend.tvm.wrapper import TVMWrapper
         >>> lib_file = 'resnet.so'
         >>> model = TVMWrapper(lib_file, ['output'])
         >>> inputs = dict(input=torch.randn(1, 3, 224, 224))

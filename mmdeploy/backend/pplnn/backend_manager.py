@@ -250,6 +250,8 @@ class PPLNNManager(BaseBackendManager):
         export_parser.add_argument(
             '--onnx-path', required=True, help='ONNX model path.')
         _BackendParam.add_arguments(export_parser)
+        export_parser.add_argument(
+            '--custom-modules', type=str, nargs='*', help='ONNX model path.')
 
         parsed_args = parser.parse_args(args)
         yield parsed_args

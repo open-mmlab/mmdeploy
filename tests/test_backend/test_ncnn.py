@@ -9,7 +9,7 @@ from mmdeploy.backend.ncnn import NCNNManager as backend_mgr
 from mmdeploy.backend.ncnn import NCNNParam
 
 if not backend_mgr.is_available():
-    pytest.skip('backend not available')
+    pytest.skip('backend not available', allow_module_level=True)
 
 
 class TestBackendParam:
