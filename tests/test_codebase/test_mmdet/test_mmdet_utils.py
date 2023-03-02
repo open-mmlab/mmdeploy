@@ -68,3 +68,17 @@ def test_get_mmdet_params():
         pre_top_k=-1,
         keep_top_k=100,
         background_label_id=-1)
+
+
+def test_get_topk_from_heatmap():
+    from mmdet.models.utils.gaussian_target import get_topk_from_heatmap
+
+    from mmdeploy.codebase.mmdet.models.utils.gaussian_target import \
+        get_topk_from_heatmap__default
+    scores = torch.rand(1, 2, 4, 4)
+
+    gts = get_topk_from_heatmap(scores, k=20)
+    outs = get_topk_from_heatmap__default(scores, k=20)
+
+    for gt, out in zip(gts, outs):
+        torch.testing.assert_allclose(gt, out)

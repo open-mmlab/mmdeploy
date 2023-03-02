@@ -611,6 +611,58 @@ class NCNNEnd2EndModel(End2EndModel):
         return dets, labels.to(torch.int32)
 
 
+@__BACKEND_MODEL.register_module('vacc_det')
+class VACCDetModel(End2EndModel):
+
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config], **kwargs):
+        assert backend == Backend.VACC, 'only supported vacc, but give ' \
+            f'{backend.value}'
+
+        super(VACCDetModel, self).__init__(backend, backend_files, device,
+                                           deploy_cfg, **kwargs)
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+        Returns:
+            Any: Model output.
+        """
+        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
+        inputs = inputs.contiguous()
+        outputs = self.wrapper({self.input_name: inputs})
+        outputs = [i for i in outputs.values()]
+        ret = self._get_bboxes(outputs[0], [i.metainfo for i in data_samples])
+        for i in range(len(ret)):
+            data_samples[i].pred_instances = ret[i]
+        return data_samples
+
+    def _get_bboxes(self, outputs, img_metas):
+        from mmdet.registry import MODELS
+        head_cfg = self.model_cfg._cfg_dict.model.bbox_head
+        head = MODELS.build(head_cfg)
+        if head_cfg.type == 'YOLOV3Head':
+            ret = head.predict_by_feat(
+                outputs, [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        else:
+            raise NotImplementedError(f'{head_cfg.type} not supported yet.')
+        return ret
+
+
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmdet format."""
