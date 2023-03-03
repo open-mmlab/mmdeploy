@@ -1,0 +1,62 @@
+name: prebuilt
+
+on:
+  push:
+    paths:
+      - ".github/workflows/prebuild.yml"
+  pull_request:
+    paths:
+      - ".github/workflows/prebuild.yml"
+
+
+jobs:
+  linux-x86_64_cu113_build:
+    runs-on: [self-hosted, linux-3090]
+    container:
+      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
+        - /data2/benchmark:/__w/mmdeploy/data
+        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Install third-party
+        run: |
+          python3 .github/scripts/install_dependencies.py \
+            --device cuda \
+            --backends "${{ env.target-backends-cuda }}" \
+            --work-dir ../third_party \
+            --platform linux \
+            --verinfo '${{ env.ver-info }}' \
+            --ubuntu '${{ fromJSON(env.ver-info).ubuntu }}' \
+            --cuda '11.1.1'
+          python3 .github/scripts/generate_env.py \
+            --third-party-dir ../third_party \
+            --platform linux \
+            --out envfile
+      - uses: conda-incubator/setup-miniconda@v2
+      - name: Create python environment
+        shell: bash -el {0}
+        run: |
+          for PYTHON_VERSION in 3.6 3.7 3.8 3.9; do
+              conda create -n mmdeploy-${PYTHON_VERSION} python=${PYTHON_VERSION} -y
+              conda activate mmdeploy-${PYTHON_VERSION}
+              pip install pyyaml packaging setuptools wheel
+              pip install -r requirements/build.txt
+      - name: Build mmdeploy
+        shell: bash -el {0}
+        id: build
+        run: |
+          conda activate mmdeploy-3.6
+          cd prebuild
+          python ../tools/package_tools/mmdeploy_builder.py \
+            ../tools/package_tools/configs/linux_x64_cuda.yaml ..
+          ls .
+#      - uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ steps.build.outputs.pkgname }}
+#          path: ${{ steps.build.outputs.pkgpath }}
