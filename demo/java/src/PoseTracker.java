@@ -60,11 +60,9 @@ public class PoseTracker {
         {
             frame = frame.clone();
         }
-        for (int i = 0; i < results.length; i++)
-        {
+        for (int i = 0; i < results.length; i++) {
             mmdeploy.PoseTracker.Result pt = results[i];
-            for (int j = 0; j < pt.keypoints.length; j++)
-            {
+            for (int j = 0; j < pt.keypoints.length; j++) {
                 PointF p = pt.keypoints[j];
                 p.x *= scale;
                 p.y *= scale;
@@ -72,31 +70,25 @@ public class PoseTracker {
             }
             float scoreThr = 0.5f;
             int used[] = new int[pt.keypoints.length * 2];
-            for (int j = 0; j < skeleton.length; j++)
-            {
+            for (int j = 0; j < skeleton.length; j++) {
                 int u = skeleton[j][0];
                 int v = skeleton[j][1];
-                if (pt.scores[u] > scoreThr && pt.scores[v] > scoreThr)
-                {
+                if (pt.scores[u] > scoreThr && pt.scores[v] > scoreThr) {
                     used[u] = used[v] = 1;
                     Point pointU = new Point(pt.keypoints[u].x, pt.keypoints[u].y);
                     Point pointV = new Point(pt.keypoints[v].x, pt.keypoints[v].y);
                     Imgproc.line(frame, pointU, pointV, palette[linkColor[j]], 1);
                 }
             }
-            for (int j = 0; j < pt.keypoints.length; j++)
-            {
-                if (used[j] == 1)
-                {
+            for (int j = 0; j < pt.keypoints.length; j++) {
+                if (used[j] == 1) {
                     Point p = new Point(pt.keypoints[j].x, pt.keypoints[j].y);
                     Imgproc.circle(frame, p, 1, palette[pointColor[j]], 2);
                 }
             }
-            if (withBbox)
-            {
+            if (withBbox) {
                 float bbox[] = {pt.bbox.left, pt.bbox.top, pt.bbox.right, pt.bbox.bottom};
-                for (int j = 0; j < 4; j++)
-                {
+                for (int j = 0; j < 4; j++) {
                     bbox[j] *= scale;
                 }
                 Imgproc.rectangle(frame, new Point(bbox[0], bbox[1]),
