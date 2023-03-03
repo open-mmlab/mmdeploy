@@ -36,7 +36,7 @@ jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv *env, jobject thiz, jlong h
                                            &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply detector, code = {}", ec);
-      return NULL
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/TextDetector$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;F)V");

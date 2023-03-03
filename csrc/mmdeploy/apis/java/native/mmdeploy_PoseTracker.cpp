@@ -142,7 +142,7 @@ void Java_mmdeploy_PoseTracker_destroyState(JNIEnv *, jobject, jlong state) {
 jobjectArray Java_mmdeploy_PoseTracker_apply(JNIEnv *env, jobject thiz, jlong handle,
                                              jlongArray states, jobjectArray frames,
                                              jintArray detects, jintArray counts) {
-  return With(env, frames, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, frames, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_pose_tracker_target_t *results{};
     int *result_count{};
     auto states_array = env->GetLongArrayElements(states, nullptr);
