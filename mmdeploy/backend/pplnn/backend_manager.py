@@ -51,7 +51,7 @@ class PPLNNParam(BaseBackendParam):
 
         self._algo_name = val
 
-    def get_model_files(self) -> str:
+    def get_model_files(self) -> List[str]:
         """get the model files."""
         assert isinstance(self.work_dir, str)
         assert isinstance(self.file_name, str)

@@ -2,10 +2,11 @@
 import importlib
 import os.path as osp
 import sys
-from typing import Any, Optional, Sequence
+from dataclasses import dataclass
+from typing import Any, List
 
 from mmdeploy.utils import get_file_path
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
 
 _is_available = False
 
@@ -26,36 +27,52 @@ if importlib.util.find_spec(module_name) is not None:
     _is_available = True
 
 
-@BACKEND_MANAGERS.register('sdk')
+@dataclass
+class SDKParam(BaseBackendParam):
+    """SDK backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        task_name (str): The name of the SDK task.
+        device (str): Inference device.
+    """
+    _default_postfix = ''
+
+    task_name: str = None
+
+    def get_model_files(self) -> str:
+        """get the model files."""
+        assert isinstance(self.work_dir, str)
+        assert isinstance(self.file_name, str)
+        model_path = osp.join(self.work_dir, self.file_name)
+        return model_path
+
+
+_BackendParam = SDKParam
+
+
+@BACKEND_MANAGERS.register('sdk', param=SDKParam)
 class SDKManager(BaseBackendManager):
 
     @classmethod
     def build_wrapper(cls,
-                      backend_files: Sequence[str],
-                      device: str = 'cpu',
-                      input_names: Optional[Sequence[str]] = None,
-                      output_names: Optional[Sequence[str]] = None,
-                      deploy_cfg: Optional[Any] = None,
-                      **kwargs):
+                      backend_model: str,
+                      task_name: str,
+                      device: str = 'cpu'):
         """Build the wrapper for the backend model.
 
         Args:
-            backend_files (Sequence[str]): Backend files.
+            backend_model (str): Backend model.
+            task_name (str): The name of the SDK task.
             device (str, optional): The device info. Defaults to 'cpu'.
-            input_names (Optional[Sequence[str]], optional): input names.
-                Defaults to None.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
             deploy_cfg (Optional[Any], optional): The deploy config. Defaults
                 to None.
         """
-        assert deploy_cfg is not None, \
-            'Building SDKWrapper requires deploy_cfg'
-        from mmdeploy.backend.sdk import SDKWrapper
-        from mmdeploy.utils import SDK_TASK_MAP, get_task_type
-        task_name = SDK_TASK_MAP[get_task_type(deploy_cfg)]['cls_name']
+        from .wrapper import SDKWrapper
         return SDKWrapper(
-            model_file=backend_files[0], task_name=task_name, device=device)
+            model_file=backend_model, task_name=task_name, device=device)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -81,3 +98,29 @@ class SDKManager(BaseBackendManager):
                 return pkg_resources.get_distribution('mmdeploy').version
             except Exception:
                 return 'None'
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        model_path = param.get_model_files()
+        device = param.device
+        task_name = param.task_name
+        return cls.build_wrapper(
+            model_path, task_name=task_name, device=device)
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: List[str] = None,
+                                **kwargs) -> _BackendParam:
+        from mmdeploy.utils import SDK_TASK_MAP, get_task_type
+        task_name = SDK_TASK_MAP[get_task_type(config)]['cls_name']
+
+        kwargs.setdefault('task_name', task_name)
+        return _BackendParam(
+            work_dir=work_dir, file_name=backend_files[0], **kwargs)
