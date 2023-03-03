@@ -21,6 +21,8 @@ jobs:
         - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
         - /data2/benchmark:/__w/mmdeploy/data
         - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    env:
+      CONDA: /opt/conda
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,26 +30,24 @@ jobs:
           submodules: 'recursive'
       - uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-update-conda: true
-          python-version: 3.6
-          miniconda-version: latest
+          auto-activate-base: false
+          activate-environment: mmdeploy-3.6
       - name: Create python environment
         shell: bash -el {0}
         run: |
-          conda create -n mmdeploy-3.6 --clone base -y
-          for PYTHON_VERSION in ${{env.python_versions}}; do
-              conda create -n mmdeploy-${PYTHON_VERSION} python==${PYTHON_VERSION} -y
-          done
+          conda info
           conda info -e
       - name: Build mmdeploy
         shell: bash -el {0}
         id: build
         run: |
+          python -V
           conda activate mmdeploy-3.6
           pip install pyyaml packaging setuptools wheel
           pip install -r requirements/build.txt
           export MMDEPLOY_DIR=$(pwd)
           cd ../prebuild
+          rm -rf *
           python $MMDEPLOY_DIR/tools/package_tools/mmdeploy_builder.py \
               $MMDEPLOY_DIR/tools/package_tools/configs/linux_x64.yaml $MMDEPLOY_DIR
           export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)

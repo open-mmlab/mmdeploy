@@ -1,6 +1,6 @@
 global_config:
   cmake_envs:
-    CMAKE_CXX_COMPILER: "g++-7"
+    CMAKE_CXX_COMPILER: "g++"
     MMDEPLOY_BUILD_SDK: "ON"
     MMDEPLOY_BUILD_SDK_MONOLITHIC: "ON"
     MMDEPLOY_SHARED_LIBS: "OFF"

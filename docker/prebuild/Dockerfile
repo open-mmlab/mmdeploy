@@ -5,6 +5,7 @@ ARG CUDA_URL
 ARG CUDNN_URL
 ARG TENSORRT_URL
 
+ARG CUDA_VERSION=11.3
 
 # important dependencies
 ARG OPENCV_VERSION=4.5.5
@@ -12,6 +13,7 @@ ARG PPLCV_VERSION=0.7.0
 
 # backends
 ARG ONNXRUNTIME_VERSION=1.8.1
+ARG TENSORRT_VERSION=8.2.3.0
 
 # torch
 ARG TORCH_VERSION=1.10.0
@@ -78,3 +80,25 @@ RUN curl -fsSL -v -o ./opencv.tgz -O https://github.com/opencv/opencv/archive/re
     make -j$(nproc) && make install
 
 ENV OpenCV_DIR=/usr/local/lib64/cmake/opencv4
+
+# install conda env
+RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  &&\
+    chmod +x ~/miniconda.sh &&\
+    bash ~/miniconda.sh -b -p /opt/conda &&\
+    rm ~/miniconda.sh &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.6 python=3.6 -y &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.7 python=3.7 -y &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.8 python=3.8 -y &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.9 python=3.9 -y &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.10 python=3.10 -y &&\
+    export CUDA_INT=$(echo $CUDA_VERSION | awk '{split($0, a, "."); print a[1]a[2]}') &&\
+    /opt/conda/bin/conda create -n torch${TORCH_VERSION} python=3.8 -y &&\
+    /opt/conda/envs/mmdeploy-3.6/bin/pip install --no-cache-dir setuptools wheel pyyaml &&\
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install --no-cache-dir onnxruntime-gpu==${ONNXRUNTIME_VERSION} &&\
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install ${TENSORRT_DIR}/python/tensorrt-*-cp38-none-linux_x86_64.whl &&\
+    /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install --no-cache-dir torch==${TORCH_VERSION}+cu${CUDA_INT} \
+        torchvision==${TORCHVISION_VERSION}+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html &&\
+    /opt/conda/bin/conda clean -ya
+
+ENV CONDA=/opt/conda
+ENV PATH=$CONDA/bin:$PATH
