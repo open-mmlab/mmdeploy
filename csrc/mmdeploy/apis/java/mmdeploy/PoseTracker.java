@@ -149,9 +149,13 @@ public class PoseTracker {
      * @param detect: detect model.
      * @param pose: pose model.
      * @param context: context.
+     * @exception Exception: create PoseTracker failed exception.
     */
-    public PoseTracker(Model detect, Model pose, Model context) {
+    public PoseTracker(Model detect, Model pose, Context context) throws Exception{
         handle = create(detect.handle(), pose.handle(), context.handle());
+        if (handle == -1) {
+            throw new Exception("Create PoseDetector failed!");
+        }
     }
 
     /** Initializes a new instance of the Params class.
@@ -175,11 +179,15 @@ public class PoseTracker {
      * @param states: states of each frame in a batch.
      * @param frames: input mats.
      * @param detects: use detects result or not.
+     * @exception Exception: apply PoseTracker failed exception.
      * @return: results of each input mat.
     */
-    public Result[][] apply(long[] states, Mat[] frames, int[] detects) {
+    public Result[][] apply(long[] states, Mat[] frames, int[] detects) throws Exception{
         int[] counts = new int[frames.length];
         Result[] results = apply(handle, states, frames, detects, counts);
+        if (results == null) {
+            throw new Exception("Apply PoseTracker failed!");
+        }
         Result[][] rets = new Result[frames.length][];
         int offset = 0;
         for (int i = 0; i < frames.length; ++i) {
@@ -197,14 +205,19 @@ public class PoseTracker {
      * @param state: state of frame.
      * @param frame: input mat.
      * @param detect: use detect result or not.
+     * @exception Exception: apply PoseTracker failed exception.
      * @return: result of input mat.
     */
-    public Result[] apply(long state, Mat frame, int detect) {
+    public Result[] apply(long state, Mat frame, int detect) throws Exception{
         long[] states = new long[]{state};
         Mat[] frames = new Mat[]{frame};
         int[] detects = new int[]{detect};
         int[] counts = new int[1];
-        return apply(handle, states, frames, detects, counts);
+        Result[] results = apply(handle, states, frames, detects, counts);
+        if (results == null) {
+            throw new Exception("Apply PoseTracker failed!");
+        }
+        return results;
     }
 
     /** Release the instance of PoseTracker. */

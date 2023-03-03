@@ -41,18 +41,26 @@ public class Detector {
      * @param modelPath: model path.
      * @param deviceName: device name.
      * @param deviceId: device ID.
+     * @exception Exception: create Detector failed exception.
     */
-    public Detector(String modelPath, String deviceName, int deviceId) {
+    public Detector(String modelPath, String deviceName, int deviceId) throws Exception {
         handle = create(modelPath, deviceName, deviceId);
+        if (handle == -1) {
+            throw new Exception("Create Detector failed!");
+        }
     }
 
     /** Get information of each image in a batch.
      * @param images: input mats.
      * @return: results of each input mat.
+     * @exception Exception: apply Detector failed exception.
     */
-    public Result[][] apply(Mat[] images) {
+    public Result[][] apply(Mat[] images) throws Exception {
         int[] counts = new int[images.length];
         Result[] results = apply(handle, images, counts);
+        if (results == null) {
+            throw new Exception("Apply Detector failed!");
+        }
         Result[][] rets = new Result[images.length][];
         int offset = 0;
         for (int i = 0; i < images.length; ++i) {
@@ -69,11 +77,16 @@ public class Detector {
     /** Get information of one image.
      * @param image: input mat.
      * @return: result of input mat.
+     * @exception Exception: apply Detector failed exception.
     */
-    public Result[] apply(Mat image) {
+    public Result[] apply(Mat image) throws Exception{
         int[] counts = new int[1];
         Mat[] images = new Mat[]{image};
-        return apply(handle, images, counts);
+        Result[] results = apply(handle, images, counts);
+        if (results == null) {
+            throw new Exception("Apply Detector failed!");
+        }
+        return results;
     }
 
     /** Release the instance of Detector. */

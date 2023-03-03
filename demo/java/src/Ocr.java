@@ -37,23 +37,13 @@ public class Ocr {
         try {
             text_detector = new TextDetector(detModelPath, deviceName, 0);
             text_recognizer = new TextRecognizer(recModelPath, deviceName, 0);
-            if (text_detector == -1) {
-                System.out.println("Create TextDetector failed.");
-                System.exit(1);
-            }
-            if (text_recognizer == -1) {
-                System.out.println("Create TextRecognizer failed.");
-                System.exit(1);
-            }
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply text detector
             TextDetector.Result[] detResult = text_detector.apply(img);
-            if (detResult == null) {
-                System.out.println("Apply TextDetector failed.");
-                System.exit(1);
-            }
+
             int [] detResultCount = {detResult.length};
             TextRecognizer.Result[] recResult = text_recognizer.applyBbox(img, detResult, detResultCount);
             if (recResult == null) {

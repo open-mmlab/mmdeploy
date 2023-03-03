@@ -34,20 +34,14 @@ public class ObjectDetection {
         Detector detector = null;
         try {
             detector = new Detector(modelPath, deviceName, 0);
-            if (detector == -1) {
-                System.out.println("Create Detector failed.");
-                System.exit(1);
-            }
+
             // load image
             BufferedImage srcImg = ImageIO.read(new File(imagePath));
             Mat img = Utils.bufferedImage2Mat(srcImg);
 
             // apply detector
             Detector.Result[] result = detector.apply(img);
-            if (result == null) {
-                System.out.println("Apply Detector failed.");
-                System.exit(1);
-            }
+
             // print results
             Graphics ghandle = srcImg.createGraphics();
             for (int i = 0; i < result.length; i++) {

@@ -31,18 +31,26 @@ public class Classifier {
      * @param modelPath: model path.
      * @param deviceName: device name.
      * @param deviceId: device ID.
+     * @exception Exception: create Classifier failed exception.
     */
-    public Classifier(String modelPath, String deviceName, int deviceId) {
+    public Classifier(String modelPath, String deviceName, int deviceId) throws Exception{
         handle = create(modelPath, deviceName, deviceId);
+        if (handle == -1) {
+            throw new Exception("Create Classifier failed!");
+        }
     }
 
     /** Get label information of each image in a batch.
      * @param images: input mats.
      * @return: results of each input mat.
+     * @exception Exception: apply Classifier failed exception.
     */
-    public Result[][] apply(Mat[] images) {
+    public Result[][] apply(Mat[] images) throws Exception{
         int[] counts = new int[images.length];
         Result[] results = apply(handle, images, counts);
+        if (results == null) {
+            throw new Exception("Apply Classifier failed!");
+        }
         Result[][] rets = new Result[images.length][];
         int offset = 0;
         for (int i = 0; i < images.length; ++i) {
@@ -59,11 +67,16 @@ public class Classifier {
     /** Get label information of one image.
      * @param image: input mat.
      * @return: result of input mat.
+     * @exception Exception: apply Classifier failed exception.
     */
-    public Result[] apply(Mat image) {
+    public Result[] apply(Mat image) throws Exception{
         int[] counts = new int[1];
         Mat[] images = new Mat[]{image};
-        return apply(handle, images, counts);
+        Result[] results = apply(handle, images, counts);
+        if (results == null) {
+            throw new Exception("Apply Classifier failed!");
+        }
+        return results;
     }
 
     /** Release the instance of Classifier. */

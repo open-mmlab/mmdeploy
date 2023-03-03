@@ -32,19 +32,12 @@ public class ImageRestorer {
 
         try {
             restorer = new Restorer(modelPath, deviceName, 0);
-            if (restorer == -1) {
-                System.out.println("Create Restorer failed.");
-                System.exit(1);
-            }
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply restorer
             Restorer.Result[] result = restorer.apply(img);
-            if (result == null) {
-                System.out.println("Apply Restorer failed.");
-                System.exit(1);
-            }
 
             // print results
             for (Restorer.Result value : result) {

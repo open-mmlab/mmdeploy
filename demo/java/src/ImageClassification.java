@@ -32,19 +32,11 @@ public class ImageClassification {
 
         try {
             classifier = new Classifier(modelPath, deviceName, 0);
-            if (classifier == -1) {
-                System.out.println("Create Classifier failed.");
-                System.exit(1);
-            }
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply classifier
             Classifier.Result[] result = classifier.apply(img);
-            if (result == null) {
-                System.out.println("Apply Classifier failed.");
-                System.exit(1);
-            }
 
             // print results
             for (Classifier.Result value : result) {

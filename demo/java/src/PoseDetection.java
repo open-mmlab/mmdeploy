@@ -32,19 +32,12 @@ public class PoseDetection {
 
         try {
             poseEstimator = new PoseDetector(modelPath, deviceName, 0);
-            if (poseEstimator == -1) {
-                System.out.println("Create PoseEstimator failed.");
-                System.exit(1);
-            }
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply pose estimator
             PoseDetector.Result[] result = poseEstimator.apply(img);
-            if (result == null) {
-                System.out.println("Apply PoseEstimator failed.");
-                System.exit(1);
-            }
 
             // print results
             for (PoseDetector.Result value : result) {
