@@ -1,4 +1,4 @@
-name: prebuilt
+name: prebuild
 
 on:
   push:
@@ -24,20 +24,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - name: Install third-party
-        run: |
-          python3 .github/scripts/install_dependencies.py \
-            --device cuda \
-            --backends "${{ env.target-backends-cuda }}" \
-            --work-dir ../third_party \
-            --platform linux \
-            --verinfo '${{ env.ver-info }}' \
-            --ubuntu '${{ fromJSON(env.ver-info).ubuntu }}' \
-            --cuda '11.1.1'
-          python3 .github/scripts/generate_env.py \
-            --third-party-dir ../third_party \
-            --platform linux \
-            --out envfile
       - uses: conda-incubator/setup-miniconda@v2
       - name: Create python environment
         shell: bash -el {0}
