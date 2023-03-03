@@ -46,7 +46,7 @@ def detrhead__predict_by_feat__default(self,
     bbox_preds = all_bbox_preds_list[-1][-1]
 
     img_shape = batch_img_metas[0]['img_shape']
-    max_per_img = self.test_cfg.get('max_per_img', self.num_query)
+    max_per_img = self.test_cfg.get('max_per_img', len(cls_scores[0]))
     batch_size = cls_scores.size(0)
     # `batch_index_offset` is used for the gather of concatenated tensor
 

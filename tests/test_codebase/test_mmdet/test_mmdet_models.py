@@ -406,54 +406,15 @@ def get_detrhead_model():
         dict(
             type='DETRHead',
             num_classes=4,
-            in_channels=1,
-            transformer=dict(
-                type='Transformer',
-                encoder=dict(
-                    type='DetrTransformerEncoder',
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='BaseTransformerLayer',
-                        attn_cfgs=[
-                            dict(
-                                type='MultiheadAttention',
-                                embed_dims=4,
-                                num_heads=1)
-                        ],
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
-                decoder=dict(
-                    type='DetrTransformerDecoder',
-                    return_intermediate=True,
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='DetrTransformerDecoderLayer',
-                        attn_cfgs=dict(
-                            type='MultiheadAttention',
-                            embed_dims=4,
-                            num_heads=1),
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        feedforward_channels=32,
-                        operation_order=('self_attn', 'norm', 'cross_attn',
-                                         'norm', 'ffn', 'norm')),
-                )),
-            positional_encoding=dict(
-                type='SinePositionalEncoding', num_feats=2, normalize=True),
-            test_cfg=dict(max_per_img=100)))
+            embed_dims=4,
+            loss_cls=dict(
+                type='CrossEntropyLoss',
+                bg_cls_weight=0.1,
+                use_sigmoid=False,
+                loss_weight=1.0,
+                class_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=5.0),
+            loss_iou=dict(type='GIoULoss', loss_weight=2.0)))
     model.requires_grad_(False)
     return model
 
@@ -715,7 +676,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
     from mmdet.apis import init_detector
-    model = init_detector(model_cfg, None, device='cpu')
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
