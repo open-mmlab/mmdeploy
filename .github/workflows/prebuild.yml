@@ -8,6 +8,8 @@ on:
     paths:
       - ".github/workflows/prebuild.yml"
 
+env:
+  python_versions: 3.7 3.8 3.9 3.10
 
 jobs:
   linux-x86_64_cu113_build:
@@ -25,22 +27,33 @@ jobs:
         with:
           submodules: 'recursive'
       - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: 3.6
+          miniconda-version: latest
       - name: Create python environment
         shell: bash -el {0}
         run: |
-          for PYTHON_VERSION in 3.6 3.7 3.8 3.9; do
-              conda create -n mmdeploy-${PYTHON_VERSION} python=${PYTHON_VERSION} -y
-              conda activate mmdeploy-${PYTHON_VERSION}
-              pip install pyyaml packaging setuptools wheel
-              pip install -r requirements/build.txt
+          conda create -n mmdeploy-3.6 --clone base -y
+          for PYTHON_VERSION in ${{env.python_versions}}; do
+              conda create -n mmdeploy-${PYTHON_VERSION} python==${PYTHON_VERSION} -y
+          done
+          conda info -e
       - name: Build mmdeploy
         shell: bash -el {0}
         id: build
         run: |
           conda activate mmdeploy-3.6
-          cd prebuild
-          python ../tools/package_tools/mmdeploy_builder.py \
-            ../tools/package_tools/configs/linux_x64_cuda.yaml ..
+          pip install pyyaml packaging setuptools wheel
+          pip install -r requirements/build.txt
+          export MMDEPLOY_DIR=$(pwd)
+          cd ../prebuild
+          python $MMDEPLOY_DIR/tools/package_tools/mmdeploy_builder.py \
+              $MMDEPLOY_DIR/tools/package_tools/configs/linux_x64.yaml $MMDEPLOY_DIR
+          export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
+          export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
+          tar -czvf ./${onnxruntime_dirname}.tar.gz ${onnxruntime_dirname}
+          tar -czvf ./${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
           ls .
 #      - uses: actions/upload-artifact@v3
 #        with:
