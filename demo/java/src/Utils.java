@@ -3,7 +3,7 @@ import mmdeploy.DataType;
 import mmdeploy.Mat;
 
 import org.opencv.core.*;
-import org.opencv.imgcodecs.*; // imread, imwrite, etc
+import org.opencv.imgcodecs.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -14,6 +14,7 @@ import java.lang.*;
 
 /** @description: this is a util class for java demo. */
 public class Utils {
+
     /** This function loads the image by path.
      * @param path: the image path.
      * @return: the image with Mat format.
@@ -23,6 +24,7 @@ public class Utils {
         BufferedImage img = ImageIO.read(new File(path));
         return bufferedImage2Mat(img);
     }
+
     /** This function changes bufferedImage to Mat.
      * @param img: the bufferedImage.
      * @return: the image with Mat format.
@@ -32,8 +34,9 @@ public class Utils {
         return new Mat(img.getHeight(), img.getWidth(), img.getColorModel().getNumComponents(),
                 PixelFormat.BGR, DataType.INT8, data);
     }
+
     /** This function changes cvMat to Mat.
-     * @param img: the image with opencv Mat format.
+     * @param cvMat: the image with opencv Mat format.
      * @return: the image with Mat format.
      */
     public static Mat cvMatToMat(org.opencv.core.Mat cvMat)
