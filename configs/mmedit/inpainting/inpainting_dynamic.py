@@ -1,21 +1,20 @@
 _base_ = ['./inpainting_static.py']
 
 onnx_config = dict(
-    dynamic_axes={
-        'masked_img': {
+    dynamic_axes=dict(
+        masked_img={
             0: 'batch',
             2: 'height',
             3: 'width'
         },
-        'mask': {
+        mask={
             0: 'batch',
             2: 'height',
             3: 'width'
         },
-        'output': {
+        output={
             0: 'batch',
             2: 'height',
             3: 'width'
-        }
-    },
+        }),
     input_shape=None)

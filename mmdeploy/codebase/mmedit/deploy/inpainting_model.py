@@ -27,11 +27,11 @@ class End2EndModel(BaseBackendModel):
 
     Args:
         backend (Backend): The backend enum, specifying backend type.
-        backend_files (Sequence[str]): Paths to all required backend files(e.g.
-            '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        backend_files (Sequence[str]): Paths to all required backend files
+            (e.g. '.onnx' for ONNX Runtime).
         device (str): A string represents device type.
         model_cfg(Config): Input model config object.
-        deploy_cfg(str | Config):Deployment config file or loaded Config
+        deploy_cfg(str | Config): Deployment config file or loaded Config
             object.
     """
     _eval_metrics = dict(l1=L1Evaluation, psnr=psnr, ssim=ssim)
@@ -107,7 +107,7 @@ class End2EndModel(BaseBackendModel):
                                          **kwargs)
 
         if save_path is not None:
-            outputs = [torch.from_numpy(i) for i in outputs]
+            outputs = [torch.from_numpy(i).flip(1) for i in outputs]
 
             filename, _ = osp.splitext(
                 osp.basename(kwargs['meta'][0]['gt_img_path']))
