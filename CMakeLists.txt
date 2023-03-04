@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.12.0)
+project(MMDeploy VERSION 0.13.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -24,6 +24,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # options
 option(MMDEPLOY_SHARED_LIBS "build shared libs" OFF)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
+option(MMDEPLOY_DYNAMIC_BACKEND "dynamic load backend" OFF)
 option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" ON)
 option(MMDEPLOY_BUILD_TEST "build unittests" OFF)
 option(MMDEPLOY_BUILD_SDK_PYTHON_API "build SDK Python API" OFF)
@@ -38,6 +39,10 @@ option(MMDEPLOY_ELENA_FUSION "use elena to fuse preprocess" OFF)
 set(MMDEPLOY_TARGET_DEVICES "cpu" CACHE STRING "target devices to support")
 set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to support")
 set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
+
+if ((NOT MMDEPLOY_BUILD_SDK_MONOLITHIC) AND MMDEPLOY_DYNAMIC_BACKEND)
+    set(MMDEPLOY_DYNAMIC_BACKEND OFF)
+endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)

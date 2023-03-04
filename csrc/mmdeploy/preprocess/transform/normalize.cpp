@@ -102,8 +102,8 @@ class Normalize : public Transform {
       } else if (to_rgb_) {
         auto src_mat = to_mat(tensor, PixelFormat::kBGR);
         Mat dst_mat;
-        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
-        dst = to_tensor(src_mat);
+        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kRGB));
+        dst = to_tensor(dst_mat);
       }
       data[key] = std::move(dst);
 

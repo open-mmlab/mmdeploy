@@ -4,6 +4,7 @@
 #include <map>
 
 #include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/core/logger.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/model_impl.h"
@@ -88,14 +89,22 @@ class ZipModelImpl : public ModelImpl {
     return std::string(buf.begin(), buf.end());
   }
 
-  Result<deploy_meta_info_t> ReadMeta() const override {
-    OUTCOME_TRY(auto deploy_json, ReadFile("deploy.json"));
+  Result<Value> ReadConfig(const std::string& config_path) const override {
+    OUTCOME_TRY(auto json_str, ReadFile(config_path));
     try {
-      deploy_meta_info_t meta;
-      from_json(json::parse(deploy_json), meta);
-      return meta;
+      return from_json<Value>(nlohmann::json::parse(json_str));
+    } catch (const std::exception& e) {
+      MMDEPLOY_ERROR("exception: {}", e.what());
+      return Status(eFail);
+    }
+  }
+
+  Result<deploy_meta_info_t> ReadMeta() const override {
+    try {
+      OUTCOME_TRY(auto deploy_cfg, ReadConfig("deploy.json"));
+      return from_value<deploy_meta_info_t>(deploy_cfg);
     } catch (std::exception& e) {
-      MMDEPLOY_ERROR("exception happened: {}", e.what());
+      MMDEPLOY_ERROR("exception: {}", e.what());
       return Status(eFail);
     }
   }

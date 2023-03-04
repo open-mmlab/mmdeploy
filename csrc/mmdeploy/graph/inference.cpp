@@ -2,7 +2,6 @@
 
 #include "mmdeploy/graph/inference.h"
 
-#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/profiler.h"
@@ -27,13 +26,12 @@ Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
       model = Model(model_name);
     }
   }
-  auto pipeline_json = model.ReadFile("pipeline.json").value();
-  auto json = nlohmann::json::parse(pipeline_json);
+
+  OUTCOME_TRY(auto pipeline_config, model.ReadConfig("pipeline.json"));
 
   auto context = config_.value("context", Value(ValueType::kObject));
   context["model"] = std::move(model);
 
-  auto pipeline_config = from_json<Value>(json);
   if (context.contains("scope")) {
     auto name = config_.value("name", config_["type"].get<std::string>());
     auto scope = context["scope"].get_ref<profiler::Scope*&>()->CreateScope(name);

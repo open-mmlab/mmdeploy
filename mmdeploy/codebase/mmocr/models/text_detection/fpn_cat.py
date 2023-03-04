@@ -52,6 +52,14 @@ def fpnc__forward__tensorrt(ctx, self, inputs, **kwargs):
         outs[i] = F.interpolate(outs[i], size=outs[0].shape[2:], mode=mode)
     out = torch.cat(outs, dim=1)
 
+    if self.asf_cfg is not None:
+        asf_feature = self.asf_conv(out)
+        attention = self.asf_attn(asf_feature)
+        enhanced_feature = []
+        for i, out in enumerate(outs):
+            enhanced_feature.append(attention[:, i:i + 1] * outs[i])
+        out = torch.cat(enhanced_feature, dim=1)
+
     if self.conv_after_concat:
         out = self.out_conv(out)
 
