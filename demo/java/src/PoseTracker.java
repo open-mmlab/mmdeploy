@@ -36,7 +36,7 @@ public class PoseTracker {
      * @return: whether the quit keyboard input received
      */
     public static boolean Visualize(org.opencv.core.Mat frame, mmdeploy.PoseTracker.Result[] results, int size,
-        int frameID, boolean withBbox){
+        int frameID, boolean withBbox) {
         int skeleton[][] = {{15, 13}, {13, 11}, {16, 14}, {14, 12}, {11, 12}, {5, 11}, {6, 12},
                 {5, 6}, {5, 7}, {6, 8}, {7, 9}, {8, 10}, {1, 2}, {0, 1},
                 {0, 2}, {1, 3}, {2, 4}, {3, 5}, {4, 6}};
@@ -56,8 +56,7 @@ public class PoseTracker {
         if (scale != 1) {
             Imgproc.resize(frame, frame, new Size(), scale, scale);
         }
-        else
-        {
+        else {
             frame = frame.clone();
         }
         for (int i = 0; i < results.length; i++) {
@@ -143,12 +142,10 @@ public class PoseTracker {
             }
             int frameID = 0;
             org.opencv.core.Mat frame = new org.opencv.core.Mat();
-            while (true)
-            {
+            while (true) {
                 cap.read(frame);
                 System.out.printf("processing frame %d\n", frameID);
-                if (frame.empty())
-                {
+                if (frame.empty()) {
                     break;
                 }
                 Mat mat = Utils.cvMatToMat(frame);
@@ -156,8 +153,7 @@ public class PoseTracker {
                 mmdeploy.PoseTracker.Result[] result = poseTracker.apply(stateHandle, mat, -1);
 
                 // visualize
-                if (!Visualize(frame, result, 1280, frameID++, true))
-                {
+                if (!Visualize(frame, result, 1280, frameID++, true)) {
                     break;
                 }
             }
