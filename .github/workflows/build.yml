@@ -284,17 +284,22 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
       - name: Setup Python Environment
         run: |
           echo "============================== Info =============================="
           echo "env:path= $env:path"
           echo "============================== Info =============================="
+          conda info
+          conda info -e
           conda create -p $pwd\tmp_env --clone $env:BASE_ENV -y
           conda activate $pwd\tmp_env
           python -V
           python -m pip install openmim
           python -m pip install -r requirements.txt -r requirements/backends.txt
-          python -m mim install -r requirements/codebases.txt
+          python -m mim install "mmcls>=1.0.0rc2"
           python -m pip list
       - name: Build mmdeploy
         run: |
@@ -334,5 +339,4 @@ jobs:
         if: success() || failure()
         run: |
           conda env remove -p $pwd\tmp_env
-          Remove-Item -LiteralPath "$pwd\tmp_env" -Force -Recurse
           Remove-Item -LiteralPath "$pwd\build" -Force -Recurse
