@@ -244,23 +244,13 @@ jobs:
       - name: Build SDK
         run: |
           export Torch_DIR=$(python3 -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
-          mkdir -p build && cd build &&\
-          cmake .. \
-              -DMMDEPLOY_BUILD_SDK=ON \
-              -DMMDEPLOY_BUILD_EXAMPLES=ON \
-              -DCMAKE_CXX_COMPILER=g++ \
+          bash .circleci/scripts/linux/build.sh "cpu;cuda" "ort;trt;ncnn;torchscript" \
               -Dpplcv_DIR=${pplcv_DIR} \
               -DTENSORRT_DIR=${TENSORRT_DIR} \
               -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-              -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
-              -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
-              -DMMDEPLOY_TARGET_BACKENDS="ort;trt;ncnn;torchscript" \
               -Dncnn_DIR=${ncnn_DIR} \
-              -DTorch_DIR=${Torch_DIR} \
-              -DMMDEPLOY_CODEBASES=all
-
-          make -j$(nproc) && make install
-          ls lib
+              -DTorch_DIR=${Torch_DIR}
+          ls build/lib
       - name: Install converter
         run: |
           rm -rf .eggs && python3 -m pip install -e .
