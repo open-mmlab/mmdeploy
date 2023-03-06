@@ -364,7 +364,10 @@ class TensorRTManager(BaseBackendManager):
             '--onnx-path', required=True, help='ONNX model path.')
         _BackendParam.add_arguments(export_parser)
         export_parser.add_argument(
-            '--custom-modules', type=str, nargs='*', help='ONNX model path.')
+            '--custom-modules',
+            type=str,
+            nargs='*',
+            help='Import custom modules.')
 
         parsed_args = parser.parse_args(args)
         yield parsed_args

@@ -67,10 +67,9 @@ class BaseBackendModel(BaseModel, metaclass=ABCMeta):
             deploy_cfg,
             work_dir='',
             backend_files=backend_files,
-            input_names=input_names)
-        param.input_names = input_names
-        param.output_names = output_names
-        param.device = device
+            input_names=input_names,
+            output_names=output_names,
+            device=device)
         return backend_mgr.build_wrapper_from_param(param)
 
     def destroy(self):

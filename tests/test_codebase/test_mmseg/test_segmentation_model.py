@@ -63,7 +63,7 @@ class TestRKNNModel:
     def setup_class(cls):
         # force add backend wrapper regardless of plugins
         import mmdeploy.backend.rknn as rknn_apis
-        from mmdeploy.backend.rknn import RKNNWrapper
+        from mmdeploy.backend.rknn.wrapper import RKNNWrapper
         rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
 
         # simplify backend inference

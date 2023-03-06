@@ -1,14 +1,18 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import Optional, Union
+import os.path as osp
+from dataclasses import asdict, dataclass
+from typing import Dict, List, Optional
 
-import mmengine
-from rknn.api import RKNN
+from mmdeploy.utils import get_root_logger
 
-from mmdeploy.utils import (get_common_config, get_normalization,
-                            get_onnx_config, get_partition_config,
-                            get_quantization_config, get_rknn_quantization,
-                            get_root_logger, load_config)
-from mmdeploy.utils.config_utils import get_backend_config
+
+@dataclass
+class RKNNConfig:
+    """RKNN Config."""
+    mean_values: List[List[int]] = None
+    std_values: List[List[int]] = None
+    optimization_level: int = 1
+    target_platform: str = None
 
 
 def rknn_package_info():
@@ -24,10 +28,13 @@ def rknn_package_info():
 
 def onnx2rknn(onnx_model: str,
               output_path: str,
-              deploy_cfg: Union[str, mmengine.Config],
-              model_cfg: Optional[Union[str, mmengine.Config]] = None,
-              dataset_file: Optional[str] = None,
-              **kwargs):
+              input_names: List[str],
+              output_names: List[str],
+              input_shapes: Dict[str, List],
+              rknn_config: RKNNConfig,
+              do_quantization: bool = False,
+              dataset: Optional[str] = None,
+              pre_compile: bool = False):
     """Convert ONNX to RKNN.
 
     RKNN-Toolkit2 is a software development kit for users to perform model
@@ -37,39 +44,27 @@ def onnx2rknn(onnx_model: str,
     Args:
         onnx_model (str): Input onnx model.
         output_path (str): File path to save RKNN model.
-        deploy_cfg (str | mmengine.Config): The path or content of config.
-        model_cfg (str | mmengine.Config): The path or content of model config.
-        dataset_file (str | None): The dataset file for quatization. Default to
-            None.
+        input_names (List[str]): Names of the inputs.
+        output_names (List[str]): Names of the outputs.
+        input_shapes (ShapeType): The Default shape of the inputs.
+        rknn_config (RKNNConfig): Config of the rknn toolset. Defined in
+            `mmdeploy.backend.rknn.onnx2rknn`.
+        do_quantization (bool): Enable model quantization.
+        dataset (str): Dataset file. Each line is an image path.
+        pre_compile (bool): Pre compile the model (smaller size and load
+            quicker, but can't run on simulator)
     """
+    from rknn.api import RKNN
     logger = get_root_logger()
-    # load deploy_cfg if necessary
-    deploy_cfg = load_config(deploy_cfg)[0]
 
-    common_params = get_common_config(deploy_cfg)
-    onnx_params = get_onnx_config(deploy_cfg)
-    quantization_cfg = get_quantization_config(deploy_cfg)
+    # get input/output names
+    input_size_list = [list(input_shapes[name][1:]) for name in input_names]
 
-    input_names = onnx_params.get('input_names', None)
-    output_names = onnx_params.get('output_names', None)
-    input_size_list = get_backend_config(deploy_cfg).get(
-        'input_size_list', None)
-    # update norm value
-    if get_rknn_quantization(deploy_cfg) is True and model_cfg is not None:
-        transform = get_normalization(model_cfg)
-        common_params.update(
-            dict(
-                mean_values=[transform['mean']],
-                std_values=[transform['std']]))
-
-    # update output_names for partition models
-    if get_partition_config(deploy_cfg) is not None:
-        import onnx
-        _onnx_model = onnx.load(onnx_model)
-        output_names = [node.name for node in _onnx_model.graph.output]
-
+    # init rknn
     rknn = RKNN(verbose=True)
-    rknn.config(**common_params)
+    rknn.config(**asdict(rknn_config))
+
+    # load onnx
     ret = rknn.load_onnx(
         model=onnx_model,
         inputs=input_names,
@@ -79,19 +74,34 @@ def onnx2rknn(onnx_model: str,
         logger.error('Load model failed!')
         exit(ret)
 
-    dataset_cfg = quantization_cfg.get('dataset', None)
-    if dataset_cfg is None:
-        quantization_cfg.update(dict(dataset=dataset_file))
-        if dataset_file is None:
-            quantization_cfg.update(dict(do_quantization=False))
+    # quantization
+    quantization_cfg = dict()
+    if do_quantization:
+        # disable quantization if dataset not exist
+        if not osp.exists(dataset):
+            do_quantization = False
             logger.warning('no dataset passed in, quantization is skipped')
-    if rknn_package_info()['name'] == 'rknn-toolkit2':
-        quantization_cfg.pop('pre_compile', None)
+        else:
+            quantization_cfg['dataset'] = dataset
+
+    # set batch size
+    if do_quantization:
+        batch_size = input_size_list[0][0]
+        assert all(batch_size == shape[0] for shape in input_size_list)
+        quantization_cfg['rknn_batch_size'] = batch_size
+
+        # set pre compile
+        if rknn_package_info()['name'] != 'rknn-toolkit2':
+            quantization_cfg['pre_compile'] = pre_compile
+
+    # do quantization
+    quantization_cfg['do_quantization'] = do_quantization
     ret = rknn.build(**quantization_cfg)
     if ret != 0:
         logger.error('Build model failed!')
         exit(ret)
 
+    # export
     ret = rknn.export_rknn(output_path)
     if ret != 0:
         logger.error('Export rknn model failed!')

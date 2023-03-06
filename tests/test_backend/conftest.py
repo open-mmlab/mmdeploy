@@ -125,11 +125,11 @@ def assert_forward():
     except Exception:
         from torch.testing import assert_allclose as torch_assert_close
 
-    def _impl(model, inputs, gts):
+    def _impl(model, inputs, gts, rtol=None, atol=None):
         outputs = model(inputs)
         for name in outputs:
             out = outputs[name]
             gt = gts[name]
-            torch_assert_close(out, gt)
+            torch_assert_close(out, gt, rtol=rtol, atol=atol)
 
     return _impl
