@@ -8,9 +8,10 @@ on:
     paths:
       - ".github/workflows/prebuild.yml"
 
+permissions: write-all
 
 jobs:
-  linux-x86_64_cu113_build:
+  run_prebuild_linux-x86_64_cu113:
     runs-on: [self-hosted, linux-3090]
     container:
       image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
@@ -22,32 +23,27 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
-    env:
-      CONDA: /opt/conda
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: mmdeploy-3.6
+#      - uses: conda-incubator/setup-miniconda@v2
+#        with:
+#          auto-activate-base: false
+#          activate-environment: mmdeploy-3.6
       - name: Create python environment
         run: |
-          conda init
           conda info
           conda info -e
           source activate mmdeploy-3.6
           python -V
-          pip install pyyaml packaging setuptools wheel
-          pip install -r requirements/build.txt
+          python -m pip install pyyaml packaging setuptools wheel
+          python -m pip install -r requirements/build.txt
       - name: Prebuild mmdeploy
         id: build
         run: |
-          conda info -e
-          python -V
-          conda activate mmdeploy-3.6
+          source activate mmdeploy-3.6
           python -V
           export MMDEPLOY_DIR=$(pwd)
           cd ../prebuild
@@ -64,8 +60,44 @@ jobs:
 #          name: ${{ steps.build.outputs.pkgname }}
 #          path: ${{ steps.build.outputs.pkgpath }}
 
+  test_prebuild_linux-x86_64_cu113:
+    runs-on: [self-hosted, linux-3090]
+    #needs: [run_prebuild_linux-x86_64_cu113]
+    container:
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
+        - /data2/benchmark:/__w/mmdeploy/data
+        - /data2/actions-runner/prebuild-archives:/__w/mmdeploy/prebuild
+        #- /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Install dependencies
+        run: |
+          python3 -V
+          python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          python3 -m pip install openmim numpy pycuda clip
+          python3 -m mim install "mmcls>=1.0.0rc2"
+      - name: Install MMDeploy
+        run: |
+          python3 -V
+          export PY_VERSION=$(python3 -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
+          tar -xzvf /__w/mmdeploy/prebuild/mmdeploy-*-onnxruntime*.tar.gz
+          cd ./mmdeploy-*
+          python3 -m pip install ./dist/mmdeploy-*-linux_x86_64.whl
+          python3 -m pip install ./sdk/python/mmdeploy_python-*-cp${PY_VERSION}-*-linux_x86_64.whl
+          python3 -c 'import mmdeploy; print(mmdeploy.__version__)'
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Test MMDeploy
+        run: |
+          python3 -V
+          bash .github/scripts/test_mmcls_full_pipeline.sh
 
-  build_cuda113_windows:
+  run_prebuild_cuda113_windows:
     runs-on: [self-hosted, win10-3080]
     defaults:
       run:
@@ -75,19 +107,15 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          pkgs_dirs: $env:CONDA\pkgs
       - name: Setup Python Environment
         run: |
-          conda init
+          conda init powershell
           conda info
           conda info -e
           conda activate mmdeploy-3.6
           python -V
-          pip install pyyaml packaging setuptools wheel
-          pip install -r requirements/build.txt
+          python -m pip install pyyaml packaging setuptools wheel
+          python -m pip install -r requirements/build.txt
       - name: Prebuild mmdeploy
         run: |
           python -V
