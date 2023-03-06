@@ -28,9 +28,11 @@ pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_CXX_USE_OPENCV=0)
 if (APPLE)
         set_target_properties(${PROJECT_NAME} PROPERTIES
+                BUILD_RPATH "@loader_path"
                 INSTALL_RPATH "@loader_path")
 else ()
         set_target_properties(${PROJECT_NAME} PROPERTIES
+                BUILD_RPATH "\$ORIGIN"
                 INSTALL_RPATH "\$ORIGIN")
 endif ()
 
