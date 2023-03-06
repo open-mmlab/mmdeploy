@@ -2,7 +2,6 @@
 import pytest
 import torch
 from mmengine import Config
-from mmengine.structures import BaseDataElement
 
 import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
@@ -35,10 +34,14 @@ class TestEnd2EndModel:
         deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
         model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
         model_cfg = load_config(model_cfg)[0]
-        from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
+        from mmdeploy.codebase.mmedit.deploy.super_resolution import \
             End2EndModel
-        cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
-                                         model_cfg, deploy_cfg)
+        cls.end2end_model = End2EndModel(
+            Backend.ONNXRUNTIME, [''],
+            'cpu',
+            model_cfg,
+            deploy_cfg,
+            data_preprocessor=model_cfg.model.data_preprocessor)
 
     @classmethod
     def teardown_class(cls):
@@ -46,6 +49,7 @@ class TestEnd2EndModel:
 
     def test_forward(self):
         input_img = torch.rand(1, 3, 32, 32)
-        img_metas = [BaseDataElement(metainfo={'ori_img_shape': [3, 32, 32]})]
+        from mmedit.structures import EditDataSample
+        img_metas = EditDataSample(metainfo={'ori_img_shape': [(32, 32, 3)]})
         results = self.end2end_model.forward(input_img, img_metas)
         assert results is not None
