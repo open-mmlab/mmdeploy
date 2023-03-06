@@ -5,7 +5,7 @@ global_config:
     MMDEPLOY_BUILD_SDK_MONOLITHIC: "ON"
     MMDEPLOY_SHARED_LIBS: "OFF"
     MMDEPLOY_CODEBASES: "all"
-    OpenCV_DIR: "%OpenCV_DIR%"
+    OpenCV_DIR: "%OPENCV_DIR%\\build\\x64\\vc15\\lib"
 
 local_configs:
   - BUILD_NAME: "mmdeploy-{mmdeploy_v}-{system}-{machine}-onnxruntime{ort_v}"

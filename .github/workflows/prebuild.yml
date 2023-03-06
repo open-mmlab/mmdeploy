@@ -8,8 +8,6 @@ on:
     paths:
       - ".github/workflows/prebuild.yml"
 
-env:
-  python_versions: 3.7 3.8 3.9 3.10
 
 jobs:
   linux-x86_64_cu113_build:
@@ -21,30 +19,36 @@ jobs:
         - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
         - /data2/benchmark:/__w/mmdeploy/data
         - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    defaults:
+      run:
+        shell: bash -el {0}
     env:
       CONDA: /opt/conda
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          submodules: 'recursive'
+          submodules: recursive
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-activate-base: false
           activate-environment: mmdeploy-3.6
       - name: Create python environment
-        shell: bash -el {0}
         run: |
+          conda init
           conda info
           conda info -e
-      - name: Build mmdeploy
-        shell: bash -el {0}
-        id: build
-        run: |
+          source activate mmdeploy-3.6
           python -V
-          conda activate mmdeploy-3.6
           pip install pyyaml packaging setuptools wheel
           pip install -r requirements/build.txt
+      - name: Prebuild mmdeploy
+        id: build
+        run: |
+          conda info -e
+          python -V
+          conda activate mmdeploy-3.6
+          python -V
           export MMDEPLOY_DIR=$(pwd)
           cd ../prebuild
           rm -rf *
@@ -59,3 +63,36 @@ jobs:
 #        with:
 #          name: ${{ steps.build.outputs.pkgname }}
 #          path: ${{ steps.build.outputs.pkgpath }}
+
+
+  build_cuda113_windows:
+    runs-on: [self-hosted, win10-3080]
+    defaults:
+      run:
+        shell: powershell
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          pkgs_dirs: $env:CONDA\pkgs
+      - name: Setup Python Environment
+        run: |
+          conda init
+          conda info
+          conda info -e
+          conda activate mmdeploy-3.6
+          python -V
+          pip install pyyaml packaging setuptools wheel
+          pip install -r requirements/build.txt
+      - name: Prebuild mmdeploy
+        run: |
+          python -V
+          conda activate mmdeploy-3.6
+          python -V
+          $env:MMDEPLOY_DIR = "$pwd"
+          cd D:\Runners\prebuild
+          python $env:MMDEPLOY_DIR\tools\package_tools\mmdeploy_builder.py $env:MMDEPLOY_DIR\tools\package_tools\configs\windows_x64.yaml $env:MMDEPLOY_DIR
