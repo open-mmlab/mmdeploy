@@ -237,6 +237,7 @@ def copy_thirdparty(cfg: Dict, sdk_path: str):
             if len(path) == 1 or path[1] == '**':
                 continue
 
+            old_dir = os.getcwd()
             os.chdir(dst_path)
             files = glob('**', recursive=True)
             reserve = []
@@ -247,6 +248,7 @@ def copy_thirdparty(cfg: Dict, sdk_path: str):
             for file in files:
                 if file not in reserve:
                     _remove_if_exist(file)
+            os.chdir(old_dir)
 
     # copy onnxruntime, tensorrt
     backend = cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']
