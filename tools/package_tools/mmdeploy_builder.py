@@ -11,6 +11,8 @@ from glob import glob
 from subprocess import check_output, run
 from typing import Dict
 import yaml
+from packaging import version
+import copy
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -44,7 +46,7 @@ def _copy(src_path, dst_path):
     if osp.isdir(src_path):
         if osp.exists(dst_path):
             shutil.rmtree(dst_path)
-        shutil.copytree(src_path, dst_path)
+        shutil.copytree(src_path, dst_path, symlinks=True)
     else:
         shutil.copy(src_path, dst_path)
 
@@ -136,7 +138,9 @@ def check_env(cfg: Dict):
     # CUDA version
     cuda_version = 'unknown'
 
-    CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get('CUDA_TOOLKIT_ROOT_DIR', '')
+    CUDA_TOOLKIT_ROOT_DIR = os.environ.get('CUDA_TOOLKIT_ROOT_DIR', '')
+    CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get(
+        'CUDA_TOOLKIT_ROOT_DIR', CUDA_TOOLKIT_ROOT_DIR)
     CUDA_TOOLKIT_ROOT_DIR = osp.expandvars(CUDA_TOOLKIT_ROOT_DIR)
     nvcc_cmd = ('nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
         CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc'))
@@ -314,7 +318,9 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         logging.info('Skip build mmdeploy sdk python api')
         return
 
-    for python_version in ['3.6']:
+    for python_version in ['3.6', '3.7', '3.8', '3.9', '3.10']:
+        _version = version.parse(python_version)
+        python_major, python_minor = _version.major, _version.minor  # type: ignore
         # create sdk python api wheel
         sdk_python_package_dir = osp.join(work_dir,
                                           '.mmdeploy_python')
@@ -361,7 +367,8 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         _remove_if_exist(osp.join(MMDEPLOY_DIR, 'build_python'))
 
         # copy net & mmdeploy
-        libs_to_copy = ['*net.so', '*net.dll', '*mmdeploy.so', '*mmdeploy.dll']
+        libs_to_copy = ['*net.so', '*net.dll',
+                        '*mmdeploy.so.0', '*mmdeploy.dll']
         for pattern in libs_to_copy:
             files = glob(osp.join(MMDEPLOY_DIR, 'build',
                          'install', 'lib', pattern))
@@ -370,6 +377,7 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
 
         # bdist
         sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_python')
+        cfg['bdist_tags'] = {'python_tag': f'cp{python_major}{python_minor}'}
         bdist_cmd = _create_bdist_cmd(cfg, c_ext=True, dist_dir=sdk_wheel_dir)
         if 'cuda' in cmake_cfg['MMDEPLOY_TARGET_DEVICES']:
             bdist_cmd += ' --use-gpu'
@@ -383,6 +391,8 @@ def create_sdk(cfg: Dict, work_dir: str):
         logging.info('Skip build mmdeploy sdk')
         return
 
+    cfg = copy.deepcopy(cfg)
+    cfg['cmake_cfg']['MMDEPLOY_BUILD_SDK_PYTHON_API'] = 'OFF'
     clear_mmdeploy()
     build_mmdeploy(cfg)
 

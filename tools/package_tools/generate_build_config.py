@@ -17,6 +17,8 @@ def parse_arguments():
                         help='whether build mmdeploy python package')
     parser.add_argument('--build-sdk', action='store_true',
                         help='whether build sdk c/cpp api')
+    parser.add_argument('--sdk-dynamic-net', action='store_true',
+                        help='whether build mmdeploy sdk dynamic net')
     parser.add_argument('--device', type=str,
                         help='target device. Eg: "cpu"')
     parser.add_argument('--shared', action='store_true',
@@ -47,7 +49,7 @@ def generate_config(args):
 
     # wheel platform tag
     if args.system in ['linux', 'jetson']:
-        config['PLATFORM_TAG'] = 'manylinux2014'
+        config['PLATFORM_TAG'] = 'manylinux2014_x86_64'
     else:
         config['PLATFORM_TAG'] = get_platform().replace(
             '-', '_').replace('.', '_')
@@ -85,6 +87,7 @@ def generate_config(args):
         cmake_cfg['MMDEPLOY_BUILD_SDK_PYTHON_API'] = 'ON' if args.build_sdk_python else 'OFF'
         cmake_cfg['MMDEPLOY_SHARED_LIBS'] = 'ON' if args.shared else 'OFF'
         cmake_cfg['MMDEPLOY_TARGET_DEVICES'] = args.device
+        cmake_cfg['MMDEPLOY_DYNAMIC_BACKEND'] = 'ON' if args.sdk_dynamic_net else 'OFF'
 
         if args.opencv_dir:
             cmake_cfg['OpenCV_DIR'] = args.opencv_dir
@@ -93,12 +96,13 @@ def generate_config(args):
         else:
             raise Exception('please provide --opencv-dir')
 
-        if args.pplcv_dir:
-            cmake_cfg['pplcv_DIR'] = args.pplcv_dir
-        elif 'pplcv_DIR' in os.environ:
-            cmake_cfg['pplcv_DIR'] = os.environ['pplcv_DIR']
-        else:
-            raise Exception('please provide --pplcv-dir')
+        if args.device == 'cuda':
+            if args.pplcv_dir:
+                cmake_cfg['pplcv_DIR'] = args.pplcv_dir
+            elif 'pplcv_DIR' in os.environ:
+                cmake_cfg['pplcv_DIR'] = os.environ['pplcv_DIR']
+            else:
+                raise Exception('please provide --pplcv-dir')
 
         # sdk package template
         if args.system in ['windows', 'linux']:
@@ -106,7 +110,7 @@ def generate_config(args):
             if args.device == 'cpu':
                 name = '{}-cpu'.format(name)
             elif args.device == 'cuda':
-                name = '{}-cuda{cuda_v}'.format(name)
+                name = '{}-cuda'.format(name) + '{cuda_v}'
             else:
                 raise Exception('unsupported device')
             config['BUILD_SDK_NAME'] = name
