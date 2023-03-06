@@ -3,7 +3,6 @@ import pytest
 import torch
 from mmengine import Config
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
@@ -18,38 +17,34 @@ except ImportError:
 @backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeEditor can use ORTWrapper inside itself
         from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
+        from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
+            End2EndModel
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'outputs': torch.rand(3, 64, 64),
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
-        model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
-        model_cfg = load_config(model_cfg)[0]
-        from mmdeploy.codebase.mmedit.deploy.super_resolution import \
-            End2EndModel
-        cls.end2end_model = End2EndModel(
-            Backend.ONNXRUNTIME, [''],
-            'cpu',
-            model_cfg,
-            deploy_cfg,
-            data_preprocessor=model_cfg.model.data_preprocessor)
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'outputs': torch.rand(3, 64, 64),
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
+            model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
+            model_cfg = load_config(model_cfg)[0]
+            model = End2EndModel(
+                Backend.ONNXRUNTIME, [''],
+                'cpu',
+                model_cfg,
+                deploy_cfg,
+                data_preprocessor=model_cfg.model.data_preprocessor)
+            yield model
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward(self):
+    def test_forward(self, end2end_model):
         input_img = torch.rand(1, 3, 32, 32)
         from mmedit.structures import EditDataSample
         img_metas = EditDataSample(metainfo={'ori_img_shape': [(32, 32, 3)]})
-        results = self.end2end_model.forward(input_img, img_metas)
+        results = end2end_model.forward(input_img, img_metas)
         assert results is not None
