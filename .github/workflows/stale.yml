@@ -7,18 +7,19 @@ on:
 
   schedule:
     # check issue and pull request once at 01:30 a.m. every day
-    - cron: '15 15 * * *'
+    - cron: '30 1 * * *'
 
 permissions:
-  contents: write # only for delete-branch option
-  issues: write
-  pull-requests: write
+  contents: read
 
 jobs:
   stale:
+    permissions:
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v5
+      - uses: actions/stale@v4
         with:
           stale-issue-message: 'This issue is marked as stale because it has been marked as invalid or awaiting response for 7 days without any further response. It will be closed in 5 days if the stale label is not removed or if there is no further response.'
           stale-pr-message: 'This PR is marked as stale because there has been no activity in the past 45 days. It will be closed in 10 days if the stale label is not removed or if there is no further updates.'
