@@ -73,7 +73,7 @@ def generate_config(args):
 
         if args.cudnn_dir:
             cmake_cfg['CUDNN_DIR'] = args.cudnn_dir
-        elif 'CUDNN_DIR' in os.environ['CUDNN_DIR']:
+        elif 'CUDNN_DIR' in os.environ:
             cmake_cfg['CUDNN_DIR'] = os.environ['CUDNN_DIR']
         else:
             raise Exception('please provide --cudnn-dir')
