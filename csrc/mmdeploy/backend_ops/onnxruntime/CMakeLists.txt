@@ -22,6 +22,13 @@ target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
+if (APPLE)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                INSTALL_RPATH "@loader_path")
+else ()
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                INSTALL_RPATH "\$ORIGIN")
+endif ()
 add_library(mmdeploy::onnxruntime::ops ALIAS ${PROJECT_NAME})
 
 set(_ORT_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)
