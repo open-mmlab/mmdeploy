@@ -114,6 +114,9 @@ def generate_config(args):
             config['BUILD_SDK_NAME'] = 'mmdeploy-{mmdeploy_v}-jetson-{machine}'
         else:
             raise Exception('unsupported system')
+    else:
+        cmake_cfg['MMDEPLOY_BUILD_SDK'] = 'OFF'
+        cmake_cfg['MMDEPLOY_BUILD_SDK_PYTHON_API'] = 'OFF'
 
     config['cmake_cfg'] = cmake_cfg
     return config
