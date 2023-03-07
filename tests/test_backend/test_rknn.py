@@ -75,9 +75,6 @@ class TestManager:
         from mmdeploy.backend.rknn.onnx2rknn import RKNNConfig
         with TemporaryDirectory() as tmp_dir:
             model_path = osp.join(tmp_dir, 'tmp.rknn')
-            import shutil
-            shutil.copy(onnx_model,
-                        '/home/PJLAB/yaoqian/space/tmp/deploy/new_deploy/tmp')
             backend_mgr.to_backend(
                 onnx_model,
                 model_path,
