@@ -95,7 +95,8 @@ target_link_libraries(
         triton-backend-utils    # from repo-backend
 )
 
-target_link_libraries(triton-mmdeploy-backend PRIVATE mmdeploy)
+mmdeploy_load_static(triton-mmdeploy-backend MMDeployStaticModules)
+target_link_libraries(triton-mmdeploy-backend PRIVATE MMDeployLibs)
 
 mmdeploy_export(triton-mmdeploy-backend)
 
