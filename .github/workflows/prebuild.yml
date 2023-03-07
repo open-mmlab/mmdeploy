@@ -11,6 +11,101 @@ on:
 permissions: write-all
 
 jobs:
+  linux_build:
+    runs-on: [self-hosted, linux-3090]
+    container:
+      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build MMDeploy
+        run: |
+          source activate mmdeploy-3.6
+          pip install pyyaml packaging setuptools wheel
+          mkdir pack; cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'trt;ort' \
+            --system linux --output config.yml --build-mmdeploy
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Build sdk cpu backend
+        run: |
+          source activate mmdeploy-3.6
+          cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'ort' \
+            --system linux --output config.yml --device cpu --build-sdk --build-sdk-monolithic \
+            --build-sdk-python --sdk-dynamic-net
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Build sdk cuda backend
+        run: |
+          source activate mmdeploy-3.6
+          cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'ort;trt' \
+            --system windows --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
+            --build-sdk-python --sdk-dynamic-net
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Move artifact
+        run: |
+          mkdir /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+          mv pack/* /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+
+  linux_test:
+    runs-on: [self-hosted, linux-3090]
+    needs: linux_build
+    container:
+      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+        - /data2/actions-runner/testmodel:/__w/mmdeploy/testmodel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Test python
+        run: |
+          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+          conda activate mmdeploy-3.8
+          bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.sh
+      - name: Test c/cpp
+        run: |
+          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+          conda activate mmdeploy-3.8
+          bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
+
+  linux_upload:
+    runs-on: [self-hosted, linux-3090]
+    needs: linux_test
+    container:
+      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    steps:
+      - name: Upload mmdeploy
+        run: |
+          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Upload mmdeploy_python
+        run: |
+          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy_python
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Zip mmdeploy sdk
+        run: |
+          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/sdk
+          for folder in *
+          do
+            tar czf $folder.tar.gz $folder
+          done
+      - name: Upload mmdeploy sdk
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+              /__w/mmdeploy/prebuild/${{ github.run_id }}/sdk/*.tar.gz
+
+
   windows_build:
     runs-on: [self-hosted, win10-3080]
     steps:

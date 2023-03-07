@@ -26,7 +26,6 @@ Push-Location $test_pkg
 
 
 # opencv
-$OPENCV = ""
 if (-Not (Test-Path $env:OpenCV_DIR)) {
     .\install_opencv.ps1
 }
@@ -38,7 +37,6 @@ if (-Not (Test-Path $env:OpenCV_DIR)) {
 .\build_sdk.ps1 $env:OpenCV_DIR
 
 # run
-write-host "run run"
 .\example\cpp\build\Release\classifier.exe "D:\DEPS\citest\mmcls" "$MODEL_DIR\demo.jpg"
 
 Pop-Location
