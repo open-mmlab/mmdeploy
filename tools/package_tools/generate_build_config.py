@@ -1,44 +1,70 @@
-import yaml
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
-import sys
 import os
+import sys
 from distutils.util import get_platform
+
+import yaml
 
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='MMDeploy create build config'
-    )
-    parser.add_argument('--backend', required=True, type=str,
-                        help='target backend. Eg: "ort;trt"')
-    parser.add_argument('--system', required=True,
-                        type=str, help='target system, Eg: windows/linux/jetson')
-    parser.add_argument('--build-mmdeploy', action='store_true',
-                        help='whether build mmdeploy python package')
-    parser.add_argument('--build-sdk', action='store_true',
-                        help='whether build sdk c/cpp api')
-    parser.add_argument('--sdk-dynamic-net', action='store_true',
-                        help='whether build mmdeploy sdk dynamic net')
-    parser.add_argument('--device', type=str,
-                        help='target device. Eg: "cpu"')
-    parser.add_argument('--shared', action='store_true',
-                        help='whether build shared lib')
-    parser.add_argument('--build-sdk-monolithic', action='store_true',
-                        help='whether build sdk monolithic')
-    parser.add_argument('--build-sdk-python', action='store_true',
-                        help='whether build sdk python api')
-    parser.add_argument('--opencv-dir', type=str,
-                        help='opencv path that contains OpenCVConfig.cmake, default use $ENV{OpenCV_DIR}')
-    parser.add_argument('--pplcv-dir', type=str,
-                        help='pplcv path that contains pplcv-config.cmake, default use $ENV{pplcv_DIR}')
-    parser.add_argument('--onnxruntime-dir', type=str,
-                        help='onnxruntime root path, default use $ENV{ONNXRUNTIME_DIR}')
-    parser.add_argument('--tensorrt-dir', type=str,
-                        help='tensorrt root path, default use $ENV{TENSORRT_DIR}')
-    parser.add_argument('--cudnn-dir', type=str,
-                        help='cudnn root dir, default use $ENV{CUDNN_DIR}')
-    parser.add_argument('--output', required=True, type=str,
-                        help='output config file path')
+        description='MMDeploy create build config')
+    parser.add_argument(
+        '--backend',
+        required=True,
+        type=str,
+        help='target backend. Eg: "ort;trt"')
+    parser.add_argument(
+        '--system',
+        required=True,
+        type=str,
+        help='target system, Eg: windows/linux/jetson')
+    parser.add_argument(
+        '--build-mmdeploy',
+        action='store_true',
+        help='whether build mmdeploy python package')
+    parser.add_argument(
+        '--build-sdk', action='store_true', help='whether build sdk c/cpp api')
+    parser.add_argument(
+        '--sdk-dynamic-net',
+        action='store_true',
+        help='whether build mmdeploy sdk dynamic net')
+    parser.add_argument('--device', type=str, help='target device. Eg: "cpu"')
+    parser.add_argument(
+        '--shared', action='store_true', help='whether build shared lib')
+    parser.add_argument(
+        '--build-sdk-monolithic',
+        action='store_true',
+        help='whether build sdk monolithic')
+    parser.add_argument(
+        '--build-sdk-python',
+        action='store_true',
+        help='whether build sdk python api')
+    parser.add_argument(
+        '--opencv-dir',
+        type=str,
+        help='opencv path that contains OpenCVConfig.cmake, '
+        'default use $ENV{OpenCV_DIR}')
+    parser.add_argument(
+        '--pplcv-dir',
+        type=str,
+        help='pplcv path that contains pplcv-config.cmake, '
+        'default use $ENV{pplcv_DIR}')
+    parser.add_argument(
+        '--onnxruntime-dir',
+        type=str,
+        help='onnxruntime root path, default use $ENV{ONNXRUNTIME_DIR}')
+    parser.add_argument(
+        '--tensorrt-dir',
+        type=str,
+        help='tensorrt root path, default use $ENV{TENSORRT_DIR}')
+    parser.add_argument(
+        '--cudnn-dir',
+        type=str,
+        help='cudnn root dir, default use $ENV{CUDNN_DIR}')
+    parser.add_argument(
+        '--output', required=True, type=str, help='output config file path')
 
     return parser.parse_args()
 
@@ -51,8 +77,8 @@ def generate_config(args):
     if args.system in ['linux', 'jetson']:
         config['PLATFORM_TAG'] = 'manylinux2014_x86_64'
     else:
-        config['PLATFORM_TAG'] = get_platform().replace(
-            '-', '_').replace('.', '_')
+        config['PLATFORM_TAG'] = get_platform().replace('-',
+                                                        '_').replace('.', '_')
 
     config['BUILD_MMDEPLOY'] = 'ON' if args.build_mmdeploy else 'OFF'
 
@@ -83,11 +109,17 @@ def generate_config(args):
     # deps for mmdeploy-python
     if args.build_sdk:
         cmake_cfg['MMDEPLOY_BUILD_SDK'] = 'ON'
-        cmake_cfg['MMDEPLOY_BUILD_SDK_MONOLITHIC'] = 'ON' if args.build_sdk_monolithic else 'OFF'
-        cmake_cfg['MMDEPLOY_BUILD_SDK_PYTHON_API'] = 'ON' if args.build_sdk_python else 'OFF'
+        cmake_cfg[
+            'MMDEPLOY_BUILD_SDK_MONOLITHIC'] = 'ON' \
+            if args.build_sdk_monolithic else 'OFF'
+        cmake_cfg[
+            'MMDEPLOY_BUILD_SDK_PYTHON_API'] = 'ON' \
+            if args.build_sdk_python else 'OFF'
         cmake_cfg['MMDEPLOY_SHARED_LIBS'] = 'ON' if args.shared else 'OFF'
         cmake_cfg['MMDEPLOY_TARGET_DEVICES'] = args.device
-        cmake_cfg['MMDEPLOY_DYNAMIC_BACKEND'] = 'ON' if args.sdk_dynamic_net else 'OFF'
+        cmake_cfg[
+            'MMDEPLOY_DYNAMIC_BACKEND'] = 'ON' \
+            if args.sdk_dynamic_net else 'OFF'
 
         if args.opencv_dir:
             cmake_cfg['OpenCV_DIR'] = args.opencv_dir

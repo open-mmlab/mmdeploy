@@ -12,6 +12,7 @@ CURDIR = os.path.realpath(os.path.dirname(__file__))
 version_file = osp.join(CURDIR, 'mmdeploy_python', 'version.py')
 package_name = 'mmdeploy_python'
 
+
 def get_version():
     with open(version_file, 'r') as f:
         exec(compile(f.read(), version_file, 'exec'))
@@ -33,7 +34,6 @@ def parse_arg_remove_boolean(argv, arg_name):
 
 if parse_arg_remove_boolean(sys.argv, '--use-gpu'):
     package_name = package_name + '-gpu'
-
 
 if __name__ == '__main__':
     setup(

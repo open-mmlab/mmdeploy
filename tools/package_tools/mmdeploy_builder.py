@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import copy
 import logging
 import os
 import os.path as osp
@@ -10,9 +11,9 @@ import sys
 from glob import glob
 from subprocess import check_output, run
 from typing import Dict
+
 import yaml
 from packaging import version
-import copy
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -139,8 +140,8 @@ def check_env(cfg: Dict):
     cuda_version = 'unknown'
 
     CUDA_TOOLKIT_ROOT_DIR = os.environ.get('CUDA_TOOLKIT_ROOT_DIR', '')
-    CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get(
-        'CUDA_TOOLKIT_ROOT_DIR', CUDA_TOOLKIT_ROOT_DIR)
+    CUDA_TOOLKIT_ROOT_DIR = cmake_envs.get('CUDA_TOOLKIT_ROOT_DIR',
+                                           CUDA_TOOLKIT_ROOT_DIR)
     CUDA_TOOLKIT_ROOT_DIR = osp.expandvars(CUDA_TOOLKIT_ROOT_DIR)
     nvcc_cmd = ('nvcc' if len(CUDA_TOOLKIT_ROOT_DIR) <= 0 else osp.join(
         CUDA_TOOLKIT_ROOT_DIR, 'bin', 'nvcc'))
@@ -186,7 +187,8 @@ def check_env(cfg: Dict):
             minor = re.search(r'#define NV_TENSORRT_MINOR (\d+)', data)
             patch = re.search(r'#define NV_TENSORRT_PATCH (\d+)', data)
             build = re.search(r'#define NV_TENSORRT_BUILD (\d+)', data)
-            if major is not None and minor is not None and patch is not None and build is not None:
+            if major is not None and minor is not None and patch is not None \
+                    and build is not None:
                 tensorrt_version = (f'{major.group(1)}.' +
                                     f'{minor.group(1)}.' +
                                     f'{patch.group(1)}.' + f'{build.group(1)}')
@@ -242,8 +244,7 @@ def copy_thirdparty(cfg: Dict, sdk_path: str):
             files = glob('**', recursive=True)
             reserve = []
             for pattern in path[1:]:
-                reserve.extend(
-                    glob(pattern, recursive=True))
+                reserve.extend(glob(pattern, recursive=True))
 
             for file in files:
                 if file not in reserve:
@@ -260,10 +261,10 @@ def copy_thirdparty(cfg: Dict, sdk_path: str):
     if 'trt' in backend:
         src_dir = cfg['cmake_cfg']['TENSORRT_DIR']
         dst_dir = osp.join(thirdparty_dir, 'tensorrt')
-        needed = [('include', '**'), ('lib',
-                                      'libnvinfer_builder_resource.so*', 'libnvinfer.so*',
-                                      'libnvinfer_plugin.so*', 'nvinfer_builder_resource.*',
-                                      'nvinfer*', 'nvinfer_plugin*')]
+        needed = [('include', '**'),
+                  ('lib', 'libnvinfer_builder_resource.so*', 'libnvinfer.so*',
+                   'libnvinfer_plugin.so*', 'nvinfer_builder_resource.*',
+                   'nvinfer*', 'nvinfer_plugin*')]
         _copy_needed(src_dir, dst_dir, needed)
 
 
@@ -290,7 +291,7 @@ def create_mmdeploy(cfg: Dict, work_dir: str):
 
     dist_dir = osp.join(work_dir, 'mmdeploy')
     if osp.exists(dist_dir):
-        logging.info(f'mmdeploy existed, deleting...')
+        logging.info('mmdeploy existed, deleting...')
         shutil.rmtree(dist_dir)
 
     clear_mmdeploy()
@@ -304,8 +305,8 @@ def create_mmdeploy(cfg: Dict, work_dir: str):
         for pattern in patterns:
             src_lib = glob(osp.join(ort_root, 'lib', pattern))
             if len(src_lib) > 0:
-                dst_lib = osp.join(MMDEPLOY_DIR, 'mmdeploy',
-                                'lib', osp.basename(src_lib[0]))
+                dst_lib = osp.join(MMDEPLOY_DIR, 'mmdeploy', 'lib',
+                                   osp.basename(src_lib[0]))
                 _copy(src_lib[0], dst_lib)
 
     # build wheel
@@ -325,27 +326,27 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
 
     for python_version in ['3.6', '3.7', '3.8', '3.9', '3.10']:
         _version = version.parse(python_version)
-        python_major, python_minor = _version.major, _version.minor  # type: ignore
+        python_major = _version.major
+        python_minor = _version.minor
         # create sdk python api wheel
-        sdk_python_package_dir = osp.join(work_dir,
-                                          '.mmdeploy_python')
+        sdk_python_package_dir = osp.join(work_dir, '.mmdeploy_python')
         _copy(PACKAGING_DIR, sdk_python_package_dir)
         _copy(
             osp.join(MMDEPLOY_DIR, 'mmdeploy', 'version.py'),
-            osp.join(sdk_python_package_dir, 'mmdeploy_python',
-                     'version.py'),
+            osp.join(sdk_python_package_dir, 'mmdeploy_python', 'version.py'),
         )
 
         # build mmdeploy_python
         python_executable = shutil.which('python')\
-            .replace('mmdeploy-3.6', f'mmdeploy-{python_version}')  # type: ignore
-        cmake_options = [f'-D{k}="{v}"' for k,
-                         v in cmake_cfg.items() if v != '']
+            .replace('mmdeploy-3.6', f'mmdeploy-{python_version}')
+        cmake_options = [
+            f'-D{k}="{v}"' for k, v in cmake_cfg.items() if v != ''
+        ]
         cmake_options.append(
             f'-DMMDeploy_DIR={MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy')
         cmake_options.append(f'-DPYTHON_EXECUTABLE={python_executable}')
-        cmake_cmd = ' '.join(
-            ['cmake ../csrc/mmdeploy/apis/python'] + cmake_options)
+        cmake_cmd = ' '.join(['cmake ../csrc/mmdeploy/apis/python'] +
+                             cmake_options)
         build_dir = osp.join(MMDEPLOY_DIR, 'build_python')
         _remove_if_exist(build_dir)
         os.mkdir(build_dir)
@@ -384,7 +385,8 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         for pattern in libs_to_copy:
             files = glob(osp.join(search_dir, pattern))
             for file in files:
-                _copy(file, osp.join(sdk_python_package_dir, 'mmdeploy_python'))
+                _copy(file, osp.join(sdk_python_package_dir,
+                                     'mmdeploy_python'))
 
         # bdist
         sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_python')
@@ -423,8 +425,7 @@ def create_sdk(cfg: Dict, work_dir: str):
 
     install_dir = osp.join(MMDEPLOY_DIR, 'build/install/')
     _copy(install_dir, sdk_path)
-    _copy(f'{MMDEPLOY_DIR}/demo/python',
-          f'{sdk_path}/example/python')
+    _copy(f'{MMDEPLOY_DIR}/demo/python', f'{sdk_path}/example/python')
     _remove_if_exist(osp.join(sdk_path, 'example', 'build'))
 
     # copy thirdparty
@@ -442,8 +443,8 @@ def create_package(cfg: Dict, work_dir: str):
 def parse_args():
     parser = argparse.ArgumentParser(description='Build mmdeploy from yaml.')
     parser.add_argument('--config', help='The build config yaml file.')
-    parser.add_argument('--output-dir', default='.',
-                        help='Output package directory.')
+    parser.add_argument(
+        '--output-dir', default='.', help='Output package directory.')
     args = parser.parse_args()
 
     return args
