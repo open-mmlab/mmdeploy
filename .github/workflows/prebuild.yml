@@ -11,116 +11,85 @@ on:
 permissions: write-all
 
 jobs:
-  run_prebuild_linux-x86_64_cu113:
-    runs-on: [self-hosted, linux-3090]
-    container:
-      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
-      options: "--gpus=all --ipc=host"
-      volumes:
-        - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
-        - /data2/benchmark:/__w/mmdeploy/data
-        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
-    defaults:
-      run:
-        shell: bash -el {0}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-#      - uses: conda-incubator/setup-miniconda@v2
-#        with:
-#          auto-activate-base: false
-#          activate-environment: mmdeploy-3.6
-      - name: Create python environment
-        run: |
-          conda info
-          conda info -e
-          source activate mmdeploy-3.6
-          python -V
-          python -m pip install pyyaml packaging setuptools wheel
-          python -m pip install -r requirements/build.txt
-      - name: Prebuild mmdeploy
-        id: build
-        run: |
-          source activate mmdeploy-3.6
-          python -V
-          export MMDEPLOY_DIR=$(pwd)
-          cd ../prebuild
-          rm -rf *
-          python $MMDEPLOY_DIR/tools/package_tools/mmdeploy_builder.py \
-              $MMDEPLOY_DIR/tools/package_tools/configs/linux_x64.yaml $MMDEPLOY_DIR
-          export onnxruntime_dirname=$(ls | grep  mmdeploy-*-onnxruntime*)
-          export tensorrt_dirname=$(ls | grep  mmdeploy-*-tensorrt*)
-          tar -czvf ./${onnxruntime_dirname}.tar.gz ${onnxruntime_dirname}
-          tar -czvf ./${tensorrt_dirname}.tar.gz ${tensorrt_dirname}
-          ls .
-#      - uses: actions/upload-artifact@v3
-#        with:
-#          name: ${{ steps.build.outputs.pkgname }}
-#          path: ${{ steps.build.outputs.pkgpath }}
-
-  test_prebuild_linux-x86_64_cu113:
-    runs-on: [self-hosted, linux-3090]
-    #needs: [run_prebuild_linux-x86_64_cu113]
-    container:
-      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
-      options: "--gpus=all --ipc=host"
-      volumes:
-        - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
-        - /data2/benchmark:/__w/mmdeploy/data
-        - /data2/actions-runner/prebuild-archives:/__w/mmdeploy/prebuild
-        #- /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
-    defaults:
-      run:
-        shell: bash -el {0}
-    steps:
-      - name: Install dependencies
-        run: |
-          python3 -V
-          python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim numpy pycuda clip
-          python3 -m mim install "mmcls>=1.0.0rc2"
-      - name: Install MMDeploy
-        run: |
-          python3 -V
-          export PY_VERSION=$(python3 -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
-          tar -xzvf /__w/mmdeploy/prebuild/mmdeploy-*-onnxruntime*.tar.gz
-          cd ./mmdeploy-*
-          python3 -m pip install ./dist/mmdeploy-*-linux_x86_64.whl
-          python3 -m pip install ./sdk/python/mmdeploy_python-*-cp${PY_VERSION}-*-linux_x86_64.whl
-          python3 -c 'import mmdeploy; print(mmdeploy.__version__)'
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Test MMDeploy
-        run: |
-          python3 -V
-          bash .github/scripts/test_mmcls_full_pipeline.sh
-
-  run_prebuild_cuda113_windows:
+  windows_build:
     runs-on: [self-hosted, win10-3080]
-    defaults:
-      run:
-        shell: powershell
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: Setup Python Environment
+      - name: Build MMDeploy
         run: |
-          conda init powershell
-          conda info
-          conda info -e
+          . D:\DEPS\cienv\prebuild_gpu_env.ps1
           conda activate mmdeploy-3.6
-          python -V
-          python -m pip install pyyaml packaging setuptools wheel
-          python -m pip install -r requirements/build.txt
-      - name: Prebuild mmdeploy
+          mkdir pack; cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'trt;ort' `
+            --system windows --output config.yml --build-mmdeploy
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Build sdk cpu backend
         run: |
-          python -V
+          . D:\DEPS\cienv\prebuild_cpu_env.ps1
           conda activate mmdeploy-3.6
-          python -V
-          $env:MMDEPLOY_DIR = "$pwd"
-          cd D:\Runners\prebuild
-          python $env:MMDEPLOY_DIR\tools\package_tools\mmdeploy_builder.py $env:MMDEPLOY_DIR\tools\package_tools\configs\windows_x64.yaml $env:MMDEPLOY_DIR
+          cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'ort' `
+            --system windows --output config.yml --device cpu --build-sdk --build-sdk-monolithic `
+            --build-sdk-python --sdk-dynamic-net
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Build sdk cuda backend
+        run: |
+          . D:\DEPS\cienv\prebuild_gpu_env.ps1
+          conda activate mmdeploy-3.6
+          cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'ort;trt' `
+            --system windows --output config.yml --device cuda --build-sdk --build-sdk-monolithic `
+            --build-sdk-python --sdk-dynamic-net
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Move artifact
+        run: |
+          New-Item "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID" -ItemType Directory -Force
+          Move-Item pack/* "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+
+  windows_test:
+    runs-on: [self-hosted, win10-3080]
+    needs: windows_build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Test python
+        run: |
+          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+          . D:\DEPS\cienv\prebuild_cpu_env.ps1
+          conda activate ci-test
+          & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.ps1"
+      - name: Test c/cpp
+        run: |
+          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+          . D:\DEPS\cienv\prebuild_cpu_env.ps1
+          & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.ps1"
+
+  windows_upload:
+    runs-on: [self-hosted, win10-3080]
+    if: startsWith(github.ref, 'refs/tags/')
+    environment: 'prod'
+    needs: windows_test
+    steps:
+      - name: Upload mmdeploy
+        run: |
+          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy"
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Upload mmdeploy_python
+        run: |
+          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy_python"
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Zip mmdeploy sdk
+        run: |
+          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/sdk"
+          $folders = $(ls).Name
+          foreach ($folder in $folders) {
+            Compress-Archive -Path $folder -DestinationPath "$folder.zip"
+          }
+      - name: Upload mmdeploy sdk
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+              D:/DEPS/ciartifact/${{github.run_id}}/sdk/*.zip
