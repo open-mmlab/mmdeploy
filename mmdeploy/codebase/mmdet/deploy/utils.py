@@ -251,6 +251,9 @@ def __gather_topk__trt(*inputs: Sequence[torch.Tensor],
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
+    backend=Backend.ASCEND.value)
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdeploy.codebase.mmdet.deploy.utils.__gather_topk',
     backend=Backend.COREML.value)
 def __gather_topk__nonbatch(*inputs: Sequence[torch.Tensor],
                             inds: torch.Tensor,
