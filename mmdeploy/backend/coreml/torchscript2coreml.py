@@ -1,17 +1,20 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
+import os.path as osp
 from typing import Dict, Optional, Sequence, Union
 
 import coremltools as ct
 import torch
 
 from mmdeploy.utils import get_root_logger
+from . import ops  # noqa
 
 try:
     # user might need ops from torchvision
     import torchvision  # noqa
 except ImportError:
     pass
+
+SUFFIX_MODE_MAP = {'.mlmodel': 'neuralnetwork', '.mlpackage': 'mlprogram'}
 
 
 def get_model_suffix(convert_to: str) -> str:
@@ -24,11 +27,9 @@ def get_model_suffix(convert_to: str) -> str:
     return suffix
 
 
-def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
+def create_shape(name: str, default_shape: Sequence, min_shape: Sequence,
+                 max_shape: Sequence) -> ct.Shape:
     """Create input shape."""
-    min_shape = input_shapes['min_shape']
-    max_shape = input_shapes['max_shape']
-    default_shape = input_shapes['default_shape']
     assert len(min_shape) == len(max_shape) == len(default_shape)
     shape = []
     n_dim = len(min_shape)
@@ -49,25 +50,27 @@ def create_shape(name: str, input_shapes: Dict) -> ct.Shape:
 
 def from_torchscript(torchscript_model: Union[str,
                                               torch.jit.RecursiveScriptModule],
-                     output_file_prefix: str,
+                     output_path: str,
                      input_names: Sequence[str],
                      output_names: Sequence[str],
                      input_shapes: Dict[str, Dict],
+                     min_shapes: Dict[str, Dict] = None,
+                     max_shapes: Dict[str, Dict] = None,
                      compute_precision: str = 'FLOAT32',
-                     convert_to: str = 'neuralnetwork',
+                     convert_to: str = None,
                      minimum_deployment_target: Optional[str] = None,
-                     skip_model_load: bool = True,
-                     **kwargs):
+                     skip_model_load: bool = True):
     """Create a coreml engine from torchscript.
 
     Args:
         torchscript_model (Union[str, torch.jit.RecursiveScriptModule]):
             The torchscript model to be converted.
-        output_file_prefix (str): The output file prefix.
+        output_path (str): The output file.
         input_names (Sequence[str]): The input names of the model.
         output_names (Sequence[str]): The output names of the model.
-        input_shapes (Dict): The input shapes include max_shape, min_shape and
-            default_shape
+        input_shapes (ShapeType): The Default shape of the inputs.
+        min_shapes (ShapeType): The minimal shape of the inputs.
+        max_shapes (ShapeType): The maximal shape of the inputs.
         compute_precision (str): The model precision,
             FLOAT16 or FLOAT32, see coremltools.precision, default `FLOAT32`.
         convert_to (str): The converted model type, can be
@@ -92,12 +95,27 @@ def from_torchscript(torchscript_model: Union[str,
     inputs = []
     outputs = []
 
+    if min_shapes is None:
+        min_shapes = input_shapes
+    if max_shapes is None:
+        max_shapes = input_shapes
     for name in input_names:
-        shape = create_shape(name, input_shapes[name])
+        input_shape = input_shapes[name]
+        min_shape = min_shapes.get(name, input_shape)
+        max_shape = max_shapes.get(name, input_shape)
+        shape = create_shape(name, input_shape, min_shape, max_shape)
         inputs.append(shape)
 
     for name in output_names:
         outputs.append(ct.TensorType(name=name))
+
+    if convert_to is None:
+        suffix = osp.splitext(output_path)[1]
+        convert_to = SUFFIX_MODE_MAP[suffix]
+
+    if convert_to not in ['neuralnetwork', 'mlprogram']:
+        get_root_logger().warning(f'Unknown postfix: {convert_to}. ',
+                                  'Use default mode: neuralnetwork.')
 
     if convert_to == 'neuralnetwork':
         compute_precision = None
@@ -113,8 +131,5 @@ def from_torchscript(torchscript_model: Union[str,
         minimum_deployment_target=ct.target[minimum_deployment_target]
         if minimum_deployment_target else None,
         skip_model_load=skip_model_load)
-
-    suffix = get_model_suffix(convert_to)
-    output_path = output_file_prefix + suffix
 
     mlmodel.save(output_path)
