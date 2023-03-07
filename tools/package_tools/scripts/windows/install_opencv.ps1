@@ -4,8 +4,9 @@ $opencvVer = "4.5.5"
 $ErrorActionPreference = 'Stop'
 $WORKSPACE = $PSScriptRoot
 $THIRDPARTY_DIR = "${WORKSPACE}/thirdparty"
+$OPENCV_DIR = "${THIRDPARTY_DIR}/opencv/install"
 
-if (Test-Path -Path $THIRDPARTY_DIR -PathType Container) {
+if (-Not (Test-Path -Path $THIRDPARTY_DIR -PathType Container)) {
     New-Item -Path $THIRDPARTY_DIR -ItemType Directory
 }
 
@@ -23,7 +24,7 @@ Push-Location build
 cmake .. -A x64 -T v142 `
     -DBUILD_TESTS=OFF `
     -DBUILD_PERF_TESTS=OFF `
-    -DCMAKE_INSTALL_PREFIX=../install
+    -DCMAKE_INSTALL_PREFIX="${OPENCV_DIR}"
 
 cmake --build . --config Release -j6
 cmake --install . --config Release

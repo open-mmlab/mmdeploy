@@ -274,7 +274,7 @@ def copy_scripts(sdk_path: str):
     elif sys.platform == 'linux':
         src_dir = osp.join(scripts_base, 'linux')
     else:
-        raise Exception('not supported')
+        raise Exception('unsupported')
     files = glob(osp.join(src_dir, '*'))
     for file in files:
         filename = osp.basename(file)
@@ -300,10 +300,13 @@ def create_mmdeploy(cfg: Dict, work_dir: str):
     backend = cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']
     if 'ort' in backend:
         ort_root = cfg['cmake_cfg']['ONNXRUNTIME_DIR']
-        src_lib = glob(osp.join(ort_root, 'lib', 'libonnxruntime.so.*'))[0]
-        dst_lib = osp.join(MMDEPLOY_DIR, 'mmdeploy',
-                           'lib', osp.basename(src_lib))
-        _copy(src_lib, dst_lib)
+        patterns = ['libonnxruntime.so.*', 'onnxruntime.dll']
+        for pattern in patterns:
+            src_lib = glob(osp.join(ort_root, 'lib', pattern))
+            if len(src_lib) > 0:
+                dst_lib = osp.join(MMDEPLOY_DIR, 'mmdeploy',
+                                'lib', osp.basename(src_lib[0]))
+                _copy(src_lib[0], dst_lib)
 
     # build wheel
     build_dir = osp.join(MMDEPLOY_DIR, 'build')
@@ -369,11 +372,17 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         _remove_if_exist(osp.join(MMDEPLOY_DIR, 'build_python'))
 
         # copy net & mmdeploy
-        libs_to_copy = ['*net.so', '*net.dll',
-                        '*mmdeploy.so.0', '*mmdeploy.dll']
+        if sys.platform == 'win32':
+            libs_to_copy = ['*net.dll', 'mmdeploy.dll']
+            search_dir = osp.join(MMDEPLOY_DIR, 'build', 'install', 'bin')
+        elif sys.platform == 'linux':
+            libs_to_copy = ['*net.so', '*mmdeploy.so.0']
+            search_dir = osp.join(MMDEPLOY_DIR, 'build', 'install', 'lib')
+        else:
+            raise Exception('unsupported')
+
         for pattern in libs_to_copy:
-            files = glob(osp.join(MMDEPLOY_DIR, 'build',
-                         'install', 'lib', pattern))
+            files = glob(osp.join(search_dir, pattern))
             for file in files:
                 _copy(file, osp.join(sdk_python_package_dir, 'mmdeploy_python'))
 
