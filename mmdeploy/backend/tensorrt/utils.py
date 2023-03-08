@@ -208,18 +208,21 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     if config.add_optimization_profile(profile) < 0:
-        logger.warning(f'Invalid optimization profile {profile}.')
+        logger.log(trt.Logger.WARNING,
+                   f'Invalid optimization profile {profile}.')
 
     if fp16_mode:
         if not getattr(builder, 'platform_has_fast_fp16', True):
-            logger.warning('Platform does not has fast native fp16.')
+            logger.log(trt.Logger.WARNING,
+                       'Platform does not has fast native fp16.')
         if version.parse(trt.__version__) < version.parse('8'):
             builder.fp16_mode = fp16_mode
         config.set_flag(trt.BuilderFlag.FP16)
 
     if int8_mode:
         if not getattr(builder, 'platform_has_fast_int8', True):
-            logger.warning('Platform does not has fast native int8.')
+            logger.log(trt.Logger.WARNING,
+                       'Platform does not has fast native int8.')
         from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
         assert int8_param is not None
