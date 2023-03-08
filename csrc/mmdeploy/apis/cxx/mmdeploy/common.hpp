@@ -6,6 +6,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "mmdeploy/common.h"
 #include "mmdeploy/core/mpl/span.h"
