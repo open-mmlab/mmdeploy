@@ -46,7 +46,6 @@ class LinearClsHead : public MMClassification {
   }
 
  private:
-
   Value GetLabels(const Tensor& scores, int class_num) const {
     auto scores_data = scores.data<float>();
     auto topk = std::min(topk_, class_num);
