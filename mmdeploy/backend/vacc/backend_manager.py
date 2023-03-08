@@ -1,13 +1,58 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
+import os.path as osp
 import sys
-from typing import Any, Callable, Optional, Sequence
+from dataclasses import dataclass, field
+from typing import Any, Callable, Dict, Optional, Sequence, Union
 
-from mmdeploy.utils import get_common_config, get_model_inputs, get_root_logger
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.ir.onnx import ONNXParam
+from mmdeploy.utils import get_common_config, get_root_logger
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    get_obj_by_qualname)
 
 
-@BACKEND_MANAGERS.register('vacc')
+@dataclass
+class VACCParam(BaseBackendParam):
+    """VACC backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        input_shapes (ShapeType): The Default shape of the inputs.
+        input_names (List[str]): Names of the inputs.
+        output_names (List[str]): Names of the outputs.
+        qconfig (Dict): Dictionary arguments feed to vacc.qconfig.
+            Or qualname to the dict.
+        quanti_data (Any): Calibration dataset. Iterable object of
+            `Dict[str, ndarray]`
+    """
+    _default_postfix = ''
+
+    use_vm: bool = False
+    qconfig: Union[str, Dict] = field(default_factory=dict)
+
+    def get_model_files(self) -> str:
+        """get the model files."""
+        assert isinstance(self.work_dir, str)
+        assert isinstance(self.file_name, str)
+        if isinstance(self.qconfig, str):
+            qconfig = get_obj_by_qualname(self.qconfig)
+        else:
+            qconfig = self.qconfig
+            assert isinstance(qconfig, Dict)
+        quant_mode = qconfig.get('dtype', 'fp16')
+        save_dir = '-'.join([self.file_name, quant_mode])
+        model_prefix = osp.join(self.work_dir, save_dir, self.file_name)
+        return [
+            model_prefix + '.so', model_prefix + '.json',
+            model_prefix + '.params'
+        ]
+
+
+_BackendParam = VACCParam
+
+
+@BACKEND_MANAGERS.register('vacc', param=VACCParam, ir_param=ONNXParam)
 class VACCManager(BaseBackendManager):
 
     @classmethod
@@ -98,31 +143,26 @@ class VACCManager(BaseBackendManager):
         return info
 
     @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   deploy_cfg: Any,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+    def to_backend(
+        cls,
+        onnx_model: str,
+        output_path: str,
+        model_name: str,
+        input_shapes: Dict[str, Sequence],
+        qconfig: Optional[Dict] = None,
+    ) -> Sequence[str]:
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be saved in this directory.
-            deploy_cfg (Any): The deploy config.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
-            device (str, optional): The device type. Defaults to 'cpu'.
-        Returns:
-            Sequence[str]: Backend files.
+            onnx_model (str): Input onnx model.
+            output_path (str): File path to save VACC model.
+            model_name (str): model name.
+            input_shapes (ShapeType): The Default shape of the inputs.
+            qconfig (Dict): Dictionary arguments feed to vacc.qconfig.
         """
         logger = get_root_logger()
-        import copy
 
-        from . import is_available
-
-        if not is_available():
+        if not cls.is_available():
             logger.error(
                 'vacc and tvm support is not available, please make sure:\n'
                 '1) `vacc/python` and `tvm/python` existed in `PYTHONPATH`\n'
@@ -130,15 +170,27 @@ class VACCManager(BaseBackendManager):
             sys.exit(1)
 
         from .onnx2vacc import from_onnx
-        model_inputs = get_model_inputs(deploy_cfg)
-        common_params = get_common_config(deploy_cfg)
-        model_name = common_params['name']
 
-        backend_files = []
-        for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
-            model_input = copy.deepcopy(model_inputs[model_id])
-            model_file = from_onnx(onnx_path, work_dir, model_input,
-                                   model_name)
-            backend_files += model_file
+        from_onnx(
+            onnx_model,
+            output_path=output_path,
+            model_name=model_name,
+            input_shapes=input_shapes,
+            qconfig=qconfig)
 
-        return backend_files
+        # model_inputs = get_model_inputs(deploy_cfg)
+        # common_params = get_common_config(deploy_cfg)
+        # model_name = common_params['name']
+
+        # backend_files = []
+        # for model_id, onnx_path in zip(range(len(ir_files)), ir_files):
+        #     model_input = copy.deepcopy(model_inputs[model_id])
+        #     model_file = from_onnx(onnx_path, work_dir, model_input,
+        #                            model_name)
+        #     backend_files += model_file
+
+        # return backend_files
+
+        # model_inputs = get_model_inputs(deploy_cfg)
+        # common_params = get_common_config(deploy_cfg)
+        # model_name = common_params['name']
