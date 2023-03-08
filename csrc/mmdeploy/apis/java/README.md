@@ -20,14 +20,14 @@ export JAVA_HOME=${PWD}/jdk-18
 export PATH=${JAVA_HOME}/bin:${PATH}
 ```
 
-**Step 3.** Switch default Java version:
+**Step 3.** Switch default Java version(optional):
 
 ```bash
 sudo update-alternatives --config java
 sudo update-alternatives --config javac
 ```
 
-You should select the version you will use.
+If you have multiple Java versions, you should select the version you will use.
 
 ### Installation
 

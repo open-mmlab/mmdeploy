@@ -17,6 +17,7 @@ jlong Java_mmdeploy_Classifier_create(JNIEnv *env, jobject, jstring modelPath, j
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create classifier, code = {}", ec);
+    return -1;
   }
   return (jlong)classifier;
 }
@@ -28,13 +29,14 @@ void Java_mmdeploy_Classifier_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_Classifier_apply(JNIEnv *env, jobject thiz, jlong handle,
                                             jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_classification_t *results{};
     int *result_count{};
     auto ec = mmdeploy_classifier_apply((mmdeploy_classifier_t)handle, imgs, size, &results,
                                         &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply classifier, code = {}", ec);
+      return NULL;
     }
 
     auto result_cls = env->FindClass("mmdeploy/Classifier$Result");
