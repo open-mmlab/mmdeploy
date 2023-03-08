@@ -61,6 +61,7 @@ class ModelCompress(BaseTask):
                  deploy_cfg: Config,
                  device: str,
                  experiment_name: str = 'BaseTask'):
+
         super().__init__(model_cfg, deploy_cfg, device, experiment_name)
         self.origin_model_cfg = self.revert_model_cfg(model_cfg)
         self.base_task = build_task_processor(self.origin_model_cfg,
@@ -128,15 +129,7 @@ class ModelCompress(BaseTask):
         mmdeploy."""
         model = super().build_pytorch_model(model_checkpoint, cfg_options,
                                             **kwargs)
-        if hasattr(model, '_razor_divisor'):
-            import json
-
-            from mmrazor.models.utils.expandable_utils import \
-                make_channel_divisible
-            from mmrazor.utils import print_log
-            divisor = getattr(model, '_razor_divisor')
-            structure = make_channel_divisible(model, divisor)
-
-            print_log(f'make divisible: {json.dumps(structure,indent=4)}')
+        if hasattr(model, 'post_process_for_mmdeploy'):
+            model.post_process_for_mmdeploy()
 
         return model
