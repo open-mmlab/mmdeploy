@@ -1,19 +1,19 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 import torch
+import torch.nn.functional as F
+from mmpose.models.utils import rope
 
 from mmdeploy.core import FUNCTION_REWRITER
-import torch.nn.functional as F
-
-from mmpose.models.utils import rope
 
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmpose.models.utils.rtmpose_block.ScaleNorm.forward', backend='ncnn')
 def scalenorm__forward__ncnn(self, x):
     """Rewrite `scalenorm` for ncnn backend.
-    ncnn does not support negative dimension for torch.chunk and torch.cat
-    ncnn pad shape does not support float input
+
+    ncnn does not support negative dimension for torch.chunk and
+    torch.cat ncnn pad shape does not support float input
     """
     # The one-dim of Fubinious norm is equal to L2Norm.
     # Set p=2 explicitly to map torch.norm to ReduceL2 onnx op,
@@ -29,6 +29,7 @@ def scalenorm__forward__ncnn(self, x):
     'mmpose.models.utils.rtmpose_block.RTMBlock._forward', backend='ncnn')
 def rtmblock___forward_ncnn(self, inputs):
     """Rewrite `_forward` of RTMBlock for ncnn backend.
+
     ncnn does not support negative dimension for Split op.
     """
     if self.attn_type == 'self-attn':
@@ -83,6 +84,7 @@ def rtmblock___forward_ncnn(self, inputs):
     'mmpose.models.utils.rtmpose_block.Scale.forward', backend='ncnn')
 def scale__forward_ncnn(self, x):
     """Rewrite `forward` of Scale for ncnn backend.
+
     Adapt the shape to avoid ncnn BinaryOp seg fault.
     """
 
