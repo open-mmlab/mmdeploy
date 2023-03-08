@@ -1,5 +1,6 @@
 package mmdeploy;
 
+/** @description: PixelFormat. */
 public enum PixelFormat {
     BGR(0),
     RGB(1),
@@ -9,6 +10,9 @@ public enum PixelFormat {
     BGRA(5);
     final int value;
 
+    /** Initialize a new instance of the PixelFormat class.
+     * @param value: the value.
+    */
     PixelFormat(int value) {
         this.value = value;
     }
