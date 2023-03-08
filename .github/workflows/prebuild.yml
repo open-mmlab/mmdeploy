@@ -2,12 +2,7 @@ name: prebuild
 
 
 on:
-  push:
-    paths:
-      - ".github/workflows/prebuild.yml"
-  pull_request:
-    paths:
-      - ".github/workflows/prebuild.yml"
+  push
 
 permissions: write-all
 
