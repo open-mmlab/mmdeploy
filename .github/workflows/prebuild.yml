@@ -74,19 +74,22 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
+    env:
+      PREBUILD_DIR: /__w/mmdeploy/temp_data
     steps:
       - name: Install dependencies
         run: |
           python3 -V
-          python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim numpy pycuda clip
+          #python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          python3 -m pip install openmim
           python3 -m mim install "mmcls>=1.0.0rc2"
       - name: Install MMDeploy
         run: |
           python3 -V
           export PY_VERSION=$(python3 -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
-          tar -xzvf /__w/mmdeploy/prebuild/mmdeploy-*-onnxruntime*.tar.gz
-          cd ./mmdeploy-*
+          mkdir -p /__w/mmdeploy/prebuild_dir
+          tar -xzvf /__w/mmdeploy/prebuild/mmdeploy-*-onnxruntime*.tar.gz -C $PREBUILD_DIR
+          cd $PREBUILD_DIR/mmdeploy-*
           python3 -m pip install ./dist/mmdeploy-*-linux_x86_64.whl
           python3 -m pip install ./sdk/python/mmdeploy_python-*-cp${PY_VERSION}-*-linux_x86_64.whl
           python3 -c 'import mmdeploy; print(mmdeploy.__version__)'
@@ -95,6 +98,9 @@ jobs:
       - name: Test MMDeploy
         run: |
           python3 -V
+          cd $PREBUILD_DIR/mmdeploy-*
+          export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
+          cd -
           bash .github/scripts/test_mmcls_full_pipeline.sh
 
   run_prebuild_cuda113_windows:
