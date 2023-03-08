@@ -12,15 +12,16 @@ if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
 device = 'rk1126'
+_extension = '.rknn'
 
 
 class TestBackendParam:
 
     def test_get_model_files(self):
         param = RKNNParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.rknn'
+        assert param.file_name == 'tmp' + _extension
 
-        assert param.get_model_files() == 'tmp.rknn'
+        assert param.get_model_files() == 'tmp' + _extension
 
     def test_add_argument(self):
         parser = argparse.ArgumentParser()
@@ -74,7 +75,7 @@ class TestManager:
                       input_shape_dict):
         from mmdeploy.backend.rknn.onnx2rknn import RKNNConfig
         with TemporaryDirectory() as tmp_dir:
-            model_path = osp.join(tmp_dir, 'tmp.rknn')
+            model_path = osp.join(tmp_dir, 'tmp' + _extension)
             backend_mgr.to_backend(
                 onnx_model,
                 model_path,
@@ -143,7 +144,7 @@ class TestManager:
         input_shapes = ','.join(input_shapes)
 
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.rknn'
+            param_name = 'tmp' + _extension
             # make args
             args = ['convert']
             args += ['--onnx-path', onnx_model]

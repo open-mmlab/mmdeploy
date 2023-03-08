@@ -11,14 +11,16 @@ from mmdeploy.backend.ascend import AscendParam
 if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
+_extension = '.om'
+
 
 class TestBackendParam:
 
     def test_get_model_files(self):
         param = AscendParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.om'
+        assert param.file_name == 'tmp' + _extension
 
-        assert param.get_model_files() == 'tmp.om'
+        assert param.get_model_files() == 'tmp' + _extension
 
     def test_add_argument(self):
         parser = argparse.ArgumentParser()
@@ -69,7 +71,7 @@ class TestManager:
     def backend_model(self, onnx_model, input_shape_dict):
         from mmdeploy.backend.ascend import AtcParam
         with TemporaryDirectory() as tmp_dir:
-            model_path = osp.join(tmp_dir, 'tmp.om')
+            model_path = osp.join(tmp_dir, 'tmp' + _extension)
             backend_mgr.to_backend(onnx_model, model_path,
                                    AtcParam(input_shapes=input_shape_dict))
 
@@ -111,7 +113,7 @@ class TestManager:
         input_shapes = ','.join(input_shapes)
 
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.om'
+            param_name = 'tmp' + _extension
             # make args
             args = ['convert']
             args += ['--onnx-path', onnx_model]

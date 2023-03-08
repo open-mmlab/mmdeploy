@@ -11,14 +11,16 @@ from mmdeploy.backend.coreml import CoreMLParam
 if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
+_extension = '.mlpackage'
+
 
 class TestBackendParam:
 
     def test_get_model_files(self):
         param = CoreMLParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.mlpackage'
+        assert param.file_name == 'tmp' + _extension
 
-        assert param.get_model_files() == 'tmp.mlpackage'
+        assert param.get_model_files() == 'tmp' + _extension
 
 
 class TestManager:
@@ -51,7 +53,7 @@ class TestManager:
     def backend_model(self, ir_model, input_names, output_names,
                       input_shape_dict):
         with TemporaryDirectory() as tmp_dir:
-            model_path = osp.join(tmp_dir, 'tmp.mlpackage')
+            model_path = osp.join(tmp_dir, 'tmp' + _extension)
             backend_mgr.to_backend(
                 ir_model,
                 model_path,
@@ -100,7 +102,7 @@ class TestManager:
         input_shapes = ','.join(input_shapes)
 
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.mlpackage'
+            param_name = 'tmp' + _extension
             # make args
             args = ['convert']
             args += ['--torchscript-path', ir_model]

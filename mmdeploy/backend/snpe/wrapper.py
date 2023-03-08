@@ -3,7 +3,7 @@ import abc
 import os
 import time
 from random import randint
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Dict, Optional, Tuple
 
 import grpc
 import inference_pb2
@@ -98,12 +98,10 @@ class SNPEWrapper(BaseWrapper):
 
     Args:
         dlc_file (str): Path of a weight file.
-        output_names (Sequence[str] | None): Names of model outputs in order.
-            Defaults to `None` and the wrapper will load the output names from
-            snpe model.
+        uri (str): URI of the device
 
     Examples:
-        >>> from mmdeploy.backend.snpe import SNPEWrapper
+        >>> from mmdeploy.backend.snpe.wrapper import SNPEWrapper
         >>> import torch
         >>>
         >>> snple_file = 'alexnet.dlc'
@@ -113,11 +111,7 @@ class SNPEWrapper(BaseWrapper):
         >>> print(outputs)
     """
 
-    def __init__(self,
-                 dlc_file: str,
-                 uri: str,
-                 output_names: Optional[Sequence[str]] = None,
-                 **kwargs):
+    def __init__(self, dlc_file: str, uri: str):
 
         logger = get_root_logger()
 

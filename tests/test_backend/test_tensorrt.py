@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import argparse
 import os.path as osp
+from tempfile import TemporaryDirectory
 
 import pytest
 
@@ -10,8 +11,16 @@ from mmdeploy.backend.tensorrt import TensorRTParam
 if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
+_extension = '.engine'
+
 
 class TestBackendParam:
+
+    def test_get_model_files(self):
+        param = TensorRTParam(work_dir='', file_name='tmp')
+        assert param.file_name == 'tmp' + _extension
+
+        assert param.get_model_files() == 'tmp' + _extension
 
     def test_check_param(self):
         with pytest.raises(ValueError):
@@ -70,29 +79,30 @@ class TestManager:
     def test_to_backend(self, backend_model):
         assert osp.exists(backend_model)
 
-    def test_to_backend_from_param(self, tmp_path, input_shape_dict,
-                                   onnx_model):
-        save_path = str(tmp_path / 'tmp.engine')
-        param = backend_mgr.build_param(
-            work_dir='', file_name=save_path, input_shapes=input_shape_dict)
-        backend_mgr.to_backend_from_param(onnx_model, param)
-        assert osp.exists(save_path)
+    def test_to_backend_from_param(self, input_shape_dict, onnx_model):
+        with TemporaryDirectory() as work_dir:
+            param = backend_mgr.build_param(
+                work_dir=work_dir,
+                file_name='tmp',
+                input_shapes=input_shape_dict)
+            backend_mgr.to_backend_from_param(onnx_model, param)
+            assert osp.exists(param.get_model_files())
 
-    def test_to_backend_from_param_quanti(self, tmp_path, input_shape_dict,
-                                          onnx_model, inputs):
+    def test_to_backend_from_param_quanti(self, input_shape_dict, onnx_model,
+                                          inputs):
 
         def _quanti_data():
             yield inputs
 
-        save_path = str(tmp_path / 'tmp.engine')
-        param = backend_mgr.build_param(
-            work_dir='',
-            file_name=save_path,
-            input_shapes=input_shape_dict,
-            int8_mode=True,
-            quanti_data=_quanti_data())
-        backend_mgr.to_backend_from_param(onnx_model, param)
-        assert osp.exists(save_path)
+        with TemporaryDirectory() as work_dir:
+            param = backend_mgr.build_param(
+                work_dir=work_dir,
+                file_name='tmp',
+                input_shapes=input_shape_dict,
+                int8_mode=True,
+                quanti_data=_quanti_data())
+            backend_mgr.to_backend_from_param(onnx_model, param)
+            assert osp.exists(param.get_model_files())
 
     def test_build_wrapper(self, backend_model, inputs, outputs,
                            assert_forward):
@@ -105,7 +115,7 @@ class TestManager:
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, onnx_model, tmp_path, input_shape_dict):
+    def test_parse_args(self, onnx_model, input_shape_dict):
         # make input shapes
         input_shapes = []
         for name, shape in input_shape_dict.items():
@@ -113,20 +123,20 @@ class TestManager:
             input_shapes.append(f'{name}:{shape}')
         input_shapes = ','.join(input_shapes)
 
-        save_path = str(tmp_path / 'tmp.engine')
+        with TemporaryDirectory() as work_dir:
 
-        # make args
-        args = ['convert']
-        args += ['--onnx-path', onnx_model]
-        args += ['--work-dir', '/']
-        args += ['--file-name', save_path]
-        args += ['--input-shapes', input_shapes]
+            # make args
+            args = ['convert']
+            args += ['--onnx-path', onnx_model]
+            args += ['--work-dir', work_dir]
+            args += ['--file-name', 'tmp']
+            args += ['--input-shapes', input_shapes]
 
-        parser = argparse.ArgumentParser()
-        generator = backend_mgr.parse_args(parser, args=args)
+            parser = argparse.ArgumentParser()
+            generator = backend_mgr.parse_args(parser, args=args)
 
-        try:
-            next(generator)
-            next(generator)
-        except StopIteration:
-            assert osp.exists(save_path)
+            try:
+                next(generator)
+                next(generator)
+            except StopIteration:
+                assert osp.exists(osp.join(work_dir, 'tmp' + _extension))

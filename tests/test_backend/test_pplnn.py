@@ -11,15 +11,19 @@ from mmdeploy.backend.pplnn import PPLNNParam
 if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
+_extension = '.onnx'
+_json_extension = '.json'
+
 
 class TestBackendParam:
 
     def test_get_model_files(self):
         param = PPLNNParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.onnx'
-        assert param.algo_name == 'tmp.json'
+        assert param.file_name == 'tmp' + _extension
+        assert param.algo_name == 'tmp' + _json_extension
 
-        assert param.get_model_files() == ('tmp.onnx', 'tmp.json')
+        assert param.get_model_files() == ('tmp' + _extension,
+                                           'tmp' + _json_extension)
 
 
 class TestManager:
@@ -43,8 +47,8 @@ class TestManager:
     @pytest.fixture(scope='class')
     def backend_model(self, onnx_model, input_shape_dict):
         with TemporaryDirectory() as tmp_dir:
-            param_path = osp.join(tmp_dir, 'tmp.onnx')
-            algo_path = osp.join(tmp_dir, 'tmp.json')
+            param_path = osp.join(tmp_dir, 'tmp' + _extension)
+            algo_path = osp.join(tmp_dir, 'tmp' + _json_extension)
             backend_mgr.to_backend(
                 onnx_model,
                 param_path,

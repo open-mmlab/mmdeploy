@@ -11,15 +11,19 @@ from mmdeploy.backend.ncnn import NCNNParam
 if not backend_mgr.is_available():
     pytest.skip('backend not available', allow_module_level=True)
 
+_extension = '.param'
+_bin_extension = '.bin'
+
 
 class TestBackendParam:
 
     def test_get_model_files(self):
         param = NCNNParam(work_dir='', file_name='tmp')
-        assert param.file_name == 'tmp.param'
-        assert param.bin_name == 'tmp.bin'
+        assert param.file_name == 'tmp' + _extension
+        assert param.bin_name == 'tmp' + _bin_extension
 
-        assert param.get_model_files() == ('tmp.param', 'tmp.bin')
+        assert param.get_model_files() == ('tmp' + _extension,
+                                           'tmp' + _bin_extension)
 
 
 class TestManager:
@@ -39,8 +43,8 @@ class TestManager:
     @pytest.fixture(scope='class')
     def backend_model(self, onnx_model):
         with TemporaryDirectory() as tmp_dir:
-            param_path = osp.join(tmp_dir, 'tmp.param')
-            bin_path = osp.join(tmp_dir, 'tmp.bin')
+            param_path = osp.join(tmp_dir, 'tmp' + _extension)
+            bin_path = osp.join(tmp_dir, 'tmp' + _bin_extension)
             backend_mgr.to_backend(onnx_model, param_path, bin_path)
 
             yield param_path, bin_path
@@ -73,7 +77,7 @@ class TestManager:
 
     def test_parse_args(self, onnx_model):
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.param'
+            param_name = 'tmp' + _extension
             # make args
             args = ['convert']
             args += ['--onnx-path', onnx_model]
@@ -89,4 +93,4 @@ class TestManager:
             except StopIteration:
                 pass
             assert osp.exists(osp.join(work_dir, param_name))
-            assert osp.exists(osp.join(work_dir, 'tmp.bin'))
+            assert osp.exists(osp.join(work_dir, 'tmp' + _bin_extension))

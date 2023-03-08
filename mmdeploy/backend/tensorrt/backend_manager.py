@@ -36,7 +36,7 @@ class TensorRTParam(BaseBackendParam):
         max_workspace_size (int): Extra workspace size required by the model.
             default to 1Gb.
     """
-    _default_postfix = '.onnx'
+    _default_postfix = '.engine'
 
     device: str = 'cuda'
     fp16_mode: bool = False

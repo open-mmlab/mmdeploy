@@ -117,7 +117,8 @@ def to_backend(backend_name: str,
             curr_deploy_cfg,
             work_dir=work_dir,
             backend_files=[file_name],
-            device=device)
+            device=device,
+            **kwargs)
 
         backend_mgr.to_backend_from_param(ir_file, param)
         backend_file = param.get_model_files()
