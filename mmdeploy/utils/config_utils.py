@@ -94,6 +94,7 @@ def get_codebase(deploy_cfg: Union[str, mmengine.Config],
         Codebase : An enumeration denotes the codebase type.
     """
     if model_cfg is not None:
+        # using mmrazor codebase if the model is a mmrazor model.
         model_cfg: dict = model_cfg['model']
         if model_cfg.get('_scope_', None) == 'mmrazor'\
                 or model_cfg['type'].startswith('mmrazor.'):
