@@ -17,6 +17,8 @@ class CpuPlatformImpl : public PlatformImpl {
 
   const char* GetPlatformName() const noexcept override;
 
+  Result<void> BindDevice(Device device, Device* prev) override;
+
   shared_ptr<BufferImpl> CreateBuffer(Device device) override;
 
   shared_ptr<StreamImpl> CreateStream(Device device) override;
