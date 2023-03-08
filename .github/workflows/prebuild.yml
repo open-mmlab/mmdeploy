@@ -1,6 +1,5 @@
 name: prebuild
 
-
 on:
   push:
     paths:
@@ -9,11 +8,21 @@ on:
     paths:
       - ".github/workflows/prebuild.yml"
 
+# on:
+#   pull_request:
+#     types: [closed]
+#     branches:
+#       - master
+#       - dev-1.x
+#     paths:
+#       - 'mmdeploy/version.py'
+
 permissions: write-all
 
 jobs:
   linux_build:
     runs-on: [self-hosted, linux-3090]
+    # if: github.event.pull_request.merged == true
     container:
       image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
       options: "--gpus=all --ipc=host"
@@ -78,7 +87,7 @@ jobs:
 
   linux_upload:
     runs-on: [self-hosted, linux-3090]
-    # if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: linux_test
     container:
@@ -109,7 +118,6 @@ jobs:
           done
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
               /__w/mmdeploy/prebuild/${{ github.run_id }}/sdk/*.tar.gz
@@ -117,6 +125,7 @@ jobs:
 
   windows_build:
     runs-on: [self-hosted, win10-3080]
+    # if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -173,7 +182,7 @@ jobs:
 
   windows_upload:
     runs-on: [self-hosted, win10-3080]
-    # if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: windows_test
     steps:
@@ -198,7 +207,6 @@ jobs:
           }
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
               D:/DEPS/ciartifact/${{github.run_id}}/sdk/*.zip
