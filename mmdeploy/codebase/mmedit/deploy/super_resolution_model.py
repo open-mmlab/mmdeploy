@@ -3,7 +3,7 @@ from typing import List, Optional, Sequence, Union
 
 import mmengine
 import torch
-from mmedit.structures import EditDataSample, PixelData
+from mmedit.structures import EditDataSample
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
@@ -64,6 +64,35 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
+    def convert_to_datasample(
+            self, predictions: EditDataSample, data_samples: EditDataSample,
+            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
+        """Add predictions and destructed inputs (if passed) to data samples.
+
+        Args:
+            predictions (EditDataSample): The predictions of the model.
+            data_samples (EditDataSample): The data samples loaded from
+                dataloader.
+            inputs (Optional[torch.Tensor]): The input of model. Defaults to
+                None.
+
+        Returns:
+            List[EditDataSample]: Modified data samples.
+        """
+
+        if inputs is not None:
+            destructed_input = self.data_preprocessor.destruct(
+                inputs, data_samples, 'img')
+            data_samples.set_tensor_data({'input': destructed_input})
+        # split to list of data samples
+        data_samples = data_samples.split()
+        predictions = predictions.split()
+
+        for data_sample, pred in zip(data_samples, predictions):
+            data_sample.output = pred
+
+        return data_samples
+
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
@@ -94,20 +123,15 @@ class End2EndModel(BaseBackendModel):
         lq = lq.to(self.device)
         batch_outputs = self.wrapper({self.input_name:
                                       lq})[self.output_names[0]].to('cpu')
-        if hasattr(self.data_preprocessor, 'destructor'):
-            batch_outputs = self.data_preprocessor.destructor(
-                batch_outputs.to(self.data_preprocessor.outputs_std.device))
-        predictions = []
+        assert hasattr(self.data_preprocessor, 'destruct')
+        batch_outputs = self.data_preprocessor.destruct(
+            batch_outputs, data_samples)
 
-        for sr_pred, data_sample in zip(batch_outputs, data_samples):
-            pred = EditDataSample()
-            pred.set_data(dict(pred_img=PixelData(**dict(data=sr_pred))))
-            data_sample.set_data(dict(output=pred))
-            '''
-            data_sample.set_data(
-                dict(pred_img=PixelData(**dict(data=sr_pred))))
-            '''
-            predictions.append(data_sample)
+        # create a stacked data sample here
+        predictions = EditDataSample(pred_img=batch_outputs.cpu())
+
+        predictions = self.convert_to_datasample(predictions, data_samples,
+                                                 inputs)
         return predictions
 
 
@@ -117,6 +141,35 @@ class SDKEnd2EndModel(End2EndModel):
 
     def __init__(self, *args, **kwargs):
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
+
+    def convert_to_datasample(
+            self, predictions: EditDataSample, data_samples: EditDataSample,
+            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
+        """Add predictions and destructed inputs (if passed) to data samples.
+
+        Args:
+            predictions (EditDataSample): The predictions of the model.
+            data_samples (EditDataSample): The data samples loaded from
+                dataloader.
+            inputs (Optional[torch.Tensor]): The input of model. Defaults to
+                None.
+
+        Returns:
+            List[EditDataSample]: Modified data samples.
+        """
+
+        if inputs is not None:
+            destructed_input = self.data_preprocessor.destruct(
+                inputs, data_samples, 'img')
+            data_samples.set_tensor_data({'input': destructed_input})
+        # split to list of data samples
+        data_samples = data_samples.split()
+        predictions = predictions.split()
+
+        for data_sample, pred in zip(data_samples, predictions):
+            data_sample.output = pred
+
+        return data_samples
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -151,14 +204,14 @@ class SDKEnd2EndModel(End2EndModel):
             outputs.append(
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
         outputs = torch.stack(outputs, 0) / 255.
-        if hasattr(self.data_preprocessor, 'destructor'):
-            outputs = self.data_preprocessor.destructor(
-                outputs.to(self.data_preprocessor.outputs_std.device))
+        assert hasattr(self.data_preprocessor, 'destruct')
+        outputs = self.data_preprocessor.destruct(outputs, data_samples)
 
-        for i, sr_pred in enumerate(outputs):
-            pred = EditDataSample()
-            pred.set_data(dict(pred_img=PixelData(**dict(data=sr_pred))))
-            data_samples[i].set_data(dict(output=pred))
+        # create a stacked data sample here
+        predictions = EditDataSample(pred_img=outputs.cpu())
+
+        predictions = self.convert_to_datasample(predictions, data_samples,
+                                                 inputs)
         return data_samples
 
 
