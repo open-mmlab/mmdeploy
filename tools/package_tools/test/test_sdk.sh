@@ -21,7 +21,7 @@ if [[ ! -d $OpenCV_DIR ]]; then
 fi
 
 # env
-source ./set_env.sh
+source ./set_env.sh $(pwd)
 
 # build
 ./build_sdk.sh $OpenCV_DIR

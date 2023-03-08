@@ -1,5 +1,6 @@
 name: prebuild
 
+
 on:
   push:
     paths:
@@ -44,7 +45,7 @@ jobs:
           source activate mmdeploy-3.6
           cd pack
           python ../tools/package_tools/generate_build_config.py --backend 'ort;trt' \
-            --system windows --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
+            --system linux --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
             --build-sdk-python --sdk-dynamic-net
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
       - name: Move artifact
@@ -67,16 +68,18 @@ jobs:
       - name: Test python
         run: |
           cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
-          conda activate mmdeploy-3.8
+          source activate mmdeploy-3.8
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.sh
       - name: Test c/cpp
         run: |
           cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
-          conda activate mmdeploy-3.8
+          source activate mmdeploy-3.8
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
 
   linux_upload:
     runs-on: [self-hosted, linux-3090]
+    # if: startsWith(github.ref, 'refs/tags/')
+    environment: 'prod'
     needs: linux_test
     container:
       image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
@@ -87,10 +90,15 @@ jobs:
       - name: Upload mmdeploy
         run: |
           cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy
+          source activate mmdeploy-3.8
+          pip install twine
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
           cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy_python
+          source activate mmdeploy-3.8
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
@@ -101,6 +109,7 @@ jobs:
           done
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
               /__w/mmdeploy/prebuild/${{ github.run_id }}/sdk/*.tar.gz
@@ -164,17 +173,21 @@ jobs:
 
   windows_upload:
     runs-on: [self-hosted, win10-3080]
-    if: startsWith(github.ref, 'refs/tags/')
+    # if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: windows_test
     steps:
       - name: Upload mmdeploy
         run: |
           cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy"
+          conda activate mmdeploy-3.8
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
           cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy_python"
+          conda activate mmdeploy-3.8
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
@@ -185,6 +198,7 @@ jobs:
           }
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
         with:
           files: |
               D:/DEPS/ciartifact/${{github.run_id}}/sdk/*.zip

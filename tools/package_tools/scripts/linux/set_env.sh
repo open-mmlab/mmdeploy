@@ -1,6 +1,11 @@
 #!/bin/bash
 
-WORKSPACE=$(realpath $(dirname "$0"))
+if [ -n "$1" ]; then
+    WORKSPACE=$1
+else
+    WORKSPACE=$(realpath $(dirname "$0"))
+fi
+
 THIRDPARTY_DIR=$WORKSPACE/thirdparty
 
 pushd $THIRDPARTY_DIR
