@@ -15,6 +15,8 @@ endfunction ()
 macro(mmdeploy_add_net NAME)
     if (MMDEPLOY_DYNAMIC_BACKEND)
         mmdeploy_add_library(${NAME} SHARED ${ARGN})
+        # DYNAMIC_BACKEND implies BUILD_SDK_MONOLITHIC
+        mmdeploy_export_impl(${NAME})
         target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
         set(BACKEND_LIB_NAMES ${BACKEND_LIB_NAMES} ${PROJECT_NAME} PARENT_SCOPE)
     else ()
