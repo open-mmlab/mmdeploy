@@ -19,10 +19,13 @@ deploy_cfg_ncnn = Config(
         codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
 
-def get_trt_config(output_names, shape):
+def get_trt_config(output_names, shape, dynamic_axes=None):
     deploy_cfg_tensorrt = Config(
         dict(
-            onnx_config=dict(input_shape=None, output_names=output_names),
+            onnx_config=dict(
+                input_shape=None,
+                output_names=output_names,
+                dynamic_axes=dynamic_axes),
             backend_config=dict(
                 type='tensorrt',
                 common_config=dict(
@@ -615,3 +618,30 @@ def test_linspace__default():
 
         assert np.allclose(
             model_output, rewrite_outputs, rtol=1e-03, atol=1e-05)
+
+
+@backend_checker(Backend.TENSORRT)
+@pytest.mark.parametrize('dtype', [torch.bool, torch.float32])
+@pytest.mark.parametrize('dynamic_axes',
+                         [None, dict(input=dict({
+                             0: 'dim0',
+                             1: 'dim1'
+                         }))])
+def test_cat__tensorrt(dtype, dynamic_axes):
+    input = torch.rand(2, 4)
+    model = WrapFunction(lambda input: torch.cat(
+        [input.to(dtype), input.to(dtype)], -1))
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'],
+                                  shape=[2, 4],
+                                  dynamic_axes=dynamic_axes),
+        run_with_backend=True)
+    assert pytorch_output.dtype == rewrite_output[0].dtype
+    assert torch.allclose(
+        pytorch_output.cpu().float(),
+        rewrite_output[0].cpu().float(),
+        rtol=1e-3,
+        atol=1e-5)
