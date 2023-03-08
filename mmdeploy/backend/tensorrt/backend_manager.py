@@ -69,23 +69,6 @@ _BackendParam = TensorRTParam
 class TensorRTManager(BaseBackendManager):
 
     @classmethod
-    def build_wrapper(
-        cls,
-        engine_path: str,
-        output_names: Optional[Sequence[str]] = None,
-    ):
-        """Build the wrapper for the backend model.
-
-        Args:
-            engine_path (str): TensorRT engine file.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-        """
-
-        from .wrapper import TRTWrapper
-        return TRTWrapper(engine=engine_path, output_names=output_names)
-
-    @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
         """Check whether backend is installed.
 
@@ -261,6 +244,23 @@ class TensorRTManager(BaseBackendManager):
             int8_algorithm=param.int8_algorithm,
             calib_data=param.quanti_data,
             device_id=device_id)
+
+    @classmethod
+    def build_wrapper(
+        cls,
+        engine_path: str,
+        output_names: Optional[Sequence[str]] = None,
+    ):
+        """Build the wrapper for the backend model.
+
+        Args:
+            engine_path (str): TensorRT engine file.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+
+        from .wrapper import TRTWrapper
+        return TRTWrapper(engine=engine_path, output_names=output_names)
 
     @classmethod
     def build_wrapper_from_param(cls, param: _BackendParam):

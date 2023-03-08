@@ -68,28 +68,6 @@ _BackendParam = PPLNNParam
 class PPLNNManager(BaseBackendManager):
 
     @classmethod
-    def build_wrapper(cls,
-                      onnx_file: str,
-                      algo_file: Optional[str] = None,
-                      device: str = 'cpu',
-                      output_names: Optional[Sequence[str]] = None):
-        """Build the wrapper for the backend model.
-
-        Args:
-            onnx_file (str): Path of input ONNX model file.
-            algo_file (str): Path of PPLNN algorithm file.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-        """
-        from .wrapper import PPLNNWrapper
-        return PPLNNWrapper(
-            onnx_file=onnx_file,
-            algo_file=algo_file if osp.exists(algo_file) else None,
-            device=device,
-            output_names=output_names)
-
-    @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
         """Check whether backend is installed.
 
@@ -179,6 +157,28 @@ class PPLNNManager(BaseBackendManager):
             device=device,
             disable_avx512=param.disable_avx512,
             quick_select=param.quick_select)
+
+    @classmethod
+    def build_wrapper(cls,
+                      onnx_file: str,
+                      algo_file: Optional[str] = None,
+                      device: str = 'cpu',
+                      output_names: Optional[Sequence[str]] = None):
+        """Build the wrapper for the backend model.
+
+        Args:
+            onnx_file (str): Path of input ONNX model file.
+            algo_file (str): Path of PPLNN algorithm file.
+            device (str, optional): The device info. Defaults to 'cpu'.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+        from .wrapper import PPLNNWrapper
+        return PPLNNWrapper(
+            onnx_file=onnx_file,
+            algo_file=algo_file if osp.exists(algo_file) else None,
+            device=device,
+            output_names=output_names)
 
     @classmethod
     def build_wrapper_from_param(cls, param: _BackendParam):

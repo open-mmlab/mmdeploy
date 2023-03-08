@@ -37,24 +37,6 @@ _BackendParam = ONNXRuntimeParam
 class ONNXRuntimeManager(BaseBackendManager):
 
     @classmethod
-    def build_wrapper(cls,
-                      model_path: str,
-                      device: str = 'cpu',
-                      output_names: Optional[Sequence[str]] = None):
-        """Build the wrapper for the backend model.
-
-        Args:
-            model_path (str): ONNX model file.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-        """
-
-        from .wrapper import ORTWrapper
-        return ORTWrapper(
-            onnx_file=model_path, device=device, output_names=output_names)
-
-    @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
         """Check whether backend is installed.
 
@@ -164,6 +146,24 @@ class ONNXRuntimeManager(BaseBackendManager):
         assert isinstance(param.file_name, str)
         save_path = osp.join(param.work_dir, param.file_name)
         cls.to_backend(ir_model, save_path)
+
+    @classmethod
+    def build_wrapper(cls,
+                      model_path: str,
+                      device: str = 'cpu',
+                      output_names: Optional[Sequence[str]] = None):
+        """Build the wrapper for the backend model.
+
+        Args:
+            model_path (str): ONNX model file.
+            device (str, optional): The device info. Defaults to 'cpu'.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+
+        from .wrapper import ORTWrapper
+        return ORTWrapper(
+            onnx_file=model_path, device=device, output_names=output_names)
 
     @classmethod
     def build_wrapper_from_param(cls, param: _BackendParam):

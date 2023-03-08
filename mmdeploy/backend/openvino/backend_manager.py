@@ -65,25 +65,6 @@ _BackendParam = OpenVINOParam
 class OpenVINOManager(BaseBackendManager):
 
     @classmethod
-    def build_wrapper(cls,
-                      model_path: str,
-                      bin_path: Optional[str] = None,
-                      output_names: Optional[Sequence[str]] = None):
-        """Build the wrapper for the backend model.
-
-        Args:
-            model_path (str): OpenVINO model path.
-            bin_path (str): OpenVINO weight path.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-        """
-        from .wrapper import OpenVINOWrapper
-        return OpenVINOWrapper(
-            model_path=model_path,
-            bin_path=bin_path,
-            output_names=output_names)
-
-    @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
         """Check whether backend is installed.
 
@@ -182,6 +163,25 @@ class OpenVINOManager(BaseBackendManager):
             bin_path=bin_path,
             work_dir=param.work_dir,
             mo_options=mo_options)
+
+    @classmethod
+    def build_wrapper(cls,
+                      model_path: str,
+                      bin_path: Optional[str] = None,
+                      output_names: Optional[Sequence[str]] = None):
+        """Build the wrapper for the backend model.
+
+        Args:
+            model_path (str): OpenVINO model path.
+            bin_path (str): OpenVINO weight path.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+        from .wrapper import OpenVINOWrapper
+        return OpenVINOWrapper(
+            model_path=model_path,
+            bin_path=bin_path,
+            output_names=output_names)
 
     @classmethod
     def build_wrapper_from_param(cls, param: _BackendParam):
