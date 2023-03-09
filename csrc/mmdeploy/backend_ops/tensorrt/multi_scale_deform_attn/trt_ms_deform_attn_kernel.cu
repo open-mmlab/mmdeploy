@@ -39,7 +39,7 @@ int32_t ms_deform_attn_cuda_forward(const float* value, const int32_t* spatialSh
             samplingLoc + n * mIm2colStep * perSampleLocSize, attnWeight + n * mIm2colStep * perAttnWeightSize, batch,
             mSpatialSize, mNumHeads, mChannels, mNumLevels, mNumQuery, mNumPoint, columns);
     }
-    
+
     return 0;
 }
 

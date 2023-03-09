@@ -121,12 +121,12 @@ __device__ __half ms_deform_attn_im2col_bilinear<__half>(const __half*& bottomDa
     __half w2 = __float2half((__half2float(hh) * __half2float(lw)) * __half2float(v2));
     __half w3 = __float2half((__half2float(lh) * __half2float(hw)) * __half2float(v3));
     __half w4 = __float2half((__half2float(lh) * __half2float(lw)) * __half2float(v4));
-    
+
     w1 = __float2half(__half2float(w1) + __half2float(w2));
     w3 = __float2half(__half2float(w3) + __half2float(w4));
 
     const __half val = __float2half(__half2float(w1) + __half2float(w3));
-#endif 
+#endif
     return val;
 }
 
@@ -250,7 +250,7 @@ __global__ void ms_deformable_im2col_gpu_kernel<__half>(int32_t const n, const _
                         dataValuePtr, spatialH, spatialW, numHeads, channels, hIm, wIm, mCol, cCol);
                     col = __float2half(__half2float(col) + (__half2float(tpVal) * __half2float(weight)));
                 }
-#endif 
+#endif
                 dataWeightPtr += 1;
                 dataLocWPtr += 2;
             }

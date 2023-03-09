@@ -111,7 +111,7 @@ int MultiScaleDeformableAttnPluginDynamic::enqueue(const nvinfer1::PluginTensorD
         const __half* samplingLoc = static_cast<const __half*>(inputs[3]);
         const __half* attnWeight = static_cast<const __half*>(inputs[4]);
         __half* output = static_cast<__half*>(outputs[0]);
-        
+
         rc = ms_deform_attn_cuda_forward(value, spatialShapes, levelStartIndex, samplingLoc, attnWeight, output,
             batch, spatial_size, num_heads, channels, num_levels, num_query, num_point, stream);
     }
