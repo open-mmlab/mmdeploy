@@ -161,18 +161,24 @@ class VACCWrapper(BaseWrapper):
         }
 
         model_info_json = json.dumps(model_info)
-        with open(os.path.join(parent_path, 'model_info.json'),
-                  'w') as json_file:
+        model_info_path = os.path.join(parent_path, 'model_info.json')
+        with open(model_info_path, 'w') as json_file:
             json_file.write(model_info_json)
 
-        vdsp_params_info_json = json.dumps(vdsp_params_info)
-        with open(os.path.join(parent_path, 'vdsp_param_info.json'),
-                  'w') as json_file:
-            json_file.write(vdsp_params_info_json)
+        if isinstance(vdsp_params_info, Dict):
+            vdsp_params_info_path = os.path.join(parent_path,
+                                                 'vdsp_param_info.json')
+            vdsp_params_info_json = json.dumps(vdsp_params_info)
+            with open(vdsp_params_info_path, 'w') as json_file:
+                json_file.write(vdsp_params_info_json)
+        elif isinstance(vdsp_params_info, str):
+            vdsp_params_info_path = vdsp_params_info
+        else:
+            raise TypeError(
+                'Expect vdsp_param_info be .json file or parameter dictory'
+                f' but get {type(vdsp_params_info)}')
 
-        self.model = VACCForward(
-            os.path.join(parent_path, 'model_info.json'),
-            os.path.join(parent_path, 'vdsp_param_info.json'))
+        self.model = VACCForward(model_info_path, vdsp_params_info_path)
 
         super().__init__(output_names)
 

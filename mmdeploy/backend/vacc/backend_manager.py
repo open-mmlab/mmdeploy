@@ -45,13 +45,9 @@ class VACCParam(BaseBackendParam):
         """get the model files."""
         assert isinstance(self.work_dir, str)
         assert isinstance(self.file_name, str)
-        if isinstance(self.qconfig, str):
-            qconfig = get_obj_by_qualname(self.qconfig)
-        else:
-            qconfig = self.qconfig
-            assert isinstance(qconfig, Dict)
         save_dir = '-'.join([self.file_name, self.quant_mode])
-        model_prefix = osp.join(self.work_dir, save_dir, self.file_name)
+        name = osp.split(self.file_name)[1]
+        model_prefix = osp.join(self.work_dir, save_dir, name)
         return [
             model_prefix + '.so', model_prefix + '.json',
             model_prefix + '.params'
@@ -145,6 +141,10 @@ class VACCManager(BaseBackendManager):
 
         from .onnx2vacc import from_onnx
 
+        if isinstance(qconfig, str):
+            qconfig = get_obj_by_qualname(qconfig)
+            assert isinstance(qconfig, Dict)
+
         from_onnx(
             onnx_model,
             output_path=output_path,
@@ -201,6 +201,10 @@ class VACCManager(BaseBackendManager):
         # For unittest deploy_config will not pass into _build_wrapper
         # function.
 
+        if isinstance(vdsp_params_info,
+                      str) and not osp.exists(vdsp_params_info):
+            vdsp_params_info = get_obj_by_qualname(vdsp_params_info)
+
         try:
             return VACCWrapper(
                 lib_file=lib_file,
@@ -208,7 +212,8 @@ class VACCManager(BaseBackendManager):
                 param_file=param_file,
                 vdsp_params_info=vdsp_params_info,
                 output_names=output_names)
-        except Exception:
+        except Exception as e:
+            print(f'failed with error: {e}')
             print('Build model process success, wrapper process stopped')
             exit(1)
 
@@ -249,15 +254,14 @@ class VACCManager(BaseBackendManager):
 
         deploy_cfg = config
         ir_cfg = get_ir_config(deploy_cfg)
-        model_inputs = get_model_inputs(deploy_cfg)
+        model_inputs = get_model_inputs(deploy_cfg)[0]
         common_params = get_common_config(deploy_cfg)
-
-        output_names = ir_cfg.get('output_names', None)
         model_name = common_params['name']
+        output_names = ir_cfg.get('output_names', None)
         vdsp_params_info = common_params['vdsp_params_info']
-        input_shapes = model_inputs.get('input_shapes', None)
+        input_shapes = model_inputs.get('shape', None)
         qconfig = model_inputs.get('qconfig', {})
-        quant_type = qconfig.pop('dtype', 'fp16')
+        quant_mode = qconfig.pop('dtype', 'fp16')
         calib_num = qconfig.pop('calib_num', 1000)
         data_transmode = qconfig.pop('data_transmode', 1)
         cluster_mode = qconfig.pop('cluster_mode', 1)
@@ -266,14 +270,22 @@ class VACCManager(BaseBackendManager):
         kwargs.setdefault('vdsp_params_info', vdsp_params_info)
         kwargs.setdefault('input_shapes', input_shapes)
         kwargs.setdefault('qconfig', qconfig)
-        kwargs.setdefault('quant_type', quant_type)
+        kwargs.setdefault('quant_mode', quant_mode)
         kwargs.setdefault('calib_num', calib_num)
         kwargs.setdefault('data_transmode', data_transmode)
         kwargs.setdefault('cluster_mode', cluster_mode)
 
         kwargs.setdefault('work_dir', work_dir)
-        kwargs.setdefault('file_name', model_name)
-        cls.build_param(**kwargs)
+        if len(backend_files) == 1:
+            file_name = model_name
+        else:
+            lib_path = osp.join(work_dir, backend_files[0])
+            lib_dir = osp.split(lib_path)[0]
+            file_name = lib_dir[:-len(quant_mode) - 1]
+
+        kwargs.setdefault('file_name', file_name)
+
+        return cls.build_param(**kwargs)
 
     @classmethod
     def parse_args(cls,
