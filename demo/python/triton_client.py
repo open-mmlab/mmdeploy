@@ -105,7 +105,7 @@ def main():
         Classifier=(('scores', 'labels'), vis_cls),
         Detector=(('bboxes', 'labels'), vis_det),
         TextOCR=(('dets', 'text', 'text_score'), vis_ocr),
-        Restorer=(('output',), lambda _, hires: hires),
+        Restorer=(('output', ), lambda _, hires: hires),
         Segmentor=(('mask', 'score'), vis_seg),
         RotatedDetector=(('bboxes', 'labels'), None),
         DetPose=(('bboxes', 'keypoints'), vis_pose))
