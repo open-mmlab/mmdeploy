@@ -311,7 +311,8 @@ class ObjectDetection(BaseTask):
             params['score_thr'] = params['rcnn']['score_thr']
             if 'mask_thr_binary' in params['rcnn']:
                 params['mask_thr_binary'] = params['rcnn']['mask_thr_binary']
-                type = 'ResizeInstanceMask'  # for instance-seg
+        if 'mask_thr_binary' in params:
+            type = 'ResizeInstanceMask'  # for instance-seg
         if get_backend(self.deploy_cfg) == Backend.RKNN:
             if 'YOLO' in self.model_cfg.model.type or \
                'RTMDet' in self.model_cfg.model.type:
