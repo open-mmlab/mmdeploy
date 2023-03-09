@@ -12,8 +12,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 def scalenorm__forward__ncnn(self, x):
     """Rewrite `scalenorm` for ncnn backend.
 
-    ncnn does not support negative dimension for torch.chunk and
-    torch.cat ncnn pad shape does not support float input
+    ncnn does not support negative dimension for torch.chunk and torch.cat ncnn
+    pad shape does not support float input
     """
     # The one-dim of Fubinious norm is equal to L2Norm.
     # Set p=2 explicitly to map torch.norm to ReduceL2 onnx op,
