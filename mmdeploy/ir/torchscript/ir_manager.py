@@ -35,7 +35,7 @@ class TorchScriptParam(BaseIRParam):
     check_tolerance: float = 1e-05
 
 
-@IR_MANAGERS.register('onnx', param=TorchScriptParam)
+@IR_MANAGERS.register('torchscript', param=TorchScriptParam)
 class TorchScriptManager(BaseIRManager):
     """TorchScript IR Manager."""
 

@@ -118,6 +118,7 @@ class TestManager:
             for file in model_files:
                 assert osp.exists(file)
 
+    # TODO: Enable the test after vdsp parameter available
     # def test_build_wrapper(self, backend_model, inputs, outputs,
     #                        dummy_vdsp_params_info, output_names,
     #                        assert_forward):

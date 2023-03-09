@@ -6,7 +6,8 @@ from dataclasses import dataclass
 from typing import Any, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
-from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    import_custom_modules)
 from .onnx2ascend import AtcParam
 
 
@@ -253,6 +254,8 @@ class AscendManager(BaseBackendManager):
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
+
+        import_custom_modules(parsed_args.custom_modules)
 
         # perform command
         command = parsed_args._command

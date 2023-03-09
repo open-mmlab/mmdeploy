@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property)
+                    dataclass_property, import_custom_modules)
 
 
 @dataclass
@@ -258,6 +258,7 @@ class PPLNNManager(BaseBackendManager):
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
+        import_custom_modules(parsed_args.custom_modules)
 
         # perform command
         command = parsed_args._command

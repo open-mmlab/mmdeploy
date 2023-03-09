@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import importlib
 from typing import Any, Dict, Sequence, Union
 
 
@@ -79,3 +80,18 @@ def create_h5pydata_generator(data_file: Union[str, Any],
         raise e
     finally:
         data_file.close()
+
+
+def import_custom_modules(custom_modules: Sequence):
+    """Import custom module."""
+    from mmdeploy.utils import get_root_logger
+    logger = get_root_logger(0)
+    custom_modules = [] if custom_modules is None else custom_modules
+
+    for qualname in custom_modules:
+        try:
+            importlib.import_module(qualname)
+            logger.info(f'Import custom module: {qualname}')
+        except Exception as e:
+            logger.warning('Failed to import custom module: '
+                           f'{qualname} with error: {e}')

@@ -4,12 +4,13 @@ import os.path as osp
 import sys
 from argparse import ArgumentParser
 from dataclasses import dataclass
-from subprocess import call
+from subprocess import call, run
 from typing import Any, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from mmdeploy.utils import get_root_logger
-from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    import_custom_modules)
 
 
 @dataclass
@@ -56,8 +57,30 @@ class SNPEManager(BaseBackendManager):
         if not osp.exists(onnx2dlc):
             return False
 
-        ret_code = call([onnx2dlc, '-v'])
+        ret_code = call([onnx2dlc, '-v'],
+                        stdout=open(os.devnull, 'wb'),
+                        stderr=open(os.devnull, 'wb'))
         return ret_code == 0
+
+    @classmethod
+    def get_version(cls) -> str:
+        """Get the version of the backend."""
+        from .onnx2dlc import get_onnx2dlc_path
+        onnx2dlc = get_onnx2dlc_path()
+        snpe_net_run_path = osp.join(osp.split(onnx2dlc)[0], 'snpe-net-run')
+        if not osp.exists(snpe_net_run_path):
+            return ''
+
+        command = [snpe_net_run_path, '--version']
+        result = run(
+            command,
+            stdout=open(os.devnull, 'wb'),
+            stderr=open(os.devnull, 'wb'),
+            universal_newlines=True)
+        if result.returncode != 0:
+            return ''
+        else:
+            return result.stdout[5:]
 
     @classmethod
     def to_backend(cls, onnx_path: str, save_path: str) -> Sequence[str]:
@@ -175,6 +198,7 @@ class SNPEManager(BaseBackendManager):
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
+        import_custom_modules(parsed_args.custom_modules)
 
         # perform command
         command = parsed_args._command

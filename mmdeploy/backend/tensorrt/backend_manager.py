@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import importlib
 import os.path as osp
 import re
 from argparse import ArgumentParser
@@ -9,8 +8,8 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
                     Union)
 
 from mmdeploy.ir.onnx import ONNXParam
-from mmdeploy.utils import get_root_logger
-from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    import_custom_modules)
 
 
 @dataclass
@@ -349,8 +348,6 @@ class TensorRTManager(BaseBackendManager):
             args (Optional[List[str]], optional): Arguments to be parsed. If
                 not given, arguments from console will be parsed.
         """
-        logger = get_root_logger()
-
         # parse args
         sub_parsers = parser.add_subparsers(
             title='command',
@@ -375,19 +372,9 @@ class TensorRTManager(BaseBackendManager):
         # perform command
         command = parsed_args._command
 
-        custom_modules = parsed_args.custom_modules
-        custom_modules = [] if custom_modules is None else custom_modules
-
-        for qualname in custom_modules:
-            try:
-                importlib.import_module(qualname)
-                logger.info(f'Import custom module: {qualname}')
-            except Exception as e:
-                logger.warning('Failed to import custom module: '
-                               f'{qualname} with error: {e}')
-
         if command == 'convert':
             # convert model
+            import_custom_modules(parsed_args.custom_modules)
             param = _BackendParam(
                 work_dir=parsed_args.work_dir,
                 file_name=parsed_args.file_name,

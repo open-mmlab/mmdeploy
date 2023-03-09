@@ -119,8 +119,7 @@ class IRManagerRegistry:
 
             if name in self._module_dict:
                 logger.info(
-                    f'Backend manager of `{name}` has already been registered.'
-                )
+                    f'IR manager of `{name}` has already been registered.')
 
             self._module_dict[name] = cls
 
@@ -139,7 +138,7 @@ class IRManagerRegistry:
         Args:
             name (str): ir name.
         Returns:
-            BaseBackendManager: ir manager of the given ir.
+            BaseIRManager: ir manager of the given ir.
         """
         # try import name if it exists in `mmdeploy.ir`
         try:

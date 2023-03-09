@@ -8,7 +8,8 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property, get_obj_by_qualname)
+                    dataclass_property, get_obj_by_qualname,
+                    import_custom_modules)
 
 
 def get_library_ext() -> str:
@@ -368,10 +369,14 @@ class TVMManager(BaseBackendManager):
             '--onnx-path', required=True, help='ONNX model path.')
         _BackendParam.add_arguments(export_parser)
         export_parser.add_argument(
-            '--custom-modules', type=str, nargs='*', help='ONNX model path.')
+            '--custom-modules',
+            type=str,
+            nargs='*',
+            help='Custom module path.')
 
         parsed_args = parser.parse_args(args)
         yield parsed_args
+        import_custom_modules(parsed_args.custom_modules)
 
         # perform command
         command = parsed_args._command
