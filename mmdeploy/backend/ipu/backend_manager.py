@@ -101,11 +101,8 @@ class IPUManager(BaseBackendManager):
             if output_dir == '':
                 output_dir = work_dir
 
-            model_dir = os.path.join(output_dir, model_name)
-            if not os.path.exists(model_dir):
-                os.mkdir(model_dir)
-            ipu_config['output_dir'] = model_dir
+            ipu_config['output_dir'] = output_dir
             onnx_to_popef(onnx_path, ipu_config)
-            backend_files.append(os.path.join(model_dir, 'executable.popef'))
+            backend_files.append(os.path.join(work_dir, 'executable.popef'))
 
         return backend_files

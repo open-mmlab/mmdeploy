@@ -83,10 +83,7 @@ Result<void> IPUNet::Init(const Value& args) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  std::string ipu_json_path =
-      (fs::path(model.GetModelPath()) / config.net).string() +  "/ipu_params.json";
-
-  OUTCOME_TRY(auto param_json, model.ReadFile(ipu_json_path));
+  OUTCOME_TRY(auto param_json, model.ReadFile("ipu_params.json"));
   ipu_params_t param;
   from_json(nlohmann::json::parse(param_json), param);
 
@@ -96,9 +93,7 @@ Result<void> IPUNet::Init(const Value& args) {
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
   
-  std::string popef_path =
-      (fs::path(model.GetModelPath()) / config.net ).string()+"/executable.popef";
-  MMDEPLOY_INFO("popef path {} ", popef_path);
+  auto popef_path = (fs::path(model.GetModelPath()) / config.net).string();
   model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
 
   input_desc = model_runner->getExecuteInputs();
