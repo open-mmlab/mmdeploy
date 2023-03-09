@@ -9,7 +9,11 @@ def from_onnx(
     output_path: str,
     model_name: str,
     input_shapes: Dict[str, Sequence],
+    quant_mode: str = 'fp16',
+    calib_num: int = 1000,
     qconfig: Optional[Dict] = None,
+    data_transmode: int = 1,
+    cluster_mode: int = 0,
 ):
     """Convert ONNX to VACC.
 
@@ -18,7 +22,11 @@ def from_onnx(
         output_path (str): File path to save VACC model.
         model_name (str): model name.
         input_shapes (ShapeType): The Default shape of the inputs.
+        quant_mode (str): quantization mode, choice between ['fp16', 'int8']
+        calib_num (int): Max numbers of calibration data.
         qconfig (Dict): Dictionary arguments feed to vacc.qconfig.
+        data_transmode (int): `tvm.build_config` arguments.
+        cluster_mode (int): `tvm.build_config` arguments.
     """
     import onnx
     import tvm
@@ -27,10 +35,6 @@ def from_onnx(
 
     target = tvm.target.vacc()
 
-    if qconfig is None:
-        qconfig = dict()
-
-    quant_mode = qconfig.get('dtype', 'fp16')
     assert quant_mode in ['int8', 'fp16'], quant_mode + ' not support now'
 
     shape_dict = input_shapes
@@ -49,13 +53,14 @@ def from_onnx(
 
         index = list(range(len(data)))
         random.shuffle(index)
-        calib_num = qconfig.get('calib_num', 1000)
         for i in index[:calib_num]:
             calib_data.append({
                 list(shape_dict.keys())[0]:
                 tvm.nd.array(data[str(i)][:].astype('float32'))
             })
 
+        if qconfig is None:
+            qconfig = dict()
         with quantize.qconfig(
                 calibrate_mode=qconfig.get('calibrate_mode', 'percentile'),
                 skip_conv_layers=qconfig.get('skip_conv_layers', []),
@@ -74,9 +79,9 @@ def from_onnx(
 
     with tvm.build_config(
             data_type=data_type,
-            data_transport_mode=qconfig.get('data_transmode', 1),
+            data_transport_mode=data_transmode,
             mem_inplace=True,
-            cluster_mode=qconfig.get('cluster_mode', 0)):
+            cluster_mode=cluster_mode):
         with relay.build_config(
                 opt_level=2, stream_mode=True, enable_float_to_half=True):
             graph, lib, params = relay.build(
