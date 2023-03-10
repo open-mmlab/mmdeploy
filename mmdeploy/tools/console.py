@@ -189,8 +189,8 @@ def run_command(parser: ArgumentParser,
                 with backend_mgr.parse_args(parser, remain_args):
                     pass
             except NotImplementedError:
-                sys.stderr.write(
-                    f'Backend: {obj_name} run has not been implemented.\n')
+                sys.stderr.write(f'Backend: {obj_name} console tools'
+                                 ' has not been implemented.\n')
         else:
             sys.stderr.write(f'Backend: {obj_name} is not available.\n')
 
