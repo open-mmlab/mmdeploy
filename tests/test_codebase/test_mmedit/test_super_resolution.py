@@ -9,7 +9,6 @@ from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
-import mmdeploy.apis.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
@@ -52,15 +51,12 @@ def init_task_processor():
 @pytest.fixture
 def backend_model():
     from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-    wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'output': torch.rand(1, 3, 50, 50),
-    })
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(outputs={
+            'output': torch.rand(1, 3, 50, 50),
+        })
 
-    yield task_processor.build_backend_model([''])
-
-    wrapper.recover()
+        yield task_processor.build_backend_model([''])
 
 
 def test_build_test_runner():

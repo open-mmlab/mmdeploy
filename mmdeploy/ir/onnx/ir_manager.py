@@ -104,7 +104,7 @@ class ONNXManager(BaseIRManager):
                 the rewriter.
             optimize (bool): Enable optimize export model.
         """
-        from .export import export
+        from .onnx_export import export
         export(
             model,
             args,

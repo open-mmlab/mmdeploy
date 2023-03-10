@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 import torch
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
@@ -24,34 +23,29 @@ IMAGE_SIZE = 32
 @backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
         from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'output': torch.rand(1, 1, IMAGE_SIZE, IMAGE_SIZE),
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = generate_mmseg_deploy_config()
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'output': torch.rand(1, 1, IMAGE_SIZE, IMAGE_SIZE),
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = generate_mmseg_deploy_config()
 
-        from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
-            End2EndModel
-        cls.end2end_model = End2EndModel(
-            Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
+            from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
+                End2EndModel
+            yield End2EndModel(
+                Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward(self):
+    def test_forward(self, end2end_model):
         from mmseg.structures import SegDataSample
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
         data_samples = [generate_datasample(IMAGE_SIZE, IMAGE_SIZE)]
-        results = self.end2end_model.forward(imgs, data_samples)
+        results = end2end_model.forward(imgs, data_samples)
         assert len(results) == 1
         assert isinstance(results[0], SegDataSample)
 
@@ -59,39 +53,38 @@ class TestEnd2EndModel:
 @backend_checker(Backend.RKNN)
 class TestRKNNModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        import mmdeploy.backend.rknn as rknn_apis
         from mmdeploy.backend.rknn.wrapper import RKNNWrapper
-        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
-        cls.outputs = [torch.rand(1, 19, IMAGE_SIZE, IMAGE_SIZE)]
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = mmengine.Config({
-            'onnx_config': {
-                'output_names': ['outputs']
-            },
-            'backend_config': {
-                'common_config': {}
-            }
-        })
+        with SwitchBackendWrapper(RKNNWrapper) as wrapper:
+            outputs = [torch.rand(1, 19, IMAGE_SIZE, IMAGE_SIZE)]
+            wrapper.set(outputs=outputs)
+            deploy_cfg = mmengine.Config({
+                'onnx_config': {
+                    'output_names': ['outputs']
+                },
+                'backend_config': {
+                    'common_config': {}
+                }
+            })
 
-        from mmdeploy.codebase.mmseg.deploy.segmentation_model import RKNNModel
-        class_names = ['' for i in range(NUM_CLASS)]
-        palette = np.random.randint(0, 255, size=(NUM_CLASS, 3))
-        cls.rknn_model = RKNNModel(
-            Backend.RKNN, [''],
-            device='cpu',
-            class_names=class_names,
-            palette=palette,
-            deploy_cfg=deploy_cfg)
+            from mmdeploy.codebase.mmseg.deploy.segmentation_model import \
+                RKNNModel
+            class_names = ['' for i in range(NUM_CLASS)]
+            palette = np.random.randint(0, 255, size=(NUM_CLASS, 3))
+            yield RKNNModel(
+                Backend.RKNN, [''],
+                device='cpu',
+                class_names=class_names,
+                palette=palette,
+                deploy_cfg=deploy_cfg)
 
-    def test_forward_test(self):
+    def test_forward_test(self, end2end_model):
         imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
-        results = self.rknn_model.forward_test(imgs)
+        results = end2end_model.forward_test(imgs)
         assert isinstance(results[0], np.ndarray)
 
 
@@ -102,7 +95,6 @@ def test_build_segmentation_model():
     deploy_cfg = generate_mmseg_deploy_config()
 
     from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:

@@ -96,6 +96,8 @@ def export(model: Any,
         model, cfg=rewrite_context, backend=backend, ir=ir)
 
     # config optimize info
+    if backend == Backend.NCNN.value:
+        optimize = False
     if optimize:
         from . import optimizer as _optimizer  # noqa
         if 'onnx_custom_passes' not in rewrite_context:

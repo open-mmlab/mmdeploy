@@ -21,7 +21,7 @@ class TestEnd2EndModel:
     def end2end_model(self):
         # force add backend wrapper regardless of plugins
         # make sure ONNXRuntimeEditor can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         from mmdeploy.codebase.mmedit.deploy.super_resolution_model import \
             End2EndModel
 

@@ -5,7 +5,6 @@ import pytest
 import torch
 from mmengine import Config
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
@@ -23,30 +22,25 @@ except ImportError:
 @backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
         from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'outputs': torch.rand(1, NUM_CLASS),
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'outputs': torch.rand(1, NUM_CLASS),
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
 
-        from mmdeploy.codebase.mmcls.deploy.classification_model import \
-            End2EndModel
-        cls.end2end_model = End2EndModel(
-            Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
+            from mmdeploy.codebase.mmcls.deploy.classification_model import \
+                End2EndModel
+            yield End2EndModel(
+                Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward(self):
+    def test_forward(self, end2end_model):
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
         from mmcls.structures import ClsDataSample
         data_sample = ClsDataSample(
@@ -54,8 +48,7 @@ class TestEnd2EndModel:
                 scale_factor=(1, 1),
                 ori_shape=(IMAGE_SIZE, IMAGE_SIZE),
                 img_shape=(IMAGE_SIZE, IMAGE_SIZE)))
-        results = self.end2end_model.forward(
-            imgs, [data_sample], mode='predict')
+        results = end2end_model.forward(imgs, [data_sample], mode='predict')
         assert results is not None, 'failed to get output using '\
             'End2EndModel'
 
@@ -63,38 +56,36 @@ class TestEnd2EndModel:
 @backend_checker(Backend.RKNN)
 class TestRKNNEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        import mmdeploy.backend.rknn as rknn_apis
         from mmdeploy.backend.rknn.wrapper import RKNNWrapper
-        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
-        cls.outputs = [torch.rand(1, 1, IMAGE_SIZE, IMAGE_SIZE)]
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({
-            'onnx_config': {
-                'output_names': ['outputs']
-            },
-            'backend_config': {
-                'common_config': {}
-            }
-        })
+        with SwitchBackendWrapper(RKNNWrapper) as wrapper:
+            outputs = [torch.rand(1, 1, IMAGE_SIZE, IMAGE_SIZE)]
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({
+                'onnx_config': {
+                    'output_names': ['outputs']
+                },
+                'backend_config': {
+                    'common_config': {}
+                }
+            })
 
-        from mmdeploy.codebase.mmcls.deploy.classification_model import \
-            RKNNEnd2EndModel
-        class_names = ['' for i in range(NUM_CLASS)]
-        cls.end2end_model = RKNNEnd2EndModel(
-            Backend.RKNN, [''],
-            device='cpu',
-            class_names=class_names,
-            deploy_cfg=deploy_cfg)
+            from mmdeploy.codebase.mmcls.deploy.classification_model import \
+                RKNNEnd2EndModel
+            class_names = ['' for i in range(NUM_CLASS)]
+            yield RKNNEnd2EndModel(
+                Backend.RKNN, [''],
+                device='cpu',
+                class_names=class_names,
+                deploy_cfg=deploy_cfg)
 
-    def test_forward_test(self):
+    def test_forward_test(self, end2end_model):
         imgs = torch.rand(2, 3, IMAGE_SIZE, IMAGE_SIZE)
-        results = self.end2end_model.forward_test(imgs)
+        results = end2end_model.forward_test(imgs)
         assert isinstance(results[0], np.ndarray)
 
 
@@ -108,7 +99,6 @@ def test_build_classification_model():
             codebase_config=dict(type='mmcls')))
 
     from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
 
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:

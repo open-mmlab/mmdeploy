@@ -5,7 +5,6 @@ import numpy as np
 import pytest
 import torch
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper
@@ -49,15 +48,13 @@ def test_build_pytorch_model():
 @pytest.fixture
 def backend_model():
     from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-    wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'output': torch.rand(1, num_output_channels, *heatmap_shape),
-    })
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(
+            outputs={
+                'output': torch.rand(1, num_output_channels, *heatmap_shape),
+            })
 
-    yield task_processor.build_backend_model([''])
-
-    wrapper.recover()
+        yield task_processor.build_backend_model([''])
 
 
 def test_build_backend_model(backend_model):

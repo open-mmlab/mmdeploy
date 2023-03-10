@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
-import os.path as osp
 import random
 import string
 import tempfile
@@ -186,13 +184,6 @@ class SwitchBackendWrapper:
         self._recover_class = recover_class
 
     def __enter__(self):
-        return self
-
-    def __exit__(self, type, value, trace):
-        self.recover()
-
-    def set(self, **kwargs):
-        """Replace attributes in backend wrappers with dummy items."""
         obj = self._recover_class
         self.init = obj.__init__
         self.forward = obj.forward
@@ -200,11 +191,9 @@ class SwitchBackendWrapper:
         obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
         obj.forward = SwitchBackendWrapper.BackendWrapper.forward
         obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
-        for k, v in kwargs.items():
-            setattr(obj, k, v)
+        return self
 
-    def recover(self):
-        """Recover to original class."""
+    def __exit__(self, type, value, trace):
         assert self.init is not None and \
             self.forward is not None,\
             'recover method must be called after exchange'
@@ -212,6 +201,12 @@ class SwitchBackendWrapper:
         obj.__init__ = self.init
         obj.forward = self.forward
         obj.__call__ = self.call
+
+    def set(self, **kwargs):
+        """Replace attributes in backend wrappers with dummy items."""
+        obj = self._recover_class
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
@@ -333,17 +328,17 @@ def get_onnx_model(wrapped_model: nn.Module,
 
     model = DummyModel().eval()
 
-    with RewriterContext(
-            cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
-        torch.onnx.export(
+    with torch.no_grad():
+        from mmdeploy.ir.onnx import ONNXManager
+        ONNXManager.export(
             model, (model_inputs, {}),
             onnx_file_path,
-            export_params=True,
             input_names=input_names,
             output_names=output_names,
             opset_version=11,
             dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=False)
+            backend=backend.value,
+            rewrite_context=deploy_cfg)
     return onnx_file_path
 
 
@@ -360,20 +355,18 @@ def get_ts_model(wrapped_model: nn.Module,
     Returns:
         str: The path to the TorchScript model file.
     """
-    ir_file_path = tempfile.NamedTemporaryFile(suffix='.pt').name
+    ir_file_path = tempfile.NamedTemporaryFile(suffix='.pth').name
     backend = get_backend(deploy_cfg)
 
-    from mmdeploy.apis.torch_jit import trace
-    context_info = dict(deploy_cfg=deploy_cfg)
-    output_prefix = osp.splitext(ir_file_path)[0]
+    from mmdeploy.ir.torchscript import TorchScriptManager
 
     example_inputs = [v for _, v in model_inputs.items()]
-    trace(
+    TorchScriptManager.export(
         wrapped_model,
         example_inputs,
-        output_path_prefix=output_prefix,
+        output_path=ir_file_path,
         backend=backend,
-        context_info=context_info)
+        rewrite_context=deploy_cfg)
     return ir_file_path
 
 

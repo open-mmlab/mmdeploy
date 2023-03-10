@@ -4,7 +4,7 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 import torch
 
 from mmdeploy.apis.core import PIPELINE_MANAGER
-from mmdeploy.ir.onnx import export as export_onnx
+from mmdeploy.ir.onnx import ONNXManager
 from mmdeploy.utils import Backend
 
 
@@ -67,7 +67,7 @@ def export(model: torch.nn.Module,
     output_path = output_path_prefix + '.onnx'
 
     deploy_cfg = context_info.pop('deploy_cfg', dict())
-    export_onnx(
+    ONNXManager.export(
         model,
         args,
         output_path,
