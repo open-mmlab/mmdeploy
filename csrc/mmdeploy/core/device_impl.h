@@ -27,7 +27,7 @@ class PlatformImpl {
 
   virtual void SetPlatformId(int id) { platform_id_ = id; }
 
-  virtual Result<void> SetDevice(Device device) { return success(); };
+  virtual Result<void> BindDevice(Device device, Device* prev) = 0;
 
   virtual shared_ptr<BufferImpl> CreateBuffer(Device device) = 0;
 

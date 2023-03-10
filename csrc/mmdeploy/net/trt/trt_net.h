@@ -6,6 +6,7 @@
 #include "NvInferRuntime.h"
 #include "mmdeploy/core/mpl/span.h"
 #include "mmdeploy/core/net.h"
+#include "mmdeploy/device/cuda/cuda_device.h"
 
 namespace mmdeploy::framework {
 

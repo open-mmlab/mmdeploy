@@ -127,6 +127,32 @@ shared_ptr<EventImpl> CudaPlatformImpl::CreateEvent(Device device) {
   return std::make_shared<CudaEventImpl>(device);
 }
 
+Result<void> CudaPlatformImpl::BindDevice(Device device, Device* prev) {
+  if (device.platform_id() != platform_id_) {
+    return Status(eInvalidArgument);
+  }
+  // skip null device
+  if (device.device_id() == -1) {
+    return success();
+  }
+  int prev_device_id = -1;
+  if (prev) {
+    CUcontext ctx{};
+    cuCtxGetCurrent(&ctx);
+    if (ctx) {
+      cudaGetDevice(&prev_device_id);
+      *prev = Device(platform_id_, prev_device_id);
+    } else {
+      // cuda is not initialized return a null device as previous
+      *prev = Device(platform_id_, -1);
+    }
+  }
+  if (device.device_id() != prev_device_id) {
+    cudaSetDevice(device.device_id());
+  }
+  return success();
+}
+
 bool CudaPlatformImpl::CheckCopyDevice(const Device& src, const Device& dst, const Device& st) {
   return st.is_device() && (src.is_host() || src == st) && (dst.is_host() || dst == st);
 }

@@ -7,12 +7,14 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <ostream>
 #include <string>
 #include <vector>
 
 #include "mmdeploy/core/macro.h"
 #include "mmdeploy/core/mpl/type_traits.h"
 #include "mmdeploy/core/status_code.h"
+#include "mmdeploy/core/utils/formatter.h"
 
 namespace mmdeploy {
 
@@ -97,6 +99,11 @@ class Device {
     return PlatformId(platform_id_);
   }
 
+  friend std::ostream& operator<<(std::ostream& os, const Device& device) {
+    os << "(" << device.platform_id_ << ", " << device.device_id_ << ")";
+    return os;
+  }
+
  private:
   int platform_id_{0};
   int device_id_{0};
@@ -111,6 +118,9 @@ class MMDEPLOY_API Platform {
 
   // throws if not found
   explicit Platform(int platform_id);
+
+  // bind device with the current thread
+  Result<void> Bind(Device device, Device* prev);
 
   // -1 if invalid
   int GetPlatformId() const;
@@ -134,6 +144,27 @@ class MMDEPLOY_API Platform {
 };
 
 MMDEPLOY_API const char* GetPlatformName(PlatformId id);
+
+class DeviceGuard {
+ public:
+  explicit DeviceGuard(Device device) : platform_(device.platform_id()) {
+    auto r = platform_.Bind(device, &prev_);
+    if (!r) {
+      MMDEPLOY_ERROR("failed to bind device {}: {}", device, r.error().message().c_str());
+    }
+  }
+
+  ~DeviceGuard() {
+    auto r = platform_.Bind(prev_, nullptr);
+    if (!r) {
+      MMDEPLOY_ERROR("failed to unbind device {}: {}", prev_, r.error().message().c_str());
+    }
+  }
+
+ private:
+  Platform platform_;
+  Device prev_;
+};
 
 class MMDEPLOY_API Stream {
  public:
