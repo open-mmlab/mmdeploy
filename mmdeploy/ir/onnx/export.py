@@ -97,8 +97,9 @@ def export(model: Any,
 
     # config optimize info
     if optimize:
+        from . import optimizer as _optimizer  # noqa
         if 'onnx_custom_passes' not in rewrite_context:
-            from mmdeploy.apis.onnx.passes import optimize_onnx
+            from .passes import optimize_onnx
             onnx_custom_passes = optimize_onnx
         else:
             onnx_custom_passes = rewrite_context['onnx_custom_passes']
