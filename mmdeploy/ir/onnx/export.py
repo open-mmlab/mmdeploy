@@ -141,7 +141,7 @@ def export(model: Any,
             output_names=output_names,
             opset_version=opset_version,
             dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=True,
+            keep_initializers_as_inputs=False,
             verbose=verbose)
 
         if const_args is not None:
