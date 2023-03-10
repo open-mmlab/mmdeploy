@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property, import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 
 
 @dataclass
@@ -27,30 +27,13 @@ class PPLNNParam(BaseBackendParam):
         quick_select (bool): Whether to use default algorithms.
             Defaults to `False`.
     """
-    _default_postfix = '.onnx'
-    _algorithm_postfix = '.json'
-    _algo_name = None
 
-    algo_name: str = None
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.onnx')
+    algo_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.json', base_name='file_name')
     disable_avx512: bool = False
     quick_select: bool = False
-
-    @dataclass_property
-    def algo_name(self) -> str:
-        """algo_name getter."""
-        if self._algo_name is None and self.file_name is not None:
-            # if bin name has not been given, use file name with postfix
-            name = osp.splitext(self.file_name)[0]
-            return name + self._algorithm_postfix
-        return self._algo_name
-
-    @algo_name.setter
-    def algo_name(self, val) -> None:
-        """algo_name setter."""
-        if val is not None and osp.splitext(val)[1] == '':
-            val = val + self._algorithm_postfix
-
-        self._algo_name = val
 
     def get_model_files(self) -> List[str]:
         """get the model files."""

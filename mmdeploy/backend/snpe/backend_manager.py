@@ -11,7 +11,7 @@ from typing import Any, List, Optional, Sequence
 from mmdeploy.ir.onnx import ONNXParam
 from mmdeploy.utils import get_root_logger
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 
 
 @dataclass
@@ -24,7 +24,8 @@ class SNPEParam(BaseBackendParam):
             added automatically.
         uri (str): The uri of remote device.
     """
-    _default_postfix = '.dlc'
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.dlc')
 
     def get_model_files(self) -> str:
         """get the model files."""

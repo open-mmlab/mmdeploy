@@ -38,8 +38,6 @@ class SDKParam(BaseBackendParam):
         task_name (str): The name of the SDK task.
         device (str): Inference device.
     """
-    _default_postfix = ''
-
     task_name: str = None
 
     def get_model_files(self) -> str:

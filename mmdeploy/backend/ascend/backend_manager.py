@@ -8,7 +8,7 @@ from typing import Any, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 from .onnx2ascend import AtcParam
 
 
@@ -64,7 +64,8 @@ class AscendParam(BaseBackendParam):
             E.g.: "input0:dims1_n1,dims1_n2;input1:dims2_n1,dims2_n2"
         device (str): Inference device.
     """
-    _default_postfix = '.om'
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.om')
     dynamic_batch_size: List[str] = None
     dynamic_image_size: List[List[int]] = None
     dynamic_dims: List[List[int]] = None

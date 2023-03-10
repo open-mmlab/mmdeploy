@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mmdeploy.ir.torchscript import TorchScriptParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 
 
 @dataclass
@@ -32,8 +32,8 @@ class CoreMLParam(BaseBackendParam):
         skip_model_load (bool, optional): Skip model load.
             Defaults to True.
     """
-    _default_postfix = '.mlpackage'
-
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.mlpackage')
     compute_precision: str = 'FLOAT32'
     convert_to: str = 'mlprogram'
     minimum_deployment_target: Optional[str] = None

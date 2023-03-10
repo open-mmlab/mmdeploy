@@ -33,8 +33,6 @@ class VACCParam(BaseBackendParam):
         vdsp_params_info (str|Dict): vdsp parameters file or qualname of the
             parameters dictionary.
     """
-    _default_postfix = ''
-
     quant_mode: str = 'fp16'
     calib_num: int = 1000
     qconfig: Union[str, Dict] = field(default_factory=dict)

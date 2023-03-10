@@ -84,17 +84,24 @@ class TestManager:
         wrapper = backend_mgr.build_wrapper_from_param(param)
         assert_forward(wrapper, inputs, outputs)
 
-    def test_parse_args(self, onnx_model):
+    def test_parse_args(self, onnx_model, input_shape_dict):
+        # make input shapes
+        input_shapes = []
+        for name, shape in input_shape_dict.items():
+            shape = 'x'.join(str(i) for i in shape)
+            input_shapes.append(f'{name}:{shape}')
+        input_shapes = ','.join(input_shapes)
+
         with TemporaryDirectory() as work_dir:
-            param_name = 'tmp.param'
+            file_name = 'tmp'
             # make args
             args = ['convert']
             args += ['--onnx-path', onnx_model]
             args += ['--work-dir', work_dir]
-            args += ['--file-name', param_name]
+            args += ['--file-name', file_name]
+            args += ['--input-shapes', input_shapes]
 
             parser = argparse.ArgumentParser()
             with backend_mgr.parse_args(parser, args=args):
                 pass
-            assert osp.exists(osp.join(work_dir, param_name))
-            assert osp.exists(osp.join(work_dir, 'tmp.bin'))
+            assert osp.exists(osp.join(work_dir, file_name + '.onnx'))

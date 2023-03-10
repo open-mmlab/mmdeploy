@@ -8,7 +8,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 
 
 class MeanStdAction(Action):
@@ -62,8 +62,9 @@ class RKNNParam(BaseBackendParam):
         pre_compile (bool): Pre compile the model (smaller size and load
             quicker, but can't run on simulator)
     """
-    _default_postfix = '.rknn'
 
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.rknn')
     mean_values: Dict[str, List[int]] = None
     std_values: Dict[str, List[int]] = None
     optimization_level: int = 1

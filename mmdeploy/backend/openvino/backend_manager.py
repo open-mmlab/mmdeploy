@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property)
+                    FileNameDescriptor)
 
 
 @dataclass
@@ -25,29 +25,11 @@ class OpenVINOParam(BaseBackendParam):
         output_names (List[str]): Names of the outputs.
         mo_options (str): Additional args to OpenVINO Model Optimizer.
     """
-    _default_postfix = '.xml'
-    _default_bin_postfix = '.bin'
-    _bin_name = None
-
-    bin_name: str = None
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.xml')
+    bin_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.bin', base_name='file_name')
     mo_options: str = ''
-
-    @dataclass_property
-    def bin_name(self) -> str:
-        """bin_name getter."""
-        if self._bin_name is None and self.file_name is not None:
-            # if bin name has not been given, use file name with postfix
-            name = osp.splitext(self.file_name)[0]
-            return name + self._default_bin_postfix
-        return self._bin_name
-
-    @bin_name.setter
-    def bin_name(self, val) -> None:
-        """bin_name setter."""
-        if val is not None and osp.splitext(val)[1] == '':
-            val = val + self._default_bin_postfix
-
-        self._bin_name = val
 
     def get_model_files(self) -> str:
         """get the model files."""

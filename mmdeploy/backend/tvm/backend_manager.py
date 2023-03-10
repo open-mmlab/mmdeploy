@@ -9,7 +9,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property, get_obj_by_qualname,
+                    FileNameDescriptor, get_obj_by_qualname,
                     import_custom_modules)
 
 
@@ -77,33 +77,15 @@ class TVMParam(BaseBackendParam):
             `Dict[str, ndarray]`
         device (str): Device used to perform inference.
     """
-    _default_postfix = get_library_ext()
-    _vm_postfix = '.vm'
-    _vm_name = None
-
-    vm_name: str = None
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix=get_library_ext())
+    vm_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.vm', base_name='file_name')
     use_vm: bool = False
     dtypes: Dict[str, str] = None
     tuner: Any = None
     qconfig: Any = None
     device: str = 'llvm'
-
-    @dataclass_property
-    def vm_name(self) -> str:
-        """vm_name getter."""
-        if self._vm_name is None and self.file_name is not None:
-            # if bin name has not been given, use file name with postfix
-            name = osp.splitext(self.file_name)[0]
-            return name + self._vm_postfix
-        return self._vm_name
-
-    @vm_name.setter
-    def vm_name(self, val) -> None:
-        """vm_name setter."""
-        if val is not None and osp.splitext(val)[1] == '':
-            val = val + self._vm_postfix
-
-        self._vm_name = val
 
     def get_model_files(self) -> str:
         """get the model files."""

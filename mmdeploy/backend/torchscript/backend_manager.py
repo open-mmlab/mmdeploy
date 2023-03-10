@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
 from mmdeploy.ir.torchscript import TorchScriptParam
-from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    FileNameDescriptor)
 
 
 # We name the name `TorchJIT` to distinguish `Torchscript` as IR.
@@ -20,7 +21,8 @@ class TorchJITParam(BaseBackendParam):
         input_names (List[str]): Names of the inputs.
         output_names (List[str]): Names of the outputs.
     """
-    _default_postfix = '.pth'
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.pth')
 
     def get_model_files(self) -> str:
         """get the model files."""

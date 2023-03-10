@@ -8,7 +8,7 @@ from typing import Any, Callable, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    dataclass_property)
+                    FileNameDescriptor)
 
 
 @dataclass
@@ -24,30 +24,12 @@ class NCNNParam(BaseBackendParam):
         use_vulkan (str): Perform inference with vulkan.
         precision (str): Precision of the model, `INT8` or `FP32`
     """
-    _default_postfix = '.param'
-    _default_bin_postfix = '.bin'
-    _bin_name: str = None
-
-    bin_name: str = None
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.param')
+    bin_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.bin', base_name='file_name')
     use_vulkan: bool = False
     precision: str = 'FP32'
-
-    @dataclass_property
-    def bin_name(self) -> str:
-        """bin_name getter."""
-        if self._bin_name is None and self.file_name is not None:
-            # if bin name has not been given, use file name with postfix
-            name = osp.splitext(self.file_name)[0]
-            return name + self._default_bin_postfix
-        return self._bin_name
-
-    @bin_name.setter
-    def bin_name(self, val) -> None:
-        """bin_name setter."""
-        if val is not None and osp.splitext(val)[1] == '':
-            val = val + self._default_bin_postfix
-
-        self._bin_name = val
 
     def get_model_files(self) -> str:
         """get the model files."""

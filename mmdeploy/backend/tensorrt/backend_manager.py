@@ -10,7 +10,7 @@ from typing import (Any, Callable, Dict, Iterable, List, Optional, Sequence,
 
 from mmdeploy.ir.onnx import ONNXParam
 from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
-                    import_custom_modules)
+                    FileNameDescriptor, import_custom_modules)
 
 
 @dataclass
@@ -36,8 +36,9 @@ class TensorRTParam(BaseBackendParam):
         max_workspace_size (int): Extra workspace size required by the model.
             default to 1Gb.
     """
-    _default_postfix = '.engine'
 
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.engine')
     device: str = 'cuda'
     fp16_mode: bool = False
     int8_mode: bool = False

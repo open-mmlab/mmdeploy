@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from typing import Any, Callable, List, Optional, Sequence
 
 from mmdeploy.ir.onnx import ONNXParam
-from ..base import BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    FileNameDescriptor)
 
 
 @dataclass
@@ -18,7 +19,8 @@ class ONNXRuntimeParam(BaseBackendParam):
             added automatically.
         device (str): The device used to perform the inference. Default to cpu.
     """
-    _default_postfix = '.onnx'
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.onnx')
 
     def get_model_files(self) -> str:
         """get the model files."""

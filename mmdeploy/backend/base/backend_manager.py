@@ -75,15 +75,39 @@ class ShapePlaceHolderAction(Action):
 ShapeType = Dict[str, Sequence[int]]
 
 
-class dataclass_property(property):
+class FileNameDescriptor:
+    """File name descriptor."""
 
-    def __set__(self, obj, value):
-        if isinstance(value, property):
-            # dataclasses tries to set a default and uses the
-            # getattr(cls, name). But the real default will come
-            # from: `_attr = field(..., default=...)`.
-            return
-        super().__set__(obj, value)
+    def __init__(self, *, default, postfix: str = '', base_name=None):
+        self._default = default
+        self._postfix = postfix
+        self._base_name = base_name
+
+    def __set_name__(self, owner, name):
+        """set obj name."""
+        self._name = '_' + name
+
+    def __get__(self, obj, type):
+        """file name getter."""
+        if obj is None:
+            return self._default
+
+        # get <obj>.<name>
+        ret = getattr(obj, self._name, self._default)
+
+        # if <obj>.<name> is None, try get name from base name
+        if ret is None and self._base_name is not None:
+            base_val = getattr(obj, self._base_name, None)
+            if base_val is not None:
+                name = osp.splitext(base_val)[0]
+                ret = name + self._postfix
+        return ret
+
+    def __set__(self, obj, val):
+        """file name setter."""
+        if val is not None and osp.splitext(val)[1] == '':
+            val = val + self._postfix
+        setattr(obj, self._name, val)
 
 
 @dataclass
@@ -105,12 +129,11 @@ class BaseBackendParam:
             correspond tensor.
         uri (str): The uri of remote device.
     """
-    _default_postfix = ''
-    _file_name = None
     _manager = None
 
     work_dir: str = None
-    file_name: str
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='')
     min_shapes: ShapeType = field(default_factory=OrderedDict)
     input_shapes: ShapeType = field(default_factory=OrderedDict)
     max_shapes: ShapeType = field(default_factory=OrderedDict)
@@ -119,19 +142,6 @@ class BaseBackendParam:
     device: str = 'cpu'
     quanti_data: Union[Iterable, str] = None
     uri: str = None
-
-    @dataclass_property
-    def file_name(self) -> str:
-        """file_name getter."""
-        return self._file_name
-
-    @file_name.setter
-    def file_name(self, val) -> None:
-        """file_name setter."""
-        if val is not None and osp.splitext(val)[1] == '':
-            val = val + self._default_postfix
-
-        self._file_name = val
 
     def get_model_files(self) -> Union[str, List[str]]:
         """get model files."""
@@ -272,6 +282,8 @@ class BaseBackendParam:
             else:
                 action = 'store_true'
             parser.add_argument(arg_name, action=action, help=desc)
+        elif dtype == FileNameDescriptor:
+            parser.add_argument(arg_name, type=str, default=default, help=desc)
         elif dtype == ShapeType:
             action = ShapeTypeAction \
                 if name == 'input_shapes' else ShapePlaceHolderAction
