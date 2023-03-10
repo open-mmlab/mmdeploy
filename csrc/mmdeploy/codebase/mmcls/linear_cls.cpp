@@ -18,6 +18,7 @@ class LinearClsHead : public MMClassification {
  public:
   explicit LinearClsHead(const Value& cfg) : MMClassification(cfg) {
     if (cfg.contains("params")) {
+      softmax_ = cfg["params"].value("softmax", false);
       topk_ = cfg["params"].value("topk", 1);
       if (topk_ <= 0) {
         MMDEPLOY_ERROR("'topk' should be greater than 0, but got '{}'", topk_);
@@ -47,16 +48,31 @@ class LinearClsHead : public MMClassification {
  private:
   Value GetLabels(const Tensor& scores, int class_num) const {
     auto scores_data = scores.data<float>();
+    auto topk = std::min(topk_, class_num);
     Labels output;
-    output.reserve(topk_);
+    output.reserve(topk);
     std::vector<int> idx(class_num);
     iota(begin(idx), end(idx), 0);
-    partial_sort(begin(idx), begin(idx) + topk_, end(idx),
+    partial_sort(begin(idx), begin(idx) + topk, end(idx),
                  [&](int i, int j) { return scores_data[i] > scores_data[j]; });
-    for (int i = 0; i < topk_; ++i) {
-      auto label = Label{idx[i], scores_data[idx[i]]};
-      MMDEPLOY_DEBUG("label_id: {}, score: {}", label.label_id, label.score);
-      output.push_back(label);
+
+    auto sum_exp = 0.f;
+    std::vector<float> exp_scores;
+    if (softmax_) {
+      exp_scores.reserve(class_num);
+      auto max_val = scores_data[idx[0]];
+      for (int i = 0; i < class_num; ++i) {
+        sum_exp += exp_scores.emplace_back(std::exp(scores_data[i] - max_val));
+      }
+    }
+    for (int i = 0; i < topk; ++i) {
+      float score = 0.f;
+      if (softmax_) {
+        score = exp_scores[idx[i]] / sum_exp;
+      } else {
+        score = scores_data[idx[i]];
+      }
+      output.push_back({idx[i], score});
     }
     return to_value(std::move(output));
   }
@@ -64,6 +80,7 @@ class LinearClsHead : public MMClassification {
  private:
   static constexpr const auto kHost = Device{0};
 
+  bool softmax_{false};
   int topk_{1};
 };
 
