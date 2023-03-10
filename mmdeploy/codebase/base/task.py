@@ -123,6 +123,8 @@ class BaseTask(metaclass=ABCMeta):
             load_checkpoint(model, model_checkpoint, map_location=self.device)
 
         model = revert_sync_batchnorm(model)
+        if hasattr(model.backbone, 'switch_to_deploy'):
+            model.backbone.switch_to_deploy()
         model = model.to(self.device)
         model.eval()
         return model
