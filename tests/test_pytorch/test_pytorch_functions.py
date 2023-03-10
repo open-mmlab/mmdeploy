@@ -319,7 +319,7 @@ def test_triu_trt(shape, diagonal):
     [torch.rand(1, 16, 16), torch.rand(1, 3, 16, 16)])
 @pytest.mark.parametrize('dim', [1, 2])
 def test_normalize_ncnn(input, dim):
-    import mmdeploy.apis.ncnn as ncnn_apis
+    import mmdeploy.backend.ncnn as ncnn_apis
     from mmdeploy.utils.test import get_onnx_model
 
     def norm_func(input, dim):
@@ -329,9 +329,9 @@ def test_normalize_ncnn(input, dim):
     model_inputs = {'input': input}
     ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg_ncnn)
     assert osp.exists(ir_file_path)
-    ncnn_files_prefix = osp.splitext(ir_file_path)[0]
-    ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
-    param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+    param_path, bin_path = ncnn_apis.onnx2ncnn.get_output_model_file(
+        ir_file_path)
+    ncnn_apis.to_backend(ir_file_path, param_path, bin_path)
     assert osp.exists(param_path)
     assert osp.exists(bin_path)
 

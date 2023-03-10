@@ -10,7 +10,7 @@ from mmdeploy.apis import torch2torchscript
 from mmdeploy.utils import IR, Backend
 from mmdeploy.utils.test import get_random_name
 
-ts_file = tempfile.NamedTemporaryFile(suffix='.pt').name
+ts_file = tempfile.NamedTemporaryFile(suffix='.pth').name
 input_name = get_random_name()
 output_name = get_random_name()
 

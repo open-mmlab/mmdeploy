@@ -95,8 +95,16 @@ def test_onnx2openvino(get_deploy_cfg):
     openvino_dir = tempfile.TemporaryDirectory().name
     deploy_cfg = get_deploy_cfg()
     mo_options = get_mo_options_from_cfg(deploy_cfg)
-    from_onnx(onnx_file, openvino_dir, input_info, output_names, mo_options)
+    mo_options = mo_options.get_options()
     openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
+
+    from_onnx(
+        onnx_file,
+        openvino_model_path,
+        input_info,
+        output_names,
+        work_dir=openvino_dir,
+        mo_options=mo_options)
     assert osp.exists(openvino_model_path), \
         'The file (.xml) for OpenVINO IR has not been created.'
 

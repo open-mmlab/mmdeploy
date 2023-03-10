@@ -179,7 +179,7 @@ class ONNXRuntimeManager(BaseBackendManager):
         assert isinstance(param.file_name, str)
         model_path = osp.join(param.work_dir, param.file_name)
         output_names = param.output_names
-        if len(output_names) == 0:
+        if output_names is not None and len(output_names) == 0:
             output_names = None
         return cls.build_wrapper(
             model_path, device=param.device, output_names=output_names)

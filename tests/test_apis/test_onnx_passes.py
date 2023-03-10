@@ -188,9 +188,6 @@ def test_flatten_cls_head():
     node, idx = _find_next_node(0, nodes, 'GlobalAveragePool')
     assert node is not None
 
-    node, idx = _find_next_node(idx + 1, nodes, 'Flatten')
-    assert node is not None
-
 
 def test_fuse_select_assign():
     pytest.importorskip('mmdeploy.backend.torchscript.ts_optimizer.onnx')

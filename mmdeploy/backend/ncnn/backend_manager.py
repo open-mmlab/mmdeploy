@@ -182,7 +182,7 @@ class NCNNManager(BaseBackendManager):
         """
         param_path, bin_path = param.get_model_files()
         output_names = param.output_names
-        if len(output_names) == 0:
+        if output_names is not None and len(output_names) == 0:
             output_names = None
         return cls.build_wrapper(
             param_path, bin_path, output_names=output_names)

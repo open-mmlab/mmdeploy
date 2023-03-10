@@ -404,44 +404,45 @@ def get_backend_outputs(ir_file_path: str,
             k for k, v in flatten_model_inputs.items() if k != 'ctx'
         ]
 
-    work_dir = tempfile.TemporaryDirectory().name
-    device = 'cpu'
+    with tempfile.TemporaryDirectory() as work_dir:
+        device = 'cpu'
 
-    # TODO: Try to wrap these code into backend manager
-    if backend != Backend.TORCHSCRIPT:
-        model_inputs = flatten_model_inputs
-    if backend == Backend.TENSORRT:
-        device = 'cuda'
-        model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
-    elif backend == Backend.OPENVINO:
-        input_info = {
-            name: value.shape
-            for name, value in flatten_model_inputs.items()
-        }
-        deploy_cfg['backend_config']['model_inputs'] = [
-            dict(opt_shapes=input_info)
-        ]
-    backend_files = to_backend(
-        backend.value, [ir_file_path],
-        work_dir=work_dir,
-        deploy_cfg=deploy_cfg,
-        device=device)
-    backend_feats = model_inputs
+        # TODO: Try to wrap these code into backend manager
+        if backend != Backend.TORCHSCRIPT:
+            model_inputs = flatten_model_inputs
+        if backend == Backend.TENSORRT:
+            device = 'cuda'
+            model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
+        elif backend == Backend.OPENVINO:
+            input_info = {
+                name: value.shape
+                for name, value in flatten_model_inputs.items()
+            }
+            deploy_cfg['backend_config']['model_inputs'] = [
+                dict(opt_shapes=input_info)
+            ]
+        backend_files = to_backend(
+            backend.value, [ir_file_path],
+            work_dir=work_dir,
+            deploy_cfg=deploy_cfg,
+            device=device)
+        backend_feats = model_inputs
 
-    if backend == Backend.TORCHSCRIPT:
-        backend_feats = [v for _, v in model_inputs.items()]
+        if backend == Backend.TORCHSCRIPT:
+            backend_feats = [v for _, v in model_inputs.items()]
 
-    from mmdeploy.codebase.base import BaseBackendModel
-    backend_model = BaseBackendModel._build_wrapper(
-        backend,
-        backend_files,
-        device,
-        input_names=input_names,
-        output_names=output_names)
-    with torch.no_grad():
-        backend_outputs = backend_model(backend_feats)
-    backend_outputs = backend_model.output_to_list(backend_outputs)
-    return backend_outputs
+        from mmdeploy.codebase.base import BaseBackendModel
+        backend_model = BaseBackendModel._build_wrapper(
+            backend,
+            backend_files,
+            device,
+            input_names=input_names,
+            output_names=output_names,
+            deploy_cfg=deploy_cfg)
+        with torch.no_grad():
+            backend_outputs = backend_model(backend_feats)
+        backend_outputs = backend_model.output_to_list(backend_outputs)
+        return backend_outputs
 
 
 def get_rewrite_outputs(wrapped_model: nn.Module,

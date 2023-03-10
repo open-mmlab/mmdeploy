@@ -101,7 +101,8 @@ def to_backend(backend_name: str,
     backend_mgr = get_backend_manager(backend_name)
 
     model_inputs = get_model_inputs(deploy_cfg)
-    assert len(model_inputs) == 0 or len(model_inputs) == len(ir_files)
+    assert model_inputs is None or len(model_inputs) == 0 or len(
+        model_inputs) == len(ir_files)
     backend_files = []
     for idx, ir_file in enumerate(ir_files):
         if isinstance(model_inputs, (list, tuple)) and len(model_inputs) > 0:
