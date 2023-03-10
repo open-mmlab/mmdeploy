@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import importlib
 import os.path as osp
 import re
@@ -412,6 +413,7 @@ class BaseBackendManager(metaclass=ABCMeta):
             f'`{cls.__name__}`')
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):
@@ -429,12 +431,7 @@ class BaseBackendManager(metaclass=ABCMeta):
     def main(cls):
         """Create console tools."""
         parser = ArgumentParser()
-        generator = cls.parse_args(parser)
-
-        try:
-            while True:
-                next(generator)
-        except StopIteration:
+        with cls.parse_args(parser):
             pass
 
     @classmethod

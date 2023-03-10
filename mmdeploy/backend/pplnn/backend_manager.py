@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import os.path as osp
 from argparse import ArgumentParser
 from dataclasses import dataclass
@@ -227,6 +228,7 @@ class PPLNNManager(BaseBackendManager):
         return _BackendParam(**kwargs)
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):

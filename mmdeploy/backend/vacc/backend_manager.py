@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import os.path as osp
 import sys
 from argparse import ArgumentParser
@@ -288,6 +289,7 @@ class VACCManager(BaseBackendManager):
         return cls.build_param(**kwargs)
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):

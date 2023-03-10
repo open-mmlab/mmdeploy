@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import os.path as osp
 import re
 from argparse import ArgumentParser
@@ -338,6 +339,7 @@ class TensorRTManager(BaseBackendManager):
         return ret
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):

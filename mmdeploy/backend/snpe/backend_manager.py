@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import os
 import os.path as osp
 import sys
@@ -167,6 +168,7 @@ class SNPEManager(BaseBackendManager):
         return _BackendParam(**kwargs)
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):

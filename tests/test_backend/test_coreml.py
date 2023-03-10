@@ -113,11 +113,6 @@ class TestManager:
             args += ['--output-names', *output_names]
 
             parser = argparse.ArgumentParser()
-            generator = backend_mgr.parse_args(parser, args=args)
-
-            try:
-                next(generator)
-                next(generator)
-            except StopIteration:
+            with backend_mgr.parse_args(parser, args=args):
                 pass
             assert osp.exists(osp.join(work_dir, param_name))

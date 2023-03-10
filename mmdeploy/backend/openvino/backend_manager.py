@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import contextlib
 import os.path as osp
 import tempfile
 from argparse import ArgumentParser
@@ -235,6 +236,7 @@ class OpenVINOManager(BaseBackendManager):
         return _BackendParam(**kwargs)
 
     @classmethod
+    @contextlib.contextmanager
     def parse_args(cls,
                    parser: ArgumentParser,
                    args: Optional[List[str]] = None):

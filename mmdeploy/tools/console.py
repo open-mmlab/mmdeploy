@@ -186,11 +186,8 @@ def run_command(parser: ArgumentParser,
         if backend_mgr.is_available():
             parser = ArgumentParser()
             try:
-                generator = backend_mgr.parse_args(parser, remain_args)
-                next(generator)
-                next(generator)
-            except StopIteration:
-                print('Run finish.')
+                with backend_mgr.parse_args(parser, remain_args):
+                    pass
             except NotImplementedError:
                 sys.stderr.write(
                     f'Backend: {obj_name} run has not been implemented.\n')

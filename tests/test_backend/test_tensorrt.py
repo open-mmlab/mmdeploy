@@ -133,10 +133,7 @@ class TestManager:
             args += ['--input-shapes', input_shapes]
 
             parser = argparse.ArgumentParser()
-            generator = backend_mgr.parse_args(parser, args=args)
+            with backend_mgr.parse_args(parser, args=args):
+                pass
 
-            try:
-                next(generator)
-                next(generator)
-            except StopIteration:
-                assert osp.exists(osp.join(work_dir, 'tmp' + _extension))
+            assert osp.exists(osp.join(work_dir, 'tmp' + _extension))

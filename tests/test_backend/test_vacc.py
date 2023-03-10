@@ -166,12 +166,7 @@ class TestManager:
             args += ['--quant-mode', quant_mode]
 
             parser = argparse.ArgumentParser()
-            generator = backend_mgr.parse_args(parser, args=args)
-
-            try:
-                next(generator)
-                next(generator)
-            except StopIteration:
+            with backend_mgr.parse_args(parser, args=args):
                 pass
             assert osp.exists(
                 osp.join(work_dir, param_name + '-' + quant_mode,
