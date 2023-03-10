@@ -14,7 +14,14 @@ mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
         mmdeploy_Restorer.cpp
         mmdeploy_PoseDetector.cpp
         mmdeploy_TextDetector.cpp
-        mmdeploy_TextRecognizer.cpp)
+        mmdeploy_TextRecognizer.cpp
+        mmdeploy_PoseTracker.cpp
+        mmdeploy_Context.cpp
+        mmdeploy_Device.cpp
+        mmdeploy_Model.cpp
+        mmdeploy_Profiler.cpp
+        mmdeploy_Scheduler.cpp
+        mmdeploy_RotatedDetector.cpp)
 
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${JNI_INCLUDE_DIRS})

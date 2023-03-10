@@ -10,12 +10,19 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
+/** @description: this is a class for Ocr java demo. */
 public class Ocr {
 
+    /** The main function for Ocr Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param detModelPath: the text detection model path.
+     * @param recModelPath: the text recognition model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 4) {
-            System.out.println("usage:\njava TextDetection deviceName detModelPath recModelPath imagePath");
+            System.out.println("usage:\njava Ocr deviceName detModelPath recModelPath imagePath");
             return;
         }
         String deviceName = args[0];
@@ -30,13 +37,19 @@ public class Ocr {
         try {
             text_detector = new TextDetector(detModelPath, deviceName, 0);
             text_recognizer = new TextRecognizer(recModelPath, deviceName, 0);
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply text detector
             TextDetector.Result[] detResult = text_detector.apply(img);
+
             int [] detResultCount = {detResult.length};
             TextRecognizer.Result[] recResult = text_recognizer.applyBbox(img, detResult, detResultCount);
+            if (recResult == null) {
+                System.out.println("Apply TextRecognizer failed.");
+                System.exit(1);
+            }
             // print results
             for (int i = 0; i < detResultCount[0]; ++i) {
                 System.out.printf("box[%d]: %s\n", i, new String(recResult[i].text));

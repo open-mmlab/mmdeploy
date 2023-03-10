@@ -74,7 +74,6 @@ train_pipeline = [
     dict(
         type='Flip', keys=['img', 'gt'], flip_ratio=0.5, direction='vertical'),
     dict(type='RandomTransposeHW', keys=['img', 'gt'], transpose_ratio=0.5),
-    dict(type='ToTensor', keys=['img', 'gt']),
     dict(type='PackEditInputs')
 ]
 val_pipeline = [
@@ -90,7 +89,6 @@ val_pipeline = [
         color_type='color',
         channel_order='rgb',
         imdecode_backend='cv2'),
-    dict(type='ToTensor', keys=['img', 'gt']),
     dict(type='PackEditInputs')
 ]
 
@@ -100,6 +98,7 @@ data_root = 'data'
 
 train_dataloader = dict(
     num_workers=4,
+    batch_size=16,
     persistent_workers=False,
     sampler=dict(type='InfiniteSampler', shuffle=True),
     dataset=dict(
@@ -124,15 +123,17 @@ val_dataloader = dict(
         data_prefix=dict(img='LRbicx4', gt='GTmod12'),
         pipeline=val_pipeline))
 
-val_evaluator = [
-    dict(type='MAE'),
-    dict(type='PSNR', crop_border=scale),
-    dict(type='SSIM', crop_border=scale),
-]
+val_evaluator = dict(
+    type='EditEvaluator',
+    metrics=[
+        dict(type='MAE'),
+        dict(type='PSNR', crop_border=scale),
+        dict(type='SSIM', crop_border=scale),
+    ])
 
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=1000000, val_interval=5000)
-val_cfg = dict(type='ValLoop')
+val_cfg = dict(type='EditValLoop')
 
 # optimizer
 optim_wrapper = dict(
@@ -175,7 +176,6 @@ test_pipeline = [
         color_type='color',
         channel_order='rgb',
         imdecode_backend='cv2'),
-    dict(type='ToTensor', keys=['img', 'gt']),
     dict(type='PackEditInputs')
 ]
 
@@ -190,12 +190,14 @@ set5_dataloader = dict(
         type='BasicImageDataset',
         metainfo=dict(dataset_type='set5', task_name='sisr'),
         data_root=set5_data_root,
-        data_prefix=dict(img='LRbicx4', gt='GTmod12'),
+        data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
-set5_evaluator = [
-    dict(type='PSNR', crop_border=2, prefix='Set5'),
-    dict(type='SSIM', crop_border=2, prefix='Set5'),
-]
+set5_evaluator = dict(
+    type='EditEvaluator',
+    metrics=[
+        dict(type='PSNR', crop_border=4, prefix='Set5'),
+        dict(type='SSIM', crop_border=4, prefix='Set5'),
+    ])
 
 set14_data_root = 'data/Set14'
 set14_dataloader = dict(
@@ -207,12 +209,14 @@ set14_dataloader = dict(
         type='BasicImageDataset',
         metainfo=dict(dataset_type='set14', task_name='sisr'),
         data_root=set5_data_root,
-        data_prefix=dict(img='LRbicx4', gt='GTmod12'),
+        data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
-set14_evaluator = [
-    dict(type='PSNR', crop_border=2, prefix='Set14'),
-    dict(type='SSIM', crop_border=2, prefix='Set14'),
-]
+set14_evaluator = dict(
+    type='EditEvaluator',
+    metrics=[
+        dict(type='PSNR', crop_border=4, prefix='Set14'),
+        dict(type='SSIM', crop_border=4, prefix='Set14'),
+    ])
 
 ut_data_root = 'tests/test_codebase/test_mmedit/data'
 ut_dataloader = dict(
@@ -227,28 +231,7 @@ ut_dataloader = dict(
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
 
-# test config for DIV2K
-div2k_data_root = 'data/DIV2K'
-div2k_dataloader = dict(
-    num_workers=4,
-    persistent_workers=False,
-    drop_last=False,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type='BasicImageDataset',
-        ann_file='meta_info_DIV2K100sub_GT.txt',
-        metainfo=dict(dataset_type='div2k', task_name='sisr'),
-        data_root=div2k_data_root,
-        data_prefix=dict(
-            img='DIV2K_train_LR_bicubic/X4_sub', gt='DIV2K_train_HR_sub'),
-        # filename_tmpl=dict(img='{}_x4', gt='{}'),
-        pipeline=test_pipeline))
-div2k_evaluator = [
-    dict(type='PSNR', crop_border=2, prefix='DIV2K'),
-    dict(type='SSIM', crop_border=2, prefix='DIV2K'),
-]
-
 # test config
-test_cfg = dict(type='MultiTestLoop')
+test_cfg = dict(type='EditTestLoop')
 test_dataloader = [ut_dataloader, ut_dataloader]
 test_evaluator = [set5_evaluator, set14_evaluator]

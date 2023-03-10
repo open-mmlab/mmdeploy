@@ -55,7 +55,7 @@ def backend_model():
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
     wrapper = SwitchBackendWrapper(ORTWrapper)
     wrapper.set(outputs={
-        'output': torch.rand(3, 50, 50),
+        'output': torch.rand(1, 3, 50, 50),
     })
 
     yield task_processor.build_backend_model([''])
@@ -65,17 +65,14 @@ def backend_model():
 
 def test_build_test_runner():
     # Prepare dummy model
-    from mmedit.structures import EditDataSample, PixelData
+    from mmedit.structures import EditDataSample
 
-    data_sample = EditDataSample()
-
-    img_meta = dict(img_shape=(800, 1196, 3))
-    img = torch.rand((3, 800, 1196))
-    gt_img = PixelData(data=img, metainfo=img_meta)
-    data_sample.gt_img = gt_img
-    pred_img = PixelData(data=img, metainfo=img_meta)
-    data_sample.set_data(dict(output=pred_img))
-    # data_sample.output.pred_img = pred_img
+    img_meta = dict(ori_img_shape=(32, 32, 3))
+    img = torch.rand(3, 32, 32)
+    data_sample = EditDataSample(gt_img=img, metainfo=img_meta)
+    data_sample.set_data(
+        dict(output=EditDataSample(pred_img=img, metainfo=img_meta)))
+    data_sample.set_data(dict(input=img))
     outputs = [data_sample]
     model = DummyModel(outputs=outputs)
     assert model is not None
@@ -104,9 +101,7 @@ def test_create_input():
 
 
 def test_visualize(backend_model):
-    data_preprocessor = task_processor.build_data_preprocessor()
-    input_dict, _ = task_processor.create_input(input_img, img_shape,
-                                                data_preprocessor)
+    input_dict, _ = task_processor.create_input(input_img, img_shape)
 
     with torch.no_grad():
         results = backend_model.test_step(input_dict)[0]

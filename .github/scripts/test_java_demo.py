@@ -47,6 +47,21 @@ PARAMS = [
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'  # noqa: E501
         ]
+    },
+    {
+        'task':
+        'PoseTracker',
+        'configs': [
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar',  # noqa: E501
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar'  # noqa: E501
+        ]
+    },
+    {
+        'task':
+        'RotatedDetection',
+        'configs': [
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'  # noqa: E501
+        ]
     }
 ]
 
@@ -60,24 +75,34 @@ def main():
     for params in PARAMS:
         task = params['task']
         configs = params['configs']
-        java_demo_cmd = [
-            'java', '-cp', 'csrc/mmdeploy/apis/java:demo/java',
-            'demo/java/' + task + '.java', 'cpu'
-        ]
+        java_command = '\"cpu'
         for config in configs:
             model_url = config
             os.system('wget {} && tar xvf {}'.format(model_url,
                                                      model_url.split('/')[-1]))
             model_dir = model_url.split('/')[-1].split('.')[0]
-            java_demo_cmd.append(model_dir)
-        java_demo_cmd.append('/home/runner/work/mmdeploy/mmdeploy/demo' +
-                             '/resources/human-pose.jpg')
-        java_demo_cmd_str = ' '.join(java_demo_cmd)
-        os.system('export JAVA_HOME=/home/runner/work/mmdeploy/mmdeploy/' +
-                  'jdk-18 && export PATH=${JAVA_HOME}/bin:${PATH} && java' +
-                  ' --version && export LD_LIBRARY_PATH=/home/runner/work/' +
-                  'mmdeploy/mmdeploy/build/lib:${LD_LIBRARY_PATH} && ' +
-                  java_demo_cmd_str)
+            java_command += (' ' + model_dir)
+        if task in [
+                'ImageClassification', 'ObjectDetection', 'ImageSegmentation',
+                'ImageRestorer', 'PoseDetection', 'RotatedDetection'
+        ]:
+            java_command += (' $GITHUB_WORKSPACE/demo' +
+                             '/resources/human-pose.jpg\"')
+        elif task in ['Ocr']:
+            java_command += (' $GITHUB_WORKSPACE/demo' +
+                             '/resources/text_det.jpg\"')
+        elif task in ['PoseTracker']:
+            os.system(
+                'wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4'  # noqa: E501
+            )
+            java_command += ' dance.mp4\"'
+        else:
+            java_command += '\"'
+        print(f'java_command: {java_command}')
+        os.system('ant -DtaskName=' + task +
+                  ' -DjarDir=${OPENCV_DIR}/build/bin ' +
+                  '-DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/' +
+                  'build/lib -Dcommand=' + java_command)
 
 
 if __name__ == '__main__':
