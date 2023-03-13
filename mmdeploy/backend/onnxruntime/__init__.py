@@ -10,3 +10,8 @@ to_backend = _BackendManager.to_backend
 to_backend_from_param = _BackendManager.to_backend_from_param
 
 __all__ = ['ONNXRuntimeParam', 'ONNXRuntimeManager']
+
+if is_available():
+    from .wrapper import ORTWrapper
+
+    __all__ += ['ORTWrapper']
