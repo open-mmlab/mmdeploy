@@ -152,10 +152,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         else:
             os.environ.pop('CUDA_DEVICE')
 
+    # build a mmdeploy logger
+    logger = get_root_logger()
     load_tensorrt_plugin()
+
+    # build a tensorrt logger
+    trt_logger = trt.Logger(log_level)
+
     # create builder and network
-    logger = trt.Logger(log_level)
-    builder = trt.Builder(logger)
+    builder = trt.Builder(trt_logger)
 
     # TODO: use TorchAllocator as builder.gpu_allocator
 
@@ -164,7 +169,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     network = builder.create_network(EXPLICIT_BATCH)
 
     # parse onnx
-    parser = trt.OnnxParser(network, logger)
+    parser = trt.OnnxParser(network, trt_logger)
 
     if isinstance(onnx_model, str):
         parse_valid = parser.parse_from_file(onnx_model)
@@ -208,21 +213,18 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         max_shape = param['max_shape']
         profile.set_shape(input_name, min_shape, opt_shape, max_shape)
     if config.add_optimization_profile(profile) < 0:
-        logger.log(trt.Logger.WARNING,
-                   f'Invalid optimization profile {profile}.')
+        logger.warning(f'Invalid optimization profile {profile}.')
 
     if fp16_mode:
         if not getattr(builder, 'platform_has_fast_fp16', True):
-            logger.log(trt.Logger.WARNING,
-                       'Platform does not has fast native fp16.')
+            logger.warning('Platform does not has fast native fp16.')
         if version.parse(trt.__version__) < version.parse('8'):
             builder.fp16_mode = fp16_mode
         config.set_flag(trt.BuilderFlag.FP16)
 
     if int8_mode:
         if not getattr(builder, 'platform_has_fast_int8', True):
-            logger.log(trt.Logger.WARNING,
-                       'Platform does not has fast native int8.')
+            logger.warning('Platform does not has fast native int8.')
         from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
         assert int8_param is not None
