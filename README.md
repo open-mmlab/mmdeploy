@@ -28,6 +28,15 @@
 
 English | [简体中文](README_zh-CN.md)
 
+## Highlights
+
+The new v1.x version has been released, which is adapted to the preview version of upstream codebase, please **align the version** when using it.
+
+| mmdeploy | mmengine |  mmcv  | mmdet  | others |
+| :------: | :------: | :----: | :----: | :----: |
+|   0.x    |    -     | \<=1.x | \<=2.x |  0.x   |
+|   1.x    |   0.x    |  2.x   |  3.x   |  1.x   |
+
 ## Introduction
 
 MMDeploy is an open-source deep learning model deployment toolset. It is a part of the [OpenMMLab](https://openmmlab.com/) project.

@@ -28,6 +28,15 @@
 
 [English](README.md) | 简体中文
 
+## 1.x 预览版本
+
+全新的 v1.x 版本已发布，针对上游算法预览版做适配，使用时务必**对齐版本**。
+
+| mmdeploy | mmengine |  mmcv  | mmdet  | others |
+| :------: | :------: | :----: | :----: | :----: |
+|   0.x    |    -     | \<=1.x | \<=2.x |  0.x   |
+|   1.x    |   0.x    |  2.x   |  3.x   |  1.x   |
+
 ## 介绍
 
 MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为各算法库提供统一的部署体验**。基于 MMDeploy，开发者可以轻松从训练 repo 生成指定硬件所需 SDK，省去大量适配时间。
