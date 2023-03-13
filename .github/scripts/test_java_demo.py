@@ -47,6 +47,13 @@ PARAMS = [
         'configs': [
             'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'  # noqa: E501
         ]
+    },
+    {
+        'task':
+        'RotatedDetection',
+        'configs': [
+            'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'  # noqa: E501
+        ]
     }
 ]
 

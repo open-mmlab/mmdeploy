@@ -9,8 +9,14 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
+/** @description: this is a class for PoseDetection java demo. */
 public class PoseDetection {
 
+    /** The main function for PoseDetection Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param modelPath: the pose detection model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {
@@ -22,15 +28,16 @@ public class PoseDetection {
         String imagePath = args[2];
 
         // create pose estimator
-        PoseDetector pose_estimator = null;
+        PoseDetector poseEstimator = null;
 
         try {
-            pose_estimator = new PoseDetector(modelPath, deviceName, 0);
+            poseEstimator = new PoseDetector(modelPath, deviceName, 0);
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
             // apply pose estimator
-            PoseDetector.Result[] result = pose_estimator.apply(img);
+            PoseDetector.Result[] result = poseEstimator.apply(img);
 
             // print results
             for (PoseDetector.Result value : result) {
@@ -42,8 +49,8 @@ public class PoseDetection {
             System.out.println("exception: " + e.getMessage());
         } finally {
             // release pose estimator
-            if (pose_estimator != null) {
-                pose_estimator.release();
+            if (poseEstimator != null) {
+                poseEstimator.release();
             }
         }
     }

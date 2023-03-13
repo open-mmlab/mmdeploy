@@ -9,8 +9,14 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
+/** @description: this is a class for ImageRestorer java demo. */
 public class ImageRestorer {
 
+    /** The main function for ImageRestorer Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param modelPath: the image restorer model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {
@@ -26,6 +32,7 @@ public class ImageRestorer {
 
         try {
             restorer = new Restorer(modelPath, deviceName, 0);
+
             // load image
             Mat img = Utils.loadImage(imagePath);
 
