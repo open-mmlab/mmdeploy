@@ -78,7 +78,7 @@ def test_build_pytorch_model(from_mmrazor: Any):
     assert isinstance(model, BaseClassifier)
 
 
-@pytest.fixture
+@pytest.fixture(scope='class')
 def backend_model():
     from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
     with SwitchBackendWrapper(ORTWrapper) as wrapper:

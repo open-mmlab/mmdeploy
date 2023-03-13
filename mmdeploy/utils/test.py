@@ -182,31 +182,40 @@ class SwitchBackendWrapper:
 
     def __init__(self, recover_class):
         self._recover_class = recover_class
+        self._initialized = False
 
     def __enter__(self):
-        obj = self._recover_class
-        self.init = obj.__init__
-        self.forward = obj.forward
-        self.call = obj.__call__
-        obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
-        obj.forward = SwitchBackendWrapper.BackendWrapper.forward
-        obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
+        self.set()
         return self
 
     def __exit__(self, type, value, trace):
-        assert self.init is not None and \
-            self.forward is not None,\
-            'recover method must be called after exchange'
-        obj = self._recover_class
-        obj.__init__ = self.init
-        obj.forward = self.forward
-        obj.__call__ = self.call
+        self.recover()
 
     def set(self, **kwargs):
         """Replace attributes in backend wrappers with dummy items."""
         obj = self._recover_class
+        if not self._initialized:
+            self.init = obj.__init__
+            self.forward = obj.forward
+            self.call = obj.__call__
+            obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
+            obj.forward = SwitchBackendWrapper.BackendWrapper.forward
+            obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
+            self._initialized = True
         for k, v in kwargs.items():
             setattr(obj, k, v)
+
+    def recover(self):
+        """Recover to original class."""
+        assert self.init is not None and \
+            self.forward is not None,\
+            'recover method must be called after exchange'
+        if self._initialized:
+            obj = self._recover_class
+            obj.__init__ = self.init
+            obj.forward = self.forward
+            obj.__call__ = self.call
+            self._initialized = False
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
