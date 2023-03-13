@@ -6,6 +6,41 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 
+class FileNameDescriptor:
+    """File name descriptor."""
+
+    def __init__(self, *, default, postfix: str = '', base_name=None):
+        self._default = default
+        self._postfix = postfix
+        self._base_name = base_name
+
+    def __set_name__(self, owner, name):
+        """set obj name."""
+        self._name = '_' + name
+
+    def __get__(self, obj, type):
+        """file name getter."""
+        if obj is None:
+            return self._default
+
+        # get <obj>.<name>
+        ret = getattr(obj, self._name, self._default)
+
+        # if <obj>.<name> is None, try get name from base name
+        if ret is None and self._base_name is not None:
+            base_val = getattr(obj, self._base_name, None)
+            if base_val is not None:
+                name = osp.splitext(base_val)[0]
+                ret = name + self._postfix
+        return ret
+
+    def __set__(self, obj, val):
+        """file name setter."""
+        if val is not None and osp.splitext(val)[1] == '':
+            val = val + self._postfix
+        setattr(obj, self._name, val)
+
+
 @dataclass
 class BaseIRParam:
     """Base ir param.
@@ -22,32 +57,18 @@ class BaseIRParam:
         rewrite_context (Dict): Provide information to the rewriter.
     """
     # latent fields
-    _default_postfix = ''
-    _file_name = None
     _manager = None
 
     # class fields
     args: Any = None
     work_dir: str = None
-    file_name: str = None
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='')
     input_names: List[str] = None
     output_names: List[str] = None
     dynamic_axes: Dict = None
     backend: str = 'default'
     rewrite_context: Dict = field(default_factory=dict)
-
-    @property
-    def file_name(self) -> str:
-        """file_name getter."""
-        return self._file_name
-
-    @file_name.setter
-    def file_name(self, val) -> None:
-        """file_name setter."""
-        if osp.splitext(val)[1] == '':
-            val = val + self._default_postfix
-
-        self._file_name = val
 
     @classmethod
     def get_manager(cls):

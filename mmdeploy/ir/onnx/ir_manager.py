@@ -3,7 +3,7 @@ import os.path as osp
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
-from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam
+from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam, FileNameDescriptor
 
 
 @dataclass
@@ -27,10 +27,9 @@ class ONNXParam(BaseIRParam):
         const_args (Any): The constant args of the model.
         optimize (bool): Perform optimization.
     """
-    # latent fields
-    _default_postfix = '.onnx'
-
     # class fields
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.onnx')
     do_constant_folding: bool = True
     opset_version: int = 11
     verbose: bool = False

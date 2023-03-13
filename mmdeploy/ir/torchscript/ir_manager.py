@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 from mmdeploy.utils.constants import Backend
-from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam
+from ..base import IR_MANAGERS, BaseIRManager, BaseIRParam, FileNameDescriptor
 
 
 @dataclass
@@ -25,11 +25,9 @@ class TorchScriptParam(BaseIRParam):
         check_trace (bool): Check outputs after trace.
         check_tolerance (float): The tolerance of the check outputs.
     """
-
-    # latent fields
-    _default_postfix = '.pth'
-
     # class fields
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.pth')
     const_args: Any = None
     check_trace: bool = True
     check_tolerance: float = 1e-05
