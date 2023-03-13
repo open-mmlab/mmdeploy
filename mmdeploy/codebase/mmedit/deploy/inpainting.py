@@ -221,12 +221,12 @@ class Inpainting(BaseTask):
         return results
 
     @staticmethod
-    def get_partition_cfg(**kwargs) -> dict:
+    def get_partition_cfg(partition_type: str, **kwargs) -> dict:
         """Get a certain partition config."""
         raise NotImplementedError
 
     @staticmethod
-    def get_tensor_from_input(**kwargs) -> torch.Tensor:
+    def get_tensor_from_input(input_data: dict, **kwargs) -> torch.Tensor:
         """Get input tensor from input data."""
         raise NotImplementedError
 
