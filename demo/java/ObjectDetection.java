@@ -12,8 +12,14 @@ import java.awt.Graphics;
 import java.io.File;
 import java.io.IOException;
 
+/** @description: this is a class for ObjectDetection java demo. */
 public class ObjectDetection {
 
+    /** The main function for ObjectDetection Java demo.
+     * @param deviceName: the device name of the demo.
+     * @param modelPath: the object detection model path.
+     * @param imagePath: the image path.
+     */
     public static void main(String[] args) {
         // Parse arguments
         if (args.length != 3) {
@@ -28,12 +34,14 @@ public class ObjectDetection {
         Detector detector = null;
         try {
             detector = new Detector(modelPath, deviceName, 0);
+
             // load image
             BufferedImage srcImg = ImageIO.read(new File(imagePath));
             Mat img = Utils.bufferedImage2Mat(srcImg);
 
             // apply detector
             Detector.Result[] result = detector.apply(img);
+
             // print results
             Graphics ghandle = srcImg.createGraphics();
             for (int i = 0; i < result.length; i++) {

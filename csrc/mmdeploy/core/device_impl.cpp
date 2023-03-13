@@ -54,6 +54,8 @@ Platform::Platform(int platform_id) {
   }
 }
 
+Result<void> Platform::Bind(Device device, Device* prev) { return impl_->BindDevice(device, prev); }
+
 const char* GetPlatformName(PlatformId id) {
   if (auto impl = gPlatformRegistry().GetPlatformImpl(id); impl) {
     return impl->GetPlatformName();

@@ -70,6 +70,14 @@ class CpuHostMemory : public NonCopyable {
 ////////////////////////////////////////////////////////////////////////////////
 /// CpuPlatformImpl
 
+Result<void> CpuPlatformImpl::BindDevice(Device device, Device* prev) {
+  // do nothing
+  if (prev) {
+    *prev = device;
+  }
+  return success();
+}
+
 shared_ptr<BufferImpl> CpuPlatformImpl::CreateBuffer(Device device) {
   return std::make_shared<CpuBufferImpl>(device);
 }

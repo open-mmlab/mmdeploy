@@ -21,7 +21,7 @@ class WarpBbox {
     if (det.is_object() && det.contains("bbox")) {
       auto bbox = from_value<std::vector<cv::Point>>(det["bbox"]);
       auto patch = warp(mmdeploy::cpu::Mat2CVMat(ori_img), bbox);
-      return Value{{"ori_img", cpu::CVMat2Mat(patch, PixelFormat::kBGR)}};
+      return Value{{"ori_img", cpu::CVMat2Mat(patch, ori_img.pixel_format())}};
     } else {  // whole image as a bbox
       return Value{{"ori_img", ori_img}};
     }

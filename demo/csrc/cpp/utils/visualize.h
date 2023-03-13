@@ -64,9 +64,11 @@ class Visualize {
       cv::Rect rect(origin + cv::Point2f(0, text_size.height + 2 * thickness),
                     origin + cv::Point2f(text_size.width, 0));
       rect &= cv::Rect({}, img_.size());
-      img_(rect) *= .35f;
-      cv::putText(img_, text, origin + cv::Point2f(0, text_size.height), font_face, font_scale,
-                  cv::Scalar::all(255), thickness, cv::LINE_AA);
+      if (rect.area() > 0) {
+        img_(rect) *= .35f;
+        cv::putText(img_, text, origin + cv::Point2f(0, text_size.height), font_face, font_scale,
+                    cv::Scalar::all(255), thickness, cv::LINE_AA);
+      }
       return text_size.height;
     }
 
@@ -120,11 +122,11 @@ class Visualize {
 
     void add_text_det(mmdeploy_point_t bbox[4], float score, const char* text, size_t text_size,
                       int index) {
-      printf("bbox[%d]: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)\n", index,  //
-             bbox[0].x, bbox[0].y,                                                         //
-             bbox[1].x, bbox[1].y,                                                         //
-             bbox[2].x, bbox[2].y,                                                         //
-             bbox[3].x, bbox[3].y);
+      printf("bbox[%d]: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), %.2f\n", index,  //
+             bbox[0].x, bbox[0].y,                                                               //
+             bbox[1].x, bbox[1].y,                                                               //
+             bbox[2].x, bbox[2].y,                                                               //
+             bbox[3].x, bbox[3].y, score);
       std::vector<cv::Point> poly_points;
       cv::Point2f center{};
       for (int i = 0; i < 4; ++i) {
@@ -198,6 +200,11 @@ class Visualize {
 
     void add_pose(const mmdeploy_point_t* pts, const float* scores, int32_t pts_size, double thr) {
       auto& skel = v_.skeleton_;
+      if (skel.point_colors.size() != pts_size) {
+        std::cout << "error: mismatched number of keypoints: " << skel.point_colors.size() << " vs "
+                  << pts_size << ", skip pose visualization.\n";
+        return;
+      }
       std::vector<int> used(pts_size);
       std::vector<int> is_end_point(pts_size);
       for (size_t i = 0; i < skel.links.size(); ++i) {

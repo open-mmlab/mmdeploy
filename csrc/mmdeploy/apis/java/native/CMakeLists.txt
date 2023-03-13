@@ -13,6 +13,7 @@ mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE
         mmdeploy_Segmentor.cpp
         mmdeploy_Restorer.cpp
         mmdeploy_PoseDetector.cpp
+        mmdeploy_RotatedDetector.cpp
         mmdeploy_TextDetector.cpp
         mmdeploy_TextRecognizer.cpp)
 

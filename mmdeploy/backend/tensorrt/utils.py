@@ -138,7 +138,6 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             device_id=0)
         >>>             })
     """
-
     if device_id != 0:
         import os
         old_cuda_device = os.environ.get('CUDA_DEVICE', None)
@@ -149,10 +148,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         else:
             os.environ.pop('CUDA_DEVICE')
 
+    # build a mmdeploy logger
+    logger = get_root_logger()
     load_tensorrt_plugin()
+
+    # build a tensorrt logger
+    trt_logger = trt.Logger(log_level)
+
     # create builder and network
-    logger = trt.Logger(log_level)
-    builder = trt.Builder(logger)
+    builder = trt.Builder(trt_logger)
 
     # TODO: use TorchAllocator as builder.gpu_allocator
 
@@ -161,12 +165,16 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     network = builder.create_network(EXPLICIT_BATCH)
 
     # parse onnx
-    parser = trt.OnnxParser(network, logger)
+    parser = trt.OnnxParser(network, trt_logger)
 
     if isinstance(onnx_model, str):
-        onnx_model = onnx.load(onnx_model)
+        parse_valid = parser.parse_from_file(onnx_model)
+    elif isinstance(onnx_model, onnx.ModelProto):
+        parse_valid = parser.parse(onnx_model.SerializeToString())
+    else:
+        raise TypeError('Unsupported onnx model type!')
 
-    if not parser.parse(onnx_model.SerializeToString()):
+    if not parse_valid:
         error_msgs = ''
         for error in range(parser.num_errors):
             error_msgs += f'{parser.get_error(error)}\n'

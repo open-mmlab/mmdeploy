@@ -40,7 +40,7 @@ Result<void> OrtNet::Init(const Value& args) {
   auto& context = args["context"];
   device_ = context["device"].get<Device>();
   stream_ = context["stream"].get<Stream>();
-
+  DeviceGuard guard(device_);
   auto name = args["name"].get<std::string>();
   auto model = context["model"].get<Model>();
 
@@ -150,6 +150,7 @@ static Result<Tensor> AsTensor(Ort::Value& value, const Device& device) {
 }
 
 Result<void> OrtNet::Forward() {
+  DeviceGuard guard(device_);
   try {
     OUTCOME_TRY(stream_.Wait());
     Ort::IoBinding binding(session_);
@@ -184,6 +185,11 @@ Result<void> OrtNet::Forward() {
     return Status(eFail);
   }
   return success();
+}
+
+OrtNet::~OrtNet() {
+  DeviceGuard guard(device_);
+  session_ = Ort::Session{nullptr};
 }
 
 static std::unique_ptr<Net> Create(const Value& args) {

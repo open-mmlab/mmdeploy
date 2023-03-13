@@ -3,6 +3,6 @@ matplotlib
 multiprocess
 numpy
 onnx>=1.8.0
-protobuf<=3.20.1
+protobuf<=3.20.2
 six
 terminaltables

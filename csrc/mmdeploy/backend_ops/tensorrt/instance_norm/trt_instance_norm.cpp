@@ -152,9 +152,18 @@ void TRTInstanceNormalization::attachToContext(cudnnContext* cudnnContext,
 
 // Detach the plugin object from its execution context.
 void TRTInstanceNormalization::detachFromContext() TRT_NOEXCEPT {
-  cudnnDestroyTensorDescriptor(_y_desc);
-  cudnnDestroyTensorDescriptor(_x_desc);
-  cudnnDestroyTensorDescriptor(_b_desc);
+  if (_y_desc) {
+    cudnnDestroyTensorDescriptor(_y_desc);
+    _y_desc = nullptr;
+  }
+  if (_x_desc) {
+    cudnnDestroyTensorDescriptor(_x_desc);
+    _x_desc = nullptr;
+  }
+  if (_b_desc) {
+    cudnnDestroyTensorDescriptor(_b_desc);
+    _b_desc = nullptr;
+  }
 }
 
 void TRTInstanceNormalization::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* in,

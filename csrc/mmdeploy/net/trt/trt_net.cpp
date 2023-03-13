@@ -79,7 +79,11 @@ static inline Result<void> trt_try(bool code, const char* msg = nullptr, Status 
 
 #define TRT_TRY(...) OUTCOME_TRY(trt_try(__VA_ARGS__))
 
-TRTNet::~TRTNet() = default;
+TRTNet::~TRTNet() {
+  CudaDeviceGuard guard(device_);
+  context_.reset();
+  engine_.reset();
+}
 
 static Result<DataType> MapDataType(nvinfer1::DataType dtype) {
   switch (dtype) {
@@ -106,6 +110,7 @@ Result<void> TRTNet::Init(const Value& args) {
     MMDEPLOY_ERROR("TRTNet: device must be a GPU!");
     return Status(eNotSupported);
   }
+  CudaDeviceGuard guard(device_);
   stream_ = context["stream"].get<Stream>();
 
   event_ = Event(device_);
@@ -156,13 +161,10 @@ Result<void> TRTNet::Init(const Value& args) {
   return success();
 }
 
-Result<void> TRTNet::Deinit() {
-  context_.reset();
-  engine_.reset();
-  return success();
-}
+Result<void> TRTNet::Deinit() { return success(); }
 
 Result<void> TRTNet::Reshape(Span<TensorShape> input_shapes) {
+  CudaDeviceGuard guard(device_);
   using namespace trt_detail;
   if (input_shapes.size() != input_tensors_.size()) {
     return Status(eInvalidArgument);
@@ -190,6 +192,7 @@ Result<Span<Tensor>> TRTNet::GetInputTensors() { return input_tensors_; }
 Result<Span<Tensor>> TRTNet::GetOutputTensors() { return output_tensors_; }
 
 Result<void> TRTNet::Forward() {
+  CudaDeviceGuard guard(device_);
   using namespace trt_detail;
   std::vector<void*> bindings(engine_->getNbBindings());
 

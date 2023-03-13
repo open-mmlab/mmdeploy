@@ -89,4 +89,17 @@ namespace MMDeploy
             Y = y;
         }
     }
+
+    /// <summary>
+    /// Context type.
+    /// </summary>
+    public enum ContextType
+    {
+        DEVICE = 0,
+        STREAM = 1,
+        MODEL = 2,
+        SCHEDULER = 3,
+        MAT = 4,
+        PROFILER = 5,
+    }
 }
