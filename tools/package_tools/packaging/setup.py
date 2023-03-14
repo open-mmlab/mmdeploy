@@ -34,6 +34,22 @@ def parse_arg_remove_boolean(argv, arg_name):
 
 if parse_arg_remove_boolean(sys.argv, '--use-gpu'):
     package_name = package_name + '-gpu'
+    if sys.platform == 'win32':
+        with open('mmdeploy_python/_win_dll_path.py', 'wt') as f:
+            code = \
+                'import os\n' \
+                'import sys\n\n' \
+                'cuda_bin_dir = ""\n' \
+                'if "CUDA_PATH" in os.environ:\n' \
+                '    cuda_bin_dir = os.path.join(os.environ["CUDA_PATH"], "bin")\n' \
+                'else:\n' \
+                '    raise ImportError("Can\'t find environment variable CUDA_PATH")\n' \
+                'if sys.version_info >= (3, 8):\n' \
+                '    os.add_dll_directory(cuda_bin_dir)\n' \
+                'else:\n' \
+                '    os.environ["PATH"] = cuda_bin_dir + os.pathsep + os.environ["PATH"]'
+            f.write(code)
+
 
 if __name__ == '__main__':
     setup(
