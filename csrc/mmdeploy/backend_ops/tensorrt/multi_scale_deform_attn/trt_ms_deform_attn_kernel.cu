@@ -21,7 +21,8 @@ void ms_deformable_im2col_cuda(cudaStream_t stream, scalar_t const* dataValue, i
         spatialSize, numHeads, channels, numLevels, numQuery, numPoint, dataCol);
 }
 
-int32_t ms_deform_attn_cuda_forward(const float* value, const int32_t* spatialShapes,
+template <>
+int32_t ms_deform_attn_cuda_forward<float>(const float* value, const int32_t* spatialShapes,
     const int32_t* levelStartIndex, const float* samplingLoc, const float* attnWeight, float* output, int32_t batch,
     int32_t mSpatialSize, int32_t mNumHeads, int32_t mChannels, int32_t mNumLevels, int32_t mNumQuery, int32_t mNumPoint,
     cudaStream_t stream)
@@ -29,21 +30,23 @@ int32_t ms_deform_attn_cuda_forward(const float* value, const int32_t* spatialSh
     auto perValueSize = mSpatialSize * mNumHeads * mChannels;
     auto perSampleLocSize = mNumQuery * mNumHeads * mNumLevels * mNumPoint * 2;
     auto perAttnWeightSize = mNumQuery * mNumHeads * mNumLevels * mNumPoint;
+    auto perOutputSize = mNumQuery * mNumHeads * mChannels;
 
     int32_t mIm2colStep = batch;
 
     for (int32_t n = 0; n < batch / mIm2colStep; ++n)
     {
-        auto columns = output + perValueSize * n * mIm2colStep;
+        auto columns = output +  n * mIm2colStep * perOutputSize;
         ms_deformable_im2col_cuda<float>(stream, value + n * mIm2colStep * perValueSize, spatialShapes, levelStartIndex,
-            samplingLoc + n * mIm2colStep * perSampleLocSize, attnWeight + n * mIm2colStep * perAttnWeightSize, batch,
+            samplingLoc + n * mIm2colStep * perSampleLocSize, attnWeight + n * mIm2colStep * perAttnWeightSize, mIm2colStep,
             mSpatialSize, mNumHeads, mChannels, mNumLevels, mNumQuery, mNumPoint, columns);
     }
 
     return 0;
 }
 
-int32_t ms_deform_attn_cuda_forward(const __half* value, const int32_t* spatialShapes,
+template <>
+int32_t ms_deform_attn_cuda_forward<__half>(const __half* value, const int32_t* spatialShapes,
     const int32_t* levelStartIndex, const __half* samplingLoc, const __half* attnWeight, __half* output, int32_t batch,
     int32_t mSpatialSize, int32_t mNumHeads, int32_t mChannels, int32_t mNumLevels, int32_t mNumQuery, int32_t mNumPoint,
     cudaStream_t stream)
@@ -51,15 +54,15 @@ int32_t ms_deform_attn_cuda_forward(const __half* value, const int32_t* spatialS
     auto perValueSize = mSpatialSize * mNumHeads * mChannels;
     auto perSampleLocSize = mNumQuery * mNumHeads * mNumLevels * mNumPoint * 2;
     auto perAttnWeightSize = mNumQuery * mNumHeads * mNumLevels * mNumPoint;
+    auto perOutputSize = mNumQuery * mNumHeads * mChannels;
 
     int32_t mIm2colStep = batch;
     for (int32_t n = 0; n < batch / mIm2colStep; ++n)
     {
-        auto columns = output + perValueSize * n * mIm2colStep;
-        ms_deformable_im2col_cuda<__half>(stream, value + n * mIm2colStep * perValueSize, spatialShapes,
-            levelStartIndex, samplingLoc + n * mIm2colStep * perSampleLocSize,
-            attnWeight + n * mIm2colStep * perAttnWeightSize, batch, mSpatialSize, mNumHeads, mChannels, mNumLevels,
-            mNumQuery, mNumPoint, columns);
+        auto columns = output + n * mIm2colStep * perOutputSize;
+        ms_deformable_im2col_cuda<__half>(stream, value + n * mIm2colStep * perValueSize, spatialShapes, levelStartIndex,
+            samplingLoc + n * mIm2colStep * perSampleLocSize, attnWeight + n * mIm2colStep * perAttnWeightSize, mIm2colStep,
+            mSpatialSize, mNumHeads, mChannels, mNumLevels, mNumQuery, mNumPoint, columns);
     }
 
     return 0;
