@@ -52,8 +52,8 @@ def norm__ncnn(input: torch.Tensor,
                dtype: Optional[torch.dtype] = None):
     """Rewrite `torch.norm` for ncnn backend.
 
-    Rewrite torch.norm for p=='fro' case to avoid FP16 exceed
-    in ncnn Android platform.
+    Rewrite torch.norm when p is Frobenius norm to avoid FP16 exceed in ncnn
+    Android platform.
     """
     ctx = FUNCTION_REWRITER.get_context()
     origin_func = ctx.origin_func
