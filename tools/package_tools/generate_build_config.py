@@ -64,6 +64,11 @@ def parse_arguments():
         type=str,
         help='cudnn root dir, default use $ENV{CUDNN_DIR}')
     parser.add_argument(
+        '--jetpack-version',
+        type=str,
+        help='jetpack version'
+    )
+    parser.add_argument(
         '--output', required=True, type=str, help='output config file path')
 
     return parser.parse_args()
@@ -74,12 +79,12 @@ def generate_config(args):
     cmake_cfg = {}
 
     # wheel platform tag
-    if args.system in ['linux', 'jetson']:
+    if args.system in ['linux']:
         config['PLATFORM_TAG'] = 'manylinux2014_x86_64'
     else:
         config['PLATFORM_TAG'] = get_platform().replace('-',
                                                         '_').replace('.', '_')
-
+    config['SYSTEM'] = args.system
     config['BUILD_MMDEPLOY'] = 'ON' if args.build_mmdeploy else 'OFF'
 
     # deps for mmdeploy
@@ -147,7 +152,8 @@ def generate_config(args):
                 raise Exception('unsupported device')
             config['BUILD_SDK_NAME'] = name
         elif args.system == 'jetson':
-            config['BUILD_SDK_NAME'] = 'mmdeploy-{mmdeploy_v}-jetson-{machine}'
+            jetpack_v = args.jetpack_version
+            config['BUILD_SDK_NAME'] = f'mmdeploy-{{mmdeploy_v}}-jetson-{jetpack_v}'
         else:
             raise Exception('unsupported system')
     else:

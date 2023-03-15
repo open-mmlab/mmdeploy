@@ -178,10 +178,9 @@ def check_env(cfg: Dict):
     TENSORRT_DIR = cmake_envs.get('TENSORRT_DIR', TENSORRT_DIR)
     TENSORRT_DIR = osp.expandvars(TENSORRT_DIR)
 
-    if osp.exists(TENSORRT_DIR):
-        with open(
-                osp.join(TENSORRT_DIR, 'include', 'NvInferVersion.h'),
-                mode='r') as f:
+    tensort_ver_file = osp.join(TENSORRT_DIR, 'include', 'NvInferVersion.h')
+    if osp.exists(tensort_ver_file):
+        with open(tensort_ver_file, mode='r') as f:
             data = f.read()
             major = re.search(r'#define NV_TENSORRT_MAJOR (\d+)', data)
             minor = re.search(r'#define NV_TENSORRT_MINOR (\d+)', data)
@@ -226,6 +225,10 @@ def build_mmdeploy(cfg: Dict):
 
 
 def copy_thirdparty(cfg: Dict, sdk_path: str):
+    if cfg['SYSTEM'] == 'jetson':
+        logging.info('Skip copy thirdparty')
+        return
+
     thirdparty_dir = osp.join(sdk_path, 'thirdparty')
     os.mkdir(thirdparty_dir)
 
