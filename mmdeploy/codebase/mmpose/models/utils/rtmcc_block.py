@@ -86,7 +86,6 @@ def scale__forward_ncnn(self, x):
 
     Adapt the shape to avoid ncnn BinaryOp seg fault.
     """
-
     x = x.unsqueeze(1)
     scale = self.scale[None, None, None, :]
     return (x * scale).squeeze(1)
