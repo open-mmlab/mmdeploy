@@ -12,12 +12,12 @@ from mmdeploy.core import FUNCTION_REWRITER
 def scalenorm__forward__ncnn(self, x):
     """Rewrite `scalenorm` for ncnn backend.
 
-    Rewrite torch.norm to avoid FP16 exceed in ncnn Android platform.
+    Rewrite scalenorm to avoid FP16 exceed in ncnn Android platform.
     """
     # The one-dim of Fubinious norm is equal to L2Norm.
     # Set p=2 explicitly to map torch.norm to ReduceL2 onnx op,
     # which will avoid FP16 exceed.
-    norm = torch.norm(x, p=2, dim=2, keepdim=True)
+    norm = torch.norm(x, dim=2, keepdim=True)
     norm = norm * self.scale
     # Rewrite for ncnn binaryop broadcast.
     norm = norm.clamp(min=self.eps)
