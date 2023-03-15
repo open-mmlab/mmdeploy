@@ -1,11 +1,10 @@
 name: prebuild
 
 on:
+  push:
+    paths:
+      - "mmdeploy/version.py"
   pull_request:
-    types: [closed]
-    branches:
-      - master
-      - dev-1.x
     paths:
       - "mmdeploy/version.py"
 
@@ -202,3 +201,36 @@ jobs:
         with:
           files: |
               D:/DEPS/ciartifact/${{github.run_id}}/sdk/*.zip
+
+  jetson_4-6_build:
+    runs-on: [self-hosted, jetson-agx]
+    container:
+      image: irexyc/mmdeploy-base:jetpack-4.6
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Build MMDeploy
+        run: |
+          source activate mmdeploy-3.6
+          pip install pyyaml packaging setuptools wheel
+          mkdir pack; cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'trt' \
+            --system jetson --output config.yml --build-mmdeploy --cudnn-dir=/usr/local/cuda
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Build sdk cuda backend
+        run: |
+          source activate mmdeploy-3.6
+          cd pack
+          python ../tools/package_tools/generate_build_config.py --backend 'trt' \
+            --system jetson --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
+            --build-sdk-python --sdk-dynamic-net --cudnn-dir=/usr/local --jetpack-version 4.6
+          python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Move artifact
+        run: |
+          mkdir /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+          mv pack/* /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
