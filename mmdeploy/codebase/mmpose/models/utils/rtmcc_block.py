@@ -29,7 +29,7 @@ def scalenorm__forward__ncnn(self, x):
 def rtmccblock___forward_ncnn(self, inputs):
     """Rewrite `_forward` of RTMBlock for ncnn backend.
 
-    ncnn does not support negative dimension for Split op.
+    Rewrite the matmul and avoid unbind for ncnn backend.
     """
     if self.attn_type == 'self-attn':
         x = inputs
@@ -53,7 +53,7 @@ def rtmccblock___forward_ncnn(self, inputs):
             q = rope(q, dim=1)
             k = rope(k, dim=1)
     else:
-        u, q = torch.split(self.act_fn(uv), [self.e, self.s], dim=uv.dim() - 1)
+        u, q = torch.split(self.act_fn(uv), [self.e, self.s], dim=-1)
 
         k = self.k_fc(k)
         v = self.v_fc(v)
