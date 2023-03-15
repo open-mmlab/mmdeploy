@@ -50,7 +50,6 @@ if parse_arg_remove_boolean(sys.argv, '--use-gpu'):
                 '    os.environ["PATH"] = cuda_bin_dir + os.pathsep + os.environ["PATH"]'
             f.write(code)
 
-
 if __name__ == '__main__':
     setup(
         name=package_name,

@@ -9,7 +9,8 @@ from .version import __version__
 
 if sys.platform == 'win32':
     os.environ['PATH'] = f'{os.path.dirname(__file__)};{os.environ["PATH"]}'
-    from . import _win_dll_path
+    from . import _win_dll_path  # noqa F401
+
 
 def try_load(library):
     try:
