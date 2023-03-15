@@ -58,7 +58,7 @@ def norm__ncnn(input: torch.Tensor,
     ctx = FUNCTION_REWRITER.get_context()
     origin_func = ctx.origin_func
     if p == 'fro' and (isinstance(dim, int) or len(dim) == 1):
-        # Substitute fro with L2 norm.
+        # Substitute Frobenius norm with L2 norm.
         return torch.norm(
             input, p=2, dim=dim, keepdim=keepdim, out=out, dtype=dtype)
     else:

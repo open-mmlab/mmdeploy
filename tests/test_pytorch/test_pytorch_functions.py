@@ -163,6 +163,28 @@ def test_linear_ncnn():
     assert np.allclose(model_output, rewrite_output[0], rtol=1e-03, atol=1e-05)
 
 
+@backend_checker(Backend.NCNN)
+def test_norm_ncnn():
+    import onnx
+
+    import mmdeploy.apis.ncnn as ncnn_apis
+    from mmdeploy.utils.test import get_onnx_model
+
+    input = torch.rand(1, 17, 24)
+    wrapped_func = WrapFunction(torch.norm, p='fro', dim=2, keepdim=True)
+    model_inputs = {'input': input}
+    ir_file_path = get_onnx_model(wrapped_func, model_inputs, deploy_cfg_ncnn)
+    assert osp.exists(ir_file_path)
+    onnx_model = onnx.load(ir_file_path)
+    nodes = onnx_model.graph.node
+    assert nodes[-1].name.startswith('ReduceL2')
+    ncnn_files_prefix = osp.splitext(ir_file_path)[0]
+    ncnn_apis.from_onnx(ir_file_path, ncnn_files_prefix)
+    param_path, bin_path = ncnn_apis.get_output_model_file(ir_file_path)
+    assert osp.exists(param_path)
+    assert osp.exists(bin_path)
+
+
 @backend_checker(Backend.TENSORRT)
 def test_repeat_static():
     input = torch.rand([1])
