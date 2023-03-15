@@ -12,8 +12,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 def scalenorm__forward__ncnn(self, x):
     """Rewrite `scalenorm` for ncnn backend.
 
-    ncnn does not support negative dimension for torch.chunk and torch.cat ncnn
-    pad shape does not support float input
+    Rewrite torch.norm to avoid FP16 exceed in ncnn Android platform.
     """
     # The one-dim of Fubinious norm is equal to L2Norm.
     # Set p=2 explicitly to map torch.norm to ReduceL2 onnx op,
@@ -42,7 +41,7 @@ def rtmccblock___forward_ncnn(self, inputs):
     if self.attn_type == 'self-attn':
         uv = self.act_fn(uv)
         u = uv[..., :self.e]
-        v = uv[..., 512:1024]
+        v = uv[..., self.e:2 * self.e]
         base = uv[..., 2 * self.e:2 * self.e + self.s]
 
         q = (base.unsqueeze(1) * self.gamma[None, None, 0:1, :] +
