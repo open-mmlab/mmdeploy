@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-import torch
-
 from typing import Optional, Sequence, Union
+
+import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
 
