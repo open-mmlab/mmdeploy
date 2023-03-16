@@ -135,6 +135,9 @@ class TRTWrapper(BaseWrapper):
         bindings = [None] * (len(self._input_names) + len(self._output_names))
 
         profile_id = 0
+        inputs = dict((name, data.contiguous().int() if data.dtype ==
+                       torch.long else data.contiguous())
+                      for name, data in inputs.items())
         for input_name, input_tensor in inputs.items():
             # check if input shape is valid
             profile = self.engine.get_profile_shape(profile_id, input_name)
