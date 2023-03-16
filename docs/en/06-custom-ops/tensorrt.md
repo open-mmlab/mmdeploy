@@ -69,6 +69,12 @@
     - [Inputs](#inputs-10)
     - [Outputs](#outputs-10)
     - [Type Constraints](#type-constraints-10)
+  - [MMCVMultiScaleDeformableAttention](#mmcvmultiscaledeformableattention)
+    - [Description](#description-11)
+    - [Parameters](#parameters-11)
+    - [Inputs](#inputs-11)
+    - [Outputs](#outputs-11)
+    - [Type Constraints](#type-constraints-11)
 
 <!-- TOC -->
 
@@ -489,3 +495,39 @@ None
 #### Type Constraints
 
 - T:tensor(float32, Linear), tensor(int32, Linear)
+
+### MMCVMultiScaleDeformableAttention
+
+#### Description
+
+Perform attention computation over a small set of key sampling points around a reference point rather than looking over all possible spatial locations. Read [Deformable DETR: Deformable Transformers for End-to-End Object Detection](https://arxiv.org/abs/2010.04159) for detail.
+
+#### Parameters
+
+None
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input feature; 4-D tensor of shape (N, S, M, D), where N is the batch size, S is the length of feature maps, M is the number of attention heads, and D is hidden_dim.</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input offset; 2-D tensor of shape (L, 2), L is the number of feature maps, `2` is shape of feature maps.</dd>
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>Input mask; 1-D tensor of shape (L, ), this tensor is used to find the sampling locations for different feature levels as the input feature tensors are flattened.</dd>
+<dt><tt>inputs[3]</tt>: T</dt>
+<dd>Input weight; 6-D tensor of shape (N, Lq, M, L, P, 2). Lq is the length of feature maps(encoder)/length of queries(decoder), P is the number of points</dd>
+<dt><tt>inputs[4]</tt>: T, optional</dt>
+<dd>Input weight; 5-D tensor of shape (N, Lq, M, L, P).</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 3-D tensor of shape (N, Lq, M*D).</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear)
