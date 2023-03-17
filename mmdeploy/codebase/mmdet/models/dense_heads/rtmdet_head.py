@@ -8,8 +8,8 @@ from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.utils import Backend
 from mmdeploy.mmcv.ops import multiclass_nms
+from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(

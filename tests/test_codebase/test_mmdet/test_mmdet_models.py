@@ -2126,7 +2126,8 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
 def get_rtmdet_head_model():
 
     from mmdet.models.dense_heads import RTMDetHead
-    from mmdet.models.task_modules.prior_generators.point_generator import MlvlPointGenerator
+    from mmdet.models.task_modules.prior_generators.point_generator import \
+        MlvlPointGenerator
 
     test_cfg = Config(
         dict(
