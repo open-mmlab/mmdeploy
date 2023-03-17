@@ -2198,7 +2198,8 @@ def test_rtmdet_head_predict_by_feat_ncnn():
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
     # output should be of shape [1, N, 6]
     if is_backend_output:
         assert rewrite_outputs[0].shape[-1] == 6
