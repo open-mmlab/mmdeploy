@@ -12,8 +12,10 @@ pushd $WORKSPACE
 pushd $SDK_DIR
 
 test_pkg=$(ls | grep *cpu*)
-pushd $test_pkg
+work_dir=/tmp/_test
+cp -r $test_pkg $work_dir
 
+pushd $work_dir
 
 # opencv
 if [[ ! -d $OpenCV_DIR ]]; then
@@ -28,3 +30,6 @@ source ./set_env.sh $(pwd)
 
 # run
 ./bin/classifier $MODEL_DIR $MODEL_DIR/demo.jpg
+
+popd
+rm -rf $work_dir

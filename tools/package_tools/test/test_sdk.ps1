@@ -22,7 +22,9 @@ if ($pkgs.Count -gt 1) {
     }
 }
 
-Push-Location $test_pkg
+$work_dir=[IO.Path]::Combine("$env:TMP", [guid]::NewGuid().ToString())
+Copy-item $test_pkg $work_dir -Recurse
+Push-Location $work_dir
 
 
 # opencv
@@ -40,5 +42,7 @@ if (-Not (Test-Path $env:OpenCV_DIR)) {
 .\example\cpp\build\Release\classifier.exe "D:\DEPS\citest\mmcls" "$MODEL_DIR\demo.jpg"
 
 Pop-Location
+Remove-Item $work_dir -Recurse
+
 Pop-Location
 Pop-Location
