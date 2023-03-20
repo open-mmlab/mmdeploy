@@ -152,10 +152,15 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         else:
             os.environ.pop('CUDA_DEVICE')
 
+    # build a mmdeploy logger
+    logger = get_root_logger()
     load_tensorrt_plugin()
+
+    # build a tensorrt logger
+    trt_logger = trt.Logger(log_level)
+
     # create builder and network
-    logger = trt.Logger(log_level)
-    builder = trt.Builder(logger)
+    builder = trt.Builder(trt_logger)
 
     # TODO: use TorchAllocator as builder.gpu_allocator
 
@@ -164,7 +169,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     network = builder.create_network(EXPLICIT_BATCH)
 
     # parse onnx
-    parser = trt.OnnxParser(network, logger)
+    parser = trt.OnnxParser(network, trt_logger)
 
     if isinstance(onnx_model, str):
         parse_valid = parser.parse_from_file(onnx_model)
