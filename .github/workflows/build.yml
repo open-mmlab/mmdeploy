@@ -274,9 +274,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: 'recursive'
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
       - name: Setup Python Environment
         run: |
           echo "============================== Info =============================="
@@ -298,8 +295,6 @@ jobs:
           mkdir build
           cd build
           cmake ..  -A x64 -T v142 `
-            -DMMDEPLOY_SHARED_LIBS=OFF `
-            -DMMDEPLOY_BUILD_SDK_CXX_API=ON `
             -DMMDEPLOY_BUILD_TEST=ON `
             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
@@ -324,9 +319,5 @@ jobs:
       - name: Test trt full pipeline
         run: |
           conda activate $pwd\tmp_env
+          $env:path = "$pwd\build\bin\Release;" + $env:path
           .circleci\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
-      - name: Destroy conda env
-        if: success() || failure()
-        run: |
-          conda env remove -p $pwd\tmp_env
-          Remove-Item -LiteralPath "$pwd\build" -Force -Recurse
