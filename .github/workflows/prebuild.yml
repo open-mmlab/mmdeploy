@@ -2,19 +2,20 @@ name: prebuild
 
 on:
   pull_request:
-    types: [closed]
+    #types: [closed]
     branches:
       - master
       - dev-1.x
     paths:
       - "mmdeploy/version.py"
+      - ".github/workflows/prebuild.yml"
 
 permissions: write-all
 
 jobs:
   linux_build:
     runs-on: [self-hosted, linux-3090]
-    if: github.event.pull_request.merged == true
+    #if: github.event.pull_request.merged == true
     container:
       image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
       options: "--gpus=all --ipc=host"
@@ -79,7 +80,7 @@ jobs:
 
   linux_upload:
     runs-on: [self-hosted, linux-3090]
-    if: startsWith(github.ref, 'refs/tags/')
+    #if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: linux_test
     container:
@@ -117,7 +118,7 @@ jobs:
 
   windows_build:
     runs-on: [self-hosted, win10-3080]
-    if: github.event.pull_request.merged == true
+    #if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -174,7 +175,7 @@ jobs:
 
   windows_upload:
     runs-on: [self-hosted, win10-3080]
-    if: startsWith(github.ref, 'refs/tags/')
+    #if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: windows_test
     steps:
