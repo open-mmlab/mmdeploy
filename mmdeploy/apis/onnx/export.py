@@ -109,17 +109,15 @@ def export(model: torch.nn.Module,
     if 'onnx_custom_passes' not in context_info:
         onnx_custom_passes = optimize_onnx if optimize else None
         context_info['onnx_custom_passes'] = onnx_custom_passes
-        
-        
+
     with RewriterContext(**context_info), torch.no_grad():
-        
+
         from mmrazor.models import MMArchitectureQuant
-        from_mmrazor = isinstance(patched_model,MMArchitectureQuant)
+        from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
         if from_mmrazor:
             quantizer = patched_model.quantizer
             patched_model = patched_model.post_process_for_mmdeploy()
-            
-        
+
         # patch input_metas
         if input_metas is not None:
             assert isinstance(
@@ -130,6 +128,7 @@ def export(model: torch.nn.Module,
             def wrap_forward(forward):
 
                 def wrapper(*arg, **kwargs):
+                    kwargs['mode_1'] = kwargs.pop('mode')
                     return forward(*arg, **kwargs)
 
                 return wrapper
@@ -138,7 +137,7 @@ def export(model: torch.nn.Module,
             patched_model.forward = partial(patched_model.forward,
                                             **input_metas)
 
-        if from_mmrazor:     
+        if from_mmrazor:
             quantizer.export_onnx(
                 patched_model,
                 args,
@@ -149,9 +148,8 @@ def export(model: torch.nn.Module,
                 opset_version=opset_version,
                 dynamic_axes=dynamic_axes,
                 keep_initializers_as_inputs=keep_initializers_as_inputs,
-                verbose=verbose
-            )
-            
+                verbose=verbose)
+
         else:
             torch.onnx.export(
                 patched_model,
@@ -164,7 +162,6 @@ def export(model: torch.nn.Module,
                 dynamic_axes=dynamic_axes,
                 keep_initializers_as_inputs=keep_initializers_as_inputs,
                 verbose=verbose)
-        
-    
+
         if input_metas is not None:
             patched_model.forward = model_forward
