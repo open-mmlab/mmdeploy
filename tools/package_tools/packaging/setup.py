@@ -35,7 +35,7 @@ def parse_arg_remove_boolean(argv, arg_name):
 if parse_arg_remove_boolean(sys.argv, '--use-gpu'):
     package_name = package_name + '-gpu'
     if sys.platform == 'win32':
-        with open('mmdeploy_python/_win_dll_path.py', 'wt') as f:
+        with open('mmdeploy_python/_win_dll_path.py', 'a') as f:
             code = \
                 'import os\n' \
                 'import sys\n\n' \

@@ -284,6 +284,16 @@ def copy_scripts(sdk_path: str):
         _copy(src_path, dst_path)
 
 
+def copy_onnxruntime(cfg, dst_dir):
+    ort_root = cfg['cmake_cfg']['ONNXRUNTIME_DIR']
+    patterns = ['libonnxruntime.so.*', 'onnxruntime.dll']
+    for pattern in patterns:
+        src_lib = glob(osp.join(ort_root, 'lib', pattern))
+        if len(src_lib) > 0:
+            dst_lib = osp.join(dst_dir, osp.basename(src_lib[0]))
+            _copy(src_lib[0], dst_lib)
+
+
 def create_mmdeploy(cfg: Dict, work_dir: str):
     if cfg['BUILD_MMDEPLOY'] == 'OFF':
         logging.info('Skip build mmdeploy package')
@@ -300,14 +310,8 @@ def create_mmdeploy(cfg: Dict, work_dir: str):
     # copy libonnxruntime.so.x.y.z
     backend = cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']
     if 'ort' in backend:
-        ort_root = cfg['cmake_cfg']['ONNXRUNTIME_DIR']
-        patterns = ['libonnxruntime.so.*', 'onnxruntime.dll']
-        for pattern in patterns:
-            src_lib = glob(osp.join(ort_root, 'lib', pattern))
-            if len(src_lib) > 0:
-                dst_lib = osp.join(MMDEPLOY_DIR, 'mmdeploy', 'lib',
-                                   osp.basename(src_lib[0]))
-                _copy(src_lib[0], dst_lib)
+        dst_dir = osp.join(MMDEPLOY_DIR, 'mmdeploy', 'lib')
+        copy_onnxruntime(cfg, dst_dir)
 
     # build wheel
     build_dir = osp.join(MMDEPLOY_DIR, 'build')
@@ -387,6 +391,11 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
             for file in files:
                 _copy(file, osp.join(sdk_python_package_dir,
                                      'mmdeploy_python'))
+
+        # copy onnxruntime
+        if 'ort' in cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']:
+            copy_onnxruntime(cfg, osp.join(
+                sdk_python_package_dir, 'mmdeploy_python'))
 
         # bdist
         sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_python')
