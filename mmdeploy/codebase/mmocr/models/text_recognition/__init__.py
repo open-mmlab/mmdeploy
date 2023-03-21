@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from . import abinet  # noqa: F401,F403
+from . import abinet_language_decoder  # noqa: F401,F403
 from . import base  # noqa: F401,F403
 from . import crnn_decoder  # noqa: F401,F403
 from . import encode_decode_recognizer  # noqa: F401,F403
