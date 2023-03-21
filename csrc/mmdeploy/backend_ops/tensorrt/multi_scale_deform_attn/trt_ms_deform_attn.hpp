@@ -12,7 +12,6 @@
 namespace mmdeploy {
 class MultiScaleDeformableAttnPluginDynamic : public TRTPluginBase {
  public:
-
   MultiScaleDeformableAttnPluginDynamic(const std::string &name);
 
   MultiScaleDeformableAttnPluginDynamic(const std::string name, const void *data, size_t length);
