@@ -43,7 +43,6 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     # Remove the scores
     rois = proposals[..., :-1]
     batch_size = rois.shape[0]
-    num_proposals_per_img = rois.shape[1]
     # Eliminate the batch dimension
     rois = rois.view(-1, 4)
 
@@ -51,6 +50,7 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     rois = torch.cat([rois.new_zeros(rois.shape[0], 1), rois], dim=-1)
 
     max_shape = img_metas[0]['img_shape']
+    scale_factor = img_metas[0].get('scale_factor', None)
     ms_scores = []
     rcnn_test_cfg = self.test_cfg
 
@@ -59,24 +59,21 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
 
         cls_score = bbox_results['cls_score']
         bbox_pred = bbox_results['bbox_pred']
-        # Recover the batch dimension
-        rois = rois.reshape(batch_size, num_proposals_per_img, rois.size(-1))
-        cls_score = cls_score.reshape(batch_size, num_proposals_per_img,
-                                      cls_score.size(-1))
-        bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
+
         ms_scores.append(cls_score)
         if i < self.num_stages - 1:
-            assert self.bbox_head[i].reg_class_agnostic
-            new_rois = self.bbox_head[i].bbox_coder.decode(
-                rois[..., 1:], bbox_pred, max_shape=max_shape)
-            rois = new_rois.reshape(-1, new_rois.shape[-1])
-            # Add dummy batch index
-            rois = torch.cat([rois.new_zeros(rois.shape[0], 1), rois], dim=-1)
+            if self.bbox_head[i].custom_activation:
+                cls_score = self.bbox_head[i].loss_cls.get_activation(
+                    cls_score)
+            bbox_label = cls_score[:, :-1].argmax(dim=1)
+            rois = self.bbox_head[i].regress_by_class(rois, bbox_label,
+                                                      bbox_pred, img_metas[0])
 
     cls_score = sum(ms_scores) / float(len(ms_scores))
-    bbox_pred = bbox_pred.reshape(batch_size, num_proposals_per_img, 4)
-    rois = rois.reshape(batch_size, num_proposals_per_img, -1)
-    scale_factor = img_metas[0].get('scale_factor', None)
+    cls_score = cls_score.unsqueeze(0)
+    rois = rois.unsqueeze(0)
+    bbox_pred = bbox_pred.unsqueeze(0)
+
     det_bboxes, det_labels = self.bbox_head[-1].get_bboxes(
         rois, cls_score, bbox_pred, max_shape, scale_factor, cfg=rcnn_test_cfg)
 
