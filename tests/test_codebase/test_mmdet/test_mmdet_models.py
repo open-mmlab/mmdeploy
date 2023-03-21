@@ -2121,3 +2121,88 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
                 atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+def get_rtmdet_head_model():
+
+    from mmdet.models.dense_heads import RTMDetHead
+    from mmdet.models.task_modules.prior_generators.point_generator import \
+        MlvlPointGenerator
+
+    test_cfg = Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.6),
+            max_per_img=100))
+    model = RTMDetHead(1, 64)
+    model.prior_generator = MlvlPointGenerator([8, 4, 2])
+    model.test_cfg = test_cfg
+
+    model.requires_grad_(False)
+    return model
+
+
+def test_rtmdet_head_predict_by_feat_ncnn():
+    """Test predict_by_feat rewrite of yolov3 head."""
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    rtmdet_head = get_rtmdet_head_model()
+    rtmdet_head.cpu().eval()
+    s = 320
+    batch_img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['detection_output']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                model_type='ncnn_end2end',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.45,
+                    confidence_threshold=0.005,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    cls_scores = [
+        torch.rand(1, 1, 40, 40),
+        torch.rand(1, 1, 20, 20),
+        torch.rand(1, 1, 10, 10)
+    ]
+
+    bbox_preds = [
+        torch.rand(1, 4, 40, 40),
+        torch.rand(1, 4, 20, 20),
+        torch.rand(1, 4, 10, 10)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        rtmdet_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
+    rewrite_inputs = {'cls_scores': cls_scores, 'bbox_preds': bbox_preds}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6

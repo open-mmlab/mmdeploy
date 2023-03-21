@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+from typing import Optional, Sequence, Union
+
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
@@ -39,3 +41,26 @@ def normalize__ncnn(input: torch.Tensor,
                 input.transpose(1, dim), p=p, dim=1,
                 eps=eps).transpose(1, dim)
     return output
+
+
+@FUNCTION_REWRITER.register_rewriter(func_name='torch.norm', backend='ncnn')
+def norm__ncnn(input: torch.Tensor,
+               p: Optional[Union[int, str]] = 'fro',
+               dim: Optional[Union[int, Sequence]] = None,
+               keepdim: Optional[bool] = False,
+               out: Optional[torch.Tensor] = None,
+               dtype: Optional[torch.dtype] = None):
+    """Rewrite `torch.norm` for ncnn backend.
+
+    Rewrite torch.norm when p is Frobenius norm to avoid FP16 exceed in ncnn
+    Android platform.
+    """
+    ctx = FUNCTION_REWRITER.get_context()
+    origin_func = ctx.origin_func
+    if p == 'fro' and (isinstance(dim, int) or len(dim) == 1):
+        # Substitute Frobenius norm with L2 norm.
+        return origin_func(
+            input, p=2, dim=dim, keepdim=keepdim, out=out, dtype=dtype)
+    else:
+        return origin_func(
+            input, p=p, dim=dim, keepdim=keepdim, out=out, dtype=dtype)

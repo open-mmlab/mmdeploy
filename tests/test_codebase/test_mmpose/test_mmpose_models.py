@@ -7,6 +7,11 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+
+try:
     import_codebase(Codebase.MMPOSE)
 except ImportError:
     pytest.skip(
@@ -108,3 +113,78 @@ def test_estimator_forward(backend_type: Backend):
         run_with_backend=False,
         deploy_cfg=deploy_cfg)
     assert isinstance(rewrite_outputs, torch.Tensor)
+
+
+def get_scale_norm_model():
+    from mmpose.models.utils.rtmcc_block import ScaleNorm
+
+    model = ScaleNorm(48)
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.NCNN])
+def test_scale_norm_forward(backend_type: Backend):
+    check_backend(backend_type, True)
+    deploy_cfg = generate_mmpose_deploy_config(backend_type.value)
+    model = get_scale_norm_model()
+    x = torch.rand(1, 17, 48)
+    wrapped_model = WrapModel(model, 'forward')
+    model_outputs = model.forward(x)
+    rewrite_inputs = {'x': x}
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    torch_assert_close(rewrite_outputs, model_outputs)
+
+
+def get_rtmcc_block_model():
+    from mmpose.models.utils.rtmcc_block import RTMCCBlock
+
+    model = RTMCCBlock(48, 48, 48)
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.NCNN])
+def test_rtmcc_block_forward(backend_type: Backend):
+    check_backend(backend_type, True)
+    deploy_cfg = generate_mmpose_deploy_config(backend_type.value)
+    model = get_rtmcc_block_model()
+    inputs = torch.rand(1, 17, 48)
+    wrapped_model = WrapModel(model, '_forward')
+    model_outputs = model._forward(inputs)
+    rewrite_inputs = {'inputs': inputs}
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    torch_assert_close(rewrite_outputs, model_outputs)
+
+
+def get_scale_model():
+    from mmpose.models.utils.rtmcc_block import Scale
+
+    model = Scale(48)
+    model.requires_grad_(False)
+    return model
+
+
+@pytest.mark.parametrize('backend_type', [Backend.NCNN])
+def test_scale_forward(backend_type: Backend):
+    check_backend(backend_type, True)
+    deploy_cfg = generate_mmpose_deploy_config(backend_type.value)
+    model = get_scale_model()
+    x = torch.rand(1, 17, 48)
+    wrapped_model = WrapModel(model, 'forward')
+    model_outputs = model.forward(x)
+    rewrite_inputs = {'x': x}
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    torch_assert_close(rewrite_outputs, model_outputs)
