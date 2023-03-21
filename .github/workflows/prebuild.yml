@@ -58,6 +58,7 @@ jobs:
       - name: Move artifact
         run: |
           mkdir -p /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
+          rm -rf /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION/*
           mv pack/* /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
 
   linux_test:
@@ -169,6 +170,7 @@ jobs:
       - name: Move artifact
         run: |
           New-Item "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION" -ItemType Directory -Force
+          Remove-Item "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/*" -Force -Recurse
           Move-Item pack/* "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION"
 
   windows_test:
