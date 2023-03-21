@@ -19,13 +19,6 @@ namespace mmdeploy::mmpose {
 using std::string;
 using std::vector;
 
-template <class F>
-struct _LoopBody : public cv::ParallelLoopBody {
-  F f_;
-  _LoopBody(F f) : f_(std::move(f)) {}
-  void operator()(const cv::Range& range) const override { f_(range); }
-};
-
 class SimCCLabelDecode : public MMPose {
  public:
   explicit SimCCLabelDecode(const Value& config) : MMPose(config) {
@@ -89,26 +82,24 @@ class SimCCLabelDecode : public MMPose {
     int N_x = simcc_x.shape(2);
     int N_y = simcc_y.shape(2);
 
-    cv::parallel_for_(cv::Range(0, K), _LoopBody{[&](const cv::Range& r) {
-                        for (int i = r.start; i < r.end; i++) {
-                          float* data_x = const_cast<float*>(simcc_x.data<float>()) + i * N_x;
-                          float* data_y = const_cast<float*>(simcc_y.data<float>()) + i * N_y;
-                          cv::Mat mat_x = cv::Mat(N_x, 1, CV_32FC1, data_x);
-                          cv::Mat mat_y = cv::Mat(N_y, 1, CV_32FC1, data_y);
-                          double min_val_x, max_val_x, min_val_y, max_val_y;
-                          cv::Point min_loc_x, max_loc_x, min_loc_y, max_loc_y;
-                          cv::minMaxLoc(mat_x, &min_val_x, &max_val_x, &min_loc_x, &max_loc_x);
-                          cv::minMaxLoc(mat_y, &min_val_y, &max_val_y, &min_loc_y, &max_loc_y);
-                          float s = max_val_x > max_val_y ? max_val_y : max_val_x;
-                          float x = s > 0 ? max_loc_x.y : -1.0;
-                          float y = s > 0 ? max_loc_y.y : -1.0;
-                          float* keypoints_data = keypoints.data<float>() + i * 2;
-                          float* scores_data = scores.data<float>() + i;
-                          *(scores_data) = s;
-                          *(keypoints_data + 0) = x;
-                          *(keypoints_data + 1) = y;
-                        }
-                      }});
+    for (int i = 0; i < K; i++) {
+      float* data_x = const_cast<float*>(simcc_x.data<float>()) + i * N_x;
+      float* data_y = const_cast<float*>(simcc_y.data<float>()) + i * N_y;
+      cv::Mat mat_x = cv::Mat(N_x, 1, CV_32FC1, data_x);
+      cv::Mat mat_y = cv::Mat(N_y, 1, CV_32FC1, data_y);
+      double min_val_x, max_val_x, min_val_y, max_val_y;
+      cv::Point min_loc_x, max_loc_x, min_loc_y, max_loc_y;
+      cv::minMaxLoc(mat_x, &min_val_x, &max_val_x, &min_loc_x, &max_loc_x);
+      cv::minMaxLoc(mat_y, &min_val_y, &max_val_y, &min_loc_y, &max_loc_y);
+      float s = max_val_x > max_val_y ? max_val_y : max_val_x;
+      float x = s > 0 ? max_loc_x.y : -1.0;
+      float y = s > 0 ? max_loc_y.y : -1.0;
+      float* keypoints_data = keypoints.data<float>() + i * 2;
+      float* scores_data = scores.data<float>() + i;
+      *(scores_data) = s;
+      *(keypoints_data + 0) = x;
+      *(keypoints_data + 1) = y;
+    }
   }
 
  private:
