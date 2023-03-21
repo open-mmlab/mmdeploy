@@ -34,7 +34,7 @@ if (TARGET mmdeploy)
 else ()
     target_link_libraries(${PROJECT_NAME} INTERFACE mmdeploy::core)
 endif ()
-mmdeploy_export(${PROJECT_NAME})
+mmdeploy_export_impl(${PROJECT_NAME})
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/common.hpp
         DESTINATION include/mmdeploy)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/demo/csrc/ DESTINATION example/cpp
