@@ -28,7 +28,7 @@ jobs:
           submodules: recursive
       - name: Get mmdeploy version
         run: |
-          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Build MMDeploy
@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Get mmdeploy version
         run: |
-          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Test python
@@ -83,6 +83,7 @@ jobs:
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.sh
       - name: Test c/cpp
         run: |
+          cd /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
 
   linux_upload:
@@ -97,7 +98,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Get mmdeploy version
         run: |
-          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Upload mmdeploy
@@ -133,6 +134,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Get mmdeploy version
+        run: |
+          conda activate mmdeploy-3.8
+          $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
+          echo $env:MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
       - name: Build MMDeploy
         run: |
           . D:\DEPS\cienv\prebuild_gpu_env.ps1
@@ -161,8 +168,8 @@ jobs:
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
       - name: Move artifact
         run: |
-          New-Item "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID" -ItemType Directory -Force
-          Move-Item pack/* "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+          New-Item "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION" -ItemType Directory -Force
+          Move-Item pack/* "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION"
 
   windows_test:
     runs-on: [self-hosted, win10-3080]
@@ -170,15 +177,21 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Get mmdeploy version
+        run: |
+          conda activate mmdeploy-3.8
+          $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
+          echo $env:MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
       - name: Test python
         run: |
-          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION"
           . D:\DEPS\cienv\prebuild_cpu_env.ps1
           conda activate ci-test
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.ps1"
       - name: Test c/cpp
         run: |
-          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION"
           . D:\DEPS\cienv\prebuild_cpu_env.ps1
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.ps1"
 
@@ -188,21 +201,29 @@ jobs:
     environment: 'prod'
     needs: windows_test
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Get mmdeploy version
+        run: |
+          conda activate mmdeploy-3.8
+          $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
+          echo $env:MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
       - name: Upload mmdeploy
         run: |
-          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy"
           conda activate mmdeploy-3.8
           twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
-          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/mmdeploy_python"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy_python"
           conda activate mmdeploy-3.8
           twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
-          cd "D:/DEPS/ciartifact/$env:GITHUB_RUN_ID/sdk"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/sdk"
           $folders = $(ls).Name
           foreach ($folder in $folders) {
             Compress-Archive -Path $folder -DestinationPath "$folder.zip"
@@ -211,4 +232,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-              D:/DEPS/ciartifact/${{github.run_id}}/sdk/*.zip
+              D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/sdk/*.zip
