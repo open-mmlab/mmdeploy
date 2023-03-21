@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import subprocess
 import json
 import os
+import subprocess
 
 
 def onnx_to_popef(onnx_path, ipu_config):
@@ -24,7 +24,7 @@ def onnx_to_popef(onnx_path, ipu_config):
         else:
             command += ['--' + str(key), str(ipu_config[key])]
 
-        if key == "batches_per_step":
+        if key == 'batches_per_step':
             bps = int(ipu_config[key])
 
     # print('command ', command)
@@ -35,7 +35,7 @@ def onnx_to_popef(onnx_path, ipu_config):
     onnx_path = os.path.abspath(onnx_path)
     config_dir = onnx_path[:onnx_path.rfind('/')]
     ipu_json_path = os.path.join(config_dir, 'ipu_params.json')
-    ipu_param_json = {"batches_per_step": bps}
+    ipu_param_json = {'batches_per_step': bps}
     with open(ipu_json_path, 'w') as f:
         json.dump(ipu_param_json, f)
-    print("dumped ipu param json ", ipu_json_path)
+    print('dumped ipu param json ', ipu_json_path)

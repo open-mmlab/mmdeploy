@@ -47,7 +47,8 @@ void IPUNet::copy_output(const model_runtime::TensorMemory& from, Tensor& to) {
   }
   int size = from.data_size_bytes;
 
-  MMDEPLOY_DEBUG("copy output total byte_size {}", size);
+  // MMDEPLOY_DEBUG("copy output total byte_size {}", size);
+  MMDEPLOY_INFO("copy output total byte_size {}", size);
 
   char* from_ptr = static_cast<char*>(from.data.get());
 
@@ -65,7 +66,8 @@ void IPUNet::copy_input(const Tensor& from, model_runtime::TensorMemory& to) {
   }
   int size = from.byte_size();
 
-  MMDEPLOY_DEBUG("copy input total byte_size {}", size);
+  // MMDEPLOY_DEBUG("copy input total byte_size {}", size);
+  MMDEPLOY_INFO("copy input total byte_size {}", size);
 
   char* to_ptr = static_cast<char*>(to.data.get());
 
@@ -92,7 +94,7 @@ Result<void> IPUNet::Init(const Value& args) {
 
   mconfig.device_wait_config =
       model_runtime::DeviceWaitConfig(std::chrono::seconds{600}, std::chrono::seconds{1});
-  
+
   auto popef_path = (fs::path(model.GetModelPath()) / config.net).string();
   model_runner = std::make_unique<model_runtime::ModelRunner>(popef_path, mconfig);
 

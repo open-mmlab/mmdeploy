@@ -43,7 +43,7 @@ jobs:
       - name: enable poplar sdk
         run: |
           source $POPLAR_PATH/enable.sh
-          
+
       - name: Build SDK Demo with IPU backend
         run: |
           mkdir -p build && pushd build
@@ -58,4 +58,3 @@ jobs:
           mim install mmcls
           git clone  --depth 1 --single-branch --branch master https://github.com/open-mmlab/mmclassification.git ../mmclassification
           bash .github/scripts/test_mmcls_ipu_pipeline.sh
-          

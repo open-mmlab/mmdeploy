@@ -92,7 +92,7 @@ class IPUManager(BaseBackendManager):
 
         backend_files = []
         for model_id, onnx_path in enumerate(ir_files):
-            model_name = onnx_path.split('/')[-1][:-5]
+            # model_name = onnx_path.split('/')[-1][:-5]
             ipu_config = deploy_cfg.get('backend_config', {})
             output_dir = ipu_config.get('output_dir', '')
             # assert output_dir != '', 'output dir for ipu backend is not set'

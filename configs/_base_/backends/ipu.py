@@ -1,6 +1,7 @@
 backend_config = dict(
     type='ipu',
-    precision='fp16',
+    # precision='fp16',
+    precision='fp32',
     output_dir='',
     batches_per_step=1,
     ipu_version='ipu21',
@@ -8,4 +9,5 @@ backend_config = dict(
         rearrangeAnchorsOnHost='false',
         enablePrefetchDatastreams='false',
         groupHostSync='false',
-        partialsTypeMatMuls='half'))
+        # partialsTypeMatMuls='half'
+    ))
