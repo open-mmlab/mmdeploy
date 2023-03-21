@@ -41,6 +41,9 @@ void* mmdeploy_load_library(const char* name) {
 
 #ifdef _WIN32
   auto handle = LoadLibraryExA(name, NULL, LOAD_LIBRARY_SEARCH_USER_DIRS);
+  if (handle == NULL) {
+    handle = LoadLibraryExA(name, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+  }
 #else
   auto handle = dlopen(name, RTLD_NOW | RTLD_GLOBAL);
 #endif
