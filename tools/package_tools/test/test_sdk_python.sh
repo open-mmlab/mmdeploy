@@ -14,8 +14,8 @@ cd $SDK_PYTHON_DIR
 PY_VERSION=$(python3 -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
 test_pkg=$(ls | grep mmdeploy_python-*cp${PY_VERSION}*)
 
-pip install $test_pkg --force-reinstall
-pip install opencv-python
+python3 -m pip install $test_pkg --force-reinstall
+python3 -m pip install opencv-python
 
 code="
 import cv2
@@ -31,4 +31,4 @@ except:
     sys.exit(1)
 "
 
-python -c "$code"
+python3 -c "$code"

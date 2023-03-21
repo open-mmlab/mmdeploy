@@ -17,7 +17,7 @@ jobs:
     runs-on: [self-hosted, linux-3090]
     #if: github.event.pull_request.merged == true
     container:
-      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      image: openmmlab/mmdeploy:manylinux2014_x86_64-cuda11.3
       options: "--gpus=all --ipc=host"
       volumes:
         - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
@@ -26,6 +26,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      - name: Get mmdeploy version
+        run: |
+          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          echo $MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Build MMDeploy
         run: |
           source activate mmdeploy-3.6
@@ -52,14 +57,14 @@ jobs:
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
       - name: Move artifact
         run: |
-          mkdir /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
-          mv pack/* /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
+          mkdir -p /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
+          mv pack/* /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
 
   linux_test:
     runs-on: [self-hosted, linux-3090]
     needs: linux_build
     container:
-      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
       options: "--gpus=all --ipc=host"
       volumes:
         - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
@@ -67,15 +72,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: Get mmdeploy version
+        run: |
+          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          echo $MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Test python
         run: |
-          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
-          source activate mmdeploy-3.8
+          cd /__w/mmdeploy/prebuild/$MMDEPLOY_VERSION
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.sh
       - name: Test c/cpp
         run: |
-          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID
-          source activate mmdeploy-3.8
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
 
   linux_upload:
@@ -83,28 +90,30 @@ jobs:
     #if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: linux_test
-    container:
-      image: runningleon814/mmdeploy-base:manylinux2014_x86_64-cuda11.3
-      options: "--gpus=all --ipc=host"
-      volumes:
-        - /data2/actions-runner/prebuild:/__w/mmdeploy/prebuild
+    env:
+      PREBUILD_DIR: /data2/actions-runner/prebuild
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Get mmdeploy version
+        run: |
+          export MMDEPLOY_VERSION=$(python3 -c 'import sys; sys.path.append("./mmdeploy");from version import __version__;print(__version__)')
+          echo $MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Upload mmdeploy
         run: |
-          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy
-          source activate mmdeploy-3.8
+          cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy
           pip install twine
           twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
-          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/mmdeploy_python
-          source activate mmdeploy-3.8
+          cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy_python
           twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
-          cd /__w/mmdeploy/prebuild/$GITHUB_RUN_ID/sdk
+          cd $PREBUILD_DIR/$MMDEPLOY_VERSION/sdk
           for folder in *
           do
             tar czf $folder.tar.gz $folder
@@ -113,7 +122,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-              /__w/mmdeploy/prebuild/${{ github.run_id }}/sdk/*.tar.gz
+              $PREBUILD_DIR/$MMDEPLOY_VERSION/sdk/*.tar.gz
 
 
   windows_build:
