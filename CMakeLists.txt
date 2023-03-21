@@ -99,10 +99,12 @@ include(cmake/MMDeploy.cmake)
 add_subdirectory(csrc/mmdeploy)
 
 if (MMDEPLOY_BUILD_SDK)
-    install(TARGETS MMDeployStaticModules
-            MMDeployDynamicModules
-            MMDeployLibs
-            EXPORT MMDeployTargets)
+    if (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        install(TARGETS MMDeployStaticModules
+                MMDeployDynamicModules
+                MMDeployLibs
+                EXPORT MMDeployTargets)
+    endif ()
 
     if (MMDEPLOY_BUILD_TEST)
         add_subdirectory(tests/test_csrc)
