@@ -166,3 +166,6 @@ service/snpe/grpc_cpp_plugin
 csrc/mmdeploy/preprocess/elena/json
 csrc/mmdeploy/preprocess/elena/cpu_kernel/*
 csrc/mmdeploy/preprocess/elena/cuda_kernel/*
+
+# c#
+demo/csharp/*/Properties
