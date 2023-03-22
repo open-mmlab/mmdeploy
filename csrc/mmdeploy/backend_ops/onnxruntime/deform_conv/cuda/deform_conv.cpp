@@ -53,6 +53,7 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
 
   cudaStream_t stream = reinterpret_cast<cudaStream_t>(ort_.KernelContext_GetGPUComputeStream(context));
   cudaStreamSynchronize(stream);
+  cublasSetStream(cublas_handle_, stream);
 
   const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
   const float *input_data =
@@ -106,12 +107,11 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   long workspace_size = col_size + out_size;
 
   void* workspace;
-  auto status = cudaMalloc(&workspace, workspace_size);
+  auto status = cudaMallocAsync(&workspace, workspace_size, stream);
   if (status != cudaSuccess) {
     ORT_CXX_API_THROW("cuda malloc error in deform_conv::CUDAKernel::Compute", ORT_FAIL);
   }
-  cudaMemset(workspace, 0, workspace_size);
-
+  cudaMemsetAsync(workspace, 0, workspace_size, stream);
   switch (data_type) {
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT:
       deform_conv<float>((float *)input_data, (float *)filter_data, (float *)offset_data, (float *)output_ptr, workspace,
@@ -126,12 +126,11 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
                          group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     default:
-      cudaFree(workspace);
+      cudaFreeAsync(workspace, stream);
       ORT_CXX_API_THROW("invalid tensor datatype in deform_conv::CUDAKernel::Compute", ORT_FAIL);
       return;
   }
-
-  cudaFree(workspace);
+  cudaFreeAsync(workspace, stream);
 }
 
 static char __openvino_cuda[] = "org.openvinotoolkit";
