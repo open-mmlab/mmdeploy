@@ -407,7 +407,7 @@ def create_mmdeploy_runtime(cfg: Dict, work_dir: str):
         bdist_cmd = _create_bdist_cmd(cfg, c_ext=True, dist_dir=sdk_wheel_dir)
         if 'cuda' in cmake_cfg['MMDEPLOY_TARGET_DEVICES']:
             bdist_cmd += ' --use-gpu'
-        _call_command(bdist_cmd, '.mmdeploy_runtime')
+        _call_command(bdist_cmd, sdk_python_package_dir)
         _remove_if_exist(sdk_python_package_dir)
 
 
