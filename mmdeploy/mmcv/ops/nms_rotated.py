@@ -26,8 +26,7 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
         Returns:
             Tensor: Selected indices of boxes.
         """
-        from mmcv.utils import ext_loader
-        ext_module = ext_loader.load_ext('_ext', ['nms_rotated'])
+        from mmcv.ops import nms_rotated
         batch_size, num_class, _ = scores.shape
 
         indices = []
@@ -42,11 +41,8 @@ class ONNXNMSRotatedOp(torch.autograd.Function):
                     continue
                 valid_inds = torch.nonzero(
                     valid_mask, as_tuple=False).squeeze(dim=1)
-                _, order = _scores.sort(0, descending=True)
-                dets_sorted = _boxes.index_select(0, order)
-                box_inds = ext_module.nms_rotated(_boxes, _scores, order,
-                                                  dets_sorted, iou_threshold,
-                                                  0)
+                _, box_inds = nms_rotated(
+                    _boxes, _scores, iou_threshold=iou_threshold)
                 box_inds = valid_inds[box_inds]
                 batch_inds = torch.zeros_like(box_inds) + batch_id
                 cls_inds = torch.zeros_like(box_inds) + cls_id

@@ -41,7 +41,7 @@ def build_task_processor(model_cfg: mmengine.Config,
         BaseTask: A task processor.
     """
     check_backend_device(deploy_cfg=deploy_cfg, device=device)
-    codebase_type = get_codebase(deploy_cfg)
+    codebase_type = get_codebase(deploy_cfg, model_cfg=model_cfg)
     custom_module_list = get_codebase_external_module(deploy_cfg)
     import_codebase(codebase_type, custom_module_list)
     codebase = get_codebase_class(codebase_type)

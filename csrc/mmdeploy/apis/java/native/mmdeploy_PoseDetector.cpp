@@ -17,6 +17,7 @@ jlong Java_mmdeploy_PoseDetector_create(JNIEnv *env, jobject, jstring modelPath,
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create pose estimator, code = {}", ec);
+    return -1;
   }
   return (jlong)pose_estimator;
 }
@@ -28,11 +29,12 @@ void Java_mmdeploy_PoseDetector_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_PoseDetector_apply(JNIEnv *env, jobject thiz, jlong handle,
                                               jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_pose_detection_t *results{};
     auto ec = mmdeploy_pose_detector_apply((mmdeploy_pose_detector_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply pose estimator, code = {}", ec);
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/PoseDetector$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[F)V");

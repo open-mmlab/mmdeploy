@@ -16,6 +16,7 @@ jlong Java_mmdeploy_Detector_create(JNIEnv *env, jobject, jstring modelPath, jst
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create detector, code = {}", ec);
+    return -1;
   }
   return (jlong)detector;
 }
@@ -27,13 +28,14 @@ void Java_mmdeploy_Detector_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_Detector_apply(JNIEnv *env, jobject thiz, jlong handle,
                                           jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_detection_t *results{};
     int *result_count{};
     auto ec =
         mmdeploy_detector_apply((mmdeploy_detector_t)handle, imgs, size, &results, &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply detector, code = {}", ec);
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/Detector$Result");
     auto result_ctor =

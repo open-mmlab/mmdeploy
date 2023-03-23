@@ -406,54 +406,15 @@ def get_detrhead_model():
         dict(
             type='DETRHead',
             num_classes=4,
-            in_channels=1,
-            transformer=dict(
-                type='Transformer',
-                encoder=dict(
-                    type='DetrTransformerEncoder',
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='BaseTransformerLayer',
-                        attn_cfgs=[
-                            dict(
-                                type='MultiheadAttention',
-                                embed_dims=4,
-                                num_heads=1)
-                        ],
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
-                decoder=dict(
-                    type='DetrTransformerDecoder',
-                    return_intermediate=True,
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='DetrTransformerDecoderLayer',
-                        attn_cfgs=dict(
-                            type='MultiheadAttention',
-                            embed_dims=4,
-                            num_heads=1),
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        feedforward_channels=32,
-                        operation_order=('self_attn', 'norm', 'cross_attn',
-                                         'norm', 'ffn', 'norm')),
-                )),
-            positional_encoding=dict(
-                type='SinePositionalEncoding', num_feats=2, normalize=True),
-            test_cfg=dict(max_per_img=100)))
+            embed_dims=4,
+            loss_cls=dict(
+                type='CrossEntropyLoss',
+                bg_cls_weight=0.1,
+                use_sigmoid=False,
+                loss_weight=1.0,
+                class_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=5.0),
+            loss_iou=dict(type='GIoULoss', loss_weight=2.0)))
     model.requires_grad_(False)
     return model
 
@@ -715,7 +676,7 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
     from mmdet.apis import init_detector
-    model = init_detector(model_cfg, None, device='cpu')
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
@@ -2160,3 +2121,88 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
                 atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+def get_rtmdet_head_model():
+
+    from mmdet.models.dense_heads import RTMDetHead
+    from mmdet.models.task_modules.prior_generators.point_generator import \
+        MlvlPointGenerator
+
+    test_cfg = Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.6),
+            max_per_img=100))
+    model = RTMDetHead(1, 64)
+    model.prior_generator = MlvlPointGenerator([8, 4, 2])
+    model.test_cfg = test_cfg
+
+    model.requires_grad_(False)
+    return model
+
+
+def test_rtmdet_head_predict_by_feat_ncnn():
+    """Test predict_by_feat rewrite of yolov3 head."""
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    rtmdet_head = get_rtmdet_head_model()
+    rtmdet_head.cpu().eval()
+    s = 320
+    batch_img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['detection_output']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                model_type='ncnn_end2end',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.45,
+                    confidence_threshold=0.005,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    cls_scores = [
+        torch.rand(1, 1, 40, 40),
+        torch.rand(1, 1, 20, 20),
+        torch.rand(1, 1, 10, 10)
+    ]
+
+    bbox_preds = [
+        torch.rand(1, 4, 40, 40),
+        torch.rand(1, 4, 20, 20),
+        torch.rand(1, 4, 10, 10)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        rtmdet_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
+    rewrite_inputs = {'cls_scores': cls_scores, 'bbox_preds': bbox_preds}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6

@@ -43,4 +43,4 @@ jobs:
           export MMDEPLOY_DIR=$(pwd)
           export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH
-          bash .github/scripts/test_mmcls_full_pipeline.sh
+          bash .circleci/scripts/linux/test_full_pipeline.sh ort cpu

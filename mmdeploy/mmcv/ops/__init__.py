@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from . import deform_conv  # noqa: F401,F403
 from . import modulated_deform_conv  # noqa: F401,F403
+from . import multi_scale_deform_attn  # noqa: F401,F403
 from . import point_sample  # noqa: F401,F403
 from . import roi_align  # noqa: F401,F403
 from . import roi_align_rotated  # noqa: F401,F403

@@ -99,7 +99,7 @@ namespace MMDeploy
     }
 
     /// <summary>
-    /// Output of DetectorOutput.
+    /// Output of TextDetector.
     /// </summary>
     public struct TextDetectorOutput
     {

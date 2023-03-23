@@ -75,7 +75,7 @@ def clip_bboxes(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdeploy.codebase.mmdet.deploy.utils.clip_bboxes',
     backend='tensorrt',
-    extra_checkers=LibVersionChecker('tensorrt', min_version='8'))
+    extra_checkers=LibVersionChecker('tensorrt', min_version='8.2'))
 def clip_bboxes__trt8(x1: Tensor, y1: Tensor, x2: Tensor, y2: Tensor,
                       max_shape: Union[Tensor, Sequence[int]]):
     """Clip bboxes for onnx. From TensorRT 8 we can do the operators on the

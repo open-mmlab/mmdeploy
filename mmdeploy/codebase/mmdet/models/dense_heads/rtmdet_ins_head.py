@@ -170,6 +170,9 @@ def _nms_with_mask_static(self,
     # pad
     dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
     labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
+    kernels = torch.cat((kernels, kernels.new_zeros(1, 1, kernels.shape[2])),
+                        1)
+    priors = torch.cat((priors, priors.new_zeros(1, 4)), 0)
 
     # topk or sort
     is_use_topk = keep_top_k > 0 and \

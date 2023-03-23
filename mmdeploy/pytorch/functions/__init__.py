@@ -2,6 +2,7 @@
 from . import adaptive_pool  # noqa: F401,F403
 from . import any  # noqa: F401,F403
 from . import atan2  # noqa: F401,F403
+from . import cat  # noqa: F401,F403
 from . import chunk  # noqa: F401,F403
 from . import clip  # noqa: F401,F403
 from . import expand  # noqa: F401,F403

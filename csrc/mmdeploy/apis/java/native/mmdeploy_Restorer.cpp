@@ -16,6 +16,7 @@ jlong Java_mmdeploy_Restorer_create(JNIEnv *env, jobject, jstring modelPath, jst
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create restorer, code = {}", ec);
+    return -1;
   }
   return (jlong)restorer;
 }
@@ -27,11 +28,12 @@ void Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handle,
                                           jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_mat_t *results{};
     auto ec = mmdeploy_restorer_apply((mmdeploy_restorer_t)handle, imgs, size, &results);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply restorer, code = {}", ec);
+      return NULL;
     }
     const char *java_enum_format[] = {"BGR", "RGB", "GRAYSCALE", "NV12", "NV21", "BGRA"};
     const char *java_enum_type[] = {"FLOAT", "HALF", "INT8", "INT32"};

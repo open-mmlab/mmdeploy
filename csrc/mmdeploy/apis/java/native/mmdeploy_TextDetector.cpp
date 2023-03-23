@@ -17,6 +17,7 @@ jlong Java_mmdeploy_TextDetector_create(JNIEnv *env, jobject, jstring modelPath,
   env->ReleaseStringUTFChars(deviceName, device_name);
   if (ec) {
     MMDEPLOY_ERROR("failed to create text_detector, code = {}", ec);
+    return -1;
   }
   return (jlong)text_detector;
 }
@@ -28,13 +29,14 @@ void Java_mmdeploy_TextDetector_destroy(JNIEnv *, jobject, jlong handle) {
 
 jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv *env, jobject thiz, jlong handle,
                                               jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
     mmdeploy_text_detection_t *results{};
     int *result_count{};
     auto ec = mmdeploy_text_detector_apply((mmdeploy_text_detector_t)handle, imgs, size, &results,
                                            &result_count);
     if (ec) {
       MMDEPLOY_ERROR("failed to apply detector, code = {}", ec);
+      return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/TextDetector$Result");
     auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;F)V");

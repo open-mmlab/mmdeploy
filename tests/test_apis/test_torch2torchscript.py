@@ -42,12 +42,11 @@ def test_torch2torchscript(input_name, output_name):
     import numpy as np
     deploy_cfg = get_deploy_cfg(input_name, output_name)
     torch2torchscript(
-        np.random.rand(8, 8, 3),
+        np.random.randint(0, 255, (8, 8, 3)),
         '',
         ts_file,
         deploy_cfg,
         model_cfg=get_model_cfg(),
         device='cpu')
 
-    print(ts_file)
     assert osp.exists(ts_file)
