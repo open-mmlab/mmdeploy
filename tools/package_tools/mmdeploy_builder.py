@@ -398,8 +398,8 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
 
         # copy onnxruntime
         if 'ort' in cfg['cmake_cfg']['MMDEPLOY_TARGET_BACKENDS']:
-            copy_onnxruntime(cfg, osp.join(
-                sdk_python_package_dir, 'mmdeploy_python'))
+            copy_onnxruntime(
+                cfg, osp.join(sdk_python_package_dir, 'mmdeploy_python'))
 
         # bdist
         sdk_wheel_dir = osp.join(work_dir, 'mmdeploy_python')
