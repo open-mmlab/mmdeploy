@@ -41,7 +41,7 @@ def process_model_config(model_cfg: Config,
         assert 'Resize' in [_.type for _ in config.test_pipeline]
         for pipeline in config.test_pipeline[::-1]:
             if pipeline.type == 'Resize':
-                pipeline.scale = input_shape
+                pipeline.scale = tuple(input_shape)
                 break
 
     key = 'gt_img_path'
