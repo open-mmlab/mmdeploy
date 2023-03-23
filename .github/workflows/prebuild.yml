@@ -1,21 +1,18 @@
 name: prebuild
 
 on:
-  pull_request:
-    #types: [closed]
+  push:
     branches:
-      - master
+      - main
       - dev-1.x
     paths:
       - "mmdeploy/version.py"
-      - ".github/workflows/prebuild.yml"
 
 permissions: write-all
 
 jobs:
   linux_build:
     runs-on: [self-hosted, linux-3090]
-    #if: github.event.pull_request.merged == true
     container:
       image: openmmlab/mmdeploy:manylinux2014_x86_64-cuda11.3
       options: "--gpus=all --ipc=host"
@@ -89,7 +86,7 @@ jobs:
 
   linux_upload:
     runs-on: [self-hosted, linux-3090]
-    #if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: linux_test
     env:
@@ -106,13 +103,13 @@ jobs:
         run: |
           cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy
           pip install twine
-          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
           cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy_python
-          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
           cd $PREBUILD_DIR/$MMDEPLOY_VERSION/sdk
@@ -129,7 +126,6 @@ jobs:
 
   windows_build:
     runs-on: [self-hosted, win10-3080]
-    #if: github.event.pull_request.merged == true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -199,7 +195,7 @@ jobs:
 
   windows_upload:
     runs-on: [self-hosted, win10-3080]
-    #if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
     needs: windows_test
     steps:
@@ -215,14 +211,14 @@ jobs:
         run: |
           cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy"
           conda activate mmdeploy-3.8
-          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_python
         run: |
           cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy_python"
           conda activate mmdeploy-3.8
-          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
         run: |
           cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/sdk"
