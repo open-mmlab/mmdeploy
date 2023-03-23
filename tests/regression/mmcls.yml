@@ -228,3 +228,11 @@ models:
       - *pipeline_ort_static_fp32
       - convert_image: *convert_image
         deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
+
+  - name: Conformer
+    metafile: configs/conformer/metafile.yml
+    model_configs:
+      - configs/conformer/conformer-tiny-p16_8xb128_in1k.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
