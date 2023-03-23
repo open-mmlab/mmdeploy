@@ -93,7 +93,7 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-## 3. Regression Test Tonfiguration
+## 3. Regression Test Configuration
 
 ### Example and parameter description
 
