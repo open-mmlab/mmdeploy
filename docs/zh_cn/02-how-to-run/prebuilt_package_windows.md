@@ -85,12 +85,12 @@ ______________________________________________________________________
 
 本节介绍`mmdeploy`使用`ONNX Runtime`推理所特有的环境准备工作
 
-5. 安装`mmdeploy`（模型转换）以及`mmdeploy_python`（模型推理Python API）的预编译包
+5. 安装`mmdeploy`（模型转换）以及`mmdeploy_runtime`（模型推理Python API）的预编译包
 
    ```bash
    # 先下载 mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1.zip
    pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.13.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.13.0-cp38-none-win_amd64.whl
+   pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_runtime-0.13.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装。
@@ -112,12 +112,12 @@ ______________________________________________________________________
 
 本节介绍`mmdeploy`使用`TensorRT`推理所特有的环境准备工作
 
-5. 安装`mmdeploy`（模型转换）以及`mmdeploy_python`（模型推理Python API）的预编译包
+5. 安装`mmdeploy`（模型转换）以及`mmdeploy_runtime`（模型推理Python API）的预编译包
 
    ```bash
    # 先下载 mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
    pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.13.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.13.0-cp38-none-win_amd64.whl
+   pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_runtime-0.13.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装

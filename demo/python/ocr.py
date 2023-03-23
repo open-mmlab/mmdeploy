@@ -2,7 +2,7 @@
 import argparse
 
 import cv2
-from mmdeploy_python import TextDetector, TextRecognizer
+from mmdeploy_runtime import TextDetector, TextRecognizer
 
 
 def parse_args():

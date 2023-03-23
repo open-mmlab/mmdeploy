@@ -77,12 +77,12 @@ After the above work is done, the structure of the current working directory sho
 
 In order to use `ONNX Runtime` backend, you should also do the following steps.
 
-5. Install `mmdeploy` (Model Converter) and `mmdeploy_python` (SDK Python API).
+5. Install `mmdeploy` (Model Converter) and `mmdeploy_runtime` (SDK Python API).
 
    ```bash
    # download mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1.zip
    pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\dist\mmdeploy-0.13.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_python-0.13.0-cp38-none-win_amd64.whl
+   pip install .\mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1\sdk\python\mmdeploy_runtime-0.13.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
@@ -104,12 +104,12 @@ In order to use `ONNX Runtime` backend, you should also do the following steps.
 
 In order to use `TensorRT` backend, you should also do the following steps.
 
-5. Install `mmdeploy` (Model Converter) and `mmdeploy_python` (SDK Python API).
+5. Install `mmdeploy` (Model Converter) and `mmdeploy_runtime` (SDK Python API).
 
    ```bash
    # download mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0.zip
    pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\dist\mmdeploy-0.13.0-py38-none-win_amd64.whl
-   pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_python-0.13.0-cp38-none-win_amd64.whl
+   pip install .\mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\sdk\python\mmdeploy_runtime-0.13.0-cp38-none-win_amd64.whl
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
