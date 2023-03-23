@@ -349,6 +349,10 @@ def create_mmdeploy_python(cfg: Dict, work_dir: str):
         cmake_options.append(
             f'-DMMDeploy_DIR={MMDEPLOY_DIR}/build/install/lib/cmake/MMDeploy')
         cmake_options.append(f'-DPYTHON_EXECUTABLE={python_executable}')
+        if sys.platform == 'win32':
+            cmake_options.append('-A x64 -T v142')
+            if 'CUDA_PATH' in os.environ:
+                cmake_options[-1] += ',cuda="%CUDA_PATH%"'
         cmake_cmd = ' '.join(['cmake ../csrc/mmdeploy/apis/python'] +
                              cmake_options)
         build_dir = osp.join(MMDEPLOY_DIR, 'build_python')
