@@ -29,6 +29,7 @@ class Task(AdvancedEnum):
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
     VIDEO_RECOGNITION = 'VideoRecognition'
+    OPTICAL_FLOW = 'OpticalFlow'
 
 
 class Codebase(AdvancedEnum):
@@ -42,6 +43,7 @@ class Codebase(AdvancedEnum):
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
     MMACTION = 'mmaction'
+    MMFLOW = 'mmflow'
 
 
 class IR(AdvancedEnum):
