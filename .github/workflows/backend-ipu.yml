@@ -1,0 +1,60 @@
+name: backend-ipu
+
+on:
+  push:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "demo/**"
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build_sdk_demo:
+    runs-on: self-hosted
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: update
+        run: sudo apt update
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install apt-get install libopencv-dev libboost-all-dev gcc-7 g++-7 cmake
+          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
+          sudo apt install libopencv-dev
+          pkg-config --libs opencv
+      - name: enable poplar sdk
+        run: |
+          source $POPLAR_PATH/enable.sh
+
+      - name: Build SDK Demo with IPU backend
+        run: |
+          mkdir -p build && pushd build
+          cmake .. -DCMAKE_CXX_COMPILER=g++-7 -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON -DMMDEPLOY_BUILD_EXAMPLES=ON -DMMDEPLOY_TARGET_DEVICES=cpu -DMMDEPLOY_TARGET_BACKENDS=ipu -DMMDEPLOY_BUILD_TEST=ON
+          make install -j4
+      - name: install POPRT model converter
+        run: |
+          pip install $POPLAR_PATH/poprt-0.9.0a15.ubuntu.2004.sdk.1209-cp38-cp38-linux_x86_64.whl
+      - name: test ipu deploy pipeline with resnet
+        run: |
+          pip install openmim
+          mim install mmcls
+          git clone  --depth 1 --single-branch --branch master https://github.com/open-mmlab/mmclassification.git ../mmclassification
+          bash .github/scripts/test_mmcls_ipu_pipeline.sh

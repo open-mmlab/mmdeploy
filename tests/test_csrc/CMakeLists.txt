@@ -4,6 +4,7 @@ project(tests)
 
 set(TC_SRCS test_main.cpp)
 
+
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/archive ARCHIVE_TC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/core CORE_TC)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/preprocess TRANSFORM_TC)

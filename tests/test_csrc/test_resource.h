@@ -102,6 +102,7 @@ class MMDeployTestResources {
     backend_devices_["ort"] = {"cpu"};
     backend_devices_["ncnn"] = {"cpu"};
     backend_devices_["openvino"] = {"cpu"};
+    backend_devices_["ipu"] = {"cpu"};
     resource_root_path_ = LocateResourceRootPath(fs::current_path(), 8);
   }
 

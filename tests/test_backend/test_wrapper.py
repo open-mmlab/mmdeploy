@@ -131,6 +131,15 @@ def ir2backend(backend, onnx_file, ts_file):
             dict(input_shapes=dict(input=test_img.shape)))
         from_onnx(onnx_file, work_dir, model_inputs)
         return backend_file
+    elif backend == Backend.IPU:
+        import os
+
+        from mmdeploy.apis.ipu import onnx_to_popef
+        onnx_dir = onnx_file[:onnx_file.rfind('/')]
+        ipu_config = {'batches_per_step': 1, 'output_dir': onnx_dir}
+        onnx_to_popef(onnx_file, ipu_config)
+        popef_file = os.path.join(onnx_dir, 'executable.popef')
+        return popef_file
     elif backend == Backend.TVM:
         from mmdeploy.backend.tvm import from_onnx, get_library_ext
         ext = get_library_ext()

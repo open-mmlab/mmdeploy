@@ -169,6 +169,8 @@ def get_models(deploy_cfg: Union[str, mmcv.Config],
             f.write(','.join(output_names) + '\n')
             if use_vm:
                 f.write(bytecode_path + '\n')
+    elif backend == Backend.IPU:
+        net = 'executable.popef'
     else:
         raise NotImplementedError(f'Not supported backend: {backend.value}.')
 
