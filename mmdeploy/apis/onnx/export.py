@@ -116,7 +116,7 @@ def export(model: torch.nn.Module,
         from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
         if from_mmrazor:
             quantizer = patched_model.quantizer
-            patched_model = patched_model.post_process_for_mmdeploy()
+            patched_model = patched_model.get_deploy_model()
 
         # patch input_metas
         if input_metas is not None:
@@ -128,7 +128,6 @@ def export(model: torch.nn.Module,
             def wrap_forward(forward):
 
                 def wrapper(*arg, **kwargs):
-                    kwargs['mode_1'] = kwargs.pop('mode')
                     return forward(*arg, **kwargs)
 
                 return wrapper
