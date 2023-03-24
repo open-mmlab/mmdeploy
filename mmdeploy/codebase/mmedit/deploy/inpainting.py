@@ -185,18 +185,17 @@ class Inpainting(BaseTask):
         if len(result.shape) == 4:
             result = result[0]
 
-        with torch.no_grad():
-            result = result.transpose(1, 2, 0)
-            result = np.clip(result, 0, 1)[:, :, ::-1]
-            result = (result * 255.0).round()
+        result = result.transpose(1, 2, 0)
+        result = (result + 1) * 127.5
+        result = np.clip(result, 0, 255)
 
-            if show_result:
-                int_result = result.astype(np.uint8)
-                mmcv.imshow(int_result, window_name, 0)
+        if show_result:
+            int_result = result.astype(np.uint8)
+            mmcv.imshow(int_result, window_name, 0)
 
-            output_file = None if show_result else output_file
-            if output_file is not None:
-                mmcv.imwrite(result, output_file)
+        output_file = None if show_result else output_file
+        if output_file is not None:
+            mmcv.imwrite(result, output_file)
 
         if not (show_result or output_file):
             warnings.warn(
@@ -216,6 +215,9 @@ class Inpainting(BaseTask):
             list: The predictions of model inference.
         """
         results = model(model_inputs['masked_img'], model_inputs['mask'])
+        if isinstance(results, dict):
+            results = [results['fake_img']]
+
         if not isinstance(results[0], np.ndarray):
             results = [results[0].detach().cpu().numpy()]
         return results
