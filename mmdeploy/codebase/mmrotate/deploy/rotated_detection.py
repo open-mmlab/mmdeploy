@@ -85,12 +85,12 @@ def process_model_config(model_cfg: Config,
         cfg.test_pipeline[0].type = 'mmdet.LoadImageFromNDArray'
 
     pipeline = cfg.test_pipeline
-
-    for i, transform in enumerate(pipeline):
-        # for static exporting
-        if input_shape is not None and transform.type == 'Resize':
-            pipeline[i].keep_ratio = False
-            pipeline[i].scale = tuple(input_shape)
+    # for static exporting
+    if input_shape is not None:
+        for i, transform in enumerate(pipeline):
+            if transform.type in ['Resize', 'mmdet.Resize']:
+                pipeline[i].keep_ratio = False
+                pipeline[i].scale = tuple(input_shape)
 
     pipeline = [
         transform for transform in pipeline
@@ -209,15 +209,12 @@ class RotatedDetection(BaseTask):
         cfg = process_model_config(self.model_cfg, imgs, input_shape)
 
         pipeline = cfg.test_pipeline
+        # for static exporting
         if not dynamic_flag:
-            transform = pipeline[1]
-            if 'transforms' in transform:
-                transform_list = transform['transforms']
-                for i, step in enumerate(transform_list):
-                    if step['type'] == 'Pad' and 'pad_to_square' in step \
-                       and step['pad_to_square']:
-                        transform_list.pop(i)
-                        break
+            for i, trans in enumerate(pipeline):
+                if trans['type'] == 'Pad' and 'pad_to_square' in trans \
+                   and trans['pad_to_square']:
+                    trans.pop(i)
         test_pipeline = Compose(pipeline)
 
         data = []
@@ -261,6 +258,7 @@ class RotatedDetection(BaseTask):
         input_shape = get_input_shape(self.deploy_cfg)
         model_cfg = process_model_config(self.model_cfg, [''], input_shape)
         pipeline = model_cfg.test_pipeline
+        pipeline = replace_RResize(pipeline)
         meta_keys = [
             'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
             'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',

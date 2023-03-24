@@ -332,7 +332,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     }
 
     # get pytorch fps value
-    fps_info = model_info.get('Metadata').get('inference time (ms/im)')
+    fps_info = model_info.get('Metadata', {}).get('inference time (ms/im)')
     if fps_info is None:
         fps = '-'
     elif isinstance(fps_info, list):
