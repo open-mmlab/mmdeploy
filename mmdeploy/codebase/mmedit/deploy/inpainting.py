@@ -36,12 +36,14 @@ def process_model_config(model_cfg: Config,
         # Remove 'LoadImageFromFile'
         config.test_pipeline.pop(0)
 
-    is_static_cfg = input_shape is not None
-    if is_static_cfg:
-        assert 'Resize' in [_.type for _ in config.test_pipeline]
+    if input_shape is not None:
+        # Fix the input shape by 'Resize' or 'RandomResizedCrop'
         for pipeline in config.test_pipeline[::-1]:
             if pipeline.type == 'Resize':
                 pipeline.scale = tuple(input_shape)
+                break
+            elif pipeline.type == 'RandomResizedCrop':
+                pipeline.crop_size = tuple(input_shape)
                 break
 
     key = 'gt_img_path'
