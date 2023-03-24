@@ -250,7 +250,9 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp32
       - *pipeline_ncnn_static_fp32
-      - *pipeline_openvino_dynamic_fp32
+      - deploy_config: configs/mmdet/detection/detection_openvino_dynamic-640x640.py
+        convert_image: *convert_image
+        backend_test: False
 
   - name: Faster R-CNN
     metafile: configs/faster_rcnn/metafile.yml
