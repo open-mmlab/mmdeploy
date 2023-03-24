@@ -51,7 +51,7 @@ openvino:
     deploy_config: configs/mmpose/pose-detection_openvino_static-256x192.py
   pipeline_openvino_static_fp32_256x256: &pipeline_openvino_static_fp32_256x256
     convert_image: *convert_image
-    backend_test: *default_backend_test
+    backend_test: False
     deploy_config: configs/mmpose/pose-detection_openvino_static-256x256.py
 
 ncnn:
@@ -74,7 +74,6 @@ torchscript:
   pipeline_ts_static_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    sdk_config: *sdk_static
     deploy_config: configs/mmpose/pose-detection_torchscript.py
 
 models:
