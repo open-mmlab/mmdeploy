@@ -46,8 +46,9 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     batch_size = rois.shape[0]
     # Eliminate the batch dimension
     rois = rois.view(-1, 4)
-    inds = torch.arange(batch_size, device=rois.device).float().repeat(
-        num_proposals_per_img, 1)
+    inds = torch.arange(
+        batch_size, device=rois.device).float().repeat(num_proposals_per_img,
+                                                       1)
     inds = inds.t().reshape(-1, 1)
     rois = torch.cat([inds, rois], dim=1)
 
