@@ -42,15 +42,17 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
                                     'while in exporting to ONNX'
     # Remove the scores
     rois = proposals[..., :-1]
+    num_proposals_per_img = rois.shape[1]
     batch_size = rois.shape[0]
     # Eliminate the batch dimension
     rois = rois.view(-1, 4)
+    inds = torch.arange(batch_size, device=rois.device).float().repeat(
+        num_proposals_per_img, 1)
+    inds = inds.t().reshape(-1, 1)
+    rois = torch.cat([inds, rois], dim=1)
 
-    # Add dummy batch index
-    rois = torch.cat([rois.new_zeros(rois.shape[0], 1), rois], dim=-1)
-
-    max_shape = img_metas[0]['img_shape']
-    scale_factor = img_metas[0].get('scale_factor', None)
+    max_shape = None
+    scale_factor = None
     ms_scores = []
     rcnn_test_cfg = self.test_cfg
 
@@ -62,17 +64,15 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
 
         ms_scores.append(cls_score)
         if i < self.num_stages - 1:
-            if self.bbox_head[i].custom_activation:
-                cls_score = self.bbox_head[i].loss_cls.get_activation(
-                    cls_score)
+            assert not self.bbox_head[i].custom_activation
             bbox_label = cls_score[:, :-1].argmax(dim=1)
             rois = self.bbox_head[i].regress_by_class(rois, bbox_label,
                                                       bbox_pred, img_metas[0])
 
     cls_score = sum(ms_scores) / float(len(ms_scores))
-    cls_score = cls_score.unsqueeze(0)
-    rois = rois.unsqueeze(0)
-    bbox_pred = bbox_pred.unsqueeze(0)
+    cls_score = cls_score.reshape(batch_size, -1, cls_score.size(-1))
+    rois = rois.reshape(batch_size, -1, rois.size(-1))
+    bbox_pred = bbox_pred.reshape(batch_size, -1, bbox_pred.size(-1))
 
     det_bboxes, det_labels = self.bbox_head[-1].get_bboxes(
         rois, cls_score, bbox_pred, max_shape, scale_factor, cfg=rcnn_test_cfg)
@@ -82,8 +82,8 @@ def cascade_roi_head__simple_test(ctx, self, x, proposals, img_metas,
     else:
         batch_index = torch.arange(det_bboxes.size(0),
                                    device=det_bboxes.device). \
-                                   float().view(-1, 1, 1).expand(
-                                   det_bboxes.size(0), det_bboxes.size(1), 1)
+            float().view(-1, 1, 1).expand(
+            det_bboxes.size(0), det_bboxes.size(1), 1)
         rois = det_bboxes[..., :4]
         mask_rois = torch.cat([batch_index, rois], dim=-1)
         mask_rois = mask_rois.view(-1, 5)
