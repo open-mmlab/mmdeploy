@@ -7,6 +7,11 @@ on:
       - dev-1.x
     paths:
       - "mmdeploy/version.py"
+  pull_request:
+    branches:
+      - master
+      - main
+      - dev-1.x
 
 permissions: write-all
 
