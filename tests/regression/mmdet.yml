@@ -320,3 +320,12 @@ models:
     pipelines:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
+
+  - name: Convnext
+    metafile: configs/convnext/metafile.yml
+    model_configs:
+      - configs/convnext/mask_rcnn_convnext-t_p4_w7_fpn_fp16_ms-crop_3x_coco.py
+    pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_trt_dynamic_fp32
+      - *pipeline_seg_openvino_dynamic_fp32
