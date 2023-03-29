@@ -32,7 +32,7 @@ pipeline {
 
     }
 
-    agent any
+
     options {
         skipDefaultCheckout()
         timestamps()
@@ -41,13 +41,7 @@ pipeline {
         timeout(time: 1, unit: 'HOURS')
         logRotator(numToKeepStr: '10')
     }
-    stages {
-        stage('Build') {
-            steps {
-                sh 'echo "Hello World"'
-            }
-        }
-    }
+
     post {
         always {
             script {
