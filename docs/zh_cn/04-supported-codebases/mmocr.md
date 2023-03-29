@@ -196,7 +196,7 @@ task_processor.visualize(
 
 ```python
 import cv2
-from mmdeploy_python import TextDetector
+from mmdeploy_runtime import TextDetector
 
 img = cv2.imread('demo/resources/text_det.jpg')
 # create text detector
@@ -218,7 +218,7 @@ if len(bboxes) > 0:
 
 ```python
 import cv2
-from mmdeploy_python import TextRecognizer
+from mmdeploy_runtime import TextRecognizer
 
 img = cv2.imread('demo/resources/text_recog.jpg')
 # create text recognizer

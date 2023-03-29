@@ -3,7 +3,7 @@ import argparse
 import math
 
 import cv2
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 
 
 def parse_args():

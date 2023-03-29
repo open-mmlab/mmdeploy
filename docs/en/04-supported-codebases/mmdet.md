@@ -163,7 +163,7 @@ task_processor.visualize(
 You can also perform SDK model inference like following,
 
 ```python
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 import cv2
 
 img = cv2.imread('./demo/resources/det.jpg')

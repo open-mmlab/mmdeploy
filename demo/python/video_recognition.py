@@ -2,7 +2,7 @@
 import argparse
 
 import cv2
-from mmdeploy_python import VideoRecognizer
+from mmdeploy_runtime import VideoRecognizer
 
 
 def parse_args():

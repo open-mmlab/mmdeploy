@@ -9,7 +9,7 @@ class SDKWrapper(BaseWrapper):
 
     def __init__(self, model_file, task_name, device):
         super().__init__([])
-        import mmdeploy_python as c_api
+        import mmdeploy_runtime as c_api
         creator = getattr(c_api, task_name)
         device_id = parse_device_id(device)
         device_type = parse_device_type(device)

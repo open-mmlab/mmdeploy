@@ -23,7 +23,7 @@ def parse_arguments():
     parser.add_argument(
         '--build-mmdeploy',
         action='store_true',
-        help='whether build mmdeploy python package')
+        help='whether build mmdeploy runtime package')
     parser.add_argument(
         '--build-sdk', action='store_true', help='whether build sdk c/cpp api')
     parser.add_argument(

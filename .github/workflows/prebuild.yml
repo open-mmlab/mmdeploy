@@ -105,9 +105,9 @@ jobs:
           pip install twine
           # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Upload mmdeploy_python
+      - name: Upload mmdeploy_runtime
         run: |
-          cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy_python
+          cd $PREBUILD_DIR/$MMDEPLOY_VERSION/mmdeploy_runtime
           # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Zip mmdeploy sdk
@@ -213,9 +213,9 @@ jobs:
           conda activate mmdeploy-3.8
           # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Upload mmdeploy_python
+      - name: Upload mmdeploy_runtime
         run: |
-          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy_python"
+          cd "D:/DEPS/ciartifact/$env:MMDEPLOY_VERSION/mmdeploy_runtime"
           conda activate mmdeploy-3.8
           # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
           twine upload * -u __token__ -p ${{ secrets.pypi_password }}
