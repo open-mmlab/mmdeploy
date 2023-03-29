@@ -10,8 +10,7 @@ from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import is_dynamic_shape
 
 
-@mark(
-    'detr_predict', inputs=['input'], outputs=['dets', 'labels', 'masks'])
+@mark('detr_predict', inputs=['input'], outputs=['dets', 'labels', 'masks'])
 def __predict_impl(self, batch_inputs, data_samples, rescale):
     """Rewrite and adding mark for `predict`.
 
@@ -20,12 +19,9 @@ def __predict_impl(self, batch_inputs, data_samples, rescale):
     2. Support both dynamic and static export to onnx.
     """
     img_feats = self.extract_feat(batch_inputs)
-    head_inputs_dict = self.forward_transformer(img_feats,
-                                                data_samples)
+    head_inputs_dict = self.forward_transformer(img_feats, data_samples)
     results_list = self.bbox_head.predict(
-            **head_inputs_dict,
-            rescale=rescale,
-            batch_data_samples=data_samples)
+        **head_inputs_dict, rescale=rescale, batch_data_samples=data_samples)
     return results_list
 
 
