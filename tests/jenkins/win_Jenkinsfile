@@ -39,7 +39,7 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
         disableConcurrentBuilds()
         timeout(time: 1, unit: 'HOURS')
-        logRotator(numToKeepStr: '10')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
     post {
