@@ -19,10 +19,17 @@ ARG TENSORRT_VERSION=8.2.3.0
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 
+ARG TOOLSET_VERSION=7
+
 USER root
 WORKDIR /root/workspace
 
 ENV FORCE_CUDA="1"
+
+# install toolset
+RUN yum install devtoolset-${TOOLSET_VERSION}-gcc devtoolset-${TOOLSET_VERSION}-gcc-c++ -y
+
+ENV PATH=/opt/rh/devtoolset-${TOOLSET_VERSION}/root/usr/bin:$PATH
 
 # install cuda cudnn
 RUN curl -fsSL -v -o ./cuda_install.run -O $CUDA_URL &&\
