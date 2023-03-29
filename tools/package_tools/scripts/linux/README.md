@@ -9,7 +9,7 @@
    in sdk folder:
 
    `source ./set_env.sh` \
-   (you have to additionally install cuda and cudnn if you use sdk cuda version)
+   (**you have to additionally install cuda and cudnn if you use sdk cuda version**)
 
 3. build sdk
    in sdk folder:
@@ -19,7 +19,7 @@
 
    or
 
-   `./build_sdk.ps1 "path/to/folder/of/OpenCVConfig.cmake"` \
+   `./build_sdk.sh "path/to/folder/of/OpenCVConfig.cmake"` \
    (if you installed opencv yourself)
 
    the executable will be generated in: `bin/`
