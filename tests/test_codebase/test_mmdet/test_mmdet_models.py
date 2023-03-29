@@ -2009,9 +2009,9 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
     deploy_cfg = get_deploy_cfg(backend_type, ir_type)
 
     seed_everything(1234)
-    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
+    cls_score = [torch.rand(1, 100, 5) for i in range(5, 0, -1)]
     seed_everything(5678)
-    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
+    bboxes = [torch.rand(1, 100, 4) for i in range(5, 0, -1)]
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
