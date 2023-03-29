@@ -1995,7 +1995,7 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
 @pytest.mark.parametrize('backend_type, ir_type',
                          [(Backend.ONNXRUNTIME, 'onnx')])
 def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
-    """Test predict_by_feat rewrite of base dense head."""
+    """Test predict_by_feat rewrite of detr head."""
     check_backend(backend_type)
     dense_head = get_detrhead_model()
     dense_head.cpu().eval()
@@ -2021,6 +2021,31 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
         'all_cls_scores_list': cls_score,
         'all_bbox_preds_list': bboxes,
     }
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend_type, ir_type',
+                         [(Backend.ONNXRUNTIME, 'onnx')])
+def test_detrhead__forward(backend_type: Backend, ir_type: str):
+    """Test forward rewrite of detr."""
+    check_backend(backend_type)
+    dense_head = get_detrhead_model()
+    dense_head.cpu().eval()
+
+    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
+
+    seed_everything(1234)
+    hidden_states = torch.rand(1, 16, 4)
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(dense_head, 'forward')
+    rewrite_inputs = {'hidden_states': hidden_states}
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
