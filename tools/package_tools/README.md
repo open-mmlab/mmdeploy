@@ -6,10 +6,10 @@ This document is going to describe the way to build MMDeploy package.
 
 - Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
 
-- Create conda environments for python 3.6, 3.7, 3.8 and 3.9, respectively.
+- Create conda environments for python 3.6, 3.7, 3.8, 3.9 and 3.10, respectively.
 
   ```shell
-  for PYTHON_VERSION in 3.6 3.7 3.8 3.9
+  for PYTHON_VERSION in 3.6 3.7 3.8 3.9 3.10
   do
     conda create --name mmdeploy-$PYTHON_VERSION python=$PYTHON_VERSION -y
   done
@@ -28,20 +28,24 @@ This document is going to describe the way to build MMDeploy package.
 
   ```shell
   conda activate mmdeploy-3.6
-  pip install pyyaml
+  pip install pyyaml packaging
   cd the/root/path/of/mmdeploy
-  python tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/linux_x64.yaml .
+  python tools/package_tools/generate_build_config.py --backend 'ort' \
+            --system linux --build-mmdeploy --device cpu --build-sdk \
+            --build-sdk-monolithic --build-sdk-python --sdk-dynamic-net \
+            --output config.yml
+  python tools/package_tools/mmdeploy_builder.py --config config.yml --output-dir pack
   ```
-
-  You will get the precompiled packages `mmdeploy-{version}-linux-x86_64-cuda11.1-tensorrt8.2.3.0` and `mmdeploy-{version}-linux-x86_64-onnxruntime1.8.1` in the current directory if everything's going well.
 
 - On Windows platform, open `Anaconda Powershell Prompt` from the start menu and execute:
 
   ```shell
   conda activate mmdeploy-3.6
-  pip install pyyaml
+  pip install pyyaml packaging
   cd the/root/path/of/MMDeploy
-  python tools/package_tools/mmdeploy_builder.py tools/package_tools/configs/windows_x64.yaml .
+  python tools/package_tools/generate_build_config.py --backend 'ort' \
+            --system windows --build-mmdeploy --device cpu --build-sdk \
+            --build-sdk-monolithic --build-sdk-python --sdk-dynamic-net \
+            --output config.yml
+  python tools/package_tools/mmdeploy_builder.py --config config.yml --output-dir pack
   ```
-
-  When the build procedure finishes successfully, you will find `mmdeploy-{version}-windows-amd64-cuda11.1-tensorrt8.2.3.0` and `mmdeploy-{version}-windows-amd64-onnxruntime1.8.1` precompiled packages in the current directory.
