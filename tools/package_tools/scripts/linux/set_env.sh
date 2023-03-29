@@ -3,7 +3,7 @@
 if [ -n "$1" ]; then
     WORKSPACE=$1
 else
-    WORKSPACE=$(realpath $(dirname "$0"))
+    WORKSPACE=$(realpath $(dirname "${BASH_SOURCE[0]}"))
 fi
 
 THIRDPARTY_DIR=$WORKSPACE/thirdparty
