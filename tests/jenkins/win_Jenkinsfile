@@ -37,10 +37,20 @@ pipeline {
 
         stage('Convert') {
             steps {
+                @echo off
+                setlocal EnableDelayedExpansion
+                SET LOGFILE=jenkins_build.log
+                echo "=== Start build ===" > %LOGFILE%
+
+                @echo on
+                2>&1 echo ====================
+                2>&1 echo Execute my bat command now!
+                2>&1 echo ====================
                 bat """
                     @ECHO ON
+
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
-                """
+                """2>&1 >> %LOGFILE%
             }
         }
 
