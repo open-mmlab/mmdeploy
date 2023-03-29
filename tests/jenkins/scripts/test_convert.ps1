@@ -17,13 +17,25 @@ Get-content $pwd/tests/jenkins/conf/win_tmp.config
 #$content.replace('codebase_list=.*', "codebase_list=$cblist") | Set-Content $ConfigPath -Verbos
 Get-content $pwd/tests/jenkins/conf/win_tmp.config
 
-$env:DEPS_DIR="D:\huangzijie\workspace\deps"
+# $env:DEPS_DIR="D:\huangzijie\workspace\deps"
+# $env:WORKSPACE="D:\huangzijie\workspace"
+# $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
+# $env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
+# $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
+# $env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
+# $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
+
+
+$env:DEPS_DIR="D:\DEPS"
 $env:WORKSPACE="D:\huangzijie\workspace"
 $env:OPENCV_DIR=(Join-PATH $env:DEPS_DIR opencv\4.6.0\build\x64\vc15)
-$env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR TensorRT-8.2.3.0)
+$env:TENSORRT_DIR=(Join-PATH $env:DEPS_DIR tensorrt\TensorRT-8.2.3.0.cuda-11.4.cudnn8.2)
 $env:ONNXRUNTIME_DIR=(Join-PATH $env:DEPS_DIR onnxruntime-win-x64-1.8.1)
-$env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn-11.3-v8.2.1.32)
+#$env:CUDNN_DIR=(Join-PATH $env:DEPS_DIR cudnn\cudnn-11.3-v8.2.1.32)
+$env:CUDNN_DIR="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3"
 $env:PPLCV_DIR=(Join-PATH $env:DEPS_DIR ppl.cv)
+
+
 
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
