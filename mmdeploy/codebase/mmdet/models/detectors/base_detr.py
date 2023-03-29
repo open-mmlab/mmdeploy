@@ -91,4 +91,3 @@ def detection_transformer__predict(self,
     data_samples = _set_metainfo(data_samples, img_shape)
 
     return __predict_impl(self, batch_inputs, data_samples, rescale)
-

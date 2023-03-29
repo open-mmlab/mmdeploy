@@ -79,4 +79,3 @@ def detrhead__predict_by_feat__default(self,
     det_bboxes = torch.cat((det_bboxes, scores.unsqueeze(-1)), -1)
 
     return det_bboxes, det_labels
-
