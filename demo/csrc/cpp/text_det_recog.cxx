@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
   auto output = pipeline.Apply(mat);
 
-  MMDEPLOY_INFO("output:\n{}", output);
+  // MMDEPLOY_INFO("output:\n{}", output);
 
   return 0;
 }
