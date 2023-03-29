@@ -50,7 +50,7 @@ def install_pplnn(dep_dir, build_cuda):
     # git clone
     if not os.path.exists(pplnn_dir):
         os.system(
-            'git clone --depth 1 --branch v0.9.1 https://github.com/openppl-public/ppl.nn/'  # noqa: E501
+            'git clone --depth 1 --branch v0.9.2 https://github.com/openppl-public/ppl.nn/'  # noqa: E501
         )
 
     # build
