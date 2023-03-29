@@ -33,29 +33,7 @@ pipeline {
     }
 
 
-    options {
-        skipDefaultCheckout()
-        timestamps()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
-        disableConcurrentBuilds()
-        timeout(time: 1, unit: 'HOURS')
 
-    }
-
-    post {
-        always {
-            script {
-                currentBuild.rawBuild.logFile.withWriter("UTF-8") { writer ->
-                    def lines = it.readLines()
-                    lines.each { line ->
-                        if (line.contains("Pipeline")) {
-                            writer.write(line + "\n")
-                        }
-                    }
-                }
-            }
-        }
-    }
     stages {
 
         stage('Convert') {
