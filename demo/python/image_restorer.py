@@ -2,7 +2,7 @@
 import argparse
 
 import cv2
-from mmdeploy_python import Restorer
+from mmdeploy_runtime import Restorer
 
 
 def parse_args():

@@ -3,7 +3,7 @@ import argparse
 import os
 
 import cv2
-from mmdeploy_python import PoseTracker
+from mmdeploy_runtime import PoseTracker
 
 
 def parse_args():

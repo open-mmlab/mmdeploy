@@ -122,7 +122,7 @@ wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.13.0/mmdeploy-0
 tar -zxvf mmdeploy-0.13.0-linux-x86_64-onnxruntime1.8.1.tar.gz
 cd mmdeploy-0.13.0-linux-x86_64-onnxruntime1.8.1
 pip install dist/mmdeploy-0.13.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.13.0-cp38-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-0.13.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -143,7 +143,7 @@ wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.13.0/mmdeploy-0
 tar -zxvf mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
 cd mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 pip install dist/mmdeploy-0.13.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.13.0-cp38-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-0.13.0-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
@@ -249,7 +249,7 @@ In the next section, we will provide examples of deploying the converted Faster 
 #### Python API
 
 ```python
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 import cv2
 
 img = cv2.imread('mmdetection/demo/demo.jpg')

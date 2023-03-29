@@ -9,7 +9,7 @@ from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 _is_available = False
 
-module_name = 'mmdeploy_python'
+module_name = 'mmdeploy_runtime'
 
 candidates = [
     f'../../../build/lib/{module_name}.*.so',
