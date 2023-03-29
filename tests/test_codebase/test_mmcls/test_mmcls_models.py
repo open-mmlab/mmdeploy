@@ -29,6 +29,14 @@ def get_invertedresidual_model():
     return model
 
 
+def get_fcuup_model():
+    from mmcls.models.backbones.conformer import FCUUp
+    model = FCUUp(16, 16, 16)
+
+    model.requires_grad_(False)
+    return model
+
+
 def get_vit_backbone():
     from mmcls.models.classifiers.image import ImageClassifier
     model = ImageClassifier(
@@ -279,3 +287,52 @@ def test_shift_windows_msa_cls(backend_type: Backend):
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
+
+
+@pytest.mark.parametrize('backend_type', [Backend.TENSORRT])
+def test_fcuup__forward(backend_type: Backend):
+
+    check_backend(backend_type, True)
+    model = get_fcuup_model()
+    model.cpu().eval()
+    if backend_type.value == 'tensorrt':
+        deploy_cfg = Config(
+            dict(
+                backend_config=dict(
+                    type=backend_type.value,
+                    model_inputs=[
+                        dict(
+                            input_shapes=dict(
+                                input=dict(
+                                    min_shape=[1, 197, 16],
+                                    opt_shape=[1, 197, 16],
+                                    max_shape=[1, 197, 16])))
+                    ]),
+                onnx_config=dict(
+                    input_shape=[197, 16], output_names=['output']),
+                codebase_config=dict(type='mmcls', task='Classification')))
+    else:
+        deploy_cfg = Config(
+            dict(
+                backend_config=dict(type=backend_type.value),
+                onnx_config=dict(input_shape=None, output_names=['output']),
+                codebase_config=dict(type='mmcls', task='Classification')))
+
+    imgs = torch.rand((1, 197, 16))
+    model_outputs = model.forward(imgs, 14, 14)
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'x': imgs, 'H': 14, 'W': 14}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+
+    if isinstance(rewrite_outputs, dict):
+        rewrite_outputs = rewrite_outputs['output']
+    for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
+        model_output = model_output.cpu().numpy()
+        if isinstance(rewrite_output, torch.Tensor):
+            rewrite_output = rewrite_output.cpu().numpy()
+        assert np.allclose(
+            model_output, rewrite_output, rtol=1e-03, atol=1e-05)
