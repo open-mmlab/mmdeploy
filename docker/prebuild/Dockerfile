@@ -100,12 +100,13 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda create -n mmdeploy-3.10 python=3.10 -y &&\
     export CUDA_INT=$(echo $CUDA_VERSION | awk '{split($0, a, "."); print a[1]a[2]}') &&\
     /opt/conda/bin/conda create -n torch${TORCH_VERSION} python=3.8 -y &&\
-    /opt/conda/envs/mmdeploy-3.6/bin/pip install --no-cache-dir setuptools wheel pyyaml &&\
+    /opt/conda/envs/mmdeploy-3.6/bin/pip install --no-cache-dir setuptools wheel pyyaml packaging &&\
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install --no-cache-dir onnxruntime-gpu==${ONNXRUNTIME_VERSION} &&\
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install ${TENSORRT_DIR}/python/tensorrt-*-cp38-none-linux_x86_64.whl &&\
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install --no-cache-dir torch==${TORCH_VERSION}+cu${CUDA_INT} \
         torchvision==${TORCHVISION_VERSION}+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html &&\
-    /opt/conda/bin/conda clean -ya
+    /opt/conda/bin/conda init bash &&\
+    /opt/conda/bin/conda clean -ya &&\
 
 ENV CONDA=/opt/conda
 ENV PATH=$CONDA/bin:$PATH
