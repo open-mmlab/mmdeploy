@@ -30,7 +30,8 @@ English | [简体中文](README_zh-CN.md)
 
 ## Highlights
 
-The new v1 version has been released, which is adapted to the preview version of upstream codebase, please **align the version** when using it.
+The MMDeploy 1.x has been released, which is adapted to upstream codebases from OpenMMLab 2.0. Please **align the version** when using it.
+The default branch has been switched to `main` from `master`. MMDeploy 0.x (`master`) will be deprecated and new features will only be add to MMDeploy 1.x (`main`) in future.
 
 | mmdeploy | mmengine |   mmcv   |  mmdet   | others |
 | :------: | :------: | :------: | :------: | :----: |

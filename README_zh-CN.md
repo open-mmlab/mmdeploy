@@ -28,9 +28,10 @@
 
 [English](README.md) | 简体中文
 
-## 1.x 预览版本
+## MMDeploy 1.x 版本
 
-全新的 v1 版本已发布，针对上游算法预览版做适配，使用时务必**对齐版本**。
+全新的 MMDeploy 1.x 已发布，该版本适配OpenMMLab 2.0生态体系，使用时务必**对齐版本**。
+MMDeploy 代码库默认分支从`master`切换至`main`。 MMDeploy 0.x (`master`)将逐步废弃，新特性将只添加到 MMDeploy 1.x (`main`)。
 
 | mmdeploy | mmengine |   mmcv   |  mmdet   | mmcls and others |
 | :------: | :------: | :------: | :------: | :--------------: |
