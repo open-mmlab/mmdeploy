@@ -9,20 +9,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.DETRHead.forward')
-def detrhead__forward__default(self, hidden_states):
-    """forward of DETRHead.
-
-    Ease the mask computation
-    """
-
-    layers_cls_scores = self.fc_cls(hidden_states)
-    layers_bbox_preds = self.fc_reg(
-        self.activate(self.reg_ffn(hidden_states))).sigmoid()
-    return layers_cls_scores, layers_bbox_preds
-
-
-@FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.DETRHead.predict_by_feat')
 def detrhead__predict_by_feat__default(self,
                                        all_cls_scores_list: List[Tensor],

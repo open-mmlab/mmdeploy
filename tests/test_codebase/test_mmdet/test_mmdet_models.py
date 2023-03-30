@@ -2030,31 +2030,6 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
     assert rewrite_outputs is not None
 
 
-@pytest.mark.parametrize('backend_type, ir_type',
-                         [(Backend.ONNXRUNTIME, 'onnx')])
-def test_detrhead__forward(backend_type: Backend, ir_type: str):
-    """Test forward rewrite of detr."""
-    check_backend(backend_type)
-    dense_head = get_detrhead_model()
-    dense_head.cpu().eval()
-
-    deploy_cfg = get_deploy_cfg(backend_type, ir_type)
-
-    seed_everything(1234)
-    hidden_states = torch.rand(1, 16, 4)
-
-    # to get outputs of onnx model after rewrite
-    wrapped_model = WrapModel(dense_head, 'forward')
-    rewrite_inputs = {'hidden_states': hidden_states}
-    rewrite_outputs, _ = get_rewrite_outputs(
-        wrapped_model=wrapped_model,
-        model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg,
-        run_with_backend=False)
-
-    assert rewrite_outputs is not None
-
-
 def get_solo_head_model():
     test_cfg = Config(
         dict(
