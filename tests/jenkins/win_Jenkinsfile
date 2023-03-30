@@ -38,7 +38,7 @@ pipeline {
 
         stage('Convert') {
             steps {
-                echo("====================")
+
                 bat """
 
                     @ECHO ON
