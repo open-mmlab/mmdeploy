@@ -194,11 +194,11 @@ export PPLNN_DIR=$(pwd)
   <tr>
     <td>OpenVINO</td>
     <td>openvino </td>
-    <td>1. 安装 <a href="https://docs.openvino.ai/2021.4/get_started.html">OpenVINO</a>
+    <td>1. 安装 <a href="https://docs.openvino.ai/latest/get_started.html">OpenVINO</a>
 <pre><code>
-pip install openvino-dev
+pip install openvino-dev>=2022.3.0
 </code></pre>
-2. <b>可选</b>. 如果您想在 MMDeploy SDK 中使用 OpenVINO，请根据<a href="https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino">指南</a>安装并配置它
+2. <b>可选</b>. 如果您想在 MMDeploy SDK 中使用 OpenVINO，请根据<a href="https://docs.openvino.ai/latest/openvino_docs_install_guides_overview.html">指南</a>安装并配置它
     </td>
   </tr>
   <tr>
