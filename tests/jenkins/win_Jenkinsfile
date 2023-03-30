@@ -38,7 +38,7 @@ pipeline {
 
         stage('Convert') {
             steps {
-                echo "============"
+                echo "======start======"
                 //sh 'pwd'
                 //powershell'''
                     //. '.\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}'
@@ -49,12 +49,12 @@ pipeline {
 
 
 
-                //bat """
+                bat """
 
-                    //@ECHO ON
+                    @ECHO ON
 
-                    //pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
-                //"""
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
+                """
             }
         }
 
