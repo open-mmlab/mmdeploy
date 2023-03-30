@@ -691,6 +691,45 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     assert rewrite_outputs is not None
 
 
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+@pytest.mark.parametrize(
+    'model_cfg_path', ['tests/test_codebase/test_mmdet/data/detr_model.json'])
+def test_predict_of_detr_detector(model_cfg_path, backend):
+    check_backend(backend)
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(
+                output_names=['dets', 'labels'], input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                    export_postprocess_mask=False,
+                ))))
+    model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
+    from mmdet.apis import init_detector
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
+
+    img = torch.randn(1, 3, 64, 64)
+    from mmdet.structures import DetDataSample
+    data_sample = DetDataSample(metainfo=dict(batch_input_shape=(64, 64)))
+    rewrite_inputs = {'batch_inputs': img}
+    wrapped_model = WrapModel(model, 'predict', data_samples=[data_sample])
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None
+
+
 @pytest.mark.parametrize('backend_type',
                          [Backend.ONNXRUNTIME, Backend.OPENVINO])
 def test_single_roi_extractor(backend_type: Backend):
