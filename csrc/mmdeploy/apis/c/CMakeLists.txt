@@ -89,5 +89,5 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
                     INSTALL_RPATH "\$ORIGIN"
                     BUILD_RPATH "\$ORIGIN")
     endif ()
-    mmdeploy_export(mmdeploy)
+    mmdeploy_export_impl(mmdeploy)
 endif ()

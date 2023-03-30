@@ -11,7 +11,7 @@ namespace mmdeploy::framework {
 
 class OrtNet : public Net {
  public:
-  ~OrtNet() override = default;
+  ~OrtNet() override;
   Result<void> Init(const Value& cfg) override;
   Result<void> Deinit() override;
   Result<Span<Tensor>> GetInputTensors() override;
