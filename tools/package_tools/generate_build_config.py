@@ -63,10 +63,7 @@ def parse_arguments():
         '--cudnn-dir',
         type=str,
         help='cudnn root dir, default use $ENV{CUDNN_DIR}')
-    parser.add_argument(
-        '--cxx11abi',
-        action='store_true',
-        help='new cxxabi')
+    parser.add_argument('--cxx11abi', action='store_true', help='new cxxabi')
     parser.add_argument(
         '--output', required=True, type=str, help='output config file path')
 
