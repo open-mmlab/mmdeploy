@@ -41,9 +41,9 @@ pipeline {
                 echo "======start======"
                 bat """
 
-                    setlocal enabledelayedexpansion
-                    set PWD=!CD!
-                    echo PWD=!PWD!
+                    echo Hello, World!
+                    dir
+                    echo %PATH%
                 """
 
 
