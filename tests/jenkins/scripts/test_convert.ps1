@@ -84,8 +84,9 @@ if ( $exec_performance -eq "y" ) {
 Write-Host "$pwd"
 cd ..
 Write-Host "$pwd"
-git clone $repo_url
 cd mmdeploy
+git pull $repo_url
+
 git checkout $mmdeploy_branch
 $env:MMDEPLOY_DIR="$pwd"
 Write-Host "mmdeploy_dir = $env:MMDEPLOY_DIR"
