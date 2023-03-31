@@ -160,7 +160,7 @@ for i in range(5):
 #### 视频分类 SDK 模型推理
 
 ```python
-from mmdeploy_python import VideoRecognizer
+from mmdeploy_runtime import VideoRecognizer
 import cv2
 
 # refer to demo/python/video_recognition.py

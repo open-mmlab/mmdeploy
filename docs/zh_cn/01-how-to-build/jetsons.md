@@ -156,10 +156,25 @@ conda activate mmdeploy
 
 - 安装 ONNX
 
+  不要安装最新的 ONNX，推荐的 ONNX 版本是 1.10.0。
+
   ```shell
   # 以下方式二选一
-  python3 -m pip install onnx
+  python3 -m pip install onnx==1.10.0
   conda install -c conda-forge onnx
+  ```
+
+  如果安装时，出现如下的报错信息:
+
+  ```
+  CMake Error at CMakeLists.txt:299 (message):
+        Protobuf compiler not found
+  ```
+
+  请根据如下指令，安装依赖项:
+
+  ```shell
+  sudo apt-get install protobuf-compiler libprotoc-dev
   ```
 
 - 安装 h5py 和 pycuda

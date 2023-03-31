@@ -28,6 +28,7 @@ class Task(AdvancedEnum):
     POSE_DETECTION = 'PoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
     VIDEO_RECOGNITION = 'VideoRecognition'
+    ModelCompress = 'ModelCompress'
 
 
 class Codebase(AdvancedEnum):
@@ -41,6 +42,7 @@ class Codebase(AdvancedEnum):
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'
     MMACTION = 'mmaction'
+    MMRAZOR = 'mmrazor'
 
 
 class IR(AdvancedEnum):
@@ -65,6 +67,7 @@ class Backend(AdvancedEnum):
     ASCEND = 'ascend'
     COREML = 'coreml'
     TVM = 'tvm'
+    VACC = 'vacc'
     DEFAULT = 'default'
 
 

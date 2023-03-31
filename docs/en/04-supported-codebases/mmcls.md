@@ -1,6 +1,6 @@
 # MMClassification Deployment
 
-- [MMSegmentation Deployment](#mmsegmentation-deployment)
+- [MMClassification Deployment](#mmclassification-deployment)
   - [Installation](#installation)
     - [Install mmcls](#install-mmcls)
     - [Install mmdeploy](#install-mmdeploy)
@@ -154,7 +154,7 @@ task_processor.visualize(
 You can also perform SDK model inference like following,
 
 ```python
-from mmdeploy_python import Classifier
+from mmdeploy_runtime import Classifier
 import cv2
 
 img = cv2.imread('tests/data/tiger.jpeg')

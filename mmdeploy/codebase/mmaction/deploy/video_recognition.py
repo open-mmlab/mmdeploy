@@ -186,41 +186,44 @@ class VideoRecognition(BaseTask):
         try:
             import decord
             from moviepy.editor import ImageSequenceClip
+
+            save_dir, save_name = osp.split(output_file)
+            video = decord.VideoReader(image)
+            frames = [x.asnumpy()[..., ::-1] for x in video]
+            pred_scores = result.pred_scores.item.tolist()
+            score_tuples = tuple(zip(range(len(pred_scores)), pred_scores))
+            score_sorted = sorted(
+                score_tuples, key=itemgetter(1), reverse=True)
+            top1_item = score_sorted[0]
+            short_edge_length = min(frames[0].shape[:2])
+            scale = short_edge_length // 224.
+            img_scale = min(max(scale, 0.3), 3.0)
+            text_cfg = {
+                'positions':
+                np.array([(img_scale * 5, ) * 2]).astype(np.int32),
+                'font_sizes': int(img_scale * 7),
+                'font_families': 'monospace',
+                'colors': 'white',
+                'bboxes': dict(facecolor='black', alpha=0.5, boxstyle='Round')
+            }
+
+            visualizer = self.get_visualizer(window_name, save_dir)
+            out_frames = []
+            for i, frame in enumerate(frames):
+                visualizer.set_image(frame)
+                texts = [f'Frame {i} of total {len(frames)} frames']
+                texts.append(
+                    f'top-1 label: {top1_item[0]}, score: {top1_item[1]}')
+                visualizer.draw_texts('\n'.join(texts), **text_cfg)
+                drawn_img = visualizer.get_image()
+                out_frames.append(drawn_img)
+            out_frames = [x[..., ::-1] for x in out_frames]
+            video_clips = ImageSequenceClip(out_frames, fps=30)
+            output_file = output_file[:output_file.rfind('.')] + '.mp4'
+            video_clips.write_videofile(output_file)
         except Exception:
             logger.warn('Please install moviepy and decord to '
                         'enable visualize for mmaction')
-
-        save_dir, save_name = osp.split(output_file)
-        video = decord.VideoReader(image)
-        frames = [x.asnumpy()[..., ::-1] for x in video]
-        pred_scores = result.pred_scores.item.tolist()
-        score_tuples = tuple(zip(range(len(pred_scores)), pred_scores))
-        score_sorted = sorted(score_tuples, key=itemgetter(1), reverse=True)
-        top1_item = score_sorted[0]
-        short_edge_length = min(frames[0].shape[:2])
-        scale = short_edge_length // 224.
-        img_scale = min(max(scale, 0.3), 3.0)
-        text_cfg = {
-            'positions': np.array([(img_scale * 5, ) * 2]).astype(np.int32),
-            'font_sizes': int(img_scale * 7),
-            'font_families': 'monospace',
-            'colors': 'white',
-            'bboxes': dict(facecolor='black', alpha=0.5, boxstyle='Round')
-        }
-
-        visualizer = self.get_visualizer(window_name, save_dir)
-        out_frames = []
-        for i, frame in enumerate(frames):
-            visualizer.set_image(frame)
-            texts = [f'Frame {i} of total {len(frames)} frames']
-            texts.append(f'top-1 label: {top1_item[0]}, score: {top1_item[0]}')
-            visualizer.draw_texts('\n'.join(texts), **text_cfg)
-            drawn_img = visualizer.get_image()
-            out_frames.append(drawn_img)
-        out_frames = [x[..., ::-1] for x in out_frames]
-        video_clips = ImageSequenceClip(out_frames, fps=30)
-        output_file = output_file[:output_file.rfind('.')] + '.mp4'
-        video_clips.write_videofile(output_file)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:

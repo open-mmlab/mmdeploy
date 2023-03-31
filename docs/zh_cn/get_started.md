@@ -113,11 +113,11 @@ mim install "mmcv>=2.0.0rc2"
 
 ```shell
 # 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -134,11 +134,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
 cd ..
 # 安装推理引擎 TensorRT
 # !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
@@ -167,13 +167,13 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 以 [MMDetection](https://github.com/open-mmlab/mmdetection) 中的 `Faster R-CNN` 为例，我们可以使用如下命令，将 PyTorch 模型转换为 TenorRT 模型，从而部署到 NVIDIA GPU 上.
 
 ```shell
-# 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线
-git clone --recursive https://github.com/open-mmlab/mmdeploy.git
+# 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线, `--recursive` 不是必须的
+git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
 
 # 安装 mmdetection。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
-git clone https://github.com/open-mmlab/mmdetection.git
+git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -v -e .
+mim install -v -e .
 cd ..
 
 # 下载 Faster R-CNN 模型权重
@@ -182,7 +182,7 @@ wget -P checkpoints https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/
 # 执行转换命令，实现端到端的转换
 python mmdeploy/tools/deploy.py \
     mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    mmdetection/configs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
     checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     mmdetection/demo/demo.jpg \
     --work-dir mmdeploy_model/faster-rcnn \
@@ -226,7 +226,7 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # 运行 python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo
@@ -247,7 +247,7 @@ export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
 对于检测功能，你也可以参考如下代码，集成 MMDeploy SDK Python API 到自己的项目中：
 
 ```python
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 import cv2
 
 # 读取图片

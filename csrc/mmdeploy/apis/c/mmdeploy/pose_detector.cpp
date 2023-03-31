@@ -1,36 +1,20 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "pose_detector.h"
+#include "mmdeploy/pose_detector.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmpose/mmpose.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
-
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"name", "pose-detector"},
-    {"type", "Inference"},
-    {"params", {{"model", model}, {"batch_size", 1}}},
-    {"input", {"image"}},
-    {"output", {"dets"}}
-  };
-  // clang-format on
-}
-
-}  // namespace
 
 int mmdeploy_pose_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                   mmdeploy_pose_detector_t* detector) {
@@ -95,8 +79,7 @@ void mmdeploy_pose_detector_destroy(mmdeploy_pose_detector_t detector) {
 
 int mmdeploy_pose_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                      mmdeploy_pose_detector_t* detector) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)detector);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)detector);
 }
 
 int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_count,
@@ -117,7 +100,7 @@ int mmdeploy_pose_detector_create_input(const mmdeploy_mat_t* mats, int mat_coun
       } else {
         b = {0, 0, img.width(), img.height(), 1.0};
       }
-      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}, {"rotation", 0.f}});
+      input_images.push_back({{"ori_img", img}, {"bbox", std::move(b)}});
     };
 
     for (int i = 0; i < mat_count; ++i) {

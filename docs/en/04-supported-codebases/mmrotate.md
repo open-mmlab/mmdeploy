@@ -44,7 +44,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 **NOTE**:
 
-- Adding `$(pwd)/build/lib` to `PYTHONPATH` is for importing mmdeploy SDK python module - `mmdeploy_python`, which will be presented in chapter [SDK model inference](#sdk-model-inference).
+- Adding `$(pwd)/build/lib` to `PYTHONPATH` is for importing mmdeploy SDK python module - `mmdeploy_runtime`, which will be presented in chapter [SDK model inference](#sdk-model-inference).
 - When [inference onnx model by ONNX Runtime](#backend-model-inference), it requests ONNX Runtime library be found. Thus, we add it to `LD_LIBRARY_PATH`.
 
 **Method III:** Build from source
@@ -160,7 +160,7 @@ task_processor.visualize(
 You can also perform SDK model inference like following,
 
 ```python
-from mmdeploy_python import RotatedDetector
+from mmdeploy_runtime import RotatedDetector
 import cv2
 import numpy as np
 
@@ -182,3 +182,4 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [Rotated FasterRCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_faster_rcnn) |      Y      |    Y     |
 | [Oriented R-CNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn)           |      Y      |    Y     |
 | [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex)          |      Y      |    Y     |
+| [RTMDET-R](https://github.com/open-mmlab/mmrotate/blob/dev-1.x/configs/rotated_rtmdet)            |      Y      |    Y     |

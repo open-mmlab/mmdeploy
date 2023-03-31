@@ -9,31 +9,6 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.dense_heads.DETRHead.forward_single')
-def detrhead__forward_single__default(self, x, img_metas):
-    """forward_single of DETRHead.
-
-    Ease the mask computation
-    """
-
-    batch_size = x.size(0)
-
-    x = self.input_proj(x)
-    # interpolate masks to have the same spatial shape with x
-    masks = x.new_zeros((batch_size, x.size(-2), x.size(-1))).to(torch.bool)
-
-    # position encoding
-    pos_embed = self.positional_encoding(masks)  # [bs, embed_dim, h, w]
-    # outs_dec: [nb_dec, bs, num_query, embed_dim]
-    outs_dec, _ = self.transformer(x, masks, self.query_embedding.weight,
-                                   pos_embed)
-    all_cls_scores = self.fc_cls(outs_dec)
-    all_bbox_preds = self.fc_reg(self.activate(
-        self.reg_ffn(outs_dec))).sigmoid()
-    return all_cls_scores, all_bbox_preds
-
-
-@FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.DETRHead.predict_by_feat')
 def detrhead__predict_by_feat__default(self,
                                        all_cls_scores_list: List[Tensor],
@@ -42,11 +17,11 @@ def detrhead__predict_by_feat__default(self,
                                        rescale: bool = True):
     """Rewrite `predict_by_feat` of `FoveaHead` for default backend."""
     from mmdet.structures.bbox import bbox_cxcywh_to_xyxy
-    cls_scores = all_cls_scores_list[-1][-1]
-    bbox_preds = all_bbox_preds_list[-1][-1]
+    cls_scores = all_cls_scores_list[-1]
+    bbox_preds = all_bbox_preds_list[-1]
 
     img_shape = batch_img_metas[0]['img_shape']
-    max_per_img = self.test_cfg.get('max_per_img', self.num_query)
+    max_per_img = self.test_cfg.get('max_per_img', len(cls_scores[0]))
     batch_size = cls_scores.size(0)
     # `batch_index_offset` is used for the gather of concatenated tensor
 

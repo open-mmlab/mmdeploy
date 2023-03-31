@@ -3,7 +3,7 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
 #define MMDEPLOY_CSRC_APIS_C_EXECUTOR_H_
 
-#include "common.h"
+#include "mmdeploy/common.h"
 
 #if __cplusplus
 extern "C" {

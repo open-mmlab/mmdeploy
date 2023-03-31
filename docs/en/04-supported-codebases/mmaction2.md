@@ -158,7 +158,7 @@ Given the above SDK model of `tsn` you can also perform SDK model inference like
 #### Video recognition SDK model inference
 
 ```python
-from mmdeploy_python import VideoRecognizer
+from mmdeploy_runtime import VideoRecognizer
 import cv2
 
 # refer to demo/python/video_recognition.py

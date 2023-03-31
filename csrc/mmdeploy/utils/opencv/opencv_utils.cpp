@@ -38,11 +38,11 @@ Mat CVMat2Mat(const cv::Mat& mat, PixelFormat format) {
 }
 
 cv::Mat Mat2CVMat(const Mat& mat) {
-  std::map<DataType, int> type_mapper{{DataType::kFLOAT, CV_32F},
-                                      {DataType::kHALF, CV_16U},
-                                      {DataType::kINT8, CV_8U},
-                                      {DataType::kINT32, CV_32S}};
-  auto type = CV_MAKETYPE(type_mapper[mat.type()], mat.channel());
+  static const std::map<DataType, int> type_mapper{{DataType::kFLOAT, CV_32F},
+                                                   {DataType::kHALF, CV_16U},
+                                                   {DataType::kINT8, CV_8U},
+                                                   {DataType::kINT32, CV_32S}};
+  auto type = CV_MAKETYPE(type_mapper.at(mat.type()), mat.channel());
   auto format = mat.pixel_format();
   if (PixelFormat::kBGR == format || PixelFormat::kRGB == format) {
     return cv::Mat(mat.height(), mat.width(), type, mat.data<void>());
@@ -106,23 +106,34 @@ Tensor CVMat2Tensor(const cv::Mat& mat) {
   return Tensor{desc, data};
 }
 
+Result<int> GetInterpolationMethod(const std::string_view& method) {
+  if (method == "bilinear") {
+    return cv::INTER_LINEAR;
+  } else if (method == "nearest") {
+    return cv::INTER_NEAREST;
+  } else if (method == "area") {
+    return cv::INTER_AREA;
+  } else if (method == "bicubic") {
+    return cv::INTER_CUBIC;
+  } else if (method == "lanczos") {
+    return cv::INTER_LANCZOS4;
+  }
+  MMDEPLOY_ERROR("unsupported interpolation method: {}", method);
+  return Status(eNotSupported);
+}
+
 cv::Mat Resize(const cv::Mat& src, int dst_height, int dst_width,
                const std::string& interpolation) {
   cv::Mat dst(dst_height, dst_width, src.type());
-  if (interpolation == "bilinear") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_LINEAR);
-  } else if (interpolation == "nearest") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_NEAREST);
-  } else if (interpolation == "area") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_AREA);
-  } else if (interpolation == "bicubic") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_CUBIC);
-  } else if (interpolation == "lanczos") {
-    cv::resize(src, dst, dst.size(), 0, 0, cv::INTER_LANCZOS4);
-  } else {
-    MMDEPLOY_ERROR("{} interpolation is not supported", interpolation);
-    assert(0);
-  }
+  auto method = GetInterpolationMethod(interpolation).value();
+  cv::resize(src, dst, dst.size(), 0, 0, method);
+  return dst;
+}
+
+cv::Mat WarpAffine(const cv::Mat& src, const cv::Mat& affine_matrix, int dst_height, int dst_width,
+                   int interpolation) {
+  cv::Mat dst(dst_height, dst_width, src.type());
+  cv::warpAffine(src, dst, affine_matrix, dst.size(), interpolation);
   return dst;
 }
 
@@ -276,6 +287,20 @@ cv::Mat Pad(const cv::Mat& src, int top, int left, int bottom, int right, int bo
   cv::Mat dst;
   cv::Scalar scalar = {val, val, val, val};
   cv::copyMakeBorder(src, dst, top, bottom, left, right, border_type, scalar);
+  return dst;
+}
+
+cv::Mat CropResizePad(const cv::Mat& src, const std::vector<int>& crop_rect,
+                      const std::vector<int>& target_size, const std::vector<int>& pad_rect) {
+  int width = target_size[0] + pad_rect[1] + pad_rect[3];
+  int height = target_size[1] + pad_rect[0] + pad_rect[2];
+  cv::Mat dst = cv::Mat::zeros(height, width, src.type());
+  if (crop_rect[2] - crop_rect[0] + 1 > 0 && crop_rect[3] - crop_rect[1] + 1 > 0) {
+    cv::Rect roi1 = {crop_rect[1], crop_rect[0], crop_rect[3] - crop_rect[1] + 1,
+                     crop_rect[2] - crop_rect[0] + 1};
+    cv::Rect roi2 = {pad_rect[1], pad_rect[0], target_size[0], target_size[1]};
+    cv::resize(src(roi1), dst(roi2), {target_size[0], target_size[1]});
+  }
   return dst;
 }
 

@@ -53,6 +53,7 @@ namespace MMDeploy
         public int Channel;
         public PixelFormat Format;
         public DataType Type;
+        public void* Device;
     }
 
     /// <summary>
@@ -87,5 +88,18 @@ namespace MMDeploy
             X = x;
             Y = y;
         }
+    }
+
+    /// <summary>
+    /// Context type.
+    /// </summary>
+    public enum ContextType
+    {
+        DEVICE = 0,
+        STREAM = 1,
+        MODEL = 2,
+        SCHEDULER = 3,
+        MAT = 4,
+        PROFILER = 5,
     }
 }

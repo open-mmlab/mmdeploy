@@ -3,8 +3,9 @@
 #ifndef MMDEPLOY_CSRC_APIS_C_PIPELINE_H_
 #define MMDEPLOY_CSRC_APIS_C_PIPELINE_H_
 
-#include "common.h"
-#include "executor.h"
+#include "mmdeploy/common.h"
+#include "mmdeploy/executor.h"
+#include "mmdeploy/model.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,6 +25,16 @@ typedef struct mmdeploy_pipeline* mmdeploy_pipeline_t;
  */
 MMDEPLOY_API int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
                                              mmdeploy_pipeline_t* pipeline);
+/**
+ * Create pipeline from internal pipeline config of the model
+ * @param model
+ * @param context
+ * @param pipeline
+ * @return
+ */
+MMDEPLOY_API int mmdeploy_pipeline_create_from_model(mmdeploy_model_t model,
+                                                     mmdeploy_context_t context,
+                                                     mmdeploy_pipeline_t* pipeline);
 
 /**
  * @brief Apply pipeline

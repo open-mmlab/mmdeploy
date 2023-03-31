@@ -7,7 +7,7 @@ namespace mmdeploy::operation::cpu {
 
 class ResizeImpl : public Resize {
  public:
-  ResizeImpl(std::string interp) : interp_(std::move(interp)) {}
+  explicit ResizeImpl(std::string interp) : interp_(std::move(interp)) {}
 
   Result<void> apply(const Tensor& src, Tensor& dst, int dst_h, int dst_w) override {
     auto src_mat = mmdeploy::cpu::Tensor2CVMat(src);

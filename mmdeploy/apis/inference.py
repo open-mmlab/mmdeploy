@@ -3,9 +3,6 @@ from typing import Any, Sequence, Union
 
 import mmengine
 import numpy as np
-import torch
-
-from mmdeploy.utils import get_input_shape, load_config
 
 
 def inference_model(model_cfg: Union[str, mmengine.Config],
@@ -37,12 +34,16 @@ def inference_model(model_cfg: Union[str, mmengine.Config],
     Returns:
         Any: The inference results
     """
+    import torch
+
+    from mmdeploy.utils import get_input_shape, load_config
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
 
     from mmdeploy.apis.utils import build_task_processor
     task_processor = build_task_processor(model_cfg, deploy_cfg, device)
 
-    model = task_processor.build_backend_model(backend_files)
+    model = task_processor.build_backend_model(
+        backend_files, task_processor.update_data_preprocessor)
 
     input_shape = get_input_shape(deploy_cfg)
     model_inputs, _ = task_processor.create_input(img, input_shape)

@@ -2,57 +2,46 @@
 
 #include "mmdeploy/segmentor.hpp"
 
-#include <fstream>
-#include <opencv2/imgcodecs/imgcodecs.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <random>
 #include <string>
 #include <vector>
 
-using namespace std;
+#include "utils/argparse.h"
+#include "utils/mediaio.h"
+#include "utils/visualize.h"
 
-vector<cv::Vec3b> gen_palette(int num_classes) {
-  std::mt19937 gen;
-  std::uniform_int_distribution<ushort> uniform_dist(0, 255);
-
-  vector<cv::Vec3b> palette;
-  palette.reserve(num_classes);
-  for (auto i = 0; i < num_classes; ++i) {
-    palette.emplace_back(uniform_dist(gen), uniform_dist(gen), uniform_dist(gen));
-  }
-  return palette;
-}
+DEFINE_ARG_string(model, "Model path");
+DEFINE_ARG_string(image, "Input image path");
+DEFINE_string(device, "cpu", R"(Device name, e.g. "cpu", "cuda")");
+DEFINE_string(output, "segmentor_output.jpg", "Output image path");
+DEFINE_string(palette, "cityscapes",
+              R"(Path to palette data or name of predefined palettes: "cityscapes")");
 
 int main(int argc, char* argv[]) {
-  if (argc != 4) {
-    fprintf(stderr, "usage:\n  image_segmentation device_name model_path image_path\n");
-    return 1;
-  }
-  auto device_name = argv[1];
-  auto model_path = argv[2];
-  auto image_path = argv[3];
-  cv::Mat img = cv::imread(image_path);
-  if (!img.data) {
-    fprintf(stderr, "failed to load image: %s\n", image_path);
-    return 1;
+  if (!utils::ParseArguments(argc, argv)) {
+    return -1;
   }
 
-  using namespace mmdeploy;
-
-  Segmentor segmentor{Model{model_path}, Device{device_name}};
-
-  auto result = segmentor.Apply(img);
-
-  auto palette = gen_palette(result->classes + 1);
-
-  cv::Mat color_mask = cv::Mat::zeros(result->height, result->width, CV_8UC3);
-  int pos = 0;
-  for (auto iter = color_mask.begin<cv::Vec3b>(); iter != color_mask.end<cv::Vec3b>(); ++iter) {
-    *iter = palette[result->mask[pos++]];
+  cv::Mat img = cv::imread(ARGS_image);
+  if (img.empty()) {
+    fprintf(stderr, "failed to load image: %s\n", ARGS_image.c_str());
+    return -1;
   }
 
-  img = img * 0.5 + color_mask * 0.5;
-  cv::imwrite("output_segmentation.png", img);
+  mmdeploy::Segmentor segmentor{mmdeploy::Model{ARGS_model}, mmdeploy::Device{FLAGS_device}};
+
+  // apply the detector, the result is an array-like class holding a reference to
+  // `mmdeploy_segmentation_t`, will be released automatically on destruction
+  mmdeploy::Segmentor::Result seg = segmentor.Apply(img);
+
+  // visualize
+  utils::Visualize v;
+  v.set_palette(utils::Palette::get(FLAGS_palette));
+  auto sess = v.get_session(img);
+  sess.add_mask(seg->height, seg->width, seg->classes, seg->mask, seg->score);
+
+  if (!FLAGS_output.empty()) {
+    cv::imwrite(FLAGS_output, sess.get());
+  }
 
   return 0;
 }

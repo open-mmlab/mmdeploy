@@ -1,10 +1,14 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import logging
+from typing import Any, Optional, Sequence
+
 import mmengine
 
 from mmdeploy.codebase import BaseTask, get_codebase_class, import_codebase
 from mmdeploy.utils import (get_backend, get_codebase, get_task_type,
                             parse_device_id)
 from mmdeploy.utils.config_utils import get_codebase_external_module
+from ..core import PIPELINE_MANAGER
 
 
 def check_backend_device(deploy_cfg: mmengine.Config, device: str):
@@ -37,7 +41,7 @@ def build_task_processor(model_cfg: mmengine.Config,
         BaseTask: A task processor.
     """
     check_backend_device(deploy_cfg=deploy_cfg, device=device)
-    codebase_type = get_codebase(deploy_cfg)
+    codebase_type = get_codebase(deploy_cfg, model_cfg=model_cfg)
     custom_module_list = get_codebase_external_module(deploy_cfg)
     import_codebase(codebase_type, custom_module_list)
     codebase = get_codebase_class(codebase_type)
@@ -66,3 +70,35 @@ def get_predefined_partition_cfg(deploy_cfg: mmengine.Config,
     codebase = get_codebase_class(codebase_type)
     task_processor_class = codebase.get_task_class(task)
     return task_processor_class.get_partition_cfg(partition_type)
+
+
+@PIPELINE_MANAGER.register_pipeline()
+def to_backend(backend_name: str,
+               ir_files: Sequence[str],
+               work_dir: str,
+               deploy_cfg: Optional[Any] = None,
+               log_level: int = logging.INFO,
+               device: str = 'cpu',
+               **kwargs) -> Sequence[str]:
+    """Convert intermediate representation to given backend.
+
+    Args:
+        backend_name (str): The name of the backend.
+        ir_files (Sequence[str]): The intermediate representation files.
+        work_dir (str): The work directory, backend files and logs should
+            be save in this directory.
+        deploy_cfg (Any): The deploy config.
+        log_level (int, optional): The log level. Defaults to logging.INFO.
+        device (str, optional): The device type. Defaults to 'cpu'.
+    Returns:
+        Sequence[str]: Backend files.
+    """
+    from mmdeploy.backend.base import get_backend_manager
+    backend_mgr = get_backend_manager(backend_name)
+    return backend_mgr.to_backend(
+        ir_files=ir_files,
+        work_dir=work_dir,
+        deploy_cfg=deploy_cfg,
+        log_level=log_level,
+        device=device,
+        **kwargs)

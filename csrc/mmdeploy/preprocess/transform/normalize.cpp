@@ -99,13 +99,14 @@ class Normalize : public Transform {
       Tensor dst;
       if (to_float_) {
         OUTCOME_TRY(normalize_.Apply(tensor, dst));
+        data[key] = std::move(dst);
       } else if (to_rgb_) {
         auto src_mat = to_mat(tensor, PixelFormat::kBGR);
         Mat dst_mat;
-        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
-        dst = to_tensor(src_mat);
+        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kRGB));
+        dst = to_tensor(dst_mat);
+        data[key] = std::move(dst);
       }
-      data[key] = std::move(dst);
 
       for (auto& v : mean_) {
         data["img_norm_cfg"]["mean"].push_back(v);

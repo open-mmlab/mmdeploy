@@ -3,7 +3,7 @@ import argparse
 
 import cv2
 import numpy as np
-from mmdeploy_python import Segmentor
+from mmdeploy_runtime import Segmentor
 
 
 def parse_args():
@@ -35,6 +35,8 @@ def main():
     segmentor = Segmentor(
         model_path=args.model_path, device_name=args.device_name, device_id=0)
     seg = segmentor(img)
+    if seg.dtype == np.float32:
+        seg = np.argmax(seg, axis=0)
 
     palette = get_palette()
     color_seg = np.zeros((seg.shape[0], seg.shape[1], 3), dtype=np.uint8)

@@ -1,10 +1,10 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "pipeline.h"
+#include "mmdeploy/pipeline.h"
 
-#include "common_internal.h"
-#include "executor_internal.h"
-#include "handle.h"
+#include "mmdeploy/common_internal.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/handle.h"
 
 int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t context,
                                 mmdeploy_pipeline_t* pipeline) {
@@ -25,6 +25,15 @@ int mmdeploy_pipeline_create_v3(mmdeploy_value_t config, mmdeploy_context_t cont
     MMDEPLOY_ERROR("unknown exception caught");
   }
   return MMDEPLOY_E_FAIL;
+}
+
+int mmdeploy_pipeline_create_from_model(mmdeploy_model_t model, mmdeploy_context_t context,
+                                        mmdeploy_pipeline_t* pipeline) {
+  auto config = Cast(model)->ReadConfig("pipeline.json");
+  auto _context = *Cast(context);
+  _context["model"] = *Cast(model);
+  return mmdeploy_pipeline_create_v3(Cast(&config.value()), (mmdeploy_context_t)&_context,
+                                     pipeline);
 }
 
 int mmdeploy_pipeline_apply_async(mmdeploy_pipeline_t pipeline, mmdeploy_sender_t input,

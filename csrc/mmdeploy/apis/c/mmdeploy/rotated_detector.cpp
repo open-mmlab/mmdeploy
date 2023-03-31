@@ -1,35 +1,19 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "rotated_detector.h"
+#include "mmdeploy/rotated_detector.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmrotate/mmrotate.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
-
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return  {
-    {"name", "mmrotate"},
-    {"type", "Inference"},
-    {"params", {{"model", model}}},
-    {"input", {"image"}},
-    {"output", {"det"}}
-  };
-  // clang-format on
-}
-
-}  // namespace
 
 int mmdeploy_rotated_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                      mmdeploy_rotated_detector_t* detector) {
@@ -84,8 +68,7 @@ void mmdeploy_rotated_detector_destroy(mmdeploy_rotated_detector_t detector) {
 
 int mmdeploy_rotated_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                         mmdeploy_rotated_detector_t* detector) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)detector);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)detector);
 }
 
 int mmdeploy_rotated_detector_create_input(const mmdeploy_mat_t* mats, int mat_count,

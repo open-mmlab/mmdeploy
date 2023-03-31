@@ -1,8 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import List, Optional
 
+import torch
 from mmengine.structures import BaseDataElement
 from torch import Tensor
+from torch.nn import functional as F
 
 from mmdeploy.core import FUNCTION_REWRITER
 
@@ -32,4 +34,12 @@ def base_classifier__forward(
     output = self.extract_feat(batch_inputs)
     if self.head is not None:
         output = self.head(output)
+
+    from mmcls.models.heads import ConformerHead, MultiLabelClsHead
+    if isinstance(self.head, MultiLabelClsHead):
+        output = torch.sigmoid(output)
+    elif isinstance(self.head, ConformerHead):
+        output = F.softmax(torch.add(output[0], output[1]), dim=1)
+    else:
+        output = F.softmax(output, dim=1)
     return output

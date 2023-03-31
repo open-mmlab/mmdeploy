@@ -32,6 +32,10 @@ img_norm_cfg = dict(
 
 test_pipeline = [
     dict(
+        type='LoadImageFromFile',
+        file_client_args=dict(backend='disk'),
+        color_type='color_ignore_orientation'),
+    dict(
         type='PackTextDetInputs',
         meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
 ]
@@ -53,6 +57,10 @@ test_dataloader = dict(
                 pipeline=None)
         ],
         pipeline=[
+            dict(
+                type='LoadImageFromFile',
+                file_client_args=dict(backend='disk'),
+                color_type='color_ignore_orientation'),
             dict(type='Resize', scale=(1333, 736), keep_ratio=True),
             dict(
                 type='mmocr.PackTextDetInputs',

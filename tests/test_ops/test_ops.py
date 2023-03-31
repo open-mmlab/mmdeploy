@@ -1223,3 +1223,62 @@ def test_multiclass_nms_rotated_with_keep_top_k(backend, pre_top_k):
         'multiclass_nms_rotated returned more values than "keep_top_k"\n' \
         f'dets.shape: {dets.shape}\n' \
         f'keep_top_k: {keep_top_k}'
+
+
+@pytest.mark.parametrize('backend', [TEST_TENSORRT])
+def test_multi_scale_deformable_attn(backend, save_dir=None):
+    backend.check_env()
+    from mmcv.ops.multi_scale_deform_attn import \
+        MultiScaleDeformableAttnFunction
+
+    Bs = 2
+    Nh = 8
+    Nc = 32
+    Nq = 32
+    Np = 32
+    spatial_shapes = [[68, 120], [34, 60]]
+    value_spatial_shapes = torch.LongTensor(spatial_shapes).cuda()
+    Nl = value_spatial_shapes.shape[0]
+    Nk = sum([spatial_shapes[i][0] * spatial_shapes[i][1] for i in range(Nl)])
+    value = torch.rand(Bs, Nk, Nh, Nc).cuda()
+    level_start_index = torch.cat((
+        value_spatial_shapes.new_zeros((1, )),
+        value_spatial_shapes.prod(1).cumsum(0)[:-1].to(torch.int64),
+    ))
+    sampling_locations = torch.rand(Bs, Nq, Nh, Nl, Np, 2).cuda()
+    attention_weights = torch.rand(Bs, Nq, Nh, Nl, Np).cuda()
+
+    class TestModel(torch.nn.Module):
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.im2col_step = 32
+
+        def forward(self, value, value_spatial_shapes, level_start_index,
+                    sampling_locations, attention_weights):
+
+            new_x = MultiScaleDeformableAttnFunction.apply(
+                value, value_spatial_shapes, level_start_index,
+                sampling_locations, attention_weights, self.im2col_step)
+            return new_x
+
+    model = TestModel().cuda()
+
+    with RewriterContext(
+            Config({'backend_config': {
+                'type': backend.backend_name
+            }}),
+            backend=backend.backend_name,
+            opset=11):
+        backend.run_and_validate(
+            model, [
+                value, value_spatial_shapes, level_start_index,
+                sampling_locations, attention_weights
+            ],
+            'multi_scale_deformable_attn',
+            input_names=[
+                'value', 'value_spatial_shapes', 'level_start_index',
+                'sampling_locations', 'attention_weights'
+            ],
+            output_names=['output'],
+            save_dir=save_dir)

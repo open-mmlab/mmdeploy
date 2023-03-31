@@ -1,51 +1,20 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "classifier.h"
+#include "mmdeploy/classifier.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "handle.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmcls/mmcls.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 using namespace std;
-
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  static Value v{
-    {
-      "pipeline", {
-        {"input", {"img"}},
-        {"output", {"cls"}},
-        {
-          "tasks", {
-            {
-              {"name", "classifier"},
-              {"type", "Inference"},
-              {"params", {{"model", "TBD"}}},
-              {"input", {"img"}},
-              {"output", {"cls"}}
-            }
-          }
-        }
-      }
-    }
-  };
-  // clang-format on
-  auto config = v;
-  config["pipeline"]["tasks"][0]["params"]["model"] = model;
-  return config;
-}
-
-}  // namespace
 
 int mmdeploy_classifier_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                mmdeploy_classifier_t* classifier) {
@@ -73,8 +42,7 @@ int mmdeploy_classifier_create_by_path(const char* model_path, const char* devic
 
 int mmdeploy_classifier_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                   mmdeploy_classifier_t* classifier) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)classifier);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)classifier);
 }
 
 int mmdeploy_classifier_create_input(const mmdeploy_mat_t* mats, int mat_count,

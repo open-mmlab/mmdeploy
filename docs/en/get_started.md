@@ -27,7 +27,7 @@ It supports FFI such as C, C++, Python, C#, Java and so on.
 
 ## Prerequisites
 
-In order to do an end-to-end model deployment, MMDeploy requires Python 3.6+ and PyTorch 1.5+.
+In order to do an end-to-end model deployment, MMDeploy requires Python 3.6+ and PyTorch 1.8+.
 
 **Step 0.** Download and install Miniconda from the [official website](https://docs.conda.io/en/latest/miniconda.html).
 
@@ -64,6 +64,7 @@ We recommend that users follow our best practices installing MMDeploy.
 
 ```shell
 pip install -U openmim
+mim install mmengine
 mim install "mmcv>=2.0.0rc2"
 ```
 
@@ -118,11 +119,11 @@ Take the latest precompiled package as example, you can install it as follows:
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-1.0.0rc0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
+tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
+cd mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1
+pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: ONNX Runtime
 pip install onnxruntime==1.8.1
@@ -139,11 +140,11 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc0/mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-1.0.0rc0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-1.0.0rc0-cp38-none-linux_x86_64.whl
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
+cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
+pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
 cd ..
 # install inference engine: TensorRT
 # !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
@@ -172,12 +173,12 @@ Based on the above settings, we provide an example to convert the Faster R-CNN i
 
 ```shell
 # clone mmdeploy to get the deployment config. `--recursive` is not necessary
-git clone https://github.com/open-mmlab/mmdeploy.git
+git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module
-git clone https://github.com/open-mmlab/mmdetection.git
+git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
 cd mmdetection
-pip install -v -e .
+mim install -v -e .
 cd ..
 
 # download Faster R-CNN checkpoint
@@ -186,7 +187,7 @@ wget -P checkpoints https://download.openmmlab.com/mmdetection/v2.0/faster_rcnn/
 # run the command to start model conversion
 python mmdeploy/tools/deploy.py \
     mmdeploy/configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py \
-    mmdetection/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py \
+    mmdetection/configs/faster_rcnn/faster-rcnn_r50_fpn_1x_coco.py \
     checkpoints/faster_rcnn_r50_fpn_1x_coco_20200130-047c8118.pth \
     mmdetection/demo/demo.jpg \
     --work-dir mmdeploy_model/faster-rcnn \
@@ -201,7 +202,7 @@ For more details about model conversion, you can read [how_to_convert_model](02-
 
 ```{tip}
 If MMDeploy-ONNXRuntime prebuilt package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
-just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
+just by changing 'detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
 ```
 
 ## Inference Model
@@ -232,7 +233,7 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-cd mmdeploy-1.0.0rc0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
 # run python demo
 python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
@@ -249,7 +250,7 @@ In the next section, we will provide examples of deploying the converted Faster 
 #### Python API
 
 ```python
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 import cv2
 
 img = cv2.imread('mmdetection/demo/demo.jpg')

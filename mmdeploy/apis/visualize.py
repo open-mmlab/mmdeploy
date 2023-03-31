@@ -5,14 +5,13 @@ import mmengine
 import numpy as np
 import torch
 
-from mmdeploy.codebase import BaseTask
 from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
 
 
 def visualize_model(model_cfg: Union[str, mmengine.Config],
                     deploy_cfg: Union[str, mmengine.Config],
-                    model: Union[str, Sequence[str], BaseTask],
-                    img: Union[str, np.ndarray],
+                    model: Union[str, Sequence[str]],
+                    img: Union[str, np.ndarray, Sequence[str]],
                     device: str,
                     backend: Optional[Backend] = None,
                     output_file: Optional[str] = None,
@@ -36,8 +35,9 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
         model_cfg (str | mmengine.Config): Model config file or Config object.
         deploy_cfg (str | mmengine.Config): Deployment config file or Config
             object.
-        model (str | list[str], BaseSubtask): Input model or file(s).
-        img (str | np.ndarray): Input image file or numpy array for inference.
+        model (str | Sequence[str]): Input model or file(s).
+        img (str | np.ndarray | Sequence[str]): Input image file or numpy array
+            for inference.
         device (str): A string specifying device type.
         backend (Backend): Specifying backend type, defaults to `None`.
         output_file (str): Output file to save visualized image, defaults to
@@ -71,22 +71,24 @@ def visualize_model(model_cfg: Union[str, mmengine.Config],
     with torch.no_grad():
         result = model.test_step(model_inputs)[0]
 
-    visualize = True
-    try:
-        # check headless
-        import tkinter
-        tkinter.Tk()
-    except Exception as e:
-        from mmdeploy.utils import get_root_logger
-        logger = get_root_logger()
-        logger.warning(
-            f'render and display result skipped for headless device, exception {e}'  # noqa: E501
-        )
-        visualize = False
+    if show_result:
+        try:
+            # check headless
+            import tkinter
+            tkinter.Tk()
+        except Exception as e:
+            from mmdeploy.utils import get_root_logger
+            logger = get_root_logger()
+            logger.warning(
+                f'render and display result skipped for headless device, exception {e}'  # noqa: E501
+            )
+            show_result = False
 
-    if visualize is True:
+    if isinstance(img, str) or not isinstance(img, Sequence):
+        img = [img]
+    for single_img in img:
         task_processor.visualize(
-            image=img,
+            image=single_img,
             model=model,
             result=result,
             output_file=output_file,

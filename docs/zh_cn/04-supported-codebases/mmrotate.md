@@ -44,7 +44,7 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 **说明**:
 
-- 把 `$(pwd)/build/lib` 添加到 `PYTHONPATH`，目的是为了加载 mmdeploy SDK python 包 `mmdeploy_python`，在章节 [SDK模型推理](#sdk模型推理)中讲述其用法。
+- 把 `$(pwd)/build/lib` 添加到 `PYTHONPATH`，目的是为了加载 mmdeploy SDK python 包 `mmdeploy_runtime`，在章节 [SDK模型推理](#sdk模型推理)中讲述其用法。
 - 在[使用 ONNX Runtime推理后端模型](#后端模型推理)时，需要加载自定义算子库，需要把 ONNX Runtime 库的路径加入环境变量 `LD_LIBRARY_PATH`中。
   **方式三：** 源码安装
 
@@ -163,7 +163,7 @@ task_processor.visualize(
 你也可以参考如下代码，对 SDK model 进行推理：
 
 ```python
-from mmdeploy_python import RotatedDetector
+from mmdeploy_runtime import RotatedDetector
 import cv2
 import numpy as np
 
@@ -186,3 +186,4 @@ det = detector(img)
 | [Rotated FasterRCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_faster_rcnn) |      Y      |    Y     |
 | [Oriented R-CNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn)           |      Y      |    Y     |
 | [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex)          |      Y      |    Y     |
+| [RTMDET-R](https://github.com/open-mmlab/mmrotate/blob/dev-1.x/configs/rotated_rtmdet)            |      Y      |    Y     |

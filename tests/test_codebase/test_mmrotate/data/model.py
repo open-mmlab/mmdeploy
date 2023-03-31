@@ -34,7 +34,6 @@ val_dataloader = dict(
         data_root=data_root,
         ann_file=ann_file,
         data_prefix=dict(img_path='trainval/images/'),
-        img_shape=(1024, 1024),
         test_mode=True,
         pipeline=[
             dict(
@@ -62,7 +61,6 @@ test_dataloader = dict(
         data_root=data_root,
         ann_file=ann_file,
         data_prefix=dict(img_path='trainval/images/'),
-        img_shape=(1024, 1024),
         test_mode=True,
         pipeline=[
             dict(

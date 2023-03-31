@@ -5,7 +5,7 @@
 ## 下载
 
 ```bash
-git clone -b master git@github.com:open-mmlab/mmdeploy.git --recursive
+git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
 ```
 
 ### FAQ

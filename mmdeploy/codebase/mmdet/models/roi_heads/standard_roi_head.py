@@ -38,7 +38,7 @@ def standard_roi_head__predict_bbox(self,
                 (num_instances, ).
     """
     rois = rpn_results_list[0]
-    rois_dims = rois.shape[-1]
+    rois_dims = int(rois.shape[-1])
     batch_index = torch.arange(
         rois.shape[0], device=rois.device).float().view(-1, 1, 1).expand(
             rois.size(0), rois.size(1), 1)
@@ -106,7 +106,7 @@ def standard_roi_head__predict_mask(self,
     # expand might lead to static shape, use broadcast instead
     batch_index = torch.arange(
         det_bboxes.size(0), device=det_bboxes.device).float().view(
-            -1, 1) + det_bboxes.new_zeros(
+            -1, 1, 1) + det_bboxes.new_zeros(
                 (det_bboxes.size(0), det_bboxes.size(1))).unsqueeze(-1)
     mask_rois = torch.cat([batch_index, det_bboxes], dim=-1)
     mask_rois = mask_rois.view(-1, 5)

@@ -168,7 +168,7 @@ task_processor.visualize(
 你也可以参考如下代码，对 SDK model 进行推理：
 
 ```python
-from mmdeploy_python import Restorer
+from mmdeploy_runtime import Restorer
 import cv2
 
 img = cv2.imread('./demo/resources/face.png')

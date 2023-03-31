@@ -28,6 +28,8 @@ class CudaPlatformImpl : public PlatformImpl {
 
   const char* GetPlatformName() const noexcept override { return "cuda"; }
 
+  Result<void> BindDevice(Device device, Device* prev) override;
+
   shared_ptr<BufferImpl> CreateBuffer(Device device) override;
 
   shared_ptr<StreamImpl> CreateStream(Device device) override;
@@ -178,7 +180,9 @@ class CudaDeviceGuard {
     if (ctx) {
       cudaGetDevice(&prev_device_id_);
     }
-    if (prev_device_id_ != device_id_) cudaSetDevice(device_id_);
+    if (prev_device_id_ != device_id_) {
+      cudaSetDevice(device_id_);
+    }
   }
   ~CudaDeviceGuard() {
     if (prev_device_id_ >= 0 && prev_device_id_ != device_id_) {

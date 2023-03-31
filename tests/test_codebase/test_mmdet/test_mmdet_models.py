@@ -9,6 +9,7 @@ import mmengine
 import numpy as np
 import pytest
 import torch
+from packaging import version
 
 try:
     from torch.testing import assert_close as torch_assert_close
@@ -406,54 +407,15 @@ def get_detrhead_model():
         dict(
             type='DETRHead',
             num_classes=4,
-            in_channels=1,
-            transformer=dict(
-                type='Transformer',
-                encoder=dict(
-                    type='DetrTransformerEncoder',
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='BaseTransformerLayer',
-                        attn_cfgs=[
-                            dict(
-                                type='MultiheadAttention',
-                                embed_dims=4,
-                                num_heads=1)
-                        ],
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        operation_order=('self_attn', 'norm', 'ffn', 'norm'))),
-                decoder=dict(
-                    type='DetrTransformerDecoder',
-                    return_intermediate=True,
-                    num_layers=1,
-                    transformerlayers=dict(
-                        type='DetrTransformerDecoderLayer',
-                        attn_cfgs=dict(
-                            type='MultiheadAttention',
-                            embed_dims=4,
-                            num_heads=1),
-                        ffn_cfgs=dict(
-                            type='FFN',
-                            embed_dims=4,
-                            feedforward_channels=32,
-                            num_fcs=2,
-                            ffn_drop=0.,
-                            act_cfg=dict(type='ReLU', inplace=True),
-                        ),
-                        feedforward_channels=32,
-                        operation_order=('self_attn', 'norm', 'cross_attn',
-                                         'norm', 'ffn', 'norm')),
-                )),
-            positional_encoding=dict(
-                type='SinePositionalEncoding', num_feats=2, normalize=True),
-            test_cfg=dict(max_per_img=100)))
+            embed_dims=4,
+            loss_cls=dict(
+                type='CrossEntropyLoss',
+                bg_cls_weight=0.1,
+                use_sigmoid=False,
+                loss_weight=1.0,
+                class_weight=1.0),
+            loss_bbox=dict(type='L1Loss', loss_weight=5.0),
+            loss_iou=dict(type='GIoULoss', loss_weight=2.0)))
     model.requires_grad_(False)
     return model
 
@@ -710,17 +672,62 @@ def test_forward_of_base_detector(model_cfg_path, backend):
                     pre_top_k=-1,
                     keep_top_k=100,
                     background_label_id=-1,
+                    export_postprocess_mask=False,
                 ))))
     model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
     model_cfg.model = _replace_r50_with_r18(model_cfg.model)
     from mmdet.apis import init_detector
-    model = init_detector(model_cfg, None, device='cpu')
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
 
     img = torch.randn(1, 3, 64, 64)
     from mmdet.structures import DetDataSample
     data_sample = DetDataSample(metainfo=dict(img_shape=(800, 1216, 3)))
     rewrite_inputs = {'batch_inputs': img}
     wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+@pytest.mark.skipif(
+    reason='mha only support torch greater than 1.10.0',
+    condition=version.parse(torch.__version__) < version.parse('1.10.0'))
+@pytest.mark.parametrize(
+    'model_cfg_path', ['tests/test_codebase/test_mmdet/data/detr_model.json'])
+def test_predict_of_detr_detector(model_cfg_path, backend):
+    # Skip test when torch.__version__ < 1.10.0
+    # See https://github.com/open-mmlab/mmdeploy/discussions/1434
+    check_backend(backend)
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(
+                output_names=['dets', 'labels'], input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                    export_postprocess_mask=False,
+                ))))
+    model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
+    from mmdet.apis import init_detector
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
+
+    img = torch.randn(1, 3, 64, 64)
+    from mmdet.structures import DetDataSample
+    data_sample = DetDataSample(metainfo=dict(batch_input_shape=(64, 64)))
+    rewrite_inputs = {'batch_inputs': img}
+    wrapped_model = WrapModel(model, 'predict', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -2033,7 +2040,7 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
 @pytest.mark.parametrize('backend_type, ir_type',
                          [(Backend.ONNXRUNTIME, 'onnx')])
 def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
-    """Test predict_by_feat rewrite of base dense head."""
+    """Test predict_by_feat rewrite of detr head."""
     check_backend(backend_type)
     dense_head = get_detrhead_model()
     dense_head.cpu().eval()
@@ -2047,9 +2054,9 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
     deploy_cfg = get_deploy_cfg(backend_type, ir_type)
 
     seed_everything(1234)
-    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
+    cls_score = [torch.rand(1, 100, 5) for i in range(5, 0, -1)]
     seed_everything(5678)
-    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
+    bboxes = [torch.rand(1, 100, 4) for i in range(5, 0, -1)]
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
@@ -2159,6 +2166,91 @@ def test_solo_head_predict_by_feat(backend_type: Backend):
                 atol=1e-05)
     else:
         assert rewrite_outputs is not None
+
+
+def get_rtmdet_head_model():
+
+    from mmdet.models.dense_heads import RTMDetHead
+    from mmdet.models.task_modules.prior_generators.point_generator import \
+        MlvlPointGenerator
+
+    test_cfg = Config(
+        dict(
+            deploy_nms_pre=0,
+            min_bbox_size=0,
+            score_thr=0.05,
+            nms=dict(type='nms', iou_threshold=0.6),
+            max_per_img=100))
+    model = RTMDetHead(1, 64)
+    model.prior_generator = MlvlPointGenerator([8, 4, 2])
+    model.test_cfg = test_cfg
+
+    model.requires_grad_(False)
+    return model
+
+
+def test_rtmdet_head_predict_by_feat_ncnn():
+    """Test predict_by_feat rewrite of yolov3 head."""
+    backend_type = Backend.NCNN
+    check_backend(backend_type)
+    rtmdet_head = get_rtmdet_head_model()
+    rtmdet_head.cpu().eval()
+    s = 320
+    batch_img_metas = [{
+        'scale_factor': np.ones(4),
+        'pad_shape': (s, s, 3),
+        'img_shape': (s, s, 3)
+    }]
+
+    output_names = ['detection_output']
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(output_names=output_names, input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                model_type='ncnn_end2end',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.45,
+                    confidence_threshold=0.005,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=10,
+                    background_label_id=-1,
+                ))))
+
+    seed_everything(1234)
+    cls_scores = [
+        torch.rand(1, 1, 40, 40),
+        torch.rand(1, 1, 20, 20),
+        torch.rand(1, 1, 10, 10)
+    ]
+
+    bbox_preds = [
+        torch.rand(1, 4, 40, 40),
+        torch.rand(1, 4, 20, 20),
+        torch.rand(1, 4, 10, 10)
+    ]
+
+    # to get outputs of onnx model after rewrite
+    wrapped_model = WrapModel(
+        rtmdet_head,
+        'predict_by_feat',
+        batch_img_metas=batch_img_metas,
+        with_nms=True)
+    rewrite_inputs = {'cls_scores': cls_scores, 'bbox_preds': bbox_preds}
+    rewrite_outputs, is_backend_output = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
+    # output should be of shape [1, N, 6]
+    if is_backend_output:
+        assert rewrite_outputs[0].shape[-1] == 6
+    else:
+        assert rewrite_outputs.shape[-1] == 6
 
 
 def get_solov2_head_model():

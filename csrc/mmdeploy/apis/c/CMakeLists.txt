@@ -12,6 +12,9 @@ macro(add_object name)
         target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fvisibility=hidden>)
     endif ()
     target_link_libraries(${name} PRIVATE mmdeploy::core)
+    target_include_directories(${name} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include>)
     set(CAPI_OBJS ${CAPI_OBJS} ${name})
     mmdeploy_export(${name})
 endmacro()
@@ -31,6 +34,7 @@ foreach (TASK ${COMMON_LIST})
     mmdeploy_add_library(${TARGET_NAME})
     target_link_libraries(${TARGET_NAME} PRIVATE ${OBJECT_NAME})
     target_include_directories(${TARGET_NAME} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
             $<INSTALL_INTERFACE:include>)
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/mmdeploy/${TASK}.h
             DESTINATION include/mmdeploy)
@@ -76,5 +80,14 @@ if (MMDEPLOY_BUILD_SDK_CSHARP_API OR MMDEPLOY_BUILD_SDK_MONOLITHIC)
     set_target_properties(mmdeploy PROPERTIES
             VERSION ${MMDEPLOY_VERSION}
             SOVERSION ${MMDEPLOY_VERSION_MAJOR})
-    mmdeploy_export(mmdeploy)
+    if (APPLE)
+            set_target_properties(mmdeploy PROPERTIES
+                    INSTALL_RPATH "@loader_path"
+                    BUILD_RPATH "@loader_path")
+    else ()
+            set_target_properties(mmdeploy PROPERTIES
+                    INSTALL_RPATH "\$ORIGIN"
+                    BUILD_RPATH "\$ORIGIN")
+    endif ()
+    mmdeploy_export_impl(mmdeploy)
 endif ()

@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
-function (mmdeploy_export NAME)
+function (mmdeploy_export_impl NAME)
     set(_LIB_DIR lib)
     if (MSVC)
         set(_LIB_DIR bin)
@@ -10,6 +10,24 @@ function (mmdeploy_export NAME)
             ARCHIVE DESTINATION lib
             LIBRARY DESTINATION ${_LIB_DIR}
             RUNTIME DESTINATION bin)
+endfunction ()
+
+macro(mmdeploy_add_net NAME)
+    if (MMDEPLOY_DYNAMIC_BACKEND)
+        mmdeploy_add_library(${NAME} SHARED ${ARGN})
+        # DYNAMIC_BACKEND implies BUILD_SDK_MONOLITHIC
+        mmdeploy_export_impl(${NAME})
+        target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)
+        set(BACKEND_LIB_NAMES ${BACKEND_LIB_NAMES} ${PROJECT_NAME} PARENT_SCOPE)
+    else ()
+        mmdeploy_add_module(${NAME} ${ARGN})
+    endif ()
+endmacro()
+
+function (mmdeploy_export NAME)
+    if (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        mmdeploy_export_impl(${NAME})
+    endif ()
 endfunction ()
 
 

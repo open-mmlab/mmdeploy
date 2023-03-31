@@ -332,7 +332,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     }
 
     # get pytorch fps value
-    fps_info = model_info.get('Metadata').get('inference time (ms/im)')
+    fps_info = model_info.get('Metadata', {}).get('inference time (ms/im)')
     if fps_info is None:
         fps = '-'
     elif isinstance(fps_info, list):
@@ -738,7 +738,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         if calib_dataset_cfg is not None:
             cmd_lines += [f'--calib-dataset-cfg {calib_dataset_cfg}']
 
-    convert_log_path = backend_output_path.joinpath('convert.log')
+    convert_log_path = backend_output_path.joinpath('convert_log.txt')
     return_code = run_cmd(cmd_lines, convert_log_path)
     convert_result = return_code == 0
     logger.info(f'Got convert_result = {convert_result}')
@@ -760,7 +760,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         if backend_test:
             log_path = \
                 gen_log_path(backend_output_path.joinpath('backend'),
-                             'test.log')
+                             'test_log.txt')
             get_backend_fps_metric(
                 deploy_cfg_path=str(deploy_cfg_path),
                 model_cfg_path=model_cfg_path,
@@ -785,7 +785,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(
-                backend_output_path.joinpath('sdk'), 'test.log')
+                backend_output_path.joinpath('sdk'), 'test_log.txt')
             if backend_name == 'onnxruntime':
                 # sdk only support onnxruntime of cpu
                 device_type = 'cpu'

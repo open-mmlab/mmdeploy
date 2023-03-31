@@ -82,6 +82,7 @@ namespace image_classification
                     mats[i].Channel = cvMats[i].Dims;
                     mats[i].Format = PixelFormat.BGR;
                     mats[i].Type = DataType.Int8;
+                    mats[i].Device = null;
                 }
             }
         }

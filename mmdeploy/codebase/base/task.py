@@ -112,6 +112,7 @@ class BaseTask(metaclass=ABCMeta):
         from mmengine.registry import MODELS
 
         model = deepcopy(self.model_cfg.model)
+        model.pop('pretrained', None)
         preprocess_cfg = deepcopy(self.model_cfg.get('preprocess_cfg', {}))
         preprocess_cfg.update(
             deepcopy(self.model_cfg.get('data_preprocessor', {})))
@@ -122,6 +123,9 @@ class BaseTask(metaclass=ABCMeta):
             load_checkpoint(model, model_checkpoint, map_location=self.device)
 
         model = revert_sync_batchnorm(model)
+        if hasattr(model, 'backbone') and hasattr(model.backbone,
+                                                  'switch_to_deploy'):
+            model.backbone.switch_to_deploy()
         model = model.to(self.device)
         model.eval()
         return model

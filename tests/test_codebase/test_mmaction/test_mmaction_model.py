@@ -29,7 +29,7 @@ def test_forward_of_base_recognizer(model_cfg_path, backend):
                 keep_initializers_as_inputs=False,
                 opset_version=11,
                 input_shape=None,
-                input_names=['input'],
+                input_names=['inputs'],
                 output_names=['output'])))
 
     model_cfg = load_config(model_cfg_path)[0]

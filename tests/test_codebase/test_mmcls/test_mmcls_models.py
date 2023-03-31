@@ -10,6 +10,10 @@ from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
 
 try:
+    from torch.testing import assert_close as torch_assert_close
+except Exception:
+    from torch.testing import assert_allclose as torch_assert_close
+try:
     import_codebase(Codebase.MMCLS)
 except ImportError:
     pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
@@ -25,7 +29,15 @@ def get_invertedresidual_model():
     return model
 
 
-def get_vit_model():
+def get_fcuup_model():
+    from mmcls.models.backbones.conformer import FCUUp
+    model = FCUUp(16, 16, 16)
+
+    model.requires_grad_(False)
+    return model
+
+
+def get_vit_backbone():
     from mmcls.models.classifiers.image import ImageClassifier
     model = ImageClassifier(
         backbone={
@@ -56,7 +68,7 @@ def get_vit_model():
             },
             'topk': (1, 5)
         },
-    )
+    ).backbone
     model.requires_grad_(False)
 
     return model
@@ -77,6 +89,7 @@ def test_baseclassifier_forward():
         def extract_feat(self, batch_inputs: torch.Tensor):
             return batch_inputs
 
+    input = torch.rand(1, 1000)
     backbone_cfg = dict(
         type='ResNet',
         depth=18,
@@ -90,8 +103,8 @@ def test_baseclassifier_forward():
     with RewriterContext({}):
         backend_output = model(input)
 
-    assert model_output == input
-    assert backend_output == input
+    torch_assert_close(model_output, input)
+    torch_assert_close(backend_output, torch.nn.functional.softmax(input, -1))
 
 
 @pytest.mark.parametrize(
@@ -146,39 +159,30 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
 
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
 def test_vision_transformer_backbone__forward(backend_type: Backend):
-
-    from mmcls.structures import ClsDataSample
-
-    from mmdeploy.core import patch_model
     import_codebase(Codebase.MMCLS)
     check_backend(backend_type, True)
-    model = get_vit_model()
+    model = get_vit_backbone()
     model.eval()
 
     deploy_cfg = Config(
         dict(
             backend_config=dict(type=backend_type.value),
-            onnx_config=dict(input_shape=None, output_names=['output']),
+            onnx_config=dict(input_shape=None, output_names=['out0', 'out1']),
             codebase_config=dict(type='mmcls', task='Classification')))
 
     imgs = torch.rand((1, 3, 384, 384))
-    data_sample = ClsDataSample(
-        metainfo=dict(
-            scale_factor=(1, 1),
-            ori_shape=imgs.shape[2:],
-            img_shape=imgs.shape[2:]))
-    model = patch_model(
-        model, {}, backend=backend_type.value, data_samples=[data_sample])
-    model_outputs = model.forward(imgs)
+    model_outputs = model.forward(imgs)[0]
     wrapped_model = WrapModel(model, 'forward')
-    rewrite_inputs = {'batch_inputs': imgs}
+    rewrite_inputs = {'x': imgs}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
 
     if isinstance(rewrite_outputs, dict):
-        rewrite_outputs = rewrite_outputs['output']
+        rewrite_outputs = [
+            rewrite_outputs[out_name] for out_name in ['out0', 'out1']
+        ]
     for model_output, rewrite_output in zip(model_outputs, rewrite_outputs):
         if isinstance(rewrite_output, torch.Tensor):
             rewrite_output = rewrite_output.cpu().numpy()

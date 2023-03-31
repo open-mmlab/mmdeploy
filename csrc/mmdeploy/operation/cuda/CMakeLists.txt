@@ -17,7 +17,11 @@ set(SRCS resize.cpp
         normalize.cu
         crop.cpp
         crop.cu
-        flip.cpp)
+        flip.cpp
+        warp_affine.cpp
+        crop_resize_pad.cpp
+        permute.cpp
+        permute.cu)
 
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
 

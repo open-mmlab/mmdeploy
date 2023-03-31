@@ -6,6 +6,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #include "mmdeploy/common.h"
 #include "mmdeploy/core/mpl/span.h"
@@ -28,6 +29,30 @@ namespace cxx {
 
 using Rect = mmdeploy_rect_t;
 
+template <typename T>
+class UniqueHandle : public NonCopyable {
+ public:
+  UniqueHandle() = default;
+  explicit UniqueHandle(T handle) : handle_(handle) {}
+
+  // derived class must destroy the object and reset `handle_`
+  ~UniqueHandle() { assert(handle_ == nullptr); }
+
+  UniqueHandle(UniqueHandle&& o) noexcept : handle_(std::exchange(o.handle_, nullptr)) {}
+  UniqueHandle& operator=(UniqueHandle&& o) noexcept {
+    if (this != &o) {
+      handle_ = std::exchange(o.handle_, nullptr);
+    }
+    return *this;
+  }
+
+  explicit operator T() const noexcept { return handle_; }
+  T operator->() const noexcept { return handle_; }
+
+ protected:
+  T handle_{};
+};
+
 class Model {
  public:
   explicit Model(const char* path) {
@@ -38,6 +63,8 @@ class Model {
     }
     model_.reset(model, [](auto p) { mmdeploy_model_destroy(p); });
   }
+
+  explicit Model(const std::string& path) : Model(path.c_str()) {}
 
   Model(const void* buffer, size_t size) {
     mmdeploy_model_t model{};
@@ -102,6 +129,8 @@ class Mat {
       mmdeploy_data_type_t type, uint8_t* data, mmdeploy_device_t device = nullptr)
       : desc_{data, height, width, channels, format, type, device} {}
 
+  Mat(const mmdeploy_mat_t& desc) : desc_(desc) {}  // NOLINT
+
   const mmdeploy_mat_t& desc() const noexcept { return desc_; }
 
 #if MMDEPLOY_CXX_USE_OPENCV
@@ -146,6 +175,16 @@ class Mat {
 template <typename T>
 class Result_ {
  public:
+  using value_type = T;
+  using size_type = size_t;
+  using difference_type = ptrdiff_t;
+  using reference = T&;
+  using const_reference = const T&;
+  using pointer = T*;
+  using const_pointer = const T*;
+  using iterator = T*;
+  using const_iterator = T*;
+
   Result_(size_t offset, size_t size, std::shared_ptr<T> data)
       : offset_(offset), size_(size), data_(std::move(data)) {}
 

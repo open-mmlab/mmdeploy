@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import math
 from functools import partial
 from typing import Any, List, Optional, Sequence, Tuple, Union
 
@@ -239,23 +240,29 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                export_postprocess_mask = True
+                export_postprocess_mask = False
                 if self.deploy_cfg is not None:
 
                     mmdet_deploy_cfg = get_post_processing_params(
                         self.deploy_cfg)
                     # this flag enable postprocess when export.
                     export_postprocess_mask = mmdet_deploy_cfg.get(
-                        'export_postprocess_mask', True)
+                        'export_postprocess_mask', False)
                 if not export_postprocess_mask:
                     masks = End2EndModel.postprocessing_masks(
                         dets[:, :4], masks, ori_w, ori_h, self.device)
                 else:
                     masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
-                if rescale and masks.shape[0] != 0:
+                if export_postprocess_mask and rescale and masks.shape[0] != 0:
                     masks = torch.nn.functional.interpolate(
-                        masks.unsqueeze(0), size=(ori_h, ori_w))
+                        masks.unsqueeze(0),
+                        size=[
+                            math.ceil(masks.shape[-2] /
+                                      img_metas[i]['scale_factor'][0]),
+                            math.ceil(masks.shape[-1] /
+                                      img_metas[i]['scale_factor'][1])
+                        ])[..., :ori_h, :ori_w]
                     masks = masks.squeeze(0)
                 if masks.dtype != bool:
                     masks = masks >= 0.5
@@ -604,6 +611,58 @@ class NCNNEnd2EndModel(End2EndModel):
         return dets, labels.to(torch.int32)
 
 
+@__BACKEND_MODEL.register_module('vacc_det')
+class VACCDetModel(End2EndModel):
+
+    def __init__(self, backend: Backend, backend_files: Sequence[str],
+                 device: str, model_cfg: Union[str, Config],
+                 deploy_cfg: Union[str, Config], **kwargs):
+        assert backend == Backend.VACC, 'only supported vacc, but give ' \
+            f'{backend.value}'
+
+        super(VACCDetModel, self).__init__(backend, backend_files, device,
+                                           deploy_cfg, **kwargs)
+        # load cfg if necessary
+        model_cfg = load_config(model_cfg)[0]
+        self.model_cfg = model_cfg
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+        Returns:
+            Any: Model output.
+        """
+        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
+        inputs = inputs.contiguous()
+        outputs = self.wrapper({self.input_name: inputs})
+        outputs = [i for i in outputs.values()]
+        ret = self._get_bboxes(outputs[0], [i.metainfo for i in data_samples])
+        for i in range(len(ret)):
+            data_samples[i].pred_instances = ret[i]
+        return data_samples
+
+    def _get_bboxes(self, outputs, img_metas):
+        from mmdet.registry import MODELS
+        head_cfg = self.model_cfg._cfg_dict.model.bbox_head
+        head = MODELS.build(head_cfg)
+        if head_cfg.type == 'YOLOV3Head':
+            ret = head.predict_by_feat(
+                outputs, [dict(scale_factor=None)],
+                cfg=self.model_cfg._cfg_dict.model.test_cfg)
+        else:
+            raise NotImplementedError(f'{head_cfg.type} not supported yet.')
+        return ret
+
+
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmdet format."""
@@ -752,6 +811,14 @@ class RKNNModel(End2EndModel):
                                [head.num_base_priors] * len(outputs))
             ret = head.predict_by_feat(
                 *outs,
+                batch_img_metas=metainfos,
+                cfg=self.model_cfg._cfg_dict.model.test_cfg,
+                rescale=True)
+        elif head_cfg.type == 'RTMDetSepBNHead':
+            divisor = round(len(outputs) / 2)
+            ret = head.predict_by_feat(
+                outputs[:divisor],
+                outputs[divisor:],
                 batch_img_metas=metainfos,
                 cfg=self.model_cfg._cfg_dict.model.test_cfg,
                 rescale=True)

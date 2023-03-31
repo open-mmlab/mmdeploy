@@ -99,11 +99,11 @@ build_mmdeploy_with_rknpu() {
   cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU_DEVICE_DIR="${RKNPU_DIR}"/rknn/rknn_api/librknn_api \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
+    -DMMDEPLOY_SHARED_LIBS=ON
 
   good_nproc
   jobs=$?
@@ -125,11 +125,11 @@ build_mmdeploy_with_rknpu2() {
   cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
+    -DMMDEPLOY_SHARED_LIBS=ON
 
   good_nproc
   jobs=$?

@@ -1,3 +1,4 @@
+# 1 channel input for CRNN models
 _base_ = [
     './text-recognition_dynamic.py', '../../_base_/backends/tensorrt-int8.py'
 ]

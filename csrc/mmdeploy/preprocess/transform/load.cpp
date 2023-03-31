@@ -48,6 +48,12 @@ class PrepareImage : public Transform {
 
   Result<void> Apply(Value& data) override {
     MMDEPLOY_DEBUG("input: {}", data);
+
+    // early exit
+    if (data.contains("img") && data["img"].is_any<Tensor>()) {
+      return success();
+    }
+
     assert(data.contains("ori_img"));
 
     Mat src_mat = data["ori_img"].get<Mat>();
@@ -55,7 +61,7 @@ class PrepareImage : public Transform {
     if (color_type_ == "color" || color_type_ == "color_ignore_orientation") {
       OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
     } else {
-      OUTCOME_TRY(cvt_color_.Apply(dst_mat, dst_mat, PixelFormat::kGRAYSCALE));
+      OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kGRAYSCALE));
     }
     auto tensor = to_tensor(dst_mat);
     if (to_float32_) {

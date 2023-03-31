@@ -1,2 +1,4 @@
 -r requirements/codebases.txt
 -r requirements/backends.txt
+h5py
+tqdm

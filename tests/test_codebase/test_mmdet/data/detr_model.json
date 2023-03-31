@@ -1,0 +1,129 @@
+{
+    "type": "DETR",
+    "num_queries": 100,
+    "data_preprocessor": {
+        "type": "DetDataPreprocessor",
+        "mean": [123.675, 116.28, 103.53],
+        "std": [58.395, 57.12, 57.375],
+        "bgr_to_rgb": true,
+        "pad_size_divisor": 1
+    },
+    "backbone": {
+        "type": "ResNet",
+        "depth": 50,
+        "num_stages": 4,
+        "out_indices": [3],
+        "frozen_stages": 1,
+        "norm_cfg": {
+            "type": "BN",
+            "requires_grad": false
+        },
+        "norm_eval": true,
+        "style": "pytorch",
+        "init_cfg": {
+            "type": "Pretrained",
+            "checkpoint": "torchvision://resnet50"
+        }
+    },
+    "neck": {
+        "type": "ChannelMapper",
+        "in_channels": [2048],
+        "kernel_size": 1,
+        "out_channels": 256,
+        "num_outs": 1
+    },
+    "encoder": {
+        "num_layers": 6,
+        "layer_cfg": {
+            "self_attn_cfg": {
+                "embed_dims": 256,
+                "num_heads": 8,
+                "dropout": 0.1,
+                "batch_first": true
+            },
+            "ffn_cfg": {
+                "embed_dims": 256,
+                "feedforward_channels": 2048,
+                "num_fcs": 2,
+                "ffn_drop": 0.1,
+                "act_cfg": {
+                    "type": "ReLU",
+                    "inplace": true
+                }
+            }
+        }
+    },
+    "decoder": {
+        "num_layers": 6,
+        "layer_cfg": {
+            "self_attn_cfg": {
+                "embed_dims": 256,
+                "num_heads": 8,
+                "dropout": 0.1,
+                "batch_first": true
+            },
+            "cross_attn_cfg": {
+                "embed_dims": 256,
+                "num_heads": 8,
+                "dropout": 0.1,
+                "batch_first": true
+            },
+            "ffn_cfg": {
+                "embed_dims": 256,
+                "feedforward_channels": 2048,
+                "num_fcs": 2,
+                "ffn_drop": 0.1,
+                "act_cfg": {
+                    "type": "ReLU",
+                    "inplace": true
+                }
+            }
+        },
+        "return_intermediate": true
+    },
+    "positional_encoding": {
+        "num_feats": 128,
+        "normalize": true
+    },
+    "bbox_head": {
+        "type": "DETRHead",
+        "num_classes": 80,
+        "embed_dims": 256,
+        "loss_cls": {
+            "type": "CrossEntropyLoss",
+            "bg_cls_weight": 0.1,
+            "use_sigmoid": false,
+            "loss_weight": 1.0,
+            "class_weight": 1.0
+        },
+        "loss_bbox": {
+            "type": "L1Loss",
+            "loss_weight": 5.0
+        },
+        "loss_iou": {
+            "type": "GIoULoss",
+            "loss_weight": 2.0
+        }
+    },
+    "train_cfg": {
+        "assigner": {
+            "type":
+            "HungarianAssigner",
+            "match_costs": [{
+                "type": "ClassificationCost",
+                "weight": 1.0
+            }, {
+                "type": "BBoxL1Cost",
+                "weight": 5.0,
+                "box_format": "xywh"
+            }, {
+                "type": "IoUCost",
+                "iou_mode": "giou",
+                "weight": 2.0
+            }]
+        }
+    },
+    "test_cfg": {
+        "max_per_img": 100
+    }
+}

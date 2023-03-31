@@ -1,5 +1,5 @@
 FROM openvino/ubuntu18_dev:2021.4.2
-ARG PYTHON_VERSION=3.7
+ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
 ARG ONNXRUNTIME_VERSION=1.8.1
@@ -39,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh  && \
     chmod +x ~/miniconda.sh && \
-    ~/miniconda.sh -b -p /opt/conda && \
+    bash ~/miniconda.sh -b -p /opt/conda && \
     rm ~/miniconda.sh && \
     /opt/conda/bin/conda install -y python=${PYTHON_VERSION} conda-build pyyaml numpy ipython cython typing typing_extensions mkl mkl-include ninja && \
     /opt/conda/bin/conda clean -ya
@@ -114,4 +114,4 @@ RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_CODEBASES=all &&\
     cmake --build . -- -j$(nproc) && cmake --install . &&\
     export SPDLOG_LEVEL=warn &&\
-    if [ -z ${VERSION} ] ; then echo "Built MMDeploy master for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi
+    if [ -z ${VERSION} ] ; then echo "Built MMDeploy 1.x for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi

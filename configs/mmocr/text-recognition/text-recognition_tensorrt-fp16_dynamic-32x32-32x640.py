@@ -1,3 +1,4 @@
+# 3 channel and 32 height input for SATRN models
 _base_ = [
     './text-recognition_dynamic.py', '../../_base_/backends/tensorrt-fp16.py'
 ]

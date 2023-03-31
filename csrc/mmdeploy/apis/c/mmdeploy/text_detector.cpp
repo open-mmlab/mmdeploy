@@ -1,36 +1,20 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "text_detector.h"
+#include "mmdeploy/text_detector.h"
 
 #include <numeric>
 
-#include "common_internal.h"
-#include "executor_internal.h"
 #include "mmdeploy/codebase/mmocr/mmocr.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "model.h"
-#include "pipeline.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/model.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace std;
 using namespace mmdeploy;
-
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"name", "detector"},
-    {"type", "Inference"},
-    {"params", {{"model", model}}},
-    {"input", {"img"}},
-    {"output", {"dets"}}
-  };
-  // clang-format on
-}
-
-}  // namespace
 
 int mmdeploy_text_detector_create(mmdeploy_model_t model, const char* device_name, int device_id,
                                   mmdeploy_text_detector_t* detector) {
@@ -46,8 +30,7 @@ int mmdeploy_text_detector_create(mmdeploy_model_t model, const char* device_nam
 
 int mmdeploy_text_detector_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                      mmdeploy_text_detector_t* detector) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)detector);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)detector);
 }
 
 int mmdeploy_text_detector_create_by_path(const char* model_path, const char* device_name,

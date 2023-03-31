@@ -1,36 +1,20 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
-#include "restorer.h"
+#include "mmdeploy/restorer.h"
 
-#include "common_internal.h"
-#include "executor_internal.h"
-#include "handle.h"
 #include "mmdeploy/codebase/mmedit/mmedit.h"
+#include "mmdeploy/common_internal.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/mpl/structure.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "pipeline.h"
+#include "mmdeploy/executor_internal.h"
+#include "mmdeploy/handle.h"
+#include "mmdeploy/pipeline.h"
 
 using namespace mmdeploy;
 
-namespace {
-
-Value config_template(const Model& model) {
-  // clang-format off
-  return {
-    {"name", "restorer"},
-    {"type", "Inference"},
-    {"params", {{"model", model}}},
-    {"input", {"img"}},
-    {"output", {"out"}}
-  };
-  // clang-format on
-}
-
 using ResultType = mmdeploy::Structure<mmdeploy_mat_t, mmdeploy::framework::Buffer>;
-
-}  // namespace
 
 int mmdeploy_restorer_create(mmdeploy_model_t model, const char* device_name, int device_id,
                              mmdeploy_restorer_t* restorer) {
@@ -81,8 +65,7 @@ void mmdeploy_restorer_destroy(mmdeploy_restorer_t restorer) {
 
 int mmdeploy_restorer_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                 mmdeploy_restorer_t* restorer) {
-  auto config = config_template(*Cast(model));
-  return mmdeploy_pipeline_create_v3(Cast(&config), context, (mmdeploy_pipeline_t*)restorer);
+  return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)restorer);
 }
 
 int mmdeploy_restorer_create_input(const mmdeploy_mat_t* mats, int mat_count,

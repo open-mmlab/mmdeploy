@@ -81,7 +81,7 @@ def interpolate__tensorrt(
     size: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int,
                                                                  int]]] = None,
     scale_factor: Optional[Union[float, Tuple[float]]] = None,
-    mode: str = 'bilinear',
+    mode: str = 'nearest',
     align_corners: Optional[bool] = None,
     recompute_scale_factor: Optional[bool] = None,
 ):

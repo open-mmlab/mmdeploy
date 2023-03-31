@@ -1,13 +1,11 @@
 aenum
 grpcio
-h5py
 matplotlib
 mmengine
 multiprocess
 numpy
-onnx>=1.8.0
+onnx>=1.13.0
 prettytable
-protobuf<=3.20.1
+protobuf<=3.20.2
 six
 terminaltables
-tqdm

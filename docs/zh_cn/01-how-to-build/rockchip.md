@@ -105,7 +105,7 @@ python tools/deploy.py \
 
 - YOLOV3 & YOLOX
 
-将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)
+将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn-int8_static-320x320.py)
 
 ```python
 # yolov3, yolox for rknn-toolkit and rknn-toolkit2
@@ -134,9 +134,27 @@ python tools/deploy.py \
 
 ```
 
+- RTMDet
+
+将下面的模型拆分配置写入到 [detection_rknn-int8_static-640x640.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/configs/mmdet/detection/detection_rknn-int8_static-640x640.py)
+
+```python
+# rtmdet for rknn-toolkit and rknn-toolkit2
+partition_config = dict(
+    type='rknn',  # the partition policy name
+    apply_marks=True,  # should always be set to True
+    partition_cfg=[
+        dict(
+            save_file='model.onnx',  # name to save the partitioned onnx
+            start=['detector_forward:input'],  # [mark_name:input, ...]
+            end=['rtmdet_head:output'],  # [mark_name:output, ...]
+            output_names=[f'pred_maps.{i}' for i in range(6)]) # output names
+    ])
+```
+
 - RetinaNet & SSD & FSAF with rknn-toolkit2
 
-将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn_static-320x320.py)。使用 rknn-toolkit 的用户则不用。
+将下面的模型拆分配置写入到 [detection_rknn_static.py](https://github.com/open-mmlab/mmdeploy/blob/1.x/configs/mmdet/detection/detection_rknn-int8_static-320x320.py)。使用 rknn-toolkit 的用户则不用。
 
 ```python
 # retinanet, ssd and fsaf for rknn-toolkit2
@@ -238,7 +256,6 @@ mkdir -p build && cd build
 cmake .. \
 -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/arm-linux-gnueabihf.cmake \
 -DMMDEPLOY_BUILD_SDK=ON \
--DMMDEPLOY_BUILD_SDK_CXX_API=ON \
 -DMMDEPLOY_BUILD_EXAMPLES=ON \
 -DMMDEPLOY_TARGET_BACKENDS="rknn" \
 -DRKNPU_DEVICE_DIR=${RKNPU_DIR}/rknn/rknn_api/librknn_api \
@@ -285,7 +302,6 @@ export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
 cmake \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
-    -DMMDEPLOY_BUILD_SDK_CXX_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DOpenCV_DIR=${OpenCV_AARCH64_INSTALL_DIR}/lib/cmake/opencv4

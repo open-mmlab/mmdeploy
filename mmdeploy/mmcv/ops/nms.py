@@ -713,4 +713,4 @@ def multiclass_nms__ascend(boxes: Tensor,
         boxes, scores, score_threshold, iou_threshold, keep_top_k, keep_top_k)
 
     dets = torch.cat([nmsed_boxes, nmsed_scores.unsqueeze(2)], dim=-1)
-    return dets, nmsed_classes
+    return dets, nmsed_classes.int()
