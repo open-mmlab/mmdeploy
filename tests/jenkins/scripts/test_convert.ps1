@@ -84,8 +84,9 @@ if ( $exec_performance -eq "y" ) {
 Write-Host "$pwd"
 cd ..
 Write-Host "$pwd"
-git clone -b $mmdeploy_branch $repo_url
+git clone $repo_url
 cd mmdeploy
+git checkout $mmdeploy_branch
 $env:MMDEPLOY_DIR="$pwd"
 Write-Host "mmdeploy_dir = $env:MMDEPLOY_DIR"
 git submodule update --init --recursive
@@ -148,7 +149,7 @@ $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 
 # New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
 # net use \\10.1.52.36\public\benchmark /user:zhengshaofeng
-
+New-Item -ItemType SymbolicLink -Path "D:\huangzijie\workspace\mmdeploy\data" -Target "Z:\"
 
 
 mkdir build
