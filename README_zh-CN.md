@@ -19,10 +19,10 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/1.x/)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/main/)
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
-[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/1.x/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
-[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/tree/1.x/LICENSE)
+[![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
+[![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/tree/main/LICENSE)
 [![issue resolution](https://img.shields.io/github/issues-closed-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 [![open issues](https://img.shields.io/github/issues-raw/open-mmlab/mmdeploy)](https://github.com/open-mmlab/mmdeploy/issues)
 
@@ -75,7 +75,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/1.x/)
+## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/main/)
 
 - [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
@@ -119,7 +119,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 基准与模型库
 
-基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/1.x/03-benchmark/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/1.x/03-benchmark/supported_models.html)中获得。
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/main/03-benchmark/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/main/03-benchmark/supported_models.html)中获得。
 
 ## 贡献指南
 
@@ -176,9 +176,9 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 扫描下方的二维码可关注 OpenMMLab 团队的 [知乎官方账号](https://www.zhihu.com/people/openmmlab)，加入 OpenMMLab 团队的 [官方交流 QQ 群](https://jq.qq.com/?_wv=1027&k=MSMAfWOe)，或添加微信小助手”OpenMMLabwx“加入官方交流微信群。
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/zhihu_qrcode.jpg" height="400" />
-  <img src="resources/qq_group_qrcode.jpg" height="400" />
-  <img src="https://raw.githubusercontent.com/open-mmlab/mmcv/master/docs/en/_static/wechat_qrcode.jpg" height="400" />
+  <img src="https://user-images.githubusercontent.com/25839884/205870927-39f4946d-8751-4219-a4c0-740117558fd7.jpg" height="400" />
+  <img src="https://user-images.githubusercontent.com/25839884/203904835-62392033-02d4-4c73-a68c-c9e4c1e2b07f.jpg" height="400" />
+  <img src="https://user-images.githubusercontent.com/25839884/205872898-e2e6009d-c6bb-4d27-8d07-117e697a3da8.jpg" height="400" />
 </div>
 
 我们会在 OpenMMLab 社区为大家

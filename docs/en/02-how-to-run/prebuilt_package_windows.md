@@ -48,7 +48,7 @@ In order to use the prebuilt package, you need to install some third-party depen
 2. Clone the mmdeploy repository
 
    ```bash
-   git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git
+   git clone -b main https://github.com/open-mmlab/mmdeploy.git
    ```
 
    :point_right: The main purpose here is to use the configs, so there is no need to compile `mmdeploy`.
@@ -56,7 +56,7 @@ In order to use the prebuilt package, you need to install some third-party depen
 3. Install mmclassification
 
    ```bash
-   git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
+   git clone -b main https://github.com/open-mmlab/mmclassification.git
    cd mmclassification
    pip install -e .
    ```

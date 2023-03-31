@@ -165,7 +165,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线, `--recursive` 不是必须的
-git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b main --recursive https://github.com/open-mmlab/mmdeploy.git
 
 # 安装 mmdetection。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
 git clone -b 3.x https://github.com/open-mmlab/mmdetection.git

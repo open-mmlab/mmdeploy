@@ -65,9 +65,9 @@ RUN cp -r /usr/local/lib/python${PYTHON_VERSION}/dist-packages/tensorrt* /opt/co
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
 ENV TENSORRT_DIR=/workspace/tensorrt
 ARG VERSION
-RUN git clone -b 1.x https://github.com/open-mmlab/mmdeploy &&\
+RUN git clone -b main https://github.com/open-mmlab/mmdeploy &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on 1.x" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on main" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     mkdir -p build &&\
     cd build &&\
@@ -101,6 +101,6 @@ RUN cd /root/workspace/mmdeploy &&\
         -DMMDEPLOY_CODEBASES=all &&\
     make -j$(nproc) && make install &&\
     export SPDLOG_LEVEL=warn &&\
-    if [ -z ${VERSION} ] ; then echo "Built MMDeploy dev-1.x for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi
+    if [ -z ${VERSION} ] ; then echo "Built MMDeploy for GPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for GPU devices successfully!" ; fi
 
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"

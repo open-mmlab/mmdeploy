@@ -3,7 +3,7 @@
 ## Download
 
 ```shell
-git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
+git clone -b main git@github.com:open-mmlab/mmdeploy.git --recursive
 ```
 
 Note:
@@ -26,7 +26,7 @@ Note:
 - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
 
   ```shell
-  git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git --recursive
+  git clone -b main https://github.com/open-mmlab/mmdeploy.git --recursive
   ```
 
 ## Build

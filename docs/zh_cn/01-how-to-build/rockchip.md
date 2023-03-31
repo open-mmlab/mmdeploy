@@ -136,7 +136,7 @@ python tools/deploy.py \
 
 - RTMDet
 
-将下面的模型拆分配置写入到 [detection_rknn-int8_static-640x640.py](https://github.com/open-mmlab/mmdeploy/blob/dev-1.x/configs/mmdet/detection/detection_rknn-int8_static-640x640.py)
+将下面的模型拆分配置写入到 [detection_rknn-int8_static-640x640.py](https://github.com/open-mmlab/mmdeploy/blob/main/configs/mmdet/detection/detection_rknn-int8_static-640x640.py)
 
 ```python
 # rtmdet for rknn-toolkit and rknn-toolkit2

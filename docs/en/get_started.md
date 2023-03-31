@@ -170,7 +170,7 @@ Based on the above settings, we provide an example to convert the Faster R-CNN i
 
 ```shell
 # clone mmdeploy to get the deployment config. `--recursive` is not necessary
-git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+git clone -b main https://github.com/open-mmlab/mmdeploy.git
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module
 git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
@@ -269,7 +269,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/python).
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/main/demo/python).
 
 #### C++ API
 
@@ -321,9 +321,9 @@ find_package(MMDeploy REQUIRED)
 target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
-For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/cpp).
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/cpp).
 
-For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/java) respectively.
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/java) respectively.
 We'll talk about them more in our next release.
 
 #### Accelerate preprocessing（Experimental）
