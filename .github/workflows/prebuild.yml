@@ -101,7 +101,9 @@ jobs:
 
   linux_test:
     runs-on: [self-hosted, linux-3090]
-    needs: linux_build
+    needs:
+      - linux_build
+      - linux_build_cxx11abi
     container:
       image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
       options: "--gpus=all --ipc=host"
@@ -130,9 +132,7 @@ jobs:
     runs-on: [self-hosted, linux-3090]
     if: startsWith(github.ref, 'refs/tags/')
     environment: 'prod'
-    needs:
-      - linux_test
-      - linux_build_cxx11abi
+    needs: linux_test
     env:
       PREBUILD_DIR: /data2/actions-runner/prebuild
     steps:
