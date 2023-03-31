@@ -32,7 +32,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
       - name: Build MMDeploy
         run: |
           source activate mmdeploy-3.6
@@ -79,7 +79,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
       - name: Build sdk cpu backend
         run: |
           mkdir pack; cd pack
@@ -118,7 +118,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
       - name: Test python
         run: |
           cd /__w/mmdeploy/prebuild/$OUTPUT_DIR
@@ -143,7 +143,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
       - name: Upload mmdeploy
         run: |
           cd $PREBUILD_DIR/$OUTPUT_DIR/mmdeploy
