@@ -29,6 +29,14 @@ def get_invertedresidual_model():
     return model
 
 
+def get_fcuup_model():
+    from mmcls.models.backbones.conformer import FCUUp
+    model = FCUUp(16, 16, 16)
+
+    model.requires_grad_(False)
+    return model
+
+
 def get_vit_backbone():
     from mmcls.models.classifiers.image import ImageClassifier
     model = ImageClassifier(

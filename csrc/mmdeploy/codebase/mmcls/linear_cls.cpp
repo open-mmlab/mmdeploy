@@ -85,6 +85,8 @@ class LinearClsHead : public MMClassification {
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMClassification, LinearClsHead);
+using ConformerHead = LinearClsHead;
+MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMClassification, ConformerHead);
 
 class CropBox {
  public:

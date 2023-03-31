@@ -9,6 +9,7 @@ import mmengine
 import numpy as np
 import pytest
 import torch
+from packaging import version
 
 try:
     from torch.testing import assert_close as torch_assert_close
@@ -683,6 +684,50 @@ def test_forward_of_base_detector(model_cfg_path, backend):
     data_sample = DetDataSample(metainfo=dict(img_shape=(800, 1216, 3)))
     rewrite_inputs = {'batch_inputs': img}
     wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        deploy_cfg=deploy_cfg)
+
+    assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+@pytest.mark.skipif(
+    reason='mha only support torch greater than 1.10.0',
+    condition=version.parse(torch.__version__) < version.parse('1.10.0'))
+@pytest.mark.parametrize(
+    'model_cfg_path', ['tests/test_codebase/test_mmdet/data/detr_model.json'])
+def test_predict_of_detr_detector(model_cfg_path, backend):
+    # Skip test when torch.__version__ < 1.10.0
+    # See https://github.com/open-mmlab/mmdeploy/discussions/1434
+    check_backend(backend)
+    deploy_cfg = Config(
+        dict(
+            backend_config=dict(type=backend.value),
+            onnx_config=dict(
+                output_names=['dets', 'labels'], input_shape=None),
+            codebase_config=dict(
+                type='mmdet',
+                task='ObjectDetection',
+                post_processing=dict(
+                    score_threshold=0.05,
+                    iou_threshold=0.5,
+                    max_output_boxes_per_class=200,
+                    pre_top_k=-1,
+                    keep_top_k=100,
+                    background_label_id=-1,
+                    export_postprocess_mask=False,
+                ))))
+    model_cfg = Config(dict(model=mmengine.load(model_cfg_path)))
+    from mmdet.apis import init_detector
+    model = init_detector(model_cfg, None, device='cpu', palette='coco')
+
+    img = torch.randn(1, 3, 64, 64)
+    from mmdet.structures import DetDataSample
+    data_sample = DetDataSample(metainfo=dict(batch_input_shape=(64, 64)))
+    rewrite_inputs = {'batch_inputs': img}
+    wrapped_model = WrapModel(model, 'predict', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
@@ -1995,7 +2040,7 @@ def test_mlvl_point_generator__single_level_grid_priors__tensorrt(
 @pytest.mark.parametrize('backend_type, ir_type',
                          [(Backend.ONNXRUNTIME, 'onnx')])
 def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
-    """Test predict_by_feat rewrite of base dense head."""
+    """Test predict_by_feat rewrite of detr head."""
     check_backend(backend_type)
     dense_head = get_detrhead_model()
     dense_head.cpu().eval()
@@ -2009,9 +2054,9 @@ def test_detrhead__predict_by_feat(backend_type: Backend, ir_type: str):
     deploy_cfg = get_deploy_cfg(backend_type, ir_type)
 
     seed_everything(1234)
-    cls_score = [[torch.rand(1, 100, 5) for i in range(5, 0, -1)]]
+    cls_score = [torch.rand(1, 100, 5) for i in range(5, 0, -1)]
     seed_everything(5678)
-    bboxes = [[torch.rand(1, 100, 4) for i in range(5, 0, -1)]]
+    bboxes = [torch.rand(1, 100, 4) for i in range(5, 0, -1)]
 
     # to get outputs of onnx model after rewrite
     img_metas[0]['img_shape'] = torch.Tensor([s, s])
