@@ -41,7 +41,7 @@ pipeline {
                 echo "======start======"
                 bat """
 
-                    echo "$pwd"
+                    echo "${pwd()}"
                 """
 
 
