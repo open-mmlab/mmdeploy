@@ -16,14 +16,15 @@ try:
 except Exception:
     from torch.testing import assert_allclose as torch_assert_close
 
+from mmengine import Config
+from mmengine.config import ConfigDict
+
 from mmdeploy.codebase import import_codebase
 from mmdeploy.core.rewriters.rewriter_manager import RewriterContext
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import (WrapFunction, WrapModel, backend_checker,
                                  check_backend, get_model_outputs,
                                  get_onnx_model, get_rewrite_outputs)
-from mmengine import Config
-from mmengine.config import ConfigDict
 
 try:
     import_codebase(Codebase.MMDET)
@@ -222,11 +223,12 @@ def test_multiclass_nms_with_keep_top_k(pre_top_k):
 @backend_checker(Backend.TENSORRT)
 def test__anchorgenerator__single_level_grid_priors():
     backend_type = 'tensorrt'
-    import mmdeploy.codebase.mmdet.models.task_modules.prior_generators.anchor  # noqa
     import onnx
-    from mmdeploy.apis.onnx import export
     from mmdet.models.task_modules.prior_generators.anchor_generator import \
         AnchorGenerator
+
+    import mmdeploy.codebase.mmdet.models.task_modules.prior_generators.anchor  # noqa
+    from mmdeploy.apis.onnx import export
 
     generator = AnchorGenerator(
         scales=[8], ratios=[0.5, 1.0, 2.0], strides=[4])
