@@ -8,9 +8,6 @@ on:
       - master
     paths:
       - "mmdeploy/version.py"
-  pull_request:
-    branches:
-      - '*'
 
 permissions: write-all
 
