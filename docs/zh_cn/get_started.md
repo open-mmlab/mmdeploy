@@ -65,7 +65,7 @@ mim install mmcv-full
 
 **第二步**: 安装 MMDeploy 和 推理引擎
 
-我们推荐用户使用预编译包安装和体验 MMDeploy 功能。目前提供模型转换(trt/ort)以及SDK的 python 接口的 pypi 预编译包，SDK 的 c/app 库可从[这里](https://github.com/open-mmlab/mmdeploy/releases) 选择最新版本下载并安装。
+我们推荐用户使用预编译包安装和体验 MMDeploy 功能。目前提供模型转换(trt/ort)以及 SDK 推理的 pypi 预编译包，SDK 的 c/cpp 库可从[这里](https://github.com/open-mmlab/mmdeploy/releases) 选择最新版本下载并安装。
 
 目前，MMDeploy 的预编译包支持的平台和设备矩阵如下：
 
