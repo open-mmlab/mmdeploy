@@ -260,8 +260,8 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 
 ```
 .
-|-- mmdeploy-0.13.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-|-- mmdeploy-0.13.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-0.14.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-0.14.0-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
