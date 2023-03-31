@@ -11,7 +11,7 @@ fi
 pushd $WORKSPACE
 pushd $SDK_DIR
 
-test_pkg=$(ls | grep *cpu*)
+test_pkg=$(find "." -type d -iname "*cxx11abi")
 work_dir=/tmp/_test
 cp -r $test_pkg $work_dir
 
