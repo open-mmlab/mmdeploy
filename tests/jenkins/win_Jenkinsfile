@@ -41,7 +41,9 @@ pipeline {
                 echo "======start======"
                 bat """
 
-                    echo "${pwd()}"
+                    setlocal enabledelayedexpansion
+                    set PWD=!CD!
+                    echo PWD=!PWD!
                 """
 
 
