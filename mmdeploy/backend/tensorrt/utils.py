@@ -238,7 +238,8 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
                 model_type=int8_param['model_type'],
                 device_id=device_id,
                 algorithm=int8_param.get(
-                    'algorithm', trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
+                    'algorithm',
+                    trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
         if version.parse(trt.__version__) < version.parse('8'):
             builder.int8_mode = int8_mode
             builder.int8_calibrator = config.int8_calibrator

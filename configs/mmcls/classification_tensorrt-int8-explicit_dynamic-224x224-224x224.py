@@ -1,4 +1,7 @@
-_base_ = ['./classification_dynamic.py', '../_base_/backends/tensorrt-int8-explicit.py']
+_base_ = [
+    './classification_dynamic.py',
+    '../_base_/backends/tensorrt-int8-explicit.py'
+]
 
 onnx_config = dict(input_shape=[224, 224])
 backend_config = dict(
