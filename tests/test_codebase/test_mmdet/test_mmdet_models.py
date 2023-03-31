@@ -692,9 +692,14 @@ def test_forward_of_base_detector(model_cfg_path, backend):
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+@pytest.mark.skipif(
+    reason='mha only support torch greater than 1.10.0',
+    condition=torch.__version__ < '1.10.0')
 @pytest.mark.parametrize(
     'model_cfg_path', ['tests/test_codebase/test_mmdet/data/detr_model.json'])
 def test_predict_of_detr_detector(model_cfg_path, backend):
+    # Skip test when torch.__version__ < 1.10.0
+    # See https://github.com/open-mmlab/mmdeploy/discussions/1434
     check_backend(backend)
     deploy_cfg = Config(
         dict(
