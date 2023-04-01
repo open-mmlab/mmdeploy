@@ -902,9 +902,24 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/solov2/solov2_r50_fpn_1x_coco.py">SOLOv2</a></td>
-    <td align="center" rowspan="2">Instance Segmentation</td>
-    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
+    <td align="center">Instance Segmentation</td>
+    <td align="center">COCO2017</td>
+    <td align="center">mask AP</td>
+    <td align="center">33.1</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">32.7</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/solov2/solov2_r50_fpn_1x_coco.py">SOLOv2</a></td>
+    <td align="center">Instance Segmentation</td>
+    <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">34.8</td>
     <td align="center">-</td>

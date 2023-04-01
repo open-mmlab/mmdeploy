@@ -2273,7 +2273,7 @@ def get_solov2_head_model():
             mask_stride=4,
             norm_cfg=dict(
                 type='GN',
-                num_groups=32,
+                num_groups=4,
             )))
     from mmdet.models.dense_heads import SOLOV2Head
     model = SOLOV2Head(
