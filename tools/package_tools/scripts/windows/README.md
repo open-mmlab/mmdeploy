@@ -12,7 +12,12 @@
    in sdk folder:
 
    `. .\set_env.ps1`
-   (you have to additionally install cuda and cudnn if you use sdk cuda version)
+
+   if you use sdk cuda version:
+
+   (**you have to additionally install cuda and cudnn if use sdk cuda version**)
+
+   (**may need to set CUDNN environment variable point to cudnn root folder if use sdk cuda version**)
 
 4. build sdk
    in sdk folder:

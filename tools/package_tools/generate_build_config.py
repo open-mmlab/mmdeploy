@@ -63,6 +63,7 @@ def parse_arguments():
         '--cudnn-dir',
         type=str,
         help='cudnn root dir, default use $ENV{CUDNN_DIR}')
+    parser.add_argument('--cxx11abi', action='store_true', help='new cxxabi')
     parser.add_argument(
         '--output', required=True, type=str, help='output config file path')
 
@@ -139,8 +140,10 @@ def generate_config(args):
         # sdk package template
         if args.system in ['windows', 'linux']:
             name = 'mmdeploy-{mmdeploy_v}-{system}-{machine}'
+            if args.cxx11abi:
+                name = name + '-cxx11abi'
             if args.device == 'cpu':
-                name = '{}-cpu'.format(name)
+                pass
             elif args.device == 'cuda':
                 name = '{}-cuda'.format(name) + '{cuda_v}'
             else:
