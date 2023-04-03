@@ -43,7 +43,7 @@ pipeline {
                 powershell """.\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}"""
                 echo "======finished======"
                 cd ..
-                $dir = 'D:\huangzijie\workspace\mmdeploy_win\mmdeploy'
+                $dir = 'D:\\huangzijie\\workspace\\mmdeploy_win\\mmdeploy'
                 Remove-Item $dir -Recurse -Force
 
                 //bat """
