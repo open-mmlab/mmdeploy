@@ -120,7 +120,7 @@ pip install mmdeploy==1.0.0rc3
 # 2.1 支持 onnxruntime 推理
 pip install mmdeploy-runtime==1.0.0rc3
 # 2.2 支持 onnxruntime-gpu tensorrt 推理
-pip install mmdeploy-runtime-cuda==1.0.0rc3
+pip install mmdeploy-runtime-gpu==1.0.0rc3
 
 # 3. 安装推理引擎
 # 3.1 安装推理引擎 TensorRT
