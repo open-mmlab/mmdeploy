@@ -44,7 +44,7 @@ pipeline {
                 echo "======finished======"
                 powershell """
                 cd ..
-                Remove-Item -Path .\mmdeploy -Recurse
+                Remove-Item -Path ".\mmdeploy" -Recurse
                 """
                 //bat """
                     //echo "======end======"
