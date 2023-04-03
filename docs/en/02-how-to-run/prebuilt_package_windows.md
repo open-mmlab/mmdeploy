@@ -21,7 +21,7 @@
 
 ______________________________________________________________________
 
-This tutorial takes `mmdeploy-0.13.0-windows-amd64.zip` and `mmdeploy-0.13.0-windows-amd64-cuda11.3.zip` as examples to show how to use the prebuilt packages. The former support onnxruntime cpu inference, the latter support onnxruntime-gpu and tensorrt inference.
+This tutorial takes `mmdeploy-0.13.0-windows-amd64.zip` and `mmdeploy-0.13.0-windows-amd64-cuda11.3.zip` as examples to show how to use the prebuilt packages. The former supports onnxruntime cpu inference, the latter supports onnxruntime-gpu and tensorrt inference.
 
 The directory structure of the prebuilt package is as follows, where the `dist` folder is about model converter, and the `sdk` folder is related to model inference.
 
