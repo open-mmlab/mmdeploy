@@ -85,9 +85,9 @@ Write-Host "$pwd"
 cd ..
 Write-Host "$pwd"
 cd mmdeploy
-git pull $repo_url
 
 git checkout $mmdeploy_branch
+git pull $repo_url
 $env:MMDEPLOY_DIR="$pwd"
 Write-Host "mmdeploy_dir = $env:MMDEPLOY_DIR"
 git submodule update --init --recursive
