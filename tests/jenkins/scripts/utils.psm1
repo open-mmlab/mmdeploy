@@ -56,6 +56,6 @@ function SwitchCudaVersion() {
         $old = (Join-PATH $MS_EXT *)
         #Remove-Item $old -Include "CUDA *.props", "CUDA *.xml", "CUDA *.targets", "Nvda.Build.CudaTasks*.dll"
         $new = (Join-PATH ($NV_EXT -f $cuda) *)
-        Copy-Item -Path $new -Destination $MS_EXT
+        #Copy-Item -Path $new -Destination $MS_EXT
     }
 }
