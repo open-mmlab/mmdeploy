@@ -23,7 +23,7 @@ ______________________________________________________________________
 
 目前，`MMDeploy`在`Windows`平台下提供`cpu`以及`cuda`两种Device的预编译包，其中`cpu`版支持使用onnxruntime cpu进行推理，`cuda`版支持使用onnxruntime-gpu以及tensorrt进行推理，可以从[Releases](https://github.com/open-mmlab/mmdeploy/releases)获取。。
 
-本篇教程以`mmdeploy-1.0.0-windows-amd64.zip`和`mmdeploy-1.0.0-windows-amd64-cuda11.3.zip`为例，展示预编译包的使用方法。
+本篇教程以`mmdeploy-1.0.0rc3-windows-amd64.zip`和`mmdeploy-1.0.0rc3-windows-amd64-cuda11.3.zip`为例，展示预编译包的使用方法。
 
 为了方便使用者快速上手，本教程以分类模型(mmclassification)为例，展示两种预编译包的使用方法。
 
@@ -89,8 +89,8 @@ ______________________________________________________________________
 5. 安装`mmdeploy`（模型转换）以及`mmdeploy_runtime`（模型推理Python API）的预编译包
 
    ```bash
-   pip install mmdeploy==1.0.0
-   pip install mmdeploy-runtime==1.0.0
+   pip install mmdeploy==1.0.0rc3
+   pip install mmdeploy-runtime==1.0.0rc3
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装。
@@ -108,7 +108,7 @@ ______________________________________________________________________
    ![sys-path](https://user-images.githubusercontent.com/16019484/181463801-1d7814a8-b256-46e9-86f2-c08de0bc150b.png)
    :exclamation: 重启powershell让环境变量生效，可以通过 echo $env:PATH 来检查是否设置成功。
 
-8. 下载 SDK C/cpp Library mmdeploy-1.0.0-windows-amd64.zip
+8. 下载 SDK C/cpp Library mmdeploy-1.0.0rc3-windows-amd64.zip
 
 ### TensorRT
 
@@ -117,8 +117,8 @@ ______________________________________________________________________
 5. 安装`mmdeploy`（模型转换）以及`mmdeploy_runtime`（模型推理Python API）的预编译包
 
    ```bash
-   pip install mmdeploy==1.0.0
-   pip install mmdeploy-runtime-gpu==1.0.0
+   pip install mmdeploy==1.0.0rc3
+   pip install mmdeploy-runtime-gpu==1.0.0rc3
    ```
 
    :point_right: 如果之前安装过，需要先卸载后再安装
@@ -137,7 +137,7 @@ ______________________________________________________________________
 
 7. 安装pycuda `pip install pycuda`
 
-8. 下载 SDK C/cpp Library mmdeploy-1.0.0-windows-amd64-cuda11.3.zip
+8. 下载 SDK C/cpp Library mmdeploy-1.0.0rc3-windows-amd64-cuda11.3.zip
 
 ## 模型转换
 
@@ -149,7 +149,7 @@ ______________________________________________________________________
 
 ```
 ..
-|-- mmdeploy-1.0.0-windows-amd64
+|-- mmdeploy-1.0.0rc3-windows-amd64
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -197,7 +197,7 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 
 ```
 ..
-|-- mmdeploy-1.0.0-windows-amd64-cuda11.3
+|-- mmdeploy-1.0.0rc3-windows-amd64-cuda11.3
 |-- mmclassification
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -260,8 +260,8 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 
 ```
 .
-|-- mmdeploy-1.0.0-windows-amd64-cuda11.1-tensorrt8.2.3.0
-|-- mmdeploy-1.0.0-windows-amd64-onnxruntime1.8.1
+|-- mmdeploy-1.0.0rc3-windows-amd64-cuda11.1-tensorrt8.2.3.0
+|-- mmdeploy-1.0.0rc3-windows-amd64-onnxruntime1.8.1
 |-- mmclassification
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -340,7 +340,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    这里建议使用cmd，这样如果exe运行时如果找不到相关的dll的话会有弹窗
 
-   在mmdeploy-1.0.0-windows-amd64-onnxruntime1.8.1\\example\\cpp\\build\\Release目录下：
+   在mmdeploy-1.0.0rc3-windows-amd64-onnxruntime1.8.1\\example\\cpp\\build\\Release目录下：
 
    ```
    .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmclassification\demo\demo.JPEG
@@ -360,7 +360,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 
    这里建议使用cmd，这样如果exe运行时如果找不到相关的dll的话会有弹窗
 
-   在mmdeploy-1.0.0-windows-amd64-cuda11.1-tensorrt8.2.3.0\\example\\cpp\\build\\Release目录下：
+   在mmdeploy-1.0.0rc3-windows-amd64-cuda11.1-tensorrt8.2.3.0\\example\\cpp\\build\\Release目录下：
 
    ```
    .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmclassification\demo\demo.JPEG
