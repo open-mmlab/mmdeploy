@@ -124,7 +124,7 @@ pip install mmdeploy==0.13.0
 # 2.1 support onnxruntime
 pip install mmdeploy-runtime==0.13.0
 # 2.2 support onnxruntime-gpu, tensorrt
-pip install mmdeploy-runtime-cuda==0.13.0
+pip install mmdeploy-runtime-gpu==0.13.0
 
 # 3. install inference engine
 # 3.1 install TensorRT
