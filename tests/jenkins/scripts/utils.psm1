@@ -54,7 +54,7 @@ function SwitchCudaVersion() {
         $env:CUDA_PATH_V11_3="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3"
         $env:path="C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\bin;C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.3\libnvvp;"+$env:path
         $old = (Join-PATH $MS_EXT *)
-        Remove-Item $old -Include "CUDA *.props", "CUDA *.xml", "CUDA *.targets", "Nvda.Build.CudaTasks*.dll"
+        #Remove-Item $old -Include "CUDA *.props", "CUDA *.xml", "CUDA *.targets", "Nvda.Build.CudaTasks*.dll"
         $new = (Join-PATH ($NV_EXT -f $cuda) *)
         Copy-Item -Path $new -Destination $MS_EXT
     }
