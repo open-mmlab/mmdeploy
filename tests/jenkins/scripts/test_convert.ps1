@@ -110,7 +110,7 @@ $codebase_fullname_opt = @{
 
 #init conda env
 conda activate mmdeploy-3.7-$env:CUDA_VERSION
-
+Write-Host "conda activate mmdeploy-3.7-$env:CUDA_VERSION"
 #opencv
 $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
