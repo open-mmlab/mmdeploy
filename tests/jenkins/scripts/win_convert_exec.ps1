@@ -7,6 +7,7 @@ $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
 
 cd $env:MMDEPLOY_DIR
+conda activate mmdeploy-3.7-cu113
 Write-Host "exec_path: $pwd"
 Write-Host "mim install $codebase"
 Write-Host "codebase_fullname = $codebase_fullname"
