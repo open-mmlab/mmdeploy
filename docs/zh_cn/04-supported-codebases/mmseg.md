@@ -20,7 +20,7 @@ ______________________________________________________________________
 
 ### 安装 mmseg
 
-请参考[官网安装指南](https://mmsegmentation.readthedocs.io/en/1.x/get_started.html)。
+请参考[官网安装指南](https://mmsegmentation.readthedocs.io/en/latest/get_started.html)。
 
 ### 安装 mmdeploy
 

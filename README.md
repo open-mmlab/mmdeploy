@@ -18,7 +18,7 @@
   </div>
   <div>&nbsp;</div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/en/main/)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/en/latest/)
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
 [![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/tree/main/LICENSE)
@@ -100,7 +100,7 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
 
 All kinds of modules in the SDK can be extended, such as `Transform` for image processing, `Net` for Neural Network inference, `Module` for postprocessing and so on
 
-## [Documentation](https://mmdeploy.readthedocs.io/en/main/)
+## [Documentation](https://mmdeploy.readthedocs.io/en/latest/)
 
 Please read [getting_started](docs/en/get_started.md) for the basic usage of MMDeploy. We also provide tutoials about:
 

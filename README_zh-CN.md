@@ -19,7 +19,7 @@
   <div>&nbsp;</div>
 </div>
 
-[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/main/)
+[![docs](https://img.shields.io/badge/docs-latest-blue)](https://mmdeploy.readthedocs.io/zh_CN/latest/)
 [![badge](https://github.com/open-mmlab/mmdeploy/workflows/build/badge.svg)](https://github.com/open-mmlab/mmdeploy/actions)
 [![codecov](https://codecov.io/gh/open-mmlab/mmdeploy/branch/main/graph/badge.svg)](https://codecov.io/gh/open-mmlab/mmdeploy)
 [![license](https://img.shields.io/github/license/open-mmlab/mmdeploy.svg)](https://github.com/open-mmlab/mmdeploy/tree/main/LICENSE)
@@ -85,7 +85,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - Net 推理
 - Module 后处理
 
-## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/main/)
+## [中文文档](https://mmdeploy.readthedocs.io/zh_CN/latest/)
 
 - [快速上手](docs/zh_cn/get_started.md)
 - [编译](docs/zh_cn/01-how-to-build/build_from_source.md)
@@ -129,7 +129,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## 基准与模型库
 
-基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/main/03-benchmark/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/main/03-benchmark/supported_models.html)中获得。
+基准和支持的模型列表可以在[基准](https://mmdeploy.readthedocs.io/zh_CN/latest/03-benchmark/benchmark.html)和[模型列表](https://mmdeploy.readthedocs.io/en/latest/03-benchmark/supported_models.html)中获得。
 
 ## 贡献指南
 

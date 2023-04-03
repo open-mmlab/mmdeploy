@@ -24,7 +24,7 @@ ______________________________________________________________________
 
 ### Install mmocr
 
-Please follow the [installation guide](https://mmocr.readthedocs.io/en/1.x/get_started/install.html) to install mmocr.
+Please follow the [installation guide](https://mmocr.readthedocs.io/en/latest/install.html) to install mmocr.
 
 ### Install mmdeploy
 

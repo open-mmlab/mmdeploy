@@ -20,7 +20,7 @@ ______________________________________________________________________
 
 ### Install mmseg
 
-Please follow the [installation guide](https://mmsegmentation.readthedocs.io/en/1.x/get_started.html) to install mmseg.
+Please follow the [installation guide](https://mmsegmentation.readthedocs.io/en/latest/get_started.html) to install mmseg.
 
 ### Install mmdeploy
 
