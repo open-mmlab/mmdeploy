@@ -27,7 +27,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I:** Install precompiled package
 
-> **TODO**. MMDeploy hasn't released based on dev-1.x branch.
+> **TODO**. MMDeploy hasn't released based on 1.x branch.
 
 **Method II:** Build using scripts
 
@@ -182,4 +182,4 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [Rotated FasterRCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_faster_rcnn) |      Y      |    Y     |
 | [Oriented R-CNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn)           |      Y      |    Y     |
 | [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex)          |      Y      |    Y     |
-| [RTMDET-R](https://github.com/open-mmlab/mmrotate/blob/dev-1.x/configs/rotated_rtmdet)            |      Y      |    Y     |
+| [RTMDET-R](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_rtmdet)               |      Y      |    Y     |
