@@ -44,7 +44,7 @@ pipeline {
                 echo "======finished======"
                 cd ..
 
-                Remove-Item 'D:\\huangzijie\\workspace\\mmdeploy_win\\mmdeploy' -Recurse -Force
+                Remove-Item D:\\huangzijie\\workspace\\mmdeploy_win\\mmdeploy -Recurse -Force
 
                 //bat """
                     //echo "======end======"
