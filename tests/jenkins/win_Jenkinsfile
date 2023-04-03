@@ -40,6 +40,7 @@ pipeline {
             steps {
                 echo "======start======"
                 powershell 'Write-Output "hello test"'
+                powershell '.\\tests\\jenkins\\scripts\\test_convert.ps1'
 
 
                 //powershell'''
