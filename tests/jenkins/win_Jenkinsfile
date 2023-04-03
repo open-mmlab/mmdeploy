@@ -40,7 +40,7 @@ pipeline {
             steps {
                 echo "======start======"
                 powershell 'Write-Output "hello test"'
-                powershell '.\\tests\\jenkins\\scripts\\test_convert.ps1'
+                powershell '.\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}'
 
 
                 //powershell'''
