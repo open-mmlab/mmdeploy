@@ -39,12 +39,7 @@ pipeline {
         stage('Convert') {
             steps {
                 echo "======start======"
-                bat """
-
-                    echo Hello, World!
-                    dir
-                    echo %PATH%
-                """
+                powershell 'Write-Output "hello test"'
 
 
                 //powershell'''
