@@ -83,13 +83,11 @@ jobs:
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           sudo apt update
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
           sudo apt install libopencv-dev lcov wget
-          pkg-config --libs opencv
       - name: Build and run SDK unit test without backend
         run: |
           mkdir -p build && pushd build
-          cmake .. -DCMAKE_CXX_COMPILER=g++-7  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
+          cmake .. -DCMAKE_CXX_COMPILER=g++  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
           make -j2
           mkdir -p mmdeploy_test_resources/transform
           cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
@@ -123,7 +121,6 @@ jobs:
       FORCE_CUDA: 1
     strategy:
       matrix:
-        python-version: [3.7]
         torch: [1.9.0+cu102]
         include:
           - torch: 1.9.0+cu102
@@ -131,14 +128,10 @@ jobs:
             torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
+          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
@@ -170,23 +163,17 @@ jobs:
 
     strategy:
       matrix:
-        python-version: [3.7]
         torch: [1.8.0+cu111]
         include:
           - torch: 1.8.0+cu111
             torch_version: torch1.8
             torchvision: 0.9.0+cu111
-
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
+          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
