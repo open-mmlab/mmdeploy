@@ -8,8 +8,11 @@
 2. set environment variable and path
    in sdk folder:
 
-   `source ./set_env.sh` \
-   (**you have to additionally install cuda and cudnn if you use sdk cuda version**)
+   `source ./set_env.sh`
+
+   (**you have to additionally install cuda and cudnn if use sdk cuda version**)
+
+   (**may need to set CUDNN environment variable point to cudnn root folder if use sdk cuda version**)
 
 3. build sdk
    in sdk folder:

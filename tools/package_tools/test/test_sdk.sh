@@ -11,14 +11,14 @@ fi
 pushd $WORKSPACE
 pushd $SDK_DIR
 
-test_pkg=$(ls | grep *cpu*)
+test_pkg=$(find "." -type d -iname "*-x86_64")
 work_dir=/tmp/_test
 cp -r $test_pkg $work_dir
 
 pushd $work_dir
 
 # opencv
-if [[ ! -d $OpenCV_DIR ]]; then
+if [ ! -d "$OpenCV_DIR" ]; then
     ./install_opencv.sh
 fi
 
