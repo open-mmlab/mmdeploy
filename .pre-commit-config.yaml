@@ -31,7 +31,7 @@ repos:
     rev: 0.7.9
     hooks:
       - id: mdformat
-        args: ["--number"]
+        args: ["--number", "--disable-escape", "link-enclosure"]
         additional_dependencies:
           - mdformat-openmmlab
           - mdformat_frontmatter
