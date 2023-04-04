@@ -45,7 +45,8 @@ jobs:
       - name: Install unittest dependencies
         run: |
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
           python -m pip install -U numpy clip
@@ -141,7 +142,8 @@ jobs:
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy clip
@@ -183,7 +185,8 @@ jobs:
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
           python -m pip install -U pycuda numpy clip
@@ -272,7 +275,8 @@ jobs:
           conda activate $pwd\tmp_env
           python -V
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
           python -m mim install "mmcls>=1.0.0rc2"
           python -m pip list
       - name: Build mmdeploy

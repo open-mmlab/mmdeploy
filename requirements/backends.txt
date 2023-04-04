@@ -1,2 +1,2 @@
 onnxruntime>=1.8.0
-openvino-dev
+openvino-dev>=2022.3.0
