@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   build_sdk_demo:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         python-version: [3.7]
