@@ -44,13 +44,14 @@ pipeline {
                 //echo "======finished======"
                 //cd ..
 
-                //Remove-Item D:\\huangzijie\\workspace\\mmdeploy_win\\mmdeploy -Recurse -Force
+
 
                 bat """
                     echo "======end======"
                     @ECHO ON
 
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
+                    Remove-Item D:\\huangzijie\\workspace\\mmdeploy_win\\mmdeploy -Recurse -Force
                 """
             }
         }
