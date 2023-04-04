@@ -41,6 +41,6 @@ dotnet build --configuration Release -p:Version=1.0.0
 
 (*option 2*) Open MMDeploy.sln && Build.
 
-You can set the package-version through `Properties -> Package Version`. The default version is 1.0.0rc3 if you don't set it.
+You can set the package-version through `Properties -> Package Version`. The default version is 1.0.0 if you don't set it.
 
 If you encounter missing dependencies, follow the instructions for MSVC.
