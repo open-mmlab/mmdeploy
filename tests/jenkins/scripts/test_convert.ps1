@@ -149,10 +149,10 @@ $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 #Copy-Item -Path $pwd\Tmp\* -Recurse $pwd\ -Force
 #rm -r Tmp
 #
-# New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
-# net use \\10.1.52.36\public\benchmark /user:zhengshaofeng
+New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
+net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
 
-New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  \\10.1.52.36\public\benchmark
+# New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  \\10.1.52.36\public\benchmark
 
 # New-Item -ItemType SymbolicLink -Path "D:\huangzijie\workspace\mmdeploy_win\mmdeploy\data" -Target "Z:\"
 
