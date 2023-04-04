@@ -4,7 +4,6 @@ import torch
 from mmengine import Config
 from mmengine.structures import BaseDataElement
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, load_config
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
@@ -21,34 +20,29 @@ IMAGE_SIZE = 32
 @backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-
-        # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'dets': torch.rand(1, 10, 6),
-            'labels': torch.rand(1, 10)
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config(
-            {'onnx_config': {
-                'output_names': ['dets', 'labels']
-            }})
-
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         from mmdeploy.codebase.mmrotate.deploy.rotated_detection_model import \
             End2EndModel
-        cls.end2end_model = End2EndModel(
-            Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
+        # simplify backend inference
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'dets': torch.rand(1, 10, 6),
+                'labels': torch.rand(1, 10)
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config(
+                {'onnx_config': {
+                    'output_names': ['dets', 'labels']
+                }})
 
-    def test_forward(self):
+            yield End2EndModel(
+                Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
+
+    def test_forward(self, end2end_model):
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
         img_metas = [
             BaseDataElement(metainfo={
@@ -56,7 +50,7 @@ class TestEnd2EndModel:
                 'scale_factor': [1, 1]
             })
         ]
-        results = self.end2end_model.forward(imgs, img_metas)
+        results = end2end_model.forward(imgs, img_metas)
         assert results is not None, 'failed to get output using End2EndModel'
 
 
@@ -70,8 +64,7 @@ def test_build_rotated_detection_model():
             ir_config=dict(type='onnx', output_names=['dets', 'labels']),
             codebase_config=dict(type='mmrotate')))
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
 
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:

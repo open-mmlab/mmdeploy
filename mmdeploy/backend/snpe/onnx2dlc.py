@@ -47,8 +47,7 @@ def get_output_model_file(onnx_path: str,
     return save_dlc
 
 
-def from_onnx(onnx_model: Union[onnx.ModelProto, str],
-              output_file_prefix: str):
+def from_onnx(onnx_model: Union[onnx.ModelProto, str], save_path: str):
     """Convert ONNX to dlc.
 
     We need to use a executable program to convert the `.onnx` file to a `.dlc`
@@ -56,12 +55,12 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     Example:
         >>> from mmdeploy.apis.snpe import from_onnx
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> output_file_prefix = 'work_dir/end2end'
-        >>> from_onnx(onnx_path, output_file_prefix)
+        >>> save_path = 'work_dir/end2end'
+        >>> from_onnx(onnx_path, save_path)
 
     Args:
         onnx_path (ModelProto|str): The path of the onnx model.
-        output_file_prefix (str): The path to save the output .dlc file.
+        save_path (str): The path to save the output .dlc file.
     """
 
     if not isinstance(onnx_model, str):
@@ -70,7 +69,7 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     else:
         onnx_path = onnx_model
 
-    save_dlc = output_file_prefix + '.dlc'
+    save_dlc = save_path
 
     onnx2dlc = get_onnx2dlc_path()
     ret_code = call(

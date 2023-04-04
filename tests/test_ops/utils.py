@@ -61,7 +61,7 @@ class TestOnnxRTExporter:
         else:
             model_outputs = list(model_outputs)
 
-        from mmdeploy.backend.onnxruntime import ORTWrapper
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         onnx_model = ORTWrapper(onnx_file_path, 'cpu', output_names)
         with torch.no_grad():
             onnx_outputs = onnx_model.forward(
@@ -151,7 +151,7 @@ class TestTensorRTExporter:
         else:
             model_outputs = [data.cpu().float() for data in model_outputs]
 
-        from mmdeploy.backend.tensorrt import TRTWrapper
+        from mmdeploy.backend.tensorrt.wrapper import TRTWrapper
         trt_model = TRTWrapper(trt_file_path, output_names)
         trt_outputs = trt_model(dict(zip(input_names, input_list)))
         trt_outputs = [trt_outputs[i].float().cpu() for i in output_names]
@@ -214,7 +214,7 @@ class TestNCNNExporter:
             model_output.float() for model_output in model_outputs
         ]
 
-        from mmdeploy.backend.ncnn import NCNNWrapper
+        from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
         ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path, output_names)
         ncnn_outputs = ncnn_model(dict(zip(input_names, inputs_list)))
         ncnn_outputs = [ncnn_outputs[name] for name in output_names]
@@ -241,9 +241,9 @@ class TestNCNNExporter:
             onnx.save_model(model, onnx_file_path)
 
             from mmdeploy.backend.ncnn import from_onnx
-            from_onnx(onnx_file_path, os.path.join(save_dir, model_name))
+            from_onnx(onnx_file_path, ncnn_param_path, ncnn_bin_path)
 
-            from mmdeploy.backend.ncnn import NCNNWrapper
+            from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
             ncnn_model = NCNNWrapper(ncnn_param_path, ncnn_bin_path,
                                      output_names)
 

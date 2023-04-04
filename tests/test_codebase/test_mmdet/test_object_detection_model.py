@@ -6,8 +6,6 @@ import torch
 from mmengine import Config
 from mmengine.structures import BaseDataElement, InstanceData
 
-import mmdeploy.backend.ncnn as ncnn_apis
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
@@ -42,35 +40,28 @@ def assert_forward_results(results, module_name: str = 'model'):
 @backend_checker(Backend.ONNXRUNTIME)
 class TestEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'dets': torch.rand(1, 10, 5),
-            'labels': torch.rand(1, 10)
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config(
-            {'onnx_config': {
-                'output_names': ['dets', 'labels']
-            }})
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'dets': torch.rand(1, 10, 5),
+                'labels': torch.rand(1, 10)
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config(
+                {'onnx_config': {
+                    'output_names': ['dets', 'labels']
+                }})
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            End2EndModel
-        cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
-                                         deploy_cfg)
+            from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+                End2EndModel
+            yield End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu', deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward(self):
+    def test_forward(self, end2end_model):
         imgs = torch.rand(1, 3, 64, 64)
         img_metas = [
             BaseDataElement(metainfo={
@@ -78,12 +69,12 @@ class TestEnd2EndModel:
                 'scale_factor': [1, 1]
             })
         ]
-        results = self.end2end_model.forward(imgs, img_metas)
+        results = end2end_model.forward(imgs, img_metas)
         assert_forward_results(results, 'End2EndModel')
 
-    def test_predict(self):
+    def test_predict(self, end2end_model):
         imgs = torch.rand(1, 3, 64, 64)
-        dets, labels = self.end2end_model.predict(imgs)
+        dets, labels = end2end_model.predict(imgs)
         assert dets.shape[-1] == 5
         assert labels.shape[0] == dets.shape[0]
 
@@ -91,44 +82,37 @@ class TestEnd2EndModel:
 @backend_checker(Backend.ONNXRUNTIME)
 class TestMaskEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        # make sure ONNXRuntimeDetector can use ORTWrapper inside itself
-        from mmdeploy.backend.onnxruntime import ORTWrapper
-        ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
+        from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
 
         # simplify backend inference
         num_classes = 80
         num_dets = 10
-        cls.wrapper = SwitchBackendWrapper(ORTWrapper)
-        cls.outputs = {
-            'dets': torch.rand(1, num_dets, 5),
-            'labels': torch.randint(num_classes, (1, num_dets)),
-            'masks': torch.rand(1, num_dets, 28, 28)
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({
-            'onnx_config': {
-                'output_names': ['dets', 'labels', 'masks']
-            },
-            'codebase_config': {
-                'post_processing': {
-                    'export_postprocess_mask': False
-                }
+        with SwitchBackendWrapper(ORTWrapper) as wrapper:
+            outputs = {
+                'dets': torch.rand(1, num_dets, 5),
+                'labels': torch.randint(num_classes, (1, num_dets)),
+                'masks': torch.rand(1, num_dets, 28, 28)
             }
-        })
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({
+                'onnx_config': {
+                    'output_names': ['dets', 'labels', 'masks']
+                },
+                'codebase_config': {
+                    'post_processing': {
+                        'export_postprocess_mask': False
+                    }
+                }
+            })
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            End2EndModel
-        cls.end2end_model = End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu',
-                                         deploy_cfg)
+            from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+                End2EndModel
+            yield End2EndModel(Backend.ONNXRUNTIME, [''], 'cpu', deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward(self):
+    def test_forward(self, end2end_model):
         imgs = torch.rand(1, 3, 64, 64)
         img_metas = [
             BaseDataElement(
@@ -138,7 +122,7 @@ class TestMaskEnd2EndModel:
                     'scale_factor': [1, 1]
                 })
         ]
-        results = self.end2end_model.forward(imgs, img_metas)
+        results = end2end_model.forward(imgs, img_metas)
         assert_forward_results(results, 'mask End2EndModel')
 
 
@@ -239,8 +223,7 @@ def test_build_object_detection_model(partition_type):
             type=partition_type,
             partition_cfg=[dict(output_names=[])])
 
-    from mmdeploy.backend.onnxruntime import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
 
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
@@ -255,118 +238,109 @@ def test_build_object_detection_model(partition_type):
 @backend_checker(Backend.NCNN)
 class TestNCNNEnd2EndModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        from mmdeploy.backend.ncnn import NCNNWrapper
-        ncnn_apis.__dict__.update({'NCNNWrapper': NCNNWrapper})
+        from mmdeploy.backend.ncnn.wrapper import NCNNWrapper
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(NCNNWrapper)
-        cls.outputs = {
-            'output': torch.rand(1, 10, 6),
-        }
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({'onnx_config': {'output_names': ['output']}})
-        model_cfg = Config({})
+        with SwitchBackendWrapper(NCNNWrapper) as wrapper:
+            outputs = {
+                'output': torch.rand(1, 10, 6),
+            }
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({'onnx_config': {'output_names': ['output']}})
+            model_cfg = Config({})
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            NCNNEnd2EndModel
-        cls.ncnn_end2end_model = NCNNEnd2EndModel(Backend.NCNN, ['', ''],
-                                                  'cpu', model_cfg, deploy_cfg)
-
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
+            from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+                NCNNEnd2EndModel
+            yield NCNNEnd2EndModel(Backend.NCNN, ['', ''], 'cpu', model_cfg,
+                                   deploy_cfg)
 
     @pytest.mark.parametrize('num_det', [10, 0])
-    def test_predict(self, num_det):
+    def test_predict(self, end2end_model, num_det):
         self.outputs = {
             'output': torch.rand(1, num_det, 6),
         }
         imgs = torch.rand(1, 3, 64, 64)
-        results = self.ncnn_end2end_model.predict(imgs)
+        results = end2end_model.predict(imgs)
         assert_det_results(results, 'NCNNEnd2EndModel')
 
 
 @backend_checker(Backend.RKNN)
 class TestRKNNModel:
 
-    @classmethod
-    def setup_class(cls):
+    @pytest.fixture(scope='class')
+    def end2end_model(self):
         # force add backend wrapper regardless of plugins
-        import mmdeploy.backend.rknn as rknn_apis
-        from mmdeploy.backend.rknn import RKNNWrapper
-        rknn_apis.__dict__.update({'RKNNWrapper': RKNNWrapper})
+        from mmdeploy.backend.rknn.wrapper import RKNNWrapper
 
         # simplify backend inference
-        cls.wrapper = SwitchBackendWrapper(RKNNWrapper)
-        cls.outputs = [
-            torch.rand(1, 255, 5, 5),
-            torch.rand(1, 255, 10, 10),
-            torch.rand(1, 255, 20, 20)
-        ]
-        cls.wrapper.set(outputs=cls.outputs)
-        deploy_cfg = Config({
-            'onnx_config': {
-                'output_names': ['output']
-            },
-            'backend_config': {
-                'common_config': {}
-            }
-        })
-        model_cfg = Config(
-            dict(
-                model=dict(
-                    bbox_head=dict(
-                        type='YOLOV3Head',
-                        num_classes=80,
-                        in_channels=[512, 256, 128],
-                        out_channels=[1024, 512, 256],
-                        anchor_generator=dict(
-                            type='YOLOAnchorGenerator',
-                            base_sizes=[[(116, 90), (156, 198), (
-                                373, 326)], [(30, 61), (62, 45), (
-                                    59, 119)], [(10, 13), (16, 30), (33, 23)]],
-                            strides=[32, 16, 8]),
-                        bbox_coder=dict(type='YOLOBBoxCoder'),
-                        featmap_strides=[32, 16, 8],
-                        loss_cls=dict(
-                            type='CrossEntropyLoss',
-                            use_sigmoid=True,
-                            loss_weight=1.0,
-                            reduction='sum'),
-                        loss_conf=dict(
-                            type='CrossEntropyLoss',
-                            use_sigmoid=True,
-                            loss_weight=1.0,
-                            reduction='sum'),
-                        loss_xy=dict(
-                            type='CrossEntropyLoss',
-                            use_sigmoid=True,
-                            loss_weight=2.0,
-                            reduction='sum'),
-                        loss_wh=dict(
-                            type='MSELoss', loss_weight=2.0, reduction='sum')),
-                    test_cfg=dict(
-                        nms_pre=1000,
-                        min_bbox_size=0,
-                        score_thr=0.05,
-                        conf_thr=0.005,
-                        nms=dict(type='nms', iou_threshold=0.45),
-                        max_per_img=100))))
+        with SwitchBackendWrapper(RKNNWrapper) as wrapper:
+            outputs = [
+                torch.rand(1, 255, 5, 5),
+                torch.rand(1, 255, 10, 10),
+                torch.rand(1, 255, 20, 20)
+            ]
+            wrapper.set(outputs=outputs)
+            deploy_cfg = Config({
+                'onnx_config': {
+                    'output_names': ['output']
+                },
+                'backend_config': {
+                    'common_config': {}
+                }
+            })
+            model_cfg = Config(
+                dict(
+                    model=dict(
+                        bbox_head=dict(
+                            type='YOLOV3Head',
+                            num_classes=80,
+                            in_channels=[512, 256, 128],
+                            out_channels=[1024, 512, 256],
+                            anchor_generator=dict(
+                                type='YOLOAnchorGenerator',
+                                base_sizes=[[(116, 90), (156, 198), (
+                                    373, 326)], [(30, 61), (62, 45), (
+                                        59,
+                                        119)], [(10, 13), (16, 30), (33, 23)]],
+                                strides=[32, 16, 8]),
+                            bbox_coder=dict(type='YOLOBBoxCoder'),
+                            featmap_strides=[32, 16, 8],
+                            loss_cls=dict(
+                                type='CrossEntropyLoss',
+                                use_sigmoid=True,
+                                loss_weight=1.0,
+                                reduction='sum'),
+                            loss_conf=dict(
+                                type='CrossEntropyLoss',
+                                use_sigmoid=True,
+                                loss_weight=1.0,
+                                reduction='sum'),
+                            loss_xy=dict(
+                                type='CrossEntropyLoss',
+                                use_sigmoid=True,
+                                loss_weight=2.0,
+                                reduction='sum'),
+                            loss_wh=dict(
+                                type='MSELoss',
+                                loss_weight=2.0,
+                                reduction='sum')),
+                        test_cfg=dict(
+                            nms_pre=1000,
+                            min_bbox_size=0,
+                            score_thr=0.05,
+                            conf_thr=0.005,
+                            nms=dict(type='nms', iou_threshold=0.45),
+                            max_per_img=100))))
 
-        from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
-            RKNNModel
-        cls.rknn_model = RKNNModel(Backend.RKNN, ['', ''], 'cpu',
-                                   ['' for i in range(80)], model_cfg,
-                                   deploy_cfg)
+            from mmdeploy.codebase.mmdet.deploy.object_detection_model import \
+                RKNNModel
+            yield RKNNModel(Backend.RKNN, ['', ''], 'cpu',
+                            ['' for i in range(80)], model_cfg, deploy_cfg)
 
-    @classmethod
-    def teardown_class(cls):
-        cls.wrapper.recover()
-
-    def test_forward_test(self):
+    def test_forward_test(self, end2end_model):
         imgs = torch.rand(1, 3, 64, 64)
-        results = self.rknn_model.forward_test(imgs)
+        results = end2end_model.forward_test(imgs)
         assert_det_results(results, 'RKNNWrapper')

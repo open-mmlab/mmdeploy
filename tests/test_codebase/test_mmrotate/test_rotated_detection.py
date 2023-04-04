@@ -9,7 +9,6 @@ from mmengine import Config
 from torch.utils.data import DataLoader
 from torch.utils.data.dataset import Dataset
 
-import mmdeploy.backend.onnxruntime as ort_apis
 from mmdeploy.apis import build_task_processor
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Codebase, load_config
@@ -62,17 +61,14 @@ def test_build_pytorch_model():
 
 @pytest.fixture
 def backend_model():
-    from mmdeploy.backend.onnxruntime import ORTWrapper
-    ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
-    wrapper = SwitchBackendWrapper(ORTWrapper)
-    wrapper.set(outputs={
-        'dets': torch.rand(1, 10, 6),
-        'labels': torch.randint(1, 10, (1, 10))
-    })
+    from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
+    with SwitchBackendWrapper(ORTWrapper) as wrapper:
+        wrapper.set(outputs={
+            'dets': torch.rand(1, 10, 6),
+            'labels': torch.randint(1, 10, (1, 10))
+        })
 
-    yield task_processor.build_backend_model([''])
-
-    wrapper.recover()
+        yield task_processor.build_backend_model([''])
 
 
 def test_build_backend_model(backend_model):

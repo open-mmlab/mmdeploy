@@ -23,7 +23,7 @@ class ORTWrapper(BaseWrapper):
             model.
 
      Examples:
-         >>> from mmdeploy.backend.onnxruntime import ORTWrapper
+         >>> from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
          >>> import torch
          >>>
          >>> onnx_file = 'model.onnx'

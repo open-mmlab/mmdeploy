@@ -1,15 +1,11 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from copy import deepcopy
-from functools import partial
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, Optional, Sequence, Tuple, Union
 
 import torch
 
 from mmdeploy.apis.core import PIPELINE_MANAGER
-from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
-from .optimizer import *  # noqa
-from .passes import optimize_onnx
+from mmdeploy.ir.onnx import ONNXManager
+from mmdeploy.utils import Backend
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -70,75 +66,17 @@ def export(model: torch.nn.Module,
     """
     output_path = output_path_prefix + '.onnx'
 
-    logger = get_root_logger()
-    logger.info(f'Export PyTorch model to ONNX: {output_path}.')
-
-    def _add_or_update(cfg: dict, key: str, val: Any):
-        if key in cfg and isinstance(cfg[key], dict) and isinstance(val, dict):
-            cfg[key].update(val)
-        else:
-            cfg[key] = val
-
-    context_info = deepcopy(context_info)
     deploy_cfg = context_info.pop('deploy_cfg', dict())
-    ir_config = dict(
-        type='onnx',
+    ONNXManager.export(
+        model,
+        args,
+        output_path,
         input_names=input_names,
         output_names=output_names,
         opset_version=opset_version,
         dynamic_axes=dynamic_axes,
         verbose=verbose,
-        keep_initializers_as_inputs=keep_initializers_as_inputs)
-    _add_or_update(deploy_cfg, 'ir_config', ir_config)
-    ir = IR.get(get_ir_config(deploy_cfg)['type'])
-    if isinstance(backend, Backend):
-        backend = backend.value
-    backend_config = dict(type=backend)
-    _add_or_update(deploy_cfg, 'backend_config', backend_config)
-
-    context_info['cfg'] = deploy_cfg
-    context_info['ir'] = ir
-    if 'backend' not in context_info:
-        context_info['backend'] = backend
-    if 'opset' not in context_info:
-        context_info['opset'] = opset_version
-
-    # patch model
-    patched_model = patch_model(model, cfg=deploy_cfg, backend=backend, ir=ir)
-
-    if 'onnx_custom_passes' not in context_info:
-        onnx_custom_passes = optimize_onnx if optimize else None
-        context_info['onnx_custom_passes'] = onnx_custom_passes
-    with RewriterContext(**context_info), torch.no_grad():
-        # patch input_metas
-        if input_metas is not None:
-            assert isinstance(
-                input_metas, dict
-            ), f'Expect input_metas type is dict, get {type(input_metas)}.'
-            model_forward = patched_model.forward
-
-            def wrap_forward(forward):
-
-                def wrapper(*arg, **kwargs):
-                    return forward(*arg, **kwargs)
-
-                return wrapper
-
-            patched_model.forward = wrap_forward(patched_model.forward)
-            patched_model.forward = partial(patched_model.forward,
-                                            **input_metas)
-
-        torch.onnx.export(
-            patched_model,
-            args,
-            output_path,
-            export_params=True,
-            input_names=input_names,
-            output_names=output_names,
-            opset_version=opset_version,
-            dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=keep_initializers_as_inputs,
-            verbose=verbose)
-
-        if input_metas is not None:
-            patched_model.forward = model_forward
+        backend=backend,
+        const_args=input_metas,
+        rewrite_context=deploy_cfg,
+        optimize=optimize)

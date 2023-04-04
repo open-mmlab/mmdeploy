@@ -1,6 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.backend.snpe import from_onnx as _from_onnx
 from mmdeploy.backend.snpe import is_available
+from mmdeploy.backend.snpe.onnx2dlc import from_onnx as _from_onnx
 from ..core import PIPELINE_MANAGER
 
 from_onnx = PIPELINE_MANAGER.register_pipeline()(_from_onnx)

@@ -78,7 +78,7 @@ def onnx2tensorrt(work_dir: str,
     save_path = osp.join(work_dir, save_file)
     from_onnx(
         onnx_model,
-        osp.splitext(save_path)[0],
+        save_path,
         input_shapes=input_shapes,
         log_level=get_trt_log_level(),
         fp16_mode=final_params.get('fp16_mode', False),

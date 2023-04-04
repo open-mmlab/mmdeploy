@@ -75,7 +75,7 @@ def generate_onnx_file(model):
 @backend_checker(Backend.TENSORRT)
 def test_onnx2tensorrt():
     from mmdeploy.apis.tensorrt import onnx2tensorrt
-    from mmdeploy.backend.tensorrt import load
+    from mmdeploy.backend.tensorrt.utils import load
     model = test_model
     generate_onnx_file(model)
     deploy_cfg = get_deploy_cfg()

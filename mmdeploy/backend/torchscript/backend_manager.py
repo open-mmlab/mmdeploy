@@ -1,38 +1,44 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
-from typing import Any, Callable, Optional, Sequence
+import os.path as osp
+import shutil
+from dataclasses import dataclass
+from typing import Any, Callable, List, Optional, Sequence
 
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.ir.torchscript import TorchScriptParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    FileNameDescriptor)
 
 
-@BACKEND_MANAGERS.register('torchscript')
+# We name the name `TorchJIT` to distinguish `Torchscript` as IR.
+@dataclass
+class TorchJITParam(BaseBackendParam):
+    """TorchJIT backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        input_names (List[str]): Names of the inputs.
+        output_names (List[str]): Names of the outputs.
+    """
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.pth')
+
+    def get_model_files(self) -> str:
+        """get the model files."""
+        assert isinstance(self.work_dir, str), ('Expect string work_dir, '
+                                                f'got {self.work_dir}')
+        assert isinstance(self.file_name, str), ('Expect string file_name, '
+                                                 f'got {self.file_name}')
+        return osp.join(self.work_dir, self.file_name)
+
+
+_BackendParam = TorchJITParam
+
+
+@BACKEND_MANAGERS.register(
+    'torchscript', param=_BackendParam, ir_param=TorchScriptParam)
 class TorchScriptManager(BaseBackendManager):
-
-    @classmethod
-    def build_wrapper(cls,
-                      backend_files: Sequence[str],
-                      device: str = 'cpu',
-                      input_names: Optional[Sequence[str]] = None,
-                      output_names: Optional[Sequence[str]] = None,
-                      deploy_cfg: Optional[Any] = None,
-                      **kwargs):
-        """Build the wrapper for the backend model.
-
-        Args:
-            backend_files (Sequence[str]): Backend files.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            input_names (Optional[Sequence[str]], optional): input names.
-                Defaults to None.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-            deploy_cfg (Optional[Any], optional): The deploy config. Defaults
-                to None.
-        """
-        from .wrapper import TorchscriptWrapper
-        return TorchscriptWrapper(
-            model=backend_files[0],
-            input_names=input_names,
-            output_names=output_names)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -84,21 +90,87 @@ class TorchScriptManager(BaseBackendManager):
         return info
 
     @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+    def to_backend(cls, torhscript_path: str, save_path: str):
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be save in this directory.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
-            device (str, optional): The device type. Defaults to 'cpu'.
+            torhscript_path (str): The intermediate representation files.
+            save_path (str): The save path of onnx path.
         Returns:
             Sequence[str]: Backend files.
         """
-        return ir_files
+        if osp.abspath(save_path) != osp.abspath(torhscript_path):
+            shutil.copy(torhscript_path, save_path)
+
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: BaseBackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            ir_model (str): The ir model path to perform the export.
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        save_path = osp.join(param.work_dir, param.file_name)
+        cls.to_backend(ir_model, save_path)
+
+    @classmethod
+    def build_wrapper(cls,
+                      model_path: str,
+                      input_names: Optional[Sequence[str]] = None,
+                      output_names: Optional[Sequence[str]] = None):
+        """Build the wrapper for the backend model.
+
+        Args:
+            model_path (str): torchscript model path.
+            input_names (Optional[Sequence[str]], optional): input names.
+                Defaults to None.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+        from .wrapper import TorchscriptWrapper
+        return TorchscriptWrapper(
+            model=model_path,
+            input_names=input_names,
+            output_names=output_names)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            param (_BackendParam): Packed backend parameter.
+        """
+        assert isinstance(param, _BackendParam)
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        model_path = osp.join(param.work_dir, param.file_name)
+        input_names = param.input_names
+        output_names = param.output_names
+        return cls.build_wrapper(
+            model_path, input_names=input_names, output_names=output_names)
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: List[str] = None,
+                                **kwargs) -> _BackendParam:
+        """Build param from deploy config.
+
+        Args:
+            config (Any): The deploy config.
+            work_dir (str): work directory of the parameters.
+            backend_files (List[str]): The backend files of the model.
+
+        Returns:
+            BaseBackendParam: The packed backend parameter.
+        """
+        from mmdeploy.utils import get_ir_config
+        ir_config = get_ir_config(config)
+        input_names = ir_config.get('input_names', [])
+        output_names = ir_config.get('output_names', [])
+        kwargs.update(dict(input_names=input_names, output_names=output_names))
+        return _BackendParam(
+            work_dir=work_dir, file_name=backend_files[0], **kwargs)

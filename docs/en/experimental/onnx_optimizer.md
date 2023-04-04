@@ -21,9 +21,9 @@ cmake --build . -- -j$(nproc) && cmake --install .
 
 ```python
 # import model_to_graph_custom_optimizer so we can hijack onnx.export
-from mmdeploy.apis.onnx.optimizer import model_to_graph__custom_optimizer # noqa
+from mmdeploy.ir.onnx.optimizer import model_to_graph__custom_optimizer # noqa
 from mmdeploy.core import RewriterContext
-from mmdeploy.apis.onnx.passes import optimize_onnx
+from mmdeploy.ir.onnx.passes import optimize_onnx
 
 # load you model here
 model = create_model()

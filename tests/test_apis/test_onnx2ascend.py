@@ -66,6 +66,5 @@ def test_onnx2ascend():
         dict(
             dynamic_batch_size=[1, 2, 4],
             input_shapes=dict(input=[-1, 3, 224, 224])))
-    from_onnx(onnx_file, work_dir, model_inputs)
-    assert osp.exists(work_dir)
+    from_onnx(onnx_file, file_name, model_inputs)
     assert osp.exists(om_path)

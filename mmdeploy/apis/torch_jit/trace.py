@@ -1,12 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from copy import deepcopy
-from functools import partial
-from typing import Any, Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, Optional, Tuple, Union
 
 import torch
 
-from mmdeploy.core import RewriterContext, patch_model
-from mmdeploy.utils import IR, Backend, get_ir_config, get_root_logger
+from mmdeploy.ir.torchscript import export
+from mmdeploy.utils import Backend
 from ..core import PIPELINE_MANAGER
 
 
@@ -27,9 +25,10 @@ def trace(func: torch.nn.Module,
         >>> func = create_model()
         >>> inputs = get_input_tensor()
         >>>
-        >>> jit_model = trace(
+        >>>  trace(
         >>>     func,
         >>>     inputs,
+        >>>     output_prefix,
         >>>     backend='torchscript',
         >>>     check_trace=False)
         >>>
@@ -55,69 +54,23 @@ def trace(func: torch.nn.Module,
     Returns:
         torch.jit.TracedModule: The traced torch jit model.
     """
-    logger = get_root_logger()
-    logger.info('Export PyTorch model to torchscript.')
+    if output_path_prefix is None:
+        from tempfile import NamedTemporaryFile
+        output_path = NamedTemporaryFile(suffix='.pth').name
+    else:
+        output_path = output_path_prefix + '.pth'
 
-    def _add_or_update(cfg: dict, key: str, val: Any):
-        if key in cfg and isinstance(cfg[key], dict) and isinstance(val, dict):
-            cfg[key].update(val)
-        else:
-            cfg[key] = val
-
-    context_info = deepcopy(context_info)
     deploy_cfg = context_info.pop('deploy_cfg', dict())
-    ir_config = dict(type='torchscript')
-    _add_or_update(deploy_cfg, 'ir_config', ir_config)
+    export(
+        func,
+        inputs,
+        output_path,
+        backend=backend,
+        rewrite_context=deploy_cfg,
+        check_trace=check_trace,
+        check_tolerance=check_tolerance,
+        const_args=input_metas)
 
-    if isinstance(backend, Backend):
-        backend = backend.value
-    backend_config = dict(type=backend)
-    _add_or_update(deploy_cfg, 'backend_config', backend_config)
-
-    context_info['cfg'] = deploy_cfg
-    if 'backend' not in context_info:
-        context_info['backend'] = backend
-    elif context_info['backend'] != backend:
-        logger.warning(
-            f'Find backend {context_info["backend"]} in context_info.'
-            f' Expect {backend}.')
-    if 'ir' not in context_info:
-        context_info['ir'] = IR.TORCHSCRIPT
-    elif context_info['ir'] != backend:
-        logger.warning(f'Find ir {context_info["ir"]} in context_info.'
-                       f' Expect {IR.TORCHSCRIPT}.')
-
-    # patch model
-    if isinstance(func, torch.nn.Module):
-        ir = IR.get(get_ir_config(deploy_cfg)['type'])
-        func = patch_model(func, cfg=deploy_cfg, backend=backend, ir=ir)
-
-    with RewriterContext(**context_info), torch.no_grad():
-
-        # patch input_metas
-        if input_metas is not None:
-            assert isinstance(
-                input_metas, dict
-            ), f'Expect input_metas type is dict, get {type(input_metas)}.'
-            model_forward = func.forward
-            func.forward = partial(func.forward, **input_metas)
-
-        # for exporting models with weight that depends on inputs
-        func(*inputs) if isinstance(inputs, Sequence) \
-            else func(inputs)
-        ts_model = torch.jit.trace(
-            func,
-            inputs,
-            check_trace=check_trace,
-            check_tolerance=check_tolerance)
-
-        if input_metas is not None:
-            func.forward = model_forward
-
-    # save model
-    if output_path_prefix is not None:
-        output_path = output_path_prefix + '.pt'
-        logger.info(f'Save PyTorch model: {output_path}.')
-        torch.jit.save(ts_model, output_path)
+    ts_model = torch.jit.load(output_path)
 
     return ts_model

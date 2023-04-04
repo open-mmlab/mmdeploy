@@ -20,7 +20,7 @@ class CoreMLWrapper(BaseWrapper):
         bin_file (str): Path of a binary file.
 
     Examples:
-        >>> from mmdeploy.backend.coreml import CoreMLWrapper
+        >>> from mmdeploy.backend.coreml.wrapper import CoreMLWrapper
         >>> import torch
         >>>
         >>> model_file = 'model.mlpackage'

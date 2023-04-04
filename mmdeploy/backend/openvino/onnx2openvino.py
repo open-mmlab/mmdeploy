@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
+import shutil
 import subprocess
 import tempfile
 from subprocess import PIPE, CalledProcessError, run
@@ -9,7 +10,6 @@ import mmengine
 import onnx
 
 from mmdeploy.utils import get_root_logger
-from .utils import ModelOptimizerOptions
 
 
 def get_mo_command() -> str:
@@ -57,10 +57,12 @@ def get_output_model_file(onnx_path: str, work_dir: str) -> str:
 
 
 def from_onnx(onnx_model: Union[str, onnx.ModelProto],
-              output_file_prefix: str,
+              xml_path: str,
               input_info: Dict[str, Sequence[int]],
               output_names: Sequence[str],
-              mo_options: Optional[ModelOptimizerOptions] = None):
+              bin_path: Optional[str] = None,
+              work_dir: str = './',
+              mo_options: str = ''):
     """Convert ONNX to OpenVINO.
 
     Examples:
@@ -68,21 +70,25 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>> input_info = {'input': [1,3,800,1344]}
         >>> output_names = ['dets', 'labels']
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> output_dir = 'work_dir'
-        >>> from_onnx( onnx_path, output_dir, input_info, output_names)
+        >>> xml_path = 'work_dir/end2end.xml'
+        >>> from_onnx( onnx_path, xml_path, input_info, output_names)
 
     Args:
         onnx_model (str|ModelProto): The onnx model or its path.
-        output_file_prefix (str): The path to the directory for saving
-            the results.
+            xml_path (str): The save model path.
         input_info (Dict[str, Sequence[int]]):
             The shape of each input.
         output_names (Sequence[str]): Output names. Example:
             ['dets', 'labels'].
-        mo_options (None | ModelOptimizerOptions): The class with
-            additional arguments for the Model Optimizer.
+        bin_path (str): The save weight path.
+        work_dir (str): The path to the directory for saving
+            the results.
+        mo_options (str): Additional arguments for the Model Optimizer.
     """
-    work_dir = output_file_prefix
+
+    if bin_path is None:
+        bin_path = osp.splitext(xml_path)[0] + '.bin'
+
     input_names = ','.join(input_info.keys())
     input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
     output = ','.join(output_names)
@@ -104,8 +110,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               f'--output="{output}" ' \
               f'--input="{input_names}" ' \
               f'--input_shape="{input_shapes}" '
-    if mo_options is not None:
-        mo_args += mo_options.get_options()
+    mo_args += mo_options
 
     command = f'{mo_command} {mo_args}'
 
@@ -116,4 +121,10 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     logger.debug(mo_output.stderr.decode())
 
     model_xml = get_output_model_file(onnx_path, work_dir)
-    logger.info(f'Successfully exported OpenVINO model: {model_xml}')
+    model_bin = osp.splitext(model_xml)[0] + '.bin'
+
+    # move result to save path
+    shutil.move(model_xml, xml_path)
+    shutil.move(model_bin, bin_path)
+
+    logger.info(f'Successfully exported OpenVINO model: {xml_path}')

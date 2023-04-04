@@ -22,7 +22,7 @@ class RKNNWrapper(BaseWrapper):
         verbose (bool): Whether verbose during inference.
 
     Examples:
-        >>> from mmdeploy.backend.rknn import RKNNWrapper
+        >>> from mmdeploy.backend.rknn.wrapper import RKNNWrapper
         >>> import torch
         >>>
         >>> model = 'model.rknn'
@@ -34,17 +34,16 @@ class RKNNWrapper(BaseWrapper):
 
     def __init__(self,
                  model: str,
-                 common_config: Dict = dict(target_platform=None),
+                 target_platform: str,
                  input_names: Optional[Sequence[str]] = None,
                  output_names: Optional[Sequence[str]] = None,
-                 verbose=True,
-                 **kwargs):
+                 verbose=True):
         logger = get_root_logger()
         # Create RKNN object
         self.rknn = RKNN(verbose=verbose)
         self.rknn.load_rknn(model)
         self.input_names = input_names
-        ret = self.rknn.init_runtime(target=common_config['target_platform'])
+        ret = self.rknn.init_runtime(target=target_platform)
         if ret != 0:
             logger.error('Init runtime environment failed!')
             exit(ret)

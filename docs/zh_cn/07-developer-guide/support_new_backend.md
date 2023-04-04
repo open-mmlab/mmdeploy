@@ -10,232 +10,255 @@ MMDeploy 支持了许多后端推理引擎，但我们依然非常欢迎新后�
 - 如果后端需要“.onnx”文件以外的模型文件或权重文件，则需要添加将“.onnx”文件转换为模型文件或权重文件的转换工具，该工具可以是 Python API、脚本或可执行程序。
 - 强烈建议新后端可提供 Python 接口来加载后端文件和推理以进行验证。
 
-## 支持后端转换
+`mmdeploy/backend` 目录下有许多已经接入的后端。如果在实现时存在任何困难，可以参考其中的代码实现。
 
-MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”文件，或者使用转换工具将“.onnx”转换成自己的格式。在本节中，我们将介绍支持后端转换的步骤。
+## 创建 BackendParam
 
-1. 在 `mmdeploy/utils/constants.py` 文件中添加新推理后端变量，以表示支持的后端名称。
+1. `BaseBackendParam` 是一个 dataclass 类，我们将模型转换与推理需要的所有数据打包在其中，方便后续的操作
 
-   **示例**：
-
-   ```Python
-   # mmdeploy/utils/constants.py
-
-   class Backend(AdvancedEnum):
-       # 以现有的TensorRT为例
-       TENSORRT = 'tensorrt'
-   ```
-
-2. 在 `mmdeploy/backend/` 目录下添加相应的库(一个包括 `__init__.py` 的文件夹),例如， `mmdeploy/backend/tensorrt` 。在 `__init__.py` 中，必须有一个名为 `is_available` 的函数检查用户是否安装了后端库。如果检查通过，则将加载库的剩余文件。
-
-   **例子**:
-
-   ```Python
-   # mmdeploy/backend/tensorrt/__init__.py
-
-   def is_available():
-       return importlib.util.find_spec('tensorrt') is not None
-
-
-   if is_available():
-       from .utils import from_onnx, load, save
-       from .wrapper import TRTWrapper
-
-       __all__ = [
-           'from_onnx', 'save', 'load', 'TRTWrapper'
-       ]
-   ```
-
-3. 在 `configs/_base_/backends` 目录中创建一个配置文件(例如， `configs/_base_/backends/tensorrt.py` )。如果新后端引擎只是将“.onnx”文件作为输入，那么新的配置可以很简单,对应配置只需包含一个表示后端名称的字段(但也应该与 `mmdeploy/utils/constants.py` 中的名称相同)。
-
-   **例子**
+   我们非常推荐您给 BackendParam 的实现提供一个 google 风格的 docsting，我们会根据 docstring 的内容生成一个命令行参数解析器，帮助创建命令行工具
 
    ```python
-   backend_config = dict(type='tensorrt')
+   # mmdeploy/backend/newengine/backend_manager.py
+   from ..base import BaseBackendParam
+   class NewEngineParam(BaseBackendParam):
+       """Your first backend parameters.
+
+       Args:
+           work_dir (str): The working directory.
+           file_name (str): File name of the serialized model. Postfix will be
+                added automatically.
+       """
+
+       work_dir:str = None
+       # FileNameDescriptor will add postfix to file name if it does not has one
+       file_name: FileNameDescriptor = FileNameDescriptor(
+           default=None, postfix='.model')
    ```
 
-   但如果后端需要其他文件，则从“.onnx”文件转换为后端文件所需的参数也应包含在配置文件中。
+2. 给创建的 param 对象提供一个方法，查询转换后的文件名。如果转换后或生成多个文件，则返回一个 string 列表
 
-   **例子**
+   ```python
+   # mmdeploy/backend/newengine/backend_manager.py
+   class NewEngineParam(BaseBackendParam):
 
-   ```Python
+       ...
 
-   backend_config = dict(
-       type='tensorrt',
-       common_config=dict(
-           fp16_mode=False, max_workspace_size=0))
+       def get_model_files(self) -> Union[List, str]:
+           """get the model files."""
+           return osp.join(self.work_dir, self.file_name)
    ```
 
-   在拥有一个基本的后端配置文件后，您已经可以通过继承轻松构建一个完整的部署配置。有关详细信息，请参阅我们的[配置教程](../02-how-to-run/write_config.md)。下面是一个例子：
+## 环境检查
 
-   ```Python
-   _base_ = ['../_base_/backends/tensorrt.py']
+每个接入的后端以 BackendManager 对象作为入口，它提供了包括转换、推理、环境检查等功能。
 
-   codebase_config = dict(type='mmcls', task='Classification')
-   onnx_config = dict(input_shape=None)
-   ```
+```python
+# mmdeploy/backend/newengine/backend_manager.py
 
-4. 如果新后端需要模型文件或权重文件而不是“.onnx”文件，则需要在相应的文件夹中创建一个 `onnx2backend.py` 文件(例如,创建 `mmdeploy/backend/tensorrt/onnx2tensorrt.py` )。然后在文件中添加一个转换函数`onnx2backend`。该函数应将给定的“.onnx”文件转换为给定工作目录中所需的后端文件。对函数的其他参数和实现细节没有要求，您可以使用任何工具进行转换。下面有些例子：
+from mmdeploy.ir.onnx import ONNXParam
+from ..base import BaseBackendManager
+@BACKEND_MANAGERS.register('newengine', param=NewEngineParam, ir_param=ONNXParam)
+class NewEngineManager(BaseBackendManager):
+```
 
-   **使用python脚本**
+如果你希望将接入的后端贡献给 MMDeploy，那么可以在 `mmdeploy/utils/constants.py` 中添加如下代码并接受我们真挚的感谢
 
-   ```Python
-   def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
-                     output_names: List[str], onnx_path: str, work_dir: str):
+```Python
+# mmdeploy/utils/constants.py
 
-       input_names = ','.join(input_info.keys())
-       input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
-       output = ','.join(output_names)
+class Backend(AdvancedEnum):
+    # Take TensorRT as an example
+    NEWENGINE = 'newengine'
+```
 
-       mo_args = f'--input_model="{onnx_path}" '\
-                 f'--output_dir="{work_dir}" ' \
-                 f'--output="{output}" ' \
-                 f'--input="{input_names}" ' \
-                 f'--input_shape="{input_shapes}" ' \
-                 f'--disable_fusing '
-       command = f'mo.py {mo_args}'
-       mo_output = run(command, stdout=PIPE, stderr=PIPE, shell=True, check=True)
-   ```
+在我们真正开始进行功能的接入之前，首先应该对当前环境进行检查以确保后续运算可以正确进行。因此我们需要如下接口：
 
-   **使用可执行文件**
+- `is_available` 返回 bool 值，表示该后端在当前环境下可用
+- `get_version` 返回该后端的版本信息
+- `check_env` 提供更详细的当前环境信息，用于帮助用户配置环境
 
-   ```Python
-   def onnx2ncnn(onnx_path: str, work_dir: str):
-       onnx2ncnn_path = get_onnx2ncnn_path()
-       save_param, save_bin = get_output_model_file(onnx_path, work_dir)
-       call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
-   ```
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
 
-5. 在 `mmdeploy/apis` 中创建新后端库并声明对应 APIs
+    ...
 
-   **例子**
+    @classmethod
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        return my_backend_is_available()
 
-   ```Python
-   # mmdeploy/apis/ncnn/__init__.py
+    @classmethod
+    def get_version(cls) -> str:
+        return my_backend_version()
 
-   from mmdeploy.backend.ncnn import is_available
+    @classmethod
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
+        log_callback('Check env of your backend!')
+        return super().check_env(log_callback=log_callback)
 
-   __all__ = ['is_available']
+```
 
-   if is_available():
-       from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
-                                                    get_output_model_file)
-       __all__ += ['onnx2ncnn', 'get_output_model_file']
-   ```
+## 支持后端转换
 
-   从 BaseBackendManager 派生类，实现 `to_backend` 类方法。
+多数后端都会有自己的序列化模型格式，为了支持从中间表示到该格式的转换，需要提供两个函数：
 
-   **例子**
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
 
-   ```Python
-   @classmethod
-    def to_backend(cls,
-                   ir_files: Sequence[str],
-                   deploy_cfg: Any,
-                   work_dir: str,
-                   log_level: int = logging.INFO,
-                   device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
-        return ir_files
-   ```
+    ...
 
-6. 将 OpenMMLab 的模型转换后(如有必要)并在后端引擎上进行推理。如果在测试时发现一些不兼容的算子，可以尝试按照[重写器教程](support_new_model.md)为后端重写原始模型或添加自定义算子。
+    @classmethod
+    def to_backend(cls, ir_model: str, *args, **kwargs):
+        # convert your model here
 
-7. 为新后端引擎代码添加相关注释和单元测试:).
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: NewEngineParam):
+        # convert the model with the backend param you have just defined
+```
+
+`to_backend` 用来将 IR 模型转换成后端需要的格式，我们不对输入参数做太多限制，可以根据后端的需要自由配置。
+`to_backend_from_param` 使用上面章节实现的 BackendParam 对象来实现转换。可以从 param 中提取数据然后调用 `to_backend` 以复用代码。
 
 ## 支持后端推理
 
-尽管后端引擎通常用C/C++实现，但如果后端提供Python推理接口，则测试和调试非常方便。我们鼓励贡献者在MMDeploy的Python接口中支持新后端推理。在本节中，我们将介绍支持后端推理的步骤。
-
-1. 添加一个名为 `wrapper.py` 的文件到 `mmdeploy/backend/{backend}` 中相应后端文件夹。例如， `mmdeploy/backend/tensorrt/wrapper` 。此模块应实现并注册一个封装类，该类继承 `mmdeploy/backend/base/base_wrapper.py` 中的基类 `BaseWrapper` 。
-
-   **例子**
-
-   ```Python
-   from mmdeploy.utils import Backend
-   from ..base import BACKEND_WRAPPER, BaseWrapper
-
-   @BACKEND_WRAPPER.register_module(Backend.TENSORRT.value)
-   class TRTWrapper(BaseWrapper):
-   ```
-
-2. 封装类可以在函数 `__init__` 中初始化引擎以及在 `forward` 函数中进行推理。请注意，该 `__init__` 函数必须接受一个参数 `output_names` 并将其传递给基类以确定输出张量的顺序。其中 `forward` 输入和输出变量应表示tensors的名称和值的字典。
-
-3. 为了方便性能测试，该类应该定义一个 `execute` 函数，只调用后端引擎的推理接口。该 `forward` 函数应在预处理数据后调用 `execute` 函数。
-
-   **例子**
-
-   ```Python
-   from mmdeploy.utils import Backend
-   from mmdeploy.utils.timer import TimeCounter
-   from ..base import BACKEND_WRAPPER, BaseWrapper
-
-   @BACKEND_WRAPPER.register_module(Backend.ONNXRUNTIME.value)
-   class ORTWrapper(BaseWrapper):
-
-       def __init__(self,
-                    onnx_file: str,
-                    device: str,
-                    output_names: Optional[Sequence[str]] = None):
-           # Initialization
-           #
-           # ...
-           super().__init__(output_names)
-
-       def forward(self, inputs: Dict[str,
-                                      torch.Tensor]) -> Dict[str, torch.Tensor]:
-           # Fetch data
-           # ...
-
-           self.__ort_execute(self.io_binding)
-
-   		# Postprocess data
-           # ...
-
-       @TimeCounter.count_time('onnxruntime')
-       def __ort_execute(self, io_binding: ort.IOBinding):
-   		# Only do the inference
-           self.sess.run_with_iobinding(io_binding)
-   ```
-
-4. 从 `BaseBackendManager` 派生接口类，实现 `build_wrapper` 静态方法
-
-   **例子**
-
-   ```Python
-        @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeManager(BaseBackendManager):
-            @classmethod
-            def build_wrapper(cls,
-                              backend_files: Sequence[str],
-                              device: str = 'cpu',
-                              input_names: Optional[Sequence[str]] = None,
-                              output_names: Optional[Sequence[str]] = None,
-                              deploy_cfg: Optional[Any] = None,
-                              **kwargs):
-                from .wrapper import ORTWrapper
-                return ORTWrapper(
-                    onnx_file=backend_files[0],
-                    device=device,
-                    output_names=output_names)
-   ```
-
-5. 为新后端引擎代码添加相关注释和单元测试 :).
-
-## 将MMDeploy作为第三方库时添加新后端
-
-前面的部分展示了如何在 MMDeploy 中添加新的后端，这需要更改其源代码。但是，如果我们将 MMDeploy 视为第三方，则上述方法不再有效。为此，添加一个新的后端需要我们预先安装另一个名为 `aenum` 的包。我们可以直接通过`pip install aenum`进行安装。
-
-成功安装 `aenum` 后，我们可以通过以下方式使用它来添加新的后端：
+如果希望可以使用 python 进行精度验证，那么就需要实现一个 Wrapper 对象和对应的构建函数。Wrapper 对象对后端推理细节进行了封装，用户可以像使用 PyTorch 模型那样使用后端接口。Wrapper 的输入输出为 Tensor 的 dict 对象。
 
 ```python
-from mmdeploy.utils.constants import Backend
-from aenum import extend_enum
+# mmdeploy/backend/newengine/wrapper.py
+from mmdeploy.utils import Backend
+from ..base import BACKEND_WRAPPER, BaseWrapper
 
-try:
-    Backend.get('backend_name')
-except Exception:
-    extend_enum(Backend, 'BACKEND', 'backend_name')
+@BACKEND_WRAPPER.register_module(Backend.NEWENGINE.value)
+class NewEngineWrapper(BaseWrapper):
+
+    def __init__(self, backend_file, other_arguments):
+        # initialize the backend model here
+
+    def forward(self, inputs) -> Dict[str, Tensor]:
+        # perform inference here
 ```
 
-我们可以在使用 MMDeploy 的重写逻辑之前运行上面的代码，这就完成了新后端的添加。
+实现了 Wrapper 以后，就可以在 backend manager 中添加构建函数：
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    def build_wrapper(cls, backend_file, other_arguments):
+        from .wrapper import NewEngineWrapper
+        return NewEngineWrapper(backend_file, other_arguments)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
+        backend_file = get_backend_file_from_param(param)
+        other_arguments = get_other_arguments_from_param(param)
+        return cls.build_wrapper(backend_file, other_arguments)
+```
+
+## 命令行工具
+
+如果希望将接入的后端作为一个命令行工具使用，可以实现 `parse_args` 接口：
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    @contextlib.contextmanager
+    def parse_args(cls,
+                   parser: ArgumentParser,
+                   args: Optional[List[str]] = None):
+
+        # setup parser
+        parser.add_argument(
+            '--onnx-path', required=True, help='ONNX model path.')
+        NewEngineParam.add_arguments(parser)
+
+        parsed_args = parser.parse_args(args)
+
+        yield parsed_args
+
+        # convert model
+        param = NewEngineParam(
+            work_dir=parsed_args.work_dir,
+            file_name=parsed_args.file_name)
+
+        cls.to_backend_from_param(parsed_args.onnx_path, param)
+```
+
+`NewEngineParam.add_arguments(parser)` 会根据之前在 `NewEngineParam` 中添加的 docstring 信息自动生成解析器的 arguments。方便我们更快实现功能。
+
+我们只要实现下面几行代码，就可以完成该工具：
+
+```python
+# console_tool.py
+from ... import NewEngineManager
+
+if __name__ == '__main__'
+    NewEngineManager.main()
+```
+
+使用效果如下
+
+```bash
+python console_tool.py -h
+
+# usage: test_dataclass.py convert [-h] --onnx-path ONNX_PATH
+#                                  [--work-dir WORK_DIR] [--file-name FILE_NAME]
+#
+# build TensorRTParam
+#
+# optional arguments:
+#   -h, --help            show this help message and exit
+#   --onnx-path ONNX_PATH
+#                         ONNX model path.
+#   --work-dir WORK_DIR   The working directory.
+#   --file-name FILE_NAME
+#                         File name of the serialized model. Postfix will
+#                         beadded automatically.
+
+```
+
+## 单元测试
+
+开发单元测试是一个好习惯，可以为功能维护以及更新带来便利。可以参考 `tests/test_backend` 添加自己的后端单元测试。
+
+## deploy.py 支持
+
+当前 MMDeploy 的总接口为 `tools/deploy.py`。它需要一个配置文件来实现转换、推理任务。如果希望接口的后端能够使用该接口，那么后端应该提供自己的配置文件。
+
+配置文件的写法可以参考 [config tutorial](../02-how-to-run/write_config.md)， 这里不做赘述。假设我们为新添加的后端提供了如下配置文件：
+
+```python
+_base_ = ['./classification_dynamic.py']
+codebase_config = dict(type='mmcls', task='Classification')
+onnx_config = dict(input_shape=None)
+backend_config = dict(type='newengine')
+```
+
+需要在 backend manager 对象中添加解析函数，通过 config 生成 BackendParam 对象
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: Sequence[str] = None,
+                                **kwargs) -> NewEngineParam:
+
+        # create NewEngineParam with the config
+```
+
+如果能够正确配置上述步骤，那么恭喜你，你已经完成了后端接入，可以开始在 MMDeploy 中享受新的推理后端！

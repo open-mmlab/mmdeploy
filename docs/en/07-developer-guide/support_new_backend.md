@@ -6,235 +6,259 @@ MMDeploy supports a number of backend engines. We welcome the contribution of ne
 
 Before contributing the codes, there are some requirements for the new backend that need to be checked:
 
-- The backend must support ONNX as IR.
+- The backend must support ONNX or Torchscript as IR.
 - If the backend requires model files or weight files other than a ".onnx" file, a conversion tool that converts the ".onnx" file to model files and weight files is required. The tool can be a Python API, a script, or an executable program.
 - It is highly recommended that the backend provides a Python interface to load the backend files and inference for validation.
 
-## Support backend conversion
+There are a lot of backends in `mmdeploy/backend`. Feel free to read the codes if you meet any problems.
 
-The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" file directly, or converts the ".onnx" to its own format using the conversion tool. In this section, we will introduce the steps to support backend conversion.
+## Create BackendParam
 
-1. Add backend constant in `mmdeploy/utils/constants.py` that denotes the name of the backend.
+1. `BaseBackendParam` is a dataclass that we used to package everything parameters we need to do the conversion or inference.
 
-   **Example**:
-
-   ```Python
-   # mmdeploy/utils/constants.py
-
-   class Backend(AdvancedEnum):
-       # Take TensorRT as an example
-       TENSORRT = 'tensorrt'
-   ```
-
-2. Add a corresponding package (a folder with `__init__.py`) in `mmdeploy/backend/`. For example, `mmdeploy/backend/tensorrt`. In the `__init__.py`, there must be a function named `is_available` which checks if users have installed the backend library. If the check is passed, then the remaining files of the package will be loaded.
-
-   **Example**:
-
-   ```Python
-   # mmdeploy/backend/tensorrt/__init__.py
-
-   def is_available():
-       return importlib.util.find_spec('tensorrt') is not None
-
-
-   if is_available():
-       from .utils import from_onnx, load, save
-       from .wrapper import TRTWrapper
-
-       __all__ = [
-           'from_onnx', 'save', 'load', 'TRTWrapper'
-       ]
-   ```
-
-3. Create a config file in `configs/_base_/backends` (e.g., `configs/_base_/backends/tensorrt.py`).  If the backend just takes the '.onnx' file as input, the new config can be simple. The config of the backend only consists of one field denoting the name of the backend (which should be same as the name in `mmdeploy/utils/constants.py`).
-
-   **Example**:
+   It is highly recommend to add google style docstring for your param. We will generate arguments for the `ArgumentParser` to ease the console tools.
 
    ```python
-   backend_config = dict(type='onnxruntime')
+   # mmdeploy/backend/newengine/backend_manager.py
+   from ..base import BaseBackendParam
+   class NewEngineParam(BaseBackendParam):
+       """Your first backend parameters.
+
+       Args:
+           work_dir (str): The working directory.
+           file_name (str): File name of the serialized model. Postfix will be
+                added automatically.
+       """
+
+       work_dir:str = None
+       # FileNameDescriptor will add postfix to file name if it does not has one
+       file_name: FileNameDescriptor = FileNameDescriptor(
+           default=None, postfix='.model')
    ```
 
-   If the backend requires other files, then the arguments for the conversion from ".onnx" file to backend files should be included in the config file.
+2. Add a method to tell us the backend model names.
 
-   **Example:**
+   ```python
+   # mmdeploy/backend/newengine/backend_manager.py
+   class NewEngineParam(BaseBackendParam):
 
-   ```Python
+       ...
 
-   backend_config = dict(
-       type='tensorrt',
-       common_config=dict(
-           fp16_mode=False, max_workspace_size=0))
+       def get_model_files(self) -> Union[List, str]:
+           """get the model files."""
+           return osp.join(self.work_dir, self.file_name)
    ```
 
-   After possessing a base backend config file, you can easily construct a complete deploy config through inheritance. Please refer to our [config tutorial](../02-how-to-run/write_config.md) for more details. Here is an example:
+## Check environment
 
-   ```Python
-   _base_ = ['../_base_/backends/onnxruntime.py']
+A backend manager is the entry to everything about the backend. Assume your backend convert model from onnx. You can create the manager below:
 
-   codebase_config = dict(type='mmcls', task='Classification')
-   onnx_config = dict(input_shape=None)
-   ```
+```python
+# mmdeploy/backend/newengine/backend_manager.py
 
-4. If the backend requires model files or weight files other than a ".onnx" file, create a `onnx2backend.py` file in the corresponding folder (e.g., create `mmdeploy/backend/tensorrt/onnx2tensorrt.py`). Then add a conversion function `onnx2backend` in the file. The function should convert a given ".onnx" file to the required backend files in a given work directory. There are no requirements on other parameters of the function and the implementation details. You can use any tools for conversion. Here are some examples:
+from mmdeploy.ir.onnx import ONNXParam
+from ..base import BaseBackendManager
+@BACKEND_MANAGERS.register('newengine', param=NewEngineParam, ir_param=ONNXParam)
+class NewEngineManager(BaseBackendManager):
+```
 
-   **Use Python script:**
+If you decide to contribute the backend manager to MMDeploy, Do not forget to add enumrate in `mmdeploy/utils/constants.py`
 
-   ```Python
-   def onnx2openvino(input_info: Dict[str, Union[List[int], torch.Size]],
-                     output_names: List[str], onnx_path: str, work_dir: str):
+```Python
+# mmdeploy/utils/constants.py
 
-       input_names = ','.join(input_info.keys())
-       input_shapes = ','.join(str(list(elem)) for elem in input_info.values())
-       output = ','.join(output_names)
+class Backend(AdvancedEnum):
+    # Take TensorRT as an example
+    NEWENGINE = 'newengine'
+```
 
-       mo_args = f'--input_model="{onnx_path}" '\
-                 f'--output_dir="{work_dir}" ' \
-                 f'--output="{output}" ' \
-                 f'--input="{input_names}" ' \
-                 f'--input_shape="{input_shapes}" ' \
-                 f'--disable_fusing '
-       command = f'mo.py {mo_args}'
-       mo_output = run(command, stdout=PIPE, stderr=PIPE, shell=True, check=True)
-   ```
+Before we do anything with the backend. We want to make sure everything is fine. Let's add some method to check the environment.
 
-   **Use executable program:**
+- `is_available` return bool indicate that the backend manager is available on current device.
+- `get_version` return the backend version information.
+- `check_env` provide detail information about the backend.
 
-   ```Python
-   def onnx2ncnn(onnx_path: str, work_dir: str):
-       onnx2ncnn_path = get_onnx2ncnn_path()
-       save_param, save_bin = get_output_model_file(onnx_path, work_dir)
-       call([onnx2ncnn_path, onnx_path, save_param, save_bin])\
-   ```
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
 
-5. Define APIs in a new package in  `mmdeploy/apis`.
+    ...
 
-   **Example:**
-
-   ```Python
-   # mmdeploy/apis/ncnn/__init__.py
-
-   from mmdeploy.backend.ncnn import is_available
-
-   __all__ = ['is_available']
-
-   if is_available():
-       from mmdeploy.backend.ncnn.onnx2ncnn import (onnx2ncnn,
-                                                    get_output_model_file)
-       __all__ += ['onnx2ncnn', 'get_output_model_file']
-   ```
-
-   Create a backend manager class which derive from `BaseBackendManager`, implement its `to_backend` static method.
-
-   **Example:**
-
-   ```Python
     @classmethod
-    def to_backend(cls,
-                ir_files: Sequence[str],
-                deploy_cfg: Any,
-                work_dir: str,
-                log_level: int = logging.INFO,
-                device: str = 'cpu',
-                **kwargs) -> Sequence[str]:
-        return ir_files
-   ```
+    def is_available(cls, with_custom_ops: bool = False) -> bool:
+        return my_backend_is_available()
 
-6. Convert the models of OpenMMLab to backends (if necessary) and inference on backend engine. If you find some incompatible operators when testing, you can try to rewrite the original model for the backend following the [rewriter tutorial](support_new_model.md) or add custom operators.
+    @classmethod
+    def get_version(cls) -> str:
+        return my_backend_version()
 
-7. Add docstring and unit tests for new code :).
+    @classmethod
+    def check_env(cls, log_callback: Callable = lambda _: _) -> str:
+        log_callback('Check env of your backend!')
+        return super().check_env(log_callback=log_callback)
+
+```
+
+## Support backend conversion
+
+Most backend has it's own serialize format. To support the conversion, Two method is required in backend manager:
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    def to_backend(cls, ir_model: str, *args, **kwargs):
+        # convert your model here
+
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: NewEngineParam):
+        # convert the model with the backend param you have just defined
+```
+
+`to_backend` convert the model to the your backend. There is no limitation on the arguments of the method. It is up to you.
+
+`to_backend_from_param` accept a serialized IR file and the backend param you have just defined. You can extract fields from the backend param and convert model with `to_backend`.
 
 ## Support backend inference
 
-Although the backend engines are usually implemented in C/C++, it is convenient for testing and debugging if the backend provides Python inference interface. We encourage the contributors to support backend inference in the Python interface of MMDeploy. In this section we will introduce the steps to support backend inference.
-
-1. Add a file named `wrapper.py` to corresponding folder in `mmdeploy/backend/{backend}`. For example, `mmdeploy/backend/tensorrt/wrapper.py`. This module should implement and register a wrapper class that inherits the base class `BaseWrapper` in `mmdeploy/backend/base/base_wrapper.py`.
-
-   **Example:**
-
-   ```Python
-   from mmdeploy.utils import Backend
-   from ..base import BACKEND_WRAPPER, BaseWrapper
-
-   @BACKEND_WRAPPER.register_module(Backend.TENSORRT.value)
-   class TRTWrapper(BaseWrapper):
-   ```
-
-2. The wrapper class can initialize the engine in `__init__` function and inference in `forward` function. Note that the `__init__` function must take a parameter `output_names` and pass it to base class to determine the orders of output tensors. The input and output variables of `forward` should be dictionaries denoting the name and value of the tensors.
-
-3. For the convenience of performance testing, the class should define a "execute" function that only calls the inference interface of the backend engine. The `forward` function should call the "execute" function after preprocessing the data.
-
-   **Example:**
-
-   ```Python
-   from mmdeploy.utils import Backend
-   from mmdeploy.utils.timer import TimeCounter
-   from ..base import BACKEND_WRAPPER, BaseWrapper
-
-   @BACKEND_WRAPPER.register_module(Backend.ONNXRUNTIME.value)
-   class ORTWrapper(BaseWrapper):
-
-       def __init__(self,
-                    onnx_file: str,
-                    device: str,
-                    output_names: Optional[Sequence[str]] = None):
-           # Initialization
-           # ...
-           super().__init__(output_names)
-
-       def forward(self, inputs: Dict[str,
-                                      torch.Tensor]) -> Dict[str, torch.Tensor]:
-           # Fetch data
-           # ...
-
-           self.__ort_execute(self.io_binding)
-
-   		# Postprocess data
-           # ...
-
-       @TimeCounter.count_time('onnxruntime')
-       def __ort_execute(self, io_binding: ort.IOBinding):
-   		# Only do the inference
-           self.sess.run_with_iobinding(io_binding)
-   ```
-
-4. Create a backend manager class which derive from `BaseBackendManager`, implement its `build_wrapper` static method.
-
-   **Example:**
-
-   ```Python
-        @BACKEND_MANAGERS.register('onnxruntime')
-        class ONNXRuntimeManager(BaseBackendManager):
-            @classmethod
-            def build_wrapper(cls,
-                              backend_files: Sequence[str],
-                              device: str = 'cpu',
-                              input_names: Optional[Sequence[str]] = None,
-                              output_names: Optional[Sequence[str]] = None,
-                              deploy_cfg: Optional[Any] = None,
-                              **kwargs):
-                from .wrapper import ORTWrapper
-                return ORTWrapper(
-                    onnx_file=backend_files[0],
-                    device=device,
-                    output_names=output_names)
-   ```
-
-5. Add docstring and unit tests for new code :).
-
-## Support new backends using MMDeploy as a third party
-
-Previous parts show how to add a new backend in MMDeploy, which requires changing its source codes. However, if we treat MMDeploy as a third party, the methods above are no longer efficient. To this end, adding a new backend requires us pre-install another package named `aenum`. We can install it directly through `pip install aenum`.
-
-After installing `aenum` successfully, we can use it to add a new backend through:
+It would be cool if we can evaluate the backend model with python. Create a backend wrapper so we can perform inference with the backend and hide the detail. The inputs/outputs of the wrapper is a `dict` of `torch.Tensor`.
 
 ```python
-from mmdeploy.utils.constants import Backend
-from aenum import extend_enum
+# mmdeploy/backend/newengine/wrapper.py
+from mmdeploy.utils import Backend
+from ..base import BACKEND_WRAPPER, BaseWrapper
 
-try:
-    Backend.get('backend_name')
-except Exception:
-    extend_enum(Backend, 'BACKEND', 'backend_name')
+@BACKEND_WRAPPER.register_module(Backend.NEWENGINE.value)
+class NewEngineWrapper(BaseWrapper):
+
+    def __init__(self, backend_file, other_arguments):
+        # initialize the backend model here
+
+    def forward(self, inputs) -> Dict[str, Tensor]:
+        # perform inference here
 ```
 
-We can run the codes above before we use the rewrite logic of MMDeploy.
+Once you have a backend wrapper, add method in manager to build it.
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    def build_wrapper(cls, backend_file, other_arguments):
+        from .wrapper import NewEngineWrapper
+        return NewEngineWrapper(backend_file, other_arguments)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
+        backend_file = get_backend_file_from_param(param)
+        other_arguments = get_other_arguments_from_param(param)
+        return cls.build_wrapper(backend_file, other_arguments)
+```
+
+## Console argument parser
+
+What if you want to use the backend manager as a console tool. You can implement `parse_args` in the backend manager:
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    @contextlib.contextmanager
+    def parse_args(cls,
+                   parser: ArgumentParser,
+                   args: Optional[List[str]] = None):
+
+        # setup parser
+        parser.add_argument(
+            '--onnx-path', required=True, help='ONNX model path.')
+        NewEngineParam.add_arguments(parser)
+
+        parsed_args = parser.parse_args(args)
+
+        yield parsed_args
+
+        # convert model
+        param = NewEngineParam(
+            work_dir=parsed_args.work_dir,
+            file_name=parsed_args.file_name)
+
+        cls.to_backend_from_param(parsed_args.onnx_path, param)
+```
+
+`NewEngineParam.add_arguments(parser)` would add the arguments to the parser according to the docstring. You can create your console tool as:
+
+```python
+# console_tool.py
+from ... import NewEngineManager
+
+if __name__ == '__main__'
+    NewEngineManager.main()
+```
+
+```bash
+python console_tool.py -h
+
+# usage: test_dataclass.py convert [-h] --onnx-path ONNX_PATH
+#                                  [--work-dir WORK_DIR] [--file-name FILE_NAME]
+#
+# build TensorRTParam
+#
+# optional arguments:
+#   -h, --help            show this help message and exit
+#   --onnx-path ONNX_PATH
+#                         ONNX model path.
+#   --work-dir WORK_DIR   The working directory.
+#   --file-name FILE_NAME
+#                         File name of the serialized model. Postfix will
+#                         beadded automatically.
+
+```
+
+## Unit Test
+
+Develop the unit test can help us test and maintain the backend support. Read scripts in `tests/test_backend` for model details.
+
+## Deploy config support
+
+MMDeploy provide config files to describe the task you want to perform. Our main entry `tools/deploy.py` require the config file to perform the conversion and inference. If you hope the new backend can be use by `tools/deploy.py`, you would need a config too.
+
+The config is a dictionary that composed of `model_config`, `ir_config`, `backend_config`... And they can be inherited by `__base__ = [...]`.
+Create a config for the codebase you want to use the new backend. mmclassification as example:
+
+```python
+_base_ = ['./classification_dynamic.py']
+codebase_config = dict(type='mmcls', task='Classification')
+onnx_config = dict(input_shape=None)
+backend_config = dict(type='newengine')
+```
+
+Read [config tutorial](../02-how-to-run/write_config.md) for more detail about the config file.
+
+Then add a convert tool in the backend manager:
+
+```python
+# mmdeploy/backend/newengine/backend_manager.py
+class NewEngineManager(BaseBackendManager):
+
+    ...
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: Sequence[str] = None,
+                                **kwargs) -> NewEngineParam:
+
+        # create NewEngineParam with the config
+```
+
+Now we have finish all steps. Enjoy the new backend and MMDeploy!

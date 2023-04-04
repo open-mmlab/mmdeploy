@@ -1,24 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 # flake8: noqa
-from .backend_manager import TensorRTManager
+from .backend_manager import TensorRTManager, TensorRTParam
 from .init_plugins import load_tensorrt_plugin
 
 _BackendManager = TensorRTManager
 is_available = _BackendManager.is_available
 build_wrapper = _BackendManager.build_wrapper
+build_wrapper_from_param = _BackendManager.build_wrapper_from_param
+to_backend = _BackendManager.to_backend
+to_backend_from_param = _BackendManager.to_backend_from_param
 
-__all__ = ['TensorRTManager']
-
-if is_available():
-    from .utils import from_onnx, load, save
-
-    __all__ += ['from_onnx', 'save', 'load', 'load_tensorrt_plugin']
-
-    try:
-        # import wrapper if pytorch is available
-        from .torch_allocator import TorchAllocator
-        from .wrapper import TRTWrapper
-        __all__ += ['TRTWrapper']
-        __all__ += ['TorchAllocator', 'TRTWrapper']
-    except Exception:
-        pass
+__all__ = ['load_tensorrt_plugin', 'TensorRTManager', 'TensorRTParam']

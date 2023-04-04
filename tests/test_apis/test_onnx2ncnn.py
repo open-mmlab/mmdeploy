@@ -61,8 +61,7 @@ def test_onnx2ncnn():
 
     work_dir, _ = osp.split(onnx_file)
     save_param, save_bin = get_output_model_file(onnx_file, work_dir=work_dir)
-    file_name = osp.splitext(onnx_file)[0]
-    from_onnx(onnx_file, osp.join(work_dir, file_name))
+    from_onnx(onnx_file, save_param, save_bin)
     assert osp.exists(work_dir)
     assert osp.exists(save_param)
     assert osp.exists(save_bin)

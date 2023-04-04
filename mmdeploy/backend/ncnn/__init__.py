@@ -1,18 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from .backend_manager import NCNNManager
+from .backend_manager import NCNNManager, NCNNParam
 from .onnx2ncnn import from_onnx
 
 _BackendManager = NCNNManager
 
 is_available = _BackendManager.is_available
 build_wrapper = _BackendManager.build_wrapper
+build_wrapper_from_param = _BackendManager.build_wrapper_from_param
+to_backend = _BackendManager.to_backend
+to_backend_from_param = _BackendManager.to_backend_from_param
 
-__all__ = ['NCNNManager', 'from_onnx']
-
-if is_available():
-    try:
-        from .wrapper import NCNNWrapper
-
-        __all__ += ['NCNNWrapper']
-    except Exception:
-        pass
+__all__ = ['NCNNParam', 'NCNNManager', 'from_onnx']

@@ -39,8 +39,8 @@ def get_output_model_file(onnx_path: str,
     return [save_param, save_bin]
 
 
-def from_onnx(onnx_model: Union[onnx.ModelProto, str],
-              output_file_prefix: str):
+def from_onnx(onnx_model: Union[onnx.ModelProto, str], param_path: str,
+              bin_path: str):
     """Convert ONNX to ncnn.
 
     The inputs of ncnn include a model file and a weight file. We need to use
@@ -50,12 +50,14 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     Example:
         >>> from mmdeploy.apis.ncnn import from_onnx
         >>> onnx_path = 'work_dir/end2end.onnx'
-        >>> output_file_prefix = 'work_dir/end2end'
-        >>> from_onnx(onnx_path, output_file_prefix)
+        >>> param_path = 'work_dir/end2end.param'
+        >>> bin_path = 'work_dir/end2end.bin'
+        >>> from_onnx(onnx_path, param_path, bin_path)
 
     Args:
         onnx_path (ModelProto|str): The path of the onnx model.
-        output_file_prefix (str): The path to save the output ncnn file.
+        param_path (str): The path to save the output ncnn param file.
+        bin_path (str): The path to save the output ncnn bin file.
     """
 
     if not isinstance(onnx_model, str):
@@ -64,9 +66,6 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     else:
         onnx_path = onnx_model
 
-    save_param = output_file_prefix + '.param'
-    save_bin = output_file_prefix + '.bin'
-
     onnx2ncnn_path = get_onnx2ncnn_path()
-    ret_code = call([onnx2ncnn_path, onnx_path, save_param, save_bin])
+    ret_code = call([onnx2ncnn_path, onnx_path, param_path, bin_path])
     assert ret_code == 0, 'onnx2ncnn failed'

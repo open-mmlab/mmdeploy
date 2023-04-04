@@ -1,30 +1,43 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
-
-import onnx
-import tvm
-import tvm.relay as relay
-from vacc import quantize
+from typing import Dict, Optional, Sequence
 
 
-def from_onnx(onnx_model: str, output_path: str, model_input: dict,
-              model_name: str, **kwargs):
+def from_onnx(
+    onnx_model: str,
+    output_path: str,
+    model_name: str,
+    input_shapes: Dict[str, Sequence],
+    quant_mode: str = 'fp16',
+    calib_num: int = 1000,
+    qconfig: Optional[Dict] = None,
+    data_transmode: int = 1,
+    cluster_mode: int = 0,
+):
     """Convert ONNX to VACC.
 
     Args:
         onnx_model (str): Input onnx model.
         output_path (str): File path to save VACC model.
-        model_input (dict): model input config.
         model_name (str): model name.
+        input_shapes (ShapeType): The Default shape of the inputs.
+        quant_mode (str): quantization mode, choice between ['fp16', 'int8']
+        calib_num (int): Max numbers of calibration data.
+        qconfig (Dict): Dictionary arguments feed to vacc.qconfig.
+        data_transmode (int): `tvm.build_config` arguments.
+        cluster_mode (int): `tvm.build_config` arguments.
     """
+    import onnx
+    import tvm
+    import tvm.relay as relay
+    from vacc import quantize
 
     target = tvm.target.vacc()
 
-    quant_mode = model_input.get('qconfig', {}).get('dtype', 'fp16')
     assert quant_mode in ['int8', 'fp16'], quant_mode + ' not support now'
 
-    shape_dict = model_input['shape']
+    shape_dict = input_shapes
     mod, params = relay.frontend.from_onnx(onnx.load(onnx_model), shape_dict)
 
     func = mod['main']
@@ -40,23 +53,19 @@ def from_onnx(onnx_model: str, output_path: str, model_input: dict,
 
         index = list(range(len(data)))
         random.shuffle(index)
-        calib_num = model_input.get('qconfig', {}).get('calib_num', 1000)
         for i in index[:calib_num]:
             calib_data.append({
                 list(shape_dict.keys())[0]:
                 tvm.nd.array(data[str(i)][:].astype('float32'))
             })
 
+        if qconfig is None:
+            qconfig = dict()
         with quantize.qconfig(
-                calibrate_mode=model_input.get('qconfig',
-                                               {}).get('calibrate_mode',
-                                                       'percentile'),
-                skip_conv_layers=model_input.get('qconfig', {}).get(
-                    'skip_conv_layers', []),
-                weight_scale=model_input.get('qconfig',
-                                             {}).get('weight_scale', 'max'),
-                quantize_per_channel=model_input.get('qconfig', {}).get(
-                    'per_channel', False)):
+                calibrate_mode=qconfig.get('calibrate_mode', 'percentile'),
+                skip_conv_layers=qconfig.get('skip_conv_layers', []),
+                weight_scale=qconfig.get('weight_scale', 'max'),
+                quantize_per_channel=qconfig.get('per_channel', False)):
 
             qmod = quantize.quantize(mod, params, calib_data)
 
@@ -70,11 +79,9 @@ def from_onnx(onnx_model: str, output_path: str, model_input: dict,
 
     with tvm.build_config(
             data_type=data_type,
-            data_transport_mode=model_input.get('qconfig',
-                                                {}).get('data_transmode', 1),
+            data_transport_mode=data_transmode,
             mem_inplace=True,
-            cluster_mode=model_input.get('qconfig', {}).get('cluster_mode',
-                                                            0)):
+            cluster_mode=cluster_mode):
         with relay.build_config(
                 opt_level=2, stream_mode=True, enable_float_to_half=True):
             graph, lib, params = relay.build(
@@ -96,10 +103,5 @@ def from_onnx(onnx_model: str, output_path: str, model_input: dict,
     with open(param_path, 'wb') as f:
         f.write(relay.save_param_dict(params))
 
-    assert osp.exists(os.path.join(output_root,
-                                   model_name + '.params')), 'onnx2vacc failed'
-    return [
-        os.path.join(output_root, model_name + '.so'),
-        os.path.join(output_root, model_name + '.json'),
-        os.path.join(output_root, model_name + '.params')
-    ]
+    assert osp.exists(param_path), 'onnx2vacc failed'
+    return [libpath, graph_json_path, param_path]

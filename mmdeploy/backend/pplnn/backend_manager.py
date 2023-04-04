@@ -1,40 +1,55 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import logging
+import contextlib
 import os.path as osp
-from typing import Any, Optional, Sequence
+from argparse import ArgumentParser
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Sequence
 
-from ..base import BACKEND_MANAGERS, BaseBackendManager
+from mmdeploy.ir.onnx import ONNXParam
+from ..base import (BACKEND_MANAGERS, BaseBackendManager, BaseBackendParam,
+                    FileNameDescriptor, import_custom_modules)
 
 
-@BACKEND_MANAGERS.register('pplnn')
+@dataclass
+class PPLNNParam(BaseBackendParam):
+    """PPLNN backend parameters.
+
+    Args:
+        work_dir (str): The working directory.
+        file_name (str): File name of the serialized model. Postfix will be
+            added automatically.
+        algo_name (str): Serialized algorithm file. If not given,
+            algo_name would be he same as file_name with postfix `.json`
+        input_shapes (ShapeType): The Default shape of the inputs.
+        device (str): Inference device.
+        disable_avx512 (bool): Whether to disable avx512 for x86.
+            Defaults to `False`.
+        quick_select (bool): Whether to use default algorithms.
+            Defaults to `False`.
+    """
+
+    file_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.onnx')
+    algo_name: FileNameDescriptor = FileNameDescriptor(
+        default=None, postfix='.json', base_name='file_name')
+    disable_avx512: bool = False
+    quick_select: bool = False
+
+    def get_model_files(self) -> List[str]:
+        """get the model files."""
+        assert isinstance(self.work_dir, str)
+        assert isinstance(self.file_name, str)
+        param_file_path = osp.join(self.work_dir, self.file_name)
+        assert isinstance(self.algo_name, str)
+        algorithm_file_path = osp.join(self.work_dir, self.algo_name)
+        return param_file_path, algorithm_file_path
+
+
+_BackendParam = PPLNNParam
+
+
+@BACKEND_MANAGERS.register('pplnn', param=_BackendParam, ir_param=ONNXParam)
 class PPLNNManager(BaseBackendManager):
-
-    @classmethod
-    def build_wrapper(cls,
-                      backend_files: Sequence[str],
-                      device: str = 'cpu',
-                      input_names: Optional[Sequence[str]] = None,
-                      output_names: Optional[Sequence[str]] = None,
-                      deploy_cfg: Optional[Any] = None,
-                      **kwargs):
-        """Build the wrapper for the backend model.
-
-        Args:
-            backend_files (Sequence[str]): Backend files.
-            device (str, optional): The device info. Defaults to 'cpu'.
-            input_names (Optional[Sequence[str]], optional): input names.
-                Defaults to None.
-            output_names (Optional[Sequence[str]], optional): output names.
-                Defaults to None.
-            deploy_cfg (Optional[Any], optional): The deploy config. Defaults
-                to None.
-        """
-        from .wrapper import PPLNNWrapper
-        return PPLNNWrapper(
-            onnx_file=backend_files[0],
-            algo_file=backend_files[1] if len(backend_files) > 1 else None,
-            device=device,
-            output_names=output_names)
 
     @classmethod
     def is_available(cls, with_custom_ops: bool = False) -> bool:
@@ -64,45 +79,184 @@ class PPLNNManager(BaseBackendManager):
 
     @classmethod
     def to_backend(cls,
-                   ir_files: Sequence[str],
-                   work_dir: str,
-                   deploy_cfg: Any,
-                   log_level: int = logging.INFO,
+                   onnx_file: str,
+                   output_file: str,
+                   algo_file: Optional[str] = None,
+                   input_shapes: Optional[Dict[str, Sequence]] = None,
                    device: str = 'cpu',
-                   **kwargs) -> Sequence[str]:
+                   disable_avx512: bool = False,
+                   quick_select: bool = False) -> Sequence[str]:
         """Convert intermediate representation to given backend.
 
         Args:
-            ir_files (Sequence[str]): The intermediate representation files.
-            work_dir (str): The work directory, backend files and logs should
-                be saved in this directory.
-            deploy_cfg (Any): The deploy config.
-            log_level (int, optional): The log level. Defaults to logging.INFO.
+            onnx_file (str): Path of input ONNX model file.
+            output_file (str): Path of output ONNX model file.
+            algo_file (str): Path of PPLNN algorithm file.
+            input_shapes (Dict[str, Sequence[int]] | None): Shapes for PPLNN
+                optimization, default to None.
             device (str, optional): The device type. Defaults to 'cpu'.
+            disable_avx512 (bool): Whether to disable avx512 for x86.
+                Defaults to `False`.
+            quick_select (bool): Whether to use default algorithms.
+                Defaults to `False`.
         Returns:
             Sequence[str]: Backend files.
         """
-        from mmdeploy.utils import get_model_inputs
-        from . import is_available
         from .onnx2pplnn import from_onnx
-        assert is_available(), \
+        assert cls.is_available(), \
             'PPLNN is not available, please install PPLNN first.'
 
-        pplnn_files = []
-        for onnx_path in ir_files:
-            algo_file = onnx_path.replace('.onnx', '.json')
-            model_inputs = get_model_inputs(deploy_cfg)
-            assert 'opt_shape' in model_inputs, 'Expect opt_shape ' \
-                'in deploy config for PPLNN'
-            # PPLNN accepts only 1 input shape for optimization,
-            # may get changed in the future
-            input_shapes = [model_inputs.opt_shape]
-            algo_prefix = osp.splitext(algo_file)[0]
-            from_onnx(
-                onnx_path,
-                algo_prefix,
-                device=device,
-                input_shapes=input_shapes)
-            pplnn_files += [onnx_path, algo_file]
+        from_onnx(
+            onnx_file,
+            output_file,
+            algo_file,
+            input_shapes=input_shapes,
+            device=device,
+            disable_avx512=disable_avx512,
+            quick_select=quick_select)
 
-        return pplnn_files
+    @classmethod
+    def to_backend_from_param(cls, ir_model: str, param: _BackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            ir_model (str): The ir model path to perform the export.
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        assert isinstance(param, _BackendParam)
+        assert isinstance(param.work_dir, str)
+        assert isinstance(param.file_name, str)
+        model_path = osp.join(param.work_dir, param.file_name)
+        assert isinstance(param.algo_name, str)
+        algo_path = osp.join(param.work_dir, param.algo_name)
+
+        input_shapes = param.input_shapes
+        device = param.device
+
+        cls.to_backend(
+            ir_model,
+            model_path,
+            algo_file=algo_path,
+            input_shapes=input_shapes,
+            device=device,
+            disable_avx512=param.disable_avx512,
+            quick_select=param.quick_select)
+
+    @classmethod
+    def build_wrapper(cls,
+                      onnx_file: str,
+                      algo_file: Optional[str] = None,
+                      device: str = 'cpu',
+                      output_names: Optional[Sequence[str]] = None):
+        """Build the wrapper for the backend model.
+
+        Args:
+            onnx_file (str): Path of input ONNX model file.
+            algo_file (str): Path of PPLNN algorithm file.
+            device (str, optional): The device info. Defaults to 'cpu'.
+            output_names (Optional[Sequence[str]], optional): output names.
+                Defaults to None.
+        """
+        from .wrapper import PPLNNWrapper
+        return PPLNNWrapper(
+            onnx_file=onnx_file,
+            algo_file=algo_file if osp.exists(algo_file) else None,
+            device=device,
+            output_names=output_names)
+
+    @classmethod
+    def build_wrapper_from_param(cls, param: _BackendParam):
+        """Export to backend with packed backend parameter.
+
+        Args:
+            param (BaseBackendParam): Packed backend parameter.
+        """
+        model_path, algo_path = param.get_model_files()
+        output_names = param.output_names
+        if len(output_names) == 0:
+            output_names = None
+        device = param.device
+        return cls.build_wrapper(
+            model_path, algo_path, device=device, output_names=output_names)
+
+    @classmethod
+    def build_param_from_config(cls,
+                                config: Any,
+                                work_dir: str,
+                                backend_files: Sequence[str] = None,
+                                **kwargs) -> _BackendParam:
+        """Build param from deploy config.
+
+        Args:
+            config (Any): The deploy config.
+            work_dir (str): work directory of the parameters.
+            backend_files (List[str]): The backend files of the model.
+
+        Returns:
+            BaseBackendParam: The packed backend parameter.
+        """
+        from mmdeploy.utils import get_model_inputs
+        model_inputs = get_model_inputs(config)
+        input_shapes = model_inputs.get('opt_shape', [1, 3, 224, 224])
+        input_shapes = [input_shapes]
+
+        kwargs.setdefault('work_dir', work_dir)
+        kwargs.setdefault('input_shapes', input_shapes)
+
+        backend_files = [] if backend_files is None else backend_files
+        if len(backend_files) > 0:
+            kwargs['file_name'] = backend_files[0]
+        if len(backend_files) > 1:
+            kwargs['algo_name'] = backend_files[1]
+        return _BackendParam(**kwargs)
+
+    @classmethod
+    @contextlib.contextmanager
+    def parse_args(cls,
+                   parser: ArgumentParser,
+                   args: Optional[List[str]] = None):
+        """Parse console arguments.
+
+        Args:
+            parser (ArgumentParser): The parser used to parse arguments.
+            args (Optional[List[str]], optional): Arguments to be parsed. If
+                not given, arguments from console will be parsed.
+        """
+
+        # parse args
+        sub_parsers = parser.add_subparsers(
+            title='command',
+            description='Please select the command you want to perform.',
+            dest='_command')
+
+        # export model
+        export_parser = sub_parsers.add_parser(
+            name='convert', help='convert model from ONNX model.')
+        export_parser.add_argument(
+            '--onnx-path', required=True, help='ONNX model path.')
+        _BackendParam.add_arguments(export_parser)
+        export_parser.add_argument(
+            '--custom-modules',
+            type=str,
+            nargs='*',
+            help='Import custom modules.')
+
+        parsed_args = parser.parse_args(args)
+        yield parsed_args
+        import_custom_modules(parsed_args.custom_modules)
+
+        # perform command
+        command = parsed_args._command
+
+        if command == 'convert':
+            # convert model
+            param = _BackendParam(
+                work_dir=parsed_args.work_dir,
+                file_name=parsed_args.file_name,
+                algo_name=parsed_args.algo_name,
+                input_shapes=parsed_args.input_shapes,
+                device=parsed_args.device,
+                disable_avx512=parsed_args.disable_avx512,
+                quick_select=parsed_args.quick_select)
+
+            cls.to_backend_from_param(parsed_args.onnx_path, param)

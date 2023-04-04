@@ -1,6 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-
-import os.path as osp
 import random
 import string
 import tempfile
@@ -147,7 +145,7 @@ class SwitchBackendWrapper:
     """A switcher for backend wrapper for unit tests.
     Examples:
         >>> from mmdeploy.utils.test import SwitchBackendWrapper
-        >>> from mmdeploy.backend.onnxruntime import ORTWrapper
+        >>> from mmdeploy.backend.onnxruntime.wrapper import ORTWrapper
         >>> with SwitchBackendWrapper(ORTWrapper) as wrapper:
         >>>     wrapper.set(ORTWrapper, outputs=outputs)
         >>>     ...
@@ -184,8 +182,10 @@ class SwitchBackendWrapper:
 
     def __init__(self, recover_class):
         self._recover_class = recover_class
+        self._initialized = False
 
     def __enter__(self):
+        self.set()
         return self
 
     def __exit__(self, type, value, trace):
@@ -194,12 +194,14 @@ class SwitchBackendWrapper:
     def set(self, **kwargs):
         """Replace attributes in backend wrappers with dummy items."""
         obj = self._recover_class
-        self.init = obj.__init__
-        self.forward = obj.forward
-        self.call = obj.__call__
-        obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
-        obj.forward = SwitchBackendWrapper.BackendWrapper.forward
-        obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
+        if not self._initialized:
+            self.init = obj.__init__
+            self.forward = obj.forward
+            self.call = obj.__call__
+            obj.__init__ = SwitchBackendWrapper.BackendWrapper.__init__
+            obj.forward = SwitchBackendWrapper.BackendWrapper.forward
+            obj.__call__ = SwitchBackendWrapper.BackendWrapper.__call__
+            self._initialized = True
         for k, v in kwargs.items():
             setattr(obj, k, v)
 
@@ -208,10 +210,12 @@ class SwitchBackendWrapper:
         assert self.init is not None and \
             self.forward is not None,\
             'recover method must be called after exchange'
-        obj = self._recover_class
-        obj.__init__ = self.init
-        obj.forward = self.forward
-        obj.__call__ = self.call
+        if self._initialized:
+            obj = self._recover_class
+            obj.__init__ = self.init
+            obj.forward = self.forward
+            obj.__call__ = self.call
+            self._initialized = False
 
 
 def assert_allclose(expected: List[Union[torch.Tensor, np.ndarray]],
@@ -333,17 +337,17 @@ def get_onnx_model(wrapped_model: nn.Module,
 
     model = DummyModel().eval()
 
-    with RewriterContext(
-            cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
-        torch.onnx.export(
+    with torch.no_grad():
+        from mmdeploy.ir.onnx import ONNXManager
+        ONNXManager.export(
             model, (model_inputs, {}),
             onnx_file_path,
-            export_params=True,
             input_names=input_names,
             output_names=output_names,
             opset_version=11,
             dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=False)
+            backend=backend.value,
+            rewrite_context=deploy_cfg)
     return onnx_file_path
 
 
@@ -360,20 +364,18 @@ def get_ts_model(wrapped_model: nn.Module,
     Returns:
         str: The path to the TorchScript model file.
     """
-    ir_file_path = tempfile.NamedTemporaryFile(suffix='.pt').name
+    ir_file_path = tempfile.NamedTemporaryFile(suffix='.pth').name
     backend = get_backend(deploy_cfg)
 
-    from mmdeploy.apis.torch_jit import trace
-    context_info = dict(deploy_cfg=deploy_cfg)
-    output_prefix = osp.splitext(ir_file_path)[0]
+    from mmdeploy.ir.torchscript import TorchScriptManager
 
     example_inputs = [v for _, v in model_inputs.items()]
-    trace(
+    TorchScriptManager.export(
         wrapped_model,
         example_inputs,
-        output_path_prefix=output_prefix,
+        output_path=ir_file_path,
         backend=backend,
-        context_info=context_info)
+        rewrite_context=deploy_cfg)
     return ir_file_path
 
 
@@ -404,44 +406,45 @@ def get_backend_outputs(ir_file_path: str,
             k for k, v in flatten_model_inputs.items() if k != 'ctx'
         ]
 
-    work_dir = tempfile.TemporaryDirectory().name
-    device = 'cpu'
+    with tempfile.TemporaryDirectory() as work_dir:
+        device = 'cpu'
 
-    # TODO: Try to wrap these code into backend manager
-    if backend != Backend.TORCHSCRIPT:
-        model_inputs = flatten_model_inputs
-    if backend == Backend.TENSORRT:
-        device = 'cuda'
-        model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
-    elif backend == Backend.OPENVINO:
-        input_info = {
-            name: value.shape
-            for name, value in flatten_model_inputs.items()
-        }
-        deploy_cfg['backend_config']['model_inputs'] = [
-            dict(opt_shapes=input_info)
-        ]
-    backend_files = to_backend(
-        backend.value, [ir_file_path],
-        work_dir=work_dir,
-        deploy_cfg=deploy_cfg,
-        device=device)
-    backend_feats = model_inputs
+        # TODO: Try to wrap these code into backend manager
+        if backend != Backend.TORCHSCRIPT:
+            model_inputs = flatten_model_inputs
+        if backend == Backend.TENSORRT:
+            device = 'cuda'
+            model_inputs = dict((k, v.cuda()) for k, v in model_inputs.items())
+        elif backend == Backend.OPENVINO:
+            input_info = {
+                name: value.shape
+                for name, value in flatten_model_inputs.items()
+            }
+            deploy_cfg['backend_config']['model_inputs'] = [
+                dict(opt_shapes=input_info)
+            ]
+        backend_files = to_backend(
+            backend.value, [ir_file_path],
+            work_dir=work_dir,
+            deploy_cfg=deploy_cfg,
+            device=device)
+        backend_feats = model_inputs
 
-    if backend == Backend.TORCHSCRIPT:
-        backend_feats = [v for _, v in model_inputs.items()]
+        if backend == Backend.TORCHSCRIPT:
+            backend_feats = [v for _, v in model_inputs.items()]
 
-    from mmdeploy.codebase.base import BaseBackendModel
-    backend_model = BaseBackendModel._build_wrapper(
-        backend,
-        backend_files,
-        device,
-        input_names=input_names,
-        output_names=output_names)
-    with torch.no_grad():
-        backend_outputs = backend_model(backend_feats)
-    backend_outputs = backend_model.output_to_list(backend_outputs)
-    return backend_outputs
+        from mmdeploy.codebase.base import BaseBackendModel
+        backend_model = BaseBackendModel._build_wrapper(
+            backend,
+            backend_files,
+            device,
+            input_names=input_names,
+            output_names=output_names,
+            deploy_cfg=deploy_cfg)
+        with torch.no_grad():
+            backend_outputs = backend_model(backend_feats)
+        backend_outputs = backend_model.output_to_list(backend_outputs)
+        return backend_outputs
 
 
 def get_rewrite_outputs(wrapped_model: nn.Module,

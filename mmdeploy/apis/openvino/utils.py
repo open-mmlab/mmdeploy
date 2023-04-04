@@ -3,7 +3,7 @@ from typing import Dict, List
 
 import mmengine
 
-from mmdeploy.backend.openvino import ModelOptimizerOptions
+from mmdeploy.backend.openvino.utils import ModelOptimizerOptions
 from mmdeploy.utils import get_model_inputs
 from mmdeploy.utils.config_utils import get_backend_config, get_ir_config
 

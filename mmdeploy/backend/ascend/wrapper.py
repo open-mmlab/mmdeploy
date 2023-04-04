@@ -238,6 +238,7 @@ class Context:
                 ret = acl.init()
                 if ret == 0:
                     Context.owned_acl = True
+                    Context.ref_count += 1  # add one to prevent early release
                 elif ret == 100002:  # ACL_ERROR_REPEAT_INITIALIZE
                     pass
                 else:
@@ -306,7 +307,7 @@ class AscendWrapper(BaseWrapper):
         model (str): Path of the model file.
 
     Examples:
-        >>> from mmdeploy.backend.ascend import AscendWrapper
+        >>> from mmdeploy.backend.ascend.wrapper import AscendWrapper
         >>> import torch
         >>>
         >>> model_file = 'model.om'

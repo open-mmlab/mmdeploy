@@ -6,7 +6,7 @@ __all__ = ['is_available']
 
 if is_available():
     try:
-        from mmdeploy.backend.vacc import from_onnx as _from_onnx
+        from mmdeploy.backend.vacc.onnx2vacc import from_onnx as _from_onnx
         from_onnx = PIPELINE_MANAGER.register_pipeline()(_from_onnx)
         __all__ += ['from_onnx']
     except Exception:

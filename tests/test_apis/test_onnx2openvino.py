@@ -53,7 +53,7 @@ def get_outputs(pytorch_model, openvino_model_path, input, input_name,
                 output_name):
     output_pytorch = pytorch_model(input).numpy()
 
-    from mmdeploy.backend.openvino import OpenVINOWrapper
+    from mmdeploy.backend.openvino.wrapper import OpenVINOWrapper
     openvino_model = OpenVINOWrapper(openvino_model_path)
     openvino_output = openvino_model({input_name: input})[output_name]
 
@@ -92,21 +92,29 @@ def test_onnx2openvino(get_deploy_cfg):
 
     input_info = {input_name: export_img.shape}
     output_names = [output_name]
-    openvino_dir = tempfile.TemporaryDirectory().name
-    deploy_cfg = get_deploy_cfg()
-    mo_options = get_mo_options_from_cfg(deploy_cfg)
-    from_onnx(onnx_file, openvino_dir, input_info, output_names, mo_options)
-    openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
-    assert osp.exists(openvino_model_path), \
-        'The file (.xml) for OpenVINO IR has not been created.'
+    with tempfile.TemporaryDirectory() as openvino_dir:
+        deploy_cfg = get_deploy_cfg()
+        mo_options = get_mo_options_from_cfg(deploy_cfg)
+        mo_options = mo_options.get_options()
+        openvino_model_path = get_output_model_file(onnx_file, openvino_dir)
 
-    test_img = torch.rand([1, 3, 16, 16])
-    output_pytorch, openvino_output = get_outputs(pytorch_model,
-                                                  openvino_model_path,
-                                                  test_img, input_name,
-                                                  output_name)
-    assert np.allclose(output_pytorch, openvino_output), \
-        'OpenVINO and PyTorch outputs are not the same.'
+        from_onnx(
+            onnx_file,
+            openvino_model_path,
+            input_info,
+            output_names,
+            work_dir=openvino_dir,
+            mo_options=mo_options)
+        assert osp.exists(openvino_model_path), \
+            'The file (.xml) for OpenVINO IR has not been created.'
+
+        test_img = torch.rand([1, 3, 16, 16])
+        output_pytorch, openvino_output = get_outputs(pytorch_model,
+                                                      openvino_model_path,
+                                                      test_img, input_name,
+                                                      output_name)
+        assert np.allclose(output_pytorch, openvino_output), \
+            'OpenVINO and PyTorch outputs are not the same.'
 
 
 @backend_checker(Backend.OPENVINO)

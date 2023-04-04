@@ -20,7 +20,7 @@ class PPLNNWrapper(BaseWrapper):
         algo_file (str): Path of PPLNN algorithm file.
         device_id (int): Device id to put model.
     Examples:
-        >>> from mmdeploy.backend.pplnn import PPLNNWrapper
+        >>> from mmdeploy.backend.pplnn.wrapper import PPLNNWrapper
         >>> import torch
         >>>
         >>> onnx_file = 'model.onnx'
