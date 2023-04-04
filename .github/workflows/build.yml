@@ -73,14 +73,18 @@ jobs:
         run: sudo apt update
       - name: gcc-multilib
         run: |
-          sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           sudo apt update
-          sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo apt install libopencv-dev lcov wget
+          sudo apt install libopencv-dev lcov wget -y
       - name: Build and run SDK unit test without backend
         run: |
           mkdir -p build && pushd build
-          cmake .. -DCMAKE_CXX_COMPILER=g++-7  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
+          cmake .. \
+            -DMMDEPLOY_CODEBASES=all \
+            -DMMDEPLOY_BUILD_SDK=ON \
+            -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF \
+            -DMMDEPLOY_TARGET_DEVICES=cpu \
+            -DMMDEPLOY_COVERAGE=ON \
+            -DMMDEPLOY_BUILD_TEST=ON
           make -j2
           mkdir -p mmdeploy_test_resources/transform
           cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
@@ -127,6 +131,8 @@ jobs:
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y git
+      - name: Install PyTorch
+        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
