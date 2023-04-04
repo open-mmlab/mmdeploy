@@ -46,10 +46,10 @@ jobs:
         run: |
           python -m pip install openmim
           python -m pip install -r requirements.txt
-          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U numpy clip
+          python -m pip install -U numpy clip numba
           python -m pip list
       - name: Install mmyolo
         run: |
@@ -136,17 +136,20 @@ jobs:
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -V
+          python -m pip install --upgrade pip
+          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
           python -m pip install -r requirements.txt
-          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip
+          python -m pip install -U pycuda numpy clip numba
           python -m pip list
       - name: Build and install
         run: |
@@ -162,7 +165,6 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
-
     strategy:
       matrix:
         torch: [1.8.0+cu111]
@@ -179,17 +181,20 @@ jobs:
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -V
+          python -m pip install --upgrade pip
+          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
           python -m pip install -r requirements.txt
-          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip
+          python -m pip install -U pycuda numpy clip numba
           python -m pip list
       - name: Build and install
         run: |
@@ -276,7 +281,7 @@ jobs:
           python -V
           python -m pip install openmim
           python -m pip install -r requirements.txt
-          python -m pip install $(cat requirements/backends.txt | grep onnxruntime)
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcls>=1.0.0rc2"
           python -m pip list
       - name: Build mmdeploy
