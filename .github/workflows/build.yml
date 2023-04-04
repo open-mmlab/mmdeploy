@@ -126,14 +126,13 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
+          apt-get update && apt-get install -y git
       - name: Install dependencies
         run: |
           python -V
-          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
-          CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
-          pip install -U pycuda
-          python -m pip install -U numpy
+          python -m pip install -U pip
+          python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu102/${{matrix.torch_version}}/index.html
+          python -m pip install -r requirements.txt
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
@@ -162,14 +161,13 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
+          apt-get update && apt-get install -y git
       - name: Install dependencies
         run: |
           python -V
+          python -m pip install -U pip
           python -m pip install mmcv-full==${{matrix.mmcv}} -f https://download.openmmlab.com/mmcv/dist/cu111/${{matrix.torch_version}}/index.html
-          CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'` python -m pip install -r requirements.txt
-          pip install -U pycuda
-          python -m pip install -U numpy
+          python -m pip install -r requirements.txt
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
