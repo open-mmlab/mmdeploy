@@ -34,7 +34,6 @@ jobs:
           sudo apt install wget libprotobuf-dev protobuf-compiler
           sudo apt update
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
           sudo apt install libopencv-dev
           pkg-config --libs opencv
       - name: Install snpe

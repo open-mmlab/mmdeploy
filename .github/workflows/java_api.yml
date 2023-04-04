@@ -26,7 +26,7 @@ jobs:
         with:
           submodules: 'recursive'
       - name: Set up Python 3.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.7
       - name: Install unittest dependencies
