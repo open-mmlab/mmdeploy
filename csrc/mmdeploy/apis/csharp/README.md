@@ -33,10 +33,10 @@ There are two methods to build the nuget package.
 
 (*option 1*) Use the command.
 
-If your environment is well prepared, you can just go to the `csrc\apis\csharp` folder, open a terminal and type the following command, the nupkg will be built in `csrc\apis\csharp\MMDeploy\bin\Release\MMDeployCSharp.1.0.0-rc2.nupkg`.
+If your environment is well prepared, you can just go to the `csrc\apis\csharp` folder, open a terminal and type the following command, the nupkg will be built in `csrc\apis\csharp\MMDeploy\bin\Release\MMDeployCSharp.1.0.0.nupkg`.
 
 ```shell
-dotnet build --configuration Release -p:Version=1.0.0-rc2
+dotnet build --configuration Release -p:Version=1.0.0
 ```
 
 (*option 2*) Open MMDeploy.sln && Build.
