@@ -1,4 +1,2 @@
-aenum
-grpcio
 h5py
 tqdm

@@ -1,4 +1,5 @@
-
+aenum
+grpcio
 matplotlib
 mmengine
 multiprocess
