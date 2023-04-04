@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   test_onnx2ncnn:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7]

@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   build_cpu_model_convert:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -70,7 +70,7 @@ jobs:
           pytest tests/test_deploy
 
   build_cpu_sdk:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -116,7 +116,7 @@ jobs:
           sh -x tools/scripts/ubuntu_cross_build_aarch64.sh
 
   build_cuda102:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
     env:
@@ -164,7 +164,7 @@ jobs:
           coverage report -m
 
   build_cuda111:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
 

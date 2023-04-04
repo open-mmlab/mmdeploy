@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   test_ncnn_PTQ:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
 
