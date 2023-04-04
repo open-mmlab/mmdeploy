@@ -197,7 +197,7 @@ $script_block = {
         [string] $exec_performance,
         [string] $codebase_fullname,
         [string] $log_dir,
-        [string] $scriptDir
+        [string] $scriptDir,
         [string] $mmdeploy_branch
     )
     Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
