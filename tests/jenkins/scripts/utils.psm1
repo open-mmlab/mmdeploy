@@ -30,7 +30,7 @@ function InitMim() {
     if ($mmdeploy_branch -eq "master" ){
         git clone --depth 1 -b master $url $place
     }
-    elseif ($cuda_version -eq "dev-1.x") {
+    elseif ($mmdeploy_branch -eq "dev-1.x") {
         git clone --depth 1 -b dev-3.x $url $place
     }
 
