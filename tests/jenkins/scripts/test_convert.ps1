@@ -198,9 +198,10 @@ $script_block = {
         [string] $codebase_fullname,
         [string] $log_dir,
         [string] $scriptDir
+        [string] $mmdeploy_branch
     )
-    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.txt"
-    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname *> $log_dir\$codebase.txt"
+    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
+    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
 }
 
 $threads = @()
@@ -208,7 +209,7 @@ $threads = @()
 $handles = foreach ($codebase in $codebase_list -split ' ')
 {
     $codebase_fullname = $codebase_fullname_opt.([string]$codebase)
-    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname).AddArgument($log_dir).AddArgument($scriptDir)
+    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname).AddArgument($log_dir).AddArgument($scriptDir).AddArgument($mmdeploy_branch)
 	  $powershell.RunspacePool = $Pool
 	  $powershell.BeginInvoke()
     $threads += $powershell

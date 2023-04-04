@@ -20,13 +20,20 @@ function ReadConfig() {
 function InitMim() {
     param (
         [string] $codebase,
-        [string] $codebase_fullname
+        [string] $codebase_fullname,
+        [string] $mmdeploy_branch
     )
     $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
     $place = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
     Write-Host "---------------------- start cloning $fullname ----------------------"
 #     Write-Host " branch = $mbranch"
-    git clone --depth 1  $url $place
+    if ($mmdeploy_branch -eq "master" ){
+        git clone --depth 1 -b master $url $place
+    }
+    elseif ($cuda_version -eq "dev-1.x") {
+        git clone --depth 1 -b dev-3.x $url $place
+    }
+
     Write-Host "---------------------- end cloning $fullname ----------------------"
 }
 

@@ -1,7 +1,8 @@
 param(
     $codebase,
     $exec_performance,
-    $codebase_fullname
+    $codebase_fullname,
+    $mmdeploy_branch
 )
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
@@ -17,7 +18,7 @@ $codebase_path = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
 Write-Host "codebase_path = $codebase_path"
 $log_dir = (Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION")
 Write-Host "log_dir = $log_dir"
-InitMim $codebase $codebase_fullname
+InitMim $codebase $codebase_fullname $mmdeploy_branch
 pip uninstall mmcv-full -y
 pip uninstall $codebase -y
 if ($codebase -eq "mmdet3d")
