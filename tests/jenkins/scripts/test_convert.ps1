@@ -83,6 +83,7 @@ if ( $exec_performance -eq "y" ) {
 }
 Write-Host "$pwd"
 cd ..
+$env:JENKINS_WORKSPACE="$pwd"
 Write-Host "$pwd"
 git clone -b $mmdeploy_branch $repo_url
 cd mmdeploy

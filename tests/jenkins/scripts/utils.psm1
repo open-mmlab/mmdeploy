@@ -22,7 +22,7 @@ function InitMim() {
         [string] $codebase_fullname
     )
     $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
-    $place = (Join-Path $env:WORKSPACE $codebase_fullname)
+    $place = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
     Write-Host "---------------------- start cloning $fullname ----------------------"
     git clone --depth 1 $url $place
     Write-Host "---------------------- end cloning $fullname ----------------------"
