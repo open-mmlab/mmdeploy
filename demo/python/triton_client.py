@@ -61,6 +61,10 @@ def vis_rdet(img, bboxes, labels):
 
 
 def vis_seg(img, mask, scores):
+    if mask is not None:
+        print(f'mask {mask.shape}')
+    if scores is not None:
+        print(f'scores {scores.shape}')
     if mask is None:
         mask = np.argmax(scores, axis=0)
 
@@ -127,8 +131,9 @@ def main():
     vis = visualize(img, *map(response.as_numpy, output_names))
 
     if vis is not None:
-        cv2.imshow('', vis)
-        cv2.waitKey(0)
+        cv2.imwrite('vis.jpg', vis)
+        # cv2.imshow('', vis)
+        # cv2.waitKey(0)
 
 
 if __name__ == '__main__':

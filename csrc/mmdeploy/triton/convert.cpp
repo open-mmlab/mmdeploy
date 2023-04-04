@@ -90,6 +90,7 @@ void ConvertSegmentation(const Value& item, std::vector<Tensor>& tensors) {
     auto desc = seg.mask.desc();
     desc.name = "mask";
     tensors.emplace_back(desc, seg.mask.buffer());
+    tensors.back().Squeeze();
   }
 }
 

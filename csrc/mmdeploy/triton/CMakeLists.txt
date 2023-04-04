@@ -61,13 +61,11 @@ FetchContent_Declare(
         repo-core
         GIT_REPOSITORY https://github.com/triton-inference-server/core.git
         GIT_TAG ${TRITON_CORE_REPO_TAG}
-        GIT_SHALLOW ON
 )
 FetchContent_Declare(
         repo-backend
         GIT_REPOSITORY https://github.com/triton-inference-server/backend.git
         GIT_TAG ${TRITON_BACKEND_REPO_TAG}
-        GIT_SHALLOW ON
 )
 FetchContent_MakeAvailable(repo-common repo-core repo-backend)
 
@@ -98,8 +96,9 @@ target_link_libraries(
 mmdeploy_load_static(triton-mmdeploy-backend MMDeployStaticModules)
 target_link_libraries(triton-mmdeploy-backend PRIVATE MMDeployLibs)
 
-mmdeploy_export(triton-mmdeploy-backend)
+set_target_properties(triton-mmdeploy-backend PROPERTIES INSTALL_RPATH "\$ORIGIN")
 
+install(TARGETS triton-mmdeploy-backend DESTINATION backend/mmdeploy)
 
 if (WIN32)
     set_target_properties(

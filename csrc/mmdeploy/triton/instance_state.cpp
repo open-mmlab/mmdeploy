@@ -172,7 +172,7 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
     input_args.push_back(std::move(input_tensors_array));
   }
 
-  MMDEPLOY_ERROR("input: {}", input_args);
+  MMDEPLOY_DEBUG("input: {}", input_args);
 
   uint64_t compute_start_ns = 0;
   SET_TIMESTAMP(compute_start_ns);
@@ -187,23 +187,20 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   SET_TIMESTAMP(compute_end_ns);
 
   std::vector<std::unique_ptr<BackendOutputResponder>> responders(request_count);
-  MMDEPLOY_ERROR("request_count {}", request_count);
+  MMDEPLOY_DEBUG("request_count {}", request_count);
   for (uint32_t request_index = 0; request_index < request_count; ++request_index) {
     responders[request_index] = std::make_unique<BackendOutputResponder>(
         &requests[request_index], 1, &response_vecs[request_index],
         model_state->TritonMemoryManager(), false, false, nullptr);
-    for (const auto& name : model_state->output_names()) {
-      MMDEPLOY_ERROR("name {}", name);
-    }
     for (size_t output_id = 0; output_id < model_state->output_names().size(); ++output_id) {
       auto output_name = model_state->output_names()[output_id];
-      MMDEPLOY_ERROR("output name {}", output_name);
+      MMDEPLOY_DEBUG("output name {}", output_name);
       auto output_data_type = model_state->output_data_types()[output_id];
       for (const auto& tensor : output_tensors[request_index]) {
         if (tensor.name() == output_name) {
           if (output_data_type != TRITONSERVER_TYPE_BYTES) {
             auto shape = tensor.shape();
-            MMDEPLOY_ERROR("name {}, shape {}", tensor.name(), shape);
+            MMDEPLOY_DEBUG("name {}, shape {}", tensor.name(), shape);
             auto memory_type = TRITONSERVER_MEMORY_CPU;
             int64_t memory_type_id = 0;
             if (not tensor.device().is_host()) {
