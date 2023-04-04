@@ -1,7 +1,7 @@
 function ReadConfig() {
     param (
         [string] $config_path
-        $mbranch
+
     )
     Write-Host "read config path: $config_path"
     $conf = @{}
@@ -25,8 +25,8 @@ function InitMim() {
     $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
     $place = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
     Write-Host "---------------------- start cloning $fullname ----------------------"
-    Write-Host " branch = $mbranch"
-    git clone --depth 1 -b $mbranch $url $place
+#     Write-Host " branch = $mbranch"
+    git clone --depth 1  $url $place
     Write-Host "---------------------- end cloning $fullname ----------------------"
 }
 
