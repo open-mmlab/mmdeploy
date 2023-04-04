@@ -29,7 +29,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I：** Install precompiled package
 
-You can download the latest release package from [here](https://github.com/open-mmlab/mmdeploy/releases)
+You can refer to [get_started](https://mmdeploy.readthedocs.io/en/latest/get_started.html#installation)
 
 **Method II：** Build using scripts
 

@@ -28,7 +28,7 @@ mmdeploy 有以下几种安装方式:
 
 **方式一：** 安装预编译包
 
-> 待 mmdeploy 正式发布 1.x，再补充
+请参考[安装概述](https://mmdeploy.readthedocs.io/zh_CN/latest/get_started.html#mmdeploy)
 
 **方式二：** 一键式脚本安装
 
