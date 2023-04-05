@@ -39,7 +39,7 @@ jobs:
         run: |
           bash .circleci/scripts/linux/build.sh "cuda" "pplnn" \
               -Dpplcv_DIR=${pplcv_DIR} \
-              -DTENSORRT_DIR=${pplnn_DIR} \
+              -Dpplnn_DIR=${pplnn_DIR}
           ls build/lib
       - name: Install mmdeploy with pplnn
         run: |

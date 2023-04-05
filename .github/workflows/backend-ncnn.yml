@@ -31,13 +31,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install unittest dependencies
+      - name: Install dependencies
         run: |
+          sudo apt update
+          sudo apt install wget
           python -m pip install cmake onnx
-      - name: update
-        run: sudo apt update
-      - name: gcc-multilib
-        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
