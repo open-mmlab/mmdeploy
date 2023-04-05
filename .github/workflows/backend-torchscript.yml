@@ -36,4 +36,4 @@ jobs:
           python -m pip install torch==1.11.0 torchvision==0.12.0 --extra-index-url https://download.pytorch.org/whl/lts/1.11/cpu
           python -m pip install mmcv-lite
           python tools/scripts/build_ubuntu_x64_torchscript.py 8
-          python -c 'import mmdeploy.apis.torchscript as ts_api; assert ts_api.is_available()'
+          python -c 'from mmdeploy.backend.torchscript import is_available; assert is_available()'

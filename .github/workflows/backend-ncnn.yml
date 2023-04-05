@@ -60,7 +60,7 @@ jobs:
           echo $(pwd)
           ln -s build/bin/mmdeploy_onnx2ncnn ./
           python .github/scripts/test_onnx2ncnn.py --run 1
-  script_install:
+  build_ncnn:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
