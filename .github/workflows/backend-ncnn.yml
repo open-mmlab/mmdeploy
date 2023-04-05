@@ -34,7 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install wget
+          sudo apt install wget gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           python -m pip install cmake onnx
       - name: Install ncnn
         run: |
