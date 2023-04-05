@@ -22,7 +22,7 @@ permissions:
 
 jobs:
   build_rknpu2:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
         run: |
           sh -x tools/scripts/ubuntu_cross_build_rknn.sh rk3588
   build_rknpu:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

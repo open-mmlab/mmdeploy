@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build_sdk_demo:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -34,9 +34,7 @@ jobs:
           sudo apt install wget libprotobuf-dev protobuf-compiler
           sudo apt update
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
           sudo apt install libopencv-dev
-          pkg-config --libs opencv
       - name: Install snpe
         run: |
           wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-1.59.tar.gz
