@@ -270,11 +270,3 @@ workflows:
           version: 1.8.1
           requires:
             - lint
-      - hold:
-          type: approval
-          requires:
-            - test_linux_onnxruntime
-            - test_windows_onnxruntime
-      - test_linux_tensorrt:
-          requires:
-            - hold

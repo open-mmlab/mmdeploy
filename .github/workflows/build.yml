@@ -164,14 +164,14 @@ jobs:
   build_cuda111:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
+      image: pytorch/pytorch:1.10.0-cuda11.1-cudnn8-devel
     strategy:
       matrix:
-        torch: [1.8.0+cu111]
+        torch: [1.10.0+cu111]
         include:
-          - torch: 1.8.0+cu111
-            torch_version: torch1.8
-            torchvision: 0.9.0+cu111
+          - torch: 1.10.0+cu111
+            torch_version: torch1.10
+            torchvision: 0.11.0+cu111
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
