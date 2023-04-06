@@ -28,10 +28,30 @@ function InitMim() {
     Write-Host "---------------------- start cloning $fullname ----------------------"
 #     Write-Host " branch = $mbranch"
     if ($mmdeploy_branch -eq "master" ){
-        git clone --depth 1 -b master $url $place
+        if ($codebase_fullname -eq “mmdetection” -or -eq “mmclassification” -or -eq "mmaction2" -or -eq "mmpose"-or -eq "mmsegmentation" -or -eq "mmediting"){
+            git clone --depth 1 -b master $url $place
+        }
+        elseif ($codebase_fullname -eq “mmocr” -or -eq “mmrotate”){
+            git clone --depth 1 -b main $url $place
+        }
+        elseif ($codebase_fullname -eq “mmdetection3d” ){
+            git clone --depth 1 -b v1.0.0rc4 $url $place
+        }
+
     }
     elseif ($mmdeploy_branch -eq "dev-1.x") {
-        git clone --depth 1 -b dev-3.x $url $place
+        if ($codebase_fullname -eq “mmocr” -or -eq “mmclassification” -or -eq "mmaction2" -or -eq "mmpose"-or -eq "mmsegmentation" -or -eq "mmediting"){
+            git clone --depth 1 -b 1.x $url $place
+        }
+        elseif ($codebase_fullname -eq “mmdetection”){
+            git clone --depth 1 -b 3.x $url $place
+        }
+        elseif ($codebase_fullname -eq “mmdetection3d” -or -eq “mmrotate”){
+            git clone --depth 1 -b dev-1.x $url $place
+        }
+        elseif ($codebase_fullname -eq “mmyolo”){
+            git clone --depth 1 -b dev $url $place
+        }
     }
 
     Write-Host "---------------------- end cloning $fullname ----------------------"
