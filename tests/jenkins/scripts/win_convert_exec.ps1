@@ -7,8 +7,8 @@ param(
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 $confDir = Split-Path -parent $MyInvocation.MyCommand.Path
 Import-Module $scriptDir\utils.psm1
-$json_v1 = (Get-Content "$confDir\requirementV1.0.json") | ConvertForm-Json
-$json_v2 = (Get-Content "$confDir\requirementV2.0.json") | ConvertForm-Json
+$json_v1 = (Get-Content "$confDir\requirementV1.0.json")
+$json_v2 = (Get-Content "$confDir\requirementV2.0.json")
 cd $env:MMDEPLOY_DIR
 conda activate mmdeploy-3.7-cu113
 Write-Host "exec_path: $pwd"
