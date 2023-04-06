@@ -18,7 +18,7 @@ concurrency:
 
 jobs:
   test_onnx2ncnn:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -31,13 +31,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install unittest dependencies
+      - name: Install dependencies
         run: |
+          sudo apt update
+          sudo apt install wget gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           python -m pip install cmake onnx
-      - name: update
-        run: sudo apt update
-      - name: gcc-multilib
-        run: sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
       - name: Install ncnn
         run: |
           wget https://github.com/Tencent/ncnn/archive/refs/tags/20220420.tar.gz
@@ -60,7 +58,7 @@ jobs:
           echo $(pwd)
           ln -s build/bin/mmdeploy_onnx2ncnn ./
           python .github/scripts/test_onnx2ncnn.py --run 1
-  script_install:
+  build_ncnn:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -78,5 +76,5 @@ jobs:
         run: |
           python -m pip install torch==1.8.2 torchvision==0.9.2 --extra-index-url https://download.pytorch.org/whl/lts/1.8/cpu
           python -m pip install mmcv-lite
-          python tools/scripts/build_ubuntu_x64_ncnn.py
+          python tools/scripts/build_ubuntu_x64_ncnn.py 8
           python -c 'import mmdeploy.apis.ncnn as ncnn_api; assert ncnn_api.is_available(with_custom_ops=True)'

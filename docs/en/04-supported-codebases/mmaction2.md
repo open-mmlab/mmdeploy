@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### Install mmaction2
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmaction2/tree/dev-1.x#installation) to install mmaction2.
+Please follow the [installation guide](https://github.com/open-mmlab/mmaction2/tree/1.x#installation) to install mmaction2.
 
 ### Install mmdeploy
 
@@ -29,7 +29,7 @@ There are several methods to install mmdeploy, among which you can choose an app
 
 **Method I：** Install precompiled package
 
-You can download the latest release package from [here](https://github.com/open-mmlab/mmdeploy/releases)
+You can refer to [get_started](https://mmdeploy.readthedocs.io/en/latest/get_started.html#installation)
 
 **Method II：** Build using scripts
 
@@ -37,7 +37,7 @@ If your target platform is **Ubuntu 18.04 or later version**, we encourage you t
 [scripts](../01-how-to-build/build_from_script.md). For example, the following commands install mmdeploy as well as inference engine - `ONNX Runtime`.
 
 ```shell
-git clone --recursive -b 1.x https://github.com/open-mmlab/mmdeploy.git
+git clone --recursive -b main https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
@@ -50,9 +50,9 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) to convert mmaction2 models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) to convert mmaction2 models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
 
-When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction) of all supported backends for mmaction2, under which the config file path follows the pattern:
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmaction) of all supported backends for mmaction2, under which the config file path follows the pattern:
 
 ```
 {task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -178,13 +178,13 @@ for label_id, score in result:
     print(label_id, score)
 ```
 
-Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo).
+Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Interface), such as C, C++, C#, Java and so on. You can learn their usage from [demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo).
 
 > MMAction2 only API of c, c++ and python for now.
 
 ## Supported models
 
-| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                     | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :---------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |

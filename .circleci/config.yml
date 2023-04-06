@@ -33,7 +33,7 @@ workflows:
             third_party/.* lint_only false
             tools/.* lint_only false
             setup.py lint_only false
-          base-revision: dev-1.x
+          base-revision: main
           # this is the path of the configuration we should trigger once
           # path filtering and pipeline parameter value updates are
           # complete. In this case, we are using the parent dynamic

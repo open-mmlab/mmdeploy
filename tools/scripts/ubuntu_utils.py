@@ -29,8 +29,6 @@ def get_job(argv) -> int:
         nproc = cmd_result('nproc')
         if nproc is not None and len(nproc) > 0:
             job = max(int(nproc) - 2, 1)
-        else:
-            job = 1
     else:
         job = int(argv[1])
     return job

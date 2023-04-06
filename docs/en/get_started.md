@@ -118,14 +118,14 @@ Take the latest precompiled package as example, you can install it as follows:
 
 ```shell
 # 1. install MMDeploy model converter
-pip install mmdeploy==1.0.0rc3
+pip install mmdeploy==1.0.0
 
 # 2. install MMDeploy sdk inference
 # you can install one to install according whether you need gpu inference
 # 2.1 support onnxruntime
-pip install mmdeploy-runtime==1.0.0rc3
+pip install mmdeploy-runtime==1.0.0
 # 2.2 support onnxruntime-gpu, tensorrt
-pip install mmdeploy-runtime-gpu==1.0.0rc3
+pip install mmdeploy-runtime-gpu==1.0.0
 
 # 3. install inference engine
 # 3.1 install TensorRT
@@ -170,7 +170,7 @@ Based on the above settings, we provide an example to convert the Faster R-CNN i
 
 ```shell
 # clone mmdeploy to get the deployment config. `--recursive` is not necessary
-git clone -b dev-1.x https://github.com/open-mmlab/mmdeploy.git
+git clone -b main https://github.com/open-mmlab/mmdeploy.git
 
 # clone mmdetection repo. We have to use the config file to build PyTorch nn module
 git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
@@ -230,9 +230,9 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3.tar.gz
-tar xf mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3
-cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0/mmdeploy-1.0.0-linux-x86_64-cuda11.3.tar.gz
+tar xf mmdeploy-1.0.0-linux-x86_64-cuda11.3
+cd mmdeploy-1.0.0-linux-x86_64-cuda11.3
 # run python demo
 python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
@@ -269,7 +269,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/python).
+You can find more examples from [here](https://github.com/open-mmlab/mmdeploy/tree/main/demo/python).
 
 #### C++ API
 
@@ -321,9 +321,9 @@ find_package(MMDeploy REQUIRED)
 target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
-For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/cpp).
+For more SDK C++ API usages, please read these [samples](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/cpp).
 
-For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/java) respectively.
+For the rest C, C# and Java API usages, please read [C demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/c), [C# demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csharp) and [Java demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/java) respectively.
 We'll talk about them more in our next release.
 
 #### Accelerate preprocessing（Experimental）

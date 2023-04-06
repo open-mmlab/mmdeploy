@@ -113,14 +113,14 @@ mim install "mmcv>=2.0.0rc2"
 
 ```shell
 # 1. 安装 MMDeploy 模型转换工具（含trt/ort自定义算子）
-pip install mmdeploy==1.0.0rc3
+pip install mmdeploy==1.0.0
 
 # 2. 安装 MMDeploy SDK推理工具
 # 根据是否需要GPU推理可任选其一进行下载安装
 # 2.1 支持 onnxruntime 推理
-pip install mmdeploy-runtime==1.0.0rc3
+pip install mmdeploy-runtime==1.0.0
 # 2.2 支持 onnxruntime-gpu tensorrt 推理
-pip install mmdeploy-runtime-gpu==1.0.0rc3
+pip install mmdeploy-runtime-gpu==1.0.0
 
 # 3. 安装推理引擎
 # 3.1 安装推理引擎 TensorRT
@@ -165,7 +165,7 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 ```shell
 # 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线, `--recursive` 不是必须的
-git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b main --recursive https://github.com/open-mmlab/mmdeploy.git
 
 # 安装 mmdetection。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
 git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
@@ -223,10 +223,10 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3.tar.gz
-tar xf mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0/mmdeploy-1.0.0-linux-x86_64-cuda11.3.tar.gz
+tar xf mmdeploy-1.0.0-linux-x86_64-cuda11.3
 
-cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.3
+cd mmdeploy-1.0.0-linux-x86_64-cuda11.3
 # 运行 python demo
 python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo
@@ -268,7 +268,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-更多示例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/python)。
+更多示例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/main/demo/python)。
 
 #### C++ API
 
@@ -322,9 +322,9 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
-更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/cpp)。
+更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/cpp)。
 
-对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/java)。
+对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
 #### 加速预处理（实验性功能）

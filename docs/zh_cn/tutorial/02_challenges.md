@@ -1,6 +1,6 @@
 # 第二章：解决模型部署中的难题
 
-在[第一章](https://mmdeploy.readthedocs.io/zh_CN/1.x/tutorial/01_introduction_to_model_deployment.html)中，我们部署了一个简单的超分辨率模型，一切都十分顺利。但是，上一个模型还有一些缺陷——图片的放大倍数固定是 4，我们无法让图片放大任意的倍数。现在，我们来尝试部署一个支持动态放大倍数的模型，体验一下在模型部署中可能会碰到的困难。
+在[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorial/01_introduction_to_model_deployment.html)中，我们部署了一个简单的超分辨率模型，一切都十分顺利。但是，上一个模型还有一些缺陷——图片的放大倍数固定是 4，我们无法让图片放大任意的倍数。现在，我们来尝试部署一个支持动态放大倍数的模型，体验一下在模型部署中可能会碰到的困难。
 
 ## 模型部署中常见的难题
 
@@ -10,7 +10,7 @@
 - 新算子的实现。深度学习技术日新月异，提出新算子的速度往往快于 ONNX 维护者支持的速度。为了部署最新的模型，部署工程师往往需要自己在 ONNX 和推理引擎中支持新算子。
 - 中间表示与推理引擎的兼容问题。由于各推理引擎的实现不同，对 ONNX 难以形成统一的支持。为了确保模型在不同的推理引擎中有同样的运行效果，部署工程师往往得为某个推理引擎定制模型代码，这为模型部署引入了许多工作量。
 
-我们会在后续教程详细讲述解决这些问题的方法。如果对前文中 ONNX、推理引擎、中间表示、算子等名词感觉陌生，不用担心，可以阅读[第一章](https://mmdeploy.readthedocs.io/zh_CN/1.x/tutorial/01_introduction_to_model_deployment.html)，了解有关概念。
+我们会在后续教程详细讲述解决这些问题的方法。如果对前文中 ONNX、推理引擎、中间表示、算子等名词感觉陌生，不用担心，可以阅读[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorial/01_introduction_to_model_deployment.html)，了解有关概念。
 
 现在，让我们对原来的 SRCNN 模型做一些小的修改，体验一下模型动态化对模型部署造成的困难，并学习解决该问题的一种方法。
 
@@ -38,7 +38,7 @@ def init_torch_model():
 
 现在，假设我们要做一个超分辨率的应用。我们的用户希望图片的放大倍数能够自由设置。而我们交给用户的，只有一个 .onnx 文件和运行超分辨率模型的应用程序。我们在不修改 .onnx 文件的前提下改变放大倍数。
 
-因此，我们必须修改原来的模型，令模型的放大倍数变成推理时的输入。在[第一章](https://mmdeploy.readthedocs.io/zh_CN/1.x/tutorial/01_introduction_to_model_deployment.html)中的 Python 脚本的基础上，我们做一些修改，得到这样的脚本：
+因此，我们必须修改原来的模型，令模型的放大倍数变成推理时的输入。在[第一章](https://mmdeploy.readthedocs.io/zh_CN/latest/tutorial/01_introduction_to_model_deployment.html)中的 Python 脚本的基础上，我们做一些修改，得到这样的脚本：
 
 ```python
 import torch
@@ -75,7 +75,7 @@ def init_torch_model():
     torch_model = SuperResolutionNet()
 
     # Please read the code about downloading 'srcnn.pth' and 'face.png' in
-    # https://mmdeploy.readthedocs.io/zh_CN/1.x/tutorial/01_introduction_to_model_deployment.html#pytorch
+    # https://mmdeploy.readthedocs.io/zh_CN/latest/tutorial/01_introduction_to_model_deployment.html#pytorch
     state_dict = torch.load('srcnn.pth')['state_dict']
 
     # Adapt the checkpoint
@@ -173,7 +173,7 @@ with torch.no_grad():
 
 ![image](https://user-images.githubusercontent.com/4560679/157626910-de33365c-b60a-49f4-ada7-157111afa6e2.png)
 
-其中，展开 scales，可以看到 scales 是一个长度为 4 的一维张量，其内容为 \[1, 1, 3, 3\], 表示 Resize  操作每一个维度的缩放系数；其类型为 Initializer，表示这个值是根据常量直接初始化出来的。如果我们能够自己生成一个 ONNX 的 Resize 算子，让 scales 成为一个可变量而不是常量，就像它上面的 X 一样，那这个超分辨率模型就能动态缩放了。
+其中，展开 scales，可以看到 scales 是一个长度为 4 的一维张量，其内容为 [1, 1, 3, 3], 表示 Resize  操作每一个维度的缩放系数；其类型为 Initializer，表示这个值是根据常量直接初始化出来的。如果我们能够自己生成一个 ONNX 的 Resize 算子，让 scales 成为一个可变量而不是常量，就像它上面的 X 一样，那这个超分辨率模型就能动态缩放了。
 
 现有实现插值的 PyTorch 算子有一套规定好的映射到 ONNX Resize 算子的方法，这些映射出的 Resize 算子的 scales 只能是常量，无法满足我们的需求。我们得自己定义一个实现插值的 PyTorch 算子，然后让它映射到一个我们期望的 ONNX Resize 算子上。
 
@@ -294,9 +294,9 @@ class NewInterpolate(torch.autograd.Function):
                            align_corners=False)
 ```
 
-在具体介绍这个算子的实现前，让我们先理清一下思路。我们希望新的插值算子有两个输入，一个是被用于操作的图像，一个是图像的放缩比例。前面讲到，为了对接 ONNX 中 Resize 算子的 scales 参数，这个放缩比例是一个 \[1, 1, x, x\] 的张量，其中 x 为放大倍数。在之前放大3倍的模型中，这个参数被固定成了\[1, 1, 3, 3\]。因此，在插值算子中，我们希望模型的第二个输入是一个 \[1, 1, w, h\] 的张量，其中 w 和 h 分别是图片宽和高的放大倍数。
+在具体介绍这个算子的实现前，让我们先理清一下思路。我们希望新的插值算子有两个输入，一个是被用于操作的图像，一个是图像的放缩比例。前面讲到，为了对接 ONNX 中 Resize 算子的 scales 参数，这个放缩比例是一个 [1, 1, x, x] 的张量，其中 x 为放大倍数。在之前放大3倍的模型中，这个参数被固定成了[1, 1, 3, 3]。因此，在插值算子中，我们希望模型的第二个输入是一个 [1, 1, w, h] 的张量，其中 w 和 h 分别是图片宽和高的放大倍数。
 
-搞清楚了插值算子的输入，再看一看算子的具体实现。算子的推理行为由算子的 forward 方法决定。该方法的第一个参数必须为 ctx，后面的参数为算子的自定义输入，我们设置两个输入，分别为被操作的图像和放缩比例。为保证推理正确，需要把 \[1, 1, w, h\] 格式的输入对接到原来的 interpolate 函数上。我们的做法是截取输入张量的后两个元素，把这两个元素以 list 的格式传入 interpolate 的 scale_factor 参数。
+搞清楚了插值算子的输入，再看一看算子的具体实现。算子的推理行为由算子的 forward 方法决定。该方法的第一个参数必须为 ctx，后面的参数为算子的自定义输入，我们设置两个输入，分别为被操作的图像和放缩比例。为保证推理正确，需要把 [1, 1, w, h] 格式的输入对接到原来的 interpolate 函数上。我们的做法是截取输入张量的后两个元素，把这两个元素以 list 的格式传入 interpolate 的 scale_factor 参数。
 
 接下来，我们要决定新算子映射到 ONNX 算子的方法。映射到 ONNX 的方法由一个算子的 symbolic 方法决定。symbolic 方法第一个参数必须是g，之后的参数是算子的自定义输入，和 forward 函数一样。ONNX 算子的具体定义由 g.op 实现。g.op 的每个参数都可以映射到 ONNX 中的算子属性：
 
