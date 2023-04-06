@@ -161,17 +161,17 @@ jobs:
           coverage xml
           coverage report -m
 
-  build_cuda111:
+  build_cuda113:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.10.0-cuda11.1-cudnn8-devel
+      image: pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
     strategy:
       matrix:
-        torch: [1.10.0+cu111]
+        torch: [1.10.0+cu113]
         include:
-          - torch: 1.10.0+cu111
+          - torch: 1.10.0+cu113
             torch_version: torch1.10
-            torchvision: 0.11.0+cu111
+            torchvision: 0.11.0+cu113
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
