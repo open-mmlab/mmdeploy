@@ -25,7 +25,7 @@ function InitMim() {
     )
     $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
     $place = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
-    $codebase_fullname = “mmdetection” | “mmclassification” | "mmaction2" | "mmpose" | "mmsegmentation" | "mmediting" | “mmocr” | “mmrotate” | “mmdetection3d” | “mmyolo”
+#     $codebase_fullname = “mmdetection” | “mmclassification” | "mmaction2" | "mmpose" | "mmsegmentation" | "mmediting" | “mmocr” | “mmrotate” | “mmdetection3d” | “mmyolo”
     Write-Host "---------------------- start cloning $fullname ----------------------"
 #     Write-Host " branch = $mbranch"
 #     if ($mmdeploy_branch -eq "master" ){
