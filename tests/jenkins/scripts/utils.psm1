@@ -26,7 +26,8 @@ function InitMim() {
     $url = "https://github.com/open-mmlab/"+$codebase_fullname+".git"
     $place = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
 #     $codebase_fullname = “mmdetection” | “mmclassification” | "mmaction2" | "mmpose" | "mmsegmentation" | "mmediting" | “mmocr” | “mmrotate” | “mmdetection3d” | “mmyolo”
-    Write-Host "---------------------- start cloning $fullname ----------------------"
+    Write-Host "---------------------- start cloning $codebase_fullname ----------------------"
+    Write-Host""
 #     Write-Host " branch = $mbranch"
 #     if ($mmdeploy_branch -eq "master" ){
 #         if ($codebase_fullname -eq “mmdetection” -or -eq “mmclassification” -or -eq "mmaction2" -or -eq "mmpose"-or -eq "mmsegmentation" -or -eq "mmediting"){
@@ -55,7 +56,7 @@ function InitMim() {
 #         }
 #     }
 
-    Write-Host "---------------------- end cloning $fullname ----------------------"
+    Write-Host "---------------------- end cloning $codebase_fullname ----------------------"
 }
 
 $NV_EXT = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v{0}\extras\visual_studio_integration\MSBuildExtensions\"
