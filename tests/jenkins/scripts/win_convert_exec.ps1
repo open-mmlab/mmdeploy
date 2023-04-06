@@ -27,7 +27,7 @@ if ($codebase -eq "mmdet3d")
 }
 else
 {
-    mim install mmcv-full==1.6.0
+    mim install mmcv-full==2.0.0
 }
 mim install $codebase
 pip install -v $codebase_path
