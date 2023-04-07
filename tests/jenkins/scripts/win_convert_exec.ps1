@@ -5,7 +5,7 @@ param(
     $mmdeploy_branch
 )
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
-$confDir = Split-Path -parent $MyInvocation.MyCommand.Path
+$confDir=(Join-PATH $env:JENKINS_WORKSPACE master@2\tests\jenkins\conf)
 Import-Module $scriptDir\utils.psm1
 $json_v1 = (Get-Content "$confDir\requirementV1.0.json")
 $json_v2 = (Get-Content "$confDir\requirementV2.0.json")

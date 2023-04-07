@@ -29,7 +29,10 @@ function InitMim() {
     Write-Host "---------------------- start cloning $codebase_fullname ----------------------"
     Write-Host "mmdeploy_branch = $mmdeploy_branch "
     if ($mmdeploy_branch -eq "dev-1.x" ){
-        git clone --depth 1 -b 3.x $url $place
+        if ($codebase_fullname -eq “mmdetection” -or -eq “mmclassification” ){
+            git clone --depth 1 -b 1.x $url $place
+        }
+
     }
 
 #     if ($mmdeploy_branch -eq "master" ){
