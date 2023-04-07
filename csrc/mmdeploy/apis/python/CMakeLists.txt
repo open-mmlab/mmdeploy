@@ -1,9 +1,9 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
 cmake_minimum_required(VERSION 3.14)
-project(mmdeploy_python)
+project(mmdeploy_runtime)
 
-set(MMDEPLOY_PYTHON_SRCS
+set(MMDEPLOY_RUNTIME_SRCS
         common.cpp
         internal.cpp
         pipeline.cpp)
@@ -20,12 +20,21 @@ elseif (NOT TARGET pybind11)
 endif ()
 
 foreach (task_name ${MMDEPLOY_TASKS})
-    list(APPEND MMDEPLOY_PYTHON_SRCS ${task_name}.cpp)
+    list(APPEND MMDEPLOY_RUNTIME_SRCS ${task_name}.cpp)
 endforeach ()
 
-pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_PYTHON_SRCS})
+pybind11_add_module(${PROJECT_NAME} ${MMDEPLOY_RUNTIME_SRCS})
 # disable MMDEPLOY_CXX_USE_OPENCV in apis/cxx/mmdeploy/common.hpp
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DMMDEPLOY_CXX_USE_OPENCV=0)
+if (APPLE)
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                BUILD_RPATH "@loader_path"
+                INSTALL_RPATH "@loader_path")
+else ()
+        set_target_properties(${PROJECT_NAME} PROPERTIES
+                BUILD_RPATH "\$ORIGIN"
+                INSTALL_RPATH "\$ORIGIN")
+endif ()
 
 # https://github.com/pybind/pybind11/issues/1604
 if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")

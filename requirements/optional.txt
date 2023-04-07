@@ -7,5 +7,5 @@ mmpose>=0.24.0,<=0.25.1
 mmrazor>=0.3.0
 mmsegmentation
 onnxruntime>=1.8.0
-openvino-dev
+openvino-dev>=2022.3.0
 tqdm

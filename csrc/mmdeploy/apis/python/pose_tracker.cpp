@@ -30,7 +30,8 @@ std::vector<py::tuple> Apply(mmdeploy::PoseTracker* self,
   std::vector<py::tuple> batch_ret;
   batch_ret.reserve(frames.size());
   for (const auto& rs : results) {
-    py::array_t<float> keypoints({static_cast<int>(rs.size()), rs[0].keypoint_count, 3});
+    py::array_t<float> keypoints(
+        {static_cast<int>(rs.size()), rs.size() > 0 ? rs[0].keypoint_count : 0, 3});
     py::array_t<float> bboxes({static_cast<int>(rs.size()), 4});
     py::array_t<uint32_t> track_ids(static_cast<int>(rs.size()));
     auto kpts_ptr = keypoints.mutable_data();

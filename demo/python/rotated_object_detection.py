@@ -4,7 +4,7 @@ from math import cos, sin
 
 import cv2
 import numpy as np
-from mmdeploy_python import RotatedDetector
+from mmdeploy_runtime import RotatedDetector
 
 
 def parse_args():

@@ -69,8 +69,7 @@ mim install mmcv-full
 
 **Step 1.** Install MMDeploy and inference engine
 
-We recommend using MMDeploy precompiled package as our best practice.
-You can download them from [here](https://github.com/open-mmlab/mmdeploy/releases) according to your target platform and device.
+We recommend using MMDeploy precompiled package as our best practice. Currently, we support model converter and sdk inference pypi package, and the sdk c/cpp library is provided [here](https://github.com/open-mmlab/mmdeploy/releases). You can download them according to your target platform and device.
 
 The supported platform and device matrix is presented as following:
 
@@ -92,7 +91,7 @@ The supported platform and device matrix is presented as following:
   </tr>
   <tr>
     <td>CUDA</td>
-    <td>N</td>
+    <td>Y</td>
     <td>Y</td>
   </tr>
   <tr>
@@ -103,7 +102,7 @@ The supported platform and device matrix is presented as following:
   </tr>
   <tr>
     <td>CUDA</td>
-    <td>N</td>
+    <td>Y</td>
     <td>Y</td>
   </tr>
 </tbody>
@@ -114,46 +113,44 @@ The supported platform and device matrix is presented as following:
 Take the latest precompiled package as example, you can install it as follows:
 
 <details open>
-<summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
+<summary><b>Linux-x86_64</b></summary>
 
 ```shell
-# install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.13.0/mmdeploy-0.13.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-0.13.0-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-0.13.0-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-0.13.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.13.0-cp38-none-linux_x86_64.whl
-cd ..
-# install inference engine: ONNX Runtime
-pip install onnxruntime==1.8.1
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-```
+# 1. install MMDeploy model converter
+pip install mmdeploy==0.14.0
 
-</details>
+# 2. install MMDeploy sdk inference
+# you can install one to install according whether you need gpu inference
+# 2.1 support onnxruntime
+pip install mmdeploy-runtime==0.14.0
+# 2.2 support onnxruntime-gpu, tensorrt
+pip install mmdeploy-runtime-gpu==0.14.0
 
-<details open>
-<summary><b>Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
-
-```shell
-# install MMDeploy
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.13.0/mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-0.13.0-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_python-0.13.0-cp38-none-linux_x86_64.whl
-cd ..
-# install inference engine: TensorRT
-# !!! Download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
+# 3. install inference engine
+# 3.1 install TensorRT
+# !!! If you want to convert a tensorrt model or inference with tensorrt,
+# download TensorRT-8.2.3.0 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
-# !!! Download cuDNN 8.2.1 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
+# !!! Moreover, download cuDNN 8.2.1 CUDA 11.x tar package from NVIDIA, and extract it to the current directory
 export CUDNN_DIR=$(pwd)/cuda
 export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+
+# 3.2 install ONNX Runtime
+# you can install one to install according whether you need gpu inference
+# 3.2.1 onnxruntime
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+# 3.2.2 onnxruntime-gpu
+pip install onnxruntime-gpu==1.8.1
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-gpu-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-gpu-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-gpu-1.8.1
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
 </details>
@@ -200,8 +197,8 @@ And they make up of MMDeploy Model that can be fed to MMDeploy SDK to do model i
 For more details about model conversion, you can read [how_to_convert_model](02-how-to-run/convert_model.md). If you want to customize the conversion pipeline, you can edit the config file by following [this](02-how-to-run/write_config.md) tutorial.
 
 ```{tip}
-If MMDeploy-ONNXRuntime prebuilt package is installed, you can convert the above model to onnx model and perform ONNX Runtime inference
-just by 'changing detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
+You can convert the above model to onnx model and perform ONNX Runtime inference
+just by changing 'detection_tensorrt_dynamic-320x320-1344x1344.py' to 'detection_onnxruntime_dynamic.py' and making '--device' as 'cpu'.
 ```
 
 ## Inference Model
@@ -232,12 +229,14 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-cd mmdeploy-0.13.0-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.14.0/mmdeploy-0.14.0-linux-x86_64-cuda11.3.tar.gz
+tar xf mmdeploy-0.14.0-linux-x86_64-cuda11.3
+cd mmdeploy-0.14.0-linux-x86_64-cuda11.3
 # run python demo
-python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
-export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-./sdk/bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+# build the demo according to the README.md in the folder.
+./bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 ```
 
 ```{note}
@@ -249,7 +248,7 @@ In the next section, we will provide examples of deploying the converted Faster 
 #### Python API
 
 ```python
-from mmdeploy_python import Detector
+from mmdeploy_runtime import Detector
 import cv2
 
 img = cv2.imread('mmdetection/demo/demo.jpg')

@@ -3,7 +3,7 @@ import argparse
 
 import cv2
 import numpy as np
-from mmdeploy_python import Detector, PoseDetector
+from mmdeploy_runtime import Detector, PoseDetector
 
 
 def parse_args():

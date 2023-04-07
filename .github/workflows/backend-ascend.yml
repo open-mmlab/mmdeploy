@@ -21,13 +21,13 @@ permissions:
 
 jobs:
   build_sdk_demo:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7]
     steps:
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Checkout repository
@@ -40,9 +40,7 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
           sudo apt install libopencv-dev
-          pkg-config --libs opencv
       - name: Install Ascend Toolkit
         run: |
           mkdir -p $GITHUB_WORKSPACE/Ascend

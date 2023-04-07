@@ -23,11 +23,27 @@
 namespace mmdeploy {
 namespace {
 
+#ifdef _WIN32
+inline static const std::wstring GetDllPath() {
+    HMODULE hm = NULL;
+    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+      (LPWSTR)&GetDllPath, &hm);
+    std::wstring ret;
+    ret.resize(MAX_PATH);
+    GetModuleFileNameW(hm, &ret[0], ret.size());
+    ret = ret.substr(0, ret.find_last_of(L"/\\"));
+    return ret;
+}
+#endif
+
 void* mmdeploy_load_library(const char* name) {
   fprintf(stderr, "loading %s ...\n", name);
 
 #ifdef _WIN32
-  auto handle = LoadLibraryExA(name, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+  auto handle = LoadLibraryExA(name, NULL, LOAD_LIBRARY_SEARCH_USER_DIRS);
+  if (handle == NULL) {
+    handle = LoadLibraryExA(name, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+  }
 #else
   auto handle = dlopen(name, RTLD_NOW | RTLD_GLOBAL);
 #endif
@@ -44,6 +60,9 @@ void* mmdeploy_load_library(const char* name) {
 class Loader {
  public:
   Loader() {
+#ifdef _WIN32
+    AddDllDirectory(GetDllPath().c_str());
+#endif
     const char* modules[] = {
         @_MMDEPLOY_DYNAMIC_MODULES@
     };
