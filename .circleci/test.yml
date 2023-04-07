@@ -74,7 +74,7 @@ commands:
       - run:
           name: Install mmcv-full
           command: |
-            python -m pip install opencv-python==4.5.4.60
+            python -m pip install opencv-python==4.5.4.60 opencv-contrib-python==4.5.4.60 opencv-python-headless==4.5.4.60
             python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/cpu/torch<< parameters.torch >>/index.html
   install_mmcv_cuda:
     parameters:
@@ -91,7 +91,7 @@ commands:
       - run:
           name: Install mmcv-full
           command: |
-            python -m pip install opencv-python==4.5.4.60
+            python -m pip install opencv-python==4.5.4.60 opencv-contrib-python==4.5.4.60 opencv-python-headless==4.5.4.60
             python -m pip install mmcv-full==<< parameters.version >> -f https://download.openmmlab.com/mmcv/dist/<< parameters.cuda >>/torch<< parameters.torch >>/index.html
   install_mmdeploy:
     description: "Install MMDeploy"

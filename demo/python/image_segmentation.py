@@ -3,7 +3,7 @@ import argparse
 
 import cv2
 import numpy as np
-from mmdeploy_python import Segmentor
+from mmdeploy_runtime import Segmentor
 
 
 def parse_args():

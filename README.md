@@ -30,12 +30,13 @@ English | [简体中文](README_zh-CN.md)
 
 ## Highlights
 
-The new v1.x version has been released, which is adapted to the preview version of upstream codebase, please **align the version** when using it.
+The MMDeploy 1.x has been released, which is adapted to upstream codebases from OpenMMLab 2.0. Please **align the version** when using it.
+The default branch has been switched to `main` from `master`. MMDeploy 0.x (`master`) will be deprecated and new features will only be added to MMDeploy 1.x (`main`) in future.
 
-| mmdeploy | mmengine |  mmcv  | mmdet  | others |
-| :------: | :------: | :----: | :----: | :----: |
-|   0.x    |    -     | \<=1.x | \<=2.x |  0.x   |
-|   1.x    |   0.x    |  2.x   |  3.x   |  1.x   |
+| mmdeploy | mmengine |   mmcv   |  mmdet   | others |
+| :------: | :------: | :------: | :------: | :----: |
+|  0.x.y   |    -     | \<=1.x.y | \<=2.x.y | 0.x.y  |
+|  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   | 1.x.y  |
 
 ## Introduction
 

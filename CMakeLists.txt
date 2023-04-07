@@ -5,7 +5,7 @@ endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
 cmake_minimum_required(VERSION 3.14)
-project(MMDeploy VERSION 0.13.0)
+project(MMDeploy VERSION 0.14.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -99,10 +99,12 @@ include(cmake/MMDeploy.cmake)
 add_subdirectory(csrc/mmdeploy)
 
 if (MMDEPLOY_BUILD_SDK)
-    install(TARGETS MMDeployStaticModules
-            MMDeployDynamicModules
-            MMDeployLibs
-            EXPORT MMDeployTargets)
+    if (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC)
+        install(TARGETS MMDeployStaticModules
+                MMDeployDynamicModules
+                MMDeployLibs
+                EXPORT MMDeployTargets)
+    endif ()
 
     if (MMDEPLOY_BUILD_TEST)
         add_subdirectory(tests/test_csrc)

@@ -6,14 +6,14 @@ This tutorial is based on Linux systems like Ubuntu-18.04.
 
 It is recommended to create a virtual environment for the project.
 
-1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
+1. Install [OpenVINO](https://docs.openvino.ai/latest/get_started.html). It is recommended to use the installer or install using pip.
    Installation example using [pip](https://pypi.org/project/openvino-dev/):
 
 ```bash
-pip install openvino-dev
+pip install openvino-dev>=2022.3.0
 ```
 
-2. \*`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
+2. \*`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/latest/openvino_docs_install_guides_overview.html).
 
 3. Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
 

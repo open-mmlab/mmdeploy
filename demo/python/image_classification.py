@@ -2,7 +2,7 @@
 import argparse
 
 import cv2
-from mmdeploy_python import Classifier
+from mmdeploy_runtime import Classifier
 
 
 def parse_args():
