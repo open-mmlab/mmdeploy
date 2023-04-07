@@ -7,8 +7,8 @@ param(
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 $confDir=(Join-PATH $env:JENKINS_WORKSPACE master@2\tests\jenkins\conf)
 Import-Module $scriptDir\utils.psm1
-$json_v1 = (Get-Content "$confDir\requirementV1.0.json")
-$json_v2 = (Get-Content "$confDir\requirementV2.0.json")
+$json_v1 = Get-Content -Path "$confDir\requirementV1.0.json" -Raw  |  ConvertFrom-Json
+$json_v1 = Get-Content -Path "$confDir\requirementV2.0.json" -Raw  |  ConvertFrom-Json
 cd $env:MMDEPLOY_DIR
 conda activate mmdeploy-3.7-cu113
 Write-Host "exec_path: $pwd"
@@ -25,23 +25,31 @@ pip uninstall mmcv-full -y
 pip uninstall mmcv -y
 pip uninstall $codebase -y
 if ($mmdeploy_branch -eq "master"){
-    if ($codebase -eq "mmdet3d")
+    if ($json_v1.PSObject.Properties.Name -contains $codebase)
     {
-        mim install mmcv-full==1.5.2
+        $mmcv = $json_v1.$codebase.mmcv
+        mim install $mmcv
     }
     else
     {
-        mim install mmcv-full == 1.6.0
+        Write-Host "$codebase not found in requirementV1.0.json file"
     }
 }
-else{
-    mim install mmcv== 2.0.0rc4
-    Write-Host "mim install mmcv== 2.0.0rc4"
+elseif ($mmdeploy_branch -eq "dev-1.x"){
+    if ($json_v2.PSObject.Properties.Name -contains $codebase)
+    {
+        $mmcv = $json_v2.$codebase.mmcv
+        mim install $mmcv
+    }
+    else
+    {
+        Write-Host "$codebase not found in requirementV2.0.json file"
+    }
 }
-
+mim list
 mim install $codebase
+mim list
 pip install -v $codebase_path
-pip uninstall mmcv-full -y
 Write-Host "$pwd"
 #Invoke-Expression -Command "python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance"
 # python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance
