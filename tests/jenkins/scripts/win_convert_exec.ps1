@@ -36,11 +36,12 @@ if ($mmdeploy_branch -eq "master"){
 }
 else{
     mim install mmcv== 2.0.0rc4
+    Write-Host "mim install mmcv== 2.0.0rc4"
 }
 
 mim install $codebase
 pip install -v $codebase_path
-pip uninstall mmcv-full==1.7.1 -y
+pip uninstall mmcv-full -y
 Write-Host "$pwd"
 #Invoke-Expression -Command "python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance"
 # python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance
