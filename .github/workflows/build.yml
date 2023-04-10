@@ -112,7 +112,7 @@ jobs:
           python-version: 3.8
       - name: gcc-multilib
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_aarch64.sh
+          sh -ex tools/scripts/ubuntu_cross_build_aarch64.sh
 
   build_cuda102:
     runs-on: ubuntu-20.04
