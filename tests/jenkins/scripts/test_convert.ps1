@@ -102,7 +102,10 @@ $codebase_fullname_opt = @{
     "mmocr" = "mmocr";
     "mmpose" = "mmpose";
     "mmrotate" = "mmrotate";
-    "mmseg" = "mmsegmentation"
+    "mmseg" = "mmsegmentation";
+    "mmedit" = "mmediting";
+    "mmyolo" = "mmyolo"
+
 }
 
 
