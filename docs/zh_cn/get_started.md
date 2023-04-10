@@ -65,7 +65,7 @@ mim install "mmcv>=2.0.0rc2"
 
 **第二步**: 安装 MMDeploy 和 推理引擎
 
-我们推荐用户使用预编译包安装和体验 MMDeploy 功能。请根据目标软硬件平台，从[这里](https://github.com/open-mmlab/mmdeploy/releases) 选择最新版本下载并安装。
+我们推荐用户使用预编译包安装和体验 MMDeploy 功能。目前提供模型转换(trt/ort)以及 SDK 推理的 pypi 预编译包，SDK 的 c/cpp 库可从[这里](https://github.com/open-mmlab/mmdeploy/releases) 选择最新版本下载并安装。
 
 目前，MMDeploy 的预编译包支持的平台和设备矩阵如下：
 
@@ -87,7 +87,7 @@ mim install "mmcv>=2.0.0rc2"
   </tr>
   <tr>
     <td>CUDA</td>
-    <td>N</td>
+    <td>Y</td>
     <td>Y</td>
   </tr>
   <tr>
@@ -98,7 +98,7 @@ mim install "mmcv>=2.0.0rc2"
   </tr>
   <tr>
     <td>CUDA</td>
-    <td>N</td>
+    <td>Y</td>
     <td>Y</td>
   </tr>
 </tbody>
@@ -109,46 +109,43 @@ mim install "mmcv>=2.0.0rc2"
 以最新的预编译包为例，你可以参考以下命令安装：
 
 <details open>
-<summary><b>Linux-x86_64, CPU, ONNX Runtime 1.8.1</b></summary>
+<summary><b>Linux-x86_64</b></summary>
 
 ```shell
-# 安装 MMDeploy ONNX Runtime 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
-tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1.tar.gz
-cd mmdeploy-1.0.0rc3-linux-x86_64-onnxruntime1.8.1
-pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
-cd ..
-# 安装推理引擎 ONNX Runtime
-pip install onnxruntime==1.8.1
-wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
-tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
-export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
-export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
-```
+# 1. 安装 MMDeploy 模型转换工具（含trt/ort自定义算子）
+pip install mmdeploy==1.0.0
 
-</details>
+# 2. 安装 MMDeploy SDK推理工具
+# 根据是否需要GPU推理可任选其一进行下载安装
+# 2.1 支持 onnxruntime 推理
+pip install mmdeploy-runtime==1.0.0
+# 2.2 支持 onnxruntime-gpu tensorrt 推理
+pip install mmdeploy-runtime-gpu==1.0.0
 
-<details open>
-<summary><b>Linux-x86_64, CUDA 11.x, TensorRT 8.2.3.0</b></summary>
-
-```shell
-# 安装 MMDeploy TensorRT 自定义算子库和推理 SDK
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0rc3/mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-tar -zxvf mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0.tar.gz
-cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
-pip install dist/mmdeploy-1.0.0rc3-py3-none-linux_x86_64.whl
-pip install sdk/python/mmdeploy_runtime-1.0.0rc3-cp38-none-linux_x86_64.whl
-cd ..
-# 安装推理引擎 TensorRT
-# !!! 从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录
+# 3. 安装推理引擎
+# 3.1 安装推理引擎 TensorRT
+# !!! 若要进行 TensorRT 模型的转换以及推理，从 NVIDIA 官网下载 TensorRT-8.2.3.0 CUDA 11.x 安装包并解压到当前目录。
 pip install TensorRT-8.2.3.0/python/tensorrt-8.2.3.0-cp38-none-linux_x86_64.whl
 pip install pycuda
 export TENSORRT_DIR=$(pwd)/TensorRT-8.2.3.0
 export LD_LIBRARY_PATH=${TENSORRT_DIR}/lib:$LD_LIBRARY_PATH
-# !!! 从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
+# !!! 另外还需要从 NVIDIA 官网下载 cuDNN 8.2.1 CUDA 11.x 安装包并解压到当前目录
 export CUDNN_DIR=$(pwd)/cuda
 export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+
+# 3.2 安装推理引擎 ONNX Runtime
+# 根据是否需要GPU推理可任选其一进行下载安装
+# 3.2.1 onnxruntime
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-1.8.1
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+# 3.2.2 onnxruntime-gpu
+pip install onnxruntime-gpu==1.8.1
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-gpu-1.8.1.tgz
+tar -zxvf onnxruntime-linux-x64-gpu-1.8.1.tgz
+export ONNXRUNTIME_DIR=$(pwd)/onnxruntime-linux-x64-gpu-1.8.1
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
 </details>
@@ -168,7 +165,7 @@ export LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 
 ```shell
 # 克隆 mmdeploy 仓库。转换时，需要使用 mmdeploy 仓库中的配置文件，建立转换流水线, `--recursive` 不是必须的
-git clone -b dev-1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b main --recursive https://github.com/open-mmlab/mmdeploy.git
 
 # 安装 mmdetection。转换时，需要使用 mmdetection 仓库中的模型配置文件，构建 PyTorch nn module
 git clone -b 3.x https://github.com/open-mmlab/mmdetection.git
@@ -193,7 +190,7 @@ python mmdeploy/tools/deploy.py \
 转换结果被保存在 `--work-dir` 指向的文件夹中。**该文件夹中不仅包含推理后端模型，还包括推理元信息。这些内容的整体被定义为 SDK Model。推理 SDK 将用它进行模型推理。**
 
 ```{tip}
-在安装了 MMDeploy-ONNXRuntime 预编译包后，把上述转换命令中的detection_tensorrt_dynamic-320x320-1344x1344.py 换成 detection_onnxruntime_dynamic.py，并修改 --device 为 cpu，
+把上述转换命令中的detection_tensorrt_dynamic-320x320-1344x1344.py 换成 detection_onnxruntime_dynamic.py，并修改 --device 为 cpu，
 即可以转出 onnx 模型，并用 ONNXRuntime 进行推理
 ```
 
@@ -226,12 +223,15 @@ result = inference_model(
 你可以直接运行预编译包中的 demo 程序，输入 SDK Model 和图像，进行推理，并查看推理结果。
 
 ```shell
-cd mmdeploy-1.0.0rc3-linux-x86_64-cuda11.1-tensorrt8.2.3.0
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.0.0/mmdeploy-1.0.0-linux-x86_64-cuda11.3.tar.gz
+tar xf mmdeploy-1.0.0-linux-x86_64-cuda11.3
+
+cd mmdeploy-1.0.0-linux-x86_64-cuda11.3
 # 运行 python demo
-python sdk/example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # 运行 C/C++ demo
-export LD_LIBRARY_PATH=$(pwd)/sdk/lib:$LD_LIBRARY_PATH
-./sdk/bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
+# 根据文件夹内的 README.md 进行编译
+./bin/object_detection cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 ```
 
 ```{note}
@@ -268,7 +268,7 @@ for index, bbox, label_id in zip(indices, bboxes, labels):
 cv2.imwrite('output_detection.png', img)
 ```
 
-更多示例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/python)。
+更多示例，请查阅[这里](https://github.com/open-mmlab/mmdeploy/tree/main/demo/python)。
 
 #### C++ API
 
@@ -322,9 +322,9 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 ```
 
 编译时，使用 -DMMDeploy_DIR，传入MMDeloyConfig.cmake所在的路径。它在预编译包中的sdk/lib/cmake/MMDeloy下。
-更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/cpp)。
+更多示例，请查阅[此处](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/cpp)。
 
-对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo/java)。
+对于 C API、C# API、Java API 的使用方法，请分别阅读代码[C demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csrc/c)， [C# demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/csharp) 和 [Java demos](https://github.com/open-mmlab/mmdeploy/tree/main/demo/java)。
 我们将在后续版本中详细讲述它们的用法。
 
 #### 加速预处理（实验性功能）

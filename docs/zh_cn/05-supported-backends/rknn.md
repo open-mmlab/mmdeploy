@@ -2,7 +2,7 @@
 
 目前, MMDeploy 只在 rk3588 和 rv1126 的 linux 平台上测试过.
 
-以下特性需要手动在 MMDeploy 自行配置，如[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/_base_/backends/rknn.py).
+以下特性需要手动在 MMDeploy 自行配置，如[这里](https://github.com/open-mmlab/mmdeploy/tree/main/configs/_base_/backends/rknn.py).
 
 - target_platform ！= default
 - quantization settings

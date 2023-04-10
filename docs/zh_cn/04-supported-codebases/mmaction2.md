@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### 安装 mmaction2
 
-请参考[官网安装指南](https://github.com/open-mmlab/mmaction2/tree/dev-1.x#installation).
+请参考[官网安装指南](https://github.com/open-mmlab/mmaction2/tree/1.x#installation).
 
 ### 安装 mmdeploy
 
@@ -29,7 +29,7 @@ mmdeploy 有以下几种安装方式:
 
 **方式一：** 安装预编译包
 
-通过此[链接](https://github.com/open-mmlab/mmdeploy/releases)获取最新的预编译包
+请参考[安装概述](https://mmdeploy.readthedocs.io/zh_CN/latest/get_started.html#mmdeploy)
 
 **方式二：** 一键式脚本安装
 
@@ -37,7 +37,7 @@ mmdeploy 有以下几种安装方式:
 比如，以下命令可以安装 mmdeploy 以及配套的推理引擎——`ONNX Runtime`.
 
 ```shell
-git clone --recursive -b 1.x https://github.com/open-mmlab/mmdeploy.git
+git clone --recursive -b main https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 python3 tools/scripts/build_ubuntu_x64_ort.py $(nproc)
 export PYTHONPATH=$(pwd)/build/lib:$PYTHONPATH
@@ -50,10 +50,10 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 ## 模型转换
 
-你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/1.x/tools/deploy.py) 把 mmaction2 模型一键式转换为推理后端模型。
-该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/1.x/docs/en/02-how-to-run/convert_model.md#usage).
+你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) 把 mmaction2 模型一键式转换为推理后端模型。
+该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/1.x/configs/mmaction)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmaction)。
 文件的命名模式是：
 
 ```
@@ -181,13 +181,13 @@ for label_id, score in result:
 ```
 
 除了python API，mmdeploy SDK 还提供了诸如 C、C++、C#、Java等多语言接口。
-你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/1.x/demo)学习其他语言接口的使用方法。
+你可以参考[样例](https://github.com/open-mmlab/mmdeploy/tree/main/demo)学习其他语言接口的使用方法。
 
 > mmaction2 的 C#，Java接口待开发
 
 ## 模型支持列表
 
-| Model                                                                                         | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :-------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/dev-1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                     | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :---------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |

@@ -85,9 +85,9 @@ ENV PATH="/root/workspace/ncnn/build/tools/quantize/:${PATH}"
 ### install mmdeploy
 WORKDIR /root/workspace
 ARG VERSION
-RUN git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git &&\
+RUN git clone -b main https://github.com/open-mmlab/mmdeploy.git &&\
     cd mmdeploy &&\
-    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on 1.x" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
+    if [ -z ${VERSION} ] ; then echo "No MMDeploy version passed in, building on main" ; else git checkout tags/v${VERSION} -b tag_v${VERSION} ; fi &&\
     git submodule update --init --recursive &&\
     rm -rf build &&\
     mkdir build &&\
@@ -114,4 +114,4 @@ RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_CODEBASES=all &&\
     cmake --build . -- -j$(nproc) && cmake --install . &&\
     export SPDLOG_LEVEL=warn &&\
-    if [ -z ${VERSION} ] ; then echo "Built MMDeploy 1.x for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi
+    if [ -z ${VERSION} ] ; then echo "Built MMDeploy main for CPU devices successfully!" ; else echo "Built MMDeploy version v${VERSION} for CPU devices successfully!" ; fi

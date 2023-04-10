@@ -105,7 +105,7 @@ html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 # documentation.
 #
 html_theme_options = {
-    'logo_url': 'https://mmdeploy.readthedocs.io/en/1.x/',
+    'logo_url': 'https://mmdeploy.readthedocs.io/en/latest/',
     'menu': [{
         'name': 'GitHub',
         'url': 'https://github.com/open-mmlab/mmdeploy'

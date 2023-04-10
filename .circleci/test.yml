@@ -84,8 +84,7 @@ commands:
           command: |
             cd mmdeploy
             python -m mim install -r requirements/codebases.txt
-            python -m pip install -r requirements/tests.txt
-            python -m pip install -r requirements/runtime.txt
+            python -m pip install -r requirements.txt
             python -m pip install -U numpy clip numba
             cd ..
   perform_model_converter_ut:
@@ -145,8 +144,7 @@ jobs:
           command: |
             docker exec mmdeploy pip install onnxruntime==1.8.1
             docker exec mmdeploy mim install -r mmdeploy/requirements/codebases.txt
-            docker exec mmdeploy pip install -r mmdeploy/requirements/tests.txt
-            docker exec mmdeploy pip install -r mmdeploy/requirements/runtime.txt
+            docker exec mmdeploy pip install -r mmdeploy/requirements.txt
             docker exec mmdeploy pip install -U numpy clip numba
       - run:
           name: Perform Model Converter unittests
@@ -272,11 +270,3 @@ workflows:
           version: 1.8.1
           requires:
             - lint
-      - hold:
-          type: approval
-          requires:
-            - test_linux_onnxruntime
-            - test_windows_onnxruntime
-      - test_linux_tensorrt:
-          requires:
-            - hold

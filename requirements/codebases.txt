@@ -5,4 +5,4 @@ mmedit>=1.0.0rc2
 mmocr>=1.0.0rc4
 mmpose>=1.0.0rc0
 mmrotate>=1.0.0rc0
-mmsegmentation>=1.0.0rc0
+mmsegmentation @ git+https://github.com/open-mmlab/mmsegmentation.git@dev-1.x

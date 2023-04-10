@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   build_cpu_model_convert:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [3.7]
@@ -45,10 +45,11 @@ jobs:
       - name: Install unittest dependencies
         run: |
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U numpy clip
+          python -m pip install -U numpy clip numba
           python -m pip list
       - name: Install mmyolo
         run: |
@@ -70,7 +71,7 @@ jobs:
           pytest tests/test_deploy
 
   build_cpu_sdk:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -83,13 +84,11 @@ jobs:
           sudo apt install gcc-multilib g++-multilib wget libprotobuf-dev protobuf-compiler
           sudo apt update
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
-          sudo add-apt-repository ppa:ignaciovizzo/opencv3-nonfree
           sudo apt install libopencv-dev lcov wget
-          pkg-config --libs opencv
       - name: Build and run SDK unit test without backend
         run: |
           mkdir -p build && pushd build
-          cmake .. -DCMAKE_CXX_COMPILER=g++-7  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
+          cmake .. -DCMAKE_CXX_COMPILER=g++  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
           make -j2
           mkdir -p mmdeploy_test_resources/transform
           cp ../tests/data/tiger.jpeg mmdeploy_test_resources/transform/
@@ -116,14 +115,13 @@ jobs:
           sh -x tools/scripts/ubuntu_cross_build_aarch64.sh
 
   build_cuda102:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
     env:
       FORCE_CUDA: 1
     strategy:
       matrix:
-        python-version: [3.7]
         torch: [1.9.0+cu102]
         include:
           - torch: 1.9.0+cu102
@@ -131,27 +129,27 @@ jobs:
             torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
+          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -V
+          python -m pip install --upgrade pip
+          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip
+          python -m pip install -U pycuda numpy clip numba
           python -m pip list
       - name: Build and install
         run: |
@@ -163,43 +161,40 @@ jobs:
           coverage xml
           coverage report -m
 
-  build_cuda111:
-    runs-on: ubuntu-18.04
+  build_cuda113:
+    runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.8.0-cuda11.1-cudnn8-devel
-
+      image: pytorch/pytorch:1.10.0-cuda11.3-cudnn8-devel
     strategy:
       matrix:
-        python-version: [3.7]
-        torch: [1.8.0+cu111]
+        torch: [1.10.0+cu113]
         include:
-          - torch: 1.8.0+cu111
-            torch_version: torch1.8
-            torchvision: 0.9.0+cu111
-
+          - torch: 1.10.0+cu113
+            torch_version: torch1.10
+            torchvision: 0.11.0+cu113
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev python${{matrix.python-version}}-dev
+          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -V
+          python -m pip install --upgrade pip
+          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip
+          python -m pip install -U pycuda numpy clip numba
           python -m pip list
       - name: Build and install
         run: |
@@ -285,7 +280,8 @@ jobs:
           conda activate $pwd\tmp_env
           python -V
           python -m pip install openmim
-          python -m pip install -r requirements.txt -r requirements/backends.txt
+          python -m pip install -r requirements.txt
+          python -m pip install -r requirements/backends.txt
           python -m mim install "mmcls>=1.0.0rc2"
           python -m pip list
       - name: Build mmdeploy

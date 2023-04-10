@@ -27,9 +27,11 @@ WORKDIR /root/workspace
 ENV FORCE_CUDA="1"
 
 # install toolset
-RUN yum install devtoolset-${TOOLSET_VERSION}-gcc devtoolset-${TOOLSET_VERSION}-gcc-c++ -y
+RUN yum install centos-release-scl devtoolset-${TOOLSET_VERSION}-gcc* -y
 
-ENV PATH=/opt/rh/devtoolset-${TOOLSET_VERSION}/root/usr/bin:$PATH
+ENV TOOLSET_DIR=/opt/rh/devtoolset-${TOOLSET_VERSION}/root/usr
+ENV PATH=$TOOLSET_DIR/bin:$PATH
+ENV LD_LIBRARY_PATH=$TOOLSET_DIR/lib:$TOOLSET_DIR/lib64:/usr/local/lib64
 
 # install cuda cudnn
 RUN curl -fsSL -v -o ./cuda_install.run -O $CUDA_URL &&\
@@ -46,6 +48,10 @@ RUN curl -fsSL -v -o ./onnxruntime.tgz -O https://github.com/microsoft/onnxrunti
     tar -xzvf onnxruntime.tgz &&\
     rm onnxruntime.tgz &&\
     mv onnxruntime* /opt/onnxruntime &&\
+    curl -fsSL -v -o ./onnxruntime.tgz -O https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-gpu-${ONNXRUNTIME_VERSION}.tgz &&\
+    tar -xzvf onnxruntime.tgz &&\
+    rm onnxruntime.tgz &&\
+    mv onnxruntime* /opt/onnxruntime-gpu &&\
     curl -fsSL -v -o ./tensorrt.tgz -O $TENSORRT_URL &&\
     tar -xzvf ./tensorrt.tgz &&\
     rm -f ./tensorrt.tgz &&\
@@ -56,10 +62,11 @@ RUN curl -fsSL -v -o ./onnxruntime.tgz -O https://github.com/microsoft/onnxrunti
 ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda
 ENV CUDNN_DIR=/opt/cudnn
 ENV ONNXRUNTIME_DIR=/opt/onnxruntime
+ENV ONNXRUNTIME_GPU_DIR=/opt/onnxruntime-gpu
 ENV TENSORRT_DIR=/opt/TensorRT
 
 ENV LD_LIBRARY_PATH=$CUDA_TOOLKIT_ROOT_DIR/lib64:$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=${ONNXRUNTIME_DIR}/lib:$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=${ONNXRUNTIME_GPU_DIR}/lib:$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 ENV PATH=$TENSORRT_DIR/bin:$PATH
 
 ### install ppl.cv
@@ -106,7 +113,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/envs/torch${TORCH_VERSION}/bin/pip install --no-cache-dir torch==${TORCH_VERSION}+cu${CUDA_INT} \
         torchvision==${TORCHVISION_VERSION}+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html &&\
     /opt/conda/bin/conda init bash &&\
-    /opt/conda/bin/conda clean -ya &&\
+    /opt/conda/bin/conda clean -ya
 
 ENV CONDA=/opt/conda
 ENV PATH=$CONDA/bin:$PATH

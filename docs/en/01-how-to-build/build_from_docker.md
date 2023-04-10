@@ -51,7 +51,7 @@ docker run --gpus all -it mmdeploy:master-gpu
 
    As described [here](https://forums.developer.nvidia.com/t/cuda-error-the-provided-ptx-was-compiled-with-an-unsupported-toolchain/185754), update the GPU driver to the latest one for your GPU.
 
-2. docker: Error response from daemon: could not select device driver "" with capabilities: \[gpu\].
+2. docker: Error response from daemon: could not select device driver "" with capabilities: [gpu].
 
    ```
    # Add the package repositories
