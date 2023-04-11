@@ -31,11 +31,11 @@ function InitMim() {
 
     if ($mmdeploy_branch -eq "master" ){
         if ($codebase_fullname -eq “mmdetection” -or $codebase_fullname -eq “mmpretrain” `
-        -or $codebase_fullname -eq "mmaction2" -or $codebase_fullname -eq "mmpose" `
+        -or $codebase_fullname -eq "mmpose" `
         -or $codebase_fullname -eq "mmsegmentation" -or $codebase_fullname -eq "mmediting"){
             git clone --depth 1 -b master $url $place
         }
-        elseif ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmrotate”){
+        elseif ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmrotate” -or $codebase_fullname -eq "mmaction2" ){
             git clone --depth 1 -b main $url $place
         }
         elseif ($codebase_fullname -eq “mmdetection3d” ){

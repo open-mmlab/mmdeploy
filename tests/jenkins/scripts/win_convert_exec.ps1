@@ -24,6 +24,11 @@ InitMim $codebase $codebase_fullname $mmdeploy_branch
 pip uninstall mmcv-full -y
 pip uninstall mmcv -y
 pip uninstall $codebase -y
+
+mim list
+pip install -v $codebase_path
+mim list
+mim install $codebase
 if ($mmdeploy_branch -eq "master"){
     if ($json_v1.PSObject.Properties.Name -contains $codebase)
     {
@@ -47,9 +52,6 @@ elseif ($mmdeploy_branch -eq "dev-1.x"){
     }
 }
 mim list
-mim install $codebase
-mim list
-pip install -v $codebase_path
 Write-Host "$pwd"
 #Invoke-Expression -Command "python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance"
 # python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance
