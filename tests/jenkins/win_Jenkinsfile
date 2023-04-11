@@ -23,7 +23,7 @@ pipeline {
         )
         string(
             name: 'max_job_nums',
-            defaultValue: '2'
+            defaultValue: '1'
         )
         string(
             name: 'repo_url',
