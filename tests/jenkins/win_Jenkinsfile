@@ -49,10 +49,10 @@ pipeline {
 
                 """
             }
+        }
         stage('Delete Directory') {
             deleteDir('mmsegmentation')
             }
-        }
 
     }
     post {
