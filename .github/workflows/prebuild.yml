@@ -42,7 +42,7 @@ jobs:
           cd pack
           python ../tools/package_tools/generate_build_config.py --backend 'ort' \
             --system linux --output config.yml --device cpu --build-sdk --build-sdk-monolithic \
-            --build-sdk-python --sdk-dynamic-net
+            --build-sdk-python --sdk-dynamic-net --onnxruntime-dir=$ONNXRUNTIME_GPU_DIR
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
       - name: Build sdk cuda backend
         run: |
