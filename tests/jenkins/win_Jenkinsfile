@@ -58,7 +58,7 @@ pipeline {
             steps {
 
                 bat """
-                echo $pwd
+                cd ..
                 """
                 deleteDir()
 
