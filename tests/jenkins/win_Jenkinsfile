@@ -54,15 +54,7 @@ pipeline {
         }
 
 
-        stage('Delete Workspace') {
-            steps {
-                dir(mmsegmentation){
-                    deleteDir()
-                }
 
-                }
-
-        }
     }
     //post {
         //always {
