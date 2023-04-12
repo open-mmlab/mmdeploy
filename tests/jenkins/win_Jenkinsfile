@@ -58,9 +58,9 @@ pipeline {
             steps {
                 script{
                     bat """
-                    cd ..
+                    pwd
                     """
-                    deleteDir()
+                    Dir("D:/huangzijie/workspace/mmdeploy_win")
                 }
 
             }
@@ -68,9 +68,9 @@ pipeline {
         }
 
     }
-    post {
-        always {
-            cleanWs()
-            }
-   }
+    //post {
+        //always {
+            //cleanWs()
+            //}
+   //}
 }
