@@ -48,7 +48,7 @@ pipeline {
 
 
                 """
-                deleteDir('mmsegmentation')
+                deleteDir(dir: 'mmdetection')
             }
         }
     }
