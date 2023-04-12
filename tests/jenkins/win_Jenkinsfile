@@ -56,9 +56,10 @@ pipeline {
 
         stage('Delete Workspace') {
             steps {
-                script{
-                    def dir = Dir.create("D:/huangzijie/workspace/mmdeploy_win/mmsegmentation")
-                    dir.remove()
+                dir(mmsegmentation){
+                    deleteDir()
+                }
+
                 }
 
             }
