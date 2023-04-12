@@ -56,12 +56,12 @@ pipeline {
 
         stage('Delete Workspace') {
             steps {
-
-                bat """
-                cd ..
-                """
-                deleteDir()
-
+                script{
+                    bat """
+                    cd ..
+                    """
+                    deleteDir()
+                }
 
             }
 
