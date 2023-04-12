@@ -48,12 +48,9 @@ pipeline {
 
 
                 """
+                deleteDir('mmsegmentation')
             }
         }
-        stage('Delete Directory') {
-            deleteDir('mmsegmentation')
-            }
-
     }
     post {
         always {
