@@ -51,11 +51,15 @@ pipeline {
                 """
             }
         }
-        def folderToDelete = 'mmdeploy_win'
+
 
         stage('Delete Folder') {
-            deleteDir(dir: null, delete: true)
-            echo "Deleting folder: ${folderToDelete}"
+            steps {
+                def folderToDelete = 'mmdeploy_win'
+                deleteDir(dir: null, delete: true)
+                echo "Deleting folder: ${folderToDelete}"
+            }
+
         }
 
     }
