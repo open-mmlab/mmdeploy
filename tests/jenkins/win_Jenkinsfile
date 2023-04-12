@@ -57,6 +57,9 @@ pipeline {
         stage('Delete Workspace') {
             steps {
                 script{
+                    bat """
+                    echo $pwd
+                    """
                     deleteDir()
                 }
 
