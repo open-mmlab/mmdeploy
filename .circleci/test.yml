@@ -85,7 +85,7 @@ commands:
             cd mmdeploy
             python -m mim install -r requirements/codebases.txt
             python -m pip install -r requirements.txt
-            python -m pip install -U numpy clip numba
+            python -m pip install -U numpy clip numba transformers
             cd ..
   perform_model_converter_ut:
     steps:
@@ -145,7 +145,7 @@ jobs:
             docker exec mmdeploy pip install onnxruntime==1.8.1
             docker exec mmdeploy mim install -r mmdeploy/requirements/codebases.txt
             docker exec mmdeploy pip install -r mmdeploy/requirements.txt
-            docker exec mmdeploy pip install -U numpy clip numba
+            docker exec mmdeploy pip install -U numpy clip numba transformers
       - run:
           name: Perform Model Converter unittests
           command: |

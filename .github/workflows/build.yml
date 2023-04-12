@@ -49,7 +49,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U numpy clip numba
+          python -m pip install -U numpy clip numba transformers
           python -m pip list
       - name: Install mmyolo
         run: |
@@ -149,7 +149,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip numba
+          python -m pip install -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
@@ -194,7 +194,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip numba
+          python -m pip install -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
@@ -232,7 +232,7 @@ jobs:
           apt update && apt install unzip
           python3 -V
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim numpy pycuda clip
+          python3 -m pip install openmim numpy pycuda clip transformers
           python3 -m pip install -r requirements.txt
           python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
           python3 -m pip list

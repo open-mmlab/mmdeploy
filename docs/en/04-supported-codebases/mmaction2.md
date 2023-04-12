@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### Install mmaction2
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmaction2/tree/1.x#installation) to install mmaction2.
+Please follow the [installation guide](https://github.com/open-mmlab/mmaction2/tree/main#installation) to install mmaction2.
 
 ### Install mmdeploy
 
@@ -184,7 +184,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                                     | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                      | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
