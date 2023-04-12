@@ -101,8 +101,9 @@ def delta2bbox(rois,
     dxy = denorm_deltas[..., :2]
     dwh = denorm_deltas[..., 2:]
 
-    xy1 = rois[..., None, :2]
-    xy2 = rois[..., None, 2:]
+    # fix openvino on torch1.13
+    xy1 = rois[..., :2].unsqueeze(2)
+    xy2 = rois[..., 2:].unsqueeze(2)
 
     pxy = (xy1 + xy2) * 0.5
     pwh = xy2 - xy1

@@ -93,7 +93,7 @@ Operators customized for ncnn are in the `csrc/mmdeploy/backend_ops/ncnn/` direc
 
 - topk
 - tensorslice
-- shpe
+- shape
 - gather
 - expand
 - constantofshape
