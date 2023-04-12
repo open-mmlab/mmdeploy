@@ -307,7 +307,6 @@ models:
     pipelines:
       - *pipeline_ts_recognition_fp32
       - *pipeline_ort_recognition_dynamic_fp32
-      - *pipeline_trt_recognition_dynamic_fp32_H48_C3
 
   - name: SATRN
     metafile: configs/textrecog/satrn/metafile.yml
