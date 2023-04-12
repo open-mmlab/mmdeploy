@@ -124,19 +124,7 @@ def solov2_head__predict_by_feat(self, mlvl_kernel_preds: List[Tensor],
                           featmap_size[1] * self.mask_stride)
         mask_preds = F.interpolate(
             mask_preds, size=upsampled_size, mode='bilinear')
-        bboxes = scores.new_zeros(batch_size, scores.shape[-1], 4)
-    else:
-
-        bboxes = scores.new_zeros(batch_size, scores.shape[-1], 2)
-        # full screen box so we can postprocess mask outside the model
-        bboxes = torch.cat([
-            bboxes,
-            bboxes.new_full((*bboxes.shape[:2], 1), w),
-            bboxes.new_full((*bboxes.shape[:2], 1), h)
-        ],
-                           dim=-1)
 
     labels = labels.reshape(batch_size, -1)
-    dets = torch.cat([bboxes, scores.reshape(batch_size, -1, 1)], dim=-1)
 
-    return dets, labels, mask_preds
+    return scores.reshape(batch_size, -1), labels, mask_preds
