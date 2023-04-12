@@ -40,7 +40,7 @@ if ($mmdeploy_branch -eq "master"){
         Write-Host "$codebase not found in requirementV1.0.json file"
     }
 }
-elseif ($mmdeploy_branch -eq "dev-1.x"){
+elseif ($mmdeploy_branch -eq "main"){
     if ($json_v2.PSObject.Properties.Name -contains $codebase)
     {
         $mmcv = $json_v2.$codebase.mmcv

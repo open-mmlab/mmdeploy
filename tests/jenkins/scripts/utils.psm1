@@ -43,7 +43,7 @@ function InitMim() {
         }
 
     }
-    elseif ($mmdeploy_branch -eq "dev-1.x") {
+    elseif ($mmdeploy_branch -eq "main") {
         if ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmpretrain” `
         $codebase_fullname -eq "mmpose" `
         -or $codebase_fullname -eq "mmsegmentation" ){
