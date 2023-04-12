@@ -24,7 +24,7 @@ ______________________________________________________________________
 
 ### Install mmocr
 
-Please follow the [installation guide](https://mmocr.readthedocs.io/en/latest/install.html) to install mmocr.
+Please follow the [installation guide](https://mmocr.readthedocs.io/en/latest/get_started/install.html) to install mmocr.
 
 ### Install mmdeploy
 
@@ -250,6 +250,9 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 ## Reminder
 
 - ABINet for TensorRT require pytorch1.10+ and TensorRT 8.4+.
+
+- SAR uses `valid_ratio` inside network inference, which causes performance drops. When the `valid_ratio`s between
+  testing image and the image for conversion are quite different, the gap would be enlarged.
 
 - For TensorRT backend, users have to choose the right config. For example, CRNN only accepts 1 channel input. Here is a recommendation table:
 

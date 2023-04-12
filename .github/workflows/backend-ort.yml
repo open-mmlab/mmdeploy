@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  buils_ort:
+  build_ort:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
