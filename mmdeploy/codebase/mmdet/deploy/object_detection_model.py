@@ -234,6 +234,7 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
+            # result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
             if batch_masks is not None:
@@ -286,6 +287,44 @@ class End2EndModel(BaseBackendModel):
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
+
+
+@__BACKEND_MODEL.register_module('end2end_solo')
+class End2EndModelSOLO(End2EndModel):
+    """End to end model for inference of box-free instance segmentor.
+
+    Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
+        deploy_cfg (str|Config): Deployment config file or loaded Config
+            object.
+        data_preprocessor (dict|nn.Module): The data preprocessor.
+    """
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: Optional[List[BaseDataElement]] = None,
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+
+        Returns:
+            Any: Model output.
+        """
+        results = super(End2EndModelSOLO, self).forward(
+            inputs=inputs, data_samples=data_samples, mode=mode, **kwargs)
+        for result in results:
+            result.pred_instances.bboxes = result.pred_instances.\
+                bboxes.new_zeros(result.pred_instances.bboxes.shape)
+        return results
 
 
 @__BACKEND_MODEL.register_module('single_stage')
