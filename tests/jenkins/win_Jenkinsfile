@@ -57,9 +57,6 @@ pipeline {
         stage('Delete Workspace') {
             steps {
                 script{
-                    bat """
-                    pwd
-                    """
                     Dir("D:/huangzijie/workspace/mmdeploy_win")
                 }
 
