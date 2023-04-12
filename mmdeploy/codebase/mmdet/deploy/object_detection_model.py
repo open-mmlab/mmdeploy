@@ -319,8 +319,8 @@ class End2EndModelSOLO(End2EndModel):
         Returns:
             Any: Model output.
         """
-        results = super(End2EndModelSOLO, self).forward(
-            inputs=inputs, data_samples=data_samples, mode=mode, **kwargs)
+        results = super(End2EndModelSOLO,
+                        self).forward(inputs, data_samples, mode, **kwargs)
         for result in results:
             result.pred_instances.bboxes = result.pred_instances.\
                 bboxes.new_zeros(result.pred_instances.bboxes.shape)
