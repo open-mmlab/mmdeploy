@@ -53,7 +53,7 @@ pipeline {
         }
 
 
-        stage('Delete Folder') {
+        stage('Delete Workspace') {
             steps {
                 script{
                     deleteDir()
