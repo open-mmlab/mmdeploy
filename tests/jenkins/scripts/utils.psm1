@@ -45,15 +45,14 @@ function InitMim() {
     }
     elseif ($mmdeploy_branch -eq "main") {
         if ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmpretrain” `
-        $codebase_fullname -eq "mmpose" `
-        -or $codebase_fullname -eq "mmsegmentation" ){
+        -or $codebase_fullname -eq "mmpose"-or $codebase_fullname -eq "mmsegmentation" ){
             git clone --depth 1 -b 1.x $url $place
         }
         elseif ($codebase_fullname -eq “mmdetection”){
             git clone --depth 1 -b 3.x $url $place
         }
         elseif ($codebase_fullname -eq “mmdetection3d” -or $codebase_fullname -eq “mmrotate” `
-        -or $codebase_fullname -eq "mmediting" -or $codebase_fullname -eq "mmaction2" -or ){
+        -or $codebase_fullname -eq "mmediting" -or $codebase_fullname -eq "mmaction2"){
             git clone --depth 1 -b dev-1.x $url $place
         }
         elseif ($codebase_fullname -eq “mmyolo”){
