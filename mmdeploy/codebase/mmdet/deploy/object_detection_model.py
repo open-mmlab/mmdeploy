@@ -234,7 +234,6 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
-            # result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
             if batch_masks is not None:
