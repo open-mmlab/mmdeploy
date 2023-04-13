@@ -202,6 +202,7 @@ And the output look like this:
 |  Max   |   1.689    | 591.983 |
 +--------+------------+---------+
 ```
+
 ## generate_md_table
 
 This tool can be used to generate supported-backends markdown table.

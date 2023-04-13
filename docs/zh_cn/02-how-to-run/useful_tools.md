@@ -202,6 +202,7 @@ python tools/profiler.py \
 |  Max   |   1.689    | 591.983 |
 +--------+------------+---------+
 ```
+
 ## generate_md_table
 
 生成mmdeploy支持的后端表。
