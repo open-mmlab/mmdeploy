@@ -43,8 +43,8 @@ class End2EndModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
-                 model_cfg: Union[str, Config],
                  deploy_cfg: Union[str, Config],
+                 model_cfg: Optional[Union[str, Config]] = None,
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
         super().__init__(
