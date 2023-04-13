@@ -37,7 +37,8 @@ pipeline {
     stages {
         stage('delete workspace') {
             steps {
-                deleteDir(path: 'D:/huangzijie/workspace/test',allowReadOnly: true)
+                def dirpath = 'D:/huangzijie/workspace/test'
+                deleteDir(path: dirpath ,allowReadOnly: true)
 
             }
 
