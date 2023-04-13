@@ -33,7 +33,9 @@ pipeline {
     }
 
 
-
+    environment {
+        REGISTRY_NAME = "regression_test_0413"
+    }
     stages {
 
         stage('test') {
