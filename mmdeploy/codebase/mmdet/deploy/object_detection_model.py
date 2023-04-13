@@ -197,6 +197,8 @@ class End2EndModel(BaseBackendModel):
         img_metas = [data_sample.metainfo for data_sample in data_samples]
         results = []
         rescale = kwargs.get('rescale', True)
+        model_type = self.model_cfg.model.type if \
+            self.model_cfg is not None else None
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
             result = InstanceData()
@@ -236,7 +238,7 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
-            if self.model_cfg.model.type in ['SOLO', 'SOLOv2']:
+            if model_type in ['SOLO', 'SOLOv2']:
                 result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
