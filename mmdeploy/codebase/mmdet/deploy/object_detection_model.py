@@ -43,12 +43,14 @@ class End2EndModel(BaseBackendModel):
                  backend: Backend,
                  backend_files: Sequence[str],
                  device: str,
+                 model_cfg: Union[str, Config],
                  deploy_cfg: Union[str, Config],
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
         super().__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
+        self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -234,7 +236,8 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
-            # result.bboxes = bboxes.new_zeros(bboxes.shape)
+            if self.model_cfg.model.type in ['SOLO', 'SOLOv2']:
+                result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
             if batch_masks is not None:
@@ -287,193 +290,6 @@ class End2EndModel(BaseBackendModel):
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
-
-
-@__BACKEND_MODEL.register_module('end2end_solo')
-class End2EndModelSOLO(End2EndModel):
-    """End to end model for inference of box-free instance segmentor.
-
-    Args:
-        backend (Backend): The backend enum, specifying backend type.
-        backend_files (Sequence[str]): Paths to all required backend files
-                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
-        device (str): A string specifying device type.
-        deploy_cfg (str|Config): Deployment config file or loaded Config
-            object.
-        data_preprocessor (dict|nn.Module): The data preprocessor.
-    """
-
-    @staticmethod
-    def __clear_outputs(
-        test_outputs: List[Union[Tensor, np.ndarray]]
-    ) -> List[Union[List[Tensor], List[np.ndarray]]]:
-        """Removes additional outputs and detections with zero and negative
-        score.
-
-        Args:
-            test_outputs (List[Union[Tensor, np.ndarray]]):
-                outputs of forward_test.
-
-        Returns:
-            List[Union[List[Tensor], List[np.ndarray]]]:
-                outputs with without zero score object.
-        """
-        batch_size = len(test_outputs[0])
-
-        num_outputs = len(test_outputs)
-        outputs = [[None for _ in range(batch_size)]
-                   for _ in range(num_outputs)]
-
-        for i in range(batch_size):
-            inds = test_outputs[0][i, :] > 0.0
-            for output_id in range(num_outputs):
-                outputs[output_id][i] = test_outputs[output_id][i, inds, ...]
-        return outputs
-
-    @staticmethod
-    def postprocessing_masks(det_masks: Union[np.ndarray, Tensor],
-                             img_w: int,
-                             img_h: int,
-                             scale_w: float,
-                             scale_h: float,
-                             device: str = 'cpu') -> Tensor:
-        """Additional processing of masks. Resizes masks from [num_det, 28, 28]
-        to [num_det, img_w, img_h]. Analog of the 'mmdeploy.codebase.mmdet.
-        models.roi_heads.fcn_mask_head._do_paste_mask' function.
-
-        Args:
-            det_masks (np.ndarray | Tensor): Masks of shape [num_det, 28, 28].
-            img_w (int): Width of the original image.
-            img_h (int): Height of the original image.
-            device :(str): The device type.
-
-        Returns:
-            Tensor: masks of shape [N, num_det, img_h, img_w].
-        """
-        masks = det_masks
-        device = torch.device(device)
-        num_det = det_masks.shape[0]
-        # Skip postprocessing if no detections are found.
-        if num_det == 0:
-            return torch.zeros(
-                0, img_h, img_w, dtype=torch.float32, device=device)
-
-        if isinstance(masks, np.ndarray):
-            masks = torch.tensor(masks, device=device)
-
-        masks = masks.to(device)
-
-        result_masks = []
-        for mask in masks:
-            x0_int, y0_int = 0, 0
-            x1_int, y1_int = img_w, img_h
-
-            img_y = torch.arange(
-                y0_int, y1_int, dtype=torch.float32, device=device) + 0.5
-            img_x = torch.arange(
-                x0_int, x1_int, dtype=torch.float32, device=device) + 0.5
-            x0, y0, x1, y1 = 0, 0, scale_w, scale_h
-
-            img_y = (img_y - y0) / (y1 - y0) * 2 - 1
-            img_x = (img_x - x0) / (x1 - x0) * 2 - 1
-            if torch.isinf(img_x).any():
-                inds = torch.where(torch.isinf(img_x))
-                img_x[inds] = 0
-            if torch.isinf(img_y).any():
-                inds = torch.where(torch.isinf(img_y))
-                img_y[inds] = 0
-
-            gx = img_x[None, :].expand(img_y.size(0), img_x.size(0))
-            gy = img_y[:, None].expand(img_y.size(0), img_x.size(0))
-            grid = torch.stack([gx, gy], dim=2)
-
-            img_masks = F.grid_sample(
-                mask.to(dtype=torch.float32)[None, None, :, :],
-                grid[None, :, :, :],
-                align_corners=False)
-
-            result_masks.append(img_masks)
-        result_masks = torch.cat(result_masks, 1)
-        return result_masks.squeeze(0)
-
-    def forward(self,
-                inputs: torch.Tensor,
-                data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'predict',
-                **kwargs) -> Any:
-        """The model forward.
-
-        Args:
-            inputs (torch.Tensor): The input tensors
-            data_samples (List[BaseDataElement], optional): The data samples.
-                Defaults to None.
-            mode (str, optional): forward mode, only support `predict`.
-
-        Returns:
-            Any: Model output.
-        """
-        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
-        inputs = inputs.contiguous()
-        outputs = self.predict(inputs)
-        outputs = End2EndModelSOLO.__clear_outputs(outputs)
-        batch_scores, batch_labels, batch_masks = outputs
-        batch_size = inputs.shape[0]
-        img_metas = [data_sample.metainfo for data_sample in data_samples]
-        results = []
-        rescale = kwargs.get('rescale', True)
-        for i in range(batch_size):
-            if rescale and 'scale_factor' in img_metas[i]:
-                scale_factor = img_metas[i]['scale_factor']
-                if isinstance(scale_factor, (list, tuple, np.ndarray)):
-                    if len(scale_factor) == 2:
-                        scale_factor = np.array(scale_factor)
-                if 'pad_shape' in img_metas[i]:
-                    pad_shape = np.array(img_metas[i]['pad_shape'])
-                    scale_w, scale_h = pad_shape[::-1] / scale_factor
-                else:
-                    img_shape = np.array(img_metas[i]['img_shape'])
-                    scale_w, scale_h = img_shape[::-1] / scale_factor
-            scores, labels = batch_scores[i], batch_labels[i]
-            result = InstanceData()
-            result.scores = scores
-            result.labels = labels
-
-            if batch_masks is not None:
-                masks = batch_masks[i]
-                img_h, img_w = img_metas[i]['img_shape'][:2]
-                ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                export_postprocess_mask = False
-                if self.deploy_cfg is not None:
-
-                    mmdet_deploy_cfg = get_post_processing_params(
-                        self.deploy_cfg)
-                    # this flag enable postprocess when export.
-                    export_postprocess_mask = mmdet_deploy_cfg.get(
-                        'export_postprocess_mask', False)
-                if not export_postprocess_mask:
-                    masks = End2EndModelSOLO.postprocessing_masks(
-                        masks, ori_w, ori_h, scale_w, scale_h, self.device)
-                else:
-                    masks = masks[:, :img_h, :img_w]
-                # avoid to resize masks with zero dim
-                if export_postprocess_mask and rescale and masks.shape[0] != 0:
-                    masks = torch.nn.functional.interpolate(
-                        masks.unsqueeze(0),
-                        size=[
-                            math.ceil(masks.shape[-2] /
-                                      img_metas[i]['scale_factor'][0]),
-                            math.ceil(masks.shape[-1] /
-                                      img_metas[i]['scale_factor'][1])
-                        ])[..., :ori_h, :ori_w]
-                    masks = masks.squeeze(0)
-                if masks.dtype != bool:
-                    masks = masks >= 0.5
-                # aligned with mmdet to easily convert to numpy
-                masks = masks.cpu()
-                result.masks = masks
-            data_samples[i].pred_instances = result
-            results.append(data_samples[i])
-        return results
 
 
 @__BACKEND_MODEL.register_module('single_stage')
