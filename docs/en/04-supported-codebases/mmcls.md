@@ -183,5 +183,5 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer) |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |
 | [SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)     |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
 | [MobileOne](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobileone)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
-| [EfficientNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/EfficientNet)            |      Y      |      Y       |    N     |  N   |   ?   |    N     |
-| [Conformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/Conformer)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
+| [EfficientNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientnet)                 |      Y      |      Y       |    N     |  N   |   ?   |    N     |
+| [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/conformer)                       |      Y      |      Y       |    N     |  N   |   ?   |    N     |
