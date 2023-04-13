@@ -33,14 +33,16 @@ pipeline {
     }
 
 
-    environment {
-        REGISTRY_NAME = "regression_test_0413"
-    }
-    stages {
 
-        stage('test') {
+    stages {
+        stage('delete workspace') {
+            deleteDir('D:/huangzijie/workspace/test')
+
+
+        }
+
+        stage('Convert') {
             steps {
-                dir("regression_test_0413")
                 echo "======start======"
 
                 bat """
@@ -48,24 +50,9 @@ pipeline {
 
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
 
-
-
                 """
             }
         }
-
-        //stage('Convert') {
-            //steps {
-                //echo "======start======"
-
-                //bat """
-                    //@ECHO ON
-
-                    //pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
-
-                //"""
-            //}
-        //}
     }
     post {
         always {
