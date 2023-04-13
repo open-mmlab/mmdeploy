@@ -36,16 +36,15 @@ pipeline {
 
     stages {
 
-        stage('Convert') {
+        stage('test') {
             steps {
+                dir("regression_test_0413")
                 echo "======start======"
 
                 bat """
                     @ECHO ON
 
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
-                    cd ..
-                    cd ..
 
 
 
@@ -53,12 +52,22 @@ pipeline {
             }
         }
 
+        //stage('Convert') {
+            //steps {
+                //echo "======start======"
 
+                //bat """
+                    //@ECHO ON
 
-    }
-    //post {
-        //always {
-            //cleanWs()
+                    //pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
+
+                //"""
             //}
-   //}
+        //}
+    }
+    post {
+        always {
+            cleanWs()
+            }
+   }
 }
