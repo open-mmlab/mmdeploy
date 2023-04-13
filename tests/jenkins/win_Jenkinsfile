@@ -35,20 +35,7 @@ pipeline {
 
 
     stages {
-        stage('delete workspace') {
-            steps {
-                script {
-                    def dirpath = 'D:/huangzijie/workspace/test'
-                    deleteDir(path: dirpath ,allowReadOnly: true)
 
-                }
-
-
-            }
-
-
-
-        }
 
         stage('Convert') {
             steps {
@@ -60,6 +47,14 @@ pipeline {
                     pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
 
                 """
+            }
+        }
+        stage('delete workspace') {
+            steps {
+                script {
+                    def dirpath = 'D:/huangzijie/workspace/mmdeploy_win_test0413'
+                    deleteDir(path: dirpath ,allowReadOnly: true)
+                }
             }
         }
     }
