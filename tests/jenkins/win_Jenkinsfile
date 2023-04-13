@@ -53,7 +53,7 @@ pipeline {
             steps {
                 script {
                     def dirpath = 'D:/huangzijie/workspace/mmdeploy_win_test0413'
-                    deleteDir(path: dirpath ,allowReadOnly: true)
+                    deleteDir(path: dirpath )
                 }
             }
         }
