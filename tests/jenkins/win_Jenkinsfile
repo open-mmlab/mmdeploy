@@ -49,18 +49,11 @@ pipeline {
                 """
             }
         }
-        stage('delete workspace') {
-            steps {
-                script {
-                    def dirpath = 'D:/huangzijie/workspace/mmdeploy_win_test0413'
-                    deleteDir(path: dirpath )
-                }
-            }
-        }
+
     }
-    post {
-        always {
-            cleanWs()
-            }
-   }
+    //post {
+        //always {
+            //cleanWs()
+            //}
+   //}
 }
