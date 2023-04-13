@@ -37,7 +37,7 @@ pipeline {
     stages {
         stage('delete workspace') {
             steps {
-                deleteDir('D:/huangzijie/workspace/test')
+                deleteDir('D:/huangzijie/workspace/test',true)
 
             }
 
