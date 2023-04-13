@@ -236,6 +236,8 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
+            if self.model_cfg.model.type in ['SOLO', 'SOLOv2']:
+                result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
             if batch_masks is not None:
