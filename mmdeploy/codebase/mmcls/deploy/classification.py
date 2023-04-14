@@ -262,7 +262,7 @@ class Classification(BaseTask):
         image = mmcv.imread(image, channel_order='rgb')
         visualizer.visualize_cls(
             image,
-            result,
+            result, 
             show=show_result,
             name=name
         )
