@@ -914,7 +914,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">33.1</td>
-    <td align="center">-</td>
+    <td align="center">32,5</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -929,7 +929,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">34.8</td>
-    <td align="center">-</td>
+    <td align="center">34.5</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>

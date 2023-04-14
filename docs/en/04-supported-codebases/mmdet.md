@@ -210,5 +210,5 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | Instance Segmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |
-|            [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)            | Instance Segmentation |      N      |    N     |  N   |   N   |    Y     |
-|          [SOLOv2](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solov2)          | Instance Segmentation |      N      |    N     |  N   |   N   |    Y     |
+|            [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)            | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
+|          [SOLOv2](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solov2)          | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |

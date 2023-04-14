@@ -8,13 +8,11 @@ from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name='mmdet.models.dense_heads.solov2_head.'
-    'SOLOV2Head.predict_by_feat',
-    backend=Backend.OPENVINO.value)
+    'SOLOV2Head.predict_by_feat')
 def solov2_head__predict_by_feat(self, mlvl_kernel_preds: List[Tensor],
                                  mlvl_cls_scores: List[Tensor],
                                  mask_feats: Tensor,
