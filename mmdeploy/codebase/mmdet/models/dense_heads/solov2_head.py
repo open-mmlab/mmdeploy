@@ -17,7 +17,7 @@ def solov2_head__predict_by_feat(self, mlvl_kernel_preds: List[Tensor],
                                  mlvl_cls_scores: List[Tensor],
                                  mask_feats: Tensor,
                                  batch_img_metas: List[Dict], **kwargs):
-    """Rewrite `predict_by_feat` of `SOLOHead` for openvino backend.
+    """Rewrite `predict_by_feat` of `SOLOV2Head` for default backend.
 
     Args:
         mlvl_kernel_preds (list[Tensor]): Multi-level dynamic kernel
