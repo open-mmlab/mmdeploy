@@ -9,7 +9,7 @@ from mmdeploy.utils import Backend, get_dynamic_axes
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    func_name='mmcls.models.utils.attention.MultiheadAttention.forward',
+    func_name='mmpretrain.models.utils.attention.MultiheadAttention.forward',
     backend=Backend.NCNN.value)
 def multiheadattention__forward__ncnn(self, qkv_input):
     """Rewrite `forward` of MultiheadAttention used in vision_transformer for
@@ -51,8 +51,8 @@ def multiheadattention__forward__ncnn(self, qkv_input):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
-    'mmcls.models.utils.ShiftWindowMSA.forward',
-    extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
+    'mmpretrain.models.utils.ShiftWindowMSA.forward',
+    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc5'))
 def shift_window_msa__forward__default(self, query, hw_shape):
     """Rewrite forward function of ShiftWindowMSA class for TensorRT.
 
@@ -141,8 +141,8 @@ def shift_window_msa__forward__default(self, query, hw_shape):
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
-    'mmcls.models.utils.ShiftWindowMSA.get_attn_mask',
-    extra_checkers=LibVersionChecker('mmcls', min_version='0.21.0'))
+    'mmpretrain.models.utils.ShiftWindowMSA.get_attn_mask',
+    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc5'))
 def shift_window_msa__get_attn_mask__default(self,
                                              hw_shape,
                                              window_size,
@@ -173,7 +173,7 @@ def shift_window_msa__get_attn_mask__default(self,
         img_mask = img_mask.unsqueeze(0)
         img_mask = img_mask.unsqueeze(-1)
         # nW, window_size, window_size, 1
-        from mmcls.models.utils import ShiftWindowMSA
+        from mmpretrain.models.utils import ShiftWindowMSA
         mask_windows = ShiftWindowMSA.window_partition(img_mask, window_size)
         mask_windows = mask_windows.view(-1, window_size * window_size)
         attn_mask = mask_windows.unsqueeze(1) - mask_windows.unsqueeze(2)

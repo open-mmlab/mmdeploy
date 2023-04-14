@@ -54,7 +54,7 @@ class End2EndModel(BaseBackendModel):
         self.device = device
 
     def _get_head(self):
-        from mmcls.models import build_head
+        from mmpretrain.models import build_head
         head_config = self.model_cfg['model']['head']
         head = build_head(head_config)
         return head
@@ -95,8 +95,8 @@ class End2EndModel(BaseBackendModel):
         cls_score = self.wrapper({self.input_name:
                                   inputs})[self.output_names[0]]
 
-        from mmcls.models.heads import MultiLabelClsHead
-        from mmcls.structures import ClsDataSample
+        from mmpretrain.models.heads import MultiLabelClsHead
+        from mmpretrain.structures import DataSample
         pred_scores = cls_score
 
         if self.head is None or not isinstance(self.head, MultiLabelClsHead):
@@ -109,7 +109,7 @@ class End2EndModel(BaseBackendModel):
             else:
                 data_samples = []
                 for score, label in zip(pred_scores, pred_labels):
-                    data_samples.append(ClsDataSample().set_pred_score(
+                    data_samples.append(DataSample().set_pred_score(
                         score).set_pred_label(label))
         else:
             if data_samples is None:
@@ -165,7 +165,7 @@ class SDKEnd2EndModel(End2EndModel):
             cls_score.append(torch.from_numpy(pred).to(self.device))
 
         cls_score = torch.cat(cls_score, 0)
-        from mmcls.models.heads.cls_head import ClsHead
+        from mmpretrain.models.heads.cls_head import ClsHead
         predict = ClsHead._get_predictions(
             None, cls_score, data_samples=data_samples)
         return predict
@@ -199,7 +199,7 @@ class RKNNEnd2EndModel(End2EndModel):
         inputs = inputs.to(self.device)
         cls_score = self.wrapper({self.input_name: inputs})[0]
 
-        from mmcls.models.heads.cls_head import ClsHead
+        from mmpretrain.models.heads.cls_head import ClsHead
         predict = ClsHead._get_predictions(
             None, cls_score, data_samples=data_samples)
 

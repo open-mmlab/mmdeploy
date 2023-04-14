@@ -22,7 +22,7 @@ input = torch.rand(1)
 
 
 def get_invertedresidual_model():
-    from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
+    from mmpretrain.models.backbones.shufflenet_v2 import InvertedResidual
     model = InvertedResidual(16, 16)
 
     model.requires_grad_(False)
@@ -30,7 +30,7 @@ def get_invertedresidual_model():
 
 
 def get_fcuup_model():
-    from mmcls.models.backbones.conformer import FCUUp
+    from mmpretrain.models.backbones.conformer import FCUUp
     model = FCUUp(16, 16, 16)
 
     model.requires_grad_(False)
@@ -38,7 +38,7 @@ def get_fcuup_model():
 
 
 def get_vit_backbone():
-    from mmcls.models.classifiers.image import ImageClassifier
+    from mmpretrain.models.classifiers.image import ImageClassifier
     model = ImageClassifier(
         backbone={
             'type':
@@ -75,7 +75,7 @@ def get_vit_backbone():
 
 
 def test_baseclassifier_forward():
-    from mmcls.models.classifiers import ImageClassifier
+    from mmpretrain.models.classifiers import ImageClassifier
 
     from mmdeploy.codebase.mmcls import models  # noqa
 
@@ -201,7 +201,7 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
 def test_gap__forward(backend_type: Backend, inputs: list):
     check_backend(backend_type, False)
 
-    from mmcls.models.necks import GlobalAveragePooling
+    from mmpretrain.models.necks import GlobalAveragePooling
     model = GlobalAveragePooling(dim=2)
     is_input_tensor = isinstance(inputs, torch.Tensor)
     if not is_input_tensor:
@@ -255,7 +255,7 @@ def test_gap__forward(backend_type: Backend, inputs: list):
 @pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
 def test_shift_windows_msa_cls(backend_type: Backend):
     check_backend(backend_type)
-    from mmcls.models.utils import ShiftWindowMSA
+    from mmpretrain.models.utils import ShiftWindowMSA
     model = ShiftWindowMSA(96, 3, 7)
     model.cuda().eval()
     output_names = ['output']

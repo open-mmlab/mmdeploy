@@ -48,8 +48,8 @@ class TestEnd2EndModel:
 
     def test_forward(self):
         imgs = torch.rand(1, 3, IMAGE_SIZE, IMAGE_SIZE)
-        from mmcls.structures import ClsDataSample
-        data_sample = ClsDataSample(
+        from mmpretrain.structures import DataSample
+        data_sample = DataSample(
             metainfo=dict(
                 scale_factor=(1, 1),
                 ori_shape=(IMAGE_SIZE, IMAGE_SIZE),

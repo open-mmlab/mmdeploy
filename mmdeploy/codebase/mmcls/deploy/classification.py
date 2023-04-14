@@ -31,7 +31,7 @@ class MMClassification(MMCodebase):
     @classmethod
     def register_all_modules(cls):
         """register all related modules and rewriters for mmcls."""
-        from mmcls.utils.setup_env import register_all_modules
+        from mmpretrain.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
         register_all_modules(True)
@@ -84,8 +84,8 @@ def _get_dataset_metainfo(model_cfg: Config):
     Returns:
         list[str]: A list of string specifying names of different class.
     """
-    from mmcls import datasets  # noqa
-    from mmcls.registry import DATASETS
+    from mmpretrain import datasets  # noqa
+    from mmpretrain.registry import DATASETS
 
     module_dict = DATASETS.module_dict
 
@@ -133,7 +133,7 @@ class Classification(BaseTask):
         """
         model_cfg = deepcopy(self.model_cfg)
         data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
-        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+        data_preprocessor.setdefault('type', 'mmpretrain.ClsDataPreprocessor')
 
         from mmengine.registry import MODELS
         data_preprocessor = MODELS.build(data_preprocessor)
@@ -160,7 +160,7 @@ class Classification(BaseTask):
         data_preprocessor = self.model_cfg.data_preprocessor
         if data_preprocessor_updater is not None:
             data_preprocessor = data_preprocessor_updater(data_preprocessor)
-        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+        data_preprocessor.setdefault('type', 'mmpretrain.ClsDataPreprocessor')
 
         model = build_classification_model(
             model_files,
@@ -197,7 +197,7 @@ class Classification(BaseTask):
         model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
         pipeline = deepcopy(model_cfg.test_pipeline)
         move_pipeline = []
-        while pipeline[-1]['type'] != 'PackClsInputs':
+        while len(pipeline) > 0 and pipeline[-1]['type'] != 'PackClsInputs':
             sub_pipeline = pipeline.pop(-1)
             move_pipeline = [sub_pipeline] + move_pipeline
         pipeline = pipeline[:-1] + move_pipeline + pipeline[-1:]
@@ -260,8 +260,12 @@ class Classification(BaseTask):
 
         name = osp.splitext(save_name)[0]
         image = mmcv.imread(image, channel_order='rgb')
-        visualizer.add_datasample(
-            name, image, result, show=show_result, out_file=output_file)
+        visualizer.visualize_cls(
+            image,
+            result,
+            show=show_result,
+            name=name
+        )
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:

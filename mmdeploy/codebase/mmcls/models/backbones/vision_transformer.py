@@ -7,7 +7,7 @@ from mmdeploy.utils import Backend
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
-    'mmcls.models.backbones.vision_transformer.VisionTransformer.forward',
+    'mmpretrain.models.backbones.vision_transformer.VisionTransformer.forward',
     backend=Backend.NCNN.value)
 def visiontransformer__forward__ncnn(self, x):
     """Rewrite `forward` of VisionTransformer for ncnn backend.
@@ -24,7 +24,7 @@ def visiontransformer__forward__ncnn(self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
-    from mmcls.models.utils import resize_pos_embed
+    from mmpretrain.models.utils import resize_pos_embed
     B = x.shape[0]
     x, patch_resolution = self.patch_embed(x)
 

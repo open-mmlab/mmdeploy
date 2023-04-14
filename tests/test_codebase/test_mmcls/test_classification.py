@@ -50,14 +50,14 @@ def init_task_processor():
 
 @pytest.mark.parametrize('from_mmrazor', [True, False, '123', 0])
 def test_build_pytorch_model(from_mmrazor: Any):
-    from mmcls.models.classifiers.base import BaseClassifier
+    from mmpretrain.models.classifiers.base import BaseClassifier
     if from_mmrazor is False:
         _task_processor = task_processor
     else:
         _model_cfg_path = 'tests/test_codebase/test_mmcls/data/' \
             'mmrazor_model.py'
         _model_cfg = load_config(_model_cfg_path)[0]
-        _model_cfg.algorithm.architecture.model.type = 'mmcls.ImageClassifier'
+        _model_cfg.algorithm.architecture.model.type = 'mmpretrain.ImageClassifier'
         _model_cfg.algorithm.architecture.model.backbone = dict(
             type='SearchableShuffleNetV2', widen_factor=1.0)
         _deploy_cfg = copy.deepcopy(deploy_cfg)
@@ -136,14 +136,14 @@ def test_build_dataset_and_dataloader():
 
 def test_build_test_runner():
     # Prepare dummy model
-    from mmcls.structures import ClsDataSample
+    from mmpretrain.structures import DataSample
     from mmengine.structures import LabelData
     label = LabelData(
         label=torch.tensor([0]),
         score=torch.rand(10),
         metainfo=dict(num_classes=10))
     outputs = [
-        ClsDataSample(
+        DataSample(
             pred_label=label,
             _pred_label=label,
             gt_label=label,
