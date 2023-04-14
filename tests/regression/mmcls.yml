@@ -1,6 +1,6 @@
 globals:
   repo_url: https://github.com/open-mmlab/mmpretrain/tree/main
-  codebase_dir: ../mmclassification
+  codebase_dir: ../mmpretrain
   checkpoint_force_download: False
   images:
     img_snake: &img_snake ../mmclassification/demo/demo.JPEG
