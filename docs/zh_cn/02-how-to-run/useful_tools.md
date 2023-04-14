@@ -213,21 +213,21 @@ python tools/profiler.py \
 python tools/generate_md_table.py \
     ${yml_file} \
     ${output} \
-    ${backends}
+    --backends ${BACKENDS}
 ```
 
 ### 参数说明
 
 - `yml_file:`  输入 yml 配置路径
 - `output:` 输出markdown文件路径
-- `backends:` 要输出的后端，默认为 onnxruntime tensorrt torchscript pplnn openvino ncnn
+- `--backends:` 要输出的后端，默认为 onnxruntime tensorrt torchscript pplnn openvino ncnn
 
 ### 使用举例
 
 从 mmocr.yml 生成mmdeploy支持的后端表
 
 ```shell
-python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md onnxruntime tensorrt torchscript pplnn openvino ncnn
+python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md --backends onnxruntime tensorrt torchscript pplnn openvino ncnn
 ```
 
 输出：
