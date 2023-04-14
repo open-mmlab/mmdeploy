@@ -75,18 +75,18 @@ tips:
 
 ## 三、测试模型
 
-以 Resnet-18 为例。先参照[文档安装 mmcls](https://github.com/open-mmlab/mmclassification/tree/1.x)，然后使用 `tools/deploy.py` 转换模型。
+以 Resnet-18 为例。先参照[文档](https://github.com/open-mmlab/mmpretrain/tree/1.x)安装 mmpretrain，然后使用 `tools/deploy.py` 转换模型。
 
 ```bash
-$ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
+$ export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb16_cifar10.py
 $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
 # 模型转换
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 192.168.1.1\:60000  --dump-info
+$ python3 tools/deploy.py  configs/mmpretrain/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 192.168.1.1\:60000  --dump-info
 
 # 精度测试
-$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 192.168.1.1\:60000
+$ python3 tools/test.py configs/mmpretrain/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 192.168.1.1\:60000
 ```
 
 注意需要 `--uri` 指明 snpe 推理服务的 ip 和端口号，可以使用 ipv4 和 ipv6 地址。
@@ -169,7 +169,7 @@ $ adb push bin/image_classification /data/local/tmp/resnet18/
 设置环境变量，执行样例
 
 ```bash
-$ adb push /path/to/mmcls/demo/demo.JPEG /data/local/tmp
+$ adb push /path/to/mmpretrain/demo/demo.JPEG /data/local/tmp
 $ adb shell
 venus:/ $ cd /data/local/tmp/resnet18
 venus:/data/local/tmp/resnet18 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib

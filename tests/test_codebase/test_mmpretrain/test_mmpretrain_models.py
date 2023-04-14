@@ -14,15 +14,16 @@ try:
 except Exception:
     from torch.testing import assert_allclose as torch_assert_close
 try:
-    import_codebase(Codebase.MMCLS)
+    import_codebase(Codebase.MMPRETRAIN)
 except ImportError:
-    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
+    pytest.skip(
+        f'{Codebase.MMPRETRAIN} is not installed.', allow_module_level=True)
 
 input = torch.rand(1)
 
 
 def get_invertedresidual_model():
-    from mmcls.models.backbones.shufflenet_v2 import InvertedResidual
+    from mmpretrain.models.backbones.shufflenet_v2 import InvertedResidual
     model = InvertedResidual(16, 16)
 
     model.requires_grad_(False)
@@ -30,7 +31,7 @@ def get_invertedresidual_model():
 
 
 def get_fcuup_model():
-    from mmcls.models.backbones.conformer import FCUUp
+    from mmpretrain.models.backbones.conformer import FCUUp
     model = FCUUp(16, 16, 16)
 
     model.requires_grad_(False)
@@ -38,7 +39,7 @@ def get_fcuup_model():
 
 
 def get_vit_backbone():
-    from mmcls.models.classifiers.image import ImageClassifier
+    from mmpretrain.models.classifiers.image import ImageClassifier
     model = ImageClassifier(
         backbone={
             'type':
@@ -75,9 +76,9 @@ def get_vit_backbone():
 
 
 def test_baseclassifier_forward():
-    from mmcls.models.classifiers import ImageClassifier
+    from mmpretrain.models.classifiers import ImageClassifier
 
-    from mmdeploy.codebase.mmcls import models  # noqa
+    from mmdeploy.codebase.mmpretrain import models  # noqa
 
     class DummyClassifier(ImageClassifier):
 
@@ -130,13 +131,15 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
                     ]),
                 onnx_config=dict(
                     input_shape=[28, 28], output_names=['output']),
-                codebase_config=dict(type='mmcls', task='Classification')))
+                codebase_config=dict(type='mmpretrain',
+                                     task='Classification')))
     else:
         deploy_cfg = Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
-                codebase_config=dict(type='mmcls', task='Classification')))
+                codebase_config=dict(type='mmpretrain',
+                                     task='Classification')))
 
     imgs = torch.rand((1, 16, 28, 28))
     model_outputs = model.forward(imgs)
@@ -159,7 +162,7 @@ def test_shufflenetv2_backbone__forward(backend_type: Backend):
 
 @pytest.mark.parametrize('backend_type', [Backend.NCNN])
 def test_vision_transformer_backbone__forward(backend_type: Backend):
-    import_codebase(Codebase.MMCLS)
+    import_codebase(Codebase.MMPRETRAIN)
     check_backend(backend_type, True)
     model = get_vit_backbone()
     model.eval()
@@ -168,7 +171,7 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
         dict(
             backend_config=dict(type=backend_type.value),
             onnx_config=dict(input_shape=None, output_names=['out0', 'out1']),
-            codebase_config=dict(type='mmcls', task='Classification')))
+            codebase_config=dict(type='mmpretrain', task='Classification')))
 
     imgs = torch.rand((1, 3, 384, 384))
     model_outputs = model.forward(imgs)[0]
@@ -201,7 +204,7 @@ def test_vision_transformer_backbone__forward(backend_type: Backend):
 def test_gap__forward(backend_type: Backend, inputs: list):
     check_backend(backend_type, False)
 
-    from mmcls.models.necks import GlobalAveragePooling
+    from mmpretrain.models.necks import GlobalAveragePooling
     model = GlobalAveragePooling(dim=2)
     is_input_tensor = isinstance(inputs, torch.Tensor)
     if not is_input_tensor:
@@ -223,13 +226,15 @@ def test_gap__forward(backend_type: Backend, inputs: list):
                                     max_shape=input_shape)))
                     ]),
                 onnx_config=dict(output_names=['output']),
-                codebase_config=dict(type='mmcls', task='Classification')))
+                codebase_config=dict(type='mmpretrain',
+                                     task='Classification')))
     else:
         deploy_cfg = Config(
             dict(
                 backend_config=dict(type=backend_type.value),
                 onnx_config=dict(input_shape=None, output_names=['output']),
-                codebase_config=dict(type='mmcls', task='Classification')))
+                codebase_config=dict(type='mmpretrain',
+                                     task='Classification')))
 
     inputs = torch.rand(input_shape)
     model_outputs = model(inputs)
@@ -255,7 +260,7 @@ def test_gap__forward(backend_type: Backend, inputs: list):
 @pytest.mark.parametrize('backend_type', [(Backend.TENSORRT)])
 def test_shift_windows_msa_cls(backend_type: Backend):
     check_backend(backend_type)
-    from mmcls.models.utils import ShiftWindowMSA
+    from mmpretrain.models.utils import ShiftWindowMSA
     model = ShiftWindowMSA(96, 3, 7)
     model.cuda().eval()
     output_names = ['output']

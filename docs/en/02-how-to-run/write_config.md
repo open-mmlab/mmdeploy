@@ -15,7 +15,7 @@ This tutorial describes how to write a config for model conversion and deploymen
       - [Example](#example-2)
   - [3. How to write backend config](#3-how-to-write-backend-config)
     - [Example](#example-3)
-  - [4. A complete example of mmcls on TensorRT](#4-a-complete-example-of-mmcls-on-tensorrt)
+  - [4. A complete example of mmpretrain on TensorRT](#4-a-complete-example-of-mmpretrain-on-tensorrt)
   - [5. The name rules of our deployment config](#5-the-name-rules-of-our-deployment-config)
     - [Example](#example-4)
   - [6. How to write model config](#6-how-to-write-model-config)
@@ -83,13 +83,13 @@ Codebase config part contains information like codebase type and task type.
 
 ### Description of codebase config arguments
 
-- `type`: Model's codebase, including `mmcls`, `mmdet`, `mmseg`, `mmocr`, `mmedit`.
+- `type`: Model's codebase, including `mmpretrain`, `mmdet`, `mmseg`, `mmocr`, `mmedit`.
 - `task`: Model's task type, referring to [List of tasks in all codebases](#list-of-tasks-in-all-codebases).
 
 #### Example
 
 ```python
-codebase_config = dict(type='mmcls', task='Classification')
+codebase_config = dict(type='mmpretrain', task='Classification')
 ```
 
 ## 3. How to write backend config
@@ -115,13 +115,13 @@ backend_config = dict(
     ])
 ```
 
-## 4. A complete example of mmcls on TensorRT
+## 4. A complete example of mmpretrain on TensorRT
 
-Here we provide a complete deployment config from mmcls on TensorRT.
+Here we provide a complete deployment config from mmpretrain on TensorRT.
 
 ```python
 
-codebase_config = dict(type='mmcls', task='Classification')
+codebase_config = dict(type='mmpretrain', task='Classification')
 
 backend_config = dict(
     type='tensorrt',
@@ -177,4 +177,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. How to write model config
 
-According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMClassification](https://github.com/open-mmlab/mmclassification/blob/1.x/docs/en/user_guides/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/user_guides/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/user_guides/1_config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md), [MMEditing](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/user_guides/config.md).
+According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMPretrain](https://github.com/open-mmlab/mmpretrain/blob/1.x/docs/en/user_guides/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/user_guides/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/user_guides/1_config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md), [MMEditing](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/user_guides/config.md).

@@ -14,24 +14,24 @@ from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
 
-MMCLS_TASK = Registry('mmcls_tasks')
+MMPRETRAIN_TASK = Registry('mmpretrain_tasks')
 
 
-@CODEBASE.register_module(Codebase.MMCLS.value)
-class MMClassification(MMCodebase):
-    """mmclassification codebase class."""
+@CODEBASE.register_module(Codebase.MMPRETRAIN.value)
+class MMPretrain(MMCodebase):
+    """mmpretrain codebase class."""
 
-    task_registry = MMCLS_TASK
+    task_registry = MMPRETRAIN_TASK
 
     @classmethod
     def register_deploy_modules(cls):
-        """register all rewriters for mmcls."""
-        import mmdeploy.codebase.mmcls.models  # noqa: F401
+        """register all rewriters for mmpretrain."""
+        import mmdeploy.codebase.mmpretrain.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
-        """register all related modules and rewriters for mmcls."""
-        from mmcls.utils.setup_env import register_all_modules
+        """register all related modules and rewriters for mmpretrain."""
+        from mmpretrain.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
         register_all_modules(True)
@@ -84,8 +84,8 @@ def _get_dataset_metainfo(model_cfg: Config):
     Returns:
         list[str]: A list of string specifying names of different class.
     """
-    from mmcls import datasets  # noqa
-    from mmcls.registry import DATASETS
+    from mmpretrain import datasets  # noqa
+    from mmpretrain.registry import DATASETS
 
     module_dict = DATASETS.module_dict
 
@@ -111,7 +111,7 @@ def _get_dataset_metainfo(model_cfg: Config):
     return None
 
 
-@MMCLS_TASK.register_module(Task.CLASSIFICATION.value)
+@MMPRETRAIN_TASK.register_module(Task.CLASSIFICATION.value)
 class Classification(BaseTask):
     """Classification task class.
 
@@ -129,11 +129,11 @@ class Classification(BaseTask):
         """Build data preprocessor.
 
         Returns:
-            nn.Module: A model build with mmcls data_preprocessor.
+            nn.Module: A model build with mmpretrain data_preprocessor.
         """
         model_cfg = deepcopy(self.model_cfg)
         data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
-        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+        data_preprocessor.setdefault('type', 'mmpretrain.ClsDataPreprocessor')
 
         from mmengine.registry import MODELS
         data_preprocessor = MODELS.build(data_preprocessor)
@@ -160,7 +160,7 @@ class Classification(BaseTask):
         data_preprocessor = self.model_cfg.data_preprocessor
         if data_preprocessor_updater is not None:
             data_preprocessor = data_preprocessor_updater(data_preprocessor)
-        data_preprocessor.setdefault('type', 'mmcls.ClsDataPreprocessor')
+        data_preprocessor.setdefault('type', 'mmpretrain.ClsDataPreprocessor')
 
         model = build_classification_model(
             model_files,
@@ -197,7 +197,7 @@ class Classification(BaseTask):
         model_cfg = process_model_config(self.model_cfg, imgs, input_shape)
         pipeline = deepcopy(model_cfg.test_pipeline)
         move_pipeline = []
-        while pipeline[-1]['type'] != 'PackClsInputs':
+        while len(pipeline) > 0 and pipeline[-1]['type'] != 'PackInputs':
             sub_pipeline = pipeline.pop(-1)
             move_pipeline = [sub_pipeline] + move_pipeline
         pipeline = pipeline[:-1] + move_pipeline + pipeline[-1:]
@@ -222,13 +222,13 @@ class Classification(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     def get_visualizer(self, name: str, save_dir: str):
-        """Get mmcls visualizer.
+        """Get mmpretrain visualizer.
 
         Args:
             name (str): Name of visualizer.
             save_dir (str): Directory to save drawn results.
         Returns:
-            ClsVisualizer: Instance of mmcls visualizer.
+            ClsVisualizer: Instance of mmpretrain visualizer.
         """
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)
@@ -260,8 +260,8 @@ class Classification(BaseTask):
 
         name = osp.splitext(save_name)[0]
         image = mmcv.imread(image, channel_order='rgb')
-        visualizer.add_datasample(
-            name, image, result, show=show_result, out_file=output_file)
+        visualizer.visualize_cls(
+            image, result, out_file=output_file, show=show_result, name=name)
 
     @staticmethod
     def get_partition_cfg(partition_type: str) -> Dict:
@@ -294,13 +294,13 @@ class Classification(BaseTask):
         ]
         move_pipeline = []
         import re
-        while re.search('Pack[a-z | A-Z]+Inputs',
+        while re.search('Pack[a-z | A-Z]*Inputs',
                         transforms[-1]['type']) is None:
             sub_pipeline = transforms.pop(-1)
             move_pipeline = [sub_pipeline] + move_pipeline
             transforms = transforms[:-1] + move_pipeline + transforms[-1:]
         for i, transform in enumerate(transforms):
-            if transform['type'] == 'PackClsInputs':
+            if transform['type'] == 'PackInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))

@@ -171,10 +171,10 @@ python tools/profiler.py \
 
 ```shell
 python tools/profiler.py \
-    configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py \
-    ../mmclassification/configs/resnet/resnet18_8xb32_in1k.py \
-    ../mmclassification/demo/ \
-    --model work-dirs/mmcls/resnet/trt/end2end.engine \
+    configs/mmpretrain/classification_tensorrt_dynamic-224x224-224x224.py \
+    ../mmpretrain/configs/resnet/resnet18_8xb32_in1k.py \
+    ../mmpretrain/demo/ \
+    --model work-dirs/mmpretrain/resnet/trt/end2end.engine \
     --device cuda \
     --shape 224x224 \
     --num-iter 100 \

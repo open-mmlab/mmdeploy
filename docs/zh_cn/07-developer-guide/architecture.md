@@ -34,7 +34,7 @@ $ tree -L 1
 
 ## 二、模型转换
 
-模型以 mmcls 的 ViT 为例，推理框架就用 ncnn 举例。其他模型、推理都是类似的。
+模型以 mmpretrain 的 ViT 为例，推理框架就用 ncnn 举例。其他模型、推理都是类似的。
 
 我们看下 mmdeploy/mmdeploy 目录结构，有个印象即可：
 
@@ -58,8 +58,8 @@ $ tree -L 1
 ..
 ├── codebase                #  mm 系列算法 forward 重写
 │   ├── base                          # 有多个算法，需要点 OO 设计
-│   ├── mmcls                      #  mmcls 相关模型重写
-│   │   ├── deploy                       # mmcls 对 base 抽象 task/model/codebase 的实现
+│   ├── mmpretrain                      #  mmpretrain 相关模型重写
+│   │   ├── deploy                       # mmpretrain 对 base 抽象 task/model/codebase 的实现
 │   │   └── models                      # 开始真正的模型重写
 │   │       ├── backbones                 # 骨干网络部分的重写，例如  multiheadattention
 │   │       ├── heads                           # 例如  MultiLabelClsHead
@@ -75,7 +75,7 @@ $ tree -L 1
 
 当敲下`tools/deploy.py` 转换 ViT，核心是这 3 件事：
 
-1. mmcls ViT forward 过程的重写
+1. mmpretrain ViT forward 过程的重写
 2. ncnn 不支持 gather opr，自定义一下、和 libncnn.so 一起加载
 3. 真实跑一遍，渲染结果，确保正确
 
@@ -85,7 +85,7 @@ $ tree -L 1
 
 例如把 `conv -> shape -> concat_const -> reshape` 过程改成 `conv -> reshape`，削掉多余的 `shape` 和 `concat` 算子。
 
-所有的 mmcls 算法重写都在 `mmdeploy/codebase/mmcls/models`目录。
+所有的 mmpretrain 算法重写都在 `mmdeploy/codebase/mmpretrain/models`目录。
 
 ### 2. 自定义算子
 

@@ -13,16 +13,16 @@ Device
 
 ## 1. Model Convert on Host
 
-Refer to the doc to install [mmdeploy](../01-how-to-build/) and [mmcls](https://github.com/open-mmlab/mmclassification), and convert resnet18 for model package
+Refer to the doc to install [mmdeploy](../01-how-to-build/) and [mmpretrain](https://github.com/open-mmlab/mmpretrain), and convert resnet18 for model package
 
 ```bash
-export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 # Convert resnet18
 cd /path/to/mmdeploy
 python tools/deploy.py \
-  configs/mmcls/classification_ncnn_static.py \
+  configs/mmpretrain/classification_ncnn_static.py \
   $MODEL_CONFIG \
   $MODEL_PATH \
   tests/data/tiger.jpeg \

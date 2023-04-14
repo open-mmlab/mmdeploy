@@ -1,8 +1,8 @@
-# MMClassification Deployment
+# MMPretrain Deployment
 
-- [MMClassification Deployment](#mmclassification-deployment)
+- [MMPretrain Deployment](#mmpretrain-deployment)
   - [Installation](#installation)
-    - [Install mmcls](#install-mmcls)
+    - [Install mmpretrain](#install-mmpretrain)
     - [Install mmdeploy](#install-mmdeploy)
   - [Convert model](#convert-model)
   - [Model Specification](#model-specification)
@@ -13,13 +13,13 @@
 
 ______________________________________________________________________
 
-[MMClassification](https://github.com/open-mmlab/mmclassification) aka `mmcls` is an open-source image classification toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com) project.
+[MMPretrain](https://github.com/open-mmlab/mmpretrain) aka `mmpretrain` is an open-source image classification toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com) project.
 
 ## Installation
 
-### Install mmcls
+### Install mmpretrain
 
-Please follow this [quick guide](https://github.com/open-mmlab/mmclassification/tree/1.x#installation) to install mmcls.
+Please follow this [quick guide](https://github.com/open-mmlab/mmpretrain/tree/1.x#installation) to install mmpretrain.
 
 ### Install mmdeploy
 
@@ -48,29 +48,29 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) to convert mmcls models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) to convert mmpretrain models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
 
 The command below shows an example about converting `resnet18` model to onnx model that can be inferred by ONNX Runtime.
 
 ```shell
 cd mmdeploy
 
-# download resnet18 model from mmcls model zoo
-mim download mmcls --config resnet18_8xb32_in1k --dest .
+# download resnet18 model from mmpretrain model zoo
+mim download mmpretrain --config resnet18_8xb32_in1k --dest .
 
-# convert mmcls model to onnxruntime model with dynamic shape
+# convert mmpretrain model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-    configs/mmcls/classification_onnxruntime_dynamic.py \
+    configs/mmpretrain/classification_onnxruntime_dynamic.py \
     resnet18_8xb32_in1k.py \
     resnet18_8xb32_in1k_20210831-fbbb1da6.pth \
     tests/data/tiger.jpeg \
-    --work-dir mmdeploy_models/mmcls/ort \
+    --work-dir mmdeploy_models/mmpretrain/ort \
     --device cpu \
     --show \
     --dump-info
 ```
 
-It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmcls) of all supported backends for mmclassification. The config filename pattern is:
+It is crucial to specify the correct deployment config during model conversion. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmcls) of all supported backends for mmpretrain. The config filename pattern is:
 
 ```
 classification_{backend}-{precision}_{static | dynamic}_{shape}.py
@@ -84,17 +84,17 @@ classification_{backend}-{precision}_{static | dynamic}_{shape}.py
 Therefore, in the above example, you can also convert `resnet18` to other backend models by changing the deployment config file `classification_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmcls), e.g., converting to tensorrt-fp16 model by `classification_tensorrt-fp16_dynamic-224x224-224x224.py`.
 
 ```{tip}
-When converting mmcls models to tensorrt models, --device should be set to "cuda"
+When converting mmpretrain models to tensorrt models, --device should be set to "cuda"
 ```
 
 ## Model Specification
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
-The converted model locates in the working directory like `mmdeploy_models/mmcls/ort` in the previous example. It includes:
+The converted model locates in the working directory like `mmdeploy_models/mmpretrain/ort` in the previous example. It includes:
 
 ```
-mmdeploy_models/mmcls/ort
+mmdeploy_models/mmpretrain/ort
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -106,7 +106,7 @@ in which,
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
 - \***.json**: the necessary information for mmdeploy SDK
 
-The whole package **mmdeploy_models/mmcls/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
+The whole package **mmdeploy_models/mmpretrain/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
 ## Model inference
 
@@ -119,10 +119,10 @@ from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch
 
-deploy_cfg = 'configs/mmcls/classification_onnxruntime_dynamic.py'
+deploy_cfg = 'configs/mmpretrain/classification_onnxruntime_dynamic.py'
 model_cfg = './resnet18_8xb32_in1k.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmcls/ort/end2end.onnx']
+backend_model = ['./mmdeploy_models/mmpretrain/ort/end2end.onnx']
 image = 'tests/data/tiger.jpeg'
 
 # read deploy_cfg and model_cfg
@@ -160,7 +160,7 @@ import cv2
 img = cv2.imread('tests/data/tiger.jpeg')
 
 # create a classifier
-classifier = Classifier(model_path='./mmdeploy_models/mmcls/ort', device_name='cpu', device_id=0)
+classifier = Classifier(model_path='./mmdeploy_models/mmpretrain/ort', device_name='cpu', device_id=0)
 # perform inference
 result = classifier(img)
 # show inference result
@@ -172,13 +172,13 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                                                   | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :------------------------------------------------------------------------------------------------------ | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnet)                        |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ResNeXt](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/resnext)                      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SE-ResNet](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/seresnet)                   |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [MobileNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/mobilenet_v2)             |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ShuffleNetV1](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v1)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ShuffleNetV2](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/shufflenet_v2)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [VisionTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/vision_transformer) |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |
-| [SwinTransformer](https://github.com/open-mmlab/mmclassification/tree/1.x/configs/swin_transformer)     |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
+| Model                                                                                             | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :------------------------------------------------------------------------------------------------ | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [ResNet](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/resnet)                        |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ResNeXt](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/resnext)                      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SE-ResNet](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/seresnet)                   |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [MobileNetV2](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/mobilenet_v2)             |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ShuffleNetV1](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/shufflenet_v1)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ShuffleNetV2](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/shufflenet_v2)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [VisionTransformer](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/vision_transformer) |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |
+| [SwinTransformer](https://github.com/open-mmlab/mmpretrain/tree/1.x/configs/swin_transformer)     |      Y      |      Y       |    Y     |  N   |   ?   |    N     |

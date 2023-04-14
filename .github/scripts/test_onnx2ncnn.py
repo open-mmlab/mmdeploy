@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         '--run', type=bool, help='Execute mmdeploy_onnx2ncnn bin.')
     parser.add_argument(
-        '--repo-dir', type=str, default='~/', help='mmcls directory.')
+        '--repo-dir', type=str, default='~/', help='mmpretrain directory.')
     parser.add_argument(
         '--out',
         type=str,
@@ -56,7 +56,7 @@ def generate_onnx(args):
         model = conf[1]
         convert_cmd = [
             'python', 'tools/deploy.py',
-            'configs/mmcls/classification_ncnn_static.py', config, model,
+            'configs/mmpretrain/classification_ncnn_static.py', config, model,
             'cat-dog.png', '--work-dir', 'work_dir', '--device', 'cpu'
         ]
         print(subprocess.call(convert_cmd))

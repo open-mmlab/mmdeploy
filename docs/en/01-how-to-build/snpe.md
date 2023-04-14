@@ -71,18 +71,18 @@ $ python3 -m pip install -e .
 
 ## 3. Test the model
 
-Take Resnet-18 as an example. First refer to [documentation to install mmcls](https://github.com/open-mmlab/mmclassification/tree/1.x)  and  use `tools/deploy.py` to convert the model.
+Take Resnet-18 as an example. First refer to [documentation to install mmpretrain](https://github.com/open-mmlab/mmpretrain/tree/1.x)  and  use `tools/deploy.py` to convert the model.
 
 ```bash
-$ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py
+$ export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb16_cifar10.py
 $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_b16x8_cifar10_20210528-bd6371c8.pth
 
 # Convert the model
 $ cd /path/to/mmdeploy
-$ python3 tools/deploy.py  configs/mmcls/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:60000  --dump-info
+$ python3 tools/deploy.py  configs/mmpretrain/classification_snpe_static.py $MODEL_CONFIG  $MODEL_PATH   /path/to/test.png   --work-dir resnet18   --device cpu  --uri 10.0.0.1\:60000  --dump-info
 
 # Test
-$ python3 tools/test.py configs/mmcls/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:60000
+$ python3 tools/test.py configs/mmpretrain/classification_snpe_static.py   $MODEL_CONFIG    --model reset18/end2end.dlc   --metrics accuracy precision f1_score recall  --uri 10.0.0.1\:60000
 ```
 
 Note that `--uri` is required to specify the ip and port of the snpe inference service, ipv4 and ipv6 addresses can be used.
@@ -163,7 +163,7 @@ $ adb push bin/image_classification /data/local/tmp/resnet18/
 Set up environment variable and execute the sample.
 
 ```bash
-$ adb push /path/to/mmcls/demo/demo.JPEG /data/local/tmp
+$ adb push /path/to/mmpretrain/demo/demo.JPEG /data/local/tmp
 $ adb shell
 venus:/ $ cd /data/local/tmp/resnet18
 venus:/data/local/tmp/resnet18 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/data/local/tmp/lib

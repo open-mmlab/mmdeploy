@@ -14,16 +14,16 @@ a) 安装 MMDeploy
 
 b) 模型转换
 
-以 Resnet-18 为例。先参照[文档](https://github.com/open-mmlab/mmclassification)安装 mmcls，然后使用 `tools/deploy.py` 转换模型。
+以 Resnet-18 为例。先参照[文档](https://github.com/open-mmlab/mmpretrain)安装 mmpretrain，然后使用 `tools/deploy.py` 转换模型。
 
 ```bash
-export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 # 模型转换
 cd /path/to/mmdeploy
 python tools/deploy.py \
-  configs/mmcls/classification_ncnn_static.py \
+  configs/mmpretrain/classification_ncnn_static.py \
   $MODEL_CONFIG \
   $MODEL_PATH \
   tests/data/tiger.jpeg \

@@ -67,7 +67,7 @@ MMDeploy is an open-source deep learning model deployment toolset. It is a part 
 
 The currently supported codebases and models are as follows, and more will be included in the future
 
-- [mmcls](docs/en/04-supported-codebases/mmcls.md)
+- [mmpretrain](docs/en/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/en/04-supported-codebases/mmdet.md)
 - [mmseg](docs/en/04-supported-codebases/mmseg.md)
 - [mmedit](docs/en/04-supported-codebases/mmedit.md)
@@ -172,7 +172,7 @@ This project is released under the [Apache 2.0 license](LICENSE).
 
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab foundational library for computer vision.
 - [MIM](https://github.com/open-mmlab/mim): MIM installs OpenMMLab packages.
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab image classification toolbox and benchmark.
+- [MMPretrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab image classification toolbox and benchmark.
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab detection toolbox and benchmark.
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab's next-generation platform for general 3D object detection.
 - [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO series toolbox and benchmark

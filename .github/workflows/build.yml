@@ -41,15 +41,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -m pip install --upgrade pip
+          python -V
+          python -m pip show pip
+          python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
         run: |
           python -m pip install openmim
           python -m pip install -r requirements.txt
           python -m pip install -r requirements/backends.txt
-          python -m mim install "mmcv>=2.0.0rc1"
+          python -m mim install "mmcv>=2.0.0"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U numpy clip numba
+          python -m pip install -U numpy clip numba transformers
           python -m pip list
       - name: Install mmyolo
         run: |
@@ -234,7 +238,7 @@ jobs:
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python3 -m pip install openmim numpy pycuda clip
           python3 -m pip install -r requirements.txt
-          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          python3 -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
           python3 -m pip list
       - name: Build SDK
         run: |
@@ -282,7 +286,7 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt
           python -m pip install -r requirements/backends.txt
-          python -m mim install "mmcls>=1.0.0rc2"
+          python -m mim install "mmpretrain>=1.0.0rc5"
           python -m pip list
       - name: Build mmdeploy
         run: |

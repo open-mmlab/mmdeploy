@@ -19,14 +19,14 @@
 注意:
 
 - 现在已支持的后端包括 [ONNXRuntime](../05-supported-backends/onnxruntime.md) ，[TensorRT](../05-supported-backends/tensorrt.md) ，[ncnn](../05-supported-backends/ncnn.md) ，[PPLNN](../05-supported-backends/pplnn.md) ，[OpenVINO](../05-supported-backends/openvino.md)。
-- 现在已支持的代码库包括 [MMClassification](../04-supported-codebases/mmcls.md) ，[MMDetection](../04-supported-codebases/mmdet.md) ，[MMSegmentation](../04-supported-codebases/mmseg.md) ，[MMOCR](../04-supported-codebases/mmocr.md) ，[MMEditing](../04-supported-codebases/mmedit.md)。
+- 现在已支持的代码库包括 [MMPretrain](../04-supported-codebases/mmpretrain.md) ，[MMDetection](../04-supported-codebases/mmdet.md) ，[MMSegmentation](../04-supported-codebases/mmseg.md) ，[MMOCR](../04-supported-codebases/mmocr.md) ，[MMEditing](../04-supported-codebases/mmedit.md)。
 
 ## 如何将模型从pytorch形式转换成其他后端形式
 
 ### 准备工作
 
 1. 安装您的目标后端。 您可以参考 [ONNXRuntime-install](../05-supported-backends/onnxruntime.md) ，[TensorRT-install](../05-supported-backends/tensorrt.md) ，[ncnn-install](../05-supported-backends/ncnn.md) ，[PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md)。
-2. 安装您的目标代码库。 您可以参考 [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/1.x/docs/zh_CN/get_started.md#%E5%AE%89%E8%A3%85)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/zh_cn/get_started/install.md)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md)。
+2. 安装您的目标代码库。 您可以参考 [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/1.x/docs/zh_CN/get_started.md#%E5%AE%89%E8%A3%85)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/zh_cn/get_started/install.md)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md)。
 
 ### 使用方法
 
@@ -47,8 +47,8 @@ python ./tools/deploy.py \
 
 ### 参数描述
 
-- `deploy_cfg` : mmdeploy 针对此模型的部署配置，包含推理框架类型、是否量化、输入 shape 是否动态等。配置文件之间可能有引用关系，`mmdeploy/mmcls/classification_ncnn_static.py` 是一个示例。
-- `model_cfg` : mm 算法库的模型配置，例如 `mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`，与 mmdeploy 的路径无关。
+- `deploy_cfg` : mmdeploy 针对此模型的部署配置，包含推理框架类型、是否量化、输入 shape 是否动态等。配置文件之间可能有引用关系，`configs/mmpretrain/classification_ncnn_static.py` 是一个示例。
+- `model_cfg` : mm 算法库的模型配置，例如 `mmpretrain/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`，与 mmdeploy 的路径无关。
 - `checkpoint` : torch 模型路径。可以 http/https 开头，详见 `mmcv.FileClient`   的实现。
 - `img` : 模型转换时，用做测试的图像或点云文件路径。
 - `--test-img` : 用于测试模型的图像文件路径。默认设置成`None`。

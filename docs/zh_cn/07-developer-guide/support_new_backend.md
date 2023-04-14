@@ -71,7 +71,7 @@ MMDeploy 中的后端必须支持 ONNX，因此后端能直接加载“.onnx”�
    ```Python
    _base_ = ['../_base_/backends/tensorrt.py']
 
-   codebase_config = dict(type='mmcls', task='Classification')
+   codebase_config = dict(type='mmpretrain', task='Classification')
    onnx_config = dict(input_shape=None)
    ```
 

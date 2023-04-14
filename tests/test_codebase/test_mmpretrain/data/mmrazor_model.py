@@ -22,10 +22,11 @@ mutator = dict(
 algorithm = dict(
     type='SPOS',
     architecture=dict(
-        type='MMClsArchitecture',
+        type='MMPretrainArchitecture',
         model={{_base_.model}},
     ),
     mutator=mutator,
     distiller=None,
-    mutable_cfg='tests/test_codebase/test_mmcls/data/mmrazor_mutable_cfg.yaml',
+    mutable_cfg='tests/test_codebase/test_pretrain/data/'
+    'mmrazor_mutable_cfg.yaml',
     retraining=True)

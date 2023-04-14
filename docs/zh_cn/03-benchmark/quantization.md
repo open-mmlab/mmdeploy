@@ -6,12 +6,12 @@
 
 ### 分类任务
 
-|                                                           model                                                           |   dataset   | fp32 top-1 (%) | int8 top-1 (%) |
-| :-----------------------------------------------------------------------------------------------------------------------: | :---------: | :------------: | :------------: |
-|       [ResNet-18](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb16_cifar10.py)       |   Cifar10   |     94.82      |     94.83      |
-| [ResNeXt-32x4d-50](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnext/resnext50-32x4d_8xb32_in1k.py) | ImageNet-1k |     77.90      |    78.20\*     |
-|  [MobileNet V2](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)  | ImageNet-1k |     71.86      |    71.43\*     |
-|       [HRNet-W18\*](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/hrnet/hrnet-w18_4xb32_in1k.py)        | ImageNet-1k |     76.75      |    76.25\*     |
+|                                                        model                                                        |   dataset   | fp32 top-1 (%) | int8 top-1 (%) |
+| :-----------------------------------------------------------------------------------------------------------------: | :---------: | :------------: | :------------: |
+|       [ResNet-18](https://github.com/open-mmlab/mmpretrain/blob/1.x/configs/resnet/resnet18_8xb16_cifar10.py)       |   Cifar10   |     94.82      |     94.83      |
+| [ResNeXt-32x4d-50](https://github.com/open-mmlab/mmpretrain/blob/1.x/configs/resnext/resnext50-32x4d_8xb32_in1k.py) | ImageNet-1k |     77.90      |    78.20\*     |
+|  [MobileNet V2](https://github.com/open-mmlab/mmpretrain/blob/1.x/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)  | ImageNet-1k |     71.86      |    71.43\*     |
+|       [HRNet-W18\*](https://github.com/open-mmlab/mmpretrain/blob/1.x/configs/hrnet/hrnet-w18_4xb32_in1k.py)        | ImageNet-1k |     76.75      |    76.25\*     |
 
 备注：
 

@@ -9,3 +9,4 @@ prettytable
 protobuf<=3.20.2
 six
 terminaltables
+transformers
