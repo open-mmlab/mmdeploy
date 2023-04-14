@@ -211,8 +211,8 @@ This tool can be used to generate supported-backends markdown table.
 
 ```shell
 python tools/generate_md_table.py \
-    ${yml_file} \
-    ${output} \
+    ${YML_FILE} \
+    ${OUTPUT} \
     --backends ${BACKENDS}
 ```
 

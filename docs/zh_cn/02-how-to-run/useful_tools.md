@@ -211,8 +211,8 @@ python tools/profiler.py \
 
 ```shell
 python tools/generate_md_table.py \
-    ${yml_file} \
-    ${output} \
+    ${YML_FILE} \
+    ${OUTPUT} \
     --backends ${BACKENDS}
 ```
 
