@@ -1,5 +1,5 @@
 globals:
-  repo_url: https://github.com/open-mmlab/mmediting/tree/master
+  repo_url: https://github.com/open-mmlab/mmediting/tree/main
   codebase_dir: ../mmediting
   checkpoint_force_download: False
   images:

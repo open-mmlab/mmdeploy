@@ -4,7 +4,7 @@ import os
 import os.path as osp
 
 import yaml
-from easydict import EasyDict as edict
+from mmengine import Config
 
 from mmdeploy.utils import get_backend, get_task_type, load_config
 
@@ -41,7 +41,7 @@ def main():
     print(f'Processing{args.yml_file}')
     with open(args.yml_file, 'r') as reader, open(args.output, 'w') as writer:
         config = yaml.load(reader, Loader=yaml.FullLoader)
-        config = edict(config)
+        config = Config(config)
         write_row_f(writer, header)
         write_row_f(writer, aligner)
         repo_url = config.globals.repo_url
