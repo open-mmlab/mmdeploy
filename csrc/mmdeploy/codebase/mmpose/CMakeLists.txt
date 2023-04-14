@@ -11,8 +11,7 @@ mmdeploy_add_module(${PROJECT_NAME} ${MMPOSE_SRCS} ${POSE_TRACKER_SRCS})
 target_link_libraries(${PROJECT_NAME} PRIVATE
         mmdeploy::transform
         mmdeploy_operation
-        mmdeploy_opencv_utils
-        ${OpenCV_LIBS})
+        mmdeploy_opencv_utils)
 target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../../apis/c)
