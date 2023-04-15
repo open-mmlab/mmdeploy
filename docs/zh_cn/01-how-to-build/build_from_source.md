@@ -22,6 +22,11 @@ git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
   git clone git@github.com:pybind/pybind11.git pybind11
   cd pybind11
   git checkout 70a58c5
+  
+  cd..
+  git clone git@github.com:gabime/spdlog.git spdlog
+  cd third_party/spdlog
+  git checkout 9e8e52c048
   ```
 
 - 如果以 `SSH` 方式 `git clone` 代码失败，您可以尝试使用 `HTTPS` 协议下载代码：
