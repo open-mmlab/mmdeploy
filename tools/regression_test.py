@@ -27,7 +27,7 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            'mmcls', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
+            'mmpretrain', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit', 'mmrotate',
             'mmdet3d'
         ])
     parser.add_argument(
@@ -485,7 +485,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     # to stop Dataloader OOM in docker CI
-    if codebase_name not in ['mmedit', 'mmocr', 'mmcls']:
+    if codebase_name not in ['mmedit', 'mmocr', 'mmpretrain']:
         cfg_options = 'test_dataloader.num_workers=0 ' \
                       'test_dataloader.persistent_workers=False ' \
                       'val_dataloader.num_workers=0 ' \
@@ -781,7 +781,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
         if sdk_config is not None:
 
-            if codebase_name == 'mmcls' or codebase_name == 'mmaction':
+            if codebase_name == 'mmpretrain' or codebase_name == 'mmaction':
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(

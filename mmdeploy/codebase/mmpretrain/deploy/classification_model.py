@@ -131,7 +131,7 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmcls format."""
+    """SDK inference class, converts SDK output to mmpretrain format."""
 
     def __init__(self, *arg, **kwargs):
         kwargs['data_preprocessor'] = None
@@ -173,7 +173,7 @@ class SDKEnd2EndModel(End2EndModel):
 
 @__BACKEND_MODEL.register_module('rknn')
 class RKNNEnd2EndModel(End2EndModel):
-    """RKNN inference class, converts RKNN output to mmcls format."""
+    """RKNN inference class, converts RKNN output to mmpretrain format."""
 
     def forward(self,
                 inputs: torch.Tensor,

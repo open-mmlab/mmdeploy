@@ -12,12 +12,12 @@ from mmdeploy.utils.test import SwitchBackendWrapper, backend_checker
 
 IMAGE_SIZE = 64
 NUM_CLASS = 1000
-MODEL_CFG_PATH = 'tests/test_codebase/test_mmcls/data/model.py'
+MODEL_CFG_PATH = 'tests/test_codebase/test_mmpretrain/data/model.py'
 
 try:
-    import_codebase(Codebase.MMCLS)
+    import_codebase(Codebase.MMPRETRAIN)
 except ImportError:
-    pytest.skip(f'{Codebase.MMCLS} is not installed.', allow_module_level=True)
+    pytest.skip(f'{Codebase.MMPRETRAIN} is not installed.', allow_module_level=True)
 
 
 @backend_checker(Backend.ONNXRUNTIME)
@@ -37,7 +37,7 @@ class TestEnd2EndModel:
         cls.wrapper.set(outputs=cls.outputs)
         deploy_cfg = Config({'onnx_config': {'output_names': ['outputs']}})
 
-        from mmdeploy.codebase.mmcls.deploy.classification_model import \
+        from mmdeploy.codebase.mmpretrain.deploy.classification_model import \
             End2EndModel
         cls.end2end_model = End2EndModel(
             Backend.ONNXRUNTIME, [''], device='cpu', deploy_cfg=deploy_cfg)
@@ -83,7 +83,7 @@ class TestRKNNEnd2EndModel:
             }
         })
 
-        from mmdeploy.codebase.mmcls.deploy.classification_model import \
+        from mmdeploy.codebase.mmpretrain.deploy.classification_model import \
             RKNNEnd2EndModel
         class_names = ['' for i in range(NUM_CLASS)]
         cls.end2end_model = RKNNEnd2EndModel(
@@ -105,7 +105,7 @@ def test_build_classification_model():
         dict(
             backend_config=dict(type='onnxruntime'),
             onnx_config=dict(output_names=['outputs']),
-            codebase_config=dict(type='mmcls')))
+            codebase_config=dict(type='mmpretrain')))
 
     from mmdeploy.backend.onnxruntime import ORTWrapper
     ort_apis.__dict__.update({'ORTWrapper': ORTWrapper})
@@ -113,7 +113,7 @@ def test_build_classification_model():
     # simplify backend inference
     with SwitchBackendWrapper(ORTWrapper) as wrapper:
         wrapper.set(model_cfg=model_cfg, deploy_cfg=deploy_cfg)
-        from mmdeploy.codebase.mmcls.deploy.classification_model import (
+        from mmdeploy.codebase.mmpretrain.deploy.classification_model import (
             End2EndModel, build_classification_model)
         classifier = build_classification_model([''], model_cfg, deploy_cfg,
                                                 'cpu')

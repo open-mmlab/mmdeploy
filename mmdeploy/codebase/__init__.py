@@ -23,8 +23,6 @@ def import_codebase(codebase_type: Codebase, custom_module_list: List = []):
     """
     import importlib
     codebase_name = codebase_type.value
-    if codebase_name == 'mmcls':
-        codebase_name = 'mmpretrain'
 
     dependent_library = [codebase_name] + \
         extra_dependent_library.get(codebase_type, [])

@@ -45,7 +45,7 @@ def main():
         model = conf[0]
         os.system('wget {}'.format(conf[1]))
         model_cfg = conf[2]
-        deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
+        deploy_cfg = 'configs/mmpretrain/classification_ncnn-int8_static.py'
         quant_cmd = [
             'python', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
             '--deploy-cfg', deploy_cfg, '--model-cfg', model_cfg, '--out-onnx',

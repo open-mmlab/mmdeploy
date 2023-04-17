@@ -14,23 +14,23 @@ from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Codebase, Task, get_root_logger
 from mmdeploy.utils.config_utils import get_input_shape
 
-MMCLS_TASK = Registry('mmcls_tasks')
+MMPRETRAIN_TASK = Registry('mmpretrain_tasks')
 
 
-@CODEBASE.register_module(Codebase.MMCLS.value)
-class MMClassification(MMCodebase):
+@CODEBASE.register_module(Codebase.MMPRETRAIN.value)
+class MMPretrain(MMCodebase):
     """mmclassification codebase class."""
 
-    task_registry = MMCLS_TASK
+    task_registry = MMPRETRAIN_TASK
 
     @classmethod
     def register_deploy_modules(cls):
-        """register all rewriters for mmcls."""
-        import mmdeploy.codebase.mmcls.models  # noqa: F401
+        """register all rewriters for mmpretrain."""
+        import mmdeploy.codebase.mmpretrain.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):
-        """register all related modules and rewriters for mmcls."""
+        """register all related modules and rewriters for mmpretrain."""
         from mmpretrain.utils.setup_env import register_all_modules
 
         cls.register_deploy_modules()
@@ -111,7 +111,7 @@ def _get_dataset_metainfo(model_cfg: Config):
     return None
 
 
-@MMCLS_TASK.register_module(Task.CLASSIFICATION.value)
+@MMPRETRAIN_TASK.register_module(Task.CLASSIFICATION.value)
 class Classification(BaseTask):
     """Classification task class.
 
@@ -129,7 +129,7 @@ class Classification(BaseTask):
         """Build data preprocessor.
 
         Returns:
-            nn.Module: A model build with mmcls data_preprocessor.
+            nn.Module: A model build with mmpretrain data_preprocessor.
         """
         model_cfg = deepcopy(self.model_cfg)
         data_preprocessor = deepcopy(model_cfg.get('preprocess_cfg', {}))
@@ -222,13 +222,13 @@ class Classification(BaseTask):
             return data, BaseTask.get_tensor_from_input(data)
 
     def get_visualizer(self, name: str, save_dir: str):
-        """Get mmcls visualizer.
+        """Get mmpretrain visualizer.
 
         Args:
             name (str): Name of visualizer.
             save_dir (str): Directory to save drawn results.
         Returns:
-            ClsVisualizer: Instance of mmcls visualizer.
+            ClsVisualizer: Instance of mmpretrain visualizer.
         """
         visualizer = super().get_visualizer(name, save_dir)
         metainfo = _get_dataset_metainfo(self.model_cfg)

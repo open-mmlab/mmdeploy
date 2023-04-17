@@ -34,8 +34,6 @@ def get_codebase_version():
     version_dict = dict()
     for enum in Codebase:
         codebase = enum.value
-        if codebase == 'mmcls':
-            codebase = 'mmpretrain'
         version_dict[codebase] = get_library_version(codebase)
     return version_dict
 
