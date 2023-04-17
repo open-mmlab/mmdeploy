@@ -233,7 +233,7 @@ def symbolic(g,
 
 在这个符号函数中，我们以刚刚搜索到的算子输入参数作为符号函数的输入参数，并只用 `input` 和 `offset` 来构造一个简单的 ONNX 算子。
 
-这段代码中，最令人疑惑的就是装饰器 `@parse_args` 了。简单来说，TorchScript 算子的符号函数要求标注出每一个输入参数的类型。比如"v"表示 Torch 库里的 `value` 类型，一般用于标注张量，而"i"表示 int 类型，"f"表示 float 类型，"none"表示该参数为空。具体的类型含义可以在 [torch.onnx.symbolic_helper.py](https://gthub.com/pytorch/pytorch/blob/main/torch/onnx/symbolic_helper.py)中查看。这里输入参数中的 `input, weight, offset, mask, bias` 都是张量，所以用"v"表示。后面的其他参数同理。我们不必纠结于 `@parse_args`的原理，根据实际情况对符号函数的参数标注类型即可。
+这段代码中，最令人疑惑的就是装饰器 `@parse_args` 了。简单来说，TorchScript 算子的符号函数要求标注出每一个输入参数的类型。比如"v"表示 Torch 库里的 `value` 类型，一般用于标注张量，而"i"表示 int 类型，"f"表示 float 类型，"none"表示该参数为空。具体的类型含义可以在 [torch.onnx.symbolic_helper.py](https://github.com/pytorch/pytorch/blob/main/torch/onnx/symbolic_helper.py)中查看。这里输入参数中的 `input, weight, offset, mask, bias` 都是张量，所以用"v"表示。后面的其他参数同理。我们不必纠结于 `@parse_args`的原理，根据实际情况对符号函数的参数标注类型即可。
 
 有了符号函数后，我们通过如下的方式注册符号函数：
 
