@@ -781,7 +781,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
         if sdk_config is not None:
 
-            if codebase_name == 'mmpretrain' or codebase_name == 'mmaction':
+            if codebase_name == 'mmcls' or codebase_name == 'mmaction':
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(
