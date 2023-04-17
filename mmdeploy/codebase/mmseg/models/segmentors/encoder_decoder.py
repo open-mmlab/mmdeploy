@@ -25,10 +25,14 @@ def encoder_decoder__simple_test(ctx, self, img, img_meta, **kwargs):
         torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
     """
     seg_logit = self.encode_decode(img, img_meta)
-    seg_logit = F.softmax(seg_logit, dim=1)
-    if get_codebase_config(ctx.cfg).get('with_argmax', True) is False:
-        return seg_logit
-    seg_pred = seg_logit.argmax(dim=1, keepdim=True)
+    if self.out_channels == 1:
+        seg_logit = F.sigmoid(seg_logit)
+        seg_pred = (seg_logit > self.decode_head.threshold).to(seg_logit)
+    else:
+        seg_pred = F.softmax(seg_logit, dim=1)
+        if get_codebase_config(ctx.cfg).get('with_argmax', True):
+            seg_pred = seg_pred.argmax(dim=1, keepdim=True)
+
     return seg_pred
 
 
@@ -51,5 +55,10 @@ def encoder_decoder__simple_test__rknn(ctx, self, img, img_meta, **kwargs):
         torch.Tensor: Output segmentation map pf shape [N, C, H, W].
     """
     seg_logit = self.encode_decode(img, img_meta)
-    seg_logit = F.softmax(seg_logit, dim=1)
-    return seg_logit
+    if self.out_channels == 1:
+        seg_logit = F.sigmoid(seg_logit)
+        seg_pred = (seg_logit > self.decode_head.threshold).to(seg_logit)
+    else:
+        seg_pred = F.softmax(seg_logit, dim=1)
+
+    return seg_pred
