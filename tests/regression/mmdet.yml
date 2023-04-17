@@ -350,4 +350,13 @@ models:
     model_configs:
       - configs/solo/solo_r50_fpn_1x_coco.py
     pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
+      - *pipeline_seg_openvino_dynamic_fp32
+
+  - name: SOLOV2
+    metafile: configs/solov2/metafile.yml
+    model_configs:
+      - configs/solov2/solov2_r50_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_openvino_dynamic_fp32
