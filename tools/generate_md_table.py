@@ -33,7 +33,7 @@ def main():
     if output_dir:
         os.makedirs(output_dir, exist_ok=True)
     header = ['model', 'task'] + args.backends
-    aligner = [':--'] * 2 + [':--'] * len(args.backends)
+    aligner = [':--'] * 2 + [':--:'] * len(args.backends)
 
     def write_row_f(writer, row):
         writer.write('|' + '|'.join(row) + '|\n')
