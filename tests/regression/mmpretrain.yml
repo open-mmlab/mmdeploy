@@ -1,9 +1,9 @@
 globals:
-  codebase_dir: /home/PJLAB/yehuayuan/workspace/mmpretrain
+  codebase_dir: ../mmpretrain
   checkpoint_force_download: False
   images:
-    img_snake: &img_snake /home/PJLAB/yehuayuan/workspace/mmpretrain/demo/demo.JPEG
-    img_color_cat: &img_color_cat /home/PJLAB/yehuayuan/workspace/mmpretrain/tests/data/color.jpg
+    img_snake: &img_snake ../mmpretrain/demo/demo.JPEG
+    img_color_cat: &img_color_cat ../mmpretrain/tests/data/color.jpg
 
   metric_info: &metric_info
     Top 1 Accuracy: # named after metafile.Results.Metrics
