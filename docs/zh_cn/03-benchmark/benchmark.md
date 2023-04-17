@@ -907,8 +907,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">33.1</td>
-    <td align="center">32.7</td>
     <td align="center">-</td>
+    <td align="center">32.7</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
@@ -922,8 +922,8 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">34.8</td>
-    <td align="center">34.5</td>
     <td align="center">-</td>
+    <td align="center">34.5</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
