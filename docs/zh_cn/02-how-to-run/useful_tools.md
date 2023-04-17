@@ -232,8 +232,15 @@ python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mm
 
 输出：
 
-| model                                                                        | task            | onnxruntime | tensorrt | torchscript | pplnn | openvino | ncnn |
-| :--------------------------------------------------------------------------- | :-------------- | :---------- | :------- | :---------- | :---- | :------- | :--- |
-| [DBNet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet) | TextDetection   | Y           | Y        | Y           | Y     | Y        | Y    |
-| [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn) | TextRecognition | Y           | Y        | Y           | Y     | N        | Y    |
-| [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)   | TextRecognition | Y           | N        | N           | N     | N        | N    |
+| model                                                                                | task            | onnxruntime | tensorrt | torchscript | pplnn | openvino | ncnn |
+| :----------------------------------------------------------------------------------- | :-------------- | :---------: | :------: | :---------: | :---: | :------: | :--: |
+| [DBNet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)         | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [DBNetpp](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnetpp)     | TextDetection   |      Y      |    Y     |      N      |   N   |    Y     |  Y   |
+| [PANet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)         | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [PSENet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)       | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [TextSnake](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/textsnake) | TextDetection   |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [MaskRCNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/maskrcnn)   | TextDetection   |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)         | TextRecognition |      Y      |    Y     |      Y      |   Y   |    N     |  Y   |
+| [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)           | TextRecognition |      Y      |    N     |      Y      |   N   |    N     |  N   |
+| [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)       | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [ABINet](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/abinet)     | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |
