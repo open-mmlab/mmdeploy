@@ -14,6 +14,7 @@ import pandas as pd
 import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
+from tqdm import tqdm
 
 import mmdeploy.version
 from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
@@ -624,10 +625,12 @@ def run_cmd(cmd_lines: List[str], log_path: Path):
         return_code = process_res.returncode
 
     if return_code != 0:
+        logger.error(50 * '+')
         logger.error(f'Got shell return code={return_code}')
         with open(log_path, 'r') as f:
             content = f.read()
             logger.error(f'Log error message\n{content}')
+        logger.error(50 * '+')
     return return_code
 
 
@@ -953,7 +956,7 @@ def main():
             f_report.write(title_str)  # clear the report tmp file
 
         models_info = yaml_info.get('models')
-        for models in models_info:
+        for models in tqdm(models_info):
             model_name_origin = models.get('name', 'model')
             model_name_new = _filter_string(model_name_origin)
             if 'model_configs' not in models:

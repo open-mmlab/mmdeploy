@@ -34,7 +34,7 @@ on:
         type: string
         default: "onnxruntime tensorrt ncnn torchscript openvino"
       run_performance:
-        required: true
+        required: false
         description: 'Whether test performance in regression test. "-p" means run, "" means do not run.'
         type: string
         default: "-p"
@@ -61,24 +61,37 @@ jobs:
           submodules: recursive
       - name: Prepare resources
         run: |
-          ln -sf /usr/bin/python3 /usr/bin/python
-          ln -sf /__w/mmdeploy/data /__w/mmdeploy/mmdeploy/data
+          echo "----------- inputs --------------"
+          echo "test_linux=${{ github.event.inputs.test_linux}}"
+          echo "test_windows=${{ github.event.inputs.test_windows}}"
+          echo "torch_version=${{ github.event.inputs.torch_version}}"
+          echo "models=${{ github.event.inputs.models}}"
+          echo "codebases=${{ github.event.inputs.codebases}}"
+          echo "backends=${{ github.event.inputs.backends}}"
+          echo "run_performance=${{ github.event.inputs.run_performance}}"
+          echo "----------- inputs --------------"
+
           date_snap=$(date +%Y%m%d)
           time_snap=$(date +%Y%m%d%H%M)
           export REGRESSION_DIR=/__w/mmdeploy/convert_log/${date_snap}/${time_snap}
           export MMDEPLOY_DIR=$(pwd)
+          echo "REGRESSION_DIR=$REGRESSION_DIR"
+          echo "MMDEPLOY_DIR=$MMDEPLOY_DIR"
           mkdir -p $REGRESSION_DIR
           echo "REGRESSION_DIR=$REGRESSION_DIR"  >> $GITHUB_ENV
           echo "MMDEPLOY_DIR=$MMDEPLOY_DIR"  >> $GITHUB_ENV
+
+          ln -sf /usr/bin/python3 /usr/bin/python
+          ln -sf /__w/mmdeploy/data $MMDEPLOY_DIR/data
+
       - name: Install Dependencies
         run: |
           apt update && apt install unzip
           python -V
-          python .github/scripts/prepare_reg_test.py --torch-version ${{ github.event.inputs.torch_version }} --codebases ${{ github.event.inputs.codebases}} --work-dir /__w/mmdeploy
+          python -m pip install openmim numpy pycuda clip transformers xlsxwriter packaging
           python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python -m pip install openmim numpy pycuda clip transformers xlsxwriter
+          python .github/scripts/prepare_reg_test.py --torch-version ${{ github.event.inputs.torch_version }} --codebases ${{ github.event.inputs.codebases}} --work-dir /__w/mmdeploy
           python -m pip install -r requirements.txt
-          python -m mim install -r requirements/codebases.txt
           python -m pip list
       - name: Install mmdeploy with sdk
         run: |
@@ -94,7 +107,7 @@ jobs:
               -DTorch_DIR=${Torch_DIR}
           rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
-      - name: Test TensorRT pipeline
+      - name: Run regression test
         run: |
           export log_dir=${REGRESSION_DIR}/torch${{github.event.inputs.torch_version}}
           export log_path=${log_dir}/convert_log.txt
@@ -106,7 +119,7 @@ jobs:
               --work-dir ${log_dir} \
               --device cuda:0 \
               --models ${{github.event.inputs.models}} \
-              --backends ${{github.event.inputs.models}} \
+              --backends ${{github.event.inputs.backends}} \
               ${{github.event.inputs.run_performance}} 2>&1 | tee ${log_path}
           end_regression=$(date +%s)
           regression_time=$(( end_regression - start_regression ))
