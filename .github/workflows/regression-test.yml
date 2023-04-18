@@ -1,0 +1,113 @@
+name: regression test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_linux:
+        required: true
+        description: 'Whether start regression test on Linux x86_64'
+        type: boolean
+        default: true
+      test_windows:
+        required: true
+        description: 'Whether start regression test on Windows'
+        type: boolean
+        default: true
+      torch_version:
+        required: true
+        description: 'Tested torch version. Default is "1.10.0"'
+        type: string
+        default: 1.10.0
+      models:
+        required: true
+        description: 'Tested model list, eg: "resnet yolov3". Default is "all"'
+        type: string
+        default: all
+      codebases:
+        required: true
+        description: 'Tested codebase list, eg: "mmdet mmseg".'
+        type: string
+        default: "mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction mmyolo"
+      backends:
+        required: true
+        description: 'Tested codebase list, eg: "onnxruntime tensorrt".'
+        type: string
+        default: "onnxruntime tensorrt ncnn torchscript openvino"
+      run_performance:
+        required: true
+        description: 'Whether test performance in regression test. "-p" means run, "" means do not run.'
+        type: string
+        default: "-p"
+
+jobs:
+  regression-linux-3090:
+    if: ${{ github.event.inputs.test_linux}}
+    runs-on: [self-hosted, linux-3090]
+    container:
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
+      options: "--gpus=all --ipc=host"
+      volumes:
+        - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
+        - /data2/benchmark:/__w/mmdeploy/data
+        - /data2/pip-cache:/root/.cache/pip
+        - /data2/regression_log/convert_log:/__w/mmdeploy/convert_log
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+      - name: Prepare resources
+        run: |
+          ln -sf /usr/bin/python3 /usr/bin/python
+          ln -sf /__w/mmdeploy/data /__w/mmdeploy/mmdeploy/data
+          date_snap=$(date +%Y%m%d)
+          time_snap=$(date +%Y%m%d%H%M)
+          export REGRESSION_DIR=/__w/mmdeploy/convert_log/${date_snap}/${time_snap}
+          export MMDEPLOY_DIR=$(pwd)
+          mkdir -p $REGRESSION_DIR
+          echo "REGRESSION_DIR=$REGRESSION_DIR"  >> $GITHUB_ENV
+          echo "MMDEPLOY_DIR=$MMDEPLOY_DIR"  >> $GITHUB_ENV
+      - name: Install Dependencies
+        run: |
+          apt update && apt install unzip
+          python -V
+          python .github/scripts/prepare_reg_test.py --torch-version ${{ github.event.inputs.torch_version }} --codebases ${{ github.event.inputs.codebases}} --work-dir /__w/mmdeploy
+          python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
+          python -m pip install openmim numpy pycuda clip transformers xlsxwriter
+          python -m pip install -r requirements.txt
+          python -m mim install -r requirements/codebases.txt
+          python -m pip list
+      - name: Install mmdeploy with sdk
+        run: |
+          export Torch_DIR=$(python -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
+          export LD_LIBRARY_PATH="$MMDEPLOY_DIR/build/lib:${LD_LIBRARY_PATH}"
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"  >> $GITHUB_ENV
+
+          bash .circleci/scripts/linux/build.sh "cpu;cuda" "ort;trt;ncnn;torchscript" \
+              -Dpplcv_DIR=${pplcv_DIR} \
+              -DTENSORRT_DIR=${TENSORRT_DIR} \
+              -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+              -Dncnn_DIR=${ncnn_DIR} \
+              -DTorch_DIR=${Torch_DIR}
+          rm -rf .eggs && python -m pip install -e .
+          python tools/check_env.py
+      - name: Test TensorRT pipeline
+        run: |
+          export log_dir=${REGRESSION_DIR}/torch${{github.event.inputs.torch_version}}
+          export log_path=${log_dir}/convert_log.txt
+          mkdir -p $log_dir
+          python tools/check_env.py 2>&1 | tee ${log_dir}/check_env_log.txt
+          start_regression=$(date +%s)
+          python tools/regression_test.py \
+              --codebase ${{github.event.inputs.codebases}} \
+              --work-dir ${log_dir} \
+              --device cuda:0 \
+              --models ${{github.event.inputs.models}} \
+              --backends ${{github.event.inputs.models}} \
+              ${{github.event.inputs.run_performance}} 2>&1 | tee ${log_path}
+          end_regression=$(date +%s)
+          regression_time=$(( end_regression - start_regression ))
+          echo "execution time is ${regression_time} seconds"
