@@ -114,7 +114,7 @@ class End2EndModel(BaseBackendModel):
         else:
             if data_samples is None:
                 data_samples = [
-                    ClsDataSample() for _ in range(cls_score.size(0))
+                    DataSample() for _ in range(cls_score.size(0))
                 ]
 
             for data_sample, score in zip(data_samples, pred_scores):

@@ -298,13 +298,13 @@ class Classification(BaseTask):
         ]
         move_pipeline = []
         import re
-        while re.search('Pack[a-z | A-Z]+Inputs',
+        while re.search('Pack[a-z | A-Z]*Inputs',
                         transforms[-1]['type']) is None:
             sub_pipeline = transforms.pop(-1)
             move_pipeline = [sub_pipeline] + move_pipeline
             transforms = transforms[:-1] + move_pipeline + transforms[-1:]
         for i, transform in enumerate(transforms):
-            if transform['type'] == 'PackClsInputs':
+            if transform['type'] == 'PackInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))

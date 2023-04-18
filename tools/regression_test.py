@@ -754,6 +754,8 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         report_checkpoint = backend_output_path.joinpath(backend_file_name)
         convert_checkpoint_path = \
             str(backend_output_path.joinpath(backend_file_name))
+
+
     # Test the model
     if convert_result and test_type == 'precision':
         # test the model metric
@@ -781,7 +783,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
         if sdk_config is not None:
 
-            if codebase_name == 'mmcls' or codebase_name == 'mmaction':
+            if codebase_name == 'mmpretrain' or codebase_name == 'mmaction':
                 replace_top_in_pipeline_json(backend_output_path, logger)
 
             log_path = gen_log_path(
@@ -1006,6 +1008,8 @@ def main():
 
                     backend_file_name = \
                         backend_file_info.get(backend_name, None)
+                    
+
                     if backend_file_name is None:
                         logger.warning('backend_file_name is None, '
                                        'skip it...')

@@ -233,6 +233,7 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     post_processor = task_processor.get_postprocess(work_dir)
     module = get_codebase(deploy_cfg).value
     module = 'mmdet' if module == 'mmyolo' else module
+    module = 'mmcls' if module == 'mmpretrain' else module
 
     return dict(
         type='Task',
@@ -347,6 +348,7 @@ def export2SDK(deploy_cfg: Union[str, mmengine.Config],
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir, device)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir, device)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
+
     mmengine.dump(
         deploy_info,
         '{}/deploy.json'.format(work_dir),

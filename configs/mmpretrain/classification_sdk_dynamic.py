@@ -4,4 +4,4 @@ codebase_config = dict(model_type='sdk')
 
 backend_config = dict(
     pipeline=[dict(type='LoadImageFromFile'),
-              dict(type='PackClsInputs')])
+              dict(type='PackInputs')])
