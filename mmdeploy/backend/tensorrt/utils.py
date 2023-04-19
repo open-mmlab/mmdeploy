@@ -141,7 +141,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             })
     """
 
-    if int8_mode or device_id != 0:
+    if (int8_mode and explicit_quant_mode is False) or device_id != 0:
         import pycuda.autoinit  # noqa:F401
 
     if device_id != 0:
