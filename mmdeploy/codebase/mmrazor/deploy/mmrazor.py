@@ -125,7 +125,7 @@ class ModelCompress(BaseTask):
                             model_checkpoint: Optional[str] = None,
                             cfg_options: Optional[Dict] = None,
                             **kwargs) -> torch.nn.Module:
-        """Build PyTorch model for mmrazor"""
+        """Build PyTorch model for mmrazor."""
         model = super().build_pytorch_model(model_checkpoint, cfg_options,
                                             **kwargs)
         return model

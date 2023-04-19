@@ -7,12 +7,11 @@
 # from mmdeploy.core import FUNCTION_REWRITER
 # from mmdeploy.utils import get_dynamic_axes
 
-
-# @FUNCTION_REWRITER.register_rewriter(func_name='torch.cat', backend='tensorrt')
-# def cat__tensorrt(tensors: Sequence[Tensor], *args, **kwargs) -> torch.Tensor:
+# @FUNCTION_REWRITER.register_rewriter(func_name='torch.cat', backend='tensorrt')  # noqa: E501
+# def cat__tensorrt(tensors: Sequence[Tensor], *args, **kwargs) -> torch.Tensor:  # noqa: E501
 #     """Rewrite `cat` for TensorRT backend.
 
-#     cat in TensorRT does not support bool or uint8 type when input is dynamic.
+#     cat in TensorRT does not support bool or uint8 type when input is dynamic.  # noqa: E501
 #     """
 #     ctx = FUNCTION_REWRITER.get_context()
 #     if get_dynamic_axes(ctx.cfg) is None:
