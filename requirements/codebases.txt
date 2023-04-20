@@ -6,3 +6,4 @@ mmocr>=1.0.0rc4
 mmpose>=1.0.0rc0
 mmrotate>=1.0.0rc0
 mmsegmentation @ git+https://github.com/open-mmlab/mmsegmentation.git@dev-1.x
+mmrazor @ git+https://github.com/open-mmlab/mmrazor.git@main
