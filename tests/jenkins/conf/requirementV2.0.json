@@ -1,52 +1,52 @@
 {
     "mmdet": {
-        "branch": "3.x",
-        "version": "mmdet>=3.0.0rc1",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmdet>=3.0.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmcls": {
-        "branch": "1.x",
-        "version": "mmcls>=1.0.0rc0",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "mmcls-1.x",
+        "version": "mmcls==1.0.0rc6",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmocr": {
-        "branch": "1.x",
-        "version": "mmocr>=1.0.0rc0",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmocr>=1.0.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmpose": {
-        "branch": "1.x",
-        "version": "mmpose>=1.0.0b0",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmpose>=1.0.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmseg": {
-        "branch": "1.x",
-        "version": "mmsegmentation>=1.0.0rc0",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmsegmentation>=1.0.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmedit": {
-        "branch": "1.x",
-        "version": "mmedit>=1.0.0rc1",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmedit==1.0.0rc7",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmaction": {
-        "branch": "1.x",
-        "version": "mmaction2>=1.0.0rc1",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmaction2>=1.0.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmdet3d": {
-        "branch": "dev-1.x",
-        "version": "mmdet3d>=1.1.0rc0",
-        "mmcv": "mmcv>=2.0.0rc1"
+        "branch": "main",
+        "version": "mmdet3d>=1.1.0",
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmyolo": {
-        "branch": "dev",
+        "branch": "main",
         "version": "mmyolo",
-        "mmcv": "mmcv>=2.0.0rc0"
+        "mmcv": "mmcv>=2.0.0"
     },
     "mmrotate": {
         "branch": "dev-1.x",
-        "version": "mmrotate>=1.0.0rc0",
+        "version": "mmrotate>=1.0.0rc1",
         "mmcv": "mmcv>=2.0.0rc0"
     }
 }
