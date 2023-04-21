@@ -202,3 +202,30 @@ python tools/profiler.py \
 |  Max   |   1.689    | 591.983 |
 +--------+------------+---------+
 ```
+
+## visualize
+
+这个工具可以用来可视化不同推理引擎的推理结果。
+
+### 用法
+
+```bash
+python tools/visualize.py \
+    --deploy-cfg {DEPLOY_CFG} \
+    --model-cfg {MODEL_CFG} \
+    --deploy-path {DEPLOY_PATH} \
+    --test-img {TEST_IMGS} \
+    --checkpoint {CHECKPOINTS} \
+    --save-dir {SAVE_DIR} \
+    --device {DEVICE}
+```
+
+### 参数说明
+
+- `deploy-cfg` : 输入的配置文件路径
+- `model-cfg` : 输入的模型配置文件路径
+- `deploy-path` : 测试的模型文件路径，如果部分模型含有多个文件，请多次使用该参数
+- `test-img` : 测试的图片路径，可以多次使用测试测试多张图片
+- `checkpoint` : PyTorch的权重文件，如果使用这个参数，推理的结果会被拼接到图像的右侧
+- `save-dir` : 保存可视化结果，如果没有指定则会被设为当前目录
+- `device` : 运行的设备类型，如果没有指定则会默认设置为`cpu`

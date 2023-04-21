@@ -202,3 +202,30 @@ And the output look like this:
 |  Max   |   1.689    | 591.983 |
 +--------+------------+---------+
 ```
+
+## visualize
+
+This tool can be used to visualize model inference results in different backend.
+
+### Usage
+
+```bash
+python tools/visualize.py \
+    --deploy-cfg {DEPLOY_CFG} \
+    --model-cfg {MODEL_CFG} \
+    --deploy-path {DEPLOY_PATH} \
+    --test-img {TEST_IMGS} \
+    --checkpoint {CHECKPOINTS} \
+    --save-dir {SAVE_DIR} \
+    --device {DEVICE}
+```
+
+### Description of all arguments
+
+- `deploy-cfg` : The path of the deploy config file in MMDeploy codebase.
+- `model-cfg` : The path of model config file in OpenMMLab codebase.
+- `deploy-path` : The path of the model to be tested, if the backend contains multiple files, you can use it multiple times.
+- `test-img` : The path of the images to be tested, you can use it multiple times.
+- `checkpoint` : The path of the checkpoint to be tested, if it is used, the result will be cancated to right part.
+- `save-dir` : The path to save the visualization results, if it not specified, it will be set to '.'.
+- `device` : The device type. If not specified, it will be set to `cpu`.
