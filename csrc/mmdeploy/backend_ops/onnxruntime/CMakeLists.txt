@@ -20,12 +20,23 @@ endif()
 
 project(mmdeploy_onnxruntime_ops)
 
-include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
+if (!APPLE)
+    include(${CMAKE_SOURCE_DIR}/cmake/cuda.cmake)
+endif()
 include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
 
 # add plugin source
 
 file(GLOB_RECURSE ORT_OPS_SRCS *.cpp *.cu)
+if (NOT FOUND_CUDA)
+    set (EXCLUDE_CUDA_DIR "/cuda/")
+    foreach (TMP_PATH ${ORT_OPS_SRCS})
+        string (FIND ${TMP_PATH} ${EXCLUDE_CUDA_DIR} EXCLUDE_DIR_FOUND)
+        if (NOT ${EXCLUDE_DIR_FOUND} EQUAL -1)
+            list (REMOVE_ITEM ORT_OPS_SRCS ${TMP_PATH})
+        endif ()
+    endforeach(TMP_PATH)
+endif()
 add_library(${PROJECT_NAME}_obj OBJECT "${ORT_OPS_SRCS}")
 target_compile_definitions(${PROJECT_NAME}_obj PRIVATE -DMMDEPLOY_API_EXPORTS=1)
 target_compile_options(${PROJECT_NAME}_obj PRIVATE
@@ -41,7 +52,11 @@ target_include_directories(${PROJECT_NAME}_obj PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/common>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../common>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/csrc>)
-target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas cudart)
+if (FOUND_CUDA)
+    target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime cublas cudart)
+else()
+    target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
+endif()
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
