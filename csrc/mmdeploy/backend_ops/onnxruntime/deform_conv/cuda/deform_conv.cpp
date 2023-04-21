@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <vector>
+#include <sstream>
 #include <cuda_runtime.h>
 #include <cuda_fp16.h>
 
@@ -32,6 +33,10 @@ MMCVDeformConvCUDAKernel::MMCVDeformConvCUDAKernel(const OrtApi& api,
 
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
+
+  int device;
+  cudaGetDevice( &device );
+  cudaDeviceGetAttribute(&cuda_dev_memory_pools_supported_, cudaDevAttrMemoryPoolsSupported, device);
 
   // create cublas handle
   cublasStatus_t stat = cublasCreate(&cublas_handle_);
@@ -107,9 +112,11 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
   long workspace_size = col_size + out_size;
 
   void* workspace;
-  auto status = cudaMallocAsync(&workspace, workspace_size, stream);
+  auto status = cuda_malloc(&workspace, workspace_size, stream);
   if (status != cudaSuccess) {
-    ORT_CXX_API_THROW("cuda malloc error in deform_conv::CUDAKernel::Compute", ORT_FAIL);
+    std::stringstream ss;
+    ss << "cudaMalloc(" << workspace_size << ") error in deform_conv::CUDAKernel::Comput, status:" << status;
+    ORT_CXX_API_THROW(ss.str(), ORT_FAIL);
   }
   cudaMemsetAsync(workspace, 0, workspace_size, stream);
   switch (data_type) {
@@ -126,15 +133,34 @@ void MMCVDeformConvCUDAKernel::Compute(OrtKernelContext *context) {
                          group, deformable_group, im2col_step, cublas_handle, stream);
       break;
     default:
-      cudaFreeAsync(workspace, stream);
+      cuda_free(workspace, stream);
       ORT_CXX_API_THROW("invalid tensor datatype in deform_conv::CUDAKernel::Compute", ORT_FAIL);
       return;
   }
-  cudaFreeAsync(workspace, stream);
+  cuda_free(workspace, stream);
 }
+
+cudaError_t MMCVDeformConvCUDAKernel::cuda_malloc(void **pointer, size_t size, cudaStream_t stream) {
+  if (cuda_dev_memory_pools_supported_) {
+    return cudaMallocAsync(pointer, size, stream);
+  } else {
+    return cudaMalloc(pointer, size);
+  }
+}
+
+void MMCVDeformConvCUDAKernel::cuda_free(void *pointer, cudaStream_t stream) {
+  if (cuda_dev_memory_pools_supported_) {
+    cudaFreeAsync(pointer, stream);
+  } else {
+    cudaFree(pointer);
+  }
+}
+
 
 static char __openvino_cuda[] = "org.openvinotoolkit";
 static OrtOpsRegistry<__openvino_cuda, MMCVDeformConvCUDAOp> ort_ops_registry_cuda_openvino {};
 
 //REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVDeformConvCUDAOp);
 }  // namespace mmdeploy
+
+
