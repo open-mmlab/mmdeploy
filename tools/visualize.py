@@ -30,7 +30,9 @@ def parse_args():
         nargs='+',
         help='image used to test model')
     parser.add_argument(
-        '--save-dir', default=None, help='the dir to save inference results')
+        '--save-dir',
+        default=os.getcwd(),
+        help='the dir to save inference results')
     parser.add_argument('--device', help='device to run model', default='cpu')
     parser.add_argument(
         '--log-level',
@@ -62,12 +64,9 @@ def main():
     deploy_cfg = load_config(deploy_cfg_path)[0]
 
     # create save_dir or generate default save_dir
-    save_dir = args.save_dir
-    if save_dir:
-        # generate default dir
-        current_time = time.localtime()
-        save_dir = osp.join(os.getcwd(),
-                            time.strftime('%Y_%m_%d_%H_%M_%S', current_time))
+    current_time = time.localtime()
+    save_dir = osp.join(os.getcwd(),
+                        time.strftime('%Y_%m_%d_%H_%M_%S', current_time))
     mmengine.mkdir_or_exist(save_dir)
 
     # get backend info
