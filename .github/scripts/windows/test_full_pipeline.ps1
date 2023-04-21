@@ -7,7 +7,7 @@ A helper script to test tools of MMDeploy Converter on windows.
     -Device: support cpu, cuda, cuda:0
 
 .EXAMPLE
-PS> .circleci/scripts/linux/test_full_pipeline.sh -Backend ort -Device cpu
+PS> .github/scripts/linux/test_full_pipeline.sh -Backend ort -Device cpu
 #>
 
 param(
