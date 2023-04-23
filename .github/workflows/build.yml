@@ -36,7 +36,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install PyTorch
-        run: python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
+        run: |
+          python -m pip install --upgrade pip
+          python -V
+          python -m pip show pip
+          python -m pip install torch==${{matrix.torch}}+cpu torchvision==${{matrix.torchvision}}+cpu -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install unittest dependencies
         run: |
           python -m pip install openmim
