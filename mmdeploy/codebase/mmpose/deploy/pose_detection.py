@@ -197,15 +197,15 @@ class PoseDetection(BaseTask):
         from mmcv.transforms import Compose
         from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
-        if isinstance(imgs, str):
-            imgs = [mmcv.imread(imgs)]
-        elif isinstance(imgs, (list, tuple)):
-            img_data = []
-            for img in imgs:
-                if isinstance(img, str):
-                    img_data.append(mmcv.imread(img))
-                else:
-                    img_data.append(img)
+        if isinstance(imgs, (list, tuple)):
+            if not isinstance(imgs[0], (np.ndarray, str)):
+                raise AssertionError('imgs must be strings or numpy arrays')
+        elif isinstance(imgs, (np.ndarray, str)):
+            imgs = [imgs]
+        else:
+            raise AssertionError('imgs must be strings or numpy arrays')
+        if isinstance(imgs, (list, tuple)) and isinstance(imgs[0], str):
+            img_data = [mmcv.imread(img) for img in imgs]
             imgs = img_data
         person_results = []
         bboxes = []
