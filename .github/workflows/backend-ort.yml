@@ -17,7 +17,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  buils_ort:
+  build_ort:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
@@ -43,4 +43,4 @@ jobs:
           export MMDEPLOY_DIR=$(pwd)
           export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH
-          bash .circleci/scripts/linux/test_full_pipeline.sh ort cpu
+          bash .github/scripts/linux/test_full_pipeline.sh ort cpu

@@ -52,7 +52,7 @@ def parallel_sar_decoder__2d_attention(
         attn_mask = torch.zeros(bsz, T, h, w + 1, c).to(attn_weight.device)
         for i, valid_ratio in enumerate(valid_ratios):
             # use torch.ceil to replace original math.ceil and if else in mmocr
-            valid_width = torch.ceil(w * valid_ratio).long()
+            valid_width = torch.tensor(w * valid_ratio).ceil().long()
             # use narrow to replace original [valid_width:] in mmocr
             attn_mask[i].narrow(2, valid_width, w + 1 - valid_width)[:] = 1
         attn_mask = attn_mask[:, :, :, :w, :]
@@ -123,7 +123,7 @@ def sequential_sar_decoder__2d_attention(self,
         attn_mask = torch.zeros(bsz, c, h, w + 1).to(attn_weight.device)
         for i, valid_ratio in enumerate(valid_ratios):
             # use torch.ceil to replace original math.ceil and if else in mmocr
-            valid_width = torch.ceil(w * valid_ratio).long()
+            valid_width = torch.tensor(w * valid_ratio).ceil().long()
             # use narrow to replace original [valid_width:] in mmocr
             attn_mask[i].narrow(2, valid_width, w + 1 - valid_width)[:] = 1
         attn_mask = attn_mask[:, :, :, :w]

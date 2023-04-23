@@ -21,7 +21,7 @@ ______________________________________________________________________
 
 ### 安装 mmaction2
 
-请参考[官网安装指南](https://github.com/open-mmlab/mmaction2/tree/1.x#installation).
+请参考[官网安装指南](https://github.com/open-mmlab/mmaction2/tree/main#installation).
 
 ### 安装 mmdeploy
 
@@ -187,7 +187,7 @@ for label_id, score in result:
 
 ## 模型支持列表
 
-| Model                                                                                     | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/1.x/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| Model                                                                                      | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
