@@ -185,4 +185,3 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [MobileOne](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobileone)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [EfficientNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientnet)            |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/conformer)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
-
