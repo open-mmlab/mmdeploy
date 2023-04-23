@@ -61,8 +61,8 @@ build_ocv_arm_gnueabi() {
   rm -rf CMakeCache.txt
   cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/arm-gnueabi.toolchain.cmake \
     -DBUILD_TIFF=ON -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs} && make install
   export OPENCV_PACKAGE_DIR=$(pwd)/install/lib/cmake/opencv4
   cd -
@@ -79,8 +79,8 @@ build_ocv_aarch64() {
   rm -rf CMakeCache.txt
   cmake .. -DCMAKE_INSTALL_PREFIX=install -DCMAKE_TOOLCHAIN_FILE=../platforms/linux/aarch64-gnu.toolchain.cmake \
     -DBUILD_PERF_TESTS=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs} && make install
   export OPENCV_PACKAGE_DIR=$(pwd)/install/lib/cmake/opencv4
   cd -
@@ -102,11 +102,10 @@ build_mmdeploy_with_rknpu() {
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU_DEVICE_DIR="${RKNPU_DIR}"/rknn/rknn_api/librknn_api \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
-    -DMMDEPLOY_SHARED_LIBS=ON
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
 
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs} && make install
 
   ls -lah install/bin/*
@@ -128,11 +127,10 @@ build_mmdeploy_with_rknpu2() {
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
     -DRKNPU2_DEVICE_DIR="${RKNPU2_DIR}/runtime/${device_model}" \
-    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}" \
-    -DMMDEPLOY_SHARED_LIBS=ON
+    -DOpenCV_DIR="${OPENCV_PACKAGE_DIR}"
 
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs} && make install
 
   ls -lah install/bin/*
