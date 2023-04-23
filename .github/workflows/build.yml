@@ -25,7 +25,6 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.7]
         torch: [1.8.0, 1.9.0]
         include:
           - torch: 1.8.0
@@ -36,10 +35,6 @@ jobs:
             torchvision: 0.10.0
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
       - name: Install PyTorch
         run: |
           python -m pip install --upgrade pip
@@ -52,7 +47,7 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0"
-          python -m mim install -r requirements/codebases.txt -c constraints.txt
+          python -m mim install -r requirements/codebases.txt
           python -m pip install -U numpy clip numba transformers
           python -m pip list
       - name: Install mmyolo
@@ -116,7 +111,7 @@ jobs:
           python-version: 3.8
       - name: gcc-multilib
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_aarch64.sh
+          sh -ex tools/scripts/ubuntu_cross_build_aarch64.sh
 
   build_cuda102:
     runs-on: ubuntu-20.04
@@ -153,7 +148,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip numba
+          python -m pip install -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
@@ -198,7 +193,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip numba
+          python -m pip install -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
@@ -236,14 +231,14 @@ jobs:
           apt update && apt install unzip
           python3 -V
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
-          python3 -m pip install openmim numpy pycuda clip
+          python3 -m pip install openmim numpy pycuda clip transformers
           python3 -m pip install -r requirements.txt
           python3 -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
           python3 -m pip list
       - name: Build SDK
         run: |
           export Torch_DIR=$(python3 -c "import torch;print(torch.utils.cmake_prefix_path + '/Torch')")
-          bash .circleci/scripts/linux/build.sh "cpu;cuda" "ort;trt;ncnn;torchscript" \
+          bash .github/scripts/linux/build.sh "cpu;cuda" "ort;trt;ncnn;torchscript" \
               -Dpplcv_DIR=${pplcv_DIR} \
               -DTENSORRT_DIR=${TENSORRT_DIR} \
               -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
@@ -259,7 +254,7 @@ jobs:
         run: |
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
-          bash .circleci/scripts/linux/test_full_pipeline.sh trt cuda
+          bash .github/scripts/linux/test_full_pipeline.sh trt cuda
 
   build_cuda113_windows:
     runs-on: [self-hosted, win10-3080]
@@ -320,4 +315,4 @@ jobs:
         run: |
           conda activate $pwd\tmp_env
           $env:path = "$pwd\build\bin\Release;" + $env:path
-          .circleci\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
+          .github\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda

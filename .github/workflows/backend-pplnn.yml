@@ -37,7 +37,7 @@ jobs:
           python3 -m pip list
       - name: Build SDK
         run: |
-          bash .circleci/scripts/linux/build.sh "cuda" "pplnn" \
+          bash .github/scripts/linux/build.sh "cuda" "pplnn" \
               -Dpplcv_DIR=${pplcv_DIR} \
               -Dpplnn_DIR=${pplnn_DIR}
           ls build/lib

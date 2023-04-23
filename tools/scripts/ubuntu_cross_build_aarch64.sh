@@ -34,8 +34,8 @@ build_ocv() {
   cd opencv/platforms/linux/cross_build_aarch64
   rm -rf CMakeCache.txt
   cmake ../../.. -DBUILD_TIFF=ON -DCMAKE_INSTALL_PREFIX=/tmp/ocv-aarch64 -DCMAKE_TOOLCHAIN_FILE=../aarch64-gnu.toolchain.cmake
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs}
   make install
   cd -
@@ -53,8 +53,8 @@ build_ncnn() {
   cmake .. \
     -DCMAKE_TOOLCHAIN_FILE=../toolchains/aarch64-linux-gnu.toolchain.cmake \
     -DCMAKE_INSTALL_PREFIX=/tmp/ncnn-aarch64
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs}
   make install
   cd -
@@ -75,10 +75,12 @@ build_mmdeploy() {
     -DMMDEPLOY_TARGET_DEVICES="cpu" \
     -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
     -Dncnn_DIR=/tmp/ncnn-aarch64/lib/cmake/ncnn \
-    -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4
+    -DOpenCV_DIR=/tmp/ocv-aarch64/lib/cmake/opencv4 \
+    -DMMDEPLOY_BUILD_EXAMPLES=ON \
+    -DMMDEPLOY_BUILD_SDK=ON
 
-  good_nproc
-  jobs=$?
+  # good_nproc
+  jobs=`nproc`
   make -j${jobs}
   make install
 

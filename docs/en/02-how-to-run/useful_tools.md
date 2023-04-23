@@ -202,3 +202,45 @@ And the output look like this:
 |  Max   |   1.689    | 591.983 |
 +--------+------------+---------+
 ```
+
+## generate_md_table
+
+This tool can be used to generate supported-backends markdown table.
+
+### Usage
+
+```shell
+python tools/generate_md_table.py \
+    ${YML_FILE} \
+    ${OUTPUT} \
+    --backends ${BACKENDS}
+```
+
+### Description of all arguments
+
+- `yml_file:` input yml config path
+- `output:`  output markdown file path
+- `--backends:` output backends list. If not specified, it will be set 'onnxruntime' 'tensorrt' 'torchscript' 'pplnn' 'openvino' 'ncnn'.
+
+### Example:
+
+Generate backends markdown table from mmocr.yml
+
+```shell
+python tools/generate_md_table.py tests/regression/mmocr.yml tests/regression/mmocr.md --backends  onnxruntime tensorrt torchscript pplnn openvino ncnn
+```
+
+And the output look like this:
+
+| model                                                                                | task            | onnxruntime | tensorrt | torchscript | pplnn | openvino | ncnn |
+| :----------------------------------------------------------------------------------- | :-------------- | :---------: | :------: | :---------: | :---: | :------: | :--: |
+| [DBNet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnet)         | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [DBNetpp](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/dbnetpp)     | TextDetection   |      Y      |    Y     |      N      |   N   |    Y     |  Y   |
+| [PANet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/panet)         | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [PSENet](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/psenet)       | TextDetection   |      Y      |    Y     |      Y      |   Y   |    Y     |  Y   |
+| [TextSnake](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/textsnake) | TextDetection   |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [MaskRCNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textdet/maskrcnn)   | TextDetection   |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [CRNN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/crnn)         | TextRecognition |      Y      |    Y     |      Y      |   Y   |    N     |  Y   |
+| [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)           | TextRecognition |      Y      |    N     |      Y      |   N   |    N     |  N   |
+| [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)       | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+| [ABINet](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/abinet)     | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |

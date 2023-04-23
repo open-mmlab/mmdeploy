@@ -54,7 +54,7 @@ def sar_encoder__forward(
         T = holistic_feat.size(1)
         for i, valid_ratio in enumerate(valid_ratios):
             # use torch.ceil to replace original math.ceil and if else in mmocr
-            valid_step = torch.ceil(T * valid_ratio).long() - 1
+            valid_step = torch.tensor(T * valid_ratio).ceil().long() - 1
             valid_hf.append(holistic_feat[i, valid_step, :])
         valid_hf = torch.stack(valid_hf, dim=0)
     else:

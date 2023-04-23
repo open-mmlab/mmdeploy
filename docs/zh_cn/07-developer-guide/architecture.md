@@ -93,7 +93,7 @@ $ tree -L 1
 
 - topk
 - tensorslice
-- shpe
+- shape
 - gather
 - expand
 - constantofshape
