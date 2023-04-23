@@ -316,3 +316,101 @@ jobs:
           conda activate $pwd\tmp_env
           $env:path = "$pwd\build\bin\Release;" + $env:path
           .github\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
+
+  badge_build_cpu_model_convert:
+    needs: build_cpu_model_convert
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cpu_model_convert
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cpu_model_convert.result == 'success' && 'passing' || needs.build_cpu_model_convert.result }}
+          COLOR: ${{ needs.build_cpu_model_convert.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_cpu_sdk:
+    needs: build_cpu_sdk
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cpu_sdk
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cpu_sdk.result == 'success' && 'passing' || needs.build_cpu_sdk.result }}
+          COLOR: ${{ needs.build_cpu_sdk.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_cross_build_aarch64:
+    needs: cross_build_aarch64
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: cross_build_aarch64
+          LABEL: 'build'
+          STATUS: ${{ needs.cross_build_aarch64.result == 'success' && 'passing' || needs.cross_build_aarch64.result }}
+          COLOR: ${{ needs.cross_build_aarch64.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_cuda102:
+    needs: build_cuda102
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda102
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cuda102.result == 'success' && 'passing' || needs.build_cuda102.result }}
+          COLOR: ${{ needs.build_cuda102.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_cuda113:
+    needs: build_cuda113
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cuda113.result == 'success' && 'passing' || needs.build_cuda113.result }}
+          COLOR: ${{ needs.build_cuda113.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_cuda113_linux:
+    needs: build_cuda113_linux
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113_linux
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cuda113_linux.result == 'success' && 'passing' || needs.build_cuda113_linux.result }}
+          COLOR: ${{ needs.build_cuda113_linux.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_cuda113_windows:
+    needs: build_cuda113_windows
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113_windows
+          LABEL: 'build'
+          STATUS: ${{ needs.build_cuda113_windows.result == 'success' && 'passing' || needs.build_cuda113_windows.result }}
+          COLOR: ${{ needs.build_cuda113_windows.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
