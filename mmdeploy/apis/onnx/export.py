@@ -112,8 +112,12 @@ def export(model: torch.nn.Module,
 
     with RewriterContext(**context_info), torch.no_grad():
 
-        from mmrazor.models import MMArchitectureQuant
-        from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
+        try:
+            from mmrazor.models import MMArchitectureQuant
+            from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
+        except ModuleNotFoundError:
+            from_mmrazor = None
+
         if from_mmrazor:
             quantizer = patched_model.quantizer
             patched_model = patched_model.get_deploy_model()
