@@ -19,7 +19,7 @@ ______________________________________________________________________
 
 ### Install mmpretrain
 
-Please follow this [quick guide](https://github.com/open-mmlab/mmpretrain/tree/1.x#installation) to install mmpretrain.
+Please follow this [quick guide](https://github.com/open-mmlab/mmpretrain/tree/main#installation) to install mmpretrain.
 
 ### Install mmdeploy
 

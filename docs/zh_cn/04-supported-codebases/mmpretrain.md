@@ -19,7 +19,7 @@ ______________________________________________________________________
 
 ### 安装 mmpretrain
 
-请参考[官网安装指南](https://github.com/open-mmlab/mmpretrain/tree/1.x#installation).
+请参考[官网安装指南](https://github.com/open-mmlab/mmpretrain/tree/main#installation).
 
 ### 安装 mmdeploy
 

@@ -71,7 +71,7 @@ ______________________________________________________________________
 
 4. 准备一个PyTorch的模型文件当作我们的示例
 
-   这里选择了[resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth)，对应的训练config为[resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py)
+   这里选择了[resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth)，对应的训练config为[resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/main/configs/resnet/resnet18_8xb32_in1k.py)
 
 做好以上工作后，当前工作目录的结构应为：
 

@@ -52,7 +52,7 @@ def multiheadattention__forward__ncnn(self, qkv_input):
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
     'mmpretrain.models.utils.ShiftWindowMSA.forward',
-    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc5'))
+    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc7'))
 def shift_window_msa__forward__default(self, query, hw_shape):
     """Rewrite forward function of ShiftWindowMSA class for TensorRT.
 
@@ -142,7 +142,7 @@ def shift_window_msa__forward__default(self, query, hw_shape):
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
     'mmpretrain.models.utils.ShiftWindowMSA.get_attn_mask',
-    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc5'))
+    extra_checkers=LibVersionChecker('mmpretrain', min_version='1.0.0rc7'))
 def shift_window_msa__get_attn_mask__default(self,
                                              hw_shape,
                                              window_size,
