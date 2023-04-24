@@ -110,13 +110,21 @@ def export(model: torch.nn.Module,
         onnx_custom_passes = optimize_onnx if optimize else None
         context_info['onnx_custom_passes'] = onnx_custom_passes
 
-    with RewriterContext(**context_info), torch.no_grad():
+    try:
+        from mmrazor.models import MMArchitectureQuant
+        from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
+    except ModuleNotFoundError:
+        from_mmrazor = None
 
-        try:
-            from mmrazor.models import MMArchitectureQuant
-            from_mmrazor = isinstance(patched_model, MMArchitectureQuant)
-        except ModuleNotFoundError:
-            from_mmrazor = None
+    rewrite_context = RewriterContext(**context_info)
+
+    if from_mmrazor:
+        from mmrazor.models.utils import pop_rewriter_function_record
+        function_record_to_pop = deploy_cfg.get('function_record_to_pop', [])
+        # pop specified untraced rewriter ops by torch.fx
+        pop_rewriter_function_record(rewrite_context, function_record_to_pop)
+
+    with rewrite_context, torch.no_grad():
 
         if from_mmrazor:
             quantizer = patched_model.quantizer
