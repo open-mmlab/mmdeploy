@@ -642,7 +642,6 @@ def test_linspace__default():
             model_output, rewrite_outputs, rtol=1e-03, atol=1e-05)
 
 
-@pytest.mark.skip(reason='func has beem removed')
 @backend_checker(Backend.TENSORRT)
 @pytest.mark.parametrize('dtype', [torch.bool, torch.float32])
 @pytest.mark.parametrize('dynamic_axes',
