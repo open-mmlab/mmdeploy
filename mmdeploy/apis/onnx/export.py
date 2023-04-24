@@ -135,7 +135,7 @@ def export(model: torch.nn.Module,
             export_params=True,
             input_names=input_names,
             output_names=output_names,
-            opset_version=opset_version,
+            opset_version=13,
             dynamic_axes=dynamic_axes,
             keep_initializers_as_inputs=keep_initializers_as_inputs,
             verbose=verbose)
