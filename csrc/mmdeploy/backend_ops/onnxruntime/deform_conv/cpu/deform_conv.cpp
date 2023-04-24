@@ -148,7 +148,7 @@ void deformable_im2col(const float *input, const float *offset,
   }
 }
 
-void deformable_conv_forward(
+void MMCVDeformConvKernel::deformConv(OrtKernelContext *context,
     const float *src, const float *offset, const float *filter,
     const int64_t batch, const int64_t src_c, const int64_t src_h,
     const int64_t src_w, const int64_t dst_c, const int64_t dst_h,
@@ -157,10 +157,23 @@ void deformable_conv_forward(
     const int64_t kernel_w, const int64_t stride_h, const int64_t stride_w,
     const int64_t pad_h, const int64_t pad_w, const int64_t dilation_h,
     const int64_t dilation_w, float *columns, float *dst) {
+
+  auto mem_info = Ort::MemoryInfo::CreateCpu(OrtAllocatorType::OrtArenaAllocator, OrtMemType::OrtMemTypeCPU);
+
   const int64_t ic_per_gp = channels / group;
   const int64_t oc_per_gp = num_output / group;
+
+  const int64_t M = oc_per_gp;
+  const int64_t K = ic_per_gp * kernel_h * kernel_w;
+  const int64_t N = dst_h * dst_w;
+
+  const int64_t raw_A_shape[2] = {M, K};
+  const int64_t raw_B_shape[2] = {K, N};
+  const int64_t raw_C_shape[2] = {M, N};
+
   for (int64_t b = 0; b < batch; ++b) {
     for (int64_t g = 0; g < group; ++g) {
+
       deformable_im2col(
           src + b * src_c * src_h * src_w + g * ic_per_gp * src_h * src_w,
           offset + b * offset_group * 2 * kernel_h * kernel_w * dst_h * dst_w,
@@ -172,17 +185,68 @@ void deformable_conv_forward(
 
       memset(dst_ptr, 0.0f, sizeof(float) * oc_per_gp * dst_h * dst_w);
 
+      float* pointerA = (float *)(filter + g * oc_per_gp * ic_per_gp * kernel_h * kernel_w);
+
+      auto A = Ort::Value::CreateTensor(mem_info, pointerA, M*K, raw_A_shape, 2);
+      auto B = Ort::Value::CreateTensor(mem_info, columns, K*N, raw_B_shape, 2);
+      auto C = Ort::Value::CreateTensor(mem_info, dst_ptr, M*N, raw_C_shape, 2);
+
+      auto Y = Ort::Value::CreateTensor(mem_info, dst_ptr, M*N, raw_C_shape, 2);
+
+      const OrtValue* inputs[3] = {(OrtValue*)A, (OrtValue*)B, (OrtValue*)C};
+      OrtValue* outputs[1] = {(OrtValue*)Y};
+
+      /*
       gemm_ref_fp32_deform(
           filter + g * oc_per_gp * ic_per_gp * kernel_h * kernel_w, columns,
           nullptr, dst_ptr, 0, 0, oc_per_gp, dst_h * dst_w,
           ic_per_gp * kernel_h * kernel_w, 1.0f, 1.0f, dst_ptr);
+       */
+      ort_.InvokeOp(context, op_gemm_, inputs, 3, outputs, 1);
     }
   }
 }
 
+void MMCVDeformConvKernel::initGemm(Ort::CustomOpApi ort) {
+  const char* type_constraint_names[1] = {"T"};
+  int type_constraint_values[1] = {1}; // float
+
+  int64_t transA = 0;
+  OrtOpAttr* attrTransA = ort.CreateOpAttr("transA", &transA, 1, OrtOpAttrType::ORT_OP_ATTR_INT);
+
+  int64_t transB = 0;
+  OrtOpAttr* attrTransB = ort.CreateOpAttr("transB", &transB, 1, OrtOpAttrType::ORT_OP_ATTR_INT);
+
+  float alpha = 1.0f;
+  OrtOpAttr* attrAlpha = ort.CreateOpAttr("alpha", &alpha, 1, OrtOpAttrType::ORT_OP_ATTR_FLOAT);
+
+  float beta = 1.0f;
+  OrtOpAttr* attrBeta = ort.CreateOpAttr("beta", &beta, 1, OrtOpAttrType::ORT_OP_ATTR_FLOAT);
+
+  if (!attrTransA || !attrTransB || !attrAlpha || !attrBeta) {
+    ORT_CXX_API_THROW("Failed to create attributes for gemm", ORT_FAIL);
+  }
+
+  OrtOpAttr* gemm_attrs[4] = {attrTransA, attrTransB, attrAlpha, attrBeta};
+  op_gemm_ = ort.CreateOp(info_, "Gemm", "", 11,
+                          (const char**)type_constraint_names,
+                          (const ONNXTensorElementDataType*)type_constraint_values,
+                          1, gemm_attrs, 4, 3, 1);
+
+  if (!op_gemm_) {
+    ORT_CXX_API_THROW("Failed to create gemm operator", ORT_FAIL);
+  }
+
+  ort.ReleaseOpAttr(attrTransA);
+  ort.ReleaseOpAttr(attrTransB);
+  ort.ReleaseOpAttr(attrAlpha);
+  ort.ReleaseOpAttr(attrBeta);
+}
+
 MMCVDeformConvKernel::MMCVDeformConvKernel(const OrtApi& api,
                                            const OrtKernelInfo *info)
-    : api_(api), ort_(api_), info_(info) {
+    : api_(api), ort_(api_) {
+  info_ = ort_.CopyKernelInfo(info);
   std::vector<int64_t> stride =
       ort_.KernelInfoGetAttribute<std::vector<int64_t>>(info, "strides");
   stride_height_ = stride[0];
@@ -200,6 +264,13 @@ MMCVDeformConvKernel::MMCVDeformConvKernel(const OrtApi& api,
 
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
+  // init Gemm Operator
+  initGemm(ort_);
+}
+
+MMCVDeformConvKernel::~MMCVDeformConvKernel() {
+  ort_.ReleaseOp(op_gemm_);
+  ort_.ReleaseKernelInfo((OrtKernelInfo *)info_);
 }
 
 void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
@@ -256,12 +327,15 @@ void MMCVDeformConvKernel::Compute(OrtKernelContext *context) {
   int64_t column_len = (in_channels / group) * kernel_height * kernel_width *
                        out_height * out_width;
   float *columns = (float *)allocator_.Alloc(sizeof(float) * column_len);
-  deformable_conv_forward(
+
+  deformConv(context,
       input_data, offset_data, filter_data, batch_size, in_channels, in_height,
       in_width, out_channels, out_height, out_width, group, deformable_group,
       in_channels, out_channels, kernel_height, kernel_width, stride_height,
       stride_width, padding_height, padding_width, dilation_height,
       dilation_width, columns, out_ptr);
+
+  allocator_.Free(columns);
 }
 
 static char __openvino[] = "org.openvinotoolkit";

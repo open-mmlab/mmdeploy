@@ -20,6 +20,7 @@ struct MMCVDeformConvCUDAKernel {
   const OrtKernelInfo *info_;
   Ort::AllocatorWithDefaultOptions allocator_;
 
+  int cuda_dev_memory_pools_supported_;
   cublasHandle_t cublas_handle_ = nullptr;  // TODO:: release the cublas handle?
 
   int64_t stride_height_;
@@ -32,6 +33,9 @@ struct MMCVDeformConvCUDAKernel {
   int64_t group_;
   int64_t im2col_step_;
 
+private:
+  cudaError_t cuda_malloc(void **pointer, size_t size, cudaStream_t stream);
+  void cuda_free(void *pointer, cudaStream_t stream);
 };
 
 struct MMCVDeformConvCUDAOp

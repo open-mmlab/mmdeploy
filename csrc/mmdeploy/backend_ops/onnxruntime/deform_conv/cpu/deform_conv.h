@@ -8,8 +8,22 @@ namespace mmdeploy {
 
 struct MMCVDeformConvKernel {
   MMCVDeformConvKernel(const OrtApi& api, const OrtKernelInfo *info);
+  ~MMCVDeformConvKernel();
 
   void Compute(OrtKernelContext *context);
+
+ private:
+  OrtOp* op_gemm_{};
+  void initGemm(Ort::CustomOpApi ort);
+  void deformConv(OrtKernelContext *context,
+    const float *src, const float *offset, const float *filter,
+    const int64_t batch, const int64_t src_c, const int64_t src_h,
+    const int64_t src_w, const int64_t dst_c, const int64_t dst_h,
+    const int64_t dst_w, const int64_t group, const int64_t offset_group,
+    const int64_t channels, const int64_t num_output, const int64_t kernel_h,
+    const int64_t kernel_w, const int64_t stride_h, const int64_t stride_w,
+    const int64_t pad_h, const int64_t pad_w, const int64_t dilation_h,
+    const int64_t dilation_w, float *columns, float *dst);
 
  protected:
   const OrtApi& api_;
