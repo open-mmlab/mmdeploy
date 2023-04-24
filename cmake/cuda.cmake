@@ -45,12 +45,16 @@ endif ()
 # nvcc compiler settings
 find_package(CUDA REQUIRED)
 
+message(STATUS "FoundCUDA              : ${CUDA_FOUND}")
+
 if (MSVC)
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc.exe)
     set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/wd4819,/wd4828")
     if (HAVE_CXX_FLAG_UTF_8)
         set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=/utf-8")
     endif ()
+    set(CMAKE_CUDA_COMPILER_WORKS "TRUE")
+    link_directories(${CUDA_SDK_ROOT_DIR}/lib/x64)
 else ()
     set(CMAKE_CUDA_COMPILER ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc)
     # Explicitly set the cuda host compiler. Because the default host compiler #
