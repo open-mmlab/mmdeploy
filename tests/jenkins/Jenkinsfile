@@ -111,20 +111,36 @@ pipeline {
             when {
                 not { expression { return params.PREBUILD_ALL } }
             }
+            // steps {
+            //     sh "cp ~/mmdeploy/tests/jenkins/conf/${params.CONFIG} ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "chmod 777 ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's#repo_url=.*#repo_url=${params.repo_url}#g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            //     // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            // }
+
             steps {
-                sh "cp ~/mmdeploy/tests/jenkins/conf/${params.CONFIG} ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "chmod 777 ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's#repo_url=.*#repo_url=${params.repo_url}#g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
-                // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp.config"
+                sh "chmod 777 tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's#repo_url=.*#repo_url=${params.repo_url}#g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' tests/jenkins/conf/tmp.config"
+                // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' tests/jenkins/conf/tmp.config"
+                // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' tests/jenkins/conf/tmp.config"
             }
         }
         stage('Regression') {
