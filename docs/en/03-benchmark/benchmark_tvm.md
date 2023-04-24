@@ -30,12 +30,12 @@ The table above list the models that we have tested. Models not listed on the ta
 - Ubuntu 20.04
 - tvm 0.9.0
 
-|                                                                   mmpretrain                                                                   | metric | PyTorch |  TVM  |
-| :--------------------------------------------------------------------------------------------------------------------------------------------: | :----: | :-----: | :---: |
-|                   [ResNet-18](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnet/resnet18_b32x8_imagenet.py)                    | top-1  |  69.90  | 69.90 |
-|               [ResNeXt-50](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnext/resnext50_32x4d_b32x8_imagenet.py)               | top-1  |  77.90  | 77.90 |
-| [ShuffleNet V2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/shufflenet_v2/shufflenet_v2_1x_b64x16_linearlr_bn_nowd_imagenet.py) | top-1  |  69.55  | 69.55 |
-|               [MobileNet V2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)               | top-1  |  71.86  | 71.86 |
+|                                                        mmpretrain                                                         | metric | PyTorch |  TVM  |
+| :-----------------------------------------------------------------------------------------------------------------------: | :----: | :-----: | :---: |
+|           [ResNet-18](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet18_8xb32_in1k.py)           | top-1  |  69.90  | 69.90 |
+|      [ResNeXt-50](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnext/resnext50-32x4d_8xb32_in1k.py)       | top-1  |  77.90  | 77.90 |
+| [ShuffleNet V2](https://github.com/open-mmlab/mmpretrain/blob/main/configs/shufflenet_v2/shufflenet-v2-1x_16xb64_in1k.py) | top-1  |  69.55  | 69.55 |
+|    [MobileNet V2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py)     | top-1  |  71.86  | 71.86 |
 
 <!-- |     [Vision Transformer](https://github.com/open-mmlab/mmpretrain/blob/main/configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py)     | top-1  |  85.43  | 84.01 | -->
 
