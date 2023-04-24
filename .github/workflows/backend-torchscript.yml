@@ -37,3 +37,17 @@ jobs:
           python -m pip install mmcv-lite
           python tools/scripts/build_ubuntu_x64_torchscript.py 8
           python -c 'from mmdeploy.backend.torchscript import is_available; assert is_available()'
+
+  badge_build_torchscript:
+    needs: build_torchscript
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_torchscript
+          LABEL: 'build'
+          STATUS: ${{ needs.build_torchscript.result == 'success' && 'passing' || needs.build_torchscript.result }}
+          COLOR: ${{ needs.build_torchscript.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

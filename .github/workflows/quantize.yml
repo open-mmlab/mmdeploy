@@ -63,3 +63,17 @@ jobs:
         run: |
           echo $(pwd)
           python .github/scripts/quantize_to_ncnn.py
+
+  badge_test_ncnn_PTQ:
+    needs: test_ncnn_PTQ
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: test_ncnn_PTQ
+          LABEL: 'build'
+          STATUS: ${{ needs.test_ncnn_PTQ.result == 'success' && 'passing' || needs.test_ncnn_PTQ.result }}
+          COLOR: ${{ needs.test_ncnn_PTQ.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -51,3 +51,17 @@ jobs:
             -DOpenCV_DIR=$GITHUB_WORKSPACE/opencv-install/lib/cmake/opencv4
           make -j$(nproc)
           make install
+
+  badge_build_riscv64_gcc:
+    needs: build_riscv64_gcc
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_riscv64_gcc
+          LABEL: 'build'
+          STATUS: ${{ needs.build_riscv64_gcc.result == 'success' && 'passing' || needs.build_riscv64_gcc.result }}
+          COLOR: ${{ needs.build_riscv64_gcc.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -62,3 +62,17 @@ jobs:
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
           cargo build
           sh ci_test.sh
+
+  badge_test_rust_api:
+    needs: test_rust_api
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: test_rust_api
+          LABEL: 'build'
+          STATUS: ${{ needs.test_rust_api.result == 'success' && 'passing' || needs.test_rust_api.result }}
+          COLOR: ${{ needs.test_rust_api.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

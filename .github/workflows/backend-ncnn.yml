@@ -78,3 +78,31 @@ jobs:
           python -m pip install mmcv-lite
           python tools/scripts/build_ubuntu_x64_ncnn.py 8
           python -c 'import mmdeploy.apis.ncnn as ncnn_api; assert ncnn_api.is_available(with_custom_ops=True)'
+
+  badge_test_onnx2ncnn:
+    needs: test_onnx2ncnn
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: test_onnx2ncnn
+          LABEL: 'build'
+          STATUS: ${{ needs.test_onnx2ncnn.result == 'success' && 'passing' || needs.test_onnx2ncnn.result }}
+          COLOR: ${{ needs.test_onnx2ncnn.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_ncnn:
+    needs: build_ncnn
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_ncnn
+          LABEL: 'build'
+          STATUS: ${{ needs.build_ncnn.result == 'success' && 'passing' || needs.build_ncnn.result }}
+          COLOR: ${{ needs.build_ncnn.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

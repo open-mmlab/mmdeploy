@@ -61,3 +61,31 @@ jobs:
           python -m pip install mmcv-lite protobuf==3.20.2
           python tools/scripts/build_ubuntu_x64_pplnn.py 8
           python -c 'import mmdeploy.apis.pplnn as pplnn_api; assert pplnn_api.is_available()'
+
+  badge_build_pplnn_cuda:
+    needs: build_pplnn_cuda
+    if: always()
+    runs-on: [self-hosted, linux-3090]
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_pplnn_cuda
+          LABEL: 'build'
+          STATUS: ${{ needs.build_pplnn_cuda.result == 'success' && 'passing' || needs.build_pplnn_cuda.result }}
+          COLOR: ${{ needs.build_pplnn_cuda.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  badge_build_pplnn_cpu:
+    needs: build_pplnn_cpu
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_pplnn_cpu
+          LABEL: 'build'
+          STATUS: ${{ needs.build_pplnn_cpu.result == 'success' && 'passing' || needs.build_pplnn_cpu.result }}
+          COLOR: ${{ needs.build_pplnn_cpu.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

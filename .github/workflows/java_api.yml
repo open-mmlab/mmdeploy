@@ -77,3 +77,17 @@ jobs:
           export OPENCV_DIR=$GITHUB_WORKSPACE/opencv
           export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/build/lib:${OPENCV_DIR}/build/lib:$LD_LIBRARY_PATH
           python .github/scripts/test_java_demo.py
+
+  badge_test_java_api:
+    needs: test_java_api
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: test_java_api
+          LABEL: 'build'
+          STATUS: ${{ needs.test_java_api.result == 'success' && 'passing' || needs.test_java_api.result }}
+          COLOR: ${{ needs.test_java_api.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

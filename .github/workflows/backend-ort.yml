@@ -44,3 +44,17 @@ jobs:
           export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH
           bash .github/scripts/linux/test_full_pipeline.sh ort cpu
+
+  badge_build_ort:
+    needs: build_ort
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
+      - name: create badge
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_ort
+          LABEL: 'build'
+          STATUS: ${{ needs.build_ort.result == 'success' && 'passing' || needs.build_ort.result }}
+          COLOR: ${{ needs.build_ort.result == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
