@@ -1,1 +1,1 @@
-{"test_onnx2ncnn":{"label":"build","status":"passing","color":"green"},"build_sdk_demo_snpe":{"label":"build","status":"passing","color":"green"}}
+{"test_onnx2ncnn":{"label":"build","status":"passing","color":"green"},"build_sdk_demo_snpe":{"label":"build","status":"passing","color":"green"},"test_java_api":{"label":"build","status":"passing","color":"green"}}
