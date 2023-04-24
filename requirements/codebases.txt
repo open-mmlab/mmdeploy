@@ -4,6 +4,6 @@ mmdet3d>=1.1.0rc2
 mmedit>=1.0.0rc7
 mmocr>=1.0.0
 mmpose>=1.0.0
-mmrazor @ git+https://github.com/open-mmlab/mmrazor.git@main
+mmrazor>=1.0.0
 mmrotate>=1.0.0rc0
 mmsegmentation>=1.0.0
