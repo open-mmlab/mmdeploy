@@ -79,8 +79,8 @@ Result<void> OpenVINONet::Init(const Value& args) {
 
   OUTCOME_TRY(auto raw_xml, model.ReadFile(config.net));
   OUTCOME_TRY(auto raw_bin, model.ReadFile(config.weights));
-  auto ov_tensor = InferenceEngine::TensorDesc(
-    InferenceEngine::Precision::U8,{raw_bin.size()}, InferenceEngine::Layout::C);
+  auto ov_tensor = InferenceEngine::TensorDesc(InferenceEngine::Precision::U8, {raw_bin.size()},
+                                               InferenceEngine::Layout::C);
   auto ov_blob = InferenceEngine::make_shared_blob<uint8_t>(ov_tensor);
   ov_blob->allocate();
   memcpy(ov_blob->buffer(), raw_bin.data(), ov_blob->byteSize());
