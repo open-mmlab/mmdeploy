@@ -28,8 +28,10 @@ cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
 cmake --build . --config Release -- /m
 cmake --install . --config Release
 cd ..
+Write-Host "build end"
 $env:MMDEPLOY_DIR="$pwd"
 $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
+Write-Host "start to pip requirements"
 pip install openmim
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
