@@ -77,30 +77,18 @@ Result<void> OpenVINONet::Init(const Value& args) {
   auto model = context["model"].get<Model>();
   OUTCOME_TRY(auto config, model.GetModelConfig(name));
 
-  // TODO: read network with stream
-  // save xml and bin to temp file
-  auto tmp_dir = fs::temp_directory_path();
-  std::string tmp_xml = (tmp_dir / fs::path("tmp.xml")).string();
-  std::string tmp_bin = (tmp_dir / fs::path("tmp.bin")).string();
   OUTCOME_TRY(auto raw_xml, model.ReadFile(config.net));
   OUTCOME_TRY(auto raw_bin, model.ReadFile(config.weights));
-
-  try {
-    std::ofstream xml_out(tmp_xml, std::ios::binary);
-    xml_out << raw_xml;
-    xml_out.close();
-    std::ofstream bin_out(tmp_bin, std::ios::binary);
-    bin_out << raw_bin;
-    bin_out.close();
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("unhandled exception when creating tmp xml/bin: {}", e.what());
-    return Status(eFail);
-  }
+  auto ov_tensor = InferenceEngine::TensorDesc(
+    InferenceEngine::Precision::U8,{raw_bin.size()}, InferenceEngine::Layout::C);
+  auto ov_blob = InferenceEngine::make_shared_blob<uint8_t>(ov_tensor);
+  ov_blob->allocate();
+  memcpy(ov_blob->buffer(), raw_bin.data(), ov_blob->byteSize());
 
   try {
     // create cnnnetwork
     core_ = InferenceEngine::Core();
-    network_ = core_.ReadNetwork(tmp_xml, tmp_bin);
+    network_ = core_.ReadNetwork(raw_xml, std::move(ov_blob));
 
     // set input tensor
     InferenceEngine::InputsDataMap input_info = network_.getInputsInfo();
