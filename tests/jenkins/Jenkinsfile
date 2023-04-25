@@ -112,6 +112,7 @@ pipeline {
                 not { expression { return params.PREBUILD_ALL } }
             }
             steps {
+                sh "cd ~/mmdeploy && git pull"
                 sh "cp ~/mmdeploy/tests/jenkins/conf/${params.CONFIG} ~/mmdeploy/tests/jenkins/conf/tmp.config"
                 sh "chmod 777 ~/mmdeploy/tests/jenkins/conf/tmp.config"
                 sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
