@@ -177,7 +177,7 @@ net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
 # cd ..
 
 #add Release Path
-$env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
+# $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
 
 # pip install openmim
 # pip install -r requirements/tests.txt
