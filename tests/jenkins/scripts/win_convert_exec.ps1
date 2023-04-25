@@ -4,13 +4,20 @@ param(
     $codebase_fullname,
     $mmdeploy_branch
 )
+
+
 $scriptDir = Split-Path -parent $MyInvocation.MyCommand.Path
 $confDir=(Join-PATH $env:JENKINS_WORKSPACE master\tests\jenkins\conf)
 Import-Module $scriptDir\utils.psm1
 $json_v1 = Get-Content -Path "$confDir\requirementV1.0.json" -Raw  |  ConvertFrom-Json
 $json_v2 = Get-Content -Path "$confDir\requirementV2.0.json" -Raw  |  ConvertFrom-Json
 cd $env:MMDEPLOY_DIR
-conda activate mmdeploy-3.7-cu113
+conda activate mmdeploy-3.7-$codebase
+pip install openmim
+pip install -r requirements/tests.txt
+pip install -r requirements/runtime.txt
+pip install -r requirements/build.txt
+pip install -v -e .
 Write-Host "exec_path: $pwd"
 Write-Host "mim install $codebase"
 Write-Host "codebase_fullname = $codebase_fullname"

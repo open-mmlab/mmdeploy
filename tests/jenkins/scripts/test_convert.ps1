@@ -113,8 +113,8 @@ $codebase_fullname_opt = @{
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
 #init conda env
-conda activate mmdeploy-3.7-$env:CUDA_VERSION
-Write-Host "conda activate mmdeploy-3.7-$env:CUDA_VERSION"
+# conda activate mmdeploy-3.7-$env:CUDA_VERSION
+# Write-Host "conda activate mmdeploy-3.7-$env:CUDA_VERSION"
 #opencv
 $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
 $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
@@ -179,11 +179,11 @@ cd ..
 #add Release Path
 $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
 
-pip install openmim
-pip install -r requirements/tests.txt
-pip install -r requirements/runtime.txt
-pip install -r requirements/build.txt
-pip install -v -e .
+# pip install openmim
+# pip install -r requirements/tests.txt
+# pip install -r requirements/runtime.txt
+# pip install -r requirements/build.txt
+# pip install -v -e .
 
 $date_snap=Get-Date -UFormat "%Y%m%d"
 $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
