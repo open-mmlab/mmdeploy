@@ -12,7 +12,7 @@ Import-Module $scriptDir\utils.psm1
 $json_v1 = Get-Content -Path "$confDir\requirementV1.0.json" -Raw  |  ConvertFrom-Json
 $json_v2 = Get-Content -Path "$confDir\requirementV2.0.json" -Raw  |  ConvertFrom-Json
 cd $env:MMDEPLOY_DIR
-conda activate mmdeploy-3.7-$codebase
+conda activate mmdeploy-3.7-cu113-$codebase
 pip install openmim
 pip install -r requirements/tests.txt
 pip install -r requirements/runtime.txt
