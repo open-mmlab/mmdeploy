@@ -160,21 +160,21 @@ net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
 # New-Item -ItemType SymbolicLink -Path "D:\huangzijie\workspace\mmdeploy_win\mmdeploy\data" -Target "Z:\"
 
 
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDEPLOY_BUILD_SDK=ON `
-  -DMMDEPLOY_BUILD_EXAMPLES=ON `
-  -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
-  -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
-  -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
-  -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
-  -DTENSORRT_DIR="$env:TENSORRT_DIR" `
-  -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
-  -DCUDNN_DIR="$env:CUDNN_DIR"
-cmake --build . --config Release -- /m
-cmake --install . --config Release
-cd ..
+# mkdir build
+# cd build
+# cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+#   -DMMDEPLOY_BUILD_SDK=ON `
+#   -DMMDEPLOY_BUILD_EXAMPLES=ON `
+#   -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+#   -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
+#   -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
+#   -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
+#   -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+#   -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
+#   -DCUDNN_DIR="$env:CUDNN_DIR"
+# cmake --build . --config Release -- /m
+# cmake --install . --config Release
+# cd ..
 
 #add Release Path
 $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
