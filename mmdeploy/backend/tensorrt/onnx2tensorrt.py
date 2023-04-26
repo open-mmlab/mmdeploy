@@ -84,5 +84,6 @@ def onnx2tensorrt(work_dir: str,
         fp16_mode=final_params.get('fp16_mode', False),
         int8_mode=final_params.get('int8_mode', False),
         int8_param=int8_param,
+        explicit_quant_mode=final_params.get('explicit_quant_mode', False),
         max_workspace_size=final_params.get('max_workspace_size', 0),
         device_id=device_id)

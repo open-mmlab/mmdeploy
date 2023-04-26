@@ -77,13 +77,14 @@ def interpolate__rknn(input: torch.Tensor,
     is_pytorch=True,
     backend=Backend.TENSORRT.value)
 def interpolate__tensorrt(
-    input: torch.Tensor,
-    size: Optional[Union[int, Tuple[int], Tuple[int, int], Tuple[int, int,
-                                                                 int]]] = None,
-    scale_factor: Optional[Union[float, Tuple[float]]] = None,
-    mode: str = 'nearest',
-    align_corners: Optional[bool] = None,
-    recompute_scale_factor: Optional[bool] = None,
+        input: torch.Tensor,
+        size: Optional[Union[int, Tuple[int], Tuple[int, int],
+                             Tuple[int, int, int]]] = None,
+        scale_factor: Optional[Union[float, Tuple[float]]] = None,
+        mode: str = 'nearest',
+        align_corners: Optional[bool] = None,
+        recompute_scale_factor: Optional[bool] = None,
+        antialias=False  # torch's interface changed
 ):
     """Register default symbolic function for `interpolate`."""
     ctx = FUNCTION_REWRITER.get_context()

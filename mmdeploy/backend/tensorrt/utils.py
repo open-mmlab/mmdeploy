@@ -102,6 +102,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
               fp16_mode: bool = False,
               int8_mode: bool = False,
               int8_param: Optional[dict] = None,
+              explicit_quant_mode: bool = False,
               device_id: int = 0,
               log_level: trt.Logger.Severity = trt.Logger.ERROR,
               **kwargs) -> trt.ICudaEngine:
@@ -140,7 +141,7 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
         >>>             })
     """
 
-    if int8_mode or device_id != 0:
+    if (int8_mode and explicit_quant_mode is False) or device_id != 0:
         import pycuda.autoinit  # noqa:F401
 
     if device_id != 0:
@@ -225,16 +226,20 @@ def from_onnx(onnx_model: Union[str, onnx.ModelProto],
     if int8_mode:
         if not getattr(builder, 'platform_has_fast_int8', True):
             logger.warning('Platform does not has fast native int8.')
-        from .calib_utils import HDF5Calibrator
         config.set_flag(trt.BuilderFlag.INT8)
-        assert int8_param is not None
-        config.int8_calibrator = HDF5Calibrator(
-            int8_param['calib_file'],
-            input_shapes,
-            model_type=int8_param['model_type'],
-            device_id=device_id,
-            algorithm=int8_param.get(
-                'algorithm', trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
+        if explicit_quant_mode:
+            config.int8_calibrator = None
+        else:
+            from .calib_utils import HDF5Calibrator
+            assert int8_param is not None
+            config.int8_calibrator = HDF5Calibrator(
+                int8_param['calib_file'],
+                input_shapes,
+                model_type=int8_param['model_type'],
+                device_id=device_id,
+                algorithm=int8_param.get(
+                    'algorithm',
+                    trt.CalibrationAlgoType.ENTROPY_CALIBRATION_2))
         if version.parse(trt.__version__) < version.parse('8'):
             builder.int8_mode = int8_mode
             builder.int8_calibrator = config.int8_calibrator
