@@ -52,11 +52,6 @@ MMDEPLOY_EXPORT TRITONSERVER_Error* TRITONBACKEND_Initialize(TRITONBACKEND_Backe
   RETURN_IF_ERROR(TRITONSERVER_MessageSerializeToJson(backend_config_message, &buffer, &byte_size));
   LOG_MESSAGE(TRITONSERVER_LOG_INFO, (std::string("backend configuration:\n") + buffer).c_str());
 
-  // This backend does not require any "global" state but as an
-  // example create a string to demonstrate.
-  std::string* state = new std::string("backend state");
-  RETURN_IF_ERROR(TRITONBACKEND_BackendSetState(backend, reinterpret_cast<void*>(state)));
-
   return nullptr;  // success
 }
 
@@ -64,16 +59,6 @@ MMDEPLOY_EXPORT TRITONSERVER_Error* TRITONBACKEND_Initialize(TRITONBACKEND_Backe
 // needed.
 //
 MMDEPLOY_EXPORT TRITONSERVER_Error* TRITONBACKEND_Finalize(TRITONBACKEND_Backend* backend) {
-  // Delete the "global" state associated with the backend.
-  void* vstate;
-  RETURN_IF_ERROR(TRITONBACKEND_BackendState(backend, &vstate));
-  std::string* state = reinterpret_cast<std::string*>(vstate);
-
-  LOG_MESSAGE(TRITONSERVER_LOG_INFO,
-              (std::string("TRITONBACKEND_Finalize: state is '") + *state + "'").c_str());
-
-  delete state;
-
   return nullptr;  // success
 }
 
