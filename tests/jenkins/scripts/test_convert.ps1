@@ -113,12 +113,55 @@ $codebase_fullname_opt = @{
 # InitMim $codebase_list $env:WORKSPACE $codebase_fullname
 
 #init conda env
+
+$codebase_list = "mmdet", "mmcls"
+
+foreach ($codebase in $codebase_list) {
+    conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase
+    #opencv
+    $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
+    $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
+    $env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
+    #ONNXRuntime
+    # pip install onnxruntime==1.8.1
+    $env:path=(Join-PATH $env:ONNXRUNTIME_DIR lib)+";"+$env:path
+
+    #Tensorrt
+    $env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
+    #cudnn
+    $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
+    New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
+    net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
+    mkdir build
+    cd build
+    cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+        -DMMDEPLOY_BUILD_SDK=ON `
+        -DMMDEPLOY_BUILD_EXAMPLES=ON `
+        -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+        -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
+        -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
+        -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
+        -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+        -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
+        -DCUDNN_DIR="$env:CUDNN_DIR"
+    cmake --build . --config Release -- /m
+    cmake --install . --config Release
+    cd ..
+
+    add Release Path
+    $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
+
+    pip install openmim
+    pip install -r requirements/tests.txt
+    pip install -r requirements/runtime.txt
+    pip install -r requirements/build.txt
+    pip install -v -e .
+
+}
+
 # conda activate mmdeploy-3.7-$env:CUDA_VERSION
 # Write-Host "conda activate mmdeploy-3.7-$env:CUDA_VERSION"
-#opencv
-$env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
-$env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
-$env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
+
 
 #pplcv
 # cd $env:WORKSPACE
@@ -134,17 +177,11 @@ $env:path = (Join-PATH $env:OPENCV_DIR lib)+";"+$env:path
 # cd ../..
 # cd ..
 
-#ONNXRuntime
-# pip install onnxruntime==1.8.1
-$env:path=(Join-PATH $env:ONNXRUNTIME_DIR lib)+";"+$env:path
 
-#Tensorrt
-$env:path =(Join-PATH $env:TENSORRT_DIR lib)+";"+$env:path
 # pip install $env:TENSORRT_DIR\python\tensorrt-8.2.3.0-cp37-none-win_amd64.whl
 # pip install pycuda
 
-#cudnn
-$env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
+
 
 #git clone -b $mmdeploy_branch  https://github.com/open-mmlab/mmdeploy.git Tmp
 #git submodule update --init --recursive
@@ -152,8 +189,8 @@ $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
 #Copy-Item -Path $pwd\Tmp\* -Recurse $pwd\ -Force
 #rm -r Tmp
 #
-New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
-net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
+# New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
+# net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
 
 # New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  \\10.1.52.36\public\benchmark
 

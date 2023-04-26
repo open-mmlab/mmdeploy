@@ -13,30 +13,30 @@ $json_v1 = Get-Content -Path "$confDir\requirementV1.0.json" -Raw  |  ConvertFro
 $json_v2 = Get-Content -Path "$confDir\requirementV2.0.json" -Raw  |  ConvertFrom-Json
 cd $env:MMDEPLOY_DIR
 conda activate mmdeploy-3.7-cu113-$codebase
-mkdir build
-cd build
-cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
-  -DMMDEPLOY_BUILD_SDK=ON `
-  -DMMDEPLOY_BUILD_EXAMPLES=ON `
-  -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
-  -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
-  -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
-  -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
-  -DTENSORRT_DIR="$env:TENSORRT_DIR" `
-  -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
-  -DCUDNN_DIR="$env:CUDNN_DIR"
-cmake --build . --config Release -- /m
-cmake --install . --config Release
-cd ..
-Write-Host "build end"
-$env:MMDEPLOY_DIR="$pwd"
-$env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
-Write-Host "start to pip requirements"
-pip install openmim
-pip install -r requirements/tests.txt
-pip install -r requirements/runtime.txt
-pip install -r requirements/build.txt
-pip install -v -e .
+# mkdir build
+# cd build
+# cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+#   -DMMDEPLOY_BUILD_SDK=ON `
+#   -DMMDEPLOY_BUILD_EXAMPLES=ON `
+#   -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+#   -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" `
+#   -DMMDEPLOY_TARGET_BACKENDS="trt;ort" `
+#   -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
+#   -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+#   -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
+#   -DCUDNN_DIR="$env:CUDNN_DIR"
+# cmake --build . --config Release -- /m
+# cmake --install . --config Release
+# cd ..
+# Write-Host "build end"
+# $env:MMDEPLOY_DIR="$pwd"
+# $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
+# Write-Host "start to pip requirements"
+# pip install openmim
+# pip install -r requirements/tests.txt
+# pip install -r requirements/runtime.txt
+# pip install -r requirements/build.txt
+# pip install -v -e .
 Write-Host "exec_path: $pwd"
 Write-Host "mim install $codebase"
 Write-Host "codebase_fullname = $codebase_fullname"
