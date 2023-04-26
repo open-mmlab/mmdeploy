@@ -8,7 +8,6 @@
 #include "mmdeploy/core/model.h"
 #include "mmdeploy/core/module.h"
 #include "mmdeploy/core/utils/formatter.h"
-#include "mmdeploy/device/cuda/cuda_device.h"
 
 namespace mmdeploy::framework {
 

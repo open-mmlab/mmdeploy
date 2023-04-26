@@ -9,4 +9,3 @@ add_subdirectory(java)
 if (MMDEPLOY_BUILD_SDK_PYTHON_API)
     add_subdirectory(python)
 endif ()
-

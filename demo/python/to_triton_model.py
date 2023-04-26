@@ -38,9 +38,7 @@ TASK_OUTPUT = dict(
         dict(name='mask', dtype=pb.TYPE_INT32, dims=[-1, -1]),
         dict(name='score', dtype=pb.TYPE_FP32, dims=[-1, -1, -1])
     ],
-    Restorer=[
-        dict(name='output', dtype=pb.TYPE_FP32, dims=[-1, -1, 3])
-    ],
+    Restorer=[dict(name='output', dtype=pb.TYPE_FP32, dims=[-1, -1, 3])],
     TextDetector=[],
     TextRecognizer=[],
     PoseDetector=[],

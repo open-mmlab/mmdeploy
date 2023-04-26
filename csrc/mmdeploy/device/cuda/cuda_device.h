@@ -1,5 +1,8 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#ifndef MMDEPLOY_SRC_DEVICE_CUDA_CUDE_DEVICE_H_
+#define MMDEPLOY_SRC_DEVICE_CUDA_CUDE_DEVICE_H_
+
 #include <any>
 #include <mutex>
 
@@ -196,3 +199,5 @@ class CudaDeviceGuard {
 };
 
 }  // namespace mmdeploy::framework
+
+#endif  // MMDEPLOY_SRC_DEVICE_CUDA_CUDE_DEVICE_H_
