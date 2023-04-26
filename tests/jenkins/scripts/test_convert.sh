@@ -82,8 +82,8 @@ for codebase in ${codebase_list[@]}; do
         echo "${codebase} convert finish!"
         echo "container_id=${container_id}"
         # cat ${log_dir}/${codebase}_log.txt
-        echo "查看日志: ${log_url}/${codebase}_log.txt"
-        echo "查看任务运行结果: ${log_url}/${codebase}/ \n"
+        echo "查看日志: http://${log_url}/${codebase}_log.txt"
+        echo "查看任务运行结果: http://${log_url}/${codebase}/"
 
         echo >&1000
     } &
