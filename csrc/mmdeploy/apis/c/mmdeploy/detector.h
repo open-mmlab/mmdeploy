@@ -55,6 +55,19 @@ MMDEPLOY_API int mmdeploy_detector_create_by_path(const char* model_path, const 
                                                   int device_id, mmdeploy_detector_t* detector);
 
 /**
+ * @brief Create detector's handle
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] detector instance of a detector
+ * @return status of creating detector's handle
+ */
+MMDEPLOY_API int mmdeploy_detector_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                                  int device_id, mmdeploy_detector_t* detector);
+
+
+/**
  * @brief Apply detector to batch images and get their inference results
  * @param[in] detector detector's handle created by \ref mmdeploy_detector_create_by_path
  * @param[in] mats a batch of images

@@ -44,6 +44,20 @@ MMDEPLOY_API int mmdeploy_restorer_create_by_path(const char* model_path, const 
                                                   int device_id, mmdeploy_restorer_t* restorer);
 
 /**
+ * @brief Create a restorer instance
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] restorer handle of the created restorer, which must be destroyed
+ * by \ref mmdeploy_restorer_destroy
+ * @return status code of the operation
+ */
+MMDEPLOY_API int mmdeploy_restorer_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                                  int device_id, mmdeploy_restorer_t* restorer);
+
+
+/**
  * @brief Apply restorer to a batch of images
  * @param[in] restorer restorer's handle created by \ref mmdeploy_restorer_create_by_path
  * @param[in] images a batch of images
