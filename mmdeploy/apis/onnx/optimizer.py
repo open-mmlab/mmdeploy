@@ -1,6 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Callable
 
+import torch
+
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -9,6 +11,17 @@ def model_to_graph__custom_optimizer(*args, **kwargs):
     """Rewriter of _model_to_graph, add custom passes."""
     ctx = FUNCTION_REWRITER.get_context()
     graph, params_dict, torch_out = ctx.origin_func(*args, **kwargs)
+    nodes = [
+        n for n in graph.nodes()
+        if n.kind() == 'onnx::Squeeze' and n.hasAttribute('axes')
+    ]
+    for n in nodes:
+        axes = n['axes']
+        axes_node = graph.create('onnx::Constant')
+        axes_node.t_('value', torch.LongTensor(axes))
+        n.removeAttribute('axes')
+        n.addInput(axes_node.output())
+        axes_node.insertBefore(n)
 
     custom_passes = getattr(ctx, 'onnx_custom_passes', None)
 
