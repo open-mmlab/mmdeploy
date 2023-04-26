@@ -61,7 +61,7 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
  * by \ref mmdeploy_text_recognizer_destroy
  * @return status code of the operation
  */
-MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const void* buffer, int size,
+MMDEPLOY_API int mmdeploy_text_recognizer_create_by_buffer(const void* buffer, int size,
                                                          const char* device_name, int device_id,
                                                          mmdeploy_text_recognizer_t* recognizer);
 
