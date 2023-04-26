@@ -613,6 +613,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">81.18</td>
     <td align="center">-</td>
     <td align="center">-</td>
+    <td align="center">-</td>
   </tr>
   <tr>
     <td align="center">top-5</td>
@@ -621,6 +622,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">95.61</td>
     <td align="center">95.61</td>
     <td align="center">95.61</td>
+    <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
   </tr>
@@ -907,19 +909,34 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo">SOLO</a></td>
-    <td align="center" rowspan="2">Instance Segmentation</td>
-    <td align="center" rowspan="2">COCO2017</td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo/solo_r50_fpn_1x_coco.py">SOLO</a></td>
+    <td align="center">Instance Segmentation</td>
+    <td align="center">COCO2017</td>
     <td align="center">mask AP</td>
     <td align="center">33.1</td>
     <td align="center">-</td>
-    <td align="center">-</td>
+    <td align="center">32.7</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">-</td>
     <td align="center">32.7</td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solov2/solov2_r50_fpn_1x_coco.py">SOLOv2</a></td>
+    <td align="center">Instance Segmentation</td>
+    <td align="center">COCO2017</td>
+    <td align="center">mask AP</td>
+    <td align="center">34.8</td>
+    <td align="center">-</td>
+    <td align="center">34.5</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">-</td>
+    <td align="center">34.5</td>
   </tr>
 </tbody>
 </table>
