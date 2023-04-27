@@ -95,16 +95,16 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
   <tr>
     <th>x86_64 <br> CPU</th>
     <td>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml"></a></sub> <sub>onnxruntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml"></a></sub> <sub>ONNXRuntime</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml"></a></sub> <sub>pplnn</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a></sub> <sub>ncnn</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-torchscript.yml"></a></sub> <sub>LibTorch</sub> <br>
-        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>openvino</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>OpenVINO</sub> <br>
         <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>TVM</sub> <br>
     </td>
     <td>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>onnxruntime</sub> <br>
-        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>openvino</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>OpenVINO</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
     <td align="center">
@@ -150,13 +150,13 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
 <tr>
     <th>NVIDIA <br> GPU</th>
     <td>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>onnxruntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>ONNXRuntime</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>TensorRT</sub> <br>
-        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub><sub>LibTorch</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>LibTorch</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_pplnn_cuda"></a></sub> <sub>pplnn</sub> <br>
     </td>
     <td>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>onnxruntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>ONNXRuntime</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>TensorRT</sub> <br>
     </td>
     <td align="center">
@@ -300,7 +300,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [How to do regression test](docs/en/07-developer-guide/regression_test.md)
 - Custom Backend Ops
   - [ncnn](docs/en/06-custom-ops/ncnn.md)
-  - [onnxruntime](docs/en/06-custom-ops/onnxruntime.md)
+  - [ONNXRuntime](docs/en/06-custom-ops/ONNXRuntime.md)
   - [tensorrt](docs/en/06-custom-ops/tensorrt.md)
 - [FAQ](docs/en/faq.md)
 - [Contributing](.github/CONTRIBUTING.md)
