@@ -190,8 +190,8 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   MMDEPLOY_DEBUG("request_count {}", request_count);
   for (uint32_t request_index = 0; request_index < request_count; ++request_index) {
     responders[request_index] = std::make_unique<BackendOutputResponder>(
-        &requests[request_index], 1, &response_vecs[request_index],
-        model_state->TritonMemoryManager(), false, false, nullptr);
+        &requests[request_index], 1, &response_vecs[request_index], false,
+        model_state->TritonMemoryManager(), false, nullptr);
     for (size_t output_id = 0; output_id < model_state->output_names().size(); ++output_id) {
       auto output_name = model_state->output_names()[output_id];
       MMDEPLOY_DEBUG("output name {}", output_name);
