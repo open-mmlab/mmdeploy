@@ -44,11 +44,13 @@ class End2EndModel(BaseBackendModel):
                  backend_files: Sequence[str],
                  device: str,
                  deploy_cfg: Union[str, Config],
+                 model_cfg: Optional[Union[str, Config]] = None,
                  data_preprocessor: Optional[Union[dict, nn.Module]] = None,
                  **kwargs):
         super().__init__(
             deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
         self.deploy_cfg = deploy_cfg
+        self.model_cfg = model_cfg
         self.device = device
         self._init_wrapper(
             backend=backend, backend_files=backend_files, device=device)
@@ -195,6 +197,8 @@ class End2EndModel(BaseBackendModel):
         img_metas = [data_sample.metainfo for data_sample in data_samples]
         results = []
         rescale = kwargs.get('rescale', True)
+        model_type = self.model_cfg.model.type if \
+            self.model_cfg is not None else None
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
             result = InstanceData()
@@ -234,6 +238,8 @@ class End2EndModel(BaseBackendModel):
 
             result.scores = scores
             result.bboxes = bboxes
+            if model_type in ['SOLO', 'SOLOv2']:
+                result.bboxes = bboxes.new_zeros(bboxes.shape)
             result.labels = labels
 
             if batch_masks is not None:

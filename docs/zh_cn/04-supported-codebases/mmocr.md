@@ -255,6 +255,8 @@ print(texts)
 
 - ABINet 在 TensorRT 后端要求使用 pytorch1.10+， TensorRT 8.4+。
 
+- SAR 在网络推广中使用 `valid_ratio`，这会让导出的 ONNX 文件精度下降。当测试图片的 `valid_ratio`s 和转换图片的值差异很大，这种下降就会越多。
+
 - 对于 TensorRT 后端，用户需要使用正确的配置文件。比如 CRNN 只接受单通道输入。下面是一个示例表格:
 
   | Model    | Config                                                     |
