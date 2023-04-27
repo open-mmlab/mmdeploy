@@ -13,7 +13,8 @@ from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
+from mmdeploy.utils import (Codebase, Task, get_codebase_config,
+                            get_input_shape, get_root_logger)
 
 
 def process_model_config(model_cfg: mmengine.Config,
@@ -303,6 +304,9 @@ class Segmentation(BaseTask):
         if isinstance(params, list):
             params = params[-1]
         postprocess = dict(params=params, type='ResizeMask')
+        with_argmax = get_codebase_config(self.deploy_cfg).get(
+            'with_argmax', True)
+        postprocess['with_argmax'] = with_argmax
         return postprocess
 
     def get_model_name(self, *args, **kwargs) -> str:
