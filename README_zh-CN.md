@@ -66,18 +66,188 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 支持的设备平台和推理引擎如下表所示。benchmark请参考[这里](docs/zh_cn/03-benchmark/benchmark.md)
 
-| Device / Platform | Linux                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Windows                                                                                                                                                                                                                                                                                                                                                                                                                      | macOS                                                                                                                                                                                      | Android                                                                                                                                                                                                                                                                                                                                                                  |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| x86_64 CPU        | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml)ONNXRuntime<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml)pplnn<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml)ncnn<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-torchscript.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml)LibTorch<br>![](https://img.shields.io/badge/build-no%20status-lightgrey)OpenVINO<br>![](https://img.shields.io/badge/build-no%20status-lightgrey)TVM<br> | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)ONNXRuntime<br>![](https://img.shields.io/badge/build-no%20status-lightgrey)OpenVINO<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)ncnn<br> | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| ARM CPU           | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)ncnn<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml)ncnn<br>                                                                                                                                                                                     |
-| RISC-V            | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/linux-riscv64-gcc.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/linux-riscv64-gcc.yml)ncnn<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| NVIDIA GPU        | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)ONNXRuntime<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)TensorRT<br>![](https://img.shields.io/badge/build-no%20status-lightgrey)LibTorch<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml)pplnn<br>                                                                                                                                                                                                                                                                                                 | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)ONNXRuntime<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml)TensorRT<br>                                                                      | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| NVIDIA Jetson     | ![](https://img.shields.io/badge/build-no%20status-lightgrey)TensorRT<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| Huawei ascend310  | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ascend.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml)CANN<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| Rockchip          | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml)RKNN<br>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | -                                                                                                                                                                                                                                                                                                                                                                        |
-| Apple M1          | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                                                                                                                                                                                                                                                                                                                                            | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-coreml.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml)CoreML<br> | -                                                                                                                                                                                                                                                                                                                                                                        |
-| Adreno GPU        | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml)SNPE<br>[![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml)ncnn<br> |
-| Hexagon DSP       | -                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | -                                                                                                                                                                                                                                                                                                                                                                                                                            | -                                                                                                                                                                                          | [![](https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml)](https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml)SNPE<br>                                                                                                                                                                                     |
+<div style="width: fit-content; margin: auto;">
+<table>
+  <tr>
+    <th>Device Platform</th>
+    <th>Linux</th>
+    <th>Windows</th>
+    <th>macOS</th>
+    <th>Android</th>
+  </tr>
+  <tr>
+    <th>x86_64 CPU</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml"></a> ONNXRuntime <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml"></a> pplnn <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a> ncnn <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-torchscript.yml"></a> LibTorch <br>
+        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> OpenVINO <br>
+        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> TVM <br>
+    </td>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a> ONNXRuntime <br>
+        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> OpenVINO <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a> ncnn <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>ARM CPU</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/cross_build_aarch64"></a> ncnn <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> ncnn <br>
+    </td>
+  </tr>
+
+<tr>
+    <th>RISC-V</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/linux-riscv64-gcc.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/linux-riscv64-gcc.yml"></a> ncnn <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>NVIDIA GPU</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a> ONNXRuntime <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a> TensorRT <br>
+        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> LibTorch <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_pplnn_cuda"></a> pplnn <br>
+    </td>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a> ONNXRuntime <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a> TensorRT <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>NVIDIA Jetson</th>
+    <td style="font-size: 0.8em">
+        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> TensorRT <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>Huawei ascend310</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ascend.yml"></a> CANN <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>Rockchip</th>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> RKNN <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>Apple M1</th>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-coreml.yml"></a> CoreML <br>
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>Adreno GPU</th>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a> SNPE <br>
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> ncnn <br>
+    </td>
+  </tr>
+
+<tr>
+    <th>Hexagon DSP</th>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em" align="center">
+        -
+    </td>
+    <td style="font-size: 0.78em">
+        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a> SNPE <br>
+    </td>
+  </tr>
+</table>
+</div>
 
 ### SDK 可高度定制化
 
