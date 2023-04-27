@@ -23,9 +23,9 @@ git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
   cd pybind11
   git checkout 70a58c5
 
-  cd..
+  cd ..
   git clone git@github.com:gabime/spdlog.git spdlog
-  cd third_party/spdlog
+  cd spdlog
   git checkout 9e8e52c048
   ```
 
