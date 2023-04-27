@@ -69,17 +69,3 @@ jobs:
             -DMMDEPLOY_BUILD_EXAMPLES=ON
           cmake --build . -j 3
           cmake --build . --target install
-
-    badge_build_macos_arm64:
-      needs: build_macos_arm64
-      if: always()
-      runs-on: macos-12
-      steps:
-        - name: create badge
-          uses: RubbaBoy/BYOB@v1.2.1
-          with:
-            NAME: build_macos_arm64
-            LABEL: 'build'
-            STATUS: ${{ needs.build_macos_arm64.result == 'success' && 'passing' || needs.build_macos_arm64.result }}
-            COLOR: ${{ needs.build_macos_arm64.result == 'success' && 'green' || 'red' }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

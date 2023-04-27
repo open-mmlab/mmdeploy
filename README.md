@@ -300,7 +300,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [How to do regression test](docs/en/07-developer-guide/regression_test.md)
 - Custom Backend Ops
   - [ncnn](docs/en/06-custom-ops/ncnn.md)
-  - [ONNXRuntime](docs/en/06-custom-ops/ONNXRuntime.md)
+  - [ONNXRuntime](docs/en/06-custom-ops/onnxruntime.md)
   - [tensorrt](docs/en/06-custom-ops/tensorrt.md)
 - [FAQ](docs/en/faq.md)
 - [Contributing](.github/CONTRIBUTING.md)

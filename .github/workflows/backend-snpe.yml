@@ -56,17 +56,3 @@ jobs:
           popd
           popd
           popd
-
-  badge_build_sdk_demo:
-    needs: build_sdk_demo
-    if: always()
-    runs-on: ubuntu-20.04
-    steps:
-      - name: create badge
-        uses: RubbaBoy/BYOB@v1.2.1
-        with:
-          NAME: build_sdk_demo_snpe
-          LABEL: 'build'
-          STATUS: ${{ needs.build_sdk_demo.result == 'success' && 'passing' || needs.build_sdk_demo.result }}
-          COLOR: ${{ needs.build_sdk_demo.result == 'success' && 'green' || 'red' }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
