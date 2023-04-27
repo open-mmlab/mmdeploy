@@ -69,181 +69,181 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 <div style="width: fit-content; margin: auto;">
 <table>
   <tr>
-    <th>Device Platform</th>
+    <th>Device / <br> Platform</th>
     <th>Linux</th>
     <th>Windows</th>
     <th>macOS</th>
     <th>Android</th>
   </tr>
   <tr>
-    <th>x86_64 CPU</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml"></a> ONNXRuntime <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml"></a> pplnn <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a> ncnn <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-torchscript.yml"></a> LibTorch <br>
-        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> OpenVINO <br>
-        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> TVM <br>
+    <th>x86_64 <br> CPU</th>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ort.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ort.yml"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml"></a></sub> <sub>pplnn</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a></sub> <sub>ncnn</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-torchscript.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-torchscript.yml"></a></sub> <sub>LibTorch</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>OpenVINO</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>TVM</sub> <br>
     </td>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a> ONNXRuntime <br>
-        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> OpenVINO <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a> ncnn <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>OpenVINO</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
-    <th>ARM CPU</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/cross_build_aarch64"></a> ncnn <br>
+    <th>ARM <br> CPU</th>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/cross_build_aarch64"></a></sub> <sub>ncnn</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> ncnn <br>
+    <td align="center">
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
   </tr>
 
 <tr>
     <th>RISC-V</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/linux-riscv64-gcc.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/linux-riscv64-gcc.yml"></a> ncnn <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/linux-riscv64-gcc.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/linux-riscv64-gcc.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
-        -
-    </td>
-  </tr>
-
-<tr>
-    <th>NVIDIA GPU</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a> ONNXRuntime <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a> TensorRT <br>
-        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> LibTorch <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_pplnn_cuda"></a> pplnn <br>
-    </td>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a> ONNXRuntime <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a> TensorRT <br>
-    </td>
-    <td style="font-size: 0.78em" align="center">
-        -
-    </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
-    <th>NVIDIA Jetson</th>
-    <td style="font-size: 0.8em">
-        <img src="https://img.shields.io/badge/build-no%20status-lightgrey"> TensorRT <br>
+    <th>NVIDIA <br> GPU</th>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>TensorRT</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>LibTorch</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_pplnn_cuda"></a></sub> <sub>pplnn</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>TensorRT</sub> <br>
+    </td>
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
-        -
-    </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
-    <th>Huawei ascend310</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ascend.yml"></a> CANN <br>
+    <th>NVIDIA <br> Jetson</th>
+    <td>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>TensorRT</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
+        -
+    </td>
+  </tr>
+
+<tr>
+    <th>Huawei <br> ascend310</th>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ascend.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ascend.yml"></a></sub> <sub>CANN</sub> <br>
+    </td>
+    <td align="center">
+        -
+    </td>
+    <td align="center">
+        -
+    </td>
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
     <th>Rockchip</th>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> RKNN <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a></sub> <sub>RKNN</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
     <th>Apple M1</th>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-coreml.yml"></a> CoreML <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-coreml.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-coreml.yml"></a></sub> <sub>CoreML</sub> <br>
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
   </tr>
 
 <tr>
-    <th>Adreno GPU</th>
-    <td style="font-size: 0.78em" align="center">
+    <th>Adreno <br> GPU</th>
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a> SNPE <br>
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a> ncnn <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a></sub> <sub>SNPE</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
   </tr>
 
 <tr>
-    <th>Hexagon DSP</th>
-    <td style="font-size: 0.78em" align="center">
+    <th>Hexagon <br> DSP</th>
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em" align="center">
+    <td align="center">
         -
     </td>
-    <td style="font-size: 0.78em">
-        <a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a> SNPE <br>
+    <td>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a></sub> <sub>SNPE</sub> <br>
     </td>
   </tr>
 </table>
