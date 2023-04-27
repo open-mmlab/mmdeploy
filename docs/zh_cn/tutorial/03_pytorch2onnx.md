@@ -280,7 +280,7 @@ ONNX 算子的定义情况，都可以在官方的[算子文档](https://github.
 
 ### PyTorch 对 ONNX 算子的映射
 
-在 PyTorch 中，和 ONNX 有关的定义全部放在 [torch.onnx 目录](https://github.com/pytorch/pytorch/tree/master/torch/onnx)中，如下图所示：
+在 PyTorch 中，和 ONNX 有关的定义全部放在 [torch.onnx 目录](https://github.com/pytorch/pytorch/tree/main/torch/onnx)中，如下图所示：
 
 ![image](https://user-images.githubusercontent.com/47652064/163531700-ddf994e5-6989-483c-a1a3-f1b50dfd84f0.png)
 

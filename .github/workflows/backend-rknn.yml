@@ -29,7 +29,7 @@ jobs:
         run: sudo apt update
       - name: cross compile
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_rknn.sh rk3588
+          sh -xe tools/scripts/ubuntu_cross_build_rknn.sh rk3588
   build_rknpu:
     runs-on: ubuntu-20.04
     steps:
@@ -41,4 +41,4 @@ jobs:
         run: sudo apt update
       - name: cross compile
         run: |
-          sh -x tools/scripts/ubuntu_cross_build_rknn.sh rv1126
+          sh -xe tools/scripts/ubuntu_cross_build_rknn.sh rv1126
