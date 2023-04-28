@@ -21,6 +21,11 @@ Note:
   git clone git@github.com:pybind/pybind11.git pybind11
   cd pybind11
   git checkout 70a58c5
+
+  cd ..
+  git clone git@github.com:gabime/spdlog.git spdlog
+  cd spdlog
+  git checkout 9e8e52c048
   ```
 
 - If it fails when `git clone` via `SSH`, you can try the `HTTPS` protocol like this:
