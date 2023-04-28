@@ -14,19 +14,19 @@ mkdir -p $work_dir $mmdeploy_dir/data
 
 model_cfg=$work_dir/resnet18_8xb32_in1k.py
 checkpoint=$work_dir/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
-sdk_cfg=configs/mmcls/classification_sdk_dynamic.py
+sdk_cfg=configs/mmpretrain/classification_sdk_dynamic.py
 input_img=tests/data/tiger.jpeg
 
-python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
+python3 -m mim download mmpretrain --config resnet18_8xb32_in1k --dest $work_dir
 
 if [ $backend == "ort" ]; then
-    deploy_cfg=configs/mmcls/classification_onnxruntime_dynamic.py
+    deploy_cfg=configs/mmpretrain/classification_onnxruntime_dynamic.py
     model=$work_dir/end2end.onnx
 elif [ $backend == "trt" ]; then
-    deploy_cfg=configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
+    deploy_cfg=configs/mmpretrain/classification_tensorrt-fp16_dynamic-224x224-224x224.py
     model=$work_dir/end2end.engine
 elif [ $backend == "ncnn" ]; then
-    deploy_cfg=configs/mmcls/classification_ncnn_static.py
+    deploy_cfg=configs/mmpretrain/classification_ncnn_static.py
     model="$work_dir/end2end.param $work_dir/end2end.bin"
 else
   echo "Unsupported Backend=$backend"

@@ -7,7 +7,7 @@ After you create a rewritten model using our [rewriter](support_new_model.md), i
 If the changes to the model are small (e.g., only change the behavior of one or two variables and don't introduce side effects), you can construct the input arguments for the rewritten functions/modules，run model's inference in `RewriteContext` and check the results.
 
 ```python
-# mmcls.models.classfiers.base.py
+# mmpretrain.models.classfiers.base.py
 class BaseClassifier(BaseModule, metaclass=ABCMeta):
     def forward(self, img, return_loss=True, **kwargs):
         if return_loss:
@@ -17,7 +17,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
 # Custom rewritten function
 @FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
+    'mmpretrain.models.classifiers.BaseClassifier.forward', backend='default')
 def forward_of_base_classifier(self, img, *args, **kwargs):
     """Rewrite `forward` for default backend."""
     return self.simple_test(img, {})
@@ -28,7 +28,7 @@ In the example, we only change the function that `forward` calls. We can test th
 ```python
 def test_baseclassfier_forward():
     input = torch.rand(1)
-    from mmcls.models.classifiers import BaseClassifier
+    from mmpretrain.models.classifiers import BaseClassifier
     class DummyClassifier(BaseClassifier):
 
         def __init__(self, init_cfg=None):

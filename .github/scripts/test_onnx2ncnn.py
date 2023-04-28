@@ -7,22 +7,22 @@ import subprocess
 # list of tuple: config, pretrained model, onnx filename
 CONFIGS = [
     (
-        'mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py',  # noqa: E501
+        'mmpretrain/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py',  # noqa: E501
         'https://download.openmmlab.com/mmclassification/v0/vit/finetune/vit-base-p32_in21k-pre-3rdparty_ft-64xb64_in1k-384_20210928-9cea8599.pth',  # noqa: E501
         'vit.onnx'),
     (
-        'mmclassification/configs/resnet/resnet50_8xb32_in1k.py',
+        'mmpretrain/configs/resnet/resnet50_8xb32_in1k.py',
         'https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_8xb32_in1k_20210831-ea4938fc.pth',  # noqa: E501
         'resnet50.onnx',
     ),
     (
-        'mmclassification/configs/resnet/resnet18_8xb32_in1k.py',
+        'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py',
         'https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth',  # noqa: E501
         'resnet18.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/resnet18.onnx',  # noqa: E501
     ),
     (
-        'mmclassification/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
+        'mmpretrain/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
         'https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth',  # noqa: E501
         'mobilenet-v2.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/mobilenet-v2.onnx',  # noqa: E501
@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         '--run', type=bool, help='Execute mmdeploy_onnx2ncnn bin.')
     parser.add_argument(
-        '--repo-dir', type=str, default='~/', help='mmcls directory.')
+        '--repo-dir', type=str, default='~/', help='mmpretrain directory.')
     parser.add_argument(
         '--out',
         type=str,
@@ -56,7 +56,7 @@ def generate_onnx(args):
         model = conf[1]
         convert_cmd = [
             'python', 'tools/deploy.py',
-            'configs/mmcls/classification_ncnn_static.py', config, model,
+            'configs/mmpretrain/classification_ncnn_static.py', config, model,
             'cat-dog.png', '--work-dir', 'work_dir', '--device', 'cpu'
         ]
         print(subprocess.call(convert_cmd))

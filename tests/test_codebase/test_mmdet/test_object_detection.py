@@ -102,7 +102,7 @@ def test_build_pytorch_model(from_mmrazor: Any):
         _model_cfg = load_config(_model_cfg_path)[0]
         _model_cfg.algorithm.architecture.model.type = 'mmdet.YOLOV3'
         _model_cfg.algorithm.architecture.model.backbone.type = \
-            'mmcls.SearchableShuffleNetV2'
+            'mmpretrain.SearchableShuffleNetV2'
         _deploy_cfg = copy.deepcopy(deploy_cfg)
         _deploy_cfg.codebase_config['from_mmrazor'] = from_mmrazor
         _task_processor = build_task_processor(_model_cfg, _deploy_cfg, 'cpu')

@@ -24,27 +24,27 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='RandomResizedCrop', scale=224),
     dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='ResizeEdge', scale=256, edge='short'),
     dict(type='CenterCrop', crop_size=224),
-    dict(type='PackClsInputs')
+    dict(type='PackInputs')
 ]
 train_dataloader = dict(
     batch_size=2,
     num_workers=1,
     dataset=dict(
         type='ImageNet',
-        data_root='tests/test_codebase/test_mmcls/data/imgs',
+        data_root='tests/test_codebase/test_mmpretrain/data/imgs',
         ann_file='ann.txt',
         data_prefix='train',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='RandomResizedCrop', scale=224),
             dict(type='RandomFlip', prob=0.5, direction='horizontal'),
-            dict(type='PackClsInputs')
+            dict(type='PackInputs')
         ]),
     sampler=dict(type='DefaultSampler', shuffle=True))
 val_dataloader = dict(
@@ -52,14 +52,14 @@ val_dataloader = dict(
     num_workers=1,
     dataset=dict(
         type='ImageNet',
-        data_root='tests/test_codebase/test_mmcls/data/imgs',
+        data_root='tests/test_codebase/test_mmpretrain/data/imgs',
         ann_file='ann.txt',
         data_prefix='val',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='ResizeEdge', scale=256, edge='short'),
             dict(type='CenterCrop', crop_size=224),
-            dict(type='PackClsInputs')
+            dict(type='PackInputs')
         ]),
     sampler=dict(type='DefaultSampler', shuffle=False))
 val_evaluator = dict(type='Accuracy', topk=(1, 5))
@@ -68,14 +68,14 @@ test_dataloader = dict(
     num_workers=1,
     dataset=dict(
         type='ImageNet',
-        data_root='tests/test_codebase/test_mmcls/data/imgs',
+        data_root='tests/test_codebase/test_mmpretrain/data/imgs',
         ann_file='ann.txt',
         data_prefix='val',
         pipeline=[
             dict(type='LoadImageFromFile'),
             dict(type='ResizeEdge', scale=256, edge='short'),
             dict(type='CenterCrop', crop_size=224),
-            dict(type='PackClsInputs')
+            dict(type='PackInputs')
         ]),
     sampler=dict(type='DefaultSampler', shuffle=False))
 test_evaluator = dict(type='Accuracy', topk=(1, 5))
@@ -87,7 +87,7 @@ train_cfg = dict(by_epoch=True, max_epochs=100, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 auto_scale_lr = dict(base_batch_size=256)
-default_scope = 'mmcls'
+default_scope = 'mmpretrain'
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=100),
@@ -101,7 +101,7 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'))
 vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
-    type='ClsVisualizer', vis_backends=[dict(type='LocalVisBackend')])
+    type='UniversalVisualizer', vis_backends=[dict(type='LocalVisBackend')])
 log_level = 'INFO'
 load_from = None
 resume = False

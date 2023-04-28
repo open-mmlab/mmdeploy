@@ -37,8 +37,8 @@ ${MODEL_CFG} \
 
 ```shell
 python tools/test.py \
-    configs/mmcls/classification_onnxruntime_static.py \
-    {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
+    configs/mmpretrain/classification_onnxruntime_static.py \
+    {MMPRETRAIN_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --out out.pkl \
     --device cuda:0
@@ -48,8 +48,8 @@ profile 速度测试
 
 ```shell
 python tools/test.py \
-    configs/mmcls/classification_onnxruntime_static.py \
-    {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
+    configs/mmpretrain/classification_onnxruntime_static.py \
+    {MMPRETRAIN_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --speed-test \
     --device cpu

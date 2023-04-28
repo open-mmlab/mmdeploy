@@ -120,7 +120,7 @@
 
 <tr>
     <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmcls", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
+    <td>{"mmpretrain", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
     <td>all</td>
     <td>用来设置SDK后处理组件，加载 OpenMMLab 算法仓库的后处理功能。如果选择多个 codebase，中间使用分号隔开。比如，<code>-DMMDEPLOY_CODEBASES="mmcls;mmdet"</code>。也可以通过 <code>-DMMDEPLOY_CODEBASES=all</code> 方式，加载所有 codebase。</td>
   </tr>

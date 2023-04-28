@@ -33,10 +33,10 @@
 全新的 MMDeploy 1.x 已发布，该版本适配OpenMMLab 2.0生态体系，使用时务必**对齐版本**。
 MMDeploy 代码库默认分支从`master`切换至`main`。 MMDeploy 0.x (`master`)将逐步废弃，新特性将只添加到 MMDeploy 1.x (`main`)。
 
-| mmdeploy | mmengine |   mmcv   |  mmdet   | mmcls and others |
-| :------: | :------: | :------: | :------: | :--------------: |
-|  0.x.y   |    -     | \<=1.x.y | \<=2.x.y |      0.x.y       |
-|  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   |      1.x.y       |
+| mmdeploy | mmengine |   mmcv   |  mmdet   | mmpretrain and others |
+| :------: | :------: | :------: | :------: | :-------------------: |
+|  0.x.y   |    -     | \<=1.x.y | \<=2.x.y |         0.x.y         |
+|  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   |         1.x.y         |
 
 ## 介绍
 
@@ -52,7 +52,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持超多 OpenMMLab 算法库
 
-- [mmcls](docs/zh_cn/04-supported-codebases/mmcls.md)
+- [mmpretrain](docs/zh_cn/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/zh_cn/04-supported-codebases/mmdet.md)
 - [mmseg](docs/zh_cn/04-supported-codebases/mmseg.md)
 - [mmedit](docs/zh_cn/04-supported-codebases/mmedit.md)

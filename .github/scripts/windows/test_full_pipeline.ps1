@@ -23,16 +23,16 @@ $work_dir="work_dir"
 New-Item -Path $work_dir, .\data -ItemType Directory -Force
 $model_cfg="$work_dir\resnet18_8xb32_in1k.py"
 $checkpoint="$work_dir\resnet18_8xb32_in1k_20210831-fbbb1da6.pth"
-$sdk_cfg="configs\mmcls\classification_sdk_dynamic.py"
+$sdk_cfg="configs\mmpretrain\classification_sdk_dynamic.py"
 $input_img="tests\data\tiger.jpeg"
 
-python -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
+python -m mim download mmpretrain --config resnet18_8xb32_in1k --dest $work_dir
 
 if ($Backend -eq "ort") {
-    $deploy_cfg="configs\mmcls\classification_onnxruntime_dynamic.py"
+    $deploy_cfg="configs\mmpretrain\classification_onnxruntime_dynamic.py"
     $model="$work_dir\end2end.onnx"
 } elseif ($Backend -eq "trt") {
-    $deploy_cfg="configs\mmcls\classification_tensorrt-fp16_dynamic-224x224-224x224.py"
+    $deploy_cfg="configs\mmpretrain\classification_tensorrt-fp16_dynamic-224x224-224x224.py"
     $model="$work_dir\end2end.engine"
 } else {
     Write-Host "Unsupported Backend=$Backend"

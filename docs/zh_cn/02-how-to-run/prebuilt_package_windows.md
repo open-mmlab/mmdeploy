@@ -25,7 +25,7 @@ ______________________________________________________________________
 
 本篇教程以`mmdeploy-1.0.0-windows-amd64.zip`和`mmdeploy-1.0.0-windows-amd64-cuda11.3.zip`为例，展示预编译包的使用方法。
 
-为了方便使用者快速上手，本教程以分类模型(mmclassification)为例，展示两种预编译包的使用方法。
+为了方便使用者快速上手，本教程以分类模型(mmpretrain)为例，展示两种预编译包的使用方法。
 
 预编译包的目录结构如下。
 
@@ -61,23 +61,23 @@ ______________________________________________________________________
 
    :point_right: 这里主要为了使用configs文件，所以没有加`--recursive`来下载submodule，也不需要编译`mmdeploy`
 
-3. 安装mmclassification
+3. 安装mmpretrain
 
    ```bash
-   git clone -b 1.x https://github.com/open-mmlab/mmclassification.git
-   cd mmclassification
+   git clone -b 1.x https://github.com/open-mmlab/mmpretrain.git
+   cd mmpretrain
    pip install -e .
    ```
 
 4. 准备一个PyTorch的模型文件当作我们的示例
 
-   这里选择了[resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth)，对应的训练config为[resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py)
+   这里选择了[resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth)，对应的训练config为[resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet18_8xb32_in1k.py)
 
 做好以上工作后，当前工作目录的结构应为：
 
 ```
 .
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -150,7 +150,7 @@ ______________________________________________________________________
 ```
 ..
 |-- mmdeploy-1.0.0-windows-amd64
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -161,11 +161,11 @@ python 转换代码
 from mmdeploy.apis import torch2onnx
 from mmdeploy.backend.sdk.export_info import export2SDK
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 work_dir = 'work_dir/onnx/resnet'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_onnxruntime_dynamic.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -198,7 +198,7 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 ```
 ..
 |-- mmdeploy-1.0.0-windows-amd64-cuda11.3
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -211,11 +211,11 @@ from mmdeploy.apis.tensorrt import onnx2tensorrt
 from mmdeploy.backend.sdk.export_info import export2SDK
 import os
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 work_dir = 'work_dir/trt/resnet'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_tensorrt_static-224x224.py'
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_tensorrt_static-224x224.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -262,7 +262,7 @@ export2SDK(deploy_cfg, model_cfg, work_dir, pth=model_checkpoint, device=device)
 .
 |-- mmdeploy-1.0.0-windows-amd64
 |-- mmdeploy-1.0.0-windows-amd64-cuda11.3
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 `-- work_dir
@@ -279,10 +279,10 @@ Python 代码
 ```python
 from mmdeploy.apis import inference_model
 
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_onnxruntime_dynamic.py'
 backend_files = ['work_dir/onnx/resnet/end2end.onnx']
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 device = 'cpu'
 result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```
@@ -294,10 +294,10 @@ Python 代码
 ```python
 from mmdeploy.apis import inference_model
 
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_tensorrt_static-224x224.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_tensorrt_static-224x224.py'
 backend_files = ['work_dir/trt/resnet/end2end.engine']
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 device = 'cuda'
 result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```
@@ -311,7 +311,7 @@ result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 推理代码
 
 ```bash
-python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet\ .\mmclassification\demo\demo.JPEG
+python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet\ .\mmpretrain\demo\demo.JPEG
 ```
 
 #### TensorRT
@@ -319,7 +319,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
 推理代码
 
 ```bash
- python .\mmdeploy\demo\python\image_classification.py cuda .\work_dir\trt\resnet\ .\mmclassification\demo\demo.JPEG
+ python .\mmdeploy\demo\python\image_classification.py cuda .\work_dir\trt\resnet\ .\mmpretrain\demo\demo.JPEG
 ```
 
 ### C SDK
@@ -343,7 +343,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    在mmdeploy-1.0.0-windows-amd64\\example\\cpp\\build\\Release目录下：
 
    ```
-   .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmclassification\demo\demo.JPEG
+   .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmpretrain\demo\demo.JPEG
    ```
 
 #### TensorRT
@@ -363,7 +363,7 @@ python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet
    在mmdeploy-1.0.0-windows-amd64-cuda11.3\\example\\cpp\\build\\Release目录下：
 
    ```
-   .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmclassification\demo\demo.JPEG
+   .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmpretrain\demo\demo.JPEG
    ```
 
 ## 可能遇到的问题

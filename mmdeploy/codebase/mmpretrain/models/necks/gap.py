@@ -7,7 +7,7 @@ from mmdeploy.utils import Backend
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.necks.GlobalAveragePooling.forward',
+    'mmpretrain.models.necks.GlobalAveragePooling.forward',
     backend=Backend.DEFAULT.value)
 def gap__forward(self, inputs):
     """Rewrite `forward` of GlobalAveragePooling for default backend.

@@ -37,9 +37,9 @@ jobs:
           python -m pip install mmcv-lite openmim
           python tools/scripts/build_ubuntu_x64_ort.py 8
           python -c 'import mmdeploy.apis.onnxruntime as ort_api; assert ort_api.is_available(with_custom_ops=True)'
-      - name: test mmcls full pipeline
+      - name: test mmpretrain full pipeline
         run: |
-          python -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          python -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
           export MMDEPLOY_DIR=$(pwd)
           export ONNXRUNTIME_DIR=$MMDEPLOY_DIR/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1
           export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$MMDEPLOY_DIR/build/install/lib:$LD_LIBRARY_PATH

@@ -42,7 +42,7 @@ It is recommended to create a virtual environment for the project.
 conda install pytorch==1.8.0 torchvision==0.9.0 cudatoolkit=11.1 -c pytorch -c conda-forge
 ```
 
-To work with models from [MMClassification](https://mmclassification.readthedocs.io/en/1.x/get_started.html), you may need to install it additionally.
+To work with models from [MMPretrain](https://mmpretrain.readthedocs.io/en/latest/get_started.html), you may need to install it additionally.
 
 ## Usage
 
@@ -50,17 +50,17 @@ Example:
 
 ```bash
 python tools/deploy.py \
-    configs/mmcls/classification_rknn_static.py \
-    /mmclassification_dir/configs/resnet/resnet50_8xb32_in1k.py \
+    configs/mmpretrain/classification_rknn_static.py \
+    /mmpretrain_dir/configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    /mmclassification_dir/demo/demo.JPEG \
+    /mmpretrain_dir/demo/demo.JPEG \
     --work-dir ../resnet50 \
     --device cpu
 ```
 
 ## Deployment config
 
-With the deployment config, you can modify the `backend_config` for your preference. An example `backend_config` of mmclassification is shown as below:
+With the deployment config, you can modify the `backend_config` for your preference. An example `backend_config` of mmpretrain is shown as below:
 
 ```python
 backend_config = dict(
@@ -119,7 +119,7 @@ First make sure that`--dump-info`is used during convert model, so that the worki
 ```bash
 cd /path/to/mmdeploy
 adb push resnet50  /data/local/tmp/resnet50
-adb push /mmclassification_dir/demo/demo.JPEG /data/local/tmp/resnet50/demo.JPEG
+adb push /mmpretrain_dir/demo/demo.JPEG /data/local/tmp/resnet50/demo.JPEG
 cd build
 adb push lib /data/local/tmp/lib
 adb push bin/image_classification /data/local/tmp/image_classification

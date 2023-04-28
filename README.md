@@ -67,7 +67,7 @@ MMDeploy is an open-source deep learning model deployment toolset. It is a part 
 
 The currently supported codebases and models are as follows, and more will be included in the future
 
-- [mmcls](docs/en/04-supported-codebases/mmcls.md)
+- [mmpretrain](docs/en/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/en/04-supported-codebases/mmdet.md)
 - [mmseg](docs/en/04-supported-codebases/mmseg.md)
 - [mmedit](docs/en/04-supported-codebases/mmedit.md)
