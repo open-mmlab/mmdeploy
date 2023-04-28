@@ -9,17 +9,17 @@ CONFIGS = [
     [
         'hrnet.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/hrnet.onnx',  # noqa: E501
-        '~/mmclassification/configs/hrnet/hrnet-w18_4xb32_in1k.py',
+        '~/mmpretrain/configs/hrnet/hrnet-w18_4xb32_in1k.py',
     ],
     [
         'resnet18.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/resnet18.onnx',  # noqa: E501
-        '~/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py',
+        '~/mmpretrain/configs/resnet/resnet18_8xb16_cifar10.py',
     ],
     [
         'mobilenet-v2.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/mobilenet-v2.onnx',  # noqa: E501
-        '~/mmclassification/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
+        '~/mmpretrain/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
     ]
 ]
 

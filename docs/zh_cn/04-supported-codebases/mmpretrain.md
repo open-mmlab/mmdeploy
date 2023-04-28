@@ -71,7 +71,7 @@ python tools/deploy.py \
     --dump-info
 ```
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmcls)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmpretrain)。
 文件的命名模式是：
 
 ```
