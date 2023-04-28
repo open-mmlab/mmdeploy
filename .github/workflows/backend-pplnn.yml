@@ -55,7 +55,7 @@ jobs:
           NAME: build_pplnn_cuda
           LABEL: 'build'
           STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
-          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'blue' || 'red' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 

@@ -64,10 +64,20 @@ jobs:
           coverage xml
           coverage report -m
       - name: Run mmyolo deploy unittests
+        id: badge_status
         run: |
           python -m pip install xdoctest
           cd /home/runner/work/mmyolo
           pytest tests/test_deploy
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cpu_model_convert
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cpu_sdk:
     runs-on: ubuntu-20.04
@@ -85,6 +95,7 @@ jobs:
           sudo apt install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev libc++1-9 libc++abi1-9
           sudo apt install libopencv-dev lcov wget
       - name: Build and run SDK unit test without backend
+        id: badge_status
         run: |
           mkdir -p build && pushd build
           cmake .. -DCMAKE_CXX_COMPILER=g++  -DMMDEPLOY_CODEBASES=all    -DMMDEPLOY_BUILD_SDK=ON     -DMMDEPLOY_BUILD_SDK_PYTHON_API=OFF     -DMMDEPLOY_TARGET_DEVICES=cpu   -DMMDEPLOY_COVERAGE=ON  -DMMDEPLOY_BUILD_TEST=ON
@@ -95,6 +106,15 @@ jobs:
           lcov --capture --directory . --output-file coverage.info
           ls -lah coverage.info
           cp coverage.info ../
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cpu_sdk
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cross_build_aarch64:
     runs-on: ubuntu-20.04
@@ -110,8 +130,18 @@ jobs:
         with:
           python-version: 3.8
       - name: gcc-multilib
+        id: badge_status
         run: |
           sh -ex tools/scripts/ubuntu_cross_build_aarch64.sh
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: cross_build_aarch64
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda102:
     runs-on: ubuntu-20.04
@@ -155,10 +185,20 @@ jobs:
           rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
+        id: badge_status
         run: |
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda102
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113:
     runs-on: ubuntu-20.04
@@ -205,6 +245,7 @@ jobs:
           coverage xml
           coverage report -m
       - name: Upload coverage to Codecov
+        id: badge_status
         uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml,./coverage.info
@@ -212,6 +253,15 @@ jobs:
           env_vars: OS,PYTHON,CPLUS
           name: codecov-umbrella
           fail_ci_if_error: false
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_linux:
     runs-on: [self-hosted, linux-3090]
@@ -251,10 +301,20 @@ jobs:
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           python3 tools/check_env.py
       - name: Test TensorRT pipeline
+        id: badge_status
         run: |
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
           bash .github/scripts/linux/test_full_pipeline.sh trt cuda
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113_linux
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_windows:
     runs-on: [self-hosted, win10-3080]
@@ -312,7 +372,17 @@ jobs:
           python -m pip install -e .
           python .\tools\check_env.py
       - name: Test trt full pipeline
+        id: badge_status
         run: |
           conda activate $pwd\tmp_env
           $env:path = "$pwd\build\bin\Release;" + $env:path
           .github\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
+          NAME: build_cuda113_windows
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
