@@ -372,17 +372,21 @@ jobs:
           python -m pip install -e .
           python .\tools\check_env.py
       - name: Test trt full pipeline
-        id: badge_status
         run: |
           conda activate $pwd\tmp_env
           $env:path = "$pwd\build\bin\Release;" + $env:path
           .github\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
+
+  badge_build_cuda113_windows:
+    needs: build_cuda113_windows
+    if: always()
+    runs-on: ubuntu-20.04
+    steps:
       - name: create badge
-        if: always()
         uses: RubbaBoy/BYOB@v1.2.1
         with:
           NAME: build_cuda113_windows
           LABEL: 'build'
-          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
-          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          STATUS: ${{ needs.build_cuda113_windows.result == 'success' && 'passing' || needs.build_cuda113_windows.result }}
+          COLOR: ${{ needs.build_cuda113_windows.result == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
