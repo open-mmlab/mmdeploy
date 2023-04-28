@@ -1,4 +1,4 @@
-FROM openvino/ubuntu18_dev:2021.4.2
+FROM openvino/ubuntu20_dev:2022.3.0
 ARG PYTHON_VERSION=3.8
 ARG TORCH_VERSION=1.10.0
 ARG TORCHVISION_VERSION=0.11.0
@@ -57,7 +57,7 @@ RUN if [ ${USE_SRC_INSIDE} == true ] ; \
 RUN /opt/conda/bin/pip install torch==${TORCH_VERSION}+cpu torchvision==${TORCHVISION_VERSION}+cpu -f https://download.pytorch.org/whl/cpu/torch_stable.html \
     && /opt/conda/bin/pip install --no-cache-dir openmim
 
-RUN /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev mmengine${MMENGINE_VERSION}
+RUN /opt/conda/bin/mim install --no-cache-dir "mmcv"${MMCV_VERSION} onnxruntime==${ONNXRUNTIME_VERSION} openvino-dev==2022.3.0 mmengine${MMENGINE_VERSION}
 
 ENV PATH /opt/conda/bin:$PATH
 WORKDIR /root/workspace
@@ -100,14 +100,14 @@ RUN git clone -b main https://github.com/open-mmlab/mmdeploy.git &&\
     /opt/conda/bin/mim install -e .
 
 ### build SDK
-ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:/opt/intel/openvino/deployment_tools/ngraph/lib:/opt/intel/openvino/deployment_tools/inference_engine/lib/intel64:${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
 RUN cd mmdeploy && rm -rf build/CM* && mkdir -p build && cd build && cmake .. \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_BUILD_EXAMPLES=ON \
-    -DCMAKE_CXX_COMPILER=g++-7 \
+    -DCMAKE_CXX_COMPILER=g++-9 \
     -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
     -Dncnn_DIR=/root/workspace/ncnn/build/install/lib/cmake/ncnn \
-    -DInferenceEngine_DIR=/opt/intel/openvino/deployment_tools/inference_engine/share \
+    -DInferenceEngine_DIR=/opt/intel/openvino/runtime/cmake \
     -DMMDEPLOY_TARGET_DEVICES=cpu \
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
     -DMMDEPLOY_TARGET_BACKENDS="ort;ncnn;openvino" \
