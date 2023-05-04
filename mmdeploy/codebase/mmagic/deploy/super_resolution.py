@@ -319,10 +319,10 @@ class SuperResolution(BaseTask):
                 transform['keys'] = ['img']
             if 'key' in transform and transform['key'] == 'lq':
                 transform['key'] = 'img'
-            if transform['type'] == 'EditDataPreprocessor':
+            if transform['type'] == 'DataPreprocessor':
                 transform['type'] = 'Normalize'
                 transform['to_rgb'] = transform.get('to_rgb', False)
-            if transform['type'] == 'PackEditInputs':
+            if transform['type'] == 'PackInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))
