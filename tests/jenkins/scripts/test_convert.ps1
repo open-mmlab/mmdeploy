@@ -114,7 +114,7 @@ $codebase_fullname_opt = @{
 
 #init conda env
 
-$codebase_list = "mmdet", "mmcls"
+# $codebase_list = "mmdet", "mmcls"
 
 foreach ($codebase in $codebase_list) {
     conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase
