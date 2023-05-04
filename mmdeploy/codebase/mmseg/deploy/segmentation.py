@@ -286,8 +286,13 @@ class Segmentation(BaseTask):
         postprocess = self.model_cfg.model.decode_head
         if isinstance(postprocess, list):
             postprocess = postprocess[-1]
+        postprocess = postprocess.copy()
         with_argmax = get_codebase_config(self.deploy_cfg).get(
             'with_argmax', True)
+        # set with_argmax=True for this special case
+        if postprocess['num_classes'] == 2 and \
+                postprocess['out_channels'] == 1:
+            with_argmax = True
         postprocess['with_argmax'] = with_argmax
         return postprocess
 
