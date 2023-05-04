@@ -7,6 +7,7 @@
 #include "convert.h"
 #include "json.hpp"
 #include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/core/device.h"
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy_utils.h"
@@ -178,6 +179,15 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   SET_TIMESTAMP(compute_start_ns);
 
   ::mmdeploy::Value outputs = pipeline_.Apply(input_args);
+  {
+    std::string device_name = "cpu";
+    if (Kind() == TRITONSERVER_INSTANCEGROUPKIND_GPU) {
+      device_name = "cuda";
+    }
+    auto device = ::mmdeploy::framework::Device(device_name.c_str(), DeviceId());
+    auto stream = ::mmdeploy::framework::Stream::GetDefault(device);
+    stream.Wait();
+  }
 
   std::vector<std::string> strings;
   auto output_tensors =
@@ -276,7 +286,7 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
                    TritonModelInstance(), total_batch_size, exec_start_ns, compute_start_ns,
                    compute_end_ns, exec_end_ns),
                "failed reporting batch request statistics");
-#endif  // TRITON_ENABLE_STATS
+#endif             // TRITON_ENABLE_STATS
 
   return nullptr;  // success
 }

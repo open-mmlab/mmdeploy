@@ -64,9 +64,6 @@ static float sigmoid(float x) { return 1.0 / (1.0 + expf(-x)); }
 Result<Detections> RTMDetSepBNHead::GetBBoxes(const Value& prep_res,
                                               const std::vector<Tensor>& bbox_preds,
                                               const std::vector<Tensor>& cls_scores) const {
-  MMDEPLOY_DEBUG("bbox_pred: {}, {}", bbox_preds[0].shape(), dets[0].data_type());
-  MMDEPLOY_DEBUG("cls_score: {}, {}", scores[0].shape(), scores[0].data_type());
-
   std::vector<float> filter_boxes;
   std::vector<float> obj_probs;
   std::vector<int> class_ids;
