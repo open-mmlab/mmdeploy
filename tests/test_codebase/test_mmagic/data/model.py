@@ -232,6 +232,6 @@ ut_dataloader = dict(
         pipeline=test_pipeline))
 
 # test config
-test_cfg = dict(type='EditTestLoop')
+test_cfg = dict(type='TestLoop')
 test_dataloader = [ut_dataloader, ut_dataloader]
 test_evaluator = [set5_evaluator, set14_evaluator]
