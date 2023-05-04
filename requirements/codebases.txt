@@ -1,6 +1,6 @@
 mmdet>=3.0.0
 mmdet3d>=1.1.0rc2
-mmedit>=1.0.0rc7
+mmagic>=1.0.0
 mmocr>=1.0.0
 mmpose>=1.0.0
 mmpretrain>=1.0.0rc7

@@ -55,7 +55,7 @@ def get_deploy_cfg(input_name, output_name, dynamic_axes):
                 input_names=[input_name],
                 output_names=[output_name],
                 input_shape=None),
-            codebase_config=dict(type='mmedit', task=''),
+            codebase_config=dict(type='mmagic', task=''),
             backend_config=dict(type='onnxruntime')))
 
 

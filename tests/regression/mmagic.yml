@@ -1,10 +1,10 @@
 globals:
-  repo_url: https://github.com/open-mmlab/mmediting/tree/main
-  codebase_dir: ../mmediting
+  repo_url: https://github.com/open-mmlab/mmagic/tree/main
+  codebase_dir: ../mmagic
   checkpoint_force_download: False
   images:
-    img_face: &img_face ../mmediting/tests/data/image/face/000001.png
-    img_bg: &img_bg ../mmediting/tests/data/image/gt/baboon.png
+    img_face: &img_face ../mmagic/tests/data/image/face/000001.png
+    img_bg: &img_bg ../mmagic/tests/data/image/gt/baboon.png
   metric_info: &metric_info
     Set14 PSNR: # named after metafile.Results.Metrics
       metric_key: Set14/PSNR # eval log key name
@@ -23,77 +23,77 @@ globals:
     test_img: *img_bg
   backend_test: &default_backend_test True
   sdk:
-    sdk_dynamic: &sdk_dynamic configs/mmedit/super-resolution/super-resolution_sdk_dynamic.py
+    sdk_dynamic: &sdk_dynamic configs/mmagic/super-resolution/super-resolution_sdk_dynamic.py
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmedit/super-resolution/super-resolution_onnxruntime_static.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
-    deploy_config: configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_onnxruntime_dynamic.py
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt_static-256x256.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt_static-256x256.py
 
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_static-256x256.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt-fp16_static-256x256.py
 
   pipeline_trt_static_int8: &pipeline_trt_static_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-int8_static-256x256.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt-int8_static-256x256.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt_dynamic-32x32-512x512.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt_dynamic-32x32-512x512.py
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-512x512.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt-fp16_dynamic-32x32-512x512.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmedit/super-resolution/super-resolution_tensorrt-int8_dynamic-32x32-512x512.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_tensorrt-int8_dynamic-32x32-512x512.py
 
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmedit/super-resolution/super-resolution_openvino_dynamic-256x256.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_openvino_dynamic-256x256.py
 
 ncnn:
   pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmedit/super-resolution/super-resolution_ncnn_dynamic.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_ncnn_dynamic.py
 
 pplnn:
   pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmedit/super-resolution/super-resolution_pplnn_dynamic-32x32.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_pplnn_dynamic-32x32.py
 
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmedit/super-resolution/super-resolution_torchscript.py
+    deploy_config: configs/mmagic/super-resolution/super-resolution_torchscript.py
 
 models:
   - name: SRCNN

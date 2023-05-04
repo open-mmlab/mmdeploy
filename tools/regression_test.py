@@ -27,7 +27,7 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            'mmpretrain', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit',
+            'mmpretrain', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmagic',
             'mmrotate', 'mmdet3d'
         ])
     parser.add_argument(
@@ -485,7 +485,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     # to stop Dataloader OOM in docker CI
-    if codebase_name not in ['mmedit', 'mmocr', 'mmpretrain']:
+    if codebase_name not in ['mmagic', 'mmocr', 'mmpretrain']:
         cfg_options = 'test_dataloader.num_workers=0 ' \
                       'test_dataloader.persistent_workers=False ' \
                       'val_dataloader.num_workers=0 ' \

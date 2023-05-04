@@ -3,7 +3,7 @@ from typing import List, Optional, Sequence, Union
 
 import mmengine
 import torch
-from mmedit.structures import EditDataSample
+from mmagic.structures import DataSample
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
@@ -65,8 +65,8 @@ class End2EndModel(BaseBackendModel):
             **kwargs)
 
     def convert_to_datasample(
-            self, predictions: EditDataSample, data_samples: EditDataSample,
-            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
+            self, predictions: DataSample, data_samples: DataSample,
+            inputs: Optional[torch.Tensor]) -> List[DataSample]:
         """Add predictions and destructed inputs (if passed) to data samples.
 
         Args:
@@ -97,7 +97,7 @@ class End2EndModel(BaseBackendModel):
                 inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
-                **kwargs) -> Sequence[EditDataSample]:
+                **kwargs) -> Sequence[DataSample]:
         """Run test inference for restorer.
 
         We want forward() to output an image or a evaluation result.
@@ -128,7 +128,7 @@ class End2EndModel(BaseBackendModel):
             batch_outputs, data_samples)
 
         # create a stacked data sample here
-        predictions = EditDataSample(pred_img=batch_outputs.cpu())
+        predictions = DataSample(pred_img=batch_outputs.cpu())
 
         predictions = self.convert_to_datasample(predictions, data_samples,
                                                  inputs)
@@ -137,14 +137,14 @@ class End2EndModel(BaseBackendModel):
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmedit format."""
+    """SDK inference class, converts SDK output to mmagic format."""
 
     def __init__(self, *args, **kwargs):
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
 
     def convert_to_datasample(
-            self, predictions: EditDataSample, data_samples: EditDataSample,
-            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
+            self, predictions: DataSample, data_samples: DataSample,
+            inputs: Optional[torch.Tensor]) -> List[DataSample]:
         """Add predictions and destructed inputs (if passed) to data samples.
 
         Args:
@@ -208,7 +208,7 @@ class SDKEnd2EndModel(End2EndModel):
         outputs = self.data_preprocessor.destruct(outputs, data_samples)
 
         # create a stacked data sample here
-        predictions = EditDataSample(pred_img=outputs.cpu())
+        predictions = DataSample(pred_img=outputs.cpu())
 
         predictions = self.convert_to_datasample(predictions, data_samples,
                                                  inputs)

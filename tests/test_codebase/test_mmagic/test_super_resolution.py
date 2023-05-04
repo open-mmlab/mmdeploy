@@ -17,17 +17,17 @@ from mmdeploy.utils import Codebase, load_config
 from mmdeploy.utils.test import DummyModel, SwitchBackendWrapper, WrapFunction
 
 try:
-    import_codebase(Codebase.MMEDIT)
+    import_codebase(Codebase.MMAGIC)
 except ImportError:
     pytest.skip(
-        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
+        f'{Codebase.MMAGIC} is not installed.', allow_module_level=True)
 
-model_cfg = 'tests/test_codebase/test_mmedit/data/model.py'
+model_cfg = 'tests/test_codebase/test_mmagic/data/model.py'
 model_cfg = load_config(model_cfg)[0]
 deploy_cfg = Config(
     dict(
         backend_config=dict(type='onnxruntime'),
-        codebase_config=dict(type='mmedit', task='SuperResolution'),
+        codebase_config=dict(type='mmagic', task='SuperResolution'),
         onnx_config=dict(
             type='onnx',
             export_params=True,
@@ -65,13 +65,13 @@ def backend_model():
 
 def test_build_test_runner():
     # Prepare dummy model
-    from mmedit.structures import EditDataSample
+    from mmagic.structures import DataSample
 
     img_meta = dict(ori_img_shape=(32, 32, 3))
     img = torch.rand(3, 32, 32)
-    data_sample = EditDataSample(gt_img=img, metainfo=img_meta)
+    data_sample = DataSample(gt_img=img, metainfo=img_meta)
     data_sample.set_data(
-        dict(output=EditDataSample(pred_img=img, metainfo=img_meta)))
+        dict(output=DataSample(pred_img=img, metainfo=img_meta)))
     data_sample.set_data(dict(input=img))
     outputs = [data_sample]
     model = DummyModel(outputs=outputs)
@@ -86,7 +86,7 @@ def test_build_test_runner():
 
 
 def test_build_pytorch_model():
-    from mmedit.models import BaseEditModel
+    from mmagic.models import BaseEditModel
     model = task_processor.build_pytorch_model(None)
     assert isinstance(model, BaseEditModel)
 
@@ -126,7 +126,7 @@ def test_build_dataset_and_dataloader():
         type='BasicImageDataset',
         ann_file='test_ann.txt',
         metainfo=dict(dataset_type='div2k', task_name='sisr'),
-        data_root='tests/test_codebase/test_mmedit/data',
+        data_root='tests/test_codebase/test_mmagic/data',
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=[
             dict(
