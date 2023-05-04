@@ -53,23 +53,23 @@ In order to use the prebuilt package, you need to install some third-party depen
 
    :point_right: The main purpose here is to use the configs, so there is no need to compile `mmdeploy`.
 
-3. Install mmclassification
+3. Install mmpretrain
 
    ```bash
-   git clone -b main https://github.com/open-mmlab/mmclassification.git
-   cd mmclassification
+   git clone -b main https://github.com/open-mmlab/mmpretrain.git
+   cd mmpretrain
    pip install -e .
    ```
 
 4. Prepare a PyTorch model as our example
 
-   Download the pth [resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth). The corresponding config of the model is [resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmclassification/blob/1.x/configs/resnet/resnet18_8xb32_in1k.py)
+   Download the pth [resnet18_8xb32_in1k_20210831-fbbb1da6.pth](https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth). The corresponding config of the model is [resnet18_8xb32_in1k.py](https://github.com/open-mmlab/mmpretrain/blob/main/configs/resnet/resnet18_8xb32_in1k.py)
 
 After the above work is done, the structure of the current working directory should be:
 
 ```
 .
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -142,7 +142,7 @@ After preparation work, the structure of the current working directory should be
 ```
 ..
 |-- mmdeploy-1.0.0-windows-amd64
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -153,11 +153,11 @@ Model conversion can be performed like below:
 from mmdeploy.apis import torch2onnx
 from mmdeploy.backend.sdk.export_info import export2SDK
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 work_dir = 'work_dir/onnx/resnet'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_onnxruntime_dynamic.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -190,7 +190,7 @@ After installation of mmdeploy-tensorrt prebuilt package, the structure of the c
 ```
 ..
 |-- mmdeploy-1.0.0-windows-amd64-cuda11.3
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 ```
@@ -203,11 +203,11 @@ from mmdeploy.apis.tensorrt import onnx2tensorrt
 from mmdeploy.backend.sdk.export_info import export2SDK
 import os
 
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 work_dir = 'work_dir/trt/resnet'
 save_file = 'end2end.onnx'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_tensorrt_static-224x224.py'
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_tensorrt_static-224x224.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
 model_checkpoint = 'resnet18_8xb32_in1k_20210831-fbbb1da6.pth'
 device = 'cpu'
 
@@ -254,7 +254,7 @@ The structure of current working directory：
 .
 |-- mmdeploy-1.0.0-windows-amd64
 |-- mmdeploy-1.0.0-windows-amd64-cuda11.3
-|-- mmclassification
+|-- mmpretrain
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 `-- work_dir
@@ -269,10 +269,10 @@ The structure of current working directory：
 ```python
 from mmdeploy.apis import inference_model
 
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_onnxruntime_dynamic.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_onnxruntime_dynamic.py'
 backend_files = ['work_dir/onnx/resnet/end2end.onnx']
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 device = 'cpu'
 result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```
@@ -282,10 +282,10 @@ result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```python
 from mmdeploy.apis import inference_model
 
-model_cfg = 'mmclassification/configs/resnet/resnet18_8xb32_in1k.py'
-deploy_cfg = 'mmdeploy/configs/mmcls/classification_tensorrt_static-224x224.py'
+model_cfg = 'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py'
+deploy_cfg = 'mmdeploy/configs/mmpretrain/classification_tensorrt_static-224x224.py'
 backend_files = ['work_dir/trt/resnet/end2end.engine']
-img = 'mmclassification/demo/demo.JPEG'
+img = 'mmpretrain/demo/demo.JPEG'
 device = 'cuda'
 result = inference_model(model_cfg, deploy_cfg, backend_files, img, device)
 ```
@@ -297,13 +297,13 @@ The following describes how to use the SDK's Python API for inference
 #### ONNXRuntime
 
 ```bash
-python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet\ .\mmclassification\demo\demo.JPEG
+python .\mmdeploy\demo\python\image_classification.py cpu .\work_dir\onnx\resnet\ .\mmpretrain\demo\demo.JPEG
 ```
 
 #### TensorRT
 
 ```bash
- python .\mmdeploy\demo\python\image_classification.py cuda .\work_dir\trt\resnet\ .\mmclassification\demo\demo.JPEG
+ python .\mmdeploy\demo\python\image_classification.py cuda .\work_dir\trt\resnet\ .\mmpretrain\demo\demo.JPEG
 ```
 
 ### C SDK
@@ -327,7 +327,7 @@ The following describes how to use the SDK's C API for inference
    Under `mmdeploy-1.0.0-windows-amd64\\example\\cpp\\build\\Release` directory：
 
    ```
-   .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmclassification\demo\demo.JPEG
+   .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmpretrain\demo\demo.JPEG
    ```
 
 #### TensorRT
@@ -347,7 +347,7 @@ The following describes how to use the SDK's C API for inference
    Under `mmdeploy-1.0.0-windows-amd64-cuda11.3\\example\\cpp\\build\\Release` directory
 
    ```
-   .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmclassification\demo\demo.JPEG
+   .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmpretrain\demo\demo.JPEG
    ```
 
 ## Troubleshooting

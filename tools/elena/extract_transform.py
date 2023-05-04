@@ -21,12 +21,12 @@ ELENA_BIN = 'OpFuse'
 logger = get_root_logger()
 
 CODEBASE = [
-    'mmclassification', 'mmdetection', 'mmpose', 'mmrotate', 'mmocr',
+    'mmpretrain', 'mmdetection', 'mmpose', 'mmrotate', 'mmocr',
     'mmsegmentation', 'mmediting'
 ]
 
 DEPLOY_CFG = {
-    'Image Classification': 'configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py',
+    'Image Classification': 'configs/mmpretrain/classification_tensorrt_dynamic-224x224-224x224.py',
     'Object Detection': 'configs/mmdet/detection/detection_tensorrt_static-800x1344.py',
     'Instance Segmentation': 'configs/mmdet/instance-seg/instance-seg_tensorrt_static-800x1344.py',
     'Semantic Segmentation': 'configs/mmseg/segmentation_tensorrt_static-512x512.py',

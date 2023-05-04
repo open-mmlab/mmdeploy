@@ -34,7 +34,7 @@ It should be clear
 
 ## Model Conversion
 
-Here we take ViT of mmcls as model example, and take ncnn as inference backend example. Other models and inferences are similar.
+Here we take ViT of mmpretrain as model example, and take ncnn as inference backend example. Other models and inferences are similar.
 
 Let's take a look at the mmdeploy/mmdeploy directory structure and get an impression:
 
@@ -58,8 +58,8 @@ Let's take a look at the mmdeploy/mmdeploy directory structure and get an impres
 ..
 ├── codebase                #  Algorithm rewriter
 │   ├── base                          # There are multiple algorithms here that we need a bit of OO design
-│   ├── mmcls                      #  mmcls related model rewrite
-│   │   ├── deploy                       # mmcls implementation of base abstract task/model/codebase
+│   ├── mmpretrain                      #  mmpretrain related model rewrite
+│   │   ├── deploy                       # mmpretrain implementation of base abstract task/model/codebase
 │   │   └── models                      # Real model rewrite
 │   │       ├── backbones                 # Rewrites of backbone network parts, such as multiheadattention
 │   │       ├── heads                           # Such as MultiLabelClsHead
@@ -75,7 +75,7 @@ Each line above needs to be read, don't skip it.
 
 When typing `tools/deploy.py` to convert ViT, these are 3 things:
 
-1. Rewrite of mmcls ViT forward
+1. Rewrite of mmpretrain ViT forward
 2. ncnn does not support `gather` opr, customize and load it with libncnn.so
 3. Run exported ncnn model with real inference, render output, and make sure the result is correct
 
@@ -85,7 +85,7 @@ Because when exporting ViT to onnx, it generates some operators that ncnn doesn'
 
 For example, rewrite the process of `conv -> shape -> concat_const -> reshape` to `conv -> reshape` to trim off the redundant `shape` and `concat` operator.
 
-All mmcls algorithm rewriters are in the `mmdeploy/codebase/mmcls/models` directory.
+All mmpretrain algorithm rewriters are in the `mmdeploy/codebase/mmpretrain/models` directory.
 
 ### 2. Custom Operator
 

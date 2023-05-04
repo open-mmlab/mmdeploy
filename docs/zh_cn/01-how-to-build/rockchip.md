@@ -78,21 +78,21 @@ MMDeploy 支持把模型部署到瑞芯微设备上。已支持的芯片：RV112
 
 ### 分类模型转换
 
-以 mmclassification 中的 resnet50 为例，模型转换命令如下：
+以 mmpretrain 中的 resnet50 为例，模型转换命令如下：
 
 ```shell
-# 安装 mmclassification
-pip install mmcls
-git clone https://github.com/open-mmlab/mmclassification
+# 安装 mmpretrain
+pip install mmpretrain
+git clone https://github.com/open-mmlab/mmpretrain
 
 # 执行转换命令
 cd /the/path/of/mmdeploy
 python tools/deploy.py \
-    configs/mmcls/classification_rknn_static.py \
-    /the/path/of/mmclassification/configs/resnet/resnet50_8xb32_in1k.py \
+    configs/mmpretrain/classification_rknn_static.py \
+    /the/path/of/mmpretrain/configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
-    /the/path/of/mmclassification/demo/demo.JPEG \
-    --work-dir mmdeploy_models/mmcls/resnet50 \
+    /the/path/of/mmpretrain/demo/demo.JPEG \
+    --work-dir mmdeploy_models/mmpretrain/resnet50 \
     --device cpu \
     --dump-info
 ```
@@ -130,7 +130,7 @@ git clone https://github.com/open-mmlab/mmdetection
 
 # 执行转换命令
 python tools/deploy.py \
-    configs/mmcls/detection_rknn_static.py \
+    configs/mmpretrain/detection_rknn_static.py \
 
 ```
 
@@ -173,7 +173,7 @@ partition_config = dict(
 
 ### 部署 config 说明
 
-部署 config，你可以根据需要修改 `backend_config` 字段. 一个 mmclassification 的 `backend_config`例子如下:
+部署 config，你可以根据需要修改 `backend_config` 字段. 一个 mmpretrain 的 `backend_config`例子如下:
 
 ```python
 backend_config = dict(
@@ -316,8 +316,8 @@ make -j $(nproc) && make install
 
 ```bash
 cd {/the/path/to/mmdeploy}
-adb push mmdeploy_models/mmcls/resnet50  /root/resnet50
-adb push {/the/path/of/mmclassification}/demo/demo.JPEG /root/demo.JPEG
+adb push mmdeploy_models/mmpretrain/resnet50  /root/resnet50
+adb push {/the/path/of/mmpretrain}/demo/demo.JPEG /root/demo.JPEG
 adb push build/install /root/mmdeploy_sdk
 ```
 

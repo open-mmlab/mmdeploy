@@ -71,7 +71,7 @@ The backends in MMDeploy must support the ONNX. The backend loads the ".onnx" fi
    ```Python
    _base_ = ['../_base_/backends/onnxruntime.py']
 
-   codebase_config = dict(type='mmcls', task='Classification')
+   codebase_config = dict(type='mmpretrain', task='Classification')
    onnx_config = dict(input_shape=None)
    ```
 

@@ -283,7 +283,7 @@ jobs:
           python3 -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python3 -m pip install openmim numpy pycuda clip transformers
           python3 -m pip install -r requirements.txt
-          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          python3 -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
           python3 -m pip list
       - name: Build SDK
         run: |
@@ -341,7 +341,7 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt
           python -m pip install -r requirements/backends.txt
-          python -m mim install "mmcls>=1.0.0rc2"
+          python -m mim install "mmpretrain>=1.0.0rc7"
           python -m pip list
       - name: Build mmdeploy
         run: |

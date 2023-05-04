@@ -15,13 +15,13 @@ You can refer to [Build document](./linux-x86_64.md) to install ncnn inference e
 b) Convert model
 
 ```bash
-export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 # Convert the model
 cd /path/to/mmdeploy
 python tools/deploy.py \
-  configs/mmcls/classification_ncnn_static.py \
+  configs/mmpretrain/classification_ncnn_static.py \
   $MODEL_CONFIG \
   $MODEL_PATH \
   tests/data/tiger.jpeg \

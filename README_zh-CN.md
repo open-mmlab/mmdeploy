@@ -33,10 +33,10 @@
 全新的 MMDeploy 1.x 已发布，该版本适配OpenMMLab 2.0生态体系，使用时务必**对齐版本**。
 MMDeploy 代码库默认分支从`master`切换至`main`。 MMDeploy 0.x (`master`)将逐步废弃，新特性将只添加到 MMDeploy 1.x (`main`)。
 
-| mmdeploy | mmengine |   mmcv   |  mmdet   | mmcls and others |
-| :------: | :------: | :------: | :------: | :--------------: |
-|  0.x.y   |    -     | \<=1.x.y | \<=2.x.y |      0.x.y       |
-|  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   |      1.x.y       |
+| mmdeploy | mmengine |   mmcv   |  mmdet   | mmpretrain and others |
+| :------: | :------: | :------: | :------: | :-------------------: |
+|  0.x.y   |    -     | \<=1.x.y | \<=2.x.y |         0.x.y         |
+|  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   |         1.x.y         |
 
 ## 介绍
 
@@ -52,7 +52,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ### 支持超多 OpenMMLab 算法库
 
-- [mmcls](docs/zh_cn/04-supported-codebases/mmcls.md)
+- [mmpretrain](docs/zh_cn/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/zh_cn/04-supported-codebases/mmdet.md)
 - [mmseg](docs/zh_cn/04-supported-codebases/mmseg.md)
 - [mmedit](docs/zh_cn/04-supported-codebases/mmedit.md)
@@ -330,26 +330,26 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 
 ## OpenMMLab 的其他项目
 
+- [MMEngine](https://github.com/open-mmlab/mmengine): OpenMMLab 深度学习模型训练基础库
 - [MMCV](https://github.com/open-mmlab/mmcv): OpenMMLab 计算机视觉基础库
-- [MIM](https://github.com/open-mmlab/mim): MIM 是 OpenMMlab 项目、算法、模型的统一入口
-- [MMClassification](https://github.com/open-mmlab/mmclassification): OpenMMLab 图像分类工具箱
+- [MMPretrain](https://github.com/open-mmlab/mmpretrain): OpenMMLab 深度学习预训练工具箱
+- [MMagic](https://github.com/open-mmlab/mmagic): OpenMMLab 新一代人工智能内容生成（AIGC）工具箱
 - [MMDetection](https://github.com/open-mmlab/mmdetection): OpenMMLab 目标检测工具箱
 - [MMDetection3D](https://github.com/open-mmlab/mmdetection3d): OpenMMLab 新一代通用 3D 目标检测平台
 - [MMYOLO](https://github.com/open-mmlab/mmyolo): OpenMMLab YOLO 系列工具箱和基准测试
 - [MMRotate](https://github.com/open-mmlab/mmrotate): OpenMMLab 旋转框检测工具箱与测试基准
+- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab 一体化视频目标感知平台
 - [MMSegmentation](https://github.com/open-mmlab/mmsegmentation): OpenMMLab 语义分割工具箱
 - [MMOCR](https://github.com/open-mmlab/mmocr): OpenMMLab 全流程文字检测识别理解工具包
 - [MMPose](https://github.com/open-mmlab/mmpose): OpenMMLab 姿态估计工具箱
 - [MMHuman3D](https://github.com/open-mmlab/mmhuman3d): OpenMMLab 人体参数化模型工具箱与测试基准
-- [MMSelfSup](https://github.com/open-mmlab/mmselfsup): OpenMMLab 自监督学习工具箱与测试基准
-- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab 模型压缩工具箱与测试基准
 - [MMFewShot](https://github.com/open-mmlab/mmfewshot): OpenMMLab 少样本学习工具箱与测试基准
 - [MMAction2](https://github.com/open-mmlab/mmaction2): OpenMMLab 新一代视频理解工具箱
-- [MMTracking](https://github.com/open-mmlab/mmtracking): OpenMMLab 一体化视频目标感知平台
 - [MMFlow](https://github.com/open-mmlab/mmflow): OpenMMLab 光流估计工具箱与测试基准
-- [MMEditing](https://github.com/open-mmlab/mmediting): OpenMMLab 图像视频编辑工具箱
-- [MMGeneration](https://github.com/open-mmlab/mmgeneration): OpenMMLab 图片视频生成模型工具箱
 - [MMDeploy](https://github.com/open-mmlab/mmdeploy): OpenMMLab 模型部署框架
+- [MMRazor](https://github.com/open-mmlab/mmrazor): OpenMMLab 模型压缩工具箱与测试基准
+- [MIM](https://github.com/open-mmlab/mim): OpenMMlab 项目、算法、模型的统一入口
+- [Playground](https://github.com/open-mmlab/playground): 收集和展示 OpenMMLab 相关的前沿、有趣的社区项目
 
 ## 欢迎加入 OpenMMLab 社区
 

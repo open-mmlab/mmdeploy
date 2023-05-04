@@ -3,8 +3,8 @@ globals:
   codebase_dir: ../mmpretrain
   checkpoint_force_download: False
   images:
-    img_snake: &img_snake ../mmclassification/demo/demo.JPEG
-    img_color_cat: &img_color_cat ../mmclassification/tests/data/color.jpg
+    img_snake: &img_snake ../mmpretrain/demo/demo.JPEG
+    img_color_cat: &img_color_cat ../mmpretrain/tests/data/color.jpg
 
   metric_info: &metric_info
     Top 1 Accuracy: # named after metafile.Results.Metrics
@@ -18,93 +18,93 @@ globals:
     test_img: *img_color_cat
   backend_test: &default_backend_test True
   sdk:
-    sdk_dynamic: &sdk_dynamic configs/mmcls/classification_sdk_dynamic.py
+    sdk_dynamic: &sdk_dynamic configs/mmpretrain/classification_sdk_dynamic.py
 
 
 onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_onnxruntime_static.py
+    deploy_config: configs/mmpretrain/classification_onnxruntime_static.py
 
   pipeline_ort_dynamic_fp32: &pipeline_ort_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_onnxruntime_dynamic.py
+    deploy_config: configs/mmpretrain/classification_onnxruntime_dynamic.py
 
 
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmcls/classification_tensorrt_static-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt_static-224x224.py
 
   pipeline_trt_static_fp16: &pipeline_trt_static_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmcls/classification_tensorrt-fp16_static-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt-fp16_static-224x224.py
 
   pipeline_trt_static_fp16_384x384: &pipeline_trt_static_fp16_384x384
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmcls/classification_tensorrt-fp16_static-384x384.py
+    deploy_config: configs/mmpretrain/classification_tensorrt-fp16_static-384x384.py
 
   pipeline_trt_static_int8: &pipeline_trt_static_int8
     convert_image: *convert_image
     backend_test: *default_backend_test
-    deploy_config: configs/mmcls/classification_tensorrt-int8_static-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt-int8_static-224x224.py
 
   pipeline_trt_dynamic_fp32: &pipeline_trt_dynamic_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt_dynamic-224x224-224x224.py
 
   pipeline_trt_dynamic_fp16: &pipeline_trt_dynamic_fp16
     convert_image: *convert_image
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmcls/classification_tensorrt-fp16_dynamic-224x224-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt-fp16_dynamic-224x224-224x224.py
 
   pipeline_trt_dynamic_int8: &pipeline_trt_dynamic_int8
     convert_image: *convert_image
     calib_dataset_cfg:
     backend_test: *default_backend_test
     sdk_config: *sdk_dynamic
-    deploy_config: configs/mmcls/classification_tensorrt-int8_dynamic-224x224-224x224.py
+    deploy_config: configs/mmpretrain/classification_tensorrt-int8_dynamic-224x224-224x224.py
 
 
 openvino:
   pipeline_openvino_dynamic_fp32: &pipeline_openvino_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_openvino_dynamic-224x224.py
+    deploy_config: configs/mmpretrain/classification_openvino_dynamic-224x224.py
 
 
 ncnn:
   pipeline_ncnn_static_fp32: &pipeline_ncnn_static_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_ncnn_static.py
+    deploy_config: configs/mmpretrain/classification_ncnn_static.py
 
   pipeline_ncnn_dynamic_fp32: &pipeline_ncnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_ncnn_dynamic.py
+    deploy_config: configs/mmpretrain/classification_ncnn_dynamic.py
 
 
 pplnn:
   pipeline_pplnn_dynamic_fp32: &pipeline_pplnn_dynamic_fp32
     convert_image: *convert_image
     backend_test: False
-    deploy_config: configs/mmcls/classification_pplnn_dynamic-224x224.py
+    deploy_config: configs/mmpretrain/classification_pplnn_dynamic-224x224.py
 
 
 torchscript:
   pipeline_ts_fp32: &pipeline_ts_fp32
     convert_image: *convert_image
     backend_test: True
-    deploy_config: configs/mmcls/classification_torchscript.py
+    deploy_config: configs/mmpretrain/classification_torchscript.py
 
 
 models:
@@ -197,7 +197,7 @@ models:
   - name: VisionTransformer
     metafile: configs/vision_transformer/metafile.yml
     model_configs:
-      - configs/vision_transformer/vit-base-p16_ft-64xb64_in1k-384.py
+      - configs/vision_transformer/vit-base-p16_64xb64_in1k-384px.py
     pipelines:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
@@ -228,7 +228,7 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - convert_image: *convert_image
-        deploy_config: configs/mmcls/classification_tensorrt_dynamic-224x224-224x224.py
+        deploy_config: configs/mmpretrain/classification_tensorrt_dynamic-224x224-224x224.py
 
   - name: Conformer
     metafile: configs/conformer/metafile.yml

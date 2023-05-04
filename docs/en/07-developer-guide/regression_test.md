@@ -30,7 +30,7 @@ python ./tools/regression_test.py \
 
 ### Description
 
-- `--codebase` : The codebase to test, eg.`mmdet`. If you want to test multiple codebase, use `mmcls mmdet ...`
+- `--codebase` : The codebase to test, eg.`mmdet`. If you want to test multiple codebase, use `mmpretrain mmdet ...`
 - `--backends` : The backend to test. By default, all `backend`s would be tested. You can use `onnxruntime tesensorrt`to choose several backends. If you also need to test the SDK, you need to configure the `sdk_config` in `tests/regression/${codebase}.yml`.
 - `--models` : Specify the model to be tested. All models in `yml` are tested by default. You can also give some model names. For the model name, please refer to the relevant yml configuration file. For example `ResNet SE-ResNet "Mask R-CNN"`. Model name can only contain numbers and letters.
 - `--work-dir` : The directory of model convert and report, use `../mmdeploy_regression_working_dir` by default.
@@ -82,7 +82,7 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-4. Test some models of mmdet and mmcls, **only test model convert**
+4. Test some models of mmdet and mmpretrain, **only test model convert**
 
 ```shell
 python ./tools/regression_test.py \
@@ -222,16 +222,16 @@ This is an example of mmocr regression test report.
 
 ## 6. Supported Codebase and Metrics
 
-| Codebase | Metric   | Support            |
-| -------- | -------- | ------------------ |
-| mmdet    | bbox     | :heavy_check_mark: |
-|          | segm     | :heavy_check_mark: |
-|          | PQ       | :x:                |
-| mmcls    | accuracy | :heavy_check_mark: |
-| mmseg    | mIoU     | :heavy_check_mark: |
-| mmpose   | AR       | :heavy_check_mark: |
-|          | AP       | :heavy_check_mark: |
-| mmocr    | hmean    | :heavy_check_mark: |
-|          | acc      | :heavy_check_mark: |
-| mmedit   | PSNR     | :heavy_check_mark: |
-|          | SSIM     | :heavy_check_mark: |
+| Codebase   | Metric   | Support            |
+| ---------- | -------- | ------------------ |
+| mmdet      | bbox     | :heavy_check_mark: |
+|            | segm     | :heavy_check_mark: |
+|            | PQ       | :x:                |
+| mmpretrain | accuracy | :heavy_check_mark: |
+| mmseg      | mIoU     | :heavy_check_mark: |
+| mmpose     | AR       | :heavy_check_mark: |
+|            | AP       | :heavy_check_mark: |
+| mmocr      | hmean    | :heavy_check_mark: |
+|            | acc      | :heavy_check_mark: |
+| mmedit     | PSNR     | :heavy_check_mark: |
+|            | SSIM     | :heavy_check_mark: |

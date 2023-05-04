@@ -35,7 +35,7 @@ class Codebase(AdvancedEnum):
     """Define codebase enumerations."""
     MMDET = 'mmdet'
     MMSEG = 'mmseg'
-    MMCLS = 'mmcls'
+    MMPRETRAIN = 'mmpretrain'
     MMOCR = 'mmocr'
     MMEDIT = 'mmedit'
     MMDET3D = 'mmdet3d'

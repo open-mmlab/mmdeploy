@@ -4,8 +4,8 @@ import torch
 from mmdeploy.core import FUNCTION_REWRITER
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmcls.models.backbones.shufflenet_v2.InvertedResidual.forward')
+@FUNCTION_REWRITER.register_rewriter(func_name='mmpretrain.models.backbones.'
+                                     'shufflenet_v2.InvertedResidual.forward')
 def shufflenetv2_backbone__forward__default(self, x):
     """Rewrite `forward` of InvertedResidual used in shufflenet_v2.
 
@@ -21,7 +21,7 @@ def shufflenetv2_backbone__forward__default(self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
-    from mmcls.models.utils import channel_shuffle
+    from mmpretrain.models.utils import channel_shuffle
     if self.stride > 1:
         out = torch.cat((self.branch1(x), self.branch2(x)), dim=1)
     else:

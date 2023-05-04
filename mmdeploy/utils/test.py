@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import copy
 import os.path as osp
 import random
 import string
@@ -258,7 +259,7 @@ def get_model_outputs(model: nn.Module, func_name: str,
     """
     assert hasattr(model, func_name), f'Got unexpected func name: {func_name}'
     func = getattr(model, func_name)
-    model_outputs = func(**model_inputs)
+    model_outputs = func(**copy.deepcopy(model_inputs))
     return model_outputs
 
 
@@ -467,7 +468,7 @@ def get_rewrite_outputs(wrapped_model: nn.Module,
     backend = get_backend(deploy_cfg)
     with RewriterContext(
             cfg=deploy_cfg, backend=backend.value, opset=11), torch.no_grad():
-        ctx_outputs = wrapped_model(**model_inputs)
+        ctx_outputs = wrapped_model(**copy.deepcopy(model_inputs))
 
     ir_type = get_ir_config(deploy_cfg).get('type', None)
     if ir_type == IR.TORCHSCRIPT.value:

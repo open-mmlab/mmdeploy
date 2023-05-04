@@ -33,7 +33,7 @@ jobs:
           python3 -V
           python3 -m pip install openmim numpy
           python3 -m pip install -r requirements.txt
-          python3 -m mim install $(cat requirements/codebases.txt | grep mmcls)
+          python3 -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
           python3 -m pip list
       - name: Build SDK
         run: |

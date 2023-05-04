@@ -188,41 +188,41 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                                                    | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVino |
-| :------------------------------------------------------------------------------------------------------- | :---------: | :------: | :--: | :---: | :------: |
-| [FCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn)                                 |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [PSPNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet)[\*](#static_shape)        |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [DeepLabV3](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3)                     |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [DeepLabV3+](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus)                |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [Fast-SCNN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastscnn)[\*](#static_shape)   |      Y      |    Y     |  N   |   Y   |    Y     |
-| [UNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/unet)                               |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [ANN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ann)[\*](#static_shape)              |      Y      |    Y     |  N   |   N   |    N     |
-| [APCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/apcnet)                           |      Y      |    Y     |  Y   |   N   |    N     |
-| [BiSeNetV1](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv1)                     |      Y      |    Y     |  Y   |   N   |    Y     |
-| [BiSeNetV2](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv2)                     |      Y      |    Y     |  Y   |   N   |    Y     |
-| [CGNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/cgnet)                             |      Y      |    Y     |  Y   |   N   |    Y     |
-| [DMNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dmnet)                             |      Y      |    N     |  N   |   N   |    N     |
-| [DNLNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dnlnet)                           |      Y      |    Y     |  Y   |   N   |    Y     |
-| [EMANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/emanet)                           |      Y      |    Y     |  N   |   N   |    Y     |
-| [EncNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/encnet)                           |      Y      |    Y     |  N   |   N   |    Y     |
-| [ERFNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/erfnet)                           |      Y      |    Y     |  Y   |   N   |    Y     |
-| [FastFCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastfcn)                         |      Y      |    Y     |  Y   |   N   |    Y     |
-| [GCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/gcnet)                             |      Y      |    Y     |  N   |   N   |    N     |
-| [ICNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/icnet)[\*](#static_shape)          |      Y      |    Y     |  N   |   N   |    Y     |
-| [ISANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/isanet)[\*](#static_shape)        |      Y      |    Y     |  N   |   N   |    Y     |
-| [NonLocal Net](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/nonlocal_net)               |      Y      |    Y     |  Y   |   N   |    Y     |
-| [OCRNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ocrnet)                           |      Y      |    Y     |  Y   |   N   |    Y     |
-| [PointRend](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/point_rend)[\*](#static_shape) |      Y      |    Y     |  N   |   N   |    N     |
-| [Semantic FPN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/sem_fpn)                    |      Y      |    Y     |  Y   |   N   |    Y     |
-| [STDC](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc)                               |      Y      |    Y     |  Y   |   N   |    Y     |
-| [UPerNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/upernet)[\*](#static_shape)      |      Y      |    Y     |  N   |   N   |    N     |
-| [DANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/danet)                             |      Y      |    Y     |  N   |   N   |    Y     |
-| [Segmenter](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segmenter)[\*](#static_shape)  |      Y      |    Y     |  Y   |   N   |    Y     |
-| [SegFormer](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segformer)[\*](#static_shape)  |      Y      |    Y     |  N   |   N   |    Y     |
-| [SETR](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/setr)                               |      Y      |    N     |  N   |   N   |    Y     |
-| [CCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ccnet)                             |      N      |    N     |  N   |   N   |    N     |
-| [PSANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/psanet)                           |      N      |    N     |  N   |   N   |    N     |
-| [DPT](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dpt)                                 |      N      |    N     |  N   |   N   |    N     |
+| Model                                                                                                    | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVino |
+| :------------------------------------------------------------------------------------------------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
+| [FCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn)                                 |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [PSPNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet)[\*](#static_shape)        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [DeepLabV3](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3)                     |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [DeepLabV3+](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus)                |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [Fast-SCNN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastscnn)[\*](#static_shape)   |      Y      |      Y      |    Y     |  N   |   Y   |    Y     |
+| [UNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/unet)                               |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [ANN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ann)[\*](#static_shape)              |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| [APCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/apcnet)                           |      Y      |      Y      |    Y     |  Y   |   N   |    N     |
+| [BiSeNetV1](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv1)                     |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [BiSeNetV2](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv2)                     |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [CGNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/cgnet)                             |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [DMNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dmnet)                             |      ?      |      Y      |    N     |  N   |   N   |    N     |
+| [DNLNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dnlnet)                           |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [EMANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/emanet)                           |      Y      |      Y      |    Y     |  N   |   N   |    Y     |
+| [EncNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/encnet)                           |      Y      |      Y      |    Y     |  N   |   N   |    Y     |
+| [ERFNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/erfnet)                           |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [FastFCN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastfcn)                         |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [GCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/gcnet)                             |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| [ICNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/icnet)[\*](#static_shape)          |      Y      |      Y      |    Y     |  N   |   N   |    Y     |
+| [ISANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/isanet)[\*](#static_shape)        |      N      |      Y      |    Y     |  N   |   N   |    Y     |
+| [NonLocal Net](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/nonlocal_net)               |      ?      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [OCRNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ocrnet)                           |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [PointRend](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/point_rend)[\*](#static_shape) |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| [Semantic FPN](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/sem_fpn)                    |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [STDC](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc)                               |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [UPerNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/upernet)[\*](#static_shape)      |      N      |      Y      |    Y     |  N   |   N   |    N     |
+| [DANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/danet)                             |      ?      |      Y      |    Y     |  N   |   N   |    Y     |
+| [Segmenter](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segmenter)[\*](#static_shape)  |      N      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [SegFormer](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segformer)[\*](#static_shape)  |      ?      |      Y      |    Y     |  N   |   N   |    Y     |
+| [SETR](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/setr)                               |      ?      |      Y      |    N     |  N   |   N   |    Y     |
+| [CCNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ccnet)                             |      ?      |      N      |    N     |  N   |   N   |    N     |
+| [PSANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/psanet)                           |      ?      |      N      |    N     |  N   |   N   |    N     |
+| [DPT](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/dpt)                                 |      ?      |      N      |    N     |  N   |   N   |    N     |
 
 ## Reminder
 
@@ -231,3 +231,5 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 - <i id="static_shape">PSPNet, Fast-SCNN</i> only support static shape, because [nn.AdaptiveAvgPool2d](https://github.com/open-mmlab/mmsegmentation/blob/0c87f7a0c9099844eff8e90fa3db5b0d0ca02fee/mmseg/models/decode_heads/psp_head.py#L38) is not supported by most inference backends.
 
 - For models that only supports static shape, you should use the deployment config file of static shape such as `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`.
+
+- For users prefer deployed models generate probability feature map, put `codebase_config = dict(with_argmax=False)` in deploy configs.
