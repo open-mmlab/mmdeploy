@@ -124,7 +124,7 @@ val_dataloader = dict(
         pipeline=val_pipeline))
 
 val_evaluator = dict(
-    type='Evaluator',
+    type='MultiEvaluator',
     metrics=[
         dict(type='MAE'),
         dict(type='PSNR', crop_border=scale),
@@ -193,7 +193,7 @@ set5_dataloader = dict(
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
 set5_evaluator = dict(
-    type='Evaluator',
+    type='MultiEvaluator',
     metrics=[
         dict(type='PSNR', crop_border=4, prefix='Set5'),
         dict(type='SSIM', crop_border=4, prefix='Set5'),
@@ -212,7 +212,7 @@ set14_dataloader = dict(
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
 set14_evaluator = dict(
-    type='Evaluator',
+    type='MultiEvaluator',
     metrics=[
         dict(type='PSNR', crop_border=4, prefix='Set14'),
         dict(type='SSIM', crop_border=4, prefix='Set14'),
