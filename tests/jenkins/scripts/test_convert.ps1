@@ -117,7 +117,7 @@ $codebase_fullname_opt = @{
 # $codebase_list = "mmdet", "mmcls"
 
 foreach ($codebase in $codebase_list -split ' ') {
-    Write-Host "$codebase"
+    Write-Host "conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase"
     conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase
 
     #opencv
@@ -162,6 +162,7 @@ foreach ($codebase in $codebase_list -split ' ') {
     $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
 # $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
     $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
+    Write-Host "log_dir = $log_dir"
     mkdir $log_dir
 
     $SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
