@@ -13,6 +13,7 @@ $json_v1 = Get-Content -Path "$confDir\requirementV1.0.json" -Raw  |  ConvertFro
 $json_v2 = Get-Content -Path "$confDir\requirementV2.0.json" -Raw  |  ConvertFrom-Json
 cd $env:MMDEPLOY_DIR
 conda activate mmdeploy-3.7-cu113-$codebase
+Write-Host "conda activate mmdeploy-3.7-cu113-$codebase"
 # mkdir build
 # cd build
 # cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
