@@ -45,7 +45,9 @@ Write-Host "exec_performance = $exec_performance"
 Write-Host "mmdeploy_branch = $mmdeploy_branch"
 $codebase_path = (Join-Path $env:JENKINS_WORKSPACE $codebase_fullname)
 Write-Host "codebase_path = $codebase_path"
-$log_dir = (Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION")
+$date_snap=Get-Date -UFormat "%Y%m%d"
+$time_snap=Get-Date -UFormat "%Y%m%d%H%M"
+$log_dir = (Join-PATH(Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
 Write-Host "log_dir = $log_dir"
 InitMim $codebase $codebase_fullname $mmdeploy_branch
 pip uninstall mmcv-full -y
