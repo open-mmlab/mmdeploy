@@ -788,8 +788,18 @@ int main(int argc, char** argv) {
     } else if (op == "Sqrt") {
       fprintf(pp, "%-16s", "UnaryOp");
     } else if (op == "Squeeze") {
-      std::vector<int> axes = get_node_attr_ai(node, "axes");
-      // fprintf(stderr, "axes[0]: %d\n",axes[0]);
+      // deal with opset 13
+      std::vector<int> axes;
+      if (node.input_size() == 2){
+        axes = get_node_attr_from_input_ai(weights[node.input(1)]);
+      }
+      else{
+        axes = get_node_attr_ai(node, "axes");
+      }
+      if( axes.size() == 0){
+        fprintf(stderr, "axes is empty for node= %s\n", node.name().c_str());
+        return -1;
+      }
       if (axes[0] == 0) {
         fprintf(pp, "%-16s", "Noop");
       } else {
@@ -814,8 +824,18 @@ int main(int argc, char** argv) {
     } else if (op == "Upsample" || op == "Resize") {
       fprintf(pp, "%-16s", "Interp");
     } else if (op == "Unsqueeze") {
-      std::vector<int> axes = get_node_attr_ai(node, "axes");
-      // fprintf(stderr, "axes[0]: %d\n",axes[0]);
+      // deal with opset 13
+      std::vector<int> axes;
+      if (node.input_size() == 2){
+        axes = get_node_attr_from_input_ai(weights[node.input(1)]);
+      }
+      else{
+        axes = get_node_attr_ai(node, "axes");
+      }
+      if( axes.size() == 0){
+        fprintf(stderr, "axes is empty for node= %s\n", node.name().c_str());
+        return -1;
+      }
       if (axes[0] == 0) {
         fprintf(pp, "%-16s", "Noop");
       } else {
@@ -2524,8 +2544,14 @@ int main(int argc, char** argv) {
       int op_type = 5;
       fprintf(pp, " 0=%d", op_type);
     } else if (op == "Squeeze") {
-      std::vector<int> axes = get_node_attr_ai(node, "axes");
-
+      // deal with opset 13
+      std::vector<int> axes;
+      if (node.input_size() == 2){
+        axes = get_node_attr_from_input_ai(weights[node.input(1)]);
+      }
+      else{
+        axes = get_node_attr_ai(node, "axes");
+      }
       if (axes.empty()) {
         fprintf(pp, " 0=1");
         fprintf(pp, " 1=1");
@@ -2664,7 +2690,15 @@ int main(int argc, char** argv) {
       fprintf(pp, " 2=%e", w_scale);
       fprintf(pp, " 6=%d", align_corner);
     } else if (op == "Unsqueeze") {
-      std::vector<int> axes = get_node_attr_ai(node, "axes");
+      // deal with opset 13
+      std::vector<int> axes;
+      if (node.input_size() == 2){
+        axes = get_node_attr_from_input_ai(weights[node.input(1)]);
+      }
+      else{
+        axes = get_node_attr_ai(node, "axes");
+      }
+
       bool flag = true;
       for (int i = 0; i < (int)axes.size(); i++) {
         if (axes[i] == 0) {

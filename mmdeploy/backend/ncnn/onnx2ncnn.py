@@ -68,5 +68,7 @@ def from_onnx(onnx_model: Union[onnx.ModelProto, str],
     save_bin = output_file_prefix + '.bin'
 
     onnx2ncnn_path = get_onnx2ncnn_path()
-    ret_code = call([onnx2ncnn_path, onnx_path, save_param, save_bin])
-    assert ret_code == 0, 'onnx2ncnn failed'
+    cmd_args = [onnx2ncnn_path, onnx_path, save_param, save_bin]
+    ret_code = call(cmd_args)
+    cmd = ' '.join(cmd_args)
+    assert ret_code == 0, f'onnx2ncnn failed:\n{cmd}'
