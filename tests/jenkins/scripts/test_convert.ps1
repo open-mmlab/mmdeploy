@@ -181,34 +181,6 @@ foreach ($codebase in $codebase_list -split ' ') {
     Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
     invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
 }
-    $threads = @()
-
-$handles = foreach ($codebase in $codebase_list -split ' ')
-{
-    $codebase_fullname = $codebase_fullname_opt.([string]$codebase)
-    $powershell = [powershell]::Create().AddScript($script_block).AddArgument($codebase).AddArgument($exec_performance).AddArgument($codebase_fullname).AddArgument($log_dir).AddArgument($scriptDir).AddArgument($mmdeploy_branch)
-	  $powershell.RunspacePool = $Pool
-	  $powershell.BeginInvoke()
-    $threads += $powershell
-}
-
-do {
-  $i = 0
-  $done = $true
-  foreach ($handle in $handles) {
-    if ($handle -ne $null) {
-  	  if ($handle.IsCompleted) {
-        $threads[$i].EndInvoke($handle)
-        $threads[$i].Dispose()
-        $handles[$i] = $null
-      } else {
-        $done = $false
-      }
-    }
-    $i++
-  }
-  if (-not $done) { Start-Sleep -Milliseconds 1000 }
-} until ($done)
 
 }
 
