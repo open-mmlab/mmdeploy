@@ -116,7 +116,7 @@ $codebase_fullname_opt = @{
 
 # $codebase_list = "mmdet", "mmcls"
 
-foreach ($codebase in $codebase_list) {
+foreach ($codebase in $codebase_list -split ' ') {
     Write-Host "$codebase"
     conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase
 
