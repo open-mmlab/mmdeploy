@@ -158,6 +158,28 @@ foreach ($codebase in $codebase_list -split ' ') {
     pip install -r requirements/runtime.txt
     pip install -r requirements/build.txt
     pip install -v -e .
+    $date_snap=Get-Date -UFormat "%Y%m%d"
+    $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
+# $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
+    $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
+    mkdir $log_dir
+
+    $SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
+    $Pool = [runspacefactory]::CreateRunspacePool(1, $max_job_nums, $SessionState, $Host)
+    $Pool.Open()
+
+    $script_block = {
+        param(
+        [string] $codebase,
+        [string] $exec_performance,
+        [string] $codebase_fullname,
+        [string] $log_dir,
+        [string] $scriptDir,
+        [string] $mmdeploy_branch
+    )
+    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
+    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
+}
 
 }
 
@@ -224,28 +246,28 @@ foreach ($codebase in $codebase_list -split ' ') {
 # pip install -r requirements/build.txt
 # pip install -v -e .
 
-$date_snap=Get-Date -UFormat "%Y%m%d"
-$time_snap=Get-Date -UFormat "%Y%m%d%H%M"
-# $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
-$log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
-mkdir $log_dir
-
-$SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
-$Pool = [runspacefactory]::CreateRunspacePool(1, $max_job_nums, $SessionState, $Host)
-$Pool.Open()
-
-$script_block = {
-    param(
-        [string] $codebase,
-        [string] $exec_performance,
-        [string] $codebase_fullname,
-        [string] $log_dir,
-        [string] $scriptDir,
-        [string] $mmdeploy_branch
-    )
-    Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
-    invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
-}
+# $date_snap=Get-Date -UFormat "%Y%m%d"
+# $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
+# # $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
+# $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
+# mkdir $log_dir
+#
+# $SessionState = [system.management.automation.runspaces.initialsessionstate]::CreateDefault()
+# $Pool = [runspacefactory]::CreateRunspacePool(1, $max_job_nums, $SessionState, $Host)
+# $Pool.Open()
+#
+# $script_block = {
+#     param(
+#         [string] $codebase,
+#         [string] $exec_performance,
+#         [string] $codebase_fullname,
+#         [string] $log_dir,
+#         [string] $scriptDir,
+#         [string] $mmdeploy_branch
+#     )
+#     Write-Host "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
+#     invoke-expression -command "$scriptDir\win_convert_exec.ps1 $codebase $exec_performance $codebase_fullname $mmdeploy_branch *> $log_dir\$codebase.txt"
+# }
 
 $threads = @()
 
