@@ -117,7 +117,9 @@ $codebase_fullname_opt = @{
 # $codebase_list = "mmdet", "mmcls"
 
 foreach ($codebase in $codebase_list) {
+    Write-Host "$codebase"
     conda activate mmdeploy-3.7-$env:CUDA_VERSION-$codebase
+
     #opencv
     $env:path = (Join-PATH $env:DEPS_DIR opencv\4.6.0\build)+";"+$env:path
     $env:path = (Join-PATH $env:OPENCV_DIR bin)+";"+$env:path
