@@ -39,14 +39,14 @@ Back in mmdeploy, enable quantization with the option 'tools/deploy.py --quant'.
 ```bash
 cd /path/to/mmdeploy
 
-export MODEL_CONFIG=/home/rg/konghuanjun/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_CONFIG=/home/rg/konghuanjun/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 # get some imagenet sample images
 git clone https://github.com/nihui/imagenet-sample-images --depth=1
 
 # quantize
-python3 tools/deploy.py  configs/mmcls/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/imagenet-sample-images
+python3 tools/deploy.py  configs/mmpretrain/classification_ncnn-int8_static.py  ${MODEL_CONFIG}  ${MODEL_PATH}   /path/to/self-test.png   --work-dir work_dir --device cpu --quant --quant-image-dir /path/to/imagenet-sample-images
 ...
 ```
 

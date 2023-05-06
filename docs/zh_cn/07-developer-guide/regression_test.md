@@ -62,7 +62,7 @@ python ./tools/regression_test.py \
 
 ### 参数解析
 
-- `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmcls mmdet ...`
+- `--codebase` : 需要测试的 codebase，eg.`mmdet`, 测试多个 `mmpretrain mmdet ...`
 - `--backends` : 筛选测试的后端, 默认测全部`backend`, 也可传入若干个后端，例如 `onnxruntime tesnsorrt`。如果需要一同进行 SDK 的测试，需要在 `tests/regression/${codebase}.yml` 里面的 `sdk_config` 进行配置。
 - `--models` : 指定测试的模型, 默认测试 `yml` 中所有模型, 也可传入若干个模型名称，模型名称可参考相关yml配置文件。例如 `ResNet SE-ResNet "Mask R-CNN"`。注意的是，可传入只有字母和数字组成模型名称，例如 `resnet seresnet maskrcnn`。
 - `--work-dir` : 模型转换、报告生成的路径，默认是`../mmdeploy_regression_working_dir`，注意路径中不要含空格等特殊字符。
@@ -114,7 +114,7 @@ python ./tools/regression_test.py \
     --log-level INFO
 ```
 
-4. 测试 mmdet 和 mmcls 的某几个 models，**只测试转换**
+4. 测试 mmdet 和 mmpretrain 的某几个 models，**只测试转换**
 
 ```shell
 python ./tools/regression_test.py \
@@ -262,19 +262,19 @@ models:
 
 ## 6. 支持的Codebase及其Metric
 
-| Codebase | Metric   | Support            |
-| -------- | -------- | ------------------ |
-| mmdet    | bbox     | :heavy_check_mark: |
-|          | segm     | :heavy_check_mark: |
-|          | PQ       | :x:                |
-| mmcls    | accuracy | :heavy_check_mark: |
-| mmseg    | mIoU     | :heavy_check_mark: |
-| mmpose   | AR       | :heavy_check_mark: |
-|          | AP       | :heavy_check_mark: |
-| mmocr    | hmean    | :heavy_check_mark: |
-|          | acc      | :heavy_check_mark: |
-| mmedit   | PSNR     | :heavy_check_mark: |
-|          | SSIM     | :heavy_check_mark: |
+| Codebase   | Metric   | Support            |
+| ---------- | -------- | ------------------ |
+| mmdet      | bbox     | :heavy_check_mark: |
+|            | segm     | :heavy_check_mark: |
+|            | PQ       | :x:                |
+| mmpretrain | accuracy | :heavy_check_mark: |
+| mmseg      | mIoU     | :heavy_check_mark: |
+| mmpose     | AR       | :heavy_check_mark: |
+|            | AP       | :heavy_check_mark: |
+| mmocr      | hmean    | :heavy_check_mark: |
+|            | acc      | :heavy_check_mark: |
+| mmedit     | PSNR     | :heavy_check_mark: |
+|            | SSIM     | :heavy_check_mark: |
 
 ## 7. 注意事项
 

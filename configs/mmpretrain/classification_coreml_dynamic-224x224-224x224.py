@@ -1,6 +1,6 @@
 _base_ = ['../_base_/torchscript_config.py', '../_base_/backends/coreml.py']
 
-codebase_config = dict(type='mmcls', task='Classification')
+codebase_config = dict(type='mmpretrain', task='Classification')
 
 backend_config = dict(model_inputs=[
     dict(

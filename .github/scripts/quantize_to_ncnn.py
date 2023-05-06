@@ -9,17 +9,17 @@ CONFIGS = [
     [
         'hrnet.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/hrnet.onnx',  # noqa: E501
-        '~/mmclassification/configs/hrnet/hrnet-w18_4xb32_in1k.py',
+        '~/mmpretrain/configs/hrnet/hrnet-w18_4xb32_in1k.py',
     ],
     [
         'resnet18.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/resnet18.onnx',  # noqa: E501
-        '~/mmclassification/configs/resnet/resnet18_8xb16_cifar10.py',
+        '~/mmpretrain/configs/resnet/resnet18_8xb16_cifar10.py',
     ],
     [
         'mobilenet-v2.onnx',
         'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/mobilenet-v2.onnx',  # noqa: E501
-        '~/mmclassification/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
+        '~/mmpretrain/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
     ]
 ]
 
@@ -45,7 +45,7 @@ def main():
         model = conf[0]
         os.system('wget {}'.format(conf[1]))
         model_cfg = conf[2]
-        deploy_cfg = 'configs/mmcls/classification_ncnn-int8_static.py'
+        deploy_cfg = 'configs/mmpretrain/classification_ncnn-int8_static.py'
         quant_cmd = [
             'python', 'tools/onnx2ncnn_quant_table.py', '--onnx', model,
             '--deploy-cfg', deploy_cfg, '--model-cfg', model_cfg, '--out-onnx',

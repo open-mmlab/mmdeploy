@@ -4,14 +4,14 @@ This tutorial briefly introduces how to export an OpenMMlab model to a specific 
 Notes:
 
 - Supported backends are [ONNXRuntime](../05-supported-backends/onnxruntime.md), [TensorRT](../05-supported-backends/tensorrt.md), [ncnn](../05-supported-backends/ncnn.md), [PPLNN](../05-supported-backends/pplnn.md), [OpenVINO](../05-supported-backends/openvino.md).
-- Supported codebases are [MMClassification](../04-supported-codebases/mmcls.md), [MMDetection](../04-supported-codebases/mmdet.md), [MMSegmentation](../04-supported-codebases/mmseg.md), [MMOCR](../04-supported-codebases/mmocr.md), [MMEditing](../04-supported-codebases/mmedit.md).
+- Supported codebases are [MMPretrain](../04-supported-codebases/mmpretrain.md), [MMDetection](../04-supported-codebases/mmdet.md), [MMSegmentation](../04-supported-codebases/mmseg.md), [MMOCR](../04-supported-codebases/mmocr.md), [MMEditing](../04-supported-codebases/mmedit.md).
 
 ## How to convert models from Pytorch to other backends
 
 ### Prerequisite
 
 1. Install and build your target backend. You could refer to [ONNXRuntime-install](../05-supported-backends/onnxruntime.md), [TensorRT-install](../05-supported-backends/tensorrt.md), [ncnn-install](../05-supported-backends/ncnn.md), [PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md) for more information.
-2. Install and build your target codebase. You could refer to [MMClassification-install](https://github.com/open-mmlab/mmclassification/blob/1.x/docs/en/get_started.md#installation), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/get_started/install.md), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md).
+2. Install and build your target codebase. You could refer to [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/main/docs/en/get_started.md#installation), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/get_started/install.md), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md).
 
 ### Usage
 
@@ -32,8 +32,8 @@ python ./tools/deploy.py \
 
 ### Description of all arguments
 
-- `deploy_cfg` : The deployment configuration of mmdeploy for the model, including the type of inference framework, whether quantize, whether the input shape is dynamic, etc. There may be a reference relationship between configuration files, `mmdeploy/mmcls/classification_ncnn_static.py` is an example.
-- `model_cfg` : Model configuration for algorithm library, e.g. `mmclassification/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`, regardless of the path to mmdeploy.
+- `deploy_cfg` : The deployment configuration of mmdeploy for the model, including the type of inference framework, whether quantize, whether the input shape is dynamic, etc. There may be a reference relationship between configuration files, `mmdeploy/mmpretrain/classification_ncnn_static.py` is an example.
+- `model_cfg` : Model configuration for algorithm library, e.g. `mmpretrain/configs/vision_transformer/vit-base-p32_ft-64xb64_in1k-384.py`, regardless of the path to mmdeploy.
 - `checkpoint` : torch model path. It can start with http/https, see the implementation of `mmcv.FileClient` for details.
 - `img` : The path to the image or point cloud file used for testing during the model conversion.
 - `--test-img` : The path of the image file that is used to test the model. If not specified, it will be set to `None`.

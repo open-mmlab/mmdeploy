@@ -10,9 +10,9 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.ImageClassifier.forward', backend='default')
+    'mmpretrain.models.classifiers.ImageClassifier.forward', backend='default')
 @FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
+    'mmpretrain.models.classifiers.BaseClassifier.forward', backend='default')
 def base_classifier__forward(
         self,
         batch_inputs: Tensor,
@@ -35,7 +35,7 @@ def base_classifier__forward(
     if self.head is not None:
         output = self.head(output)
 
-    from mmcls.models.heads import ConformerHead, MultiLabelClsHead
+    from mmpretrain.models.heads import ConformerHead, MultiLabelClsHead
     if isinstance(self.head, MultiLabelClsHead):
         output = torch.sigmoid(output)
     elif isinstance(self.head, ConformerHead):

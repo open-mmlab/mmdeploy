@@ -7,7 +7,7 @@ from mmdeploy.utils import Backend
 
 @FUNCTION_REWRITER.register_rewriter(
     func_name=  # noqa: E251
-    'mmcls.models.backbones.vision_transformer.VisionTransformer.forward',
+    'mmpretrain.models.backbones.vision_transformer.VisionTransformer.forward',
     backend=Backend.NCNN.value)
 def visiontransformer__forward__ncnn(self, x):
     """Rewrite `forward` of VisionTransformer for ncnn backend.
@@ -24,7 +24,7 @@ def visiontransformer__forward__ncnn(self, x):
         out (Tensor): A feature map output from InvertedResidual. The tensor
         shape (N, Cout, H, W).
     """
-    from mmcls.models.utils import resize_pos_embed
+    from mmpretrain.models.utils import resize_pos_embed
     B = x.shape[0]
     x, patch_resolution = self.patch_embed(x)
 
@@ -38,7 +38,7 @@ def visiontransformer__forward__ncnn(self, x):
         num_extra_tokens=self.num_extra_tokens)
     x = self.drop_after_pos(x)
 
-    if not self.with_cls_token:
+    if self.cls_token is None:
         # Remove class token for transformer encoder input
         x = x[:, 1:]
 
@@ -51,7 +51,7 @@ def visiontransformer__forward__ncnn(self, x):
 
         if i in self.out_indices:
             B, _, C = x.shape
-            if self.with_cls_token:
+            if self.cls_token is not None:
                 patch_token = x[:, 1:].reshape(B, *patch_resolution, C)
                 patch_token = patch_token.permute(0, 3, 1, 2)
                 cls_token = x[:, 0]
@@ -59,7 +59,7 @@ def visiontransformer__forward__ncnn(self, x):
                 patch_token = x.reshape(B, *patch_resolution, C)
                 patch_token = patch_token.permute(0, 3, 1, 2)
                 cls_token = None
-            if self.output_cls_token:
+            if self.cls_token is not None:
                 out = [patch_token, cls_token]
             else:
                 out = patch_token

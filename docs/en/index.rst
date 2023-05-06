@@ -42,7 +42,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    :maxdepth: 1
    :caption: OpenMMLab Codebase Support
 
-   04-supported-codebases/mmcls.md
+   04-supported-codebases/mmpretrain.md
    04-supported-codebases/mmdet.md
    04-supported-codebases/mmseg.md
    04-supported-codebases/mmedit.md

@@ -385,7 +385,7 @@ mim install -e .
       -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
       -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
       -DMMDEPLOY_TARGET_BACKENDS=pplnn \
-      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/cuda-build/install/lib/cmake/ppl \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
       -Dpplnn_DIR=${PPLNN_DIR}/pplnn-build/install/lib/cmake/ppl
 
   make -j$(nproc) && make install

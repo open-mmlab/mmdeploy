@@ -235,3 +235,5 @@ cv2.imwrite('output_segmentation.png', img)
 - <i id=“static_shape”>PSPNet，Fast-SCNN</i> 仅支持静态输入，因为多数推理框架的 [nn.AdaptiveAvgPool2d](https://github.com/open-mmlab/mmsegmentation/blob/0c87f7a0c9099844eff8e90fa3db5b0d0ca02fee/mmseg/models/decode_heads/psp_head.py#L38) 不支持动态输入。
 
 - 对于仅支持静态形状的模型，应使用静态形状的部署配置文件，例如 `configs/mmseg/segmentation_tensorrt_static-1024x2048.py`
+
+- 对于喜欢部署模型生成概率特征图的用户，将 `codebase_config = dict(with_argmax=False)` 放在部署配置中就足够了。

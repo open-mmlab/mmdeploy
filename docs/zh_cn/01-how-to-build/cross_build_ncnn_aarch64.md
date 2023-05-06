@@ -13,16 +13,16 @@ Device
 
 ## 1. Host 模型转换
 
-参照文档安装 [mmdeploy](../01-how-to-build/) 和 [mmcls](https://github.com/open-mmlab/mmclassification)，转换 resnet18 对应模型包
+参照文档安装 [mmdeploy](../01-how-to-build/) 和 [mmpretrain](https://github.com/open-mmlab/mmpretrain)，转换 resnet18 对应模型包
 
 ```bash
-export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 # 模型转换
 cd /path/to/mmdeploy
 python tools/deploy.py \
-  configs/mmcls/classification_ncnn_static.py \
+  configs/mmpretrain/classification_ncnn_static.py \
   $MODEL_CONFIG \
   $MODEL_PATH \
   tests/data/tiger.jpeg \

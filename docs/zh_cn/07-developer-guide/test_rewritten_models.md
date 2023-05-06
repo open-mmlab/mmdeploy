@@ -7,7 +7,7 @@
 如果对模型的更改很小（例如，仅更改一个或两个变量且无副作用），则可为重写函数/模块构造输入，在`RewriteContext`中运行推理并检查结果。
 
 ```python
-# mmcls.models.classfiers.base.py
+# mmpretrain.models.classfiers.base.py
 class BaseClassifier(BaseModule, metaclass=ABCMeta):
     def forward(self, img, return_loss=True, **kwargs):
         if return_loss:
@@ -17,7 +17,7 @@ class BaseClassifier(BaseModule, metaclass=ABCMeta):
 
 # Custom rewritten function
 @FUNCTION_REWRITER.register_rewriter(
-    'mmcls.models.classifiers.BaseClassifier.forward', backend='default')
+    'mmpretrain.models.classifiers.BaseClassifier.forward', backend='default')
 def forward_of_base_classifier(self, img, *args, **kwargs):
     """Rewrite `forward` for default backend."""
     return self.simple_test(img, {})
@@ -28,7 +28,7 @@ def forward_of_base_classifier(self, img, *args, **kwargs):
 ```python
 def test_baseclassfier_forward():
     input = torch.rand(1)
-    from mmcls.models.classifiers import BaseClassifier
+    from mmpretrain.models.classifiers import BaseClassifier
     class DummyClassifier(BaseClassifier):
 
         def __init__(self, init_cfg=None):

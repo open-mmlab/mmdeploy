@@ -45,12 +45,12 @@ jobs:
           python -m pip install -r requirements.txt
           python -m pip install -U numpy
 
-      - name: Install mmcls
+      - name: Install mmpretrain
         run: |
           python -m pip install openmim
-          python -m mim install $(cat requirements/codebases.txt | grep mmcls)
-          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmclassification.git ~/mmclassification
-          cd ~/mmclassification && python -m pip install . && cd -
+          python -m mim install $(cat requirements/codebases.txt | grep mmpretrain)
+          git clone --depth 1 --branch 1.x https://github.com/open-mmlab/mmpretrain.git ~/mmpretrain
+          cd ~/mmpretrain && python -m pip install . && cd -
       - name: Install ppq
         run: |
           python -m pip install protobuf==3.20.0

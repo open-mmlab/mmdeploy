@@ -42,7 +42,7 @@
    :maxdepth: 1
    :caption: 支持的算法框架
 
-   04-supported-codebases/mmcls.md
+   04-supported-codebases/mmpretrain.md
    04-supported-codebases/mmdet.md
    04-supported-codebases/mmdet3d.md
    04-supported-codebases/mmedit.md

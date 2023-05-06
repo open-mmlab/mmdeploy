@@ -37,7 +37,7 @@ ${MODEL_CFG} \
 - `--model`: The backend model file. For example, if we convert a model to TensorRT, we need to pass the model file with ".engine" suffix.
 - `--out`:  The path to save output results in pickle format. (The results will be saved only if this argument is given)
 - `--format-only`: Whether format the output results without evaluation or not. It is useful when you want to format the result to a specific format and submit it to the test server
-- `--metrics`: The metrics to evaluate the model defined in OpenMMLab codebases. e.g. "segm", "proposal" for COCO in mmdet, "precision", "recall", "f1_score", "support" for single label dataset in mmcls.
+- `--metrics`: The metrics to evaluate the model defined in OpenMMLab codebases. e.g. "segm", "proposal" for COCO in mmdet, "precision", "recall", "f1_score", "support" for single label dataset in mmpretrain.
 - `--show`: Whether to show the evaluation result on the screen.
 - `--show-dir`: The directory to save the evaluation result. (The results will be saved only if this argument is given)
 - `--show-score-thr`: The threshold determining whether to show detection bounding boxes.
@@ -57,8 +57,8 @@ ${MODEL_CFG} \
 
 ```shell
 python tools/test.py \
-    configs/mmcls/classification_onnxruntime_static.py \
-    {MMCLS_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
+    configs/mmpretrain/classification_onnxruntime_static.py \
+    {MMPRETRAIN_DIR}/configs/resnet/resnet50_b32x8_imagenet.py \
     --model model.onnx \
     --out out.pkl \
     --device cpu \

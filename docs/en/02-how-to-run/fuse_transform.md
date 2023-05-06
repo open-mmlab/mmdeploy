@@ -38,7 +38,7 @@ ii) Download algorithm codebase
 ```bash
 $ tree -L 1 .
 ├── mmdeploy
-├── mmclassification
+├── mmpretrain
 ├── mmdetection
 ├── mmsegmentation
 ├── ...
@@ -58,11 +58,11 @@ iv) Add option `-DMMDEPLOY_ELENA_FUSION=ON` when compile MMDeploy.
 Add `--dump-info` argument when convert a model, this will generate files that SDK needs.
 
 ```bash
-$ export MODEL_CONFIG=/path/to/mmclassification/configs/resnet/resnet18_8xb32_in1k.py
+$ export MODEL_CONFIG=/path/to/mmpretrain/configs/resnet/resnet18_8xb32_in1k.py
 $ export MODEL_PATH=https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
 
 $ python tools/deploy.py \
-    configs/mmcls/classification_onnxruntime_static.py \
+    configs/mmpretrain/classification_onnxruntime_static.py \
     $MODEL_CONFIG \
     $MODEL_PATH \
     tests/data/tiger.jpeg \
