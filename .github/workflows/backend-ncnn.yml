@@ -116,10 +116,10 @@ jobs:
           export work_dir=./work_dir
           mkdir -p $work_dir
           export model_cfg=$work_dir/resnet18_8xb32_in1k.py
-          export deploy_cfg=configs/mmcls/classification_ncnn-int8_static.py
+          export deploy_cfg=configs/mmpretrain/classification_ncnn-int8_static.py
           export checkpoint=$work_dir/resnet18_8xb32_in1k_20210831-fbbb1da6.pth
           export input_img=tests/data/tiger.jpeg
-          python3 -m mim download mmcls --config resnet18_8xb32_in1k --dest $work_dir
+          python3 -m mim download mmpretrain --config resnet18_8xb32_in1k --dest $work_dir
           python3 tools/torch2onnx.py $deploy_cfg $model_cfg $checkpoint $input_img --work-dir $work_dir
           wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/dataset.tar
           tar xvf dataset.tar
@@ -129,6 +129,6 @@ jobs:
             --model-cfg $model_cfg \
             --out-onnx $work_dir/quant.onnx \
             --out-table $work_dir/ncnn.table \
-            --image-dir ../dataset
+            --image-dir ./dataset
           ls -sha $work_dir/quant.onnx
           cat $work_dir/ncnn.table
