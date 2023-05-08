@@ -63,6 +63,10 @@ class End2EndModel(BaseBackendModel):
             output_names=output_names,
             deploy_cfg=self.deploy_cfg,
             **kwargs)
+        print('\n\n\n------------------wrapper-----------------')
+        print(backend)
+        print(backend_files)
+        print(self.deploy_cfg)
 
     def convert_to_datasample(
             self, predictions: DataSample, data_samples: DataSample,
@@ -121,8 +125,15 @@ class End2EndModel(BaseBackendModel):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {lq.device}.')
         lq = lq.to(self.device)
+        print('\n\n\n--------------trt---------------')
+        print(lq.shape)
+        print(lq)
+        
         batch_outputs = self.wrapper({self.input_name:
                                       lq})[self.output_names[0]].to('cpu')
+        print('\n\n\n--------------trt output-------------')
+        print(batch_outputs)
+        
         assert hasattr(self.data_preprocessor, 'destruct')
         batch_outputs = self.data_preprocessor.destruct(
             batch_outputs, data_samples)
@@ -132,6 +143,9 @@ class End2EndModel(BaseBackendModel):
 
         predictions = self.convert_to_datasample(predictions, data_samples,
                                                  inputs)
+
+        print('\n\n\n------------trt predictions---------------')
+        print(predictions)
         return predictions
 
 
@@ -194,15 +208,20 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
+    
         if hasattr(self.data_preprocessor, 'destructor'):
             inputs = self.data_preprocessor.destructor(
                 inputs.to(self.data_preprocessor.input_std.device))
+        print("\n\n\n++++++++++++++++sdk+++++++++++++++++")
+        print(inputs.shape)
+        print(inputs)
         outputs = []
         for i in range(inputs.shape[0]):
-            output = self.wrapper.invoke(inputs[i].permute(
-                1, 2, 0).contiguous().detach().cpu().numpy())
+            output = self.wrapper.invoke(inputs[i].permute(1, 2, 0).contiguous().detach().cpu().numpy() * 255.)
             outputs.append(
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
+        print('\n\n\n---------------sdk output-----------------')
+        print(output)
         outputs = torch.stack(outputs, 0) / 255.
         assert hasattr(self.data_preprocessor, 'destruct')
         outputs = self.data_preprocessor.destruct(outputs, data_samples)
@@ -212,7 +231,9 @@ class SDKEnd2EndModel(End2EndModel):
 
         predictions = self.convert_to_datasample(predictions, data_samples,
                                                  inputs)
-        return data_samples
+        print('\n\n\n-------sdk predections--------------')
+        print(predictions)
+        return predictions
 
 
 def build_super_resolution_model(

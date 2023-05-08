@@ -7,17 +7,23 @@ globals:
     img_bg: &img_bg ../mmagic/tests/data/image/gt/baboon.png
   metric_info: &metric_info
     Set14 PSNR: # named after metafile.Results.Metrics
-      metric_key: PSNR # eval log key name
+      metric_key: Set14/PSNR # eval log key name
       tolerance: 4 # metric ±n%
     Set14 SSIM:
-      metric_key: SSIM
+      metric_key: Set14/SSIM
       tolerance: 0.02 # metric ±n
     Set5 PSNR: # named after metafile.Results.Metrics
-      metric_key: PSNR # eval log key name
+      metric_key: Set5/PSNR # eval log key name
       tolerance: 4 # metric ±n%
     Set5 SSIM:
-      metric_key: SSIM
-      tolerance: 0.02 # metric ±n
+      metric_key: Set5/SSIM
+      tolerance: 0.02 # metric ±
+    DIV2K PSNR: #named afer metafile.Results.Metrics
+      metric_key: DIV2K/PSNR
+      tolerance: 4
+    DIV2K SSIM:
+      metric_key: DIV2K/SSIM
+      tolerance: 0.02
   convert_image: &convert_image
     input_img: *img_face
     test_img: *img_bg
