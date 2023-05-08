@@ -109,6 +109,7 @@ jobs:
           cd ppq
           python3 -m pip install -r requirements.txt
           python3 setup.py install
+          python3 -m pip install ppq
       - name: Test ncnn + ppq pipeline
         run: |
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
