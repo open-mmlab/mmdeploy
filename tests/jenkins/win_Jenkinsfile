@@ -8,7 +8,7 @@ pipeline {
         )
         string(
             name: 'codebase_list',
-            defaultValue:"mmdet mmcls mmedit mmocr mmpose mmrotate mmseg mmaction mmyolo mmdet3d",
+            defaultValue:"mmdet mmpretrain mmagic mmocr mmpose mmrotate mmseg mmaction mmyolo mmdet3d",
             description: 'select codebase'
         )
         string(
