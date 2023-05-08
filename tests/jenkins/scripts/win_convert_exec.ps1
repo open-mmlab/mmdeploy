@@ -57,12 +57,12 @@ pip uninstall $codebase -y
 mim list
 python -m pip install -v $codebase_path
 mim list
-mim install $codebase
+python -m mim install $codebase
 if ($mmdeploy_branch -eq "master"){
     if ($json_v1.PSObject.Properties.Name -contains $codebase)
     {
         $mmcv = $json_v1.$codebase.mmcv
-        mim install $mmcv
+        python -m mim install $mmcv
     }
     else
     {
@@ -73,7 +73,7 @@ elseif ($mmdeploy_branch -eq "main"){
     if ($json_v2.PSObject.Properties.Name -contains $codebase)
     {
         $mmcv = $json_v2.$codebase.mmcv
-        mim install $mmcv
+        python -m mim install $mmcv
     }
     else
     {
