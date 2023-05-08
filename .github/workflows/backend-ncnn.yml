@@ -105,13 +105,13 @@ jobs:
           python3 tools/check_env.py
       - name: Install ppq
         run: |
-          git clone -b v0.6.6 https://github.com/openppl-public/ppq
+          git clone -b v0.6.6 --depth 1 https://github.com/openppl-public/ppq
           cd ppq
           python3 -m pip install -r requirements.txt
           python3 setup.py install
-          python3 -m pip install ppq
       - name: Test ncnn + ppq pipeline
         run: |
+          export PYTHONPATH=${PWD}/ppq:${PYTHONPATH}
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${LD_LIBRARY_PATH}"
           export LD_LIBRARY_PATH="/root/workspace/mmdeploy/mmdeploy/lib:${LD_LIBRARY_PATH}"
           export work_dir=./work_dir
