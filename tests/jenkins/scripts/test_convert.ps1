@@ -153,11 +153,11 @@ foreach ($codebase in $codebase_list -split ' ') {
     add Release Path
     $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
 
-    pip install openmim
-    pip install -r requirements/tests.txt
-    pip install -r requirements/runtime.txt
-    pip install -r requirements/build.txt
-    pip install -v -e .
+    python -m pip install openmim
+    python -m pip install -r requirements/tests.txt
+    python -m pip install -r requirements/runtime.txt
+    python -m pip install -r requirements/build.txt
+    python -m pip install -v -e .
     $date_snap=Get-Date -UFormat "%Y%m%d"
     $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
 # $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)

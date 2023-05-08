@@ -55,7 +55,7 @@ pip uninstall mmcv -y
 pip uninstall $codebase -y
 
 mim list
-pip install -v $codebase_path
+python -m pip install -v $codebase_path
 mim list
 mim install $codebase
 if ($mmdeploy_branch -eq "master"){
