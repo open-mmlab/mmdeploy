@@ -309,16 +309,11 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
 
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
-        #pytorch_metric.update(metafile_metric['Metrics'])
-        #dataset = metafile_metric['Dataset']
-        #task_name = metafile_metric['Task']
-        #datasets.append(dataset)
-        #using_task.add(task_name)
-        #using_dataset.add(dataset)
-
         task_name = metafile_metric['Task']
         dataset = metafile_metric['Dataset']
-        if  len(metafile_metric_info) > 1:
+
+        # check if metafile use the same metric on several datasets
+        if len(metafile_metric_info) > 1:
             for k, v in metafile_metric['Metrics'].items():
                 pytorch_metric[f'{dataset} {k}'] = v
         else:

@@ -124,10 +124,10 @@ val_dataloader = dict(
         pipeline=val_pipeline))
 
 val_evaluator = [
-        dict(type='MAE'),
-        dict(type='PSNR', crop_border=scale),
-        dict(type='SSIM', crop_border=scale),
-    ]
+    dict(type='MAE'),
+    dict(type='PSNR', crop_border=scale),
+    dict(type='SSIM', crop_border=scale),
+]
 
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=1000000, val_interval=5000)
@@ -191,9 +191,9 @@ set5_dataloader = dict(
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
 set5_evaluator = [
-        dict(type='PSNR', crop_border=4, prefix='Set5'),
-        dict(type='SSIM', crop_border=4, prefix='Set5'),
-    ]
+    dict(type='PSNR', crop_border=4, prefix='Set5'),
+    dict(type='SSIM', crop_border=4, prefix='Set5'),
+]
 
 set14_data_root = 'data/Set14'
 set14_dataloader = dict(
@@ -208,9 +208,9 @@ set14_dataloader = dict(
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
 set14_evaluator = [
-        dict(type='PSNR', crop_border=4, prefix='Set14'),
-        dict(type='SSIM', crop_border=4, prefix='Set14'),
-    ]
+    dict(type='PSNR', crop_border=4, prefix='Set14'),
+    dict(type='SSIM', crop_border=4, prefix='Set14'),
+]
 
 ut_data_root = 'tests/test_codebase/test_mmagic/data'
 ut_dataloader = dict(
