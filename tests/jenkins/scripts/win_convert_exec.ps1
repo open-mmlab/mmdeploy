@@ -50,9 +50,9 @@ $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
 $log_dir = (Join-PATH(Join-Path $env:WORKSPACE "mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
 Write-Host "log_dir = $log_dir"
 InitMim $codebase $codebase_fullname $mmdeploy_branch
-pip uninstall mmcv-full -y
-pip uninstall mmcv -y
-pip uninstall $codebase -y
+python -m pip uninstall mmcv-full -y
+python -m pip uninstall mmcv -y
+python -m pip uninstall $codebase -y
 
 mim list
 python -m pip install -v $codebase_path
@@ -81,6 +81,7 @@ elseif ($mmdeploy_branch -eq "main"){
     }
 }
 mim list
+python -m mim list
 Write-Host "$pwd"
 #Invoke-Expression -Command "python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance"
 # python3 ./tools/regression_test.py --codebase $codebase --device cuda:0 --backends tensorrt onnxruntime --work-dir $log_dir  $exec_performance
