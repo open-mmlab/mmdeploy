@@ -24,6 +24,12 @@ globals:
     DIV2K SSIM:
       metric_key: DIV2K/SSIM
       tolerance: 0.02 # metric ±n
+    PSNR: # named after metafile.Results.Metrics
+      metric_key: PSNR # eval log key name
+      tolerance: 4 # metric ±n%
+    SSIM:
+      metric_key: SSIM
+      tolerance: 0.02 # metric ±n
   convert_image: &convert_image
     input_img: *img_face
     test_img: *img_bg

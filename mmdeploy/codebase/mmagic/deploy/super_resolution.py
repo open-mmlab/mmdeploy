@@ -101,7 +101,7 @@ def _get_dataset_metainfo(model_cfg: Config):
                     meta_list.append(dataset.METAINFO)
             return meta_list
         else:
-            dataset_cfg = dataloader_cfg[0].dataset
+            dataset_cfg = dataloader_cfg.get('dataset', None)
             dataset_cls = module_dict.get(dataset_cfg.type, None)
             if dataset_cls is None:
                 continue
