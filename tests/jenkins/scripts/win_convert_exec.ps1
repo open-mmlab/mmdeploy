@@ -94,7 +94,7 @@ python $pwd/tools/regression_test.py `
 
 cd ..
 python ./master/tests/jenkins/scripts/check_results.py `
-    $log_dir
+    $log_dir `
     --regression-dir $log_dir
 if (-not $?) {
     throw "regression_test failed"
