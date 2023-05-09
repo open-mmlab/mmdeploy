@@ -27,8 +27,8 @@ class Resize : public Transform {
           MMDEPLOY_ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
           throw_exception(eInvalidArgument);
         }
-        auto height = args["size"][0].get<int>();
-        auto width = args["size"][1].get<int>();
+        auto width = args["size"][0].get<int>();
+        auto height = args["size"][1].get<int>();
         img_scale_ = {height, width};
       } else {
         MMDEPLOY_ERROR("'size' is expected to be an integer or and array of size 2");

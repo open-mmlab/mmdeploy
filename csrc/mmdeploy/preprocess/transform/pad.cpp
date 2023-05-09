@@ -82,7 +82,7 @@ class Pad : public Transform {
           data["pad_fixed_size"].push_back(pad_h);
           data["pad_fixed_size"].push_back(pad_w);
         } else {
-          padding = {0, 0, size_[1] - width, size_[0] - height};
+          padding = {0, 0, size_[0] - width, size_[1] - height};
           data["pad_fixed_size"].push_back(size_[0]);
           data["pad_fixed_size"].push_back(size_[1]);
         }
