@@ -11,8 +11,8 @@ pipeline {
             choices: [
                 'mmdet',
                 'mmdet3d',
-                'mmpretrain',
-                'mmagic',
+                'mmclassification',
+                'mmedit',
                 'mmocr',
                 'mmpose',
                 'mmrotate',
