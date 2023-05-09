@@ -6,9 +6,20 @@ pipeline {
             defaultValue:'Windows-3080_cuda-113_master_full-test.config',
             description: 'select config'
         )
-        string(
+        choice(
             name: 'codebase_list',
-            defaultValue:"mmdet mmpretrain mmagic mmocr mmpose mmrotate mmseg mmaction mmyolo mmdet3d",
+            choices: [
+                'mmdet',
+                'mmdet3d',
+                'mmpretrain',
+                'mmagic',
+                'mmocr',
+                'mmpose',
+                'mmrotate',
+                'mmseg',
+                'mmaction',
+                'mmyolo'
+            ],
             description: 'select codebase'
         )
         string(
@@ -16,9 +27,12 @@ pipeline {
             defaultValue: 'y',
             description: 'exec performance or not,use y/n'
         )
-        string(
+        choice(
             name: 'mmdeploy_branch',
-            defaultValue: 'master',
+            choices: [
+                'master',
+                'main'
+            ],
             description: 'select branch'
         )
         string(
