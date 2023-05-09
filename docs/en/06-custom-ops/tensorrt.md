@@ -525,10 +525,10 @@ TensorRT deformable convolution v3 is used to support [InternImage](https://gith
 <dt><tt>inputs[0]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>inputs[1]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>inputs[2]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 </dl>
 

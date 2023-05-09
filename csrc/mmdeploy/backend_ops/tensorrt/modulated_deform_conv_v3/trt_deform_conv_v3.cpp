@@ -105,25 +105,7 @@ void TRTDCNv3::configurePlugin(const nvinfer1::DynamicPluginTensorDesc *inputs, 
 size_t TRTDCNv3::getWorkspaceSize(const nvinfer1::PluginTensorDesc *inputs, int nbInputs,
                                   const nvinfer1::PluginTensorDesc *outputs,
                                   int nbOutputs) const TRT_NOEXCEPT {
-  int sizeof_dtype = mmdeploy::getElementSize(outputs[0].type);
-
-  int batch_size = inputs[0].dims.d[0];
-  int nInputPlane = inputs[0].dims.d[3];
-  int inputHeight = inputs[0].dims.d[1];
-  int inputWidth = inputs[0].dims.d[2];
-
-  int nOutputPlane = outputs[0].dims.d[3];
-  int outputHeight = outputs[0].dims.d[1];
-  int outputWidth = outputs[0].dims.d[2];
-
-  int kW = inputs[3].dims.d[1];
-  int kH = inputs[3].dims.d[2];
-  int im2col_step = std::min(32, batch_size);
-
-  size_t col_size =
-      mmdeploy::getAlignedSize(nInputPlane * kW * kH * outputHeight * outputWidth * sizeof_dtype);
-
-  return col_size;
+  return 0;
 }
 
 int TRTDCNv3::enqueue(const nvinfer1::PluginTensorDesc *inputDesc,

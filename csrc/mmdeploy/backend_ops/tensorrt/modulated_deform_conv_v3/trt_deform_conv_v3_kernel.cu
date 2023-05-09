@@ -13,7 +13,7 @@
 #define CUDA_KERNEL_LOOP(i, n) \
   for (int i = blockIdx.x * blockDim.x + threadIdx.x; i < (n); i += blockDim.x * gridDim.x)
 
-const int CUDA_NUM_THREADS = 256;
+const static int CUDA_NUM_THREADS = 256;
 inline int GET_BLOCKS(const int N, const int num_threads) {
   return (N + num_threads - 1) / num_threads;
 }
