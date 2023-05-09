@@ -154,6 +154,7 @@ foreach ($codebase in $codebase_list -split ' ') {
     $env:path+=";$env:MMDEPLOY_DIR\build\bin\Release"
 
     python -m pip install openmim
+    python -m pip install xlsxwriter
     python -m pip install -r requirements/tests.txt
     python -m pip install -r requirements/runtime.txt
     python -m pip install -r requirements/build.txt
