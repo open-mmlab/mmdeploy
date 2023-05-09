@@ -30,33 +30,35 @@ function InitMim() {
     Write-Host "mmdeploy_branch = $mmdeploy_branch "
 
     if ($mmdeploy_branch -eq "master" ){
-        if ($codebase_fullname -eq “mmdetection” -or $codebase_fullname -eq “mmpretrain” `
-        -or $codebase_fullname -eq "mmpose" `
-        -or $codebase_fullname -eq "mmsegmentation" -or $codebase_fullname -eq "mmediting"){
-            git clone --depth 1 -b master $url $place
+        if ($codebase_fullname -eq “mmdetection” ){
+            git clone --depth 1 -b v2.20.0 $url $place
         }
-        elseif ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmrotate” -or $codebase_fullname -eq "mmaction2" ){
+        elseif ($codebase_fullname -eq “mmrotate”  ){
             git clone --depth 1 -b main $url $place
+        }
+        elseif ($codebase_fullname -eq “mmclassification” ){
+            git clone --depth 1 -b v1.0.0rc6 $url $place
         }
         elseif ($codebase_fullname -eq “mmdetection3d” ){
             git clone --depth 1 -b v1.0.0rc4 $url $place
         }
+        elseif ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq "mmpose" -or $codebase_fullname -eq "mmaction2" `
+            -or $codebase_fullname -eq "mmsegmentation" -or $codebase_fullname -eq "mmediting"){
+            git clone --depth 1 -b 0.x $url $place
+        }
 
     }
     elseif ($mmdeploy_branch -eq "main") {
-        if ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmpretrain” `
-        -or $codebase_fullname -eq "mmpose"-or $codebase_fullname -eq "mmsegmentation" ){
-            git clone --depth 1 -b 1.x $url $place
+        if ($codebase_fullname -eq “mmocr” -or $codebase_fullname -eq “mmdetection” `
+        -or $codebase_fullname -eq "mmpose"-or $codebase_fullname -eq "mmsegmentation" -or $codebase_fullname -eq "mmyolo" `
+        -or $codebase_fullname -eq "mmediting"-or $codebase_fullname -eq "mmaction2" -or $codebase_fullname -eq "mmdetection3d"){
+            git clone --depth 1 -b main $url $place
         }
-        elseif ($codebase_fullname -eq “mmdetection”){
-            git clone --depth 1 -b 3.x $url $place
+        elseif ($codebase_fullname -eq “mmclassification”){
+            git clone --depth 1 -b mmcls-1.x $url $place
         }
-        elseif ($codebase_fullname -eq “mmdetection3d” -or $codebase_fullname -eq “mmrotate” `
-        -or $codebase_fullname -eq "mmediting" -or $codebase_fullname -eq "mmaction2"){
+        elseif ($codebase_fullname -eq “mmrotate” ){
             git clone --depth 1 -b dev-1.x $url $place
-        }
-        elseif ($codebase_fullname -eq “mmyolo”){
-            git clone --depth 1 -b dev $url $place
         }
     }
 
