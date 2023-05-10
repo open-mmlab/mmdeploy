@@ -500,7 +500,8 @@ None
 
 #### Description
 
-TensorRT deformable convolution v3 is used to support [InternImage](https://github.com/OpenGVLab/InternImage).
+TensorRT deformable convolution v3 is used to support [InternImage](https://github.com/OpenGVLab/InternImage). The op
+contains only im2col logic even though it is named convolution. For more detail, you may refer to [InternImage](https://github.com/OpenGVLab/InternImage/blob/4fb17721a0f9ab9fb28c7ed48ac1667a247c6da4/classification/ops_dcnv3/src/cuda/dcnv3_cuda.cu#L71)
 
 #### Parameters
 
@@ -525,10 +526,10 @@ TensorRT deformable convolution v3 is used to support [InternImage](https://gith
 <dt><tt>inputs[0]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>inputs[1]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 
-<dt><tt>inputs[0]</tt>: T</dt>
+<dt><tt>inputs[2]</tt>: T</dt>
 <dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
 </dl>
 

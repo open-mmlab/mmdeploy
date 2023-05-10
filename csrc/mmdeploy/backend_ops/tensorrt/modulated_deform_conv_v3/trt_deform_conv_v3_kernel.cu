@@ -157,7 +157,8 @@ void dcnv3_cuda_forward(const scalar_t *input, const scalar_t *offset, const sca
   auto per_offset_size = height_out * width_out * group * kernel_h * kernel_w * 2;
   auto per_mask_size = height_out * width_out * group * kernel_h * kernel_w;
   for (int n = 0; n < batch / im2col_step_; ++n) {
-    // AT_DISPATCH_FLOATING_TYPES(
+    // there is only im2col in dcnv3. The same as
+    // https://github.com/OpenGVLab/InternImage/blob/4fb17721a0f9ab9fb28c7ed48ac1667a247c6da4/classification/ops_dcnv3/src/cuda/dcnv3_cuda.cu#L71
     dcnv3_im2col_cuda<scalar_t>(
         stream, input + n * im2col_step_ * per_input_size,
         offset + n * im2col_step_ * per_offset_size, mask + n * im2col_step_ * per_mask_size,

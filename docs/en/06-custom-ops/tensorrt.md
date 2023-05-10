@@ -500,7 +500,8 @@ None
 
 #### Description
 
-TensorRT deformable convolution v3 is used to support [InternImage](https://github.com/OpenGVLab/InternImage).
+TensorRT deformable convolution v3 is used to support [InternImage](https://github.com/OpenGVLab/InternImage). The op
+contains only im2col logic even though it is named convolution. For more detail, you may refer to [InternImage](https://github.com/OpenGVLab/InternImage/blob/4fb17721a0f9ab9fb28c7ed48ac1667a247c6da4/classification/ops_dcnv3/src/cuda/dcnv3_cuda.cu#L71)
 
 #### Parameters
 
