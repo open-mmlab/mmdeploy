@@ -3,7 +3,7 @@
 The table below lists the models that are guaranteed to be exportable to other backends.
 
 | Model config                                                                                            | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO | Ascend | RKNN |
-| :------------------------------------------------------------------------------------------------------ | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: | :----: | :--: |
+|:--------------------------------------------------------------------------------------------------------|:-----------------| :---------: | :---------: | :------: | :--: | :---: | :------: | :----: | :--: |
 | [RetinaNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/retinanet)                       | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/faster_rcnn)                  | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |
 | [YOLOv3](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolo)                               | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   Y    |  Y   |
@@ -61,13 +61,13 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [UPerNet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/upernet)[\*](#note)             | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |   N    |  Y   |
 | [DANet](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/danet)                            | MMSegmentation   |      ?      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
 | [Segmenter](https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/segmenter) [\*static](#note)  | MMSegmentation   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
-| [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)                                 | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)                               | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                          | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)                       | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan)                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
-| [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)                                   | MMEditing        |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
-| [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                                     | MMEditing        |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRCNN](https://github.com/open-mmlab/mmagic/tree/main/configs/srcnn)                                   | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)                                 | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)                            | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [SRResNet](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)                         | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [Real-ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/real_esrgan)                       | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
+| [EDSR](https://github.com/open-mmlab/mmagic/tree/main/configs/edsr)                                     | MMagic           |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   N    |  N   |
+| [RDN](https://github.com/open-mmlab/mmagic/tree/main/configs/rdn)                                       | MMagic           |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   N    |  N   |
 | [DBNet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet)                             | MMOCR            |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |
 | [DBNetpp](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnetpp)                         | MMOCR            |      Y      |      Y      |    Y     |  ?   |   ?   |    Y     |   ?    |  N   |
 | [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet)                             | MMOCR            |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |  N   |

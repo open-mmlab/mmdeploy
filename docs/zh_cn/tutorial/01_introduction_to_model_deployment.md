@@ -99,7 +99,7 @@ class SuperResolutionNet(nn.Module):
 
 # Download checkpoint and test image
 urls = ['https://download.openmmlab.com/mmediting/restorers/srcnn/srcnn_x4k915_1x16_1000k_div2k_20200608-4186f232.pth',
-        'https://raw.githubusercontent.com/open-mmlab/mmediting/master/tests/data/face/000001.png']
+        'https://raw.githubusercontent.com/open-mmlab/mmagic/master/tests/data/face/000001.png']
 names = ['srcnn.pth', 'face.png']
 for url, name in zip(urls, names):
     if not os.path.exists(name):
@@ -138,7 +138,7 @@ torch_output = np.transpose(torch_output, [1, 2, 0]).astype(np.uint8)
 cv2.imwrite("face_torch.png", torch_output)
 ```
 
-在这份代码中，我们创建了一个经典的超分辨率网络 [SRCNN](https://arxiv.org/abs/1501.00092)。SRCNN 先把图像上采样到对应分辨率，再用 3 个卷积层处理图像。为了方便起见，我们跳过训练网络的步骤，直接下载模型权重（由于 MMEditing 中 SRCNN 的权重结构和我们定义的模型不太一样，我们修改了权重字典的 key 来适配我们定义的模型），同时下载好输入图片。为了让模型输出成正确的图片格式，我们把模型的输出转换成 HWC 格式，并保证每一通道的颜色值都在 0~255 之间。如果脚本正常运行的话，一幅超分辨率的人脸照片会保存在 `face_torch.png` 中。
+在这份代码中，我们创建了一个经典的超分辨率网络 [SRCNN](https://arxiv.org/abs/1501.00092)。SRCNN 先把图像上采样到对应分辨率，再用 3 个卷积层处理图像。为了方便起见，我们跳过训练网络的步骤，直接下载模型权重（由于 MMagic 中 SRCNN 的权重结构和我们定义的模型不太一样，我们修改了权重字典的 key 来适配我们定义的模型），同时下载好输入图片。为了让模型输出成正确的图片格式，我们把模型的输出转换成 HWC 格式，并保证每一通道的颜色值都在 0~255 之间。如果脚本正常运行的话，一幅超分辨率的人脸照片会保存在 `face_torch.png` 中。
 
 在 PyTorch 模型测试正确后，我们来正式开始部署这个模型。我们下一步的任务是把 PyTorch 模型转换成用中间表示 ONNX 描述的模型。
 

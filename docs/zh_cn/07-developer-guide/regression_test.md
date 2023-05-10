@@ -273,7 +273,7 @@ models:
 |            | AP       | :heavy_check_mark: |
 | mmocr      | hmean    | :heavy_check_mark: |
 |            | acc      | :heavy_check_mark: |
-| mmedit     | PSNR     | :heavy_check_mark: |
+| mmagic     | PSNR     | :heavy_check_mark: |
 |            | SSIM     | :heavy_check_mark: |
 
 ## 7. 注意事项

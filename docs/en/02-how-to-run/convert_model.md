@@ -4,14 +4,14 @@ This tutorial briefly introduces how to export an OpenMMlab model to a specific 
 Notes:
 
 - Supported backends are [ONNXRuntime](../05-supported-backends/onnxruntime.md), [TensorRT](../05-supported-backends/tensorrt.md), [ncnn](../05-supported-backends/ncnn.md), [PPLNN](../05-supported-backends/pplnn.md), [OpenVINO](../05-supported-backends/openvino.md).
-- Supported codebases are [MMPretrain](../04-supported-codebases/mmpretrain.md), [MMDetection](../04-supported-codebases/mmdet.md), [MMSegmentation](../04-supported-codebases/mmseg.md), [MMOCR](../04-supported-codebases/mmocr.md), [MMEditing](../04-supported-codebases/mmedit.md).
+- Supported codebases are [MMPretrain](../04-supported-codebases/mmpretrain.md), [MMDetection](../04-supported-codebases/mmdet.md), [MMSegmentation](../04-supported-codebases/mmseg.md), [MMOCR](../04-supported-codebases/mmocr.md), [MMagic](../04-supported-codebases/mmagic.md).
 
 ## How to convert models from Pytorch to other backends
 
 ### Prerequisite
 
 1. Install and build your target backend. You could refer to [ONNXRuntime-install](../05-supported-backends/onnxruntime.md), [TensorRT-install](../05-supported-backends/tensorrt.md), [ncnn-install](../05-supported-backends/ncnn.md), [PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md) for more information.
-2. Install and build your target codebase. You could refer to [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/main/docs/en/get_started.md#installation), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/get_started/install.md), [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md).
+2. Install and build your target codebase. You could refer to [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/main/docs/en/get_started.md#installation), [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/get_started.md), [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/get_started.md#installation), [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/get_started/install.md), [MMagic-install](https://github.com/open-mmlab/mmagic/blob/main/docs/en/get_started/install.md).
 
 ### Usage
 

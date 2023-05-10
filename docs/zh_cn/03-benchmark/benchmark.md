@@ -253,7 +253,7 @@ GPU: ncnn, TensorRT, PPLNN
 <table class="docutils">
 <thead>
   <tr>
-    <th align="center" colspan="2">mmedit</th>
+    <th align="center" colspan="2">mmagic</th>
     <th align="center" colspan="4">TensorRT(ms)</th>
     <th align="center" colspan="1">PPLNN(ms)</th>
   </tr>
@@ -274,7 +274,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN</a></td>
     <td align="center">32x32</td>
     <td align="center">12.64</td>
     <td align="center">12.42</td>
@@ -283,7 +283,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">7.67</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
     <td align="center">32x32</td>
     <td align="center">0.70</td>
     <td align="center">0.35</td>
@@ -938,7 +938,7 @@ GPU: ncnn, TensorRT, PPLNN
 <table class="docutils">
 <thead>
   <tr>
-    <th align="center" colspan="4">mmedit</th>
+    <th align="center" colspan="4">mmagic</th>
     <th align="center">Pytorch</th>
     <th align="center">TorchScript</th>
     <th align="center">ONNX Runtime</th>
@@ -961,7 +961,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">fp16</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/srcnn/srcnn_x4k915_1xb16-1000k_div2k.py">SRCNN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -984,7 +984,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8096</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_x4c64b23g32_1xb16-400k_div2k.py">ESRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/esrgan/esrgan_x4c64b23g32_1xb16-400k_div2k.py">ESRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1007,7 +1007,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7765</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN-PSNR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/esrgan/esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py">ESRGAN-PSNR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1030,7 +1030,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8557</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srgan_resnet/srgan_x4c64b16_1xb16-1000k_div2k.py">SRGAN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/srgan_resnet/srgan_x4c64b16_1xb16-1000k_div2k.py">SRGAN</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1053,7 +1053,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.7839</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/srgan_resnet/msrresnet_x4c64b16_1xb16-1000k_div2k.py">SRResNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/srgan_resnet/msrresnet_x4c64b16_1xb16-1000k_div2k.py">SRResNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1076,7 +1076,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8488</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/real_esrgan/realesrnet_c64b23g32_4xb12-lr2e-4-1000k_df2k-ost.py">Real-ESRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/real_esrgan/realesrnet_c64b23g32_4xb12-lr2e-4-1000k_df2k-ost.py">Real-ESRNet</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>
@@ -1099,7 +1099,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">0.8123</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmediting/blob/1.x/configs/edsr/edsr_x4c64b16_1xb16-300k_div2k.py">EDSR</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmagic/blob/main/configs/edsr/edsr_x4c64b16_1xb16-300k_div2k.py">EDSR</a></td>
     <td align="center" rowspan="2">Super Resolution</td>
     <td align="center" rowspan="2">Set5</td>
     <td align="center">PSNR</td>

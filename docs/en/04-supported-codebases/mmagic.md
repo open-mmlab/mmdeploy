@@ -1,8 +1,8 @@
-# MMEditing Deployment
+# MMagic Deployment
 
-- [MMEditing Deployment](#mmediting-deployment)
+- [MMagic Deployment](#mmagic-deployment)
   - [Installation](#installation)
-    - [Install mmedit](#install-mmedit)
+    - [Install mmagic](#install-mmagic)
     - [Install mmdeploy](#install-mmdeploy)
   - [Convert model](#convert-model)
     - [Convert super resolution model](#convert-super-resolution-model)
@@ -14,13 +14,13 @@
 
 ______________________________________________________________________
 
-[MMEditing](https://github.com/open-mmlab/mmediting/tree/1.x) aka `mmedit` is an open-source image and video editing toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
+[MMagic](https://github.com/open-mmlab/mmagic/tree/main) aka `mmagic` is an open-source image and video editing toolbox based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 ## Installation
 
-### Install mmedit
+### Install mmagic
 
-Please follow the [installation guide](https://github.com/open-mmlab/mmediting/tree/1.x#installation) to install mmedit.
+Please follow the [installation guide](https://github.com/open-mmlab/mmagic/tree/main#installation) to install mmagic.
 
 ### Install mmdeploy
 
@@ -49,17 +49,17 @@ If neither **I** nor **II** meets your requirements, [building mmdeploy from sou
 
 ## Convert model
 
-You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) to convert mmedit models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
+You can use [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) to convert mmagic models to the specified backend models. Its detailed usage can be learned from [here](https://github.com/open-mmlab/mmdeploy/tree/main/docs/en/02-how-to-run/convert_model.md#usage).
 
-When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmedit) of all supported backends for mmedit, under which the config file path follows the pattern:
+When using `tools/deploy.py`, it is crucial to specify the correct deployment config. We've already provided builtin deployment config [files](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmagic) of all supported backends for mmagic, under which the config file path follows the pattern:
 
 ```
 {task}/{task}_{backend}-{precision}_{static | dynamic}_{shape}.py
 ```
 
-- **{task}:** task in mmedit.
+- **{task}:** task in mmagic.
 
-  MMDeploy supports models of one task in mmedit, i.e., `super resolution`. Please refer to chapter [supported models](#supported-models) for task-model organization.
+  MMDeploy supports models of one task in mmagic, i.e., `super resolution`. Please refer to chapter [supported models](#supported-models) for task-model organization.
 
   **DO REMEMBER TO USE** the corresponding deployment config file when trying to convert models of different tasks.
 
@@ -77,34 +77,34 @@ The command below shows an example about converting `ESRGAN` model to onnx model
 
 ```shell
 cd mmdeploy
-# download esrgan model from mmedit model zoo
-mim download mmedit --config esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k --dest .
+# download esrgan model from mmagic model zoo
+mim download mmagic --config esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k --dest .
 # convert esrgan model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-  configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py \
+  configs/mmagic/super-resolution/super-resolution_onnxruntime_dynamic.py \
   esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py \
   esrgan_psnr_x4c64b23g32_1x16_1000k_div2k_20200420-bf5c993c.pth \
   demo/resources/face.png \
-  --work-dir mmdeploy_models/mmedit/ort \
+  --work-dir mmdeploy_models/mmagic/ort \
   --device cpu \
   --show \
   --dump-info
 ```
 
-You can also convert the above model to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmedit), e.g., converting to tensorrt model by `super-resolution/super-resolution_tensorrt-_dynamic-32x32-512x512.py`.
+You can also convert the above model to other backend models by changing the deployment config file `*_onnxruntime_dynamic.py` to [others](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmagic), e.g., converting to tensorrt model by `super-resolution/super-resolution_tensorrt-_dynamic-32x32-512x512.py`.
 
 ```{tip}
-When converting mmedit models to tensorrt models, --device should be set to "cuda"
+When converting mmagic models to tensorrt models, --device should be set to "cuda"
 ```
 
 ## Model specification
 
 Before moving on to model inference chapter, let's know more about the converted model structure which is very important for model inference.
 
-The converted model locates in the working directory like `mmdeploy_models/mmedit/ort` in the previous example. It includes:
+The converted model locates in the working directory like `mmdeploy_models/mmagic/ort` in the previous example. It includes:
 
 ```
-mmdeploy_models/mmedit/ort
+mmdeploy_models/mmagic/ort
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -116,7 +116,7 @@ in which,
 - **end2end.onnx**: backend model which can be inferred by ONNX Runtime
 - \***.json**: the necessary information for mmdeploy SDK
 
-The whole package **mmdeploy_models/mmedit/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
+The whole package **mmdeploy_models/mmagic/ort** is defined as **mmdeploy SDK model**, i.e., **mmdeploy SDK model** includes both backend model and inference meta information.
 
 ## Model inference
 
@@ -129,10 +129,10 @@ from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch
 
-deploy_cfg = 'configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py'
+deploy_cfg = 'configs/mmagic/super-resolution/super-resolution_onnxruntime_dynamic.py'
 model_cfg = 'esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmedit/ort/end2end.onnx']
+backend_model = ['./mmdeploy_models/mmagic/ort/end2end.onnx']
 image = './demo/resources/face.png'
 
 # read deploy_cfg and model_cfg
@@ -170,7 +170,7 @@ import cv2
 img = cv2.imread('./demo/resources/face.png')
 
 # create a classifier
-restorer = Restorer(model_path='./mmdeploy_models/mmedit/ort', device_name='cpu', device_id=0)
+restorer = Restorer(model_path='./mmdeploy_models/mmagic/ort', device_name='cpu', device_id=0)
 # perform inference
 result = restorer(img)
 
@@ -184,13 +184,13 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 
 ## Supported models
 
-| Model                                                                               | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
-| [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)   | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
-| [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| Model                                                                             | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+|:----------------------------------------------------------------------------------| :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| [SRCNN](https://github.com/open-mmlab/mmagic/tree/main/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN-PSNR](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRResNet](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)   | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [Real-ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [EDSR](https://github.com/open-mmlab/mmagic/tree/main/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
+| [RDN](https://github.com/open-mmlab/mmagic/tree/main/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |

@@ -1,8 +1,8 @@
-# MMEditing 模型部署
+# MMagic 模型部署
 
-- [MMEditing 模型部署](#mmediting-模型部署)
+- [MMagic 模型部署](#mmagic-模型部署)
   - [安装](#安装)
-    - [安装 mmedit](#安装-mmedit)
+    - [安装 mmagic](#安装-mmagic)
     - [安装 mmdeploy](#安装-mmdeploy)
   - [模型转换](#模型转换)
     - [超分任务模型转换](#超分任务模型转换)
@@ -14,13 +14,13 @@
 
 ______________________________________________________________________
 
-[MMEditing](https://github.com/open-mmlab/mmediting)，又称 `mmedit`，是基于 PyTorch 的开源图像和视频编辑工具箱。它是 [OpenMMLab](https://openmmlab.com/) 项目成员之一。
+[MMagic](https://github.com/open-mmlab/mmagic)，又称 `mmagic`，是基于 PyTorch 的开源图像和视频编辑工具箱。它是 [OpenMMLab](https://openmmlab.com/) 项目成员之一。
 
 ## 安装
 
-### 安装 mmedit
+### 安装 mmagic
 
-请参考[官网安装指南](https://github.com/open-mmlab/mmediting/tree/1.x#installation)。
+请参考[官网安装指南](https://github.com/open-mmlab/mmagic/tree/main#installation)。
 
 ### 安装 mmdeploy
 
@@ -49,10 +49,10 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 ## 模型转换
 
-你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) 把 mmedit 模型一键式转换为推理后端模型。
+你可以使用 [tools/deploy.py](https://github.com/open-mmlab/mmdeploy/tree/main/tools/deploy.py) 把 mmagic 模型一键式转换为推理后端模型。
 该工具的详细使用说明请参考[这里](https://github.com/open-mmlab/mmdeploy/tree/main/docs/zh_cn/02-how-to-run/convert_model.md#使用方法).
 
-转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmedit)。
+转换的关键之一是使用正确的配置文件。项目中已内置了各后端部署[配置文件](https://github.com/open-mmlab/mmdeploy/tree/main/configs/mmagic)。
 文件的命名模式是：
 
 ```
@@ -61,9 +61,9 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 其中：
 
-- **{task}:** mmedit 中的任务
+- **{task}:** mmagic 中的任务
 
-  mmedit 中任务有多种。目前，mmdeploy 支持其中的超分（super resolution）任务。关于`模型-任务`的划分，请参考章节[模型支持列表](#模型支持列表)。
+  mmagic 中任务有多种。目前，mmdeploy 支持其中的超分（super resolution）任务。关于`模型-任务`的划分，请参考章节[模型支持列表](#模型支持列表)。
 
   **请务必**使用对应的部署文件转换相关的模型。
 
@@ -81,15 +81,15 @@ export LD_LIBRARY_PATH=$(pwd)/../mmdeploy-dep/onnxruntime-linux-x64-1.8.1/lib/:$
 
 ```shell
 cd mmdeploy
-# download esrgan model from mmedit model zoo
-mim download mmedit --config esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k --dest .
+# download esrgan model from mmagic model zoo
+mim download mmagic --config esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k --dest .
 # convert esrgan model to onnxruntime model with dynamic shape
 python tools/deploy.py \
-  configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py \
+  configs/mmagic/super-resolution/super-resolution_onnxruntime_dynamic.py \
   esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py \
   esrgan_psnr_x4c64b23g32_1x16_1000k_div2k_20200420-bf5c993c.pth \
   demo/resources/face.png \
-  --work-dir mmdeploy_models/mmedit/ort \
+  --work-dir mmdeploy_models/mmagic/ort \
   --device cpu \
   --show \
   --dump-info
@@ -105,10 +105,10 @@ python tools/deploy.py \
 
 在使用转换后的模型进行推理之前，有必要了解转换结果的结构。 它存放在 `--work-dir` 指定的路路径下。
 
-上例中的`mmdeploy_models/mmedit/ort`，结构如下：
+上例中的`mmdeploy_models/mmagic/ort`，结构如下：
 
 ```
-mmdeploy_models/mmedit/ort
+mmdeploy_models/mmagic/ort
 ├── deploy.json
 ├── detail.json
 ├── end2end.onnx
@@ -133,10 +133,10 @@ from mmdeploy.apis.utils import build_task_processor
 from mmdeploy.utils import get_input_shape, load_config
 import torch
 
-deploy_cfg = 'configs/mmedit/super-resolution/super-resolution_onnxruntime_dynamic.py'
+deploy_cfg = 'configs/mmagic/super-resolution/super-resolution_onnxruntime_dynamic.py'
 model_cfg = 'esrgan_psnr-x4c64b23g32_1xb16-1000k_div2k.py'
 device = 'cpu'
-backend_model = ['./mmdeploy_models/mmedit/ort/end2end.onnx']
+backend_model = ['./mmdeploy_models/mmagic/ort/end2end.onnx']
 image = './demo/resources/face.png'
 
 # read deploy_cfg and model_cfg
@@ -174,7 +174,7 @@ import cv2
 img = cv2.imread('./demo/resources/face.png')
 
 # create a classifier
-restorer = Restorer(model_path='./mmdeploy_models/mmedit/ort', device_name='cpu', device_id=0)
+restorer = Restorer(model_path='./mmdeploy_models/mmagic/ort', device_name='cpu', device_id=0)
 # perform inference
 result = restorer(img)
 
@@ -189,13 +189,13 @@ cv2.imwrite('output_restorer.bmp', result)
 
 ## 模型支持列表
 
-| Model                                                                               | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
-| [SRCNN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [ESRGAN-PSNR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [SRResNet](https://github.com/open-mmlab/mmediting/tree/1.x/configs/srgan_resnet)   | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [Real-ESRGAN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
-| [EDSR](https://github.com/open-mmlab/mmediting/tree/1.x/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
-| [RDN](https://github.com/open-mmlab/mmediting/tree/1.x/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| Model                                                                             | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+|:----------------------------------------------------------------------------------| :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| [SRCNN](https://github.com/open-mmlab/mmagic/tree/main/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [ESRGAN-PSNR](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [SRResNet](https://github.com/open-mmlab/mmagic/tree/main/configs/srgan_resnet)   | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [Real-ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/real_esrgan) | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [EDSR](https://github.com/open-mmlab/mmagic/tree/main/configs/edsr)               | super-resolution |      Y       |    Y     |  Y   |   N   |    Y     |
+| [RDN](https://github.com/open-mmlab/mmagic/tree/main/configs/rdn)                 | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |

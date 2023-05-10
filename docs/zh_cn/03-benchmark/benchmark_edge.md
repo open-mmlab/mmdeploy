@@ -51,7 +51,7 @@ tips:
 - mmdet 需要手动把模型拆成两部分。因为
   - snpe 源码中 `onnx_to_ir.py` 仅能解析输入，`ir_to_dlc.py` 还不支持 topk
   - UDO （用户自定义算子）无法和 `snpe-onnx-to-dlc` 配合使用
-- mmedit 模型
+- mmagic 模型
   - srcnn 需要 cubic resize，snpe 不支持
   - esrgan 可正常转换，但加载模型会导致设备重启
 - mmrotate 依赖 [e2cnn](https://pypi.org/project/e2cnn/) ，需要手动安装 [其 Python3.6
