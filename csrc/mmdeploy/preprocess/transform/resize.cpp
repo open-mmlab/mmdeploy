@@ -74,12 +74,12 @@ class Resize : public Transform {
         MMDEPLOY_DEBUG(
             "neither 'scale' or 'scale_factor' is provided in input value. "
             "'img_scale' will be used");
-        if (-1 == img_scale_[1]) {
+        if (-1 == img_scale_[0]) {
           if (w < h) {
-            dst_w = img_scale_[0];
+            dst_w = img_scale_[1];
             dst_h = dst_w * h / w;
           } else {
-            dst_h = img_scale_[0];
+            dst_h = img_scale_[1];
             dst_w = dst_h * w / h;
           }
         } else {

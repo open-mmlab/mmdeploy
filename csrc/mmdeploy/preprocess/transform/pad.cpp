@@ -83,8 +83,8 @@ class Pad : public Transform {
           data["pad_fixed_size"].push_back(pad_w);
         } else {
           padding = {0, 0, size_[0] - width, size_[1] - height};
-          data["pad_fixed_size"].push_back(size_[0]);
           data["pad_fixed_size"].push_back(size_[1]);
+          data["pad_fixed_size"].push_back(size_[0]);
         }
       } else if (size_divisor_ != 1) {
         auto pad_h = (height + size_divisor_ - 1) / size_divisor_ * size_divisor_;
