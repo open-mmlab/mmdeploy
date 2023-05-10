@@ -185,7 +185,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 ## Supported models
 
 | Model                                                                             | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-|:----------------------------------------------------------------------------------| :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| :-------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
 | [SRCNN](https://github.com/open-mmlab/mmagic/tree/main/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN-PSNR](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |

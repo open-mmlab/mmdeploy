@@ -3,7 +3,7 @@
 自测完成的 model-backend 组合：
 
 | Model config                                                                                            | Codebase         | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO | Ascend | RKNN |
-|:--------------------------------------------------------------------------------------------------------|:-----------------| :---------: | :---------: | :------: | :--: | :---: | :------: | :----: | :--: |
+| :------------------------------------------------------------------------------------------------------ | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: | :----: | :--: |
 | [RetinaNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/retinanet)                       | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [Faster R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/faster_rcnn)                  | MMDetection      |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  N   |
 | [YOLOv3](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/yolo)                               | MMDetection      |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |   Y    |  Y   |

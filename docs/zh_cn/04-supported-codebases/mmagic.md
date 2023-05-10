@@ -190,7 +190,7 @@ cv2.imwrite('output_restorer.bmp', result)
 ## 模型支持列表
 
 | Model                                                                             | Task             | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-|:----------------------------------------------------------------------------------| :--------------- | :----------: | :------: | :--: | :---: | :------: |
+| :-------------------------------------------------------------------------------- | :--------------- | :----------: | :------: | :--: | :---: | :------: |
 | [SRCNN](https://github.com/open-mmlab/mmagic/tree/main/configs/srcnn)             | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)           | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ESRGAN-PSNR](https://github.com/open-mmlab/mmagic/tree/main/configs/esrgan)      | super-resolution |      Y       |    Y     |  Y   |   Y   |    Y     |
