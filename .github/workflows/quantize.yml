@@ -56,7 +56,7 @@ jobs:
           git clone https://github.com/openppl-public/ppq ~/ppq
           cd ~/ppq && git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
           python -m pip install -r requirements.txt
-          python -m pip install protobuf==3.20.0
+          python -m pip install protobuf==3.20.2
           python setup.py install
           cd -
       - name: Run tests
