@@ -133,7 +133,7 @@ foreach ($codebase in $codebase_list -split ' ') {
     #cudnn
     $env:path=(Join-PATH $env:CUDNN_DIR bin)+";"+$env:path
     New-Item -Path $env:MMDEPLOY_DIR\data -ItemType SymbolicLink -Value  D:\huangzijie\workspace\data
-    net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
+#     net use \\10.1.52.36\public\benchmark 123456 /user:zhengshaofeng
     mkdir build
     cd build
     cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
@@ -162,7 +162,8 @@ foreach ($codebase in $codebase_list -split ' ') {
     $date_snap=Get-Date -UFormat "%Y%m%d"
     $time_snap=Get-Date -UFormat "%Y%m%d%H%M"
 # $log_dir=(Join-PATH (Join-PATH "$env:WORKSPACE\regression_log\convert_log" $data_snap) $time_snap)
-    $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
+#     $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
+    $log_dir = (Join-PATH (Join-Path "D:\reg-test\regression_log\convert_log\" $data_snap) $time_snap)
     Write-Host "log_dir = $log_dir"
     mkdir $log_dir
 
