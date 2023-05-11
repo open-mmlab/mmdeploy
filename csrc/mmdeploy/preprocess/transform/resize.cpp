@@ -27,6 +27,8 @@ class Resize : public Transform {
           MMDEPLOY_ERROR("'size' expects an array of size 2, but got {}", args["size"].size());
           throw_exception(eInvalidArgument);
         }
+        // the order in openmmalb config is [width, height], while in SDK it is [height, width]
+        // keep the last dim -1
         auto width = args["size"][0].get<int>();
         auto height = args["size"][1].get<int>();
         if (-1 == height) {
