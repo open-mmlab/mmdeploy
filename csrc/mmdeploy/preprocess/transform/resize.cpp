@@ -29,7 +29,11 @@ class Resize : public Transform {
         }
         auto width = args["size"][0].get<int>();
         auto height = args["size"][1].get<int>();
-        img_scale_ = {height, width};
+        if (-1 == height) {
+          img_scale_ = {width, -1};
+        } else {
+          img_scale_ = {height, width};
+        }
       } else {
         MMDEPLOY_ERROR("'size' is expected to be an integer or and array of size 2");
         throw_exception(eInvalidArgument);
@@ -74,12 +78,12 @@ class Resize : public Transform {
         MMDEPLOY_DEBUG(
             "neither 'scale' or 'scale_factor' is provided in input value. "
             "'img_scale' will be used");
-        if (-1 == img_scale_[0]) {
+        if (-1 == img_scale_[1]) {
           if (w < h) {
-            dst_w = img_scale_[1];
+            dst_w = img_scale_[0];
             dst_h = dst_w * h / w;
           } else {
-            dst_h = img_scale_[1];
+            dst_h = img_scale_[0];
             dst_w = dst_h * w / h;
           }
         } else {
