@@ -126,7 +126,8 @@ def install_torch(torch_version):
         url = f'https://download.pytorch.org/whl/cu{cuda_int}'
         cmd = [
             'python -m pip install ', f'torch=={torch_version}+cu{cuda_int} ',
-            f'torchvision=={tv_version}+cu{cuda_int} ', f'-f {url}'
+            f'torchvision=={tv_version}+cu{cuda_int} ',
+            f'--extra-index-url {url}'
         ]
     run_cmd(cmd)
 
