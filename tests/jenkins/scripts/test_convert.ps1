@@ -164,7 +164,7 @@ foreach ($codebase in $codebase_list -split ' ') {
 
 #     $log_dir = (Join-PATH (Join-Path "$env:WORKSPACE\mmdeploy_regression_working_dir\$codebase\$env:CUDA_VERSION" $data_snap) $time_snap)
     $log_dir = (Join-PATH (Join-Path "D:\reg-test\regression_log\convert_log\mmdeploy_test_windows\$codebase\" $data_snap) $time_snap)
-    New-Item -Path $env:WORKSPACE\mmdeploy_regression_working_dir\regression_log -ItemType SymbolicLink -Value  D:\reg-test\regression_log
+#     New-Item -Path $env:WORKSPACE\mmdeploy_regression_working_dir\regression_log -ItemType SymbolicLink -Value  D:\reg-test\regression_log
     Write-Host "log_dir = $log_dir"
     mkdir $log_dir
 
