@@ -55,7 +55,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
 - [mmpretrain](docs/zh_cn/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/zh_cn/04-supported-codebases/mmdet.md)
 - [mmseg](docs/zh_cn/04-supported-codebases/mmseg.md)
-- [mmedit](docs/zh_cn/04-supported-codebases/mmedit.md)
+- [mmagic](docs/zh_cn/04-supported-codebases/mmagic.md)
 - [mmocr](docs/zh_cn/04-supported-codebases/mmocr.md)
 - [mmpose](docs/zh_cn/04-supported-codebases/mmpose.md)
 - [mmdet3d](docs/zh_cn/04-supported-codebases/mmdet3d.md)
