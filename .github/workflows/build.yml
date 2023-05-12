@@ -48,7 +48,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install -U numpy clip numba transformers
+          python -m pip install clip numba transformers numpy==1.23
           python -m pip list
       - name: Install mmyolo
         run: |
