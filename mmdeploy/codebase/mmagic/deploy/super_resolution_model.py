@@ -123,7 +123,7 @@ class End2EndModel(BaseBackendModel):
         lq = lq.to(self.device)
 
         batch_outputs = self.wrapper({self.input_name:
-                                      lq})[self.output_names[0]].to('cpu')
+                                      lq})[self.output_names[0]].to(self.device)
 
         assert hasattr(self.data_preprocessor, 'destruct')
         batch_outputs = self.data_preprocessor.destruct(
