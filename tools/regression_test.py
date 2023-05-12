@@ -14,6 +14,7 @@ import pandas as pd
 import yaml
 from torch.hub import download_url_to_file
 from torch.multiprocessing import set_start_method
+from tqdm import tqdm
 
 import mmdeploy.version
 from mmdeploy.utils import (get_backend, get_codebase, get_root_logger,
@@ -228,18 +229,6 @@ def update_report(report_dict: dict, model_name: str, model_config: str,
         report_txt_path (Path): Report txt path.
         codebase_name (str): Codebase name.
     """
-    # make model path shorter
-    if '.pth' in checkpoint:
-        checkpoint = Path(checkpoint).absolute().resolve()
-        checkpoint = str(checkpoint).split(f'/{codebase_name}/')[-1]
-        checkpoint = '${CHECKPOINT_DIR}' + f'/{codebase_name}/{checkpoint}'
-    else:
-        parent_dir, filename = os.path.split(checkpoint)
-        parent_dir = os.path.abspath(parent_dir)
-        work_dir = report_txt_path.parent.absolute().resolve()
-        parent_dir = parent_dir.replace(str(work_dir), '${WORK_DIR}')
-        checkpoint = os.path.join(parent_dir, filename)
-
     # save to tmp file
     tmp_str = f'{model_name},{model_config},{task_name},{checkpoint},' \
               f'{dataset},{backend_name},{deploy_config},' \
@@ -302,6 +291,9 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     # get metric
     model_info = meta_info[model_config_name]
     metafile_metric_info = model_info['Results']
+    # deal with mmseg case
+    if not isinstance(metafile_metric_info, (list, tuple)):
+        metafile_metric_info = [metafile_metric_info]
     pytorch_metric = dict()
     using_dataset = set()
     using_task = set()
@@ -477,8 +469,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
     if not work_dir.exists():
         work_dir.mkdir(parents=True, exist_ok=True)
     cmd_lines = [
-        'python3 tools/test.py', f'{deploy_cfg_path}',
-        f'{str(model_cfg_path.absolute())}',
+        'python3 tools/test.py', f'{deploy_cfg_path}', f'{model_cfg_path}',
         f'--model {convert_checkpoint_path}', f'--work-dir "{work_dir}"',
         '--speed-test', f'--device {device_type}'
     ]
@@ -578,7 +569,7 @@ def replace_top_in_pipeline_json(backend_output_path: Path,
 def gen_log_path(backend_output_path: Path, log_name: str):
     if not backend_output_path.exists():
         backend_output_path.mkdir(parents=True, exist_ok=True)
-    log_path = backend_output_path.joinpath(log_name).absolute().resolve()
+    log_path = backend_output_path.joinpath(log_name)
     if log_path.exists():
         os.remove(str(log_path))
     return log_path
@@ -719,12 +710,10 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
 
     # convert cmd lines
     cmd_lines = [
-        'python3 ./tools/deploy.py',
-        f'{str(deploy_cfg_path.absolute().resolve())}',
-        f'{str(model_cfg_path.absolute().resolve())}',
-        f'"{str(checkpoint_path.absolute().resolve())}"',
-        f'"{input_img_path}" ', f'--work-dir "{backend_output_path}" ',
-        f'--device {device_type} ', '--log-level INFO'
+        'python3 ./tools/deploy.py', f'{deploy_cfg_path}', f'{model_cfg_path}',
+        f'"{checkpoint_path}"', f'"{input_img_path}"',
+        f'--work-dir "{backend_output_path}"', f'--device {device_type}',
+        '--log-level INFO'
     ]
 
     if sdk_config is not None and test_type == 'precision':
@@ -748,8 +737,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
         convert_checkpoint_path = ''
         for backend_file in backend_file_name:
             backend_path = backend_output_path.joinpath(backend_file)
-            backend_path = str(backend_path.absolute().resolve())
-            convert_checkpoint_path += f'{str(backend_path)} '
+            convert_checkpoint_path += f'{backend_path} '
     else:
         report_checkpoint = backend_output_path.joinpath(backend_file_name)
         convert_checkpoint_path = \
@@ -845,7 +833,7 @@ def save_report(report_info: dict, report_save_path: Path,
         logger (logging.Logger): Logger.
     """
     logger.info('Saving regression test report to '
-                f'{report_save_path.absolute().resolve()}, pls wait...')
+                f'{report_save_path}, pls wait...')
     try:
         df = pd.DataFrame(report_info)
         df.to_excel(report_save_path)
@@ -853,7 +841,7 @@ def save_report(report_info: dict, report_save_path: Path,
         logger.info(f'Got error report_info = {report_info}')
 
     logger.info('Saved regression test report to '
-                f'{report_save_path.absolute().resolve()}.')
+                f'{report_save_path}.')
 
 
 def _filter_string(inputs):
@@ -954,7 +942,7 @@ def main():
             f_report.write(title_str)  # clear the report tmp file
 
         models_info = yaml_info.get('models')
-        for models in models_info:
+        for models in tqdm(models_info):
             model_name_origin = models.get('name', 'model')
             model_name_new = _filter_string(model_name_origin)
             if 'model_configs' not in models:
