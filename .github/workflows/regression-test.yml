@@ -37,7 +37,7 @@ on:
         required: true
         description: "Tested codebase list, eg: ['mmdet', 'mmseg']"
         type: string
-        default: "['mmcls','mmdet','mmedit','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
+        default: "['mmpretrain','mmdet','mmedit','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
       backends:
         required: true
         description: 'Tested codebase list, eg: "onnxruntime tensorrt".'

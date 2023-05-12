@@ -10,7 +10,7 @@ import tempfile
 from packaging import version
 
 REPO_NAMES = dict(
-    mmcls='mmclassification',
+    mmcls='mmpretrain',
     mmdet='mmdetection',
     mmseg='mmsegmentation',
     mmdet3d='mmdetection3d',
@@ -77,9 +77,7 @@ def prepare_codebases(codebases):
         if os.path.exists(target_dir):
             shutil.rmtree(target_dir)
         branch = 'main'
-        if codebase == 'mmcls':
-            branch = 'mmcls-1.x'
-        elif codebase == 'mmrotate':
+        if codebase == 'mmrotate':
             branch = 'dev-1.x'
         elif codebase == 'mmedit':
             branch = 'v1.0.0rc7'
