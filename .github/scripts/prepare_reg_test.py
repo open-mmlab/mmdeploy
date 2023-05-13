@@ -10,11 +10,12 @@ import tempfile
 from packaging import version
 
 REPO_NAMES = dict(
-    mmcls='mmpretrain',
+    mmpretrain='mmpretrain',
     mmdet='mmdetection',
     mmseg='mmsegmentation',
     mmdet3d='mmdetection3d',
     mmedit='mmediting',
+    mmagic='mmagic',
     mmocr='mmocr',
     mmpose='mmpose',
     mmrotate='mmrotate',

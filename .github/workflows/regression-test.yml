@@ -94,7 +94,7 @@ jobs:
           echo "${{github.event.inputs.models}}"
           echo "${{github.event.inputs.backends}}"
           echo "${{github.event.inputs.run_performance}}"
-          echo "$env:GITHUB_RUN_ID"
+          echo "$GITHUB_RUN_ID"
           echo "${{matrix.codebase}}"
           echo "${{matrix.torch_version}}"
           echo ""
@@ -230,6 +230,9 @@ jobs:
           $env:BACKENDS=% {$env:BACKENDS -replace "tensorrt", "trt"}
           $env:BACKENDS=% {$env:BACKENDS -replace "onnxruntime", "ort"}
           echo "env:BACKENDS = $env:BACKENDS"
+          $env:Torch_DIR=% {python -c "import torch;print(torch.utils.cmake_prefix_path + '\Torch')"}
+          echo "Torch_DIR=$env:Torch_DIR" >> $env:GITHUB_ENV
+          echo "BACKENDS=$env:BACKENDS" >> $env:GITHUB_ENV
           mkdir build
           cd build
           cmake ..  -A x64 -T v142 `
@@ -243,6 +246,7 @@ jobs:
             -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
             -DOpenCV_DIR="$env:OPENCV_DIR\build\x64\vc15\lib" `
             -DTENSORRT_DIR="$env:TENSORRT_DIR" `
+            -DTorch_DIR="$env:Torch_DIR" `
             -DONNXRUNTIME_DIR="$env:ONNXRUNTIME_DIR" `
             -DMMDEPLOY_BUILD_EXAMPLES=OFF `
             -DCUDNN_DIR="$env:CUDNN_DIR"
