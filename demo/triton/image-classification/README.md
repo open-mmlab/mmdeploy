@@ -1,0 +1,1 @@
+python tools/deploy.py configs/mmpretrain/classification_tensorrt_static-224x224.py ../mmpretrain/configs/resnet/resnet18_8xb32_in1k.py ../checkpoints/resnet18_8xb32_in1k_20210831-fbbb1da6.pth ../mmclassification/demo/demo.JPEG --device cuda --work-dir work_dirs/resnet --dump-info

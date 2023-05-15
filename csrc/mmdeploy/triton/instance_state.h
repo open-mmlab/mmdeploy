@@ -36,6 +36,7 @@ class ModelInstanceState : public BackendModelInstance {
  private:
   ModelState* model_state_;
   ::mmdeploy::Pipeline pipeline_;
+  std::vector<std::vector<int>> merge_inputs_;
 };
 
 }  // namespace triton::backend::mmdeploy

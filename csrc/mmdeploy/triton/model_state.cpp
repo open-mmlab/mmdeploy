@@ -2,6 +2,11 @@
 
 #include "model_state.h"
 
+#include <fstream>
+
+#include "mmdeploy/archive/json_archive.h"
+#include "mmdeploy/archive/value_archive.h"
+#include "mmdeploy/core/utils/filesystem.h"
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/pipeline.hpp"
 
@@ -19,8 +24,7 @@ TRITONSERVER_Error* ModelState::Create(TRITONBACKEND_Model* triton_model, ModelS
   return {};
 }
 
-ModelState::ModelState(TRITONBACKEND_Model* triton_model)
-    : BackendModel(triton_model), model_(JoinPath({RepositoryPath(), std::to_string(Version())})) {
+ModelState::ModelState(TRITONBACKEND_Model* triton_model) : BackendModel(triton_model) {
   THROW_IF_BACKEND_MODEL_ERROR(ValidateModelConfig());
 }
 
@@ -79,12 +83,39 @@ TRITONSERVER_Error* ModelState::ValidateModelConfig() {
     device_name = "cuda";
   }
 
-  auto config = model_.ReadConfig("pipeline.json").value();
+  std::string pipeline_template_path =
+      JoinPath({RepositoryPath(), std::to_string(Version()), "pipeline_template.json"});
+  if (fs::exists(pipeline_template_path)) {
+    std::ifstream ifs(pipeline_template_path, std::ios::binary | std::ios::in);
+    ifs.seekg(0, std::ios::end);
+    auto size = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+    std::string str(size, '\0');
+    ifs.read(str.data(), size);
 
-  config["context"]["model"] = model_;
+    auto config = ::mmdeploy::from_json<::mmdeploy::Value>(nlohmann::json::parse(str));
+    ::mmdeploy::Context context(::mmdeploy::Device(device_name, device_id));
+    config["task_type"].get_to(task_type_);
+    config.object().erase("task_type");
+    if (config.contains("model_names")) {
+      std::vector<std::string> model_names;
+      ::mmdeploy::from_value(config["model_names"], model_names);
+      for (const auto& name : model_names) {
+        std::string model_path = JoinPath({RepositoryPath(), std::to_string(Version()), name});
+        context.Add(name, ::mmdeploy::Model(model_path));
+      }
+      config.object().erase("model_names");
+    }
+    return {config, context};
 
-  ::mmdeploy::Context context(::mmdeploy::Device(device_name, device_id));
-  return {config, context};
+  } else {
+    model_ = ::mmdeploy::framework::Model(JoinPath({RepositoryPath(), std::to_string(Version())}));
+    auto config = model_.ReadConfig("pipeline.json").value();
+    config["context"]["model"] = model_;
+    ::mmdeploy::Context context(::mmdeploy::Device(device_name, device_id));
+    task_type_ = model_.meta().task;
+    return {config, context};
+  }
 }
 
 }  // namespace triton::backend::mmdeploy

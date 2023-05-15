@@ -1,0 +1,1 @@
+python tools/deploy.py configs/mmdet/detection/detection_tensorrt_dynamic-320x320-1344x1344.py ../mmdetection/configs/retinanet/retinanet_r18_fpn_1x_coco.py https://download.openmmlab.com/mmdetection/v2.0/retinanet/retinanet_r18_fpn_1x_coco/retinanet_r18_fpn_1x_coco_20220407_171055-614fd399.pth  ../mmdetection/demo/demo.jpg --work-dir work_dir/retinanet --dump-info --device cuda

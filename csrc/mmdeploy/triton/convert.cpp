@@ -4,6 +4,7 @@
 
 #include <numeric>
 
+#include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/archive/value_archive.h"
 #include "mmdeploy/codebase/mmaction/mmaction.h"
 #include "mmdeploy/codebase/mmcls/mmcls.h"
@@ -67,15 +68,42 @@ void ConvertDetections(const Value& item, std::vector<Tensor>& tensors) {
                            "labels"});
   auto bboxes_data = bboxes.data<float>();
   auto labels_data = labels.data<int32_t>();
+  int64_t sum_byte_size = 0;
   for (const auto& det : detections) {
     for (const auto& x : det.bbox) {
       *bboxes_data++ = x;
     }
     *bboxes_data++ = det.score;
     *labels_data++ = det.label_id;
+    sum_byte_size += det.mask.byte_size();
   }
   tensors.push_back(std::move(bboxes));
   tensors.push_back(std::move(labels));
+  if (sum_byte_size > 0) {
+    // return mask
+    Tensor masks(TensorDesc{bboxes.device(),
+                            ::mmdeploy::DataType::kINT8,
+                            {static_cast<int64_t>(sum_byte_size)},
+                            "masks"});
+    Tensor offs(TensorDesc{bboxes.device(),
+                           ::mmdeploy::DataType::kINT32,
+                           {static_cast<int64_t>(detections.size()), 3},
+                           "mask_offs"});  // [(off, w, h), ... ]
+
+    auto masks_data = masks.data<int8_t>();
+    auto offs_data = offs.data<int32_t>();
+    int sum_offs = 0;
+    for (const auto& det : detections) {
+      memcpy(masks_data, det.mask.data<int8_t>(), det.mask.byte_size());
+      masks_data += det.mask.byte_size();
+      *offs_data++ = sum_offs;
+      *offs_data++ = det.mask.width();
+      *offs_data++ = det.mask.height();
+      sum_offs += det.mask.byte_size();
+    }
+    tensors.push_back(std::move(masks));
+    tensors.push_back(std::move(offs));
+  }
 }
 
 void ConvertSegmentation(const Value& item, std::vector<Tensor>& tensors) {
@@ -105,39 +133,75 @@ void ConvertTextDetections(const Value& item, std::vector<Tensor>& tensors) {
   ::mmdeploy::from_value(item, detections);
   Tensor bboxes(TensorDesc{::mmdeploy::Device(0),
                            ::mmdeploy::DataType::kFLOAT,
-                           {static_cast<int64_t>(detections.size()), 9},
-                           "dets"});
+                           {static_cast<int64_t>(detections.size()), 8},
+                           "bboxes"});
+  Tensor scores(TensorDesc{::mmdeploy::Device(0),
+                           ::mmdeploy::DataType::kFLOAT,
+                           {static_cast<int64_t>(detections.size()), 1},
+                           "scores"});
   auto bboxes_data = bboxes.data<float>();
+  auto scores_data = scores.data<float>();
   for (const auto& det : detections) {
     bboxes_data = std::copy(det.bbox.begin(), det.bbox.end(), bboxes_data);
-    *bboxes_data++ = det.score;
+    *scores_data++ = det.score;
   }
   tensors.push_back(std::move(bboxes));
+  tensors.push_back(std::move(scores));
+}
+
+void ConvertTextRecognitions(const Value& item, int request_count,
+                             const std::vector<int>& batch_per_request,
+                             std::vector<std::vector<Tensor>>& tensors,
+                             std::vector<std::string>& strings) {
+  std::vector<::mmdeploy::mmocr::TextRecognition> recognitions;
+  ::mmdeploy::from_value(item, recognitions);
+
+  int k = 0;
+  for (int i = 0; i < request_count; i++) {
+    int num = batch_per_request[i];
+    Tensor texts(TensorDesc{
+        ::mmdeploy::Device(0), ::mmdeploy::DataType::kINT32, {static_cast<int64_t>(num)}, "texts"});
+    Tensor score(TensorDesc{::mmdeploy::Device(0),
+                            ::mmdeploy::DataType::kINT32,
+                            {static_cast<int64_t>(num)},
+                            "scores"});
+    auto text_data = texts.data<int32_t>();
+    auto score_data = score.data<int32_t>();
+
+    for (int j = 0; j < num; j++) {
+      auto& recognition = recognitions[k++];
+      text_data[j] = static_cast<int32_t>(strings.size());
+      strings.push_back(recognition.text);
+      score_data[j] = static_cast<int32_t>(strings.size());
+      strings.push_back(::mmdeploy::to_json(::mmdeploy::to_value(recognition.score)).dump());
+    }
+    tensors[i].push_back(std::move(texts));
+    tensors[i].push_back(std::move(score));
+  }
 }
 
 void ConvertTextRecognitions(const Value& item, std::vector<Tensor>& tensors,
                              std::vector<std::string>& strings) {
   std::vector<::mmdeploy::mmocr::TextRecognition> recognitions;
   ::mmdeploy::from_value(item, recognitions);
+
   Tensor texts(TensorDesc{::mmdeploy::Device(0),
                           ::mmdeploy::DataType::kINT32,
                           {static_cast<int64_t>(recognitions.size())},
-                          "text"});
+                          "rec_texts"});
   Tensor score(TensorDesc{::mmdeploy::Device(0),
-                          ::mmdeploy::DataType::kFLOAT,
+                          ::mmdeploy::DataType::kINT32,
                           {static_cast<int64_t>(recognitions.size())},
-                          "text_score"});
+                          "rec_scores"});
   auto text_data = texts.data<int32_t>();
-  auto score_data = score.data<float>();
-  for (size_t text_id = 0; text_id < recognitions.size(); ++text_id) {
-    text_data[text_id] = static_cast<int32_t>(strings.size());
-    strings.push_back(recognitions[text_id].text);
-    auto& s = recognitions[text_id].score;
-    if (!s.empty()) {
-      score_data[text_id] = std::accumulate(s.begin(), s.end(), 0.f) / static_cast<float>(s.size());
-    } else {
-      score_data[text_id] = 0;
-    }
+  auto score_data = score.data<int32_t>();
+
+  for (size_t j = 0; j < recognitions.size(); j++) {
+    auto& recognition = recognitions[j];
+    text_data[j] = static_cast<int32_t>(strings.size());
+    strings.push_back(recognition.text);
+    score_data[j] = static_cast<int32_t>(strings.size());
+    strings.push_back(::mmdeploy::to_json(::mmdeploy::to_value(recognition.score)).dump());
   }
   tensors.push_back(std::move(texts));
   tensors.push_back(std::move(score));
@@ -164,20 +228,39 @@ void ConvertPreprocess(const Value& item, std::vector<Tensor>& tensors,
   tensors.push_back(std::move(img_meta_tensor));
 }
 
-void ConvertPoseDetections(const Value& item, std::vector<Tensor>& tensors) {
-  ::mmdeploy::mmpose::PoseDetectorOutput detections;
-  ::mmdeploy::from_value(item, detections);
-  Tensor pts(TensorDesc{::mmdeploy::Device(0),
-                        ::mmdeploy::DataType::kFLOAT,
-                        {static_cast<int64_t>(detections.key_points.size()), 3},
-                        "keypoints"});
-  auto pts_data = pts.data<float>();
-  for (const auto& p : detections.key_points) {
-    *pts_data++ = p.bbox[0];
-    *pts_data++ = p.bbox[1];
-    *pts_data++ = p.score;
+void ConvertInference(const Value& item, std::vector<Tensor>& tensors) {
+  for (auto it = item.begin(); it != item.end(); ++it) {
+    auto tensor = it->get<Tensor>();
+    auto desc = tensor.desc();
+    desc.name = it.key();
+    tensors.emplace_back(desc, tensor.buffer());
   }
-  tensors.push_back({std::move(pts)});
+}
+
+void ConvertPoseDetections(const Value& item, int request_count,
+                           const std::vector<int>& batch_per_request,
+                           std::vector<std::vector<Tensor>>& tensors) {
+  std::vector<::mmdeploy::mmpose::PoseDetectorOutput> detections;
+  ::mmdeploy::from_value(item, detections);
+
+  int k = 0;
+  for (int i = 0; i < request_count; i++) {
+    int num = batch_per_request[i];
+    Tensor pts(TensorDesc{::mmdeploy::Device(0),
+                          ::mmdeploy::DataType::kFLOAT,
+                          {num, static_cast<int64_t>(detections[0].key_points.size()), 3},
+                          "keypoints"});
+    auto pts_data = pts.data<float>();
+    for (int j = 0; j < num; j++) {
+      auto& detection = detections[k++];
+      for (const auto& p : detection.key_points) {
+        *pts_data++ = p.bbox[0];
+        *pts_data++ = p.bbox[1];
+        *pts_data++ = p.score;
+      }
+    }
+    tensors[i].push_back(std::move(pts));
+  }
 }
 
 void ConvertRotatedDetections(const Value& item, std::vector<Tensor>& tensors) {
@@ -185,7 +268,7 @@ void ConvertRotatedDetections(const Value& item, std::vector<Tensor>& tensors) {
   ::mmdeploy::from_value(item, detections);
   Tensor bboxes(TensorDesc{::mmdeploy::Device(0),
                            ::mmdeploy::DataType::kFLOAT,
-                           {static_cast<int64_t>(detections.detections.size()), 5},
+                           {static_cast<int64_t>(detections.detections.size()), 6},
                            "bboxes"});
   Tensor labels(TensorDesc{::mmdeploy::Device(0),
                            ::mmdeploy::DataType::kINT32,
@@ -203,12 +286,18 @@ void ConvertRotatedDetections(const Value& item, std::vector<Tensor>& tensors) {
 }
 
 std::vector<std::vector<Tensor>> ConvertOutputToTensors(const std::string& type,
-                                                        int32_t request_count, const Value& output,
+                                                        int32_t request_count,
+                                                        const std::vector<int>& batch_per_request,
+                                                        const Value& output,
                                                         std::vector<std::string>& strings) {
   std::vector<std::vector<Tensor>> tensors(request_count);
   if (type == "Preprocess") {
     for (int i = 0; i < request_count; ++i) {
       ConvertPreprocess(output.front()[i], tensors[i], strings);
+    }
+  } else if (type == "Inference") {
+    for (int i = 0; i < request_count; ++i) {
+      ConvertInference(output.front()[i], tensors[i]);
     }
   } else if (type == "Classifier") {
     for (int i = 0; i < request_count; ++i) {
@@ -231,13 +320,9 @@ std::vector<std::vector<Tensor>> ConvertOutputToTensors(const std::string& type,
       ConvertTextDetections(output.front()[i], tensors[i]);
     }
   } else if (type == "TextRecognizer") {
-    for (int i = 0; i < request_count; ++i) {
-      ConvertTextRecognitions(output.front(), tensors[i], strings);
-    }
+    ConvertTextRecognitions(output.front(), request_count, batch_per_request, tensors, strings);
   } else if (type == "PoseDetector") {
-    for (int i = 0; i < request_count; ++i) {
-      ConvertPoseDetections(output.front()[i], tensors[i]);
-    }
+    ConvertPoseDetections(output.front(), request_count, batch_per_request, tensors);
   } else if (type == "RotatedDetector") {
     for (int i = 0; i < request_count; ++i) {
       ConvertRotatedDetections(output.front()[i], tensors[i]);

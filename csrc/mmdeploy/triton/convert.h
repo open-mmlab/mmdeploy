@@ -3,14 +3,16 @@
 #ifndef MMDEPLOY_CONVERT_H
 #define MMDEPLOY_CONVERT_H
 
+#include <vector>
+
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
 namespace triton::backend::mmdeploy {
 
 std::vector<std::vector<::mmdeploy::framework::Tensor>> ConvertOutputToTensors(
-    const std::string& type, int32_t request_count, const ::mmdeploy::Value& output,
-    std::vector<std::string>& strings);
+    const std::string& type, int32_t request_count, const std::vector<int>& batch_per_request,
+    const ::mmdeploy::Value& output, std::vector<std::string>& strings);
 
 }
 

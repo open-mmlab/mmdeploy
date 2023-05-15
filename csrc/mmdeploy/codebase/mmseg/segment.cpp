@@ -90,6 +90,7 @@ class ResizeMask : public MMSegmentation {
       std::vector<int> axes = {0, 3, 1, 2};
       ::mmdeploy::operation::Context ctx(host, stream_);
       OUTCOME_TRY(permute_.Apply(tensor_score, tensor_score, axes));
+      tensor_score.Squeeze(0);
     }
 
     SegmentorOutput output{tensor_mask, tensor_score, input_height, input_width, classes_};

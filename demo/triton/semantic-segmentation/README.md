@@ -1,0 +1,1 @@
+python tools/deploy.py configs/mmseg/segmentation_tensorrt-fp16_static-512x1024.py ../mmsegmentation/configs/pspnet/pspnet_r18-d8_4xb2-80k_cityscapes-512x1024.py ../../checkpoints/pspnet_r18-d8_512x1024_80k_cityscapes_20201225_021458-09ffa746.pth ../mmsegmentation/demo/demo.png --work-dir work_dir/pspnet --dump-info --device cuda

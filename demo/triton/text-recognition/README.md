@@ -1,0 +1,1 @@
+python tools/deploy.py configs/mmocr/text-recognition/text-recognition_tensorrt-fp16_dynamic-1x32x32-1x32x640.py ../mmocr/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py https://download.openmmlab.com/mmocr/textrecog/crnn/crnn_mini-vgg_5e_mj/crnn_mini-vgg_5e_mj_20220826_224120-8afbedbb.pth ../mmocr/demo/demo_text_recog.jpg --work-dir work_dir/crnn --device cuda --dump-info

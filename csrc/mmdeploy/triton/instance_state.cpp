@@ -3,9 +3,11 @@
 #include "instance_state.h"
 
 #include <numeric>
+#include <sstream>
 
 #include "convert.h"
 #include "json.hpp"
+#include "json_input.h"
 #include "mmdeploy/archive/json_archive.h"
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/mat.h"
@@ -31,7 +33,25 @@ ModelInstanceState::ModelInstanceState(ModelState* model_state,
                                        TRITONBACKEND_ModelInstance* triton_model_instance)
     : BackendModelInstance(model_state, triton_model_instance),
       model_state_(model_state),
-      pipeline_(model_state_->CreatePipeline(Kind(), DeviceId())) {}
+      pipeline_(model_state_->CreatePipeline(Kind(), DeviceId())) {
+  // parse parameters
+  ::triton::common::TritonJson::Value parameters;
+  model_state->ModelConfig().Find("parameters", &parameters);
+  std::string info;
+  TryParseModelStringParameter(parameters, "merge_inputs", &info, "");
+  if (info != "") {
+    std::stringstream ss1(info);
+    std::string group;
+    while (std::getline(ss1, group, ',')) {
+      std::stringstream ss2(group);
+      merge_inputs_.emplace_back();
+      int v;
+      while (ss2 >> v) {
+        merge_inputs_.back().push_back(v);
+      }
+    }
+  }
+}
 
 //     TRITON               DIR      MMDeploy
 // (Tensor, PixFmt, Region) ->  (Mat     , Region)
@@ -49,6 +69,42 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   SET_TIMESTAMP(exec_start_ns);
 
   ModelState* model_state = StateForModel();
+
+  const int max_batch_size = model_state->MaxBatchSize();
+
+  for (size_t i = 0; i < request_count; ++i) {
+    if (requests[i] == nullptr) {
+      RequestsRespondWithError(
+          requests, request_count,
+          TRITONSERVER_ErrorNew(
+              TRITONSERVER_ERROR_INTERNAL,
+              std::string("null request given to MMDeploy backend for '" + Name() + "'").c_str()));
+      return nullptr;
+    }
+
+    if (max_batch_size > 0) {
+      // Retrieve the batch size from one of the inputs, if the model
+      // supports batching, the first dimension size is batch size
+      // and batch dim should be 1 for mmdeploy
+      TRITONBACKEND_Input* input;
+      TRITONSERVER_Error* err =
+          TRITONBACKEND_RequestInputByIndex(requests[i], 0 /* index */, &input);
+      if (err == nullptr) {
+        const int64_t* shape;
+        err = TRITONBACKEND_InputProperties(input, nullptr, nullptr, &shape, nullptr, nullptr,
+                                            nullptr);
+        if (err == nullptr && shape[0] != 1) {
+          err = TRITONSERVER_ErrorNew(
+              TRITONSERVER_ERROR_INTERNAL,
+              std::string("only support batch dim 1 for single request").c_str());
+        }
+      }
+      if (err != nullptr) {
+        RequestsRespondWithError(requests, request_count, err);
+        return nullptr;
+      }
+    }
+  }
 
   // 'responses' is initialized as a parallel array to 'requests',
   // with one TRITONBACKEND_Response object for each
@@ -70,35 +126,30 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
     responses.push_back(response);
   }
 
-  BackendInputCollector collector(requests, request_count, &responses,
-                                  model_state->TritonMemoryManager(), false /* pinned_enabled */,
-                                  nullptr /* stream*/);
-
-  // To instruct ProcessTensor to "gather" the entire batch of input
-  // tensors into a single contiguous buffer in CPU memory, set the
-  // "allowed input types" to be the CPU ones (see tritonserver.h in
-  // the triton-inference-server/core repo for allowed memory types).
   std::vector<std::pair<TRITONSERVER_MemoryType, int64_t>> allowed_input_types = {
       {TRITONSERVER_MEMORY_CPU_PINNED, 0}, {TRITONSERVER_MEMORY_CPU, 0}};
 
-  std::vector<const char*> input_buffers(model_state->input_names().size());
-
   std::vector<std::unique_ptr<BackendInputCollector>> collectors(request_count);
   std::vector<std::vector<TRITONBACKEND_Response*>> response_vecs(request_count);
+  bool need_cuda_input_sync = false;
 
-  ::mmdeploy::Value::Array image_and_metas_array;
-  ::mmdeploy::Value::Array input_tensors_array;
-
-  // Setting input data
   for (uint32_t request_index = 0; request_index < request_count; ++request_index) {
-    ::mmdeploy::Value::Object input_tensors;
-    ::mmdeploy::Value::Object image_and_metas;
     response_vecs[request_index] = {responses[request_index]};
     collectors[request_index] = std::make_unique<BackendInputCollector>(
         &requests[request_index], 1, &response_vecs[request_index],
-        model_state->TritonMemoryManager(), false, nullptr);
+        model_state->TritonMemoryManager(), false, CudaStream());
+  }
+
+  // Setting input data
+  ::mmdeploy::Value vec_inputs;
+  std::vector<int> batch_per_request;
+  for (uint32_t request_index = 0; request_index < request_count; ++request_index) {
+    const auto& collector = collectors[request_index];
+    ::mmdeploy::Value vec_inputi;
+    batch_per_request.push_back(1);
 
     for (size_t input_id = 0; input_id < model_state->input_names().size(); ++input_id) {
+      ::mmdeploy::Value inputi;
       const auto& input_name = model_state->input_names()[input_id];
       // Get input shape
       TRITONBACKEND_Input* input{};
@@ -115,70 +166,122 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
         size_t buffer_size{};
         TRITONSERVER_MemoryType memory_type{};
         int64_t memory_type_id{};
-        RETURN_IF_ERROR(collectors[request_index]->ProcessTensor(
-            input_name.c_str(), nullptr, 0, allowed_input_types, &buffer, &buffer_size,
-            &memory_type, &memory_type_id));
-
+        RETURN_IF_ERROR(collector->ProcessTensor(input_name.c_str(), nullptr, 0,
+                                                 allowed_input_types, &buffer, &buffer_size,
+                                                 &memory_type, &memory_type_id));
         ::mmdeploy::framework::Device device(0);
         if (memory_type == TRITONSERVER_MEMORY_GPU) {
           device = ::mmdeploy::framework::Device("cuda", static_cast<int>(memory_type_id));
         }
-        if (model_state->input_formats()[request_index] == "FORMAT_NHWC") {
+
+        if (model_state->input_formats()[input_id] == "FORMAT_NHWC") {
           // Construct Mat from shape & buffer
+          int h, w;
+          if (max_batch_size > 0) {
+            h = dims[1];
+            w = dims[2];
+          } else {
+            h = dims[0];
+            w = dims[1];
+          }
           ::mmdeploy::framework::Mat mat(
-              static_cast<int>(dims[0]), static_cast<int>(dims[1]), ::mmdeploy::PixelFormat::kBGR,
-              ::mmdeploy::DataType::kINT8,
+              h, w, ::mmdeploy::PixelFormat::kBGR, ::mmdeploy::DataType::kINT8,
               std::shared_ptr<void>(const_cast<char*>(buffer), [](auto) {}), device);
-          image_and_metas.insert({input_name, mat});
+          inputi = {{input_name, mat}};
         } else {
           ::mmdeploy::framework::Tensor tensor(
               ::mmdeploy::framework::TensorDesc{
-                  device, ::mmdeploy::DataType::kFLOAT,
+                  device, ConvertDataType(model_state->input_data_types()[input_id]),
                   ::mmdeploy::framework::TensorShape(dims, dims + dims_count), input_name},
               std::shared_ptr<void>(const_cast<char*>(buffer), [](auto) {}));
-          input_tensors.insert({input_name, std::move(tensor)});
+          inputi = {{input_name, std::move(tensor)}};
         }
       } else {
         ::mmdeploy::Value value;
         GetStringInputTensor(input, dims, dims_count, value);
         assert(value.is_array());
-        ::mmdeploy::update(image_and_metas, value.front().object(), 2);
+
+        if (value[0].contains("type")) {
+          const auto& type = value[0]["type"].get_ref<std::string&>();
+          CreateJsonInput(value[0]["value"], type, inputi);
+          batch_per_request.back() = inputi.size();
+        } else {
+          inputi = {{}};
+          inputi.update(value.front().object());
+        }
+      }
+      vec_inputi.push_back(std::move(inputi));  // [ a, [b,b] ]
+    }
+
+    // broadcast, [ a, [b,b] ] -> [[a, a], [b, b]]
+    if (batch_per_request.back() >= 1) {
+      // std::vector<::mmdeploy::Value> input;
+      ::mmdeploy::Value input;
+      for (size_t i = 0; i < vec_inputi.size(); i++) {
+        input.push_back(::mmdeploy::Value::kArray);
+      }
+
+      for (int i = 0; i < batch_per_request.back(); i++) {
+        for (size_t input_id = 0; input_id < model_state->input_names().size(); ++input_id) {
+          if (vec_inputi[input_id].is_object()) {
+            input[input_id].push_back(vec_inputi[input_id]);
+          } else {
+            input[input_id].push_back(vec_inputi[input_id][i]);
+          }
+        }
+      }
+      vec_inputi = input;
+    }
+
+    // construct [[a,a,a], [b,b,b]]
+    if (vec_inputs.is_null()) {
+      for (size_t i = 0; i < vec_inputi.size(); i++) {
+        vec_inputs.push_back(::mmdeploy::Value::kArray);
       }
     }
-
-    if (!input_tensors.empty()) {
-      input_tensors_array.emplace_back(std::move(input_tensors));
+    for (size_t i = 0; i < vec_inputi.size(); i++) {
+      auto&& inner = vec_inputi[i];
+      for (auto&& obj : inner) {
+        vec_inputs[i].push_back(std::move(obj));
+      }
     }
-    if (!image_and_metas.empty()) {
-      image_and_metas_array.emplace_back(std::move(image_and_metas));
-    }
+  }
 
-    // Input from device memory is not supported yet
-    const bool need_cuda_input_sync = collectors[request_index]->Finalize();
-    if (need_cuda_input_sync) {
+  // merget inputs for example: [[a,a,a], [b,b,b], [c,c,c]] -> [[aaa], [(b,c), (b,c), (b,c)]]
+  if (!merge_inputs_.empty()) {
+    int n_example = vec_inputs[0].size();
+    ::mmdeploy::Value inputs;
+    for (const auto& group : merge_inputs_) {
+      ::mmdeploy::Value input_array;
+      for (int i = 0; i < n_example; i++) {
+        ::mmdeploy::Value input_i;
+        for (const auto& idx : group) {
+          auto&& inner = vec_inputs[idx];
+          input_i.update(inner[i]);
+        }
+        input_array.push_back(std::move(input_i));
+      }
+      inputs.push_back(std::move(input_array));
+    }
+    vec_inputs = std::move(inputs);
+  }
+
+  if (need_cuda_input_sync) {
 #if TRITON_ENABLE_GPU
-      cudaStreamSynchronize(CudaStream());
+    cudaStreamSynchronize(CudaStream());
 #else
-      LOG_MESSAGE(TRITONSERVER_LOG_ERROR,
-                  "mmdeploy backend: unexpected CUDA sync required by collector");
+    LOG_MESSAGE(TRITONSERVER_LOG_ERROR,
+                "mmdeploy backend: unexpected CUDA sync required by collector");
 #endif
-    }
   }
-
-  ::mmdeploy::Value input_args;
-  if (!image_and_metas_array.empty()) {
-    input_args.push_back(std::move(image_and_metas_array));
-  }
-  if (!input_tensors_array.empty()) {
-    input_args.push_back(std::move(input_tensors_array));
-  }
-
-  MMDEPLOY_DEBUG("input: {}", input_args);
 
   uint64_t compute_start_ns = 0;
   SET_TIMESTAMP(compute_start_ns);
 
-  ::mmdeploy::Value outputs = pipeline_.Apply(input_args);
+  ::mmdeploy::Value outputs = pipeline_.Apply(vec_inputs);
+  // MMDEPLOY_ERROR("outputs:\n{}", outputs);
+
+  // preprocess and inference need cuda sync
   {
     std::string device_name = "cpu";
     if (Kind() == TRITONSERVER_INSTANCEGROUPKIND_GPU) {
@@ -190,9 +293,8 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   }
 
   std::vector<std::string> strings;
-  auto output_tensors =
-      ConvertOutputToTensors(model_state->task_type(), request_count, outputs, strings);
-
+  auto output_tensors = ConvertOutputToTensors(model_state->task_type(), request_count,
+                                               batch_per_request, outputs, strings);
   uint64_t compute_end_ns = 0;
   SET_TIMESTAMP(compute_end_ns);
 
@@ -201,7 +303,7 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
   for (uint32_t request_index = 0; request_index < request_count; ++request_index) {
     responders[request_index] = std::make_unique<BackendOutputResponder>(
         &requests[request_index], 1, &response_vecs[request_index], false,
-        model_state->TritonMemoryManager(), false, nullptr);
+        model_state->TritonMemoryManager(), false, CudaStream());
     for (size_t output_id = 0; output_id < model_state->output_names().size(); ++output_id) {
       auto output_name = model_state->output_names()[output_id];
       MMDEPLOY_DEBUG("output name {}", output_name);

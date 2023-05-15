@@ -1,0 +1,6 @@
+python tools/deploy.py configs/mmocr/text-detection/text-detection_tensorrt_dynamic-320x320-2240x2240.py ../mmocr/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py https://download.openmmlab.com/mmocr/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015/panet_resnet18_fpem-ffm_600e_icdar2015_20220826_144817-be2acdb4.pth ../mmocr/demo/demo_text_det.jpg --work-dir work_dir/panet --dump-info --device cuda:0
+
+python tools/deploy.py configs/mmocr/text-detection/text-detection_tensorrt_dynamic-320x320-2240x2240.py ../mmocr/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py https://download.openmmlab.com/mmocr/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015/dbnet_resnet18_fpnc_1200e_icdar2015_20220825_221614-7c0e94f2.pth ../mmocr/demo/demo_text_det.jpg --work-dir work_dir/dbnet --dump-info --device cuda:0
+
+
+python tools/deploy.py configs/mmocr/text-detection/text-detection_tensorrt_dynamic-320x320-2240x2240.py ../mmocr/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py https://download.openmmlab.com/mmocr/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015/psenet_resnet50_fpnf_600e_icdar2015_20220825_222709-b6741ec3.pth ../mmocr/demo/demo_text_det.jpg --work-dir work_dir/psenet --dump-info --device cuda:0

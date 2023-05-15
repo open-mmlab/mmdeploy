@@ -24,7 +24,7 @@ class ModelState : public BackendModel {
 
   ::mmdeploy::Pipeline CreatePipeline(TRITONSERVER_InstanceGroupKind kind, int device_id);
 
-  const std::string& task_type() { return model_.meta().task; }
+  const std::string& task_type() { return task_type_; }
 
  private:
   explicit ModelState(TRITONBACKEND_Model* triton_model);
@@ -33,6 +33,7 @@ class ModelState : public BackendModel {
 
  private:
   ::mmdeploy::framework::Model model_;
+  std::string task_type_;
   std::vector<std::string> input_names_;
   std::vector<std::string> output_names_;
   std::vector<TRITONSERVER_DataType> input_data_types_;
