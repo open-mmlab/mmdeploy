@@ -103,9 +103,9 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
         <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>TVM</sub> <br>
     </td>
     <td>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ONNXRuntime</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>ONNXRuntime</sub> <br>
         <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>OpenVINO</sub> <br>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/build.yml"></a></sub> <sub>ncnn</sub> <br>
+        <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>ncnn</sub> <br>
     </td>
     <td align="center">
         -
@@ -127,7 +127,7 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
         -
     </td>
     <td align="center">
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-rknn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a></sub> <sub>ncnn</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
   </tr>
 
@@ -153,7 +153,7 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>ONNXRuntime</sub> <br>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_linux"></a></sub> <sub>TensorRT</sub> <br>
         <sub><img src="https://img.shields.io/badge/build-no%20status-lightgrey"></sub> <sub>LibTorch</sub> <br>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_pplnn_cuda"></a></sub> <sub>pplnn</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-pplnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-pplnn.yml"></a></sub> <sub>pplnn</sub> <br>
     </td>
     <td>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/build.yml"><img src="https://byob.yarr.is/open-mmlab/mmdeploy/build_cuda113_windows"></a></sub> <sub>ONNXRuntime</sub> <br>
@@ -244,7 +244,7 @@ The benchmark can be found from [here](docs/en/03-benchmark/benchmark.md)
     </td>
     <td>
         <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-snpe.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-snpe.yml"></a></sub> <sub>SNPE</sub> <br>
-        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-rknn.yml"></a></sub> <sub>ncnn</sub> <br>
+        <sub><a href="https://github.com/open-mmlab/mmdeploy/actions/workflows/backend-ncnn.yml"><img src="https://img.shields.io/github/actions/workflow/status/open-mmlab/mmdeploy/backend-ncnn.yml"></a></sub> <sub>ncnn</sub> <br>
     </td>
   </tr>
 
