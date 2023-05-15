@@ -25,7 +25,12 @@ def model_to_graph__custom_optimizer(*args, **kwargs):
     """Rewriter of _model_to_graph, add custom passes."""
     ctx = FUNCTION_REWRITER.get_context()
     graph, params_dict, torch_out = ctx.origin_func(*args, **kwargs)
-    if ctx.opset >= 13:
+    if hasattr(ctx, 'opset'):
+        opset_version = ctx.opset
+    else:
+        from mmdeploy.utils import get_ir_config
+        opset_version = get_ir_config(ctx.cfg).get('opset_version', 11)
+    if opset_version >= 13:
         graph, params_dict, torch_out = update_squeeze_unsqueeze_opset13_pass(
             graph, params_dict, torch_out)
     custom_passes = getattr(ctx, 'onnx_custom_passes', None)
