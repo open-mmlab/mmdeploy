@@ -230,7 +230,7 @@ TEST_CASE("resize transform: size", "[resize]") {
     for (auto& mat : mats) {
       for (auto& interp : interpolations) {
         Value cfg{{"type", "Resize"},
-                  {"size", {dst_height, dst_width}},
+                  {"size", {dst_width, dst_height}},
                   {"keep_ratio", keep_ratio},
                   {"interpolation", interp}};
         TestResize(cfg, kHost, mat, dst_height, dst_width);
