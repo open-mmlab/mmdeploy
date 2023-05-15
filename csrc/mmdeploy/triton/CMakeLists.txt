@@ -38,9 +38,13 @@ project(tritonmmdeploybackend LANGUAGES C CXX)
 # doesn't use GPUs.
 #
 
-set(TRITON_COMMON_REPO_TAG "main" CACHE STRING "Tag for triton-inference-server/common repo")
-set(TRITON_CORE_REPO_TAG "main" CACHE STRING "Tag for triton-inference-server/core repo")
-set(TRITON_BACKEND_REPO_TAG "main" CACHE STRING "Tag for triton-inference-server/backend repo")
+if (NOT TRITON_TAG)
+        set(TRITON_TAG main)
+endif()
+
+set(TRITON_COMMON_REPO_TAG ${TRITON_TAG} CACHE STRING "Tag for triton-inference-server/common repo")
+set(TRITON_CORE_REPO_TAG ${TRITON_TAG} CACHE STRING "Tag for triton-inference-server/core repo")
+set(TRITON_BACKEND_REPO_TAG ${TRITON_TAG} CACHE STRING "Tag for triton-inference-server/backend repo")
 
 
 #
@@ -73,6 +77,7 @@ add_library(triton-mmdeploy-backend SHARED
         model_state.cpp
         instance_state.cpp
         convert.cpp
+        json_input.cpp
         mmdeploy.cpp)
 
 target_include_directories(triton-mmdeploy-backend PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
@@ -98,7 +103,7 @@ target_link_libraries(triton-mmdeploy-backend PRIVATE MMDeployLibs)
 
 set_target_properties(triton-mmdeploy-backend PROPERTIES INSTALL_RPATH "\$ORIGIN")
 
-install(TARGETS triton-mmdeploy-backend DESTINATION backend/mmdeploy)
+install(TARGETS triton-mmdeploy-backend DESTINATION backends/mmdeploy)
 
 if (WIN32)
     set_target_properties(
