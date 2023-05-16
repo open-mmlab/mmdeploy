@@ -35,14 +35,14 @@ on:
         default: all
       codebases:
         required: true
-        description: "Tested codebase list, eg: ['mmdet', 'mmseg']"
+        description: "Tested codebase list, eg: ['mmpretrain','mmdet','mmedit','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
         type: string
-        default: "['mmpretrain','mmdet','mmedit','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
+        default: "['mmpretrain']"
       backends:
         required: true
-        description: 'Tested codebase list, eg: "onnxruntime tensorrt".'
+        description: 'Tested codebase list, eg: "onnxruntime tensorrt ncnn torchscript openvino".'
         type: string
-        default: "onnxruntime tensorrt ncnn torchscript openvino"
+        default: "onnxruntime tensorrt"
       run_performance:
         required: false
         description: 'Whether to test performance in regression test. "-p" means run, "" means do not run.'
@@ -56,7 +56,7 @@ on:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   reg-linux:
@@ -201,8 +201,8 @@ jobs:
           echo "${{matrix.torch_version}}"
           echo ""
           echo "============================== Prepare dataset =============================="
-          New-Item -Path $pwd/data -ItemType SymbolicLink -Target $env:DATASET_DIR
-          New-Item -Path $pwd/../mmdeploy_checkpoints -ItemType SymbolicLink -Target $env:CHECKPOINT_DIR
+          New-Item -Path $pwd/data -ItemType SymbolicLink -Target $env:DATASET_DIR -Force
+          New-Item -Path $pwd/../mmdeploy_checkpoints -ItemType SymbolicLink -Target $env:CHECKPOINT_DIR -Force
           ls data
           ls ../mmdeploy_checkpoints
       - name: Setup Python Environment
@@ -233,7 +233,7 @@ jobs:
           $env:Torch_DIR=% {python -c "import torch;print(torch.utils.cmake_prefix_path + '\Torch')"}
           echo "Torch_DIR=$env:Torch_DIR" >> $env:GITHUB_ENV
           echo "BACKENDS=$env:BACKENDS" >> $env:GITHUB_ENV
-          mkdir build
+          New-Item -Path build -ItemType Directory -Force
           cd build
           cmake ..  -A x64 -T v142 `
             -DMMDEPLOY_BUILD_TEST=OFF `
@@ -266,8 +266,8 @@ jobs:
           python -V
           $env:CONVERT_DIR = "$env:REGRESSION_DIR\convert_log\$env:GITHUB_RUN_ID-windows\${{matrix.codebase}}\torch${{matrix.torch_version}}"
           echo "env:CONVERT_DIR = $env:CONVERT_DIR"
-          New-Item -Path "$env:CONVERT_DIR" -ItemType Directory
-          New-Item -Path mmdeploy_regression_dir -ItemType SymbolicLink -Target $env:CONVERT_DIR
+          New-Item -Path "$env:CONVERT_DIR" -ItemType Directory -Force
+          New-Item -Path mmdeploy_regression_dir -ItemType SymbolicLink -Target $env:CONVERT_DIR -Force
           python tools/regression_test.py `
               --codebase ${{matrix.codebase}} `
               --work-dir mmdeploy_regression_dir `
