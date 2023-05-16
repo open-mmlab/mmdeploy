@@ -10,6 +10,15 @@ endif()
 
 find_package(Torch REQUIRED)
 
+if(MSVC)
+    # workaround to fix building torchscript ops on windows
+    set(_TORCH_TARGET torch_cuda_cu torch_cuda_cpp torch_cpu)
+    foreach(_target IN LISTS _TORCH_TARGET)
+        get_property(FIXED_TORCH_CPU_COMPILE_OPTIONS TARGET ${_target} PROPERTY INTERFACE_COMPILE_OPTIONS)
+        string(REPLACE ";" " " FIXED_TORCH_CPU_COMPILE_OPTIONS "${FIXED_TORCH_CPU_COMPILE_OPTIONS}")
+        set_property(TARGET ${_target} PROPERTY INTERFACE_COMPILE_OPTIONS -Xcompiler "${FIXED_TORCH_CPU_COMPILE_OPTIONS}")
+    endforeach()
+endif()
 
 add_library(${PROJECT_NAME}_obj OBJECT "${BACKEND_OPS_SRCS}")
 set_target_properties(${PROJECT_NAME}_obj PROPERTIES POSITION_INDEPENDENT_CODE 1)
