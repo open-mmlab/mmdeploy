@@ -287,9 +287,3 @@ jobs:
           echo "## ${{matrix.codebase}} + [torch${{matrix.torch_version}}]($env:URL_PREFIX)" >> $env:GITHUB_STEP_SUMMARY
           python .github/scripts/gen_reg_summary.py "$env:REPORT_PREFIX.xlsx" $env:URL_PREFIX
           cat "$env:REPORT_PREFIX.md" >> $env:GITHUB_STEP_SUMMARY
-      - name: Clear working directory
-        if: always()
-        run: |
-          Remove-Item -Path "$pwd\tmp_env" -Force -Recurse
-          Remove-Item -Path "$pwd\data" -Force -Recurse
-          Remove-Item -Path "$pwd\..\mmdeploy_checkpoints" -Force -Recurse
