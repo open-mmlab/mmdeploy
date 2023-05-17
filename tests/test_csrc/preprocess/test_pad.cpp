@@ -111,7 +111,7 @@ TEST_CASE("transform 'Pad'", "[pad]") {
     constexpr int width = 800;
     for (auto& mat : mats) {
       for (auto& mode : modes) {
-        Value cfg{{"type", "Pad"}, {"size", {height, width}}, {"padding_mode", mode}};
+        Value cfg{{"type", "Pad"}, {"size", {width, height}}, {"padding_mode", mode}};
         auto [pad_left, pad_top, pad_right, pad_bottom] = GetPadSize(mat, height, width);
         TestPad(cfg, mat, pad_top, pad_left, pad_bottom, pad_right, border_map[mode], 0);
       }
