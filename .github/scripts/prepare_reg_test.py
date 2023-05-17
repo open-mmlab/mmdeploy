@@ -113,15 +113,17 @@ def prepare_codebases(codebases):
 def install_torch(torch_version):
     cuda_version = os.environ.get('CUDA_VERSION', '11.3')
     cuda_int = ''.join(cuda_version.split('.')[:2])
-    if version.parse(torch_version) < version.parse('1.10.0'):
+    tv = version.parse(torch_version)
+    if tv < version.parse('1.10.0'):
         cuda_int = '111'
-    is_torch_v2 = version.parse(torch_version) >= version.parse('2.0.0')
-    if is_torch_v2:
-        tv_version = '0.15.1'
+    elif tv >= version.parse('1.13.0'):
         cuda_int = '117'
+
+    is_torch_v2 = tv >= version.parse('2.0.0')
+    if is_torch_v2:
+        tv_version = f'0.{tv.minor+15}.{tv.micro}'
     else:
-        ver = version.parse(torch_version)
-        tv_version = f'0.{ver.minor+1}.{ver.micro}'
+        tv_version = f'0.{tv.minor+1}.{tv.micro}'
     if is_torch_v2:
         cmd = [
             f'python -m pip install torch=={torch_version} ',
