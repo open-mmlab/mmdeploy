@@ -108,3 +108,13 @@ RUN wget -c $TENSORRT_URL && \
 ENV TENSORRT_DIR=/root/workspace/TensorRT
 ENV LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
 ENV PATH=$TENSORRT_DIR/bin:$PATH
+
+# openvino
+RUN wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/linux/l_openvino_toolkit_ubuntu20_2022.3.0.9052.9752fafe8eb_x86_64.tgz &&\
+    tar -zxvf ./l_openvino_toolkit*.tgz &&\
+    rm ./l_openvino_toolkit*.tgz &&\
+    mv ./l_openvino* ./openvino_toolkit &&\
+    bash ./openvino_toolkit/install_dependencies/install_openvino_dependencies.sh
+
+ENV OPENVINO_DIR=/root/workspace/openvino_toolkit
+ENV InferenceEngine_DIR=$OPENVINO_DIR/runtime/cmake
