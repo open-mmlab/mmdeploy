@@ -292,5 +292,5 @@ jobs:
         run: |
           conda env remove --prefix "$pwd\tmp_env"
           Remove-Item -Path "$pwd\data" -Force -Recurse
-          Remove-Item -Path "$pwd\..\mmdeploy_checkpoints" -Force -Recurse
+          Remove-Item -Path "$pwd\build" -Force -Recurse
           Remove-Item -Path "$pwd\mmdeploy_regression_dir" -Force -Recurse
