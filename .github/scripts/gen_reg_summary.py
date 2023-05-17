@@ -24,7 +24,9 @@ def write_row_f(writer, row):
 
 def main():
     args = parse_args()
-    assert osp.exists(args.report_path)
+    if not osp.exists(args.report_path):
+        print(f'File not exists: {args.report_path}')
+        return
     report = pd.read_excel(args.report_path)
     markdown_path = osp.splitext(args.report_path)[0] + '.md'
     _, fname = osp.split(args.report_path)
