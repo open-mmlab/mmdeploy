@@ -3,10 +3,22 @@ import argparse
 import os.path as osp
 
 import pandas as pd
-import yaml
 
 MMDEPLOY_DIR = osp.abspath(osp.join(osp.dirname(__file__), '..', '..'))
 MMDEPLOY_URL = 'https://github.com/open-mmlab/mmdeploy/tree/main'
+
+REPO_NAMES = dict(
+    mmpretrain='mmpretrain',
+    mmdet='mmdetection',
+    mmseg='mmsegmentation',
+    mmdet3d='mmdetection3d',
+    mmedit='mmediting',
+    mmagic='mmagic',
+    mmocr='mmocr',
+    mmpose='mmpose',
+    mmrotate='mmrotate',
+    mmaction='mmaction2',
+    mmyolo='mmyolo')
 
 
 def parse_args():
@@ -31,10 +43,8 @@ def main():
     markdown_path = osp.splitext(args.report_path)[0] + '.md'
     _, fname = osp.split(args.report_path)
     codebase, _ = fname.split('_')
-    test_yml = osp.join(MMDEPLOY_DIR, f'tests/regression/{codebase}.yml')
-    with open(test_yml, 'r') as f:
-        yml_cfg = yaml.load(f, Loader=yaml.FullLoader)
-        repo_url = yml_cfg['globals']['repo_url']
+    codebase_fullname = REPO_NAMES[codebase]
+    repo_url = f'https://github.com/open-mmlab/{codebase_fullname}/tree/main'
     header = [
         'Index', 'Task', 'Model', 'Backend', 'Precision', 'Conversion',
         'Benchmark', 'Pass'
