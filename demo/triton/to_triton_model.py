@@ -158,21 +158,3 @@ if __name__ == '__main__':
         os.makedirs(output_dir)
     copy_template(src_folder, output_dir)
     convert.create_single_model()
-
-
-# /data/testmodel/mmcls
-
-# /home/cx/ws/2.0/mmdeploy/work_dir/rtn2/
-# /home/cx/ws/2.0/mmdeploy/work_dir/maskrcnn/
-
-# /home/cx/ws/2.0/mmdeploy/work_dir/pose1
-# /home/cx/ws/2.0/mmdeploy/work_dir/pose2
-
-# /home/cx/ws/2.0/mmdeploy/work_dir/pspnet
-# /home/cx/ws/2.0/mmdeploy/work_dir/pspnet_mask
-
-# /home/cx/ws/2.0/mmdeploy/work_dirs/rrcnn
-
-# /home/cx/ws/2.0/mmdeploy/work_dir/panet
-
-# /home/cx/ws/2.0/mmdeploy/work_dir/crnn
