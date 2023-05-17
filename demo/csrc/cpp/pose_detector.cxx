@@ -21,12 +21,8 @@ int main(int argc, char *argv[]) {
 
   using namespace mmdeploy;
 
-  Profiler profiler{"profile.bin"};
-  Context context(Device(device_name, 0));
-  context.Add(profiler);
-  PoseDetector detector{Model(model_path), context};
+  PoseDetector detector{Model(model_path), Device(device_name)};
   auto res = detector.Apply(img);
-  for (int i = 0; i < 100; i++) auto res = detector.Apply(img);
 
   for (int i = 0; i < res[0].length; i++) {
     cv::circle(img, {(int)res[0].point[i].x, (int)res[0].point[i].y}, 1, {0, 255, 0}, 2);
