@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+from copy import deepcopy
 from typing import Callable, Dict, Optional, Sequence, Tuple, Union
 
 import mmengine
@@ -260,11 +261,13 @@ class TextRecognition(BaseTask):
         postprocess = self.model_cfg.model.decoder.postprocessor
         if postprocess.type == 'CTCPostProcessor':
             postprocess.type = 'CTCConvertor'
+        if postprocess.type == 'AttentionPostprocessor':
+            postprocess.type = 'AttnConvertor'
         import shutil
         shutil.copy(self.model_cfg.dictionary.dict_file,
                     f'{work_dir}/dict_file.txt')
-        with_padding = self.model_cfg.dictionary.get('with_padding', False)
-        params = dict(dict_file='dict_file.txt', with_padding=with_padding)
+        params = deepcopy(self.model_cfg.dictionary)
+        params.update(dict(dict_file='dict_file.txt'))
         postprocess['params'] = params
         return postprocess
 
