@@ -3,7 +3,6 @@
 import argparse
 import os
 import os.path as osp
-import shutil
 import subprocess
 import tempfile
 
@@ -75,17 +74,22 @@ def prepare_codebases(codebases):
     for codebase in codebases:
         full_name = REPO_NAMES[codebase]
         target_dir = os.path.join(MMDEPLOY_DIR, '..', full_name)
-        if os.path.exists(target_dir):
-            shutil.rmtree(target_dir)
         branch = 'main'
         if codebase == 'mmrotate':
             branch = 'dev-1.x'
         elif codebase == 'mmedit':
             branch = 'v1.0.0rc7'
+        if not osp.exists(target_dir):
+            run_cmd([
+                'git clone --depth 1 ', f'-b {branch} '
+                f'https://github.com/open-mmlab/{full_name}.git '
+                f'{target_dir} '
+            ])
+        else:
+            run_cmd([f'cd {target_dir}', f'git pull origin {branch}:{branch}'])
         run_cmd([
-            'git clone --depth 1 ', f'-b {branch} '
-            f'https://github.com/open-mmlab/{full_name}.git '
-            f'{target_dir} '
+            'python -m mim install ',
+            f'-r {target_dir}/requirements/mminstall.txt ',
         ])
         run_cmd([
             'python -m pip install ',

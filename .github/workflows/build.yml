@@ -218,9 +218,6 @@ jobs:
     container:
       image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
       options: "--gpus=all --ipc=host"
-      #volumes:
-      #  - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
-      #  - /data2/benchmark:/__w/mmdeploy/data
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -316,3 +313,7 @@ jobs:
           conda activate $pwd\tmp_env
           $env:path = "$pwd\build\bin\Release;" + $env:path
           .github\scripts\windows\test_full_pipeline.ps1 -Backend trt -Device cuda
+      - name: Clear temp env
+        if: always()
+        run: |
+          conda env remove --prefix "$pwd\tmp_env"
