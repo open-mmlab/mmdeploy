@@ -330,6 +330,10 @@ We'll talk about them more in our next release.
 
 If you want to fuse preprocess for acceleration，please refer to this [doc](./02-how-to-run/fuse_transform.md)
 
+## Model serving (triton)
+
+For server-side deployment, please read [model serving](02-how-to-run/triton_server.md) for more details.
+
 ## Evaluate Model
 
 You can test the performance of deployed model using `tool/test.py`. For example,
