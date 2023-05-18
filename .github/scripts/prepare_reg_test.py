@@ -3,6 +3,7 @@
 import argparse
 import os
 import os.path as osp
+import shutil
 import subprocess
 import tempfile
 
@@ -96,16 +97,10 @@ def prepare_codebases(codebases):
         ])
         run_cmd([f'python -m pip install {target_dir}'])
         if codebase == 'mmyolo':
-            cmd = [
-                f'cp -r {target_dir}/configs/deploy ',
-                f'{MMDEPLOY_DIR}/configs/mmyolo '
-            ]
-            run_cmd(cmd)
-            cmd = [
-                f'cp {target_dir}/tests/regression/mmyolo.yml ',
-                f'{MMDEPLOY_DIR}/tests/regression/mmyolo.yml '
-            ]
-            run_cmd(cmd)
+            shutil.copytree(f'{target_dir}/configs/deploy',
+                            f'{MMDEPLOY_DIR}/configs/mmyolo')
+            shutil.copy(f'{target_dir}/tests/regression/mmyolo.yml',
+                        f'{MMDEPLOY_DIR}/tests/regression/mmyolo.yml')
 
 
 def install_torch(torch_version):
