@@ -207,7 +207,7 @@ jobs:
           ls data
           ls ../mmdeploy_checkpoints
           echo "============================== Prepare env =============================="
-          $env:TEMP_ENV = "$pwd/../temp_envS/$env:GITHUB_RUN_ID"
+          $env:TEMP_ENV = "$pwd/../temp_envs/$env:GITHUB_RUN_ID"
           New-Item -Path "$env:TEMP_ENV" -ItemType Directory -Force
           echo "TEMP_ENV=$env:TEMP_ENV" >> $env:GITHUB_ENV
       - name: Setup Python Environment

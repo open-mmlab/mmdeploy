@@ -332,7 +332,7 @@ jobs:
           echo "============================== Info =============================="
           conda info
           conda info -e
-          $env:TEMP_ENV = "$pwd/../temp_envS/$env:GITHUB_RUN_ID"
+          $env:TEMP_ENV = "$pwd/../temp_envs/$env:GITHUB_RUN_ID"
           New-Item -Path "$env:TEMP_ENV" -ItemType Directory -Force
           echo "TEMP_ENV=$env:TEMP_ENV" >> $env:GITHUB_ENV
           conda create -p $env:TEMP_ENV --clone $env:BASE_ENV -y
