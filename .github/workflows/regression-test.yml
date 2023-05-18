@@ -206,6 +206,10 @@ jobs:
           New-Item -Path $pwd/../mmdeploy_checkpoints -ItemType SymbolicLink -Target $env:CHECKPOINT_DIR -Force
           ls data
           ls ../mmdeploy_checkpoints
+          echo "============================== Prepare env =============================="
+          $env:TEMP_ENV = "$pwd/../temp_envS/$env:GITHUB_RUN_ID"
+          New-Item -Path "$env:TEMP_ENV" -ItemType Directory -Force
+          echo "TEMP_ENV=$env:TEMP_ENV" >> $env:GITHUB_ENV
       - name: Setup Python Environment
         run: |
           echo "============================== Info =============================="
@@ -213,8 +217,8 @@ jobs:
           echo "============================== Info =============================="
           conda info
           conda info -e
-          conda create -p $pwd\tmp_env --clone $env:BASE_ENV -y
-          conda activate $pwd\tmp_env
+          conda create -p $env:TEMP_ENV --clone $env:BASE_ENV -y
+          conda activate $env:TEMP_ENV
           python -V
           python -m pip install --upgrade pip
           python -m pip install openmim numpy pycuda xlsxwriter packaging prettytable
@@ -224,7 +228,7 @@ jobs:
           python -m pip list
       - name: Build mmdeploy
         run: |
-          conda activate $pwd\tmp_env
+          conda activate $env:TEMP_ENV
           python -V
           $env:BACKENDS = "${{github.event.inputs.backends}}"
           $env:BACKENDS=% {$env:BACKENDS -replace " ", ";"}
@@ -258,12 +262,12 @@ jobs:
           ls $pwd\lib\Release
       - name: Install mmdeploy converter
         run: |
-          conda activate $pwd\tmp_env
+          conda activate $env:TEMP_ENV
           python -m pip install -e .
           python .\tools\check_env.py
       - name: Run regression test
         run: |
-          conda activate $pwd\tmp_env
+          conda activate $env:TEMP_ENV
           python -V
           $env:CONVERT_DIR = "$env:REGRESSION_DIR\convert_log\$env:GITHUB_RUN_ID-windows\${{matrix.codebase}}\torch${{matrix.torch_version}}"
           echo "env:CONVERT_DIR = $env:CONVERT_DIR"
@@ -280,7 +284,7 @@ jobs:
       - name: Check regression result
         continue-on-error: true
         run: |
-          conda activate $pwd\tmp_env
+          conda activate $env:TEMP_ENV
           python -V
           $env:URL_PREFIX = "${{github.event.inputs.mapped_domain}}/convert_log/$env:GITHUB_RUN_ID-windows/${{matrix.codebase}}/torch${{matrix.torch_version}}"
           echo "URL_PREFIX = $env:URL_PREFIX"
@@ -292,7 +296,7 @@ jobs:
       - name: Clear working directory
         if: always()
         run: |
-          conda env remove --prefix "$pwd\tmp_env"
+          conda env remove --prefix "$env:TEMP_ENV"
           Remove-Item -Path "$pwd\data" -Force -Recurse
           Remove-Item -Path "$pwd\build" -Force -Recurse
           Remove-Item -Path "$pwd\mmdeploy_regression_dir" -Force -Recurse
