@@ -388,7 +388,7 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
                    TritonModelInstance(), total_batch_size, exec_start_ns, compute_start_ns,
                    compute_end_ns, exec_end_ns),
                "failed reporting batch request statistics");
-#endif             // TRITON_ENABLE_STATS
+#endif
 
   return nullptr;  // success
 }
