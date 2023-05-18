@@ -85,8 +85,6 @@ def prepare_codebases(codebases):
                 f'https://github.com/open-mmlab/{full_name}.git '
                 f'{target_dir} '
             ])
-        else:
-            run_cmd([f'cd {target_dir}', f'git pull origin {branch}:{branch}'])
         run_cmd([
             'python -m mim install ',
             f'-r {target_dir}/requirements/mminstall.txt ',

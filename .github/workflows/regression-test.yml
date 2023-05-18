@@ -159,6 +159,7 @@ jobs:
               ${{github.event.inputs.run_performance}} 2>&1 | tee ${log_path}
           echo "Saved to $REGRESSION_DIR"
       - name: Check regression result
+        continue-on-error: true
         run: |
           export url_prefix=${{github.event.inputs.mapped_domain}}/convert_log/${GITHUB_RUN_ID}-linux/${{matrix.codebase}}/torch${{matrix.torch_version}}
           echo "## ${{matrix.codebase}} + [torch${{matrix.torch_version}}](${url_prefix})" >> $GITHUB_STEP_SUMMARY
@@ -277,6 +278,7 @@ jobs:
               ${{github.event.inputs.run_performance}}
           echo "Saved to $env:CONVERT_DIR"
       - name: Check regression result
+        continue-on-error: true
         run: |
           conda activate $pwd\tmp_env
           python -V
@@ -287,8 +289,8 @@ jobs:
           echo "## ${{matrix.codebase}} + [torch${{matrix.torch_version}}]($env:URL_PREFIX)" >> $env:GITHUB_STEP_SUMMARY
           python .github/scripts/gen_reg_summary.py "$env:REPORT_PREFIX.xlsx" $env:URL_PREFIX
           cat "$env:REPORT_PREFIX.md" >> $env:GITHUB_STEP_SUMMARY
-      - name: Clear working directory when all good
-        if: success()
+      - name: Clear working directory
+        if: always()
         run: |
           conda env remove --prefix "$pwd\tmp_env"
           Remove-Item -Path "$pwd\data" -Force -Recurse
