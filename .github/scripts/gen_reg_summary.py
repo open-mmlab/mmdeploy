@@ -44,11 +44,14 @@ def main():
     _, fname = osp.split(args.report_path)
     codebase, _ = fname.split('_')
     codebase_fullname = REPO_NAMES[codebase]
+    columns = report.columns.tolist()
+    convert_col_name = 'Conversion Result'
+    convert_col_index = columns.index(convert_col_name)
+    metric_col_names = columns[convert_col_index + 1:-1]
     repo_url = f'https://github.com/open-mmlab/{codebase_fullname}/tree/main'
-    header = [
-        'Index', 'Task', 'Model', 'Backend', 'Precision', 'Conversion',
-        'Benchmark', 'Pass'
-    ]
+    header = ['Index', 'Task', 'Model', 'Backend', 'Precision']
+    header += metric_col_names
+    header += ['Conversion', 'Benchmark', 'Pass:link:']
     aligner = [':-:'] * len(header)
     pass_flag = ':heavy_check_mark:'
     fail_flag = ':x:'
@@ -58,45 +61,59 @@ def main():
         counter = 0
         for idx, row in report.iterrows():
             backend = row['Backend']
-            if backend.lower() == 'pytorch':
-                continue
-            ckpt = row['Checkpoint']
-            ckpt_prefix = 'mmdeploy_regression_dir'
-            assert ckpt.startswith(ckpt_prefix)
+            precision_type = row['Precision Type']
             model_cfg = row['Model Config'].split('configs')[1].replace(
                 osp.sep, r'/')
             config_url = f'{repo_url}/configs/{model_cfg}'
-            deploy_cfg = row['Deploy Config'].replace(osp.sep, r'/')
-            deploy_url = f'{MMDEPLOY_URL}/{deploy_cfg}'
-            backend = f'[{backend}]({deploy_url})'
             model = f'[{row["Model"]}]({config_url})'
-            parent, filename = osp.split(ckpt)
-            if '.' in filename:
-                ckpt = parent
-            ckpt = ckpt.replace(osp.sep, r'/')
-            current_url = ckpt.replace(ckpt_prefix, args.url_prefix)
-            convert_pass = eval(row['Conversion Result'])
-            test_pass = eval(row['Test Pass'])
-            if convert_pass:
-                conversion = pass_flag
-                if test_pass:
-                    benchmark_pass = ':heavy_check_mark:'
-                else:
-                    benchmark_pass = fail_flag
-            else:
-                conversion = fail_flag
-                benchmark_pass = ':o:'
-            if test_pass:
-                test = pass_flag
-            else:
-                test = fail_flag
-            test = f'[{test}]({current_url})'
-            line = [
-                f'{counter}', row['Task'], model, backend,
-                row['Precision Type'], conversion, benchmark_pass, test
+            metric_col_values = [row[_] for _ in metric_col_names]
+            metric_col_values = [
+                _ if isinstance(_, str) else f'{_:.4f}'
+                for _ in metric_col_values
             ]
+            run_test = not all([str(_) == '-' for _ in metric_col_values])
+            if backend.lower() == 'pytorch':
+                counter += 1
+                backend = f'[{backend}]({config_url})'
+                conversion = pass_flag
+                test = pass_flag
+                benchmark_pass = pass_flag
+                precision_type = 'fp32'
+            else:
+                ckpt = row['Checkpoint']
+                ckpt_prefix = 'mmdeploy_regression_dir'
+                assert ckpt.startswith(ckpt_prefix)
+                deploy_cfg = row['Deploy Config'].replace(osp.sep, r'/')
+                deploy_url = f'{MMDEPLOY_URL}/{deploy_cfg}'
+                backend = f'[{backend}]({deploy_url})'
+                parent, filename = osp.split(ckpt)
+                if '.' in filename:
+                    ckpt = parent
+                ckpt = ckpt.replace(osp.sep, r'/')
+                current_url = ckpt.replace(ckpt_prefix, args.url_prefix)
+                convert_pass = eval(row[convert_col_name])
+                test_pass = eval(row['Test Pass'])
+                if convert_pass:
+                    conversion = pass_flag
+                    if test_pass:
+                        if run_test:
+                            benchmark_pass = pass_flag
+                        else:
+                            benchmark_pass = ':white_check_mark:'
+                    else:
+                        benchmark_pass = fail_flag
+                else:
+                    conversion = fail_flag
+                    benchmark_pass = ':o:'
+                if test_pass:
+                    test = pass_flag
+                else:
+                    test = fail_flag
+                test = f'[{test}]({current_url})'
+            line = [f'{counter}', row['Task'], model, backend, precision_type]
+            line += metric_col_values
+            line += [conversion, benchmark_pass, test]
             write_row_f(f, line)
-            counter += 1
 
     print(f'Saved to {markdown_path}')
 
