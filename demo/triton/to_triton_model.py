@@ -3,8 +3,8 @@ import argparse
 import json
 import os
 import os.path as osp
-from enum import Enum, unique
 import shutil
+from enum import Enum, unique
 from glob import glob
 
 BASEDIR = os.path.dirname(__file__)
@@ -35,7 +35,8 @@ def copy_template(src_folder, dst_folder):
 
 class Convert:
 
-    def __init__(self, model_type, model_dir, deploy_cfg, pipeline_cfg, detail_cfg, output_dir):
+    def __init__(self, model_type, model_dir, deploy_cfg, pipeline_cfg,
+                 detail_cfg, output_dir):
         self._model_type = model_type
         self._model_dir = model_dir
         self._deploy_cfg = deploy_cfg
@@ -62,19 +63,14 @@ class Convert:
             self._pipeline_cfg['pipeline']['input'].append('bbox')
             self._pipeline_cfg['pipeline']['tasks'][0]['input'] = ['patch']
             warpbbox = {
-                "type": "Task",
-                "module": "WarpBbox",
-                "input": [
-                    "img",
-                    "bbox"
-                ],
-                "output": [
-                    "patch"
-                ]
+                'type': 'Task',
+                'module': 'WarpBbox',
+                'input': ['img', 'bbox'],
+                'output': ['patch']
             }
             self._pipeline_cfg['pipeline']['tasks'].insert(0, warpbbox)
-            self.write_json_file(self._pipeline_cfg,
-                                 'pipeline.json', output_model_folder)
+            self.write_json_file(self._pipeline_cfg, 'pipeline.json',
+                                 output_model_folder)
         else:
             self.copy_file('pipeline.json', self._model_dir,
                            output_model_folder)
@@ -90,10 +86,12 @@ class Convert:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('model_dir', type=str,
-                        help='converted model dir with `--dump-info` flag when convert the model')
-    parser.add_argument('output_dir', type=str,
-                        help='output dir')
+    parser.add_argument(
+        'model_dir',
+        type=str,
+        help='converted model dir with '
+        '`--dump-info` flag when convert the model')
+    parser.add_argument('output_dir', type=str, help='output dir')
     return parser.parse_args()
 
 
@@ -145,7 +143,8 @@ if __name__ == '__main__':
         pipeline_cfg = json.load(f)
     with open(osp.join(model_dir, 'detail.json')) as f:
         detail_cfg = json.load(f)
-        assert 'onnx_config' in detail_cfg, f'currently, only support onnx as middle ir'
+        assert 'onnx_config' in detail_cfg, \
+            'currently, only support onnx as middle ir'
 
     # process
     model_type = get_model_type(detail_cfg, pipeline_cfg)

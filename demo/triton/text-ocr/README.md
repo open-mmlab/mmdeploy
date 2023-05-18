@@ -1,11 +1,13 @@
 # Text ocr serving
 
 ## Starting a docker container
+
 ```
 docker run -it --rm --gpus all openmmlab/mmdeploy:triton-22.12
 ```
 
 ## Convert pytorch model to tensorrt model
+
 ```
 cd /root/workspace/mmdeploy
 
@@ -31,6 +33,7 @@ python3 tools/deploy.py \
 ```
 
 ## Ensemble detection and recognition model
+
 ```
 cd /root/workspace/mmdeploy
 cp -r demo/triton/text-ocr/serving /model-repository
@@ -39,11 +42,13 @@ cp -r work_dir/crnn/* /model-repository/model/1/text_recognition/
 ```
 
 ## Start triton server
+
 ```
 tritonserver --model-repository=/model-repository
 ```
 
 ## Run client code output container
+
 ```
 python3 demo/triton/text-ocr/grpc_client.py \
     model \

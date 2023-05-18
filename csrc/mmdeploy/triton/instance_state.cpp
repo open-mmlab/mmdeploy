@@ -247,7 +247,7 @@ TRITONSERVER_Error* ModelInstanceState::Execute(TRITONBACKEND_Request** requests
     }
   }
 
-  // merget inputs for example: [[a,a,a], [b,b,b], [c,c,c]] -> [[aaa], [(b,c), (b,c), (b,c)]]
+  // merge inputs for example: [[a,a,a], [b,b,b], [c,c,c]] -> [[aaa], [(b,c), (b,c), (b,c)]]
   if (!merge_inputs_.empty()) {
     int n_example = vec_inputs[0].size();
     ::mmdeploy::Value inputs;
