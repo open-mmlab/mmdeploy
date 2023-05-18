@@ -263,11 +263,13 @@ jobs:
       - name: Install mmdeploy converter
         run: |
           conda activate $env:TEMP_ENV
+          $env:path = "$pwd\build\bin\Release;" + $env:path
           python -m pip install -e .
           python .\tools\check_env.py
       - name: Run regression test
         run: |
           conda activate $env:TEMP_ENV
+          $env:path = "$pwd\build\bin\Release;" + $env:path
           python -V
           $env:CONVERT_DIR = "$env:REGRESSION_DIR\convert_log\$env:GITHUB_RUN_ID-windows\${{matrix.codebase}}\torch${{matrix.torch_version}}"
           echo "env:CONVERT_DIR = $env:CONVERT_DIR"
