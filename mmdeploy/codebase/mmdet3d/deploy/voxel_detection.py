@@ -92,14 +92,14 @@ class VoxelDetection(BaseTask):
 
     def create_input(
         self,
-        pcd: str,
+        pcd: Union[str, Sequence[str]],
         input_shape: Sequence[int] = None,
         data_preprocessor: Optional[BaseDataPreprocessor] = None
     ) -> Tuple[Dict, torch.Tensor]:
         """Create input for detector.
 
         Args:
-            pcd (str): Input pcd file path.
+            pcd (str, Sequence[str]): Input pcd file path.
             input_shape (Sequence[int], optional): model input shape.
                 Defaults to None.
             data_preprocessor (Optional[BaseDataPreprocessor], optional):
@@ -115,7 +115,9 @@ class VoxelDetection(BaseTask):
         test_pipeline = Compose(test_pipeline)
         box_type_3d, box_mode_3d = \
             get_box_type(cfg.test_dataloader.dataset.box_type_3d)
-
+        # do not support batch inference
+        if isinstance(pcd, (list, tuple)):
+            pcd = pcd[0]
         data = []
         data_ = dict(
             lidar_points=dict(lidar_path=pcd),

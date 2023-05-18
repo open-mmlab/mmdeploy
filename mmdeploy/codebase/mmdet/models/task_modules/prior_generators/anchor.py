@@ -48,8 +48,8 @@ class GridPriorsTRTOp(torch.autograd.Function):
                  stride_w: int):
         """Map ops to onnx symbolics."""
         # zero_h and zero_w is used to provide shape to GridPriorsTRT
-        feat_h = g.op('Unsqueeze', feat_h, axes_i=[0])
-        feat_w = g.op('Unsqueeze', feat_w, axes_i=[0])
+        feat_h = symbolic_helper._unsqueeze_helper(g, feat_h, [0])
+        feat_w = symbolic_helper._unsqueeze_helper(g, feat_w, [0])
         zero_h = g.op(
             'ConstantOfShape',
             feat_h,

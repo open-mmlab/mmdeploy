@@ -302,6 +302,9 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     # get metric
     model_info = meta_info[model_config_name]
     metafile_metric_info = model_info['Results']
+    # deal with mmseg case
+    if not isinstance(metafile_metric_info, (list, tuple)):
+        metafile_metric_info = [metafile_metric_info]
     pytorch_metric = dict()
     using_dataset = set()
     using_task = set()
