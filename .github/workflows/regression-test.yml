@@ -131,7 +131,7 @@ jobs:
               -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
               -DMMDEPLOY_TARGET_DEVICES="cpu;cuda" \
               -DMMDEPLOY_TARGET_BACKENDS="$BACKENDS" \
-              -DMMDEPLOY_CODEBASES=${{matrix.codebase}} \
+              -DMMDEPLOY_CODEBASES="all" \
               -Dpplcv_DIR=${pplcv_DIR} \
               -DTENSORRT_DIR=${TENSORRT_DIR} \
               -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
@@ -247,7 +247,7 @@ jobs:
             -DMMDEPLOY_BUILD_SDK=ON `
             -DMMDEPLOY_TARGET_DEVICES="cpu;cuda" `
             -DMMDEPLOY_TARGET_BACKENDS="$env:BACKENDS" `
-            -DMMDEPLOY_CODEBASES="${{matrix.codebase}}" `
+            -DMMDEPLOY_CODEBASES="all" `
             -Dpplcv_DIR="$env:PPLCV_DIR\pplcv-build\install\lib\cmake\ppl" `
             -DOpenCV_DIR="$env:OPENCV_DIR\build\x64\vc15\lib" `
             -DTENSORRT_DIR="$env:TENSORRT_DIR" `

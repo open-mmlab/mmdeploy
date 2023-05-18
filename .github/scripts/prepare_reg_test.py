@@ -14,7 +14,6 @@ REPO_NAMES = dict(
     mmdet='mmdetection',
     mmseg='mmsegmentation',
     mmdet3d='mmdetection3d',
-    mmedit='mmediting',
     mmagic='mmagic',
     mmocr='mmocr',
     mmpose='mmpose',
@@ -78,8 +77,6 @@ def prepare_codebases(codebases):
         branch = 'main'
         if codebase == 'mmrotate':
             branch = 'dev-1.x'
-        elif codebase == 'mmedit':
-            branch = 'v1.0.0rc7'
         if not osp.exists(target_dir):
             run_cmd([
                 'git clone --depth 1 ', f'-b {branch} '

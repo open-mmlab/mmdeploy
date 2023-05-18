@@ -12,7 +12,6 @@ REPO_NAMES = dict(
     mmdet='mmdetection',
     mmseg='mmsegmentation',
     mmdet3d='mmdetection3d',
-    mmedit='mmediting',
     mmagic='mmagic',
     mmocr='mmocr',
     mmpose='mmpose',
