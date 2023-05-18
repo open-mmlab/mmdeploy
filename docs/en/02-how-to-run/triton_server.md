@@ -29,6 +29,10 @@ a) Using Docker images
 
 For ease of use, we provide a Docker image to support the deployment of models converted by MMDeploy. The image supports Tensorrt and ONNX Runtime as backends. If you need other backends, you can choose build from source.
 
+```
+docker run -it --rm --gpus all openmmlab/mmdeploy:triton-22.12
+```
+
 b) Build from source
 
 You can refer [build from source](../01-how-to-build/build_from_source.md) to build MMDeploy. In order to build MMDeploy Triton Backend, you need to add `-DTRITON_MMDEPLOY_BACKEND=ON` to cmake configure command. By default, the latest version of Triton Backend is used. If you want to use an older version of Triton Backend, you can add `-DTRITON_TAG=r22.12` to the cmake configure command.

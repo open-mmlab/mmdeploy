@@ -29,6 +29,10 @@ a) 使用 Docker 镜像
 
 为了方便使用，我们提供了 Docker 镜像，支持对通过 MMDeploy 转换的模型进行部署。镜像支持 Tensorrt 以及 ONNX Runtime 作为后端。若需要其他后端，可选择从源码进行编译。
 
+```
+docker run -it --rm --gpus all openmmlab/mmdeploy:triton-22.12
+```
+
 b) 从源码编译
 
 从源码编译 MMDeploy 的方式可参考[源码手动安装](../01-how-to-build/build_from_source.md)，要编译 MMDeploy Triton Backend，需要在编译命令中添加：`-DTRITON_MMDEPLOY_BACKEND=ON`。默认使用最新版本的 Triton Backend，若要使用旧版本的 Triton Backend，可在编译命令中添加`-DTRITON_TAG=r22.12`
