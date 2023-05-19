@@ -64,7 +64,7 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
-    def convert_to_datasample(
+    def convert_to_datasample_list(
             self, predictions: DataSample, data_samples: DataSample,
             inputs: Optional[torch.Tensor]) -> List[DataSample]:
         """Add predictions and destructed inputs (if passed) to data samples.
@@ -132,8 +132,8 @@ class End2EndModel(BaseBackendModel):
         # create a stacked data sample here
         predictions = DataSample(pred_img=batch_outputs.cpu())
 
-        predictions = self.convert_to_datasample(predictions, data_samples,
-                                                 inputs)
+        predictions = self.convert_to_datasample_list(predictions, data_samples,
+                                                      inputs)
 
         return predictions
 
@@ -144,35 +144,6 @@ class SDKEnd2EndModel(End2EndModel):
 
     def __init__(self, *args, **kwargs):
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
-
-    def convert_to_datasample(
-            self, predictions: DataSample, data_samples: DataSample,
-            inputs: Optional[torch.Tensor]) -> List[DataSample]:
-        """Add predictions and destructed inputs (if passed) to data samples.
-
-        Args:
-            predictions (EditDataSample): The predictions of the model.
-            data_samples (EditDataSample): The data samples loaded from
-                dataloader.
-            inputs (Optional[torch.Tensor]): The input of model. Defaults to
-                None.
-
-        Returns:
-            List[EditDataSample]: Modified data samples.
-        """
-
-        if inputs is not None:
-            destructed_input = self.data_preprocessor.destruct(
-                inputs, data_samples, 'img')
-            data_samples.set_tensor_data({'input': destructed_input})
-        # split to list of data samples
-        data_samples = data_samples.split()
-        predictions = predictions.split()
-
-        for data_sample, pred in zip(data_samples, predictions):
-            data_sample.output = pred
-
-        return data_samples
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -210,14 +181,14 @@ class SDKEnd2EndModel(End2EndModel):
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
         outputs = torch.stack(outputs, 0) / 255.
         assert hasattr(self.data_preprocessor, 'destruct')
-        outputs = self.data_preprocessor.destruct(outputs.to(self.data_preprocessor.std.device)
-                                                  , data_samples)
+        outputs = self.data_preprocessor.destruct(
+            outputs.to(self.data_preprocessor.std.device), data_samples)
 
         # create a stacked data sample here
         predictions = DataSample(pred_img=outputs.cpu())
 
-        predictions = self.convert_to_datasample(predictions, data_samples,
-                                                 inputs)
+        predictions = self.convert_to_datasample_list(predictions, data_samples,
+                                                      inputs)
         return predictions
 
 
