@@ -14,7 +14,9 @@ if (PROTOBUF_FOUND)
     target_include_directories(mmdeploy_onnx2ncnn PRIVATE ${PROTOBUF_INCLUDE_DIR}
             ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(mmdeploy_onnx2ncnn PRIVATE ${PROTOBUF_LIBRARIES})
-
+    if (MSVC)
+        target_compile_options(mmdeploy_onnx2ncnn PUBLIC $<$<COMPILE_LANGUAGE:CXX>:/Za>)
+    endif()
     set(_NCNN_CONVERTER_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/backend/ncnn)
     install(TARGETS mmdeploy_onnx2ncnn DESTINATION ${_NCNN_CONVERTER_DIR})
 else ()

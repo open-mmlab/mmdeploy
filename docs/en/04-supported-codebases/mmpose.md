@@ -159,3 +159,4 @@ TODO
 | [LiteHRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#litehrnet-cvpr-2021)  | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [Hourglass](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [SimCC](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    N     |
+| [RTMPose](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose)                             | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |

@@ -274,7 +274,7 @@ class Segmentation(BaseTask):
         preprocess = model_cfg.test_pipeline
         preprocess[0] = load_from_file
         assert preprocess[1].type == 'Resize'
-        preprocess[1]['size'] = list(reversed(preprocess[1].pop('scale')))
+        preprocess[1]['size'] = list(preprocess[1].pop('scale'))
         preprocess = preprocess[:2]
         dp = self.model_cfg.data_preprocessor
         preprocess.append(
