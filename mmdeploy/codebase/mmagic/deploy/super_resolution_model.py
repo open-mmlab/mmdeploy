@@ -64,21 +64,20 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
-    def convert_to_datasample_list(
+    def convert_to_datasample(
             self, predictions: DataSample, data_samples: DataSample,
             inputs: Optional[torch.Tensor]) -> List[DataSample]:
-        """Add predictions and destructed inputs (if passed) into a list of
-        data samples.
+        """Add predictions and destructed inputs (if passed) to data samples.
 
         Args:
-            predictions (DataSample): The predictions of the model.
-            data_samples (DataSample): The data samples loaded from
+            predictions (EditDataSample): The predictions of the model.
+            data_samples (EditDataSample): The data samples loaded from
                 dataloader.
             inputs (Optional[torch.Tensor]): The input of model. Defaults to
                 None.
 
         Returns:
-            List[EditDataSample]: A list of modified data samples.
+            List[EditDataSample]: Modified data samples.
         """
 
         if inputs is not None:
@@ -133,8 +132,8 @@ class End2EndModel(BaseBackendModel):
         # create a stacked data sample here
         predictions = DataSample(pred_img=batch_outputs.cpu())
 
-        predictions = self.convert_to_datasample_list(predictions,
-                                                      data_samples, inputs)
+        predictions = self.convert_to_datasample(predictions, data_samples,
+                                                 inputs)
 
         return predictions
 
@@ -144,6 +143,7 @@ class SDKEnd2EndModel(End2EndModel):
     """SDK inference class, converts SDK output to mmagic format."""
 
     def __init__(self, *args, **kwargs):
+        kwargs.update(dict(data_preprocessor=None))
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
 
     def forward(self,
@@ -169,28 +169,18 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
-
-        if hasattr(self.data_preprocessor, 'destructor'):
-            inputs = self.data_preprocessor.destructor(
-                inputs.to(self.data_preprocessor.std.device))
-
         outputs = []
-        for i in range(inputs.shape[0]):
-            output = self.wrapper.invoke(inputs[i].permute(
-                1, 2, 0).contiguous().detach().cpu().numpy() * 255.)
+        for input in inputs:
+            output = self.wrapper.invoke(
+                input.permute(1, 2, 0).contiguous().detach().cpu().numpy())
             outputs.append(
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
-        outputs = torch.stack(outputs, 0) / 255.
-        assert hasattr(self.data_preprocessor, 'destruct')
-        outputs = self.data_preprocessor.destruct(
-            outputs.to(self.data_preprocessor.std.device), data_samples)
+        outputs = torch.stack(outputs, 0)
+        outputs = DataSample(pred_img=outputs.cpu()).split()
 
-        # create a stacked data sample here
-        predictions = DataSample(pred_img=outputs.cpu())
-
-        predictions = self.convert_to_datasample_list(predictions,
-                                                      data_samples, inputs)
-        return predictions
+        for data_sample, pred in zip(data_samples, outputs):
+            data_sample.output = pred
+        return data_samples
 
 
 def build_super_resolution_model(
