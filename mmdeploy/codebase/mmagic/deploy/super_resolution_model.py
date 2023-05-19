@@ -160,7 +160,8 @@ class SDKEnd2EndModel(End2EndModel):
         it is an image.
 
         Args:
-            inputs (torch.Tensor): The input tensors
+            inputs (torch.Tensor): A list contains input image(s)
+                in [C x H x W] format.
             data_samples (List[BaseDataElement], optional): The data samples.
                 Defaults to None.
             mode (str, optional): forward mode, only support `predict`.
