@@ -3,7 +3,7 @@ from typing import List, Optional, Sequence, Union
 
 import mmengine
 import torch
-from mmedit.structures import EditDataSample
+from mmagic.structures import DataSample
 from mmengine import Config
 from mmengine.model.base_model.data_preprocessor import BaseDataPreprocessor
 from mmengine.registry import Registry
@@ -64,20 +64,21 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
-    def convert_to_datasample(
-            self, predictions: EditDataSample, data_samples: EditDataSample,
-            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
-        """Add predictions and destructed inputs (if passed) to data samples.
+    def convert_to_datasample_list(
+            self, predictions: DataSample, data_samples: DataSample,
+            inputs: Optional[torch.Tensor]) -> List[DataSample]:
+        """Add predictions and destructed inputs (if passed) into a list of
+        data samples.
 
         Args:
-            predictions (EditDataSample): The predictions of the model.
-            data_samples (EditDataSample): The data samples loaded from
+            predictions (DataSample): The predictions of the model.
+            data_samples (DataSample): The data samples loaded from
                 dataloader.
             inputs (Optional[torch.Tensor]): The input of model. Defaults to
                 None.
 
         Returns:
-            List[EditDataSample]: Modified data samples.
+            List[EditDataSample]: A list of modified data samples.
         """
 
         if inputs is not None:
@@ -97,7 +98,7 @@ class End2EndModel(BaseBackendModel):
                 inputs: torch.Tensor,
                 data_samples: Optional[List[BaseDataElement]] = None,
                 mode: str = 'predict',
-                **kwargs) -> Sequence[EditDataSample]:
+                **kwargs) -> Sequence[DataSample]:
         """Run test inference for restorer.
 
         We want forward() to output an image or a evaluation result.
@@ -121,55 +122,29 @@ class End2EndModel(BaseBackendModel):
             get_root_logger().warning(f'expect input device {self.device}'
                                       f' but get {lq.device}.')
         lq = lq.to(self.device)
+
         batch_outputs = self.wrapper({self.input_name:
                                       lq})[self.output_names[0]].to('cpu')
+
         assert hasattr(self.data_preprocessor, 'destruct')
         batch_outputs = self.data_preprocessor.destruct(
-            batch_outputs, data_samples)
+            batch_outputs.to(self.data_preprocessor.std.device), data_samples)
 
         # create a stacked data sample here
-        predictions = EditDataSample(pred_img=batch_outputs.cpu())
+        predictions = DataSample(pred_img=batch_outputs.cpu())
 
-        predictions = self.convert_to_datasample(predictions, data_samples,
-                                                 inputs)
+        predictions = self.convert_to_datasample_list(predictions,
+                                                      data_samples, inputs)
+
         return predictions
 
 
 @__BACKEND_MODEL.register_module('sdk')
 class SDKEnd2EndModel(End2EndModel):
-    """SDK inference class, converts SDK output to mmedit format."""
+    """SDK inference class, converts SDK output to mmagic format."""
 
     def __init__(self, *args, **kwargs):
         super(SDKEnd2EndModel, self).__init__(*args, **kwargs)
-
-    def convert_to_datasample(
-            self, predictions: EditDataSample, data_samples: EditDataSample,
-            inputs: Optional[torch.Tensor]) -> List[EditDataSample]:
-        """Add predictions and destructed inputs (if passed) to data samples.
-
-        Args:
-            predictions (EditDataSample): The predictions of the model.
-            data_samples (EditDataSample): The data samples loaded from
-                dataloader.
-            inputs (Optional[torch.Tensor]): The input of model. Defaults to
-                None.
-
-        Returns:
-            List[EditDataSample]: Modified data samples.
-        """
-
-        if inputs is not None:
-            destructed_input = self.data_preprocessor.destruct(
-                inputs, data_samples, 'img')
-            data_samples.set_tensor_data({'input': destructed_input})
-        # split to list of data samples
-        data_samples = data_samples.split()
-        predictions = predictions.split()
-
-        for data_sample, pred in zip(data_samples, predictions):
-            data_sample.output = pred
-
-        return data_samples
 
     def forward(self,
                 inputs: torch.Tensor,
@@ -194,25 +169,28 @@ class SDKEnd2EndModel(End2EndModel):
         Returns:
             list | dict: High resolution image or a evaluation results.
         """
+
         if hasattr(self.data_preprocessor, 'destructor'):
             inputs = self.data_preprocessor.destructor(
-                inputs.to(self.data_preprocessor.input_std.device))
+                inputs.to(self.data_preprocessor.std.device))
+
         outputs = []
         for i in range(inputs.shape[0]):
             output = self.wrapper.invoke(inputs[i].permute(
-                1, 2, 0).contiguous().detach().cpu().numpy())
+                1, 2, 0).contiguous().detach().cpu().numpy() * 255.)
             outputs.append(
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
         outputs = torch.stack(outputs, 0) / 255.
         assert hasattr(self.data_preprocessor, 'destruct')
-        outputs = self.data_preprocessor.destruct(outputs, data_samples)
+        outputs = self.data_preprocessor.destruct(
+            outputs.to(self.data_preprocessor.std.device), data_samples)
 
         # create a stacked data sample here
-        predictions = EditDataSample(pred_img=outputs.cpu())
+        predictions = DataSample(pred_img=outputs.cpu())
 
-        predictions = self.convert_to_datasample(predictions, data_samples,
-                                                 inputs)
-        return data_samples
+        predictions = self.convert_to_datasample_list(predictions,
+                                                      data_samples, inputs)
+        return predictions
 
 
 def build_super_resolution_model(

@@ -19,7 +19,7 @@ class ModuleRewriter:
 
     Examples:
         >>> @MODULE_REWRITER.register_rewrite_module(
-        >>>     'mmedit.models.backbones.sr_backbones.SRCNN',
+        >>>     'mmagic.models.backbones.sr_backbones.SRCNN',
         >>>     backend='tensorrt')
         >>> class SRCNNWrapper(torch.nn.Module):
         >>>     # rewrite the module here

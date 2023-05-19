@@ -45,7 +45,7 @@ You can switch between Chinese and English documents in the lower-left corner of
    04-supported-codebases/mmpretrain.md
    04-supported-codebases/mmdet.md
    04-supported-codebases/mmseg.md
-   04-supported-codebases/mmedit.md
+   04-supported-codebases/mmagic.md
    04-supported-codebases/mmocr.md
    04-supported-codebases/mmpose.md
    04-supported-codebases/mmdet3d.md

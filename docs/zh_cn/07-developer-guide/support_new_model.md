@@ -33,7 +33,7 @@ def repeat_static(input, *size):
 
 ```python
 @MODULE_REWRITER.register_rewrite_module(
-    'mmedit.models.backbones.sr_backbones.SRCNN', backend='tensorrt')
+    'mmagic.models.backbones.sr_backbones.SRCNN', backend='tensorrt')
 class SRCNNWrapper(nn.Module):
     def __init__(self,
                  module,

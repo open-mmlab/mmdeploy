@@ -23,13 +23,13 @@ def get_deploy_cfg(input_name, output_name):
                 input_names=[input_name],
                 output_names=[output_name],
                 input_shape=None),
-            codebase_config=dict(type='mmedit', task='SuperResolution'),
+            codebase_config=dict(type='mmagic', task='SuperResolution'),
             backend_config=dict(type=Backend.TORCHSCRIPT.value)))
 
 
 def get_model_cfg():
     import mmengine
-    file = 'tests/test_codebase/test_mmedit/data/model.py'
+    file = 'tests/test_codebase/test_mmagic/data/model.py'
     model_cfg = mmengine.Config.fromfile(file)
     return model_cfg
 
@@ -37,7 +37,7 @@ def get_model_cfg():
 @pytest.mark.parametrize('input_name', [input_name])
 @pytest.mark.parametrize('output_name', [output_name])
 @pytest.mark.skipif(
-    not importlib.util.find_spec('mmedit'), reason='requires mmedit')
+    not importlib.util.find_spec('mmagic'), reason='requires mmagic')
 def test_torch2torchscript(input_name, output_name):
     import numpy as np
     deploy_cfg = get_deploy_cfg(input_name, output_name)

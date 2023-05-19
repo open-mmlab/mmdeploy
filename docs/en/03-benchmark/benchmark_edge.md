@@ -51,7 +51,7 @@ tips:
 - We needs to manually split the mmdet model into two parts. Because
   - In snpe source code, `onnx_to_ir.py` can only parse onnx input while `ir_to_dlc.py` does not support `topk` operator
   - UDO (User Defined Operator) does not work with `snpe-onnx-to-dlc`
-- mmedit model
+- mmagic model
   - `srcnn` requires cubic resize which snpe does not support
   - `esrgan` converts fine, but loading the model causes the device to reboot
 - mmrotate depends on [e2cnn](https://pypi.org/project/e2cnn/) and needs to be installed manually [its Python3.6 compatible branch](https://github.com/QUVA-Lab/e2cnn)

@@ -33,7 +33,7 @@ If you want to replace a whole module with another one, we have another rewriter
 
 ```python
 @MODULE_REWRITER.register_rewrite_module(
-    'mmedit.models.backbones.sr_backbones.SRCNN', backend='tensorrt')
+    'mmagic.models.backbones.sr_backbones.SRCNN', backend='tensorrt')
 class SRCNNWrapper(nn.Module):
 
     def __init__(self,

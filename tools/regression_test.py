@@ -27,7 +27,7 @@ def parse_args():
         nargs='+',
         help='regression test yaml path.',
         default=[
-            'mmpretrain', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmedit',
+            'mmpretrain', 'mmdet', 'mmseg', 'mmpose', 'mmocr', 'mmagic',
             'mmrotate', 'mmdet3d'
         ])
     parser.add_argument(
@@ -309,11 +309,18 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     using_dataset = set()
     using_task = set()
     datasets = []
+
     # Get metrics info from metafile
     for metafile_metric in metafile_metric_info:
-        pytorch_metric.update(metafile_metric['Metrics'])
-        dataset = metafile_metric['Dataset']
         task_name = metafile_metric['Task']
+        dataset = metafile_metric['Dataset']
+
+        # check if metafile use the same metric on several datasets
+        if len(metafile_metric_info) > 1:
+            for k, v in metafile_metric['Metrics'].items():
+                pytorch_metric[f'{dataset} {k}'] = v
+        else:
+            pytorch_metric.update(metafile_metric['Metrics'])
         datasets.append(dataset)
         using_task.add(task_name)
         using_dataset.add(dataset)
@@ -329,6 +336,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
                 pytorch_metric.update(metafile_metric_info[idx]['Metrics'])
             value = pytorch_metric[metric]
         metric_list.append({metric: value})
+
     valid_pytorch_metric = {
         k: v
         for k, v in pytorch_metric.items() if k in test_yaml_metric_info
@@ -428,6 +436,7 @@ def get_fps_metric(shell_res: int, pytorch_metric: dict, metric_info: dict,
         backend_results = parse_test_log(work_path)
     compare_results = {}
     output_result = {}
+
     for metric_name, metric_value in pytorch_metric.items():
         metric_key = metric_info[metric_name]['metric_key']
         tolerance = metric_info[metric_name]['tolerance']
@@ -488,7 +497,7 @@ def get_backend_fps_metric(deploy_cfg_path: str, model_cfg_path: Path,
 
     codebase_name = get_codebase(str(deploy_cfg_path)).value
     # to stop Dataloader OOM in docker CI
-    if codebase_name not in ['mmedit', 'mmocr', 'mmpretrain']:
+    if codebase_name not in ['mmagic', 'mmocr', 'mmpretrain']:
         cfg_options = 'test_dataloader.num_workers=0 ' \
                       'test_dataloader.persistent_workers=False ' \
                       'val_dataloader.num_workers=0 ' \
@@ -765,6 +774,7 @@ def get_backend_result(pipeline_info: dict, model_cfg_path: Path,
             log_path = \
                 gen_log_path(backend_output_path.joinpath('backend'),
                              'test_log.txt')
+
             get_backend_fps_metric(
                 deploy_cfg_path=str(deploy_cfg_path),
                 model_cfg_path=model_cfg_path,

@@ -21,5 +21,5 @@ onnx_config = dict(
     output_names=['output'],
     input_shape=None)
 
-codebase_config = dict(type='mmedit', task='SuperResolution')
+codebase_config = dict(type='mmagic', task='SuperResolution')
 backend_config = dict(type='onnxruntime')

@@ -233,5 +233,5 @@ This is an example of mmocr regression test report.
 |            | AP       | :heavy_check_mark: |
 | mmocr      | hmean    | :heavy_check_mark: |
 |            | acc      | :heavy_check_mark: |
-| mmedit     | PSNR     | :heavy_check_mark: |
+| mmagic     | PSNR     | :heavy_check_mark: |
 |            | SSIM     | :heavy_check_mark: |

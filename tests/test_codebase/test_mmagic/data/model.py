@@ -1,5 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-default_scope = 'mmedit'
+default_scope = 'mmagic'
 save_dir = './work_dirs'
 
 default_hooks = dict(
@@ -46,7 +46,7 @@ model = dict(
     train_cfg=dict(),
     test_cfg=dict(metrics=['PSNR'], crop_border=scale),
     data_preprocessor=dict(
-        type='EditDataPreprocessor',
+        type='DataPreprocessor',
         mean=[0., 0., 0.],
         std=[255., 255., 255.],
     ))
@@ -74,7 +74,7 @@ train_pipeline = [
     dict(
         type='Flip', keys=['img', 'gt'], flip_ratio=0.5, direction='vertical'),
     dict(type='RandomTransposeHW', keys=['img', 'gt'], transpose_ratio=0.5),
-    dict(type='PackEditInputs')
+    dict(type='PackInputs')
 ]
 val_pipeline = [
     dict(
@@ -89,7 +89,7 @@ val_pipeline = [
         color_type='color',
         channel_order='rgb',
         imdecode_backend='cv2'),
-    dict(type='PackEditInputs')
+    dict(type='PackInputs')
 ]
 
 # dataset settings
@@ -123,17 +123,15 @@ val_dataloader = dict(
         data_prefix=dict(img='LRbicx4', gt='GTmod12'),
         pipeline=val_pipeline))
 
-val_evaluator = dict(
-    type='EditEvaluator',
-    metrics=[
-        dict(type='MAE'),
-        dict(type='PSNR', crop_border=scale),
-        dict(type='SSIM', crop_border=scale),
-    ])
+val_evaluator = [
+    dict(type='MAE'),
+    dict(type='PSNR', crop_border=scale),
+    dict(type='SSIM', crop_border=scale),
+]
 
 train_cfg = dict(
     type='IterBasedTrainLoop', max_iters=1000000, val_interval=5000)
-val_cfg = dict(type='EditValLoop')
+val_cfg = dict(type='ValLoop')
 
 # optimizer
 optim_wrapper = dict(
@@ -176,7 +174,7 @@ test_pipeline = [
         color_type='color',
         channel_order='rgb',
         imdecode_backend='cv2'),
-    dict(type='PackEditInputs')
+    dict(type='PackInputs')
 ]
 
 # test config for Set5
@@ -192,12 +190,10 @@ set5_dataloader = dict(
         data_root=set5_data_root,
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
-set5_evaluator = dict(
-    type='EditEvaluator',
-    metrics=[
-        dict(type='PSNR', crop_border=4, prefix='Set5'),
-        dict(type='SSIM', crop_border=4, prefix='Set5'),
-    ])
+set5_evaluator = [
+    dict(type='PSNR', crop_border=4, prefix='Set5'),
+    dict(type='SSIM', crop_border=4, prefix='Set5'),
+]
 
 set14_data_root = 'data/Set14'
 set14_dataloader = dict(
@@ -211,14 +207,12 @@ set14_dataloader = dict(
         data_root=set5_data_root,
         data_prefix=dict(img='imgs', gt='imgs'),
         pipeline=test_pipeline))
-set14_evaluator = dict(
-    type='EditEvaluator',
-    metrics=[
-        dict(type='PSNR', crop_border=4, prefix='Set14'),
-        dict(type='SSIM', crop_border=4, prefix='Set14'),
-    ])
+set14_evaluator = [
+    dict(type='PSNR', crop_border=4, prefix='Set14'),
+    dict(type='SSIM', crop_border=4, prefix='Set14'),
+]
 
-ut_data_root = 'tests/test_codebase/test_mmedit/data'
+ut_data_root = 'tests/test_codebase/test_mmagic/data'
 ut_dataloader = dict(
     num_workers=4,
     persistent_workers=False,
@@ -232,6 +226,6 @@ ut_dataloader = dict(
         pipeline=test_pipeline))
 
 # test config
-test_cfg = dict(type='EditTestLoop')
+test_cfg = dict(type='MultiTestLoop')
 test_dataloader = [ut_dataloader, ut_dataloader]
 test_evaluator = [set5_evaluator, set14_evaluator]

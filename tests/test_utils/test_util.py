@@ -16,7 +16,7 @@ from mmdeploy.utils.config_utils import get_codebase_external_module
 from mmdeploy.utils.constants import Backend, Codebase, Task
 from mmdeploy.utils.test import get_random_name
 
-correct_model_path = 'tests/test_codebase/test_mmedit/data/model.py'
+correct_model_path = 'tests/test_codebase/test_mmagic/data/model.py'
 correct_model_cfg = Config.fromfile(correct_model_path)
 correct_deploy_path = 'tests/data/super-resolution.py'
 correct_deploy_cfg = Config.fromfile(correct_deploy_path)
@@ -92,7 +92,7 @@ class TestGetCodebase:
             util.get_codebase(Config(dict()))
 
     def test_get_codebase(self):
-        assert util.get_codebase(correct_deploy_path) == Codebase.MMEDIT
+        assert util.get_codebase(correct_deploy_path) == Codebase.MMAGIC
 
 
 class TestGetBackendConfig:
@@ -430,7 +430,7 @@ def test_AdvancedEnum():
 
 
 @pytest.mark.skipif(
-    not importlib.util.find_spec('mmedit'), reason='requires mmedit')
+    not importlib.util.find_spec('mmagic'), reason='requires mmagic')
 def test_export_info():
     with tempfile.TemporaryDirectory() as dir:
         export2SDK(correct_deploy_cfg, correct_model_cfg, dir, '', 'cpu')

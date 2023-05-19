@@ -4,4 +4,4 @@ _base_ = [
 ]
 
 ir_config = dict(input_shape=None)
-codebase_config = dict(type='mmedit', task='SuperResolution')
+codebase_config = dict(type='mmagic', task='SuperResolution')
