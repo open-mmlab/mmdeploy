@@ -75,7 +75,7 @@ def prepare_codebases(codebases):
         full_name = REPO_NAMES[codebase]
         target_dir = os.path.join(MMDEPLOY_DIR, '..', full_name)
         branch = 'main'
-        if codebase == 'mmrotate':
+        if codebase in ['mmrotate', 'mmdet3d']:
             branch = 'dev-1.x'
         if not osp.exists(target_dir):
             run_cmd([

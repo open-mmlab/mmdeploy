@@ -30,12 +30,12 @@ on:
         default: "['1.10.0']"
       models:
         required: true
-        description: 'Tested model list, eg: "resnet yolov3". Default is "all"'
+        description: 'Tested model list, eg: "resnet yolov3". Default is "all".\r\n Example: resnet ssd yolov5 maskrcnn srcnn pointpillars dbnet crnn hrnet fastscnn slowfast RotatedRetinanet'
         type: string
         default: all
       codebases:
         required: true
-        description: "Tested codebase list, eg: ['mmpretrain','mmdet','mmedit','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
+        description: "Tested codebase list, eg: ['mmpretrain','mmdet','mmagic','mmseg','mmpose','mmocr','mmdet3d','mmaction','mmyolo','mmrotate']"
         type: string
         default: "['mmpretrain']"
       backends:
