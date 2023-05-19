@@ -70,7 +70,7 @@ The currently supported codebases and models are as follows, and more will be in
 - [mmpretrain](docs/en/04-supported-codebases/mmpretrain.md)
 - [mmdet](docs/en/04-supported-codebases/mmdet.md)
 - [mmseg](docs/en/04-supported-codebases/mmseg.md)
-- [mmedit](docs/en/04-supported-codebases/mmedit.md)
+- [mmagic](docs/en/04-supported-codebases/mmagic.md)
 - [mmocr](docs/en/04-supported-codebases/mmocr.md)
 - [mmpose](docs/en/04-supported-codebases/mmpose.md)
 - [mmdet3d](docs/en/04-supported-codebases/mmdet3d.md)

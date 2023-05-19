@@ -234,8 +234,11 @@ def get_postprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
     module = get_codebase(deploy_cfg).value
     module = 'mmdet' if module == 'mmyolo' else module
     module = 'mmcls' if module == 'mmpretrain' else module
+    module = 'mmedit' if module == 'mmagic' else module
+    # mmocr det models depend on postprocess from mmdet
     if module == 'mmocr' and post_processor['type'] == 'ResizeInstanceMask':
         module = 'mmdet'
+
     return dict(
         type='Task',
         module=module,

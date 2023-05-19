@@ -33,7 +33,7 @@ DEPLOY_CFG = {
     'Oriented Object Detection': 'configs/mmrotate/rotated-detection_tensorrt-fp16_dynamic-320x320-1024x1024.py',
     'Text Recognition': 'configs/mmocr/text-recognition/text-recognition_tensorrt_static-32x32.py',
     'Text Detection': 'configs/mmocr/text-detection/text-detection_tensorrt_static-512x512.py',
-    'Restorers': 'configs/mmedit/super-resolution/super-resolution_tensorrt_static-256x256.py'
+    'Restorers': 'configs/mmagic/super-resolution/super-resolution_tensorrt_static-256x256.py'
 }  # yapf: disable
 
 INFO = {

@@ -121,7 +121,7 @@
   </tr>
   <tr>
     <td>MMDEPLOY_CODEBASES</td>
-    <td>{"mmpretrain", "mmdet", "mmseg", "mmedit", "mmocr", "all"}</td>
+    <td>{"mmpretrain", "mmdet", "mmseg", "mmagic", "mmocr", "all"}</td>
     <td>all</td>
     <td>Enable codebase's postprocess modules. You can provide a semicolon separated list of codebase names to enable them, e.g., <code>-DMMDEPLOY_CODEBASES="mmpretrain;mmdet"</code>. Or you can pass <code>all</code> to enable them all, i.e., <code>-DMMDEPLOY_CODEBASES=all</code></td>
   </tr>

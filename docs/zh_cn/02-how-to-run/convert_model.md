@@ -19,14 +19,14 @@
 注意:
 
 - 现在已支持的后端包括 [ONNXRuntime](../05-supported-backends/onnxruntime.md) ，[TensorRT](../05-supported-backends/tensorrt.md) ，[ncnn](../05-supported-backends/ncnn.md) ，[PPLNN](../05-supported-backends/pplnn.md) ，[OpenVINO](../05-supported-backends/openvino.md)。
-- 现在已支持的代码库包括 [MMPretrain](../04-supported-codebases/mmpretrain.md) ，[MMDetection](../04-supported-codebases/mmdet.md) ，[MMSegmentation](../04-supported-codebases/mmseg.md) ，[MMOCR](../04-supported-codebases/mmocr.md) ，[MMEditing](../04-supported-codebases/mmedit.md)。
+- 现在已支持的代码库包括 [MMPretrain](../04-supported-codebases/mmpretrain.md) ，[MMDetection](../04-supported-codebases/mmdet.md) ，[MMSegmentation](../04-supported-codebases/mmseg.md) ，[MMOCR](../04-supported-codebases/mmocr.md) ，[MMagic](../04-supported-codebases/mmagic.md)。
 
 ## 如何将模型从pytorch形式转换成其他后端形式
 
 ### 准备工作
 
 1. 安装您的目标后端。 您可以参考 [ONNXRuntime-install](../05-supported-backends/onnxruntime.md) ，[TensorRT-install](../05-supported-backends/tensorrt.md) ，[ncnn-install](../05-supported-backends/ncnn.md) ，[PPLNN-install](../05-supported-backends/pplnn.md), [OpenVINO-install](../05-supported-backends/openvino.md)。
-2. 安装您的目标代码库。 您可以参考 [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/main/docs/zh_CN/get_started.md#%E5%AE%89%E8%A3%85)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/zh_cn/get_started/install.md)， [MMEditing-install](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/get_started/install.md)。
+2. 安装您的目标代码库。 您可以参考 [MMPretrain-install](https://github.com/open-mmlab/mmpretrain/blob/main/docs/zh_CN/get_started.md#%E5%AE%89%E8%A3%85)， [MMDetection-install](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/get_started.md)， [MMSegmentation-install](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/get_started.md#installation)， [MMOCR-install](https://github.com/open-mmlab/mmocr/blob/1.x/docs/zh_cn/get_started/install.md)， [MMagic-install](https://github.com/open-mmlab/mmagic/blob/main/docs/en/get_started/install.md)。
 
 ### 使用方法
 

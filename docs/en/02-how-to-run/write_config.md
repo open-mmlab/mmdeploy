@@ -83,7 +83,7 @@ Codebase config part contains information like codebase type and task type.
 
 ### Description of codebase config arguments
 
-- `type`: Model's codebase, including `mmpretrain`, `mmdet`, `mmseg`, `mmocr`, `mmedit`.
+- `type`: Model's codebase, including `mmpretrain`, `mmdet`, `mmseg`, `mmocr`, `mmagic`.
 - `task`: Model's task type, referring to [List of tasks in all codebases](#list-of-tasks-in-all-codebases).
 
 #### Example
@@ -177,4 +177,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. How to write model config
 
-According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMPretrain](https://github.com/open-mmlab/mmpretrain/blob/main/docs/en/user_guides/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/user_guides/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/user_guides/1_config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md), [MMEditing](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/user_guides/config.md).
+According to model's codebase, write the model config file. Model's config file is used to initialize the model, referring to [MMPretrain](https://github.com/open-mmlab/mmpretrain/blob/main/docs/en/user_guides/config.md), [MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/en/user_guides/config.md), [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/en/user_guides/1_config.md), [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md), [MMagic](https://github.com/open-mmlab/mmagic/blob/main/docs/en/user_guides/config.md).

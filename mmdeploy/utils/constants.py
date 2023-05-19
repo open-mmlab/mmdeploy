@@ -37,7 +37,7 @@ class Codebase(AdvancedEnum):
     MMSEG = 'mmseg'
     MMPRETRAIN = 'mmpretrain'
     MMOCR = 'mmocr'
-    MMEDIT = 'mmedit'
+    MMAGIC = 'mmagic'
     MMDET3D = 'mmdet3d'
     MMPOSE = 'mmpose'
     MMROTATE = 'mmrotate'

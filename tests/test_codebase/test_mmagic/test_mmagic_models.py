@@ -13,10 +13,10 @@ from mmdeploy.core import RewriterContext
 from mmdeploy.utils import Backend, Codebase, get_onnx_config
 
 try:
-    import_codebase(Codebase.MMEDIT)
+    import_codebase(Codebase.MMAGIC)
 except ImportError:
     pytest.skip(
-        f'{Codebase.MMEDIT} is not installed.', allow_module_level=True)
+        f'{Codebase.MMAGIC} is not installed.', allow_module_level=True)
 
 img = torch.rand(1, 3, 4, 4)
 model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
@@ -24,7 +24,7 @@ model_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
 deploy_cfg = mmengine.Config(
     dict(
         codebase_config=dict(
-            type='mmedit',
+            type='mmagic',
             task='SuperResolution',
         ),
         backend_config=dict(
@@ -50,10 +50,10 @@ deploy_cfg = mmengine.Config(
 
 
 def test_base_edit_model_forward():
-    from mmedit.models.base_models.base_edit_model import BaseEditModel
-    from mmedit.structures import EditDataSample
+    from mmagic.models.base_models.base_edit_model import BaseEditModel
+    from mmagic.structures import DataSample
 
-    from mmdeploy.codebase.mmedit import models  # noqa
+    from mmdeploy.codebase.mmagic import models  # noqa
 
     class DummyBaseEditModel(BaseEditModel):
 
@@ -62,7 +62,7 @@ def test_base_edit_model_forward():
 
         def forward(self,
                     inputs: torch.Tensor,
-                    data_samples: Optional[List[EditDataSample]] = None,
+                    data_samples: Optional[List[DataSample]] = None,
                     mode: str = 'tensor',
                     **kwargs):
             return inputs
@@ -85,7 +85,7 @@ def test_base_edit_model_forward():
 
 
 def test_srcnn():
-    from mmedit.models.editors.srcnn import SRCNNNet
+    from mmagic.models.editors.srcnn import SRCNNNet
 
     pytorch_model = SRCNNNet()
     model_inputs = {'x': img}

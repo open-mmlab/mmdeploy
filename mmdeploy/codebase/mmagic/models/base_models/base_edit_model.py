@@ -8,7 +8,7 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmedit.models.base_models.BaseEditModel.forward', backend='default')
+    'mmagic.models.base_models.BaseEditModel.forward', backend='default')
 def base_edit_model__forward(
         self,
         batch_inputs: Tensor,

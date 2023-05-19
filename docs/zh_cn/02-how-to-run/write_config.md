@@ -93,7 +93,7 @@ onnx_config = dict(
 
 ### 代码库配置参数说明
 
-- `type`: OpenMMLab 系列模型代码库的简称， 包括 `mmpretrain`， `mmdet`， `mmseg`， `mmocr`， `mmedit`。
+- `type`: OpenMMLab 系列模型代码库的简称， 包括 `mmpretrain`， `mmdet`， `mmseg`， `mmocr`， `mmagic`。
 - `task`: OpenMMLab 系列模型任务类型， 具体请参考 [OpenMMLab 系列模型任务列表](#list-of-tasks-in-all-codebases)。
 
 #### 示例
@@ -187,4 +187,4 @@ detection_tensorrt-int8_dynamic-320x320-1344x1344.py
 
 ## 6. 如何编写模型配置文件
 
-请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMPretrain](https://github.com/open-mmlab/mmpretrain/blob/main/docs/zh_CN/user_guides/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/user_guides/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/user_guides/1_config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md)，[MMEditing](https://github.com/open-mmlab/mmediting/blob/1.x/docs/en/user_guides/config.md)。
+请根据模型具体任务的代码库，编写模型配置文件。 模型配置文件用于初始化模型，详情请参考[MMPretrain](https://github.com/open-mmlab/mmpretrain/blob/main/docs/zh_CN/user_guides/config.md)，[MMDetection](https://github.com/open-mmlab/mmdetection/blob/3.x/docs/zh_cn/user_guides/config.md)， [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/1.x/docs/zh_cn/user_guides/1_config.md)， [MMOCR](https://github.com/open-mmlab/mmocr/blob/1.x/docs/en/user_guides/config.md)，[MMagic](https://github.com/open-mmlab/mmagic/blob/main/docs/en/user_guides/config.md)。

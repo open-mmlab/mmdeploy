@@ -10,7 +10,7 @@ from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.codebase.mmedit.deploy.mmediting import MMEDIT_TASK
+from mmdeploy.codebase.mmagic.deploy.mmediting import MMAGIC_TASK
 from mmdeploy.utils import Task, get_input_shape
 
 
@@ -33,7 +33,7 @@ def process_model_config(model_cfg: mmengine.Config,
     if not hasattr(config, 'test_pipeline'):
         config.__setattr__('test_pipeline', config.val_pipeline)
     keys_to_remove = ['gt', 'gt_path']
-    # MMEdit doesn't support LoadImageFromWebcam.
+    # MMagic doesn't support LoadImageFromWebcam.
     # Remove "LoadImageFromFile" and related metakeys.
     load_from_file = isinstance(imgs[0], str)
     is_static_cfg = input_shape is not None
@@ -72,8 +72,8 @@ def _get_dataset_metainfo(model_cfg: Config):
     Returns:
         list[str]: A list of string specifying names of different class.
     """
-    from mmedit import datasets  # noqa
-    from mmedit.registry import DATASETS
+    from mmagic import datasets  # noqa
+    from mmagic.registry import DATASETS
 
     module_dict = DATASETS.module_dict
 
@@ -101,7 +101,7 @@ def _get_dataset_metainfo(model_cfg: Config):
                     meta_list.append(dataset.METAINFO)
             return meta_list
         else:
-            dataset_cfg = dataloader_cfg[0].dataset
+            dataset_cfg = dataloader_cfg.get('dataset', None)
             dataset_cls = module_dict.get(dataset_cfg.type, None)
             if dataset_cls is None:
                 continue
@@ -117,7 +117,7 @@ def _get_dataset_metainfo(model_cfg: Config):
     return None
 
 
-@MMEDIT_TASK.register_module(Task.SUPER_RESOLUTION.value)
+@MMAGIC_TASK.register_module(Task.SUPER_RESOLUTION.value)
 class SuperResolution(BaseTask):
     """BaseTask class of super resolution task.
 
@@ -145,7 +145,7 @@ class SuperResolution(BaseTask):
         from .super_resolution_model import build_super_resolution_model
         data_preprocessor = deepcopy(
             self.model_cfg.model.get('data_preprocessor', {}))
-        data_preprocessor.setdefault('type', 'mmedit.EditDataPreprocessor')
+        data_preprocessor.setdefault('type', 'mmagic.EditDataPreprocessor')
         model = build_super_resolution_model(
             model_files,
             self.model_cfg,
@@ -208,7 +208,7 @@ class SuperResolution(BaseTask):
             name (str): The name of visualization window.
             save_dir (str): The directory to save images.
         """
-        from mmedit.utils import register_all_modules
+        from mmagic.utils import register_all_modules
         register_all_modules(init_default_scope=False)
         vis_backends = [dict(type='LocalVisBackend')]
         visualizer = Config(
@@ -232,7 +232,7 @@ class SuperResolution(BaseTask):
                   window_name: str = '',
                   show_result: bool = False,
                   **kwargs) -> np.ndarray:
-        """Visualize result of a model. mmedit does not have visualizer, so
+        """Visualize result of a model. mmagic does not have visualizer, so
         write visualize function directly.
 
         Args:
@@ -257,6 +257,7 @@ class SuperResolution(BaseTask):
             result = result[0]
         with torch.no_grad():
             result = result.transpose(1, 2, 0)
+            result = mmcv.bgr2rgb(result)
             result = np.clip(result, 0, 255)[:, :, ::-1].round()
             output_file = None if show_result else output_file
             if show_result:
@@ -273,7 +274,7 @@ class SuperResolution(BaseTask):
 
     @staticmethod
     def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
-        """Get a certain partition config for mmedit.
+        """Get a certain partition config for mmagic.
 
         Args:
             partition_type (str): A string specifying partition type.
@@ -318,10 +319,10 @@ class SuperResolution(BaseTask):
                 transform['keys'] = ['img']
             if 'key' in transform and transform['key'] == 'lq':
                 transform['key'] = 'img'
-            if transform['type'] == 'EditDataPreprocessor':
+            if transform['type'] == 'DataPreprocessor':
                 transform['type'] = 'Normalize'
                 transform['to_rgb'] = transform.get('to_rgb', False)
-            if transform['type'] == 'PackEditInputs':
+            if transform['type'] == 'PackInputs':
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
                 transform['meta_keys'] = list(set(meta_keys))
