@@ -685,8 +685,8 @@ class SDKEnd2EndModel(End2EndModel):
         """Run forward inference.
 
         Args:
-            img (Sequence[Tensor]): A list contains input image(s)
-                in [N x C x H x W] format.
+            inputs (Sequence[Tensor]): A list contains input image(s)
+                in [C x H x W] format.
             data_samples (List[BaseDataElement]): A list of meta info
                 for image(s).
             *args: Other arguments.
