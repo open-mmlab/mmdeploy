@@ -21,7 +21,7 @@
 
 ______________________________________________________________________
 
-This tutorial takes `mmdeploy-1.0.0-windows-amd64.zip` and `mmdeploy-1.0.0-windows-amd64-cuda11.3.zip` as examples to show how to use the prebuilt packages. The former support onnxruntime cpu inference, the latter support onnxruntime-gpu and tensorrt inference.
+This tutorial takes `mmdeploy-1.1.0-windows-amd64.zip` and `mmdeploy-1.1.0-windows-amd64-cuda11.3.zip` as examples to show how to use the prebuilt packages. The former support onnxruntime cpu inference, the latter support onnxruntime-gpu and tensorrt inference.
 
 The directory structure of the prebuilt package is as follows, where the `dist` folder is about model converter, and the `sdk` folder is related to model inference.
 
@@ -81,8 +81,8 @@ In order to use `ONNX Runtime` backend, you should also do the following steps.
 5. Install `mmdeploy` (Model Converter) and `mmdeploy_runtime` (SDK Python API).
 
    ```bash
-   pip install mmdeploy==1.0.0
-   pip install mmdeploy-runtime==1.0.0
+   pip install mmdeploy==1.1.0
+   pip install mmdeploy-runtime==1.1.0
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
@@ -100,7 +100,7 @@ In order to use `ONNX Runtime` backend, you should also do the following steps.
    ![sys-path](https://user-images.githubusercontent.com/16019484/181463801-1d7814a8-b256-46e9-86f2-c08de0bc150b.png)
    :exclamation: Restart powershell to make the environment variables setting take effect. You can check whether the settings are in effect by `echo $env:PATH`.
 
-8. Download SDK C/cpp Library mmdeploy-1.0.0-windows-amd64.zip
+8. Download SDK C/cpp Library mmdeploy-1.1.0-windows-amd64.zip
 
 ### TensorRT
 
@@ -109,8 +109,8 @@ In order to use `TensorRT` backend, you should also do the following steps.
 5. Install `mmdeploy` (Model Converter) and `mmdeploy_runtime` (SDK Python API).
 
    ```bash
-   pip install mmdeploy==1.0.0
-   pip install mmdeploy-runtime-gpu==1.0.0
+   pip install mmdeploy==1.1.0
+   pip install mmdeploy-runtime-gpu==1.1.0
    ```
 
    :point_right: If you have installed it before, please uninstall it first.
@@ -129,7 +129,7 @@ In order to use `TensorRT` backend, you should also do the following steps.
 
 7. Install pycuda by `pip install pycuda`
 
-8. Download SDK C/cpp Library mmdeploy-1.0.0-windows-amd64-cuda11.3.zip
+8. Download SDK C/cpp Library mmdeploy-1.1.0-windows-amd64-cuda11.3.zip
 
 ## Model Convert
 
@@ -141,7 +141,7 @@ After preparation work, the structure of the current working directory should be
 
 ```
 ..
-|-- mmdeploy-1.0.0-windows-amd64
+|-- mmdeploy-1.1.0-windows-amd64
 |-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -189,7 +189,7 @@ After installation of mmdeploy-tensorrt prebuilt package, the structure of the c
 
 ```
 ..
-|-- mmdeploy-1.0.0-windows-amd64-cuda11.3
+|-- mmdeploy-1.1.0-windows-amd64-cuda11.3
 |-- mmpretrain
 |-- mmdeploy
 `-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -252,8 +252,8 @@ The structure of current working directory：
 
 ```
 .
-|-- mmdeploy-1.0.0-windows-amd64
-|-- mmdeploy-1.0.0-windows-amd64-cuda11.3
+|-- mmdeploy-1.1.0-windows-amd64
+|-- mmdeploy-1.1.0-windows-amd64-cuda11.3
 |-- mmpretrain
 |-- mmdeploy
 |-- resnet18_8xb32_in1k_20210831-fbbb1da6.pth
@@ -324,7 +324,7 @@ The following describes how to use the SDK's C API for inference
 
    It is recommended to use `CMD` here.
 
-   Under `mmdeploy-1.0.0-windows-amd64\\example\\cpp\\build\\Release` directory：
+   Under `mmdeploy-1.1.0-windows-amd64\\example\\cpp\\build\\Release` directory：
 
    ```
    .\image_classification.exe cpu C:\workspace\work_dir\onnx\resnet\ C:\workspace\mmpretrain\demo\demo.JPEG
@@ -344,7 +344,7 @@ The following describes how to use the SDK's C API for inference
 
    It is recommended to use `CMD` here.
 
-   Under `mmdeploy-1.0.0-windows-amd64-cuda11.3\\example\\cpp\\build\\Release` directory
+   Under `mmdeploy-1.1.0-windows-amd64-cuda11.3\\example\\cpp\\build\\Release` directory
 
    ```
    .\image_classification.exe cuda C:\workspace\work_dir\trt\resnet C:\workspace\mmpretrain\demo\demo.JPEG
