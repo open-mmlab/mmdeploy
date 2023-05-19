@@ -64,20 +64,21 @@ class End2EndModel(BaseBackendModel):
             deploy_cfg=self.deploy_cfg,
             **kwargs)
 
-    def convert_to_datasample(
+    def convert_to_datasample_list(
             self, predictions: DataSample, data_samples: DataSample,
             inputs: Optional[torch.Tensor]) -> List[DataSample]:
-        """Add predictions and destructed inputs (if passed) to data samples.
+        """Add predictions and destructed inputs (if passed) into a list of
+        data samples.
 
         Args:
-            predictions (EditDataSample): The predictions of the model.
-            data_samples (EditDataSample): The data samples loaded from
+            predictions (DataSample): The predictions of the model.
+            data_samples (DataSample): The data samples loaded from
                 dataloader.
             inputs (Optional[torch.Tensor]): The input of model. Defaults to
                 None.
 
         Returns:
-            List[EditDataSample]: Modified data samples.
+            List[EditDataSample]: A list of modified data samples.
         """
 
         if inputs is not None:
@@ -132,8 +133,8 @@ class End2EndModel(BaseBackendModel):
         # create a stacked data sample here
         predictions = DataSample(pred_img=batch_outputs.cpu())
 
-        predictions = self.convert_to_datasample(predictions, data_samples,
-                                                 inputs)
+        predictions = self.convert_to_datasample_list(predictions,
+                                                      data_samples, inputs)
 
         return predictions
 
