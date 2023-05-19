@@ -127,7 +127,7 @@ class End2EndModel(BaseBackendModel):
 
         assert hasattr(self.data_preprocessor, 'destruct')
         batch_outputs = self.data_preprocessor.destruct(
-            batch_outputs, data_samples)
+            batch_outputs.to(self.data_preprocessor.std.device), data_samples)
 
         # create a stacked data sample here
         predictions = DataSample(pred_img=batch_outputs.cpu())
@@ -200,7 +200,7 @@ class SDKEnd2EndModel(End2EndModel):
 
         if hasattr(self.data_preprocessor, 'destructor'):
             inputs = self.data_preprocessor.destructor(
-                inputs.to(self.data_preprocessor.input_std.device))
+                inputs.to(self.data_preprocessor.std.device))
 
         outputs = []
         for i in range(inputs.shape[0]):
@@ -210,7 +210,8 @@ class SDKEnd2EndModel(End2EndModel):
                 torch.from_numpy(output).permute(2, 0, 1).contiguous())
         outputs = torch.stack(outputs, 0) / 255.
         assert hasattr(self.data_preprocessor, 'destruct')
-        outputs = self.data_preprocessor.destruct(outputs, data_samples)
+        outputs = self.data_preprocessor.destruct(outputs.to(self.data_preprocessor.std.device)
+                                                  , data_samples)
 
         # create a stacked data sample here
         predictions = DataSample(pred_img=outputs.cpu())
