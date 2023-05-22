@@ -214,7 +214,7 @@ conda activate mmdeploy
 ## 安装 MMDeploy
 
 ```shell
-git clone -b 1.x --recursive https://github.com/open-mmlab/mmdeploy.git
+git clone -b main --recursive https://github.com/open-mmlab/mmdeploy.git
 cd mmdeploy
 export MMDEPLOY_DIR=$(pwd)
 ```

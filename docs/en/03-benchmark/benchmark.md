@@ -145,7 +145,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOv3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/yolo/yolov3_d53_320_273e_coco.py">YOLOv3</a></td>
     <td align="center">320x320</td>
     <td align="center">14.76</td>
     <td align="center">24.92</td>
@@ -154,7 +154,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">18.07</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py">SSD-Lite</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/ssd/ssdlite_mobilenetv2_scratch_600e_coco.py">SSD-Lite</a></td>
     <td align="center">320x320</td>
     <td align="center">8.84</td>
     <td align="center">9.21</td>
@@ -163,7 +163,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">19.72</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/retinanet/retinanet_r50_fpn_1x_coco.py">RetinaNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/retinanet/retinanet_r50_fpn_1x_coco.py">RetinaNet</a></td>
     <td align="center">800x1344</td>
     <td align="center">97.09</td>
     <td align="center">25.79</td>
@@ -172,7 +172,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">38.34</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/fcos/fcos_r50_caffe_fpn_gn-head_1x_coco.py">FCOS</a></td>
     <td align="center">800x1344</td>
     <td align="center">84.06</td>
     <td align="center">23.15</td>
@@ -181,7 +181,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/fsaf/fsaf_r50_fpn_1x_coco.py">FSAF</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/fsaf/fsaf_r50_fpn_1x_coco.py">FSAF</a></td>
     <td align="center">800x1344</td>
     <td align="center">82.96</td>
     <td align="center">21.02</td>
@@ -190,7 +190,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">30.41</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/master/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmdetection/tree/main/configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py">Faster R-CNN</a></td>
     <td align="center">800x1344</td>
     <td align="center">88.08</td>
     <td align="center">26.52</td>
@@ -326,7 +326,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp32</td>
   </tr>
     <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet</a></td>
     <td align="center">640x640</td>
     <td align="center">10.70</td>
     <td align="center">5.62</td>
@@ -336,7 +336,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">32x32</td>
     <td align="center">1.93 </td>
     <td align="center">1.40</td>
@@ -373,7 +373,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center" colspan="1">fp16</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
     <td align="center">512x1024</td>
     <td align="center">128.42</td>
     <td align="center">23.97</td>
@@ -382,7 +382,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">27.00</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
     <td align="center">1x3x512x1024</td>
     <td align="center">119.77</td>
     <td align="center">24.10</td>
@@ -391,7 +391,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">27.26</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3/deeplabv3/deeplabv3_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/deeplabv3/deeplabv3/deeplabv3_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3</a></td>
     <td align="center">512x1024</td>
     <td align="center">226.75</td>
     <td align="center">31.80</td>
@@ -400,7 +400,7 @@ Users can directly test the speed through [model profiling](../02-how-to-run/pro
     <td align="center">36.01</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-80k_cityscapes-512x1024.py">DeepLabV3+</a></td>
     <td align="center">512x1024</td>
     <td align="center">151.25</td>
     <td align="center">47.03</td>
@@ -1160,7 +1160,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py">DBNet*</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1196,7 +1196,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7950</td>
   </tr>
  <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnetpp/dbnetpp_resnet50_fpnc_1200e_icdar2015.py">DBNetpp</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/dbnetpp/dbnetpp_resnet50_fpnc_1200e_icdar2015.py">DBNetpp</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1232,7 +1232,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8622</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py">PSENet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/psenet/psenet_resnet50_fpnf_600e_icdar2015.py">PSENet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1268,7 +1268,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.8057</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py">PANet</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet/panet_resnet18_fpem-ffm_600e_icdar2015.py">PANet</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1304,7 +1304,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.7955</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/textsnake/textsnake_resnet50_fpn-unet_1200e_ctw1500.py">TextSnake</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/textsnake/textsnake_resnet50_fpn-unet_1200e_ctw1500.py">TextSnake</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">CTW1500</td>
     <td align="center">recall</td>
@@ -1340,7 +1340,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/maskrcnn/mask-rcnn_resnet50_fpn_160e_icdar2015.py">MaskRCNN</a></td>
+    <td align="center" rowspan="3"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/maskrcnn/mask-rcnn_resnet50_fpn_160e_icdar2015.py">MaskRCNN</a></td>
     <td align="center" rowspan="3">TextDetection</td>
     <td align="center" rowspan="3">ICDAR2015</td>
     <td align="center">recall</td>
@@ -1376,7 +1376,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py">CRNN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1390,7 +1390,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py">SAR</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/sar/sar_resnet31_parallel-decoder_5e_st-sub_mj-sub_sa_real.py">SAR</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1404,7 +1404,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn/satrn_shallow-small_5e_st_mj.py">SATRN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/satrn/satrn_shallow-small_5e_st_mj.py">SATRN</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1418,7 +1418,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet/abinet_20e_st-an_mj.py">ABINet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/abinet/abinet_20e_st-an_mj.py">ABINet</a></td>
     <td align="center">TextRecognition</td>
     <td align="center">IIIT5K</td>
     <td align="center">acc</td>
@@ -1462,7 +1462,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py">FCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">72.25</td>
@@ -1475,7 +1475,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">72.35</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py">PSPNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.55</td>
@@ -1488,7 +1488,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">78.67</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3/deeplabv3_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/deeplabv3/deeplabv3_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.09</td>
@@ -1501,7 +1501,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">79.06</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3+</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/deeplabv3plus/deeplabv3plus_r50-d8_4xb2-40k_cityscapes-512x1024.py">deeplabv3+</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.61</td>
@@ -1514,7 +1514,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">79.51</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastscnn/fast_scnn_8xb4-160k_cityscapes-512x1024.py">Fast-SCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/fastscnn/fast_scnn_8xb4-160k_cityscapes-512x1024.py">Fast-SCNN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">70.96</td>
@@ -1527,7 +1527,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/unet/unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py">UNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/unet/unet-s5-d16_fcn_4xb4-160k_cityscapes-512x1024.py">UNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">69.10</td>
@@ -1540,7 +1540,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ann/ann_r50-d8_4xb2-40k_cityscapes-512x1024.py">ANN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/ann/ann_r50-d8_4xb2-40k_cityscapes-512x1024.py">ANN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1553,7 +1553,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/apcnet/apcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">APCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/apcnet/apcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">APCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.40</td>
@@ -1566,7 +1566,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV1</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV1</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.44</td>
@@ -1579,7 +1579,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/bisenetv2/bisenetv2_fcn_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV2</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/bisenetv2/bisenetv2_fcn_4xb4-160k_cityscapes-1024x1024.py">BiSeNetV2</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">73.21</td>
@@ -1592,7 +1592,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/cgnet/cgnet_fcn_4xb8-60k_cityscapes-512x1024.py">CGNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/cgnet/cgnet_fcn_4xb8-60k_cityscapes-512x1024.py">CGNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">68.25</td>
@@ -1605,7 +1605,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/emanet/emanet_r50-d8_4xb2-80k_cityscapes-512x1024.py">EMANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/emanet/emanet_r50-d8_4xb2-80k_cityscapes-512x1024.py">EMANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.59</td>
@@ -1618,7 +1618,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/encnet/encnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">EncNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/encnet/encnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">EncNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.67</td>
@@ -1631,7 +1631,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/erfnet/erfnet_fcn_4xb4-160k_cityscapes-512x1024.py">ERFNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/erfnet/erfnet_fcn_4xb4-160k_cityscapes-512x1024.py">ERFNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">71.08</td>
@@ -1644,7 +1644,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_4xb2-80k_cityscapes-512x1024.py">FastFCN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/fastfcn/fastfcn_r50-d32_jpu_aspp_4xb2-80k_cityscapes-512x1024.py">FastFCN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">79.12</td>
@@ -1657,7 +1657,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/gcnet/gcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">GCNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/gcnet/gcnet_r50-d8_4xb2-40k_cityscapes-512x1024.py">GCNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.69</td>
@@ -1670,7 +1670,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/icnet/icnet_r18-d8_4xb2-80k_cityscapes-832x832.py">ICNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/icnet/icnet_r18-d8_4xb2-80k_cityscapes-832x832.py">ICNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.29</td>
@@ -1683,7 +1683,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/isanet/isanet_r50-d8_4xb2-40k_cityscapes-512x1024.py">ISANet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/isanet/isanet_r50-d8_4xb2-40k_cityscapes-512x1024.py">ISANet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">78.49</td>
@@ -1696,7 +1696,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/ocrnet/ocrnet_hr18s_4xb2-40k_cityscapes-512x1024.py">OCRNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/ocrnet/ocrnet_hr18s_4xb2-40k_cityscapes-512x1024.py">OCRNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.30</td>
@@ -1709,7 +1709,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/point_rend/pointrend_r50_4xb2-80k_cityscapes-512x1024.py">PointRend</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/point_rend/pointrend_r50_4xb2-80k_cityscapes-512x1024.py">PointRend</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">76.47</td>
@@ -1722,7 +1722,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/sem_fpn/fpn_r50_4xb2-80k_cityscapes-512x1024.py">Semantic FPN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/sem_fpn/fpn_r50_4xb2-80k_cityscapes-512x1024.py">Semantic FPN</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">74.52</td>
@@ -1735,7 +1735,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc/stdc1_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/stdc/stdc1_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">75.10</td>
@@ -1748,7 +1748,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/stdc/stdc2_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/stdc/stdc2_in1k-pre_4xb12-80k_cityscapes-512x1024.py">STDC</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.17</td>
@@ -1761,7 +1761,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/1.x/configs/upernet/upernet_r50_4xb2-40k_cityscapes-512x1024.py">UPerNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/tree/main/configs/upernet/upernet_r50_4xb2-40k_cityscapes-512x1024.py">UPerNet</a></td>
     <td align="center">Cityscapes</td>
     <td align="center">mIoU</td>
     <td align="center">77.10</td>
@@ -1774,7 +1774,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/1.x/configs/segmenter/segmenter_vit-s_fcn_8xb1-160k_ade20k-512x512.py">Segmenter</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmsegmentation/blob/main/configs/segmenter/segmenter_vit-s_fcn_8xb1-160k_ade20k-512x512.py">Segmenter</a></td>
     <td align="center">ADE20K</td>
     <td align="center">mIoU</td>
     <td align="center">44.32</td>
@@ -1815,7 +1815,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hrnet-w48_8xb32-210e_coco-256x192.py">HRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/main/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hrnet-w48_8xb32-210e_coco-256x192.py">HRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1836,7 +1836,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.802</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_litehrnet-30_8xb64-210e_coco-256x192.py">LiteHRNet</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/main/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_litehrnet-30_8xb64-210e_coco-256x192.py">LiteHRNet</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1857,7 +1857,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.728</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_4xmspn50_8xb32-210e_coco-256x192.py">MSPN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/main/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_4xmspn50_8xb32-210e_coco-256x192.py">MSPN</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1878,7 +1878,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.825</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py">Hourglass</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/main/configs/body_2d_keypoint/topdown_heatmap/coco/td-hm_hourglass52_8xb32-210e_coco-256x256.py">Hourglass</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1899,7 +1899,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">0.774</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/1.x/configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py">SimCC</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpose/blob/main/configs/body_2d_keypoint/simcc/coco/simcc_mobilenetv2_wo-deconv-8xb64-210e_coco-256x192.py">SimCC</a></td>
     <td align="center" rowspan="2">Pose Detection</td>
     <td align="center" rowspan="2">COCO</td>
     <td align="center">AP</td>
@@ -1949,7 +1949,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/1.x/configs/rotated_retinanet/rotated-retinanet-hbox-oc_r50_fpn_1x_dota.py">RotatedRetinaNet</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/rotated_retinanet/rotated-retinanet-hbox-oc_r50_fpn_1x_dota.py">RotatedRetinaNet</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1961,7 +1961,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/1.x/configs/oriented_rcnn/oriented-rcnn-le90_r50_fpn_1x_dota.py">Oriented RCNN</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/tree/main/configs/oriented_rcnn/oriented-rcnn-le90_r50_fpn_1x_dota.py">Oriented RCNN</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1973,7 +1973,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex/gliding-vertex-rbox_r50_fpn_1x_dota.py">GlidingVertex</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/gliding-vertex-rbox_r50_fpn_1x_dota.py">GlidingVertex</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -1985,7 +1985,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
   <tr>
-    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/1.x/configs/roi_trans/roi-trans-le90_r50_fpn_1x_dota.py">RoI Transformer</a></td>
+    <td align="center"><a href="https://github.com/open-mmlab/mmrotate/blob/main/configs/roi_trans/roi-trans-le90_r50_fpn_1x_dota.py">RoI Transformer</a></td>
     <td align="center">Rotated Detection</td>
     <td align="center">DOTA-v1.0</td>
     <td align="center">mAP</td>
@@ -2026,7 +2026,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">fp32</td>
   </tr>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/1.x/configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py">TSN</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/main/configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py">TSN</a></td>
     <td align="center" rowspan="2">Recognition</td>
     <td align="center" rowspan="2">Kinetics-400</td>
     <td align="center">top-1</td>
@@ -2047,7 +2047,7 @@ Users can directly test the performance through [how_to_evaluate_a_model.md](../
     <td align="center">-</td>
   </tr>
 <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/1.x/configs/recognition/slowfast/slowfast_r50_8xb8-4x16x1-256e_kinetics400-rgb.py">SlowFast</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmaction2/blob/main/configs/recognition/slowfast/slowfast_r50_8xb8-4x16x1-256e_kinetics400-rgb.py">SlowFast</a></td>
     <td align="center" rowspan="2">Recognition</td>
     <td align="center" rowspan="2">Kinetics-400</td>
     <td align="center">top-1</td>

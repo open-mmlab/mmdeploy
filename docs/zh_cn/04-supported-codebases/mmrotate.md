@@ -19,7 +19,7 @@ ______________________________________________________________________
 
 ### 安装 mmrotate
 
-请参考[官网安装指南](https://mmrotate.readthedocs.io/zh_CN/1.x/get_started.html)。
+请参考[官网安装指南](https://mmrotate.readthedocs.io/zh_CN/latest/get_started.html)。
 
 ### 安装 mmdeploy
 
