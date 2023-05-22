@@ -10,10 +10,18 @@ globals:
     hmean-iou: # named after metafile.Results.Metrics
       metric_key: icdar/hmean # eval key name
       tolerance: 0.15 # metric ±n%
-    word_acc:
+    IIIT5K word_acc:
       metric_key: IIIT5K/recog/word_acc_ignore_case_symbol
       tolerance: 0.05 # metric ±n%
       dataset: IIIT5K
+    SVT word_acc:
+      metric_key: SVT/recog/word_acc_ignore_case_symbol
+      tolerance: 0.05 # metric ±n%
+      dataset: SVT
+    SVTP word_acc:
+      metric_key: SVTP/recog/word_acc_ignore_case_symbol
+      tolerance: 0.05 # metric ±n%
+      dataset: SVTP
   convert_image_det: &convert_image_det
     input_img: *img_densetext_det
     test_img: *img_demo_text_det
@@ -71,7 +79,6 @@ tensorrt:
   pipeline_trt_detection_dynamic_fp32: &pipeline_trt_detection_dynamic_fp32
     convert_image: *convert_image_det
     backend_test: *default_backend_test
-    sdk_config: *sdk_detection_dynamic
     deploy_config: configs/mmocr/text-detection/text-detection_tensorrt_dynamic-320x320-2240x2240.py
 
   pipeline_trt_detection_mrcnn_dynamic_fp32: &pipeline_trt_detection_mrcnn_dynamic_fp32
