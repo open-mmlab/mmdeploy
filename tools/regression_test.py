@@ -314,8 +314,8 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         using_task.add(task_name)
         using_dataset.add(dataset)
 
-    dataset_type = '|'.join(list(using_dataset))
-    task_type = '|'.join(list(using_task))
+    dataset_type = '+'.join(list(using_dataset))
+    task_type = '+'.join(list(using_task))
     metric_list = []
     for metric, metric_info in test_yaml_metric_info.items():
         value = '-'
