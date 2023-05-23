@@ -45,7 +45,7 @@
 
 \*: 由于暂时不支持动态转换，因此仅提供 SSD 的精度测试结果。
 
-|                                                          mmseg                                                           | metric | PyTorch |  TVM  |
-| :----------------------------------------------------------------------------------------------------------------------: | :----: | :-----: | :---: |
-|     [FCN](https://github.com/open-mmlab/mmsegmentation/tree/main/configs/fcn/fcn_r50-d8_512x1024_40k_cityscapes.py)      |  mIoU  |  72.25  | 72.36 |
-| [PSPNet](https://github.com/open-mmlab/mmsegmentation/tree/main/configs/pspnet/pspnet_r50-d8_512x1024_80k_cityscapes.py) |  mIoU  |  78.55  | 77.90 |
+|                                                             mmseg                                                             | metric | PyTorch |  TVM  |
+| :---------------------------------------------------------------------------------------------------------------------------: | :----: | :-----: | :---: |
+|     [FCN](https://github.com/open-mmlab/mmsegmentation/blob/main/configs/fcn/fcn_r50-d8_4xb2-40k_cityscapes-512x1024.py)      |  mIoU  |  72.25  | 72.36 |
+| [PSPNet](https://github.com/open-mmlab/mmsegmentation/blob/main/configs/pspnet/pspnet_r50-d8_4xb2-80k_cityscapes-512x1024.py) |  mIoU  |  78.55  | 77.90 |
