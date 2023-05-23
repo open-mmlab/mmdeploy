@@ -69,6 +69,12 @@
     - [Inputs](#inputs-10)
     - [Outputs](#outputs-10)
     - [Type Constraints](#type-constraints-10)
+  - [TRTDCNv3](#trtdcnv3)
+    - [Description](#description-11)
+    - [Parameters](#parameters-11)
+    - [Inputs](#inputs-11)
+    - [Outputs](#outputs-11)
+    - [Type Constraints](#type-constraints-11)
 
 <!-- TOC -->
 
@@ -489,3 +495,51 @@ None
 #### Type Constraints
 
 - T:tensor(float32, Linear), tensor(int32, Linear)
+
+### TRTDCNv3
+
+#### Description
+
+TensorRT deformable convolution v3 is used to support [InternImage](https://github.com/OpenGVLab/InternImage). The op
+contains only im2col logic even though it is named convolution. For more detail, you may refer to [InternImage](https://github.com/OpenGVLab/InternImage/blob/4fb17721a0f9ab9fb28c7ed48ac1667a247c6da4/classification/ops_dcnv3/src/cuda/dcnv3_cuda.cu#L71)
+
+#### Parameters
+
+| Type    | Parameter        | Description                       |
+| ------- | ---------------- | --------------------------------- |
+| `int`   | `kernel_h`       | The kernel size of h dim.         |
+| `int`   | `kernel_w`       | The kernel size of w dim.         |
+| `int`   | `stride_h`       | The stride size of h dim.         |
+| `int`   | `stride_w`       | The stride size of w dim.         |
+| `int`   | `pad_h`          | The padding size of h dim.        |
+| `int`   | `pad_w`          | The padding size of w dim.        |
+| `int`   | `dilation_h`     | The dilation size of h dim.       |
+| `int`   | `dilation_w`     | The dilation size of w dim.       |
+| `int`   | `group`          | The group nums.                   |
+| `int`   | `group_channels` | The number of channels per group. |
+| `float` | `offset_scale`   | The offset cale.                  |
+| `int`   | `im2col_step`    | The step for img2col.             |
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
+
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
+
+<dt><tt>inputs[2]</tt>: T</dt>
+<dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>A 4-D Tensor, with shape of [batch, height, width, channels].</dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32, Linear), tensor(int32, Linear), tensor(int32, Linear)
