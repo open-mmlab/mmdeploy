@@ -7,10 +7,19 @@ on:
     paths:
       - "mmdeploy/version.py"
 
+  workflow_dispatch:
+    inputs:
+      run:
+        description: 'Manually start pre-build workflow'
+        required: false
+        type: boolean
+        default: false
+
 permissions: write-all
 
 jobs:
   linux_build:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
     container:
       image: openmmlab/mmdeploy:manylinux2014_x86_64-cuda11.3
@@ -58,6 +67,7 @@ jobs:
           cp -r pack/* /__w/mmdeploy/prebuild/$OUTPUT_DIR
 
   linux_build_cxx11abi:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
     container:
       image: openmmlab/mmdeploy:build-ubuntu16.04-cuda11.3
@@ -95,6 +105,7 @@ jobs:
           cp -r pack/* /__w/mmdeploy/prebuild/$OUTPUT_DIR
 
   linux_test:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
     needs:
       - linux_build
@@ -124,6 +135,7 @@ jobs:
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
 
   linux_upload:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
     environment: 'prod'
     needs: linux_test
@@ -164,6 +176,7 @@ jobs:
 
 
   windows_build:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, win10-3080]
     steps:
       - name: Checkout repository
@@ -209,6 +222,7 @@ jobs:
           Move-Item pack/* "D:/DEPS/ciartifact/$env:OUTPUT_DIR"
 
   windows_test:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, win10-3080]
     needs: windows_build
     steps:
@@ -234,6 +248,7 @@ jobs:
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.ps1"
 
   windows_upload:
+    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, win10-3080]
     environment: 'prod'
     needs: windows_test
