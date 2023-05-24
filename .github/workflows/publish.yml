@@ -29,29 +29,27 @@ jobs:
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
           echo "OUTPUT_DIR=$PREBUILD_DIR/$MMDEPLOY_VERSION" >> $GITHUB_ENV
-          echo "TAGNAME=test" >> $GITHUB_ENV
           pip install twine
       - name: Upload mmdeploy
         run: |
           cd $OUTPUT_DIR/mmdeploy
           ls -sha *.whl
           # twine upload mmdeploy-${MMDEPLOY_VERSION}-py3-none-manylinux2014_x86_64.whl --repository testpypi -u testmmdeploy -p ${{ secrets.test_pypi_password }}
-          #twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_runtime
         run: |
           cd $OUTPUT_DIR/mmdeploy_runtime
           ls -sha *.whl
           # twine upload mmdeploy_runtime-${MMDEPLOY_VERSION}-cp38-none-manylinux2014_x86_64.whl --repository testpypi -u testmmdeploy -p ${{ secrets.test_pypi_password }}
-          #twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Create dummy softlinks to assets
         run: |
           ln -sf $OUTPUT_DIR/sdk ./prebuild
           ls -sha ./prebuild
-          echo "tag = $TAGNAME"
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: $TAGNAME
+          tag_name: v${MMDEPLOY_VERSION}
           files: |
               ./prebuild/*.zip
               ./prebuild/*.tar.gz
