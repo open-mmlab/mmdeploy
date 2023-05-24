@@ -247,46 +247,6 @@ jobs:
           . D:\DEPS\cienv\prebuild_cpu_env.ps1
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.ps1"
 
-  windows_upload:
-    if: inputs.run == true || ${{ github.event_name == 'push' }}
-    runs-on: [self-hosted, win10-3080]
-    environment: 'prod'
-    needs: windows_test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Get mmdeploy version
-        run: |
-          conda activate mmdeploy-3.8
-          $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
-          echo $env:MMDEPLOY_VERSION
-          echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
-          echo "OUTPUT_DIR=$env:MMDEPLOY_VERSION-$env:GITHUB_RUN_ID" >> $env:GITHUB_ENV
-      - name: Upload mmdeploy
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/mmdeploy"
-          conda activate mmdeploy-3.8
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Upload mmdeploy_runtime
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/mmdeploy_runtime"
-          conda activate mmdeploy-3.8
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Zip mmdeploy sdk
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/sdk"
-          $folders = $(ls).Name
-          foreach ($folder in $folders) {
-            Compress-Archive -Path $folder -DestinationPath "$folder.zip"
-          }
-      - name: Upload mmdeploy sdk
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-              D:/DEPS/ciartifact/$env:OUTPUT_DIR/sdk/*.zip
-
   upload:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
