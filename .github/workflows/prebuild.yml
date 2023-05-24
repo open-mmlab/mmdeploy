@@ -36,7 +36,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "OUTPUT_DIR=/__w/mmdeploy/prebuild/$MMDEPLOY_VERSION" >> $GITHUB_ENV
       - name: Build MMDeploy
         run: |
           source activate mmdeploy-3.6
@@ -61,10 +61,20 @@ jobs:
             --system linux --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
             --build-sdk-python --sdk-dynamic-net --onnxruntime-dir=$ONNXRUNTIME_GPU_DIR
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Zip mmdeploy sdk
+        run: |
+          cd pack/sdk
+          for folder in *
+          do
+            tar czf $folder.tar.gz $folder
+          done
       - name: Move artifact
         run: |
-          mkdir -p /__w/mmdeploy/prebuild/$OUTPUT_DIR
-          cp -r pack/* /__w/mmdeploy/prebuild/$OUTPUT_DIR
+          mkdir -p $OUTPUT_DIR/mmdeploy  $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
+          chmod -R 777 $OUTPUT_DIR
+          mv -vf pack/mmdeploy/* $OUTPUT_DIR/mmdeploy/
+          mv -vf pack/mmdeploy_runtime/* $OUTPUT_DIR/mmdeploy_runtime/
+          mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
 
   linux_build_cxx11abi:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
@@ -84,7 +94,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "OUTPUT_DIR=/__w/mmdeploy/prebuild/$MMDEPLOY_VERSION" >> $GITHUB_ENV
       - name: Build sdk cpu backend
         run: |
           mkdir pack; cd pack
@@ -99,10 +109,18 @@ jobs:
             --system linux --output config.yml --device cuda --build-sdk --build-sdk-monolithic \
             --sdk-dynamic-net --cxx11abi --onnxruntime-dir=$ONNXRUNTIME_GPU_DIR --cudnn-dir /usr
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Zip mmdeploy sdk
+        run: |
+          cd pack/sdk
+          for folder in *
+          do
+            tar czf $folder.tar.gz $folder
+          done
       - name: Move artifact
         run: |
-          mkdir -p /__w/mmdeploy/prebuild/$OUTPUT_DIR
-          cp -r pack/* /__w/mmdeploy/prebuild/$OUTPUT_DIR
+          mkdir -p $OUTPUT_DIR/sdk
+          chmod -R 777 $OUTPUT_DIR
+          mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
 
   linux_test:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
@@ -124,60 +142,21 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
+          echo "OUTPUT_DIR=/__w/mmdeploy/prebuild/$MMDEPLOY_VERSION" >> $GITHUB_ENV
       - name: Test python
         run: |
-          cd /__w/mmdeploy/prebuild/$OUTPUT_DIR
+          cd $OUTPUT_DIR
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.sh
       - name: Test c/cpp
         run: |
-          cd /__w/mmdeploy/prebuild/$OUTPUT_DIR
+          cd $OUTPUT_DIR
           bash $GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.sh
-
-  linux_upload:
-    if: inputs.run == true || ${{ github.event_name == 'push' }}
-    runs-on: [self-hosted, linux-3090]
-    environment: 'prod'
-    needs: linux_test
-    env:
-      PREBUILD_DIR: /data2/actions-runner/prebuild
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Get mmdeploy version
-        run: |
-          export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
-          echo $MMDEPLOY_VERSION
-          echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-          echo "OUTPUT_DIR=$MMDEPLOY_VERSION-$GITHUB_RUN_ID" >> $GITHUB_ENV
-      - name: Upload mmdeploy
-        run: |
-          cd $PREBUILD_DIR/$OUTPUT_DIR/mmdeploy
-          pip install twine
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Upload mmdeploy_runtime
-        run: |
-          cd $PREBUILD_DIR/$OUTPUT_DIR/mmdeploy_runtime
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Zip mmdeploy sdk
-        run: |
-          cd $PREBUILD_DIR/$OUTPUT_DIR/sdk
-          for folder in *
-          do
-            tar czf $folder.tar.gz $folder
-          done
-      - name: Upload mmdeploy sdk
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-              $PREBUILD_DIR/$OUTPUT_DIR/sdk/*.tar.gz
-
 
   windows_build:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, win10-3080]
+    env:
+      PREBUILD_DIR: D:\Runners\prebuild
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -189,12 +168,13 @@ jobs:
           $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $env:MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
-          echo "OUTPUT_DIR=$env:MMDEPLOY_VERSION-$env:GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$env:PREBUILD_DIR\$env:MMDEPLOY_VERSION" >> $env:GITHUB_ENV
       - name: Build MMDeploy
         run: |
           . D:\DEPS\cienv\prebuild_gpu_env.ps1
           conda activate mmdeploy-3.6
-          mkdir pack; cd pack
+          New-Item -Path pack -ItemType Directory -Force
+          cd pack
           python ../tools/package_tools/generate_build_config.py --backend 'trt;ort' `
             --system windows --output config.yml --build-mmdeploy
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
@@ -216,15 +196,28 @@ jobs:
             --system windows --output config.yml --device cuda --build-sdk --build-sdk-monolithic `
             --build-sdk-python --sdk-dynamic-net
           python ../tools/package_tools/mmdeploy_builder.py --config config.yml
+      - name: Zip mmdeploy sdk
+        run: |
+          cd pack/sdk
+          $folders = $(ls).Name
+          foreach ($folder in $folders) {
+            Compress-Archive -Path $folder -DestinationPath "$folder.zip"
+          }
       - name: Move artifact
         run: |
-          New-Item "D:/DEPS/ciartifact/$env:OUTPUT_DIR" -ItemType Directory -Force
-          Move-Item pack/* "D:/DEPS/ciartifact/$env:OUTPUT_DIR"
+          New-Item "$env:OUTPUT_DIR\mmdeploy" -ItemType Directory -Force
+          New-Item "$env:OUTPUT_DIR\mmdeploy_runtime" -ItemType Directory -Force
+          New-Item "$env:OUTPUT_DIR\sdk" -ItemType Directory -Force
+          Move-Item pack/mmdeploy/* -Force "$env:OUTPUT_DIR\mmdeploy\"
+          Move-Item pack/mmdeploy_runtime/* -Force "$env:OUTPUT_DIR\mmdeploy_runtime\"
+          Move-Item pack/sdk/* -Force "$env:OUTPUT_DIR\sdk\"
 
   windows_test:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, win10-3080]
     needs: windows_build
+    env:
+      PREBUILD_DIR: D:\Runners\prebuild
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -234,55 +227,15 @@ jobs:
           $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $env:MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
-          echo "OUTPUT_DIR=$env:MMDEPLOY_VERSION-$env:GITHUB_RUN_ID" >> $env:GITHUB_ENV
+          echo "OUTPUT_DIR=$env:PREBUILD_DIR\$env:MMDEPLOY_VERSION" >> $env:GITHUB_ENV
       - name: Test python
         run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR"
+          cd "$env:OUTPUT_DIR"
           . D:\DEPS\cienv\prebuild_cpu_env.ps1
           conda activate ci-test
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk_python.ps1"
       - name: Test c/cpp
         run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR"
+          cd "$env:OUTPUT_DIR"
           . D:\DEPS\cienv\prebuild_cpu_env.ps1
           & "$env:GITHUB_WORKSPACE/tools/package_tools/test/test_sdk.ps1"
-
-  windows_upload:
-    if: inputs.run == true || ${{ github.event_name == 'push' }}
-    runs-on: [self-hosted, win10-3080]
-    environment: 'prod'
-    needs: windows_test
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Get mmdeploy version
-        run: |
-          conda activate mmdeploy-3.8
-          $env:MMDEPLOY_VERSION=(python -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
-          echo $env:MMDEPLOY_VERSION
-          echo "MMDEPLOY_VERSION=$env:MMDEPLOY_VERSION"  >> $env:GITHUB_ENV
-          echo "OUTPUT_DIR=$env:MMDEPLOY_VERSION-$env:GITHUB_RUN_ID" >> $env:GITHUB_ENV
-      - name: Upload mmdeploy
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/mmdeploy"
-          conda activate mmdeploy-3.8
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Upload mmdeploy_runtime
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/mmdeploy_runtime"
-          conda activate mmdeploy-3.8
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Zip mmdeploy sdk
-        run: |
-          cd "D:/DEPS/ciartifact/$env:OUTPUT_DIR/sdk"
-          $folders = $(ls).Name
-          foreach ($folder in $folders) {
-            Compress-Archive -Path $folder -DestinationPath "$folder.zip"
-          }
-      - name: Upload mmdeploy sdk
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-              D:/DEPS/ciartifact/$env:OUTPUT_DIR/sdk/*.zip

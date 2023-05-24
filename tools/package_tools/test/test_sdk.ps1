@@ -15,7 +15,7 @@ $pkgs = $(ls).Name
 $test_pkg = $pkgs[0]
 if ($pkgs.Count -gt 1) {
     foreach ($pkg in $pkgs) {
-        if ($pkg -like '*cpu*') {
+        if ($pkg -like '*-windows-amd64') {
             $test_pkg = $pkg
             break
         }
