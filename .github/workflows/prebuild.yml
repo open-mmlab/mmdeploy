@@ -74,6 +74,7 @@ jobs:
       - name: Move artifact
         run: |
           mkdir -p $OUTPUT_DIR/mmdeploy  $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
+          chmod -R 777 $OUTPUT_DIR
           mv -vf pack/mmdeploy/* $OUTPUT_DIR/mmdeploy/
           mv -vf pack/mmdeploy_runtime/* $OUTPUT_DIR/mmdeploy_runtime/
           mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
@@ -120,8 +121,8 @@ jobs:
           done
       - name: Move artifact
         run: |
-          mkdir -p $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
-          mv -vf pack/mmdeploy_runtime/* $OUTPUT_DIR/mmdeploy_runtime/
+          mkdir -p $OUTPUT_DIR/sdk
+          chmod -R 777 $OUTPUT_DIR
           mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
 
   linux_test:
