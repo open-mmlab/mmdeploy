@@ -74,11 +74,9 @@ jobs:
       - name: Move artifact
         run: |
           mkdir -p $OUTPUT_DIR/mmdeploy  $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
-          chmod -R 777 $OUTPUT_DIR
           mv -vf pack/mmdeploy/* $OUTPUT_DIR/mmdeploy/
           mv -vf pack/mmdeploy_runtime/* $OUTPUT_DIR/mmdeploy_runtime/
           mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
-          chmod -R 777 $OUTPUT_DIR
 
   linux_build_cxx11abi:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
@@ -122,12 +120,9 @@ jobs:
           done
       - name: Move artifact
         run: |
-          mkdir -p $OUTPUT_DIR/mmdeploy  $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
-          chmod -R 777 $OUTPUT_DIR
-          mv -vf pack/mmdeploy/* $OUTPUT_DIR/mmdeploy/
+          mkdir -p $OUTPUT_DIR/mmdeploy_runtime $OUTPUT_DIR/sdk
           mv -vf pack/mmdeploy_runtime/* $OUTPUT_DIR/mmdeploy_runtime/
           mv -vf pack/sdk/* $OUTPUT_DIR/sdk/
-          chmod -R 777 $OUTPUT_DIR
 
   linux_test:
     if: inputs.run == true || ${{ github.event_name == 'push' }}
