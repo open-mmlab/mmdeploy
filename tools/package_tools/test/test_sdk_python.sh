@@ -12,7 +12,7 @@ cd $WORKSPACE
 cd $SDK_PYTHON_DIR
 
 PY_VERSION=$(python3 -V | awk '{print $2}' | awk '{split($0, a, "."); print a[1]a[2]}')
-test_pkg=$(ls | grep mmdeploy_runtime-*cp${PY_VERSION}*)
+test_pkg=$(ls | grep mmdeploy_runtime-*cp${PY_VERSION}*x86_64.whl)
 
 python3 -m pip install $test_pkg --force-reinstall
 python3 -m pip install opencv-python
