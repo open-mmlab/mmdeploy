@@ -309,16 +309,17 @@ jobs:
         run: |
           cd $OUTPUT_DIR/mmdeploy
           pip install twine
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_runtime
         run: |
           cd $OUTPUT_DIR/mmdeploy_runtime
-          # twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
-          twine upload * -u __token__ -p ${{ secrets.pypi_password }}
+          twine upload * --repository testpypi -u __token__ -p ${{ secrets.test_pypi_password }}
+          # twine upload * -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy sdk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd $OUTPUT_DIR/sdk
-          gh release upload "v$MMDEPLOY_VERSION" *.zip *.tar.gz
+          # gh release upload "v$MMDEPLOY_VERSION" *.zip *.tar.gz
+          gh release upload "test" *.zip *.tar.gz
