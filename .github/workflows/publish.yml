@@ -31,12 +31,14 @@ jobs:
           echo "OUTPUT_DIR=$PREBUILD_DIR/$MMDEPLOY_VERSION" >> $GITHUB_ENV
           pip install twine
       - name: Upload mmdeploy
+        continue-on-error: true
         run: |
           cd $OUTPUT_DIR/mmdeploy
           ls -sha *.whl
           # twine upload mmdeploy-${MMDEPLOY_VERSION}-py3-none-manylinux2014_x86_64.whl --repository testpypi -u testmmdeploy -p ${{ secrets.test_pypi_password }}
           twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_runtime
+        continue-on-error: true
         run: |
           cd $OUTPUT_DIR/mmdeploy_runtime
           ls -sha *.whl
