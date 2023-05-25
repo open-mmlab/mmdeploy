@@ -28,6 +28,7 @@ jobs:
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
+          echo "TAG_NAME=v$MMDEPLOY_VERSION"  >> $GITHUB_ENV
           echo "OUTPUT_DIR=$PREBUILD_DIR/$MMDEPLOY_VERSION" >> $GITHUB_ENV
           pip install twine
       - name: Upload mmdeploy
@@ -51,7 +52,7 @@ jobs:
       - name: Upload mmdeploy sdk
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${MMDEPLOY_VERSION}
+          tag_name: $TAG_NAME
           files: |
               ./prebuild/*.zip
               ./prebuild/*.tar.gz
