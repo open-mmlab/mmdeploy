@@ -53,6 +53,8 @@ The default branch has been switched to `main` from `master`. MMDeploy 0.x (`mas
 |  0.x.y   |    -     | \<=1.x.y | \<=2.x.y | 0.x.y  |
 |  1.x.y   |  0.x.y   |  2.x.y   |  3.x.y   | 1.x.y  |
 
+[deploee](https://platform.openmmlab.com/deploee/) offers over 2,300 AI models in ONNX, NCNN, TRT and OpenVINO formats. Featuring a built-in list of real hardware devices, deploee enables users to convert Torch models into any target inference format for profiling purposes.
+
 ## Introduction
 
 MMDeploy is an open-source deep learning model deployment toolset. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
