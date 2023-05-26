@@ -258,6 +258,7 @@ python tools/visualize.py \
     --deploy-path {DEPLOY_PATH} \
     --test-img {TEST_IMGS} \
     --checkpoint {CHECKPOINTS} \
+    --batch {BATCH} \
     --save-dir {SAVE_DIR} \
     --device {DEVICE}
 ```
@@ -269,5 +270,6 @@ python tools/visualize.py \
 - `deploy-path` : 测试的模型文件路径，如果部分模型含有多个文件，请多次使用该参数
 - `test-img` : 测试的图片路径，可以多次使用测试测试多张图片
 - `checkpoint` : PyTorch的权重文件，如果使用这个参数，推理的结果会被拼接到图像的右侧
+- `batch` : 可视化的batch大小，默认为1
 - `save-dir` : 保存可视化结果，如果没有指定则会被设为当前目录
 - `device` : 运行的设备类型，如果没有指定则会默认设置为`cpu`
