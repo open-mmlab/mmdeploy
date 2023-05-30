@@ -57,6 +57,7 @@ class ResizeMask : public MMSegmentation {
     auto input_width = preprocess_result["img_metas"]["ori_shape"][2].get<int>();
     Device host{"cpu"};
     OUTCOME_TRY(auto host_tensor, MakeAvailableOnDevice(mask, host, stream_));
+    OUTCOME_TRY(stream().Wait());  // should sync even mask is on cpu
     if (!with_argmax_) {
       // (C, H, W) -> (H, W, C)
       ::mmdeploy::operation::Context ctx(host, stream_);
