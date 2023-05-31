@@ -110,11 +110,11 @@ jobs:
           task="${{ matrix.task_config.task }}"
           configs=${{ toJson(matrix.task_config.configs) }}
           resource_file="${{ matrix.task_config.resource_file }}"
-          
+
           if [ "$task" == "PoseTracker" ]; then
             wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4
           fi
-          
+
           java_command="cpu"
           for config in $configs; do
             model_url=$config
@@ -128,5 +128,3 @@ jobs:
 
           echo "java_command: $java_command"
           ant -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
-          
-
