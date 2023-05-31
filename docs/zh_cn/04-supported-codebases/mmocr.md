@@ -18,7 +18,7 @@
 
 ______________________________________________________________________
 
-[MMOCR](https://github.com/open-mmlab/mmocr/tree/1.x)，又称 `mmocr`，是基于 PyTorch 和 mmdetection 的开源工具箱，专注于文本检测，文本识别以及相应的下游任务，如关键信息提取。 它是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
+[MMOCR](https://github.com/open-mmlab/mmocr/tree/main)，又称 `mmocr`，是基于 PyTorch 和 mmdetection 的开源工具箱，专注于文本检测，文本识别以及相应的下游任务，如关键信息提取。 它是 [OpenMMLab](https://openmmlab.com/) 项目的一部分。
 
 ## 安装
 
@@ -238,18 +238,18 @@ print(texts)
 
 ## 模型支持列表
 
-| Model                                                                               | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :---------------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
-| [DBNet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
-| [DBNetpp](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/dbnetpp)     | text-detection   |      N      |      Y      |    Y     |  ?   |   ?   |    Y     |
-| [PSENet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/psenet)       | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [PANet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/panet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
-| [TextSnake](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/textsnake) | text-detection   |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
-| [MaskRCNN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textdet/maskrcnn)   | text-detection   |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
-| [CRNN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/crnn)         | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
-| [SAR](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/sar)           | text-recognition |      N      |      Y      |    Y     |  N   |   N   |    N     |
-| [SATRN](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/satrn)       | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
-| [ABINet](https://github.com/open-mmlab/mmocr/blob/1.x/configs/textrecog/abinet)     | text-recognition |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
+| Model                                                                                | Task             | TorchScript | OnnxRuntime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :----------------------------------------------------------------------------------- | :--------------- | :---------: | :---------: | :------: | :--: | :---: | :------: |
+| [DBNet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/dbnet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |
+| [DBNetpp](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/dbnetpp)     | text-detection   |      N      |      Y      |    Y     |  ?   |   ?   |    Y     |
+| [PSENet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/psenet)       | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [PANet](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/panet)         | text-detection   |      Y      |      Y      |    Y     |  Y   |   N   |    Y     |
+| [TextSnake](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/textsnake) | text-detection   |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
+| [MaskRCNN](https://github.com/open-mmlab/mmocr/blob/main/configs/textdet/maskrcnn)   | text-detection   |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
+| [CRNN](https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/crnn)         | text-recognition |      Y      |      Y      |    Y     |  Y   |   Y   |    N     |
+| [SAR](https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/sar)           | text-recognition |      N      |      Y      |    Y     |  N   |   N   |    N     |
+| [SATRN](https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/satrn)       | text-recognition |      Y      |      Y      |    Y     |  N   |   N   |    N     |
+| [ABINet](https://github.com/open-mmlab/mmocr/blob/main/configs/textrecog/abinet)     | text-recognition |      Y      |      Y      |    Y     |  ?   |   ?   |    ?     |
 
 ## 注意事项
 

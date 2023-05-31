@@ -56,7 +56,7 @@ ______________________________________________________________________
 2. 克隆mmdeploy仓库
 
    ```bash
-   git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git
+   git clone -b main https://github.com/open-mmlab/mmdeploy.git
    ```
 
    :point_right: 这里主要为了使用configs文件，所以没有加`--recursive`来下载submodule，也不需要编译`mmdeploy`
@@ -64,7 +64,7 @@ ______________________________________________________________________
 3. 安装mmpretrain
 
    ```bash
-   git clone -b 1.x https://github.com/open-mmlab/mmpretrain.git
+   git clone -b main https://github.com/open-mmlab/mmpretrain.git
    cd mmpretrain
    pip install -e .
    ```

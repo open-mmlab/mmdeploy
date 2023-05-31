@@ -74,10 +74,10 @@ The caller needs to refer to the corresponding [python implementation](../../../
 
 ## Supported models
 
-|                                                                                  model                                                                                  | dataset  | onnxruntime | openvino | tensorrt\* |
-| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :---------: | :------: | :--------: |
-| [centerpoint](https://github.com/open-mmlab/mmdetection3d/blob/dev-1.x/configs/centerpoint/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py) | nuScenes |     ✔️      |    ✔️    |     ✔️     |
-|             [pointpillars](https://github.com/open-mmlab/mmdetection3d/blob/dev-1.x/configs/pointpillars/pointpillars_hv_secfpn_sbn-all_8xb4-2x_nus-3d.py)              | nuScenes |     ✔️      |    ✔️    |     ✔️     |
-|            [pointpillars](https://github.com/open-mmlab/mmdetection3d/blob/dev-1.x/configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py)            |  KITTI   |     ✔️      |    ✔️    |     ✔️     |
+|                                                                                model                                                                                 | dataset  | onnxruntime | openvino | tensorrt\* |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------: | :---------: | :------: | :--------: |
+| [centerpoint](https://github.com/open-mmlab/mmdetection3d/blob/main/configs/centerpoint/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py) | nuScenes |     ✔️      |    ✔️    |     ✔️     |
+|             [pointpillars](https://github.com/open-mmlab/mmdetection3d/blob/main/configs/pointpillars/pointpillars_hv_secfpn_sbn-all_8xb4-2x_nus-3d.py)              | nuScenes |     ✔️      |    ✔️    |     ✔️     |
+|            [pointpillars](https://github.com/open-mmlab/mmdetection3d/blob/main/configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py)            |  KITTI   |     ✔️      |    ✔️    |     ✔️     |
 
 - Make sure trt >= 8.4 for some bug fixed, such as ScatterND, dynamic shape crash and so on.

@@ -13,13 +13,13 @@
 
 ______________________________________________________________________
 
-[MMPose](https://github.com/open-mmlab/mmpose/tree/1.x) aka `mmpose` is an open-source toolbox for pose estimation based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
+[MMPose](https://github.com/open-mmlab/mmpose/tree/main) aka `mmpose` is an open-source toolbox for pose estimation based on PyTorch. It is a part of the [OpenMMLab](https://openmmlab.com/) project.
 
 ## Installation
 
 ### Install mmpose
 
-Please follow the [best practice](https://mmpose.readthedocs.io/en/1.x/installation.html#best-practices) to install mmpose.
+Please follow the [best practice](https://mmpose.readthedocs.io/en/latest/installation.html#best-practices) to install mmpose.
 
 ### Install mmdeploy
 
@@ -152,11 +152,11 @@ TODO
 
 ## Supported models
 
-| Model                                                                                                  | Task          | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :----------------------------------------------------------------------------------------------------- | :------------ | :----------: | :------: | :--: | :---: | :------: |
-| [HRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#hrnet-cvpr-2019)          | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [MSPN](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#mspn-arxiv-2019)           | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [LiteHRNet](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/backbones.html#litehrnet-cvpr-2021)  | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [Hourglass](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [SimCC](https://mmpose.readthedocs.io/en/1.x/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    N     |
-| [RTMPose](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose)                             | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| Model                                                                                                     | Task          | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
+| :-------------------------------------------------------------------------------------------------------- | :------------ | :----------: | :------: | :--: | :---: | :------: |
+| [HRNet](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/backbones.html#hrnet-cvpr-2019)          | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [MSPN](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/backbones.html#mspn-arxiv-2019)           | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [LiteHRNet](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/backbones.html#litehrnet-cvpr-2021)  | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [Hourglass](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [SimCC](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    N     |
+| [RTMPose](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose)                                | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |

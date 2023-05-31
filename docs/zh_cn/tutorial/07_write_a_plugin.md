@@ -182,7 +182,9 @@ with torch.no_grad():
 
 执行上述脚本，我们导出成功了一个ONNX模型 `srcnn.onnx`。用[netron](https://netron.app/)打开这个模型可视化如下：
 
-![](../../../resources/tutorial/srcnn.svg)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/28671653/241883709-e21d60d0-1b1d-4665-af14-9c1240484773.png"/>
+</div>
 
 直接将该模型转换成TensorRT模型也是不可行的，这是因为TensorRT还无法解析 `DynamicTRTResize` 节点。而想要解析该节点，我们必须为TensorRT添加c++代码，实现该插件。
 
@@ -274,7 +276,9 @@ class DynamicTRTResizeCreator : public TRTPluginCreatorBase {
 
 在这样一份头文件中，DynamicTRTResize类进行了如下的套娃继承：
 
-![](../../../resources/tutorial/IPluginV2DynamicExt.svg)
+<div align="center">
+  <img src="https://user-images.githubusercontent.com/28671653/241883700-0bee87a0-6d6a-478b-8a71-983a4e47b670.png"/>
+</div>
 
 从上面的图片和代码中我们发现，插件类`DynamicTRTResize`中我们定义了私有变量`mAlignCorners`，该变量表示是否`align corners`。此外只要实现构造析构函数和TensoRT中三个基类的方法即可。其中构造函数有二，分别用于创建插件和反序列化插件。而基类方法中：
 
