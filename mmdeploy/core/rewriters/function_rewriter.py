@@ -42,7 +42,7 @@ def _replace_all_obj(obj: Any,
         elif isinstance(ref, MutableSequence):
             for i, v in enumerate(ref):
                 if id(v) == obj_id:
-                    ref[i] == new_obj
+                    ref[i] = new_obj
         elif isinstance(ref, Dict):
             for k, v in ref.items():
                 if id(v) == obj_id and k not in ignore_keys:

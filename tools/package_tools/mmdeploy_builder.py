@@ -21,6 +21,7 @@ logger.setLevel(logging.INFO)
 CUR_DIR = osp.dirname(osp.abspath(__file__))
 MMDEPLOY_DIR = osp.abspath(osp.join(CUR_DIR, '../..'))
 PACKAGING_DIR = osp.join(CUR_DIR, 'packaging')
+VERSION_FILE = osp.join(MMDEPLOY_DIR, 'mmdeploy', 'version.py')
 
 
 def get_version(version_file):
@@ -336,7 +337,7 @@ def create_mmdeploy_runtime(cfg: Dict, work_dir: str):
         sdk_python_package_dir = osp.join(work_dir, '.mmdeploy_runtime')
         _copy(PACKAGING_DIR, sdk_python_package_dir)
         _copy(
-            osp.join(MMDEPLOY_DIR, 'mmdeploy', 'version.py'),
+            VERSION_FILE,
             osp.join(sdk_python_package_dir, 'mmdeploy_runtime', 'version.py'),
         )
 
@@ -385,7 +386,11 @@ def create_mmdeploy_runtime(cfg: Dict, work_dir: str):
             libs_to_copy = ['*net.dll', 'mmdeploy.dll']
             search_dir = osp.join(MMDEPLOY_DIR, 'build', 'install', 'bin')
         elif sys.platform == 'linux':
-            libs_to_copy = ['*net.so', '*mmdeploy.so.0']
+            mmdeploy_version = get_version(VERSION_FILE)
+            mmdeploy_version = version.parse(mmdeploy_version)
+            libs_to_copy = [
+                '*net.so', f'*mmdeploy.so.{mmdeploy_version.major}'
+            ]
             search_dir = osp.join(MMDEPLOY_DIR, 'build', 'install', 'lib')
         else:
             raise Exception('unsupported')
@@ -425,8 +430,7 @@ def create_sdk(cfg: Dict, work_dir: str):
     sdk_root = osp.abspath(osp.join(work_dir, 'sdk'))
     build_sdk_name = cfg['BUILD_SDK_NAME']
     env_info = check_env(cfg)
-    version_file = osp.join(MMDEPLOY_DIR, 'mmdeploy', 'version.py')
-    mmdeploy_version = get_version(version_file)
+    mmdeploy_version = get_version(VERSION_FILE)
     build_sdk_name = build_sdk_name.format(
         mmdeploy_v=mmdeploy_version, **env_info)
     sdk_path = osp.join(sdk_root, build_sdk_name)

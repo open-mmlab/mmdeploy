@@ -5,7 +5,7 @@
 ## 下载
 
 ```bash
-git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
+git clone -b main git@github.com:open-mmlab/mmdeploy.git --recursive
 ```
 
 ### FAQ
@@ -32,7 +32,7 @@ git clone -b 1.x git@github.com:open-mmlab/mmdeploy.git --recursive
 - 如果以 `SSH` 方式 `git clone` 代码失败，您可以尝试使用 `HTTPS` 协议下载代码：
 
   ```bash
-  git clone -b 1.x https://github.com/open-mmlab/mmdeploy.git MMDeploy
+  git clone -b main https://github.com/open-mmlab/mmdeploy.git MMDeploy
   cd MMDeploy
   git submodule update --init --recursive
   ```

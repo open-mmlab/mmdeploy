@@ -1,7 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 // Modified from https://github.com/WenmuZhou/PAN.pytorch
 // and
-// https://github.com/open-mmlab/mmcv/blob/master/mmcv/ops/csrc/pytorch/cpu/pixel_group.cpp
+// https://github.com/open-mmlab/mmcv/blob/main/mmcv/ops/csrc/pytorch/cpu/pixel_group.cpp
 
 #include <cmath>
 #include <queue>

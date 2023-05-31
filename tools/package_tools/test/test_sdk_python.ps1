@@ -15,7 +15,7 @@ $pkgs = $(ls).Name
 $test_pkg = ""
 if ($pkgs.Count -gt 1) {
     foreach ($pkg in $pkgs) {
-        if ($pkg -like 'mmdeploy_runtime-*cp38*') {
+        if ($pkg -like 'mmdeploy_runtime-*cp38*-win_amd64.whl') {
             $test_pkg = $pkg
             break
         }
