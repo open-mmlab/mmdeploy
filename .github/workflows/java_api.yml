@@ -120,8 +120,7 @@ jobs:
           java_command="cpu"
           for config in $(echo "$configs" | jq -r '.[]'); do
             model_url=$config
-            echo "model_url: $model_url"
-            wget $model_url && tar xvf ${model_url##*/}
+            wget --no-check-certificate $model_url && tar xvf ${model_url##*/}
             model_dir=${model_url##*/} && model_dir=${model_dir%.*}
             java_command+=" $model_dir"
           done
