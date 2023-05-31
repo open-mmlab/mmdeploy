@@ -621,7 +621,7 @@ GPU: ncnn, TensorRT, PPLNN
     <td align="center">-</td>
     <td align="center">-</td>
   <tr>
-    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpretrain/blob/main/configs/efficientformer/efficientformer-l1_8xb128_in1k.py">EfficientFormerr</a></td>
+    <td align="center" rowspan="2"><a href="https://github.com/open-mmlab/mmpretrain/blob/main/configs/efficientformer/efficientformer-l1_8xb128_in1k.py">EfficientFormer</a></td>
     <td align="center">top-1</td>
     <td align="center">80.46</td>
     <td align="center">80.45</td>

@@ -190,4 +190,4 @@ for label_id, score in result:
 | [MobileOne](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobileone)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [EfficientNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientnet)            |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/conformer)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
-| [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientformer)            |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
+| [EfficientFormer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientformer)            |      Y      |      Y       |    Y     |  N   |   ?   |    N     |

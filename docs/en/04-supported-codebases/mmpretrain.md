@@ -173,7 +173,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 ## Supported models
 
 | Model                                                                                              | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
-| :------------------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
+|:---------------------------------------------------------------------------------------------------| :---------: | :----------: | :------: | :--: | :---: | :------: |
 | [ResNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnet)                        |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ResNeXt](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnext)                      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [SE-ResNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/seresnet)                   |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
@@ -185,4 +185,4 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 | [MobileOne](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobileone)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [EfficientNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientnet)            |      Y      |      Y       |    N     |  N   |   ?   |    N     |
 | [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/conformer)                  |      Y      |      Y       |    N     |  N   |   ?   |    N     |
-| [Conformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientformer)            |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
+| [EfficientFormer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/efficientformer)      |      Y      |      Y       |    Y     |  N   |   ?   |    N     |
