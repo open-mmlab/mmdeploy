@@ -246,3 +246,4 @@ models:
       - *pipeline_ts_fp32
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32
