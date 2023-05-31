@@ -109,8 +109,8 @@ jobs:
           export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/build/lib:${OPENCV_DIR}/build/lib:$LD_LIBRARY_PATH
       - name: Run ${{ matrix.task_config.task }} test
         run: |
-          task = "${{ matrix.task_config.task }}"
-          configs = ${{ toJson(matrix.task_config.configs) }}
+          task="${{ matrix.task_config.task }}"
+          configs=${{ toJson(matrix.task_config.configs) }}
           resource_file="${{ matrix.task_config.resource_file }}"
           
           if [ "$task" == "PoseTracker" ]; then
