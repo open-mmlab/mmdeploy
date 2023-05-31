@@ -40,7 +40,7 @@ jobs:
       - name: Install system dependencies
         run: |
           apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y git
+          apt-get update && apt-get install -y git wget
       - name: Install dependencies
         run: |
           python -V
@@ -51,22 +51,16 @@ jobs:
       - name: Install mmcls
         run: |
           cd ~
-          git clone https://github.com/open-mmlab/mmclassification.git
+          git clone -b v0.23.0 --depth 1 https://github.com/open-mmlab/mmclassification.git
           cd mmclassification
-          git checkout v0.23.0
           python3 -m pip install -e .
-          cd -
       - name: Install ppq
         run: |
-          cd ~
-          python -m pip install protobuf==3.20.0
-          git clone https://github.com/openppl-public/ppq
+          git clone -b v0.6.6 --depth 1 https://github.com/openppl-public/ppq
           cd ppq
-          git checkout edbecf44c7b203515640e4f4119c000a1b66b33a
           python3 -m pip install -r requirements.txt
           python3 setup.py install
-          cd -
       - name: Run tests
         run: |
-          echo $(pwd)
+          export PYTHONPATH=${PWD}/ppq:${PYTHONPATH}
           python3 .github/scripts/quantize_to_ncnn.py
