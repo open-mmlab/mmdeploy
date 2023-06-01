@@ -18,6 +18,7 @@ import pytorch_sphinx_theme
 from m2r import MdInclude
 from recommonmark.transform import AutoStructify
 from sphinx.builders.html import StandaloneHTMLBuilder
+import subprocess
 
 sys.path.insert(0, os.path.abspath('../..'))
 
@@ -48,6 +49,7 @@ release = __version__
 # ones.
 
 extensions = [
+    'breathe',
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
@@ -57,6 +59,23 @@ extensions = [
     'sphinx_copybutton',
     'sphinxcontrib.mermaid'
 ]  # yapf: disable
+
+breathe_default_project = 'mmdeployapi'
+breathe_projects = {
+    'mmdeployapi': '../api/cpp/docs/xml'
+}
+
+
+def generate_doxygen_xml(app):
+    try:
+        folder = '../api/cpp'
+        retcode = subprocess.call(
+            "cd %s; doxygen" % folder, shell=True)
+        if retcode < 0:
+            sys.stderr.write("doxygen terminated by signal %s" % (-retcode))
+    except Exception as e:
+        sys.stderr.write("doxygen execution failed: %s" % e)
+
 
 autodoc_mock_imports = ['tensorrt']
 
@@ -211,6 +230,8 @@ copybutton_prompt_is_regexp = True
 
 
 def setup(app):
+    # Add hook for building doxygen xml when needed
+    app.connect("builder-inited", generate_doxygen_xml)
     app.add_config_value('no_underscore_emphasis', False, 'env')
     app.add_config_value('m2r_parse_relative_links', False, 'env')
     app.add_config_value('m2r_anonymous_references', False, 'env')

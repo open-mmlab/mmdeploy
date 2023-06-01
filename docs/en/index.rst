@@ -116,6 +116,14 @@ You can switch between Chinese and English documents in the lower-left corner of
 
    api.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: SDK Usage
+
+
+   sdk_usage/index.rst
+
+
 Indices and tables
 ==================
 
