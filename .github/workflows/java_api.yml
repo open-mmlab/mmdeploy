@@ -130,4 +130,5 @@ jobs:
           
           cd $GITHUB_WORKSPACE/demo/java
           pwd
+          ls ${OPENCV_DIR}
           ant -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
