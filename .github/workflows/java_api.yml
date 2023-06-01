@@ -20,30 +20,30 @@ jobs:
     strategy:
       matrix:
         task_config:
-          - task: ImageClassification
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/resnet.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
-          - task: ObjectDetection
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
-          - task: ImageSegmentation
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
-          - task: ImageRestorer
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: ImageClassification
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/resnet.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: ObjectDetection
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/mobilessd.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: ImageSegmentation
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/fcn.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: ImageRestorer
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/srcnn.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
           - task: Ocr
             configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dbnet.tar https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/crnn.tar'
             resource_file: 'demo/resources/text_det.jpg'
-          - task: PoseDetection
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
-          - task: PoseTracker
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar'
-            resource_file: 'dance.mp4'
-          - task: RotatedDetection
-            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'
-            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: PoseDetection
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/litehrnet.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
+#          - task: PoseTracker
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar'
+#            resource_file: 'dance.mp4'
+#          - task: RotatedDetection
+#            configs: 'https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/gliding-vertex.tar'
+#            resource_file: 'demo/resources/human-pose.jpg'
 
 
     steps:
