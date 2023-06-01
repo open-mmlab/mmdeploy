@@ -44,7 +44,13 @@
         <arg line="${command}" />
     </java>
 
-    <fail message="Java application failed with exit code ${java.exit.code}" if="java.exit.code" />
+    <fail message="Java application failed with exit code ${java.exit.code}">
+        <condition>
+            <not>
+                <equals arg1="${java.exit.code}" arg2="0" />
+            </not>
+        </condition>
+    </fail>
 </target>
 
 
