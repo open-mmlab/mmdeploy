@@ -127,4 +127,6 @@ jobs:
           java_command+=" $GITHUB_WORKSPACE/$resource_file"
 
           echo "java_command: $java_command"
+          ls
+          ls ../
           ant -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
