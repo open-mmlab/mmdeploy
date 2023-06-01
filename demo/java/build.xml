@@ -35,15 +35,18 @@
     </target>
 
     <target name="run" depends="jar">
-        <java fork="true" classname="${main-class}">
-            <sysproperty key="java.library.path" path="${libDir}"/>
-            <classpath>
-                <path refid="classpath"/>
-                <path location="${jar.dir}/${taskName}.jar"/>
-            </classpath>
-            <arg line="${command}" />
-        </java>
-    </target>
+    <java fork="true" classname="${main-class}" resultproperty="java.exit.code">
+        <sysproperty key="java.library.path" path="${libDir}"/>
+        <classpath>
+            <path refid="classpath"/>
+            <path location="${jar.dir}/${taskName}.jar"/>
+        </classpath>
+        <arg line="${command}" />
+    </java>
+
+    <fail message="Java application failed with exit code ${java.exit.code}" if="java.exit.code" />
+</target>
+
 
     <target name="rebuild" depends="clean,jar"/>
 
