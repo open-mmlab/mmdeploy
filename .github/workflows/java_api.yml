@@ -128,4 +128,5 @@ jobs:
 
           echo "java_command: $java_command"
           find $GITHUB_WORKSPACE -name "build.xml"
+          pwd
           ant -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
