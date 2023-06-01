@@ -1,48 +1,51 @@
 # 使用 Docker 镜像
 
-我们分别为 CPU 和 GPU 提供了两个 dockerfile。对于 CPU 用户，我们对接 ONNXRuntime、ncnn 和 OpenVINO 后端安装 MMDeploy。对于 GPU 用户，我们安装带有 TensorRT 后端的 MMDeploy。此外，用户可以在构建 docker 镜像时安装不同版本的 mmdeploy。
+本文简述如何使用[Docker](https://docs.docker.com/get-docker/)安装mmdeploy
 
-## 构建镜像
+## 获取镜像
 
-对于 CPU 用户，我们可以通过以下方式使用最新的 MMDeploy 构建 docker 镜像：
+为了方便用户，mmdeploy在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了多个版本的镜像，例如对于`mmdeploy==1.1.0`，
+其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0`。镜像相关规格信息如下表所示：
 
+|    Item     |   Version   |
+| :---------: | :---------: |
+|     OS      | Ubuntu20.04 |
+|    CUDA     |    11.3     |
+|    CUDNN    |     8.2     |
+|   Python    |   3.8.10    |
+|    Torch    |   1.10.0    |
+| TorchVision |   0.11.0    |
+| TorchScript |   1.10.0    |
+|  TensorRT   |   8.2.3.0   |
+| ONNXRuntime |    1.8.1    |
+|  OpenVINO   |  2022.3.0   |
+|    ncnn     |  20221128   |
+|   openppl   |    0.8.1    |
+
+用户可选择一个[镜像](https://hub.docker.com/r/openmmlab/mmdeploy/tags)并运行`docker pull`拉取镜像到本地：
+
+```shell
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+docker pull $TAG
 ```
-cd mmdeploy
-docker build docker/CPU/ -t mmdeploy:master-cpu
-```
 
-对于 GPU 用户，我们可以通过以下方式使用最新的 MMDeploy 构建 docker 镜像：
+## 构建镜像(可选)
 
-```
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:master-gpu
-```
+如果已提供的镜像无法满足要求，用户可修改`docker/Release/Dockerfile`并在本地构建镜像。其中，构建参数`MMDEPLOY_VERSION`可以是[mmdeploy](https://github.com/open-mmlab/mmdeploy)项目的一个[标签](https://github.com/open-mmlab/mmdeploy/tags)或者分支。
 
-要安装具有特定版本的 MMDeploy，我们可以将 `--build-arg VERSION=${VERSION}` 附加到构建命令中。以 GPU 为例：
-
-```
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
-```
-
-要切换成阿里源安装依赖，我们可以将 `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` 附加到构建命令中。
-
-```
-# 以 GPU 为例
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
-
-# 以 CPU 为例
-cd mmdeploy
-docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+```shell
+export MMDEPLOY_VERSION=main
+export TAG=mmdeploy-${MMDEPLOY_VERSION}
+docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
 ```
 
 ## 运行 docker 容器
 
-构建 docker 镜像成功后，我们可以使用 `docker run` 启动 docker 服务。 GPU 镜像为例：
+当拉取或构建 docker 镜像后，用户可使用 `docker run` 启动 docker 服务：
 
-```
-docker run --gpus all -it mmdeploy:master-gpu
+```shell
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+docker run --gpus=all -it --rm $TAG
 ```
 
 ## 常见问答
@@ -53,7 +56,7 @@ docker run --gpus all -it mmdeploy:master-gpu
 
 2. docker: Error response from daemon: could not select device driver "" with capabilities: [gpu].
 
-   ```
+   ```shell
    # Add the package repositories
    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -

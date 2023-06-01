@@ -1,48 +1,55 @@
 # Use Docker Image
 
-We provide two dockerfiles for CPU and GPU respectively. For CPU users, we install MMDeploy with ONNXRuntime, ncnn and OpenVINO backends. For GPU users, we install MMDeploy with TensorRT backend. Besides, users can install mmdeploy with different versions when building the docker image.
+This document guides how to install mmdeploy with [Docker](https://docs.docker.com/get-docker/).
 
-## Build docker image
+## Get prebuilt docker images
 
-For CPU users, we can build the docker image with the latest MMDeploy through:
+MMDeploy provides prebuilt docker images for the convenience of its users on [Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy). The docker images are built on
+the released MMDeploy. For instance, the image tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0` is for `mmdeploy==1.1.0`.
+The specifications of the Docker Image are shown below.
 
+|    Item     |   Version   |
+| :---------: | :---------: |
+|     OS      | Ubuntu20.04 |
+|    CUDA     |    11.3     |
+|    CUDNN    |     8.2     |
+|   Python    |   3.8.10    |
+|    Torch    |   1.10.0    |
+| TorchVision |   0.11.0    |
+| TorchScript |   1.10.0    |
+|  TensorRT   |   8.2.3.0   |
+| ONNXRuntime |    1.8.1    |
+|  OpenVINO   |  2022.3.0   |
+|    ncnn     |  20221128   |
+|   openppl   |    0.8.1    |
+
+You can select a [tag](https://hub.docker.com/r/openmmlab/mmdeploy/tags) and run `docker pull` to get the docker image:
+
+```shell
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+docker pull $TAG
 ```
-cd mmdeploy
-docker build docker/CPU/ -t mmdeploy:master-cpu
-```
 
-For GPU users, we can build the docker image with the latest MMDeploy through:
+## Build docker images (optional)
 
-```
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:master-gpu
-```
+If the prebuilt docker images do not meet your requirements,
+then you can build your own image by running the following script.
+The docker file is `docker/Release/Dockerfile`and its building argument is `MMDEPLOY_VERSION`,
+which can be a [tag](https://github.com/open-mmlab/mmdeploy/tags) or a branch from [mmdeploy](https://github.com/open-mmlab/mmdeploy).
 
-For installing MMDeploy with a specific version, we can append `--build-arg VERSION=${VERSION}` to build command. GPU for example:
-
-```
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:0.1.0 --build-arg  VERSION=0.1.0
-```
-
-For installing libs with the aliyun source, we can append `--build-arg USE_SRC_INSIDE=${USE_SRC_INSIDE}` to build command.
-
-```
-# GPU for example
-cd mmdeploy
-docker build docker/GPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
-
-# CPU for example
-cd mmdeploy
-docker build docker/CPU/ -t mmdeploy:inside --build-arg  USE_SRC_INSIDE=true
+```shell
+export MMDEPLOY_VERSION=main
+export TAG=mmdeploy-${MMDEPLOY_VERSION}
+docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
 ```
 
 ## Run docker container
 
-After building the docker image succeed, we can use `docker run` to launch the docker service. GPU docker image for example:
+After pulling or building the docker image, you can use `docker run` to launch the docker service:
 
-```
-docker run --gpus all -it mmdeploy:master-gpu
+```shell
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+docker run --gpus=all -it --rm $TAG
 ```
 
 ## FAQs
@@ -53,7 +60,7 @@ docker run --gpus all -it mmdeploy:master-gpu
 
 2. docker: Error response from daemon: could not select device driver "" with capabilities: [gpu].
 
-   ```
+   ```shell
    # Add the package repositories
    distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
    curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
