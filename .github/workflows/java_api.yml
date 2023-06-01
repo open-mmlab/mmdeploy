@@ -121,12 +121,13 @@ jobs:
             echo "Downloading model: $model_url"
             wget "$model_url" && tar xvf ${model_url##*/}
             model_dir=${model_url##*/} && model_dir=${model_dir%.*}
-            java_command+=" $model_dir"
+            java_command+=" $GITHUB_WORKSPACE/$model_dir"
           done
 
           java_command+=" $GITHUB_WORKSPACE/$resource_file"
 
           echo "java_command: $java_command"
+          ls $GITHUB_WORKSPACE
 
           cd $GITHUB_WORKSPACE/demo/java
           ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
