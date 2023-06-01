@@ -35,23 +35,17 @@ jobs:
         run: |
           cd $OUTPUT_DIR/mmdeploy
           ls -sha *.whl
-          # twine upload mmdeploy-${MMDEPLOY_VERSION}-py3-none-manylinux2014_x86_64.whl --repository testpypi -u testmmdeploy -p ${{ secrets.test_pypi_password }}
           twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_runtime
         continue-on-error: true
         run: |
           cd $OUTPUT_DIR/mmdeploy_runtime
           ls -sha *.whl
-          # twine upload mmdeploy_runtime-${MMDEPLOY_VERSION}-cp38-none-manylinux2014_x86_64.whl --repository testpypi -u testmmdeploy -p ${{ secrets.test_pypi_password }}
           twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
-      - name: Create dummy softlinks to assets
+      - name: Check assets
         run: |
-          ln -sf $OUTPUT_DIR/sdk ./prebuild
-          ls -sha ./prebuild
+          ls -sha $OUTPUT_DIR/sdk
       - name: Upload mmdeploy sdk
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${MMDEPLOY_VERSION}
-          files: |
-              ./prebuild/*.zip
-              ./prebuild/*.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload v${MMDEPLOY_VERSION} ${OUTPUT_DIR}/sdk/*.zip ${OUTPUT_DIR}/sdk/*.tar.gz --clobber
