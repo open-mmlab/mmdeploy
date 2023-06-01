@@ -127,7 +127,7 @@ jobs:
           java_command+=" $GITHUB_WORKSPACE/$resource_file"
 
           echo "java_command: $java_command"
-          find $GITHUB_WORKSPACE -name "build.xml"
+          
+          cd $GITHUB_WORKSPACE/mmdeploy/demo/java
           pwd
-          ls $GITHUB_WORKSPACE/mmdeploy
-          ant -buildfile $GITHUB_WORKSPACE/mmdeploy/demo/java/build.xml -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
+          ant -DtaskName=$task -DjarDir=${OPENCV_DIR}/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
