@@ -131,7 +131,5 @@ jobs:
           cd $GITHUB_WORKSPACE/demo/java
           pwd
           echo hello
-          ls ${OPENCV_DIR}/src
-          echo hello
           ls $GITHUB_WORKSPACE/opencv
           ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
