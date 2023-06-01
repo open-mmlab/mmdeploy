@@ -18,17 +18,8 @@ on:
     tags:
       - "v*.*.*"
 
-  workflow_dispatch:
-    inputs:
-      run:
-        description: 'Manually start pre-build workflow'
-        required: false
-        type: boolean
-        default: false
-
 jobs:
   publish_docker_image:
-    if: inputs.run == true || ${{ github.event_name == 'push' }}
     runs-on: [self-hosted, linux-3090]
     environment: 'prod'
     env:
@@ -49,11 +40,13 @@ jobs:
           echo "TAG=${TAG_PREFIX}${MMDEPLOY_VERSION}"  >> $GITHUB_ENV
           echo "MMDEPLOY_VERSION=v$MMDEPLOY_VERSION"  >> $GITHUB_ENV
       - name: Build Docker image
+        continue-on-error: true
         run: |
           echo $MMDEPLOY_VERSION
           echo $TAG
           docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
       - name: Push Docker image
+        continue-on-error: true
         run: |
           echo $MMDEPLOY_VERSION
           echo $TAG

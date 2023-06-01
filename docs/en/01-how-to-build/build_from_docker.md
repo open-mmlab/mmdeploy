@@ -5,7 +5,7 @@ This document guides how to install mmdeploy with [Docker](https://docs.docker.c
 ## Get prebuilt docker images
 
 MMDeploy provides prebuilt docker images for the convenience of its users on [Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy). The docker images are built on
-the released MMDeploy. For instance, the image tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0` is for `mmdeploy==1.1.0`.
+the latest and released versions. For instance, the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy` is built on the latest mmdeploy and the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0` is for `mmdeploy==1.1.0`.
 The specifications of the Docker Image are shown below.
 
 |    Item     |   Version   |
@@ -26,7 +26,7 @@ The specifications of the Docker Image are shown below.
 You can select a [tag](https://hub.docker.com/r/openmmlab/mmdeploy/tags) and run `docker pull` to get the docker image:
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
 docker pull $TAG
 ```
 
@@ -48,7 +48,7 @@ docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_V
 After pulling or building the docker image, you can use `docker run` to launch the docker service:
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
 docker run --gpus=all -it --rm $TAG
 ```
 

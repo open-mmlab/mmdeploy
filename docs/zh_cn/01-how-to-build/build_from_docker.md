@@ -5,7 +5,8 @@
 ## 获取镜像
 
 为了方便用户，mmdeploy在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了多个版本的镜像，例如对于`mmdeploy==1.1.0`，
-其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0`。镜像相关规格信息如下表所示：
+其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0`，而最新的镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy`。
+镜像相关规格信息如下表所示：
 
 |    Item     |   Version   |
 | :---------: | :---------: |
@@ -25,7 +26,7 @@
 用户可选择一个[镜像](https://hub.docker.com/r/openmmlab/mmdeploy/tags)并运行`docker pull`拉取镜像到本地：
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
 docker pull $TAG
 ```
 
@@ -44,7 +45,7 @@ docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_V
 当拉取或构建 docker 镜像后，用户可使用 `docker run` 启动 docker 服务：
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
 docker run --gpus=all -it --rm $TAG
 ```
 
