@@ -94,9 +94,6 @@ def yolox_head__predict_by_feat(self,
     bboxes = self._bbox_decode(flatten_priors, flatten_bbox_preds)
     # directly multiply score factor and feed to nms
     scores = cls_scores * (score_factor.unsqueeze(-1))
-    max_scores, _ = torch.max(scores, 1)
-    mask = max_scores >= cfg.score_thr
-    scores = scores.where(mask, scores.new_zeros(1))
 
     if not with_nms:
         return bboxes, scores
