@@ -75,7 +75,7 @@ jobs:
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv470-lib.tar -P opencv/build
           tar -xf opencv/build/opencv470-lib.tar -C opencv/build
           export OPENCV_DIR=$GITHUB_WORKSPACE/opencv
-          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/build/lib:${OPENCV_DIR}/build/lib:$LD_LIBRARY_PATH
+          export LD_LIBRARY_PATH=${OPENCV_DIR}/build/lib:$LD_LIBRARY_PATH
 
       - name: Run ImageClassification Test
         if: always()
@@ -205,7 +205,7 @@ jobs:
           echo "java_command: $java_command"
           cd $GITHUB_WORKSPACE/demo/java
           ls $GITHUB_WORKSPACE/opencv/build/lib
-          ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=$GITHUB_WORKSPACE/opencv/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
+          ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=$GITHUB_WORKSPACE/opencv/build/lib -Dcommand="$java_command" -Djava.library.path=$GITHUB_WORKSPACE/opencv/build/lib
 
       - name: Run RotatedDetection Test
         if: always()
