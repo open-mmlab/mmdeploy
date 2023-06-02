@@ -185,16 +185,22 @@ jobs:
         if: always()
         run: |
           task="PoseTracker"
-          model_url="https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar"
+          model_url_1="https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmdet-nano.tar"
+          model_url_2="https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/rtmpose-tiny.tar"
           resource_file="dance.mp4"
           wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/dance.mp4
           java_command="cpu"
-          for url in $model_url; do
-            echo "Downloading model: $model_url"
-            wget "$model_url" && tar xvf ${model_url##*/}
-            model_dir=${model_url##*/} && model_dir=${model_dir%.*}
-            java_command+=" $GITHUB_WORKSPACE/$model_dir"
-          done
+          
+          echo "Downloading model: $model_url_1"
+          wget "$model_url_1" && tar xvf ${model_url_1##*/}
+          model_dir=${model_url_1##*/} && model_dir=${model_dir%.*}
+          java_command+=" $GITHUB_WORKSPACE/$model_dir"
+          
+          echo "Downloading model: $model_url_2"
+          wget "$model_url_2" && tar xvf ${model_url_2##*/}
+          model_dir=${model_url_2##*/} && model_dir=${model_dir%.*}
+          java_command+=" $GITHUB_WORKSPACE/$model_dir"
+          
           java_command+=" $GITHUB_WORKSPACE/$resource_file"
           echo "java_command: $java_command"
           cd $GITHUB_WORKSPACE/demo/java
