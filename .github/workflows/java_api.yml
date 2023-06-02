@@ -204,8 +204,8 @@ jobs:
           java_command+=" $GITHUB_WORKSPACE/$resource_file"
           echo "java_command: $java_command"
           cd $GITHUB_WORKSPACE/demo/java
-          ls $GITHUB_WORKSPACE/opencv/build/lib
-          ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=$GITHUB_WORKSPACE/opencv/build/lib -Dcommand="$java_command" -Djava.library.path=$GITHUB_WORKSPACE/opencv/build/lib
+          ls -l $GITHUB_WORKSPACE/opencv/build/lib
+          ant -DtaskName=$task -DjarDir=$GITHUB_WORKSPACE/opencv/build/bin -DlibDir=${OPENCV_DIR}/build/lib:$GITHUB_WORKSPACE/build/lib -Dcommand="$java_command"
 
       - name: Run RotatedDetection Test
         if: always()
