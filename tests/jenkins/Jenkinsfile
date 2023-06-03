@@ -1,0 +1,256 @@
+pipeline {
+    agent { label 'deploy_linux_3090' }
+    parameters {
+        choice(
+            name: 'CONFIG',
+            choices : [
+                'Linux-3090_cuda-113_master_full-test.config',
+                'Linux-3090_cuda-113_dev-1.x_full-test.config',
+                'Linux-3090_cuda-113_dev-1.x_quick-test.config',
+                'Linux-3090_cuda-113_master_quick-test.config',
+                'Linux-2080_cuda-102_dev-1.x_full-test.config',
+                'Linux-2080_cuda-102_master_full-test.config',
+                'Linux-2080_cuda-111_dev-1.x_full-test.config',
+                'Linux-2080_cuda-111_master_full-test.config'
+            ],
+            description: 'select config'
+        )
+        choice(
+            name: 'EXEC_NODE',
+            choices: [
+                'deploy_linux_3090',
+                'deploy_linux_2080'
+            ],
+            description: 'select exec_node'
+        )
+        booleanParam(
+            name: 'EXEC_BUILD',
+            defaultValue: false,
+        )
+        booleanParam(
+            name: 'EXEC_PREBUILD',
+            defaultValue: false,
+        )
+        booleanParam(
+            name: 'EXEC_CONVERT',
+            defaultValue: false,
+        )
+        booleanParam(
+            name: 'EXEC_UNITTEST',
+            defaultValue: false,
+        )
+        booleanParam(
+            name: 'PREBUILD_ALL',
+            description: '勾选此项后,其他参数和选项均不再生效,只执行预编译任务',
+            defaultValue: false,
+        )
+        string(
+            name: 'repo_url',
+            defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
+        )
+        string(
+            name: 'mmdeploy_branch',
+            defaultValue: 'master'
+        )
+        string(
+            name: 'codebase_list',
+            defaultValue: 'mmcls mmdet mmedit mmseg mmpose mmocr mmdet3d mmaction mmrotate'
+        )
+        choice(
+            name: 'exec_performance',
+            choices: [
+                'y',
+                'n'
+            ]
+        )
+        string(
+            name: 'exec_torch_versions',
+            description: '3090上可选版本: 1.8.0/1.9.0/1.10.0/1.11.0/1.12.0, 2080上可选版本: 1.8.1/1.9.0/1.10.0/1.11.0/1.12.0',
+            defaultValue: '1.10.0'
+        )
+        string(
+            name: 'exec_models',
+            defaultValue: 'all'
+        )
+        string(
+            name: 'exec_backends',
+            defaultValue: 'onnxruntime tensorrt ncnn torchscript openvino'
+        )
+        string(
+            name: 'max_job_nums',
+            defaultValue: '3'
+        )
+
+        // string(
+        //     name: 'repo_version',
+        //     defaultValue: 'v1.0'
+        // )
+        choice(
+            name: 'tensorrt_version',
+            description: '3090上可选版本: 8.2.3.0/8.4.1.5/8.2.5.1/8.5.1.7, 2080上可选版本: 8.2.3.0/7.2.3.4',
+            choices: [
+                '8.2.3.0',
+                '8.2.5.1',
+                '8.4.1.5',
+                '7.2.3.4',
+                '8.5.1.7'
+            ]
+        )
+        // choice(
+        //     name: 'requirement',
+        //     choices: [
+        //         'requirementV1.0.json',
+        //         'requirementV2.0.json'
+        //     ]
+        // )
+    }
+
+    stages {
+        stage('Set Config') {
+            agent { label params.EXEC_NODE }
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
+            steps {
+                sh "cd ~/mmdeploy && git checkout master && git pull"
+                sh "cp ~/mmdeploy/tests/jenkins/conf/${params.CONFIG} ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "chmod 777 ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's#repo_url=.*#repo_url=${params.repo_url}#g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+                // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' ~/mmdeploy/tests/jenkins/conf/tmp.config"
+            }
+
+            // steps {
+            //     sh "cp tests/jenkins/conf/${params.CONFIG} tests/jenkins/conf/tmp.config"
+            //     sh "chmod 777 tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/codebase_list=.*/codebase_list=${params.codebase_list}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_performance=.*/exec_performance=${params.exec_performance}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_torch_versions=.*/exec_torch_versions=${params.exec_torch_versions}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_models=.*/exec_models=${params.exec_models}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/exec_backends=.*/exec_backends=${params.exec_backends}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/max_job_nums=.*/max_job_nums=${params.max_job_nums}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's#repo_url=.*#repo_url=${params.repo_url}#g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/mmdeploy_branch=.*/mmdeploy_branch=${params.mmdeploy_branch}/g' tests/jenkins/conf/tmp.config"
+            //     // sh "sed -i 's/repo_version=.*/repo_version=${params.repo_version}/g' tests/jenkins/conf/tmp.config"
+            //     sh "sed -i 's/tensorrt_version=.*/tensorrt_version=${params.tensorrt_version}/g' tests/jenkins/conf/tmp.config"
+            //     // sh "sed -i 's/requirement=.*/requirement=${params.requirement}/g' tests/jenkins/conf/tmp.config"
+            // }
+        }
+        stage('Regression') {
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
+            parallel {
+                stage('Build') {
+                    agent { label params.EXEC_NODE }
+                    when {
+                        expression { return params.EXEC_BUILD }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_build.sh 'tmp.config'"
+                    }
+                }
+
+                stage('Convert') {
+                    agent { label params.EXEC_NODE }
+                    when {
+                        expression { return params.EXEC_CONVERT }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_convert.sh 'tmp.config'"
+                    }
+
+                }
+
+                stage('Prebuild') {
+                    agent { label params.EXEC_NODE }
+                    when {
+                        expression { return params.EXEC_PREBUILD }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'tmp.config'"
+                    }
+                }
+
+                stage('Unittest') {
+                    agent { label params.EXEC_NODE }
+                    when {
+                        expression { return params.EXEC_UNITTEST }
+                    }
+                    steps {
+                        sh "tests/jenkins/scripts/test_ut.sh 'tmp.config'"
+                    }
+                }
+
+               
+            }
+        }
+        stage('Tear Down') {
+            when {
+                not { expression { return params.PREBUILD_ALL } }
+            }
+            agent { label params.EXEC_NODE }
+            steps {
+                sh "rm -f tests/jenkins/conf/tmp.config"
+            }
+        }
+
+        stage('Prebuild All') {
+            when {
+                expression { return params.PREBUILD_ALL }
+            }
+            parallel {
+                stage('Prebuild_2080_cuda10.2_master') {
+                    agent { label 'deploy_linux_2080' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-102_master_full-test.config'"
+                    }
+                }
+
+                stage('Prebuild_2080_cuda10.2_dev1.x') {
+                    agent { label 'deploy_linux_2080' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-102_dev-1.x_full-test.config'"
+                    }
+                }
+
+                stage('Prebuild_2080_cuda11.1_master') {
+                    agent { label 'deploy_linux_2080' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-111_master_full-test.config'"
+                    }
+                }
+
+                stage('Prebuild_2080_cuda11.1_dev1.x') {
+                    agent { label 'deploy_linux_2080' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-2080_cuda-111_dev-1.x_full-test.config'"
+                    }
+                }
+                
+                stage('Prebuild_3090_cuda11.3_master') {
+                    agent { label 'deploy_linux_3090' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-3090_cuda-113_master_full-test.config'"
+                    }
+                } 
+
+                stage('Prebuild_3090_cuda11.3_dev1.x') {
+                    agent { label 'deploy_linux_3090' }
+                    steps {
+                        sh "tests/jenkins/scripts/test_prebuild.sh 'Linux-3090_cuda-113_dev-1.x_full-test.config'"
+                    }
+                }
+
+            }
+        }
+    }
+}

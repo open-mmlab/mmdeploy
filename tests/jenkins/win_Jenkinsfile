@@ -1,0 +1,73 @@
+pipeline {
+    agent { label 'deploy_win2' }
+    parameters {
+        string(
+            name: 'CONFIG',
+            defaultValue:'Windows-3080_cuda-113_master_full-test.config',
+            description: 'select config'
+        )
+        choice(
+            name: 'codebase_list',
+            choices: [
+                'mmdet',
+                'mmdet3d',
+                'mmcls',
+                'mmedit',
+                'mmocr',
+                'mmpose',
+                'mmrotate',
+                'mmseg',
+                'mmaction',
+                'mmyolo'
+            ],
+            description: 'select codebase'
+        )
+        string(
+            name: 'exec_performance',
+            defaultValue: 'y',
+            description: 'exec performance or not,use y/n'
+        )
+        choice(
+            name: 'mmdeploy_branch',
+            choices: [
+                'master',
+                'main'
+            ],
+            description: 'select branch'
+        )
+        string(
+            name: 'max_job_nums',
+            defaultValue: '1'
+        )
+        string(
+            name: 'repo_url',
+            defaultValue: 'https://github.com/open-mmlab/mmdeploy.git'
+        )
+
+    }
+
+
+
+    stages {
+
+
+        stage('Convert') {
+            steps {
+                echo "======start======"
+
+                bat """
+                    @ECHO ON
+
+                    pwsh.exe -ExecutionPolicy Bypass -File .\\tests\\jenkins\\scripts\\test_convert.ps1 -cblist "${params.codebase_list}" -eperformance ${params.exec_performance} -rurl ${params.repo_url} -mbranch ${params.mmdeploy_branch} -winconfig ${params.CONFIG} -mjn ${params.max_job_nums}
+
+                """
+            }
+        }
+
+    }
+    //post {
+        //always {
+            //cleanWs()
+            //}
+   //}
+}
