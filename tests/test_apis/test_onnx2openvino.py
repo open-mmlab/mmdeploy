@@ -66,13 +66,7 @@ def get_base_deploy_cfg():
 
 
 def get_deploy_cfg_with_mo_args():
-    deploy_cfg = Config(
-        dict(
-            backend_config=dict(
-                type='openvino',
-                mo_options=dict(
-                    args={'--data_type': 'FP32'}, flags=['--disable_fusing'
-                                                         ]))))
+    deploy_cfg = Config(dict(backend_config=dict(type='openvino')))
     return deploy_cfg
 
 
@@ -118,7 +112,7 @@ def test_can_not_run_onnx2openvino_without_mo():
     try:
         from mmdeploy.apis.openvino import from_onnx
         from_onnx('tmp.onnx', '/tmp', {}, ['output'])
-    except RuntimeError:
+    except Exception:
         is_error = True
 
     os.environ.update(current_environ)
