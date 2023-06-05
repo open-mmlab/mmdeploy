@@ -156,7 +156,7 @@ TEST_CASE("resize transform: size", "[resize]") {
 
   vector<cv::Mat> mats{bgr_mat, gray_mat, bgr_float_mat, gray_float_mat};
   vector<string> interpolations{"bilinear", "nearest", "area", "bicubic", "lanczos"};
-  set<string> cuda_interpolations{"bilinear", "nearest"};
+  set<string> cuda_interpolations{"bilinear", "nearest", "area"};
   constexpr const char* kHost = "cpu";
   SECTION("tuple size with -1") {
     for (auto& mat : mats) {
