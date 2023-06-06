@@ -266,6 +266,9 @@ class ObjectDetection(BaseTask):
             and 'Annotation' not in item['type']
         ]
         for i, transform in enumerate(transforms):
+            # deal with mmyolo
+            if transform['type'].startswith('mmdet.'):
+                transforms[i]['type'] = transform['type'][6:]
             if 'PackDetInputs' in transform['type']:
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
