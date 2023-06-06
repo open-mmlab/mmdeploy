@@ -61,12 +61,12 @@ extensions = [
 ]  # yapf: disable
 
 breathe_default_project = 'mmdeployapi'
-breathe_projects = {'mmdeployapi': '../api/cpp/docs/xml'}
+breathe_projects = {'mmdeployapi': '../cppapi/docs/xml'}
 
 
 def generate_doxygen_xml(app):
     try:
-        folder = '../api/cpp'
+        folder = '../cppapi'
         retcode = subprocess.call('cd %s; doxygen' % folder, shell=True)
         if retcode < 0:
             sys.stderr.write('doxygen terminated by signal %s' % (-retcode))

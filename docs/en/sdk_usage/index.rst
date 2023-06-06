@@ -1,18 +1,17 @@
-========
-SDK Usage Guide
-========
+========================
+SDK Documentation
+========================
 
 Setup & Usage
-------------
+--------------
 .. toctree::
    :maxdepth: 1
 
-   load_model
-
+   quick_start
 
 
 API Reference
-------------
+--------------
 .. toctree::
    :maxdepth: 1
 

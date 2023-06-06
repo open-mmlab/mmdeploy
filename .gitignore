@@ -171,4 +171,4 @@ csrc/mmdeploy/preprocess/elena/cuda_kernel/*
 demo/csharp/*/Properties
 
 # doxygen
-docs/api/cpp/docs
+docs/cppapi/docs
