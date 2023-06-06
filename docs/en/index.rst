@@ -30,6 +30,12 @@ You can switch between Chinese and English documents in the lower-left corner of
 
 .. toctree::
    :maxdepth: 1
+   :caption: SDK Usage
+
+   sdk_usage/index.rst
+
+.. toctree::
+   :maxdepth: 1
    :caption: Benchmark
 
    03-benchmark/supported_models.md
@@ -115,14 +121,6 @@ You can switch between Chinese and English documents in the lower-left corner of
    :caption: API Reference
 
    api.rst
-
-.. toctree::
-   :maxdepth: 1
-   :caption: SDK Usage
-
-
-   sdk_usage/index.rst
-
 
 Indices and tables
 ==================
