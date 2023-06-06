@@ -268,8 +268,7 @@ class ObjectDetection(BaseTask):
         for i, transform in enumerate(transforms):
             # deal with mmyolo
             if transform['type'].startswith('mmdet.'):
-                transform['type'] = transform['type'][6:]
-                transforms[i]['type'] = transform['type']
+                transforms[i]['type'] = transform['type'][6:]
             if 'PackDetInputs' in transform['type']:
                 meta_keys += transform[
                     'meta_keys'] if 'meta_keys' in transform else []
