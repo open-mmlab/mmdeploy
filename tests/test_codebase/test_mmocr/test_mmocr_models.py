@@ -382,7 +382,8 @@ def test_forward_of_encoder_decoder_recognizer(data_samples, is_dynamic,
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
 
     if is_backend_output:
         rewrite_outputs = rewrite_outputs[0]

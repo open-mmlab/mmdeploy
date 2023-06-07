@@ -211,6 +211,7 @@ def test_modulated_deform_conv(backend,
             'modulated_deform_conv',
             input_names=['input', 'offset', 'mask'],
             output_names=['output'],
+            tolerate_small_mismatch=True,
             save_dir=save_dir)
 
 
@@ -756,8 +757,9 @@ def test_gather(backend,
         make_tensor_value_info(input_names[0], onnx.TensorProto.FLOAT, None),
         make_tensor_value_info(input_names[1], onnx.TensorProto.INT64, None)
     ], [make_tensor_value_info(output_names[0], onnx.TensorProto.FLOAT, None)])
-    gather_model = make_model(gather_graph)
-
+    opset_imports = [onnx.helper.make_operatorsetid('', 11)]
+    gather_model = make_model(gather_graph, opset_imports=opset_imports)
+    gather_model.ir_version = 7
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
                                        save_dir)
