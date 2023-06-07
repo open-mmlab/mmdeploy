@@ -22,7 +22,7 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # options
-option(MMDEPLOY_SHARED_LIBS "build shared libs" OFF)
+option(MMDEPLOY_SHARED_LIBS "build shared libs" ON)
 option(MMDEPLOY_BUILD_SDK "build MMDeploy SDK" OFF)
 option(MMDEPLOY_DYNAMIC_BACKEND "dynamic load backend" OFF)
 option(MMDEPLOY_BUILD_SDK_MONOLITHIC "build single lib for SDK API" ON)
@@ -41,18 +41,24 @@ set(MMDEPLOY_TARGET_BACKENDS "" CACHE STRING "target inference engines to suppor
 set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
 
 if ((NOT MMDEPLOY_BUILD_SDK_MONOLITHIC) AND MMDEPLOY_DYNAMIC_BACKEND)
+    message(WARNING
+        "dynamic backend only supported with MMDEPLOY_BUILD_SDK_MONOLITHIC=ON\n"
+        "implicit set MMDEPLOY_DYNAMIC_BACKEND=OFF")
     set(MMDEPLOY_DYNAMIC_BACKEND OFF)
 endif ()
 
-if (MMDEPLOY_BUILD_SDK_MONOLITHIC AND MMDEPLOY_SHARED_LIBS)
-    set(MMDEPLOY_SHARED_LIBS OFF)
+if (MMDEPLOY_BUILD_SDK_MONOLITHIC AND (NOT MMDEPLOY_SHARED_LIBS))
+    message(WARNING
+        "monolithic lib only supported with MMDEPLOY_SHARED_LIBS=ON\n"
+        "implicit set MMDEPLOY_BUILD_SDK_MONOLITHIC=OFF")
+    set(MMDEPLOY_BUILD_SDK_MONOLITHIC OFF)
 endif ()
 
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
 endif ()
 
-if (MMDEPLOY_SHARED_LIBS)
+if (MMDEPLOY_SHARED_LIBS AND (NOT MMDEPLOY_BUILD_SDK_MONOLITHIC))
     set(MMDEPLOY_LIB_TYPE SHARED)
 else ()
     set(MMDEPLOY_LIB_TYPE STATIC)
