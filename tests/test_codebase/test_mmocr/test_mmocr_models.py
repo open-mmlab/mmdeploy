@@ -403,7 +403,7 @@ def test_forward_of_fpnc(backend: Backend):
         dict(
             backend_config=dict(
                 type=backend.value,
-                common_config=dict(max_workspace_size=1 << 30),
+                common_config=dict(max_workspace_size=1 << 20),
                 model_inputs=[
                     dict(
                         input_shapes=dict(
@@ -550,7 +550,7 @@ def test_mmdet_wrapper__forward(backend):
         dict(
             backend_config=dict(
                 type=backend.value,
-                common_config=dict(max_workspace_size=1 << 30)),
+                common_config=dict(max_workspace_size=1 << 20)),
             onnx_config=dict(
                 input_shape=None,
                 input_names=['inputs'],

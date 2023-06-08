@@ -119,7 +119,7 @@ class TestTensorRTExporter:
                 backend_config=dict(
                     type='tensorrt',
                     common_config=dict(
-                        fp16_mode=False, max_workspace_size=1 << 28),
+                        fp16_mode=False, max_workspace_size=1 << 20),
                     model_inputs=[
                         dict(
                             input_shapes=dict(
@@ -132,14 +132,13 @@ class TestTensorRTExporter:
                                 ])))
                     ])))
 
-        onnx_model = onnx.load(onnx_file_path)
         work_dir, filename = os.path.split(trt_file_path)
         trt_apis.onnx2tensorrt(
             work_dir,
             filename,
             0,
             deploy_cfg=deploy_cfg,
-            onnx_model=onnx_model)
+            onnx_model=onnx_file_path)
         if expected_result is None and not isinstance(
                 model, onnx.onnx_ml_pb2.ModelProto):
             with torch.no_grad():
