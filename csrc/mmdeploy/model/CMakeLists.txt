@@ -8,7 +8,6 @@ if (${MMDEPLOY_ZIP_MODEL})
 
     if (MSVC)
         set(zlib zlibstatic)
-        set(ziplib zip)
         set(LIB_PREFIX "")
         set(LIB_SUFFIX ".lib")
     else()
@@ -16,6 +15,7 @@ if (${MMDEPLOY_ZIP_MODEL})
         set(LIB_PREFIX "lib")
         set(LIB_SUFFIX ".a")
     endif()
+    set(ziplib zip)
 
     set(zlib_name ${LIB_PREFIX}${zlib}${LIB_SUFFIX})
     set(ziplib_name ${LIB_PREFIX}${ziplib}${LIB_SUFFIX})
@@ -31,6 +31,7 @@ if (${MMDEPLOY_ZIP_MODEL})
         GIT_TAG v1.2.13
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=${ZLIB_INSTALL_DIR}
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON
         UPDATE_DISCONNECTED 1
     )
     add_custom_target(static_zlib ALL
