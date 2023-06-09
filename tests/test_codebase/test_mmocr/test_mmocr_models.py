@@ -194,9 +194,10 @@ def test_nrtr_decoder__get_source_mask(backend: Backend):
     ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
     backend_outputs = get_backend_outputs(ir_file_path, batch_model_inputs,
                                           deploy_cfg)[0].numpy()
+    num_elements = np.prod(backend_outputs.shape[1:])
     # batch results should be same
-    assert np.sum(backend_outputs[0] == backend_outputs[1]) and np.sum(
-        backend_outputs[1] == backend_outputs[2])
+    assert np.sum(backend_outputs[0] == backend_outputs[1]) == num_elements \
+        and np.sum(backend_outputs[1] == backend_outputs[2]) == num_elements
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
@@ -228,9 +229,10 @@ def test_satrn_encoder__get_source_mask(backend: Backend):
     ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
     backend_outputs = get_backend_outputs(ir_file_path, batch_model_inputs,
                                           deploy_cfg)[0].numpy()
+    num_elements = np.prod(backend_outputs.shape[1:])
     # batch results should be same
-    assert np.sum(backend_outputs[0] == backend_outputs[1]) and np.sum(
-        backend_outputs[1] == backend_outputs[2])
+    assert np.sum(backend_outputs[0] == backend_outputs[1]) == num_elements \
+        and np.sum(backend_outputs[1] == backend_outputs[2]) == num_elements
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
