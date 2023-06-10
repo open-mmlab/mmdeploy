@@ -336,3 +336,8 @@ class BaseTask(metaclass=ABCMeta):
                             f'but got: {from_mmrazor}')
 
         return from_mmrazor
+
+    def update_deploy_config(self, deploy_config: Any, model_type: str, *args,
+                             **kwargs):
+        raise NotImplementedError('Update deploy config is not supported '
+                                  f'for {type(self)}')

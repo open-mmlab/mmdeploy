@@ -157,6 +157,11 @@ def is_dynamic_batch(deploy_cfg: Union[str, mmcv.Config],
     """
 
     deploy_cfg = load_config(deploy_cfg)[0]
+
+    codebase_config = get_codebase_config(deploy_cfg)
+    if 'is_dynamic_batch' in codebase_config:
+        if codebase_config['is_dynamic_batch']:
+            return True
     ir_config = get_ir_config(deploy_cfg)
 
     # check if input name is in the config
@@ -199,6 +204,12 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmcv.Config],
         return True
 
     deploy_cfg = load_config(deploy_cfg)[0]
+
+    codebase_config = get_codebase_config(deploy_cfg)
+    if 'is_dynamic_size' in codebase_config:
+        if codebase_config['is_dynamic_size']:
+            return True
+
     ir_config = get_ir_config(deploy_cfg)
 
     # check if input name is in the config

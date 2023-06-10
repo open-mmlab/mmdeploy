@@ -98,6 +98,13 @@ class BaseBackendManager(metaclass=ABCMeta):
         raise NotImplementedError(
             f'to_backend has not been implemented for `{cls.__name__}`')
 
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, opt_shapes: dict,
+                             **kwargs):
+        raise NotImplementedError(
+            'update_deploy_config has not been implemented '
+            f'for `{cls.__name__}`')
+
 
 class BackendManagerRegistry:
     """backend manager registry."""

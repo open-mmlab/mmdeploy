@@ -136,3 +136,17 @@ class TVMManager(BaseBackendManager):
             tvm_files += [lib_path, code_path]
 
         return tvm_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, opt_shapes: dict,
+                             dtypes: dict, **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+        model_inputs = backend_config.get('model_inputs', [])
+        if len(model_inputs) == 0:
+            model_inputs.append(dict())
+
+        model_input = model_inputs[0]
+        model_input['shape'] = opt_shapes
+        model_input['dtype'] = dtypes
+        return deploy_config

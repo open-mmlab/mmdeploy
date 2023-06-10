@@ -121,3 +121,39 @@ class CoreMLManager(BaseBackendManager):
             output_path = output_file_prefix + suffix
             coreml_files.append(output_path)
         return coreml_files
+
+    @classmethod
+    def update_deploy_config(cls,
+                             deploy_config: Any,
+                             opt_shapes: dict,
+                             min_shapes: Optional[dict] = None,
+                             max_shapes: Optional[dict] = None,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+
+        # fill min shape and max shape if necessary
+        if min_shapes is None:
+            min_shapes = opt_shapes
+        if max_shapes is None:
+            max_shapes = opt_shapes
+
+        input_shapes = dict()
+        # check and fill input shapes
+        for name in opt_shapes:
+            assert name in min_shapes
+            assert name in max_shapes
+            min_shape = min_shapes[name]
+            opt_shape = opt_shapes[name]
+            max_shape = max_shapes[name]
+            assert len(min_shape) == len(opt_shape) == len(max_shape)
+            for min_s, opt_s, max_s in zip(min_shape, opt_shape, max_shape):
+                assert min_s <= opt_s <= max_s
+            input_shapes[name] = dict(
+                min_shape=min_shape,
+                default_shape=opt_shape,
+                max_shape=max_shape)
+
+        model_inputs = [dict(input_shapes=input_shapes)]
+        backend_config['model_inputs'] = model_inputs
+        return deploy_config

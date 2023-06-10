@@ -145,3 +145,7 @@ class NCNNManager(BaseBackendManager):
             backend_files += [model_param_path, model_bin_path]
 
         return backend_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, **kwargs):
+        return deploy_config

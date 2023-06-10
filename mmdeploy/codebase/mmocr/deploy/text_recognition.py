@@ -328,3 +328,151 @@ class TextRecognition(BaseTask):
         assert 'type' in self.model_cfg.model, 'model config contains no type'
         name = self.model_cfg.model.type.lower()
         return name
+
+    def update_deploy_config(self,
+                             deploy_config: Any,
+                             model_type: str,
+                             is_dynamic_batch: bool = False,
+                             is_dynamic_size: bool = False,
+                             input_shape: Optional[Tuple[int]] = None,
+                             *args,
+                             **kwargs):
+
+        from mmdeploy.backend.base import get_backend_manager
+        from mmdeploy.utils import Backend, get_backend, get_ir_config
+
+        def _shape_inference():
+            nonlocal is_dynamic_size
+            nonlocal input_shape
+            pipeline = self.model_cfg.data.test.pipeline
+            pipeline = pipeline.copy()
+
+            transforms = pipeline
+
+            load_image_trans = None
+            resize_ocr_trans = None
+
+            for trans in transforms:
+                if trans['type'] == 'LoadImageFromFile':
+                    load_image_trans = trans
+                if trans['type'] == 'ResizeOCR':
+                    resize_ocr_trans = trans
+
+            color_type = load_image_trans.get('color_type', 'color')
+
+            if input_shape is not None:
+                height = input_shape[1]
+                min_width = max_width = input_shape[0]
+                assert height == resize_ocr_trans['height']
+            else:
+                height = resize_ocr_trans['height']
+                min_width = resize_ocr_trans.get('min_width', height)
+                if min_width is None:
+                    min_width = height
+                if is_dynamic_size:
+                    max_width = resize_ocr_trans.get('max_width', None)
+                else:
+                    max_width = resize_ocr_trans.get('max_width', None)
+
+                if max_width is None:
+                    if is_dynamic_size:
+                        max_width = 20 * min_width
+                    else:
+                        max_width = min_width
+
+            if min_width == max_width:
+                is_dynamic_size = False
+                input_shape = (min_width, height)
+
+            channels = 1 if color_type == 'grayscale' else 3
+            return height, min_width, max_width, channels
+
+        def _get_mean_std():
+            pipeline = self.model_cfg.data.test.pipeline
+            pipeline = pipeline.copy()
+            transforms = pipeline
+            for trans in transforms:
+                if trans['type'] == 'Normalize':
+                    mean = trans.get('mean', [0.0, 0.0, 0.0])
+                    std = trans.get('std', [1.0, 1.0, 1.0])
+                    to_rgb = trans.get('to_rgb', False)
+                    if to_rgb:
+                        mean = mean[::-1]
+                        std = std[::-1]
+                    return mean, std
+            return None, None
+
+        height, min_width, max_width, channels = _shape_inference()
+        mean, std = _get_mean_std()
+
+        # update codebase_config
+        codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
+        codebase_config['model_type'] = model_type
+        codebase_config['is_dynamic_batch'] = is_dynamic_batch
+        codebase_config['is_dynamic_size'] = is_dynamic_size
+        codebase_config['input_shape'] = input_shape
+        deploy_config['codebase_config'] = codebase_config
+
+        # update ir_config
+        ir_config = get_ir_config(deploy_config)
+        input_names = ['input']
+        output_names = ['output']
+
+        ir_config['input_names'] = input_names
+        ir_config['output_names'] = output_names
+
+        if is_dynamic_batch or is_dynamic_size:
+            dynamic_axes = dict()
+            input_axes = dict()
+            output_axes = dict()
+            if is_dynamic_batch:
+                input_axes[0] = 'batch'
+                output_axes[0] = 'batch'
+            if is_dynamic_size:
+                input_axes[3] = 'width'
+                output_axes[1] = 'seq_len'
+                output_axes[2] = 'num_classes'
+            dynamic_axes['input'] = input_axes
+            dynamic_axes['output'] = output_axes
+            ir_config['dynamic_axes'] = dynamic_axes
+        if input_shape is not None:
+            ir_config['input_shape'] = input_shape
+        deploy_config['ir_config'] = ir_config
+
+        # update backend_config
+        backend = get_backend(deploy_config)
+        backend_mgr = get_backend_manager(backend.value)
+
+        min_batch = 1
+        opt_batch = 1
+        max_batch = 1
+        if is_dynamic_batch:
+            max_batch = 2
+
+        min_shape = (min_batch, channels, height, min_width)
+        opt_shape = (opt_batch, channels, height, min_width)
+        max_shape = (max_batch, channels, height, max_width)
+
+        if backend == Backend.SDK:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                pipeline=[
+                    dict(type='LoadImageFromFile'),
+                    dict(
+                        type='Collect',
+                        keys=['img'],
+                        meta_keys=['filename', 'ori_shape'])
+                ])
+        else:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                opt_shapes=dict(input=opt_shape),
+                min_shapes=dict(input=min_shape),
+                max_shapes=dict(input=max_shape),
+                dtypes=dict(input='float32'),
+                input_names=input_names,
+                mean=mean,
+                std=std)
+
+        return deploy_config

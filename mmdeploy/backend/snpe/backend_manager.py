@@ -98,3 +98,7 @@ class SNPEManager(BaseBackendManager):
             backend_files += [dlc_path]
 
         return backend_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, **kwargs):
+        return deploy_config

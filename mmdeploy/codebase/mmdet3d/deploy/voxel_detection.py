@@ -305,3 +305,86 @@ class VoxelDetection(BaseTask):
             for _ in range(batch_size):
                 prog_bar.update()
         return results
+
+    def update_deploy_config(self, deploy_config: Any, model_type: str, *args,
+                             **kwargs):
+        from mmdeploy.backend.base import get_backend_manager
+        from mmdeploy.utils import get_backend, get_ir_config
+
+        def _shape_inference():
+            model = self.model_cfg['model']
+
+            voxel_layer = None
+            voxel_encoder = None
+
+            if 'voxel_layer' in model:
+                voxel_layer = model['voxel_layer']
+            elif 'pts_voxel_layer' in model:
+                voxel_layer = model['pts_voxel_layer']
+
+            if 'voxel_encoder' in model:
+                voxel_encoder = model['voxel_encoder']
+            elif 'pts_voxel_encoder' in model:
+                voxel_encoder = model['pts_voxel_encoder']
+
+            assert voxel_layer is not None
+            assert voxel_encoder is not None
+
+            max_num_points = voxel_layer['max_num_points']
+            max_voxels = voxel_layer.get('max_voxels', 20000)
+            if isinstance(max_voxels, Sequence):
+                max_voxels = max_voxels[-1]
+            in_channels = voxel_encoder.get('in_channels', 4)
+
+            return max_voxels, max_num_points, in_channels
+
+        max_voxels, max_num_points, in_channels = _shape_inference()
+
+        # update ir_config
+        ir_config = get_ir_config(deploy_config)
+        input_names = ['voxels', 'num_points', 'coors']
+        output_names = ['bboxes', 'scores', 'labels']
+        ir_config['input_names'] = input_names
+        ir_config['output_names'] = output_names
+
+        dynamic_axes = {
+            'voxels': {
+                0: 'voxels_num',
+            },
+            'num_points': {
+                0: 'voxels_num',
+            },
+            'coors': {
+                0: 'voxels_num',
+            }
+        }
+        ir_config['dynamic_axes'] = dynamic_axes
+
+        # update backend_config
+        backend = get_backend(deploy_config)
+        backend_mgr = get_backend_manager(backend.value)
+
+        min_voxels = min(1000, max_voxels // 8)
+        opt_voxels = max_voxels // 4
+        min_shapes = dict(
+            voxels=[min_voxels, max_num_points, in_channels],
+            num_points=[min_voxels],
+            coors=[min_voxels, 4])
+        opt_shapes = dict(
+            voxels=[opt_voxels, max_num_points, in_channels],
+            num_points=[opt_voxels],
+            coors=[opt_voxels, 4])
+        max_shapes = dict(
+            voxels=[max_voxels, max_num_points, in_channels],
+            num_points=[max_voxels],
+            coors=[max_voxels, 4])
+
+        deploy_config = backend_mgr.update_deploy_config(
+            deploy_config,
+            min_shapes=min_shapes,
+            opt_shapes=opt_shapes,
+            max_shapes=max_shapes,
+            dtypes=dict(voxels='float32', num_points='int32', coors='float32'),
+            input_names=input_names)
+
+        return deploy_config

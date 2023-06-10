@@ -102,3 +102,13 @@ class OpenVINOManager(BaseBackendManager):
             openvino_files.append(model_xml_path)
 
         return openvino_files
+
+    @classmethod
+    def update_deploy_config(cls, deploy_config: Any, opt_shapes: dict,
+                             **kwargs):
+        from mmdeploy.utils import get_backend_config
+        backend_config = get_backend_config(deploy_config)
+
+        model_inputs = [dict(opt_shapes=opt_shapes)]
+        backend_config['model_inputs'] = model_inputs
+        return deploy_config

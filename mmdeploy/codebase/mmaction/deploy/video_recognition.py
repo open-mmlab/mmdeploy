@@ -371,3 +371,151 @@ class VideoRecognition(BaseTask):
             'no type'
         name = self.model_cfg.model.backbone.type.lower()
         return name
+
+    def update_deploy_config(self,
+                             deploy_config: Any,
+                             model_type: str,
+                             is_dynamic_batch: bool = False,
+                             *args,
+                             **kwargs):
+        from mmdeploy.backend.base import get_backend_manager
+        from mmdeploy.utils import Backend, get_backend, get_ir_config
+
+        def _get_input_shape(channel=3):
+            pipeline = self.model_cfg.data.test.pipeline
+            pipeline = pipeline.copy()
+
+            transforms = pipeline
+
+            sample_frame_trans = None
+            center_crop_trans = None
+            three_crop_trans = None
+            ten_crop_trans = None
+            format_shape_trans = None
+
+            for trans in transforms:
+                if trans['type'] == 'SampleFrames':
+                    sample_frame_trans = trans
+                if trans['type'] == 'CenterCrop':
+                    center_crop_trans = trans
+                if trans['type'] == 'ThreeCrop':
+                    three_crop_trans = trans
+                if trans['type'] == 'TenCrop':
+                    ten_crop_trans = trans
+                if trans['type'] == 'FormatShape':
+                    format_shape_trans = trans
+
+            assert sample_frame_trans is not None
+            assert format_shape_trans is not None
+
+            clip_len = sample_frame_trans['clip_len']
+            num_clips = sample_frame_trans.get('num_clips', 1)
+            input_format = format_shape_trans['input_format']
+
+            if center_crop_trans is not None:
+                num_crop = 1
+                input_size = center_crop_trans['crop_size']
+            elif three_crop_trans is not None:
+                num_crop = 3
+                input_size = three_crop_trans['crop_size']
+            elif ten_crop_trans is not None:
+                num_crop = 10
+                input_size = ten_crop_trans['crop_size']
+            else:
+                raise ValueError('Unknown crop.')
+
+            if isinstance(input_size, int):
+                input_size = (input_size, input_size)
+
+            if input_format == 'NCHW':
+                return [
+                    clip_len * num_clips * num_crop, channel, *input_size[::-1]
+                ]
+            elif input_format == 'NCTHW':
+                return [
+                    num_clips * num_crop, channel, clip_len, *input_size[::-1]
+                ]
+            else:
+                raise ValueError(f'Unknown input_format: {input_format}.')
+
+        def _get_mean_std():
+            pipeline = self.model_cfg.data.test.pipeline
+            pipeline = pipeline.copy()
+            transforms = pipeline
+            for trans in transforms:
+                if trans['type'] == 'Normalize':
+                    mean = trans.get('mean', [0.0, 0.0, 0.0])
+                    std = trans.get('std', [1.0, 1.0, 1.0])
+                    to_rgb = trans.get('to_rgb', False)
+                    if to_rgb:
+                        mean = mean[::-1]
+                        std = std[::-1]
+                    return mean, std
+            return [0.0, 0.0, 0.0], [1.0, 1.0, 1.0]
+
+        num_channel = 3
+        input_shape = _get_input_shape(num_channel)
+        mean, std = _get_mean_std()
+
+        # update codebase_config
+        codebase_config = deploy_config.codebase_config
+        codebase_config['update_config'] = False
+
+        # update ir config
+        input_names = ['input']
+        output_names = ['output']
+
+        ir_config = get_ir_config(deploy_config)
+        ir_config['input_names'] = input_names
+        ir_config['output_names'] = output_names
+
+        if is_dynamic_batch:
+            dynamic_axes = dict()
+            input_axes = dict()
+            output_axes = dict()
+
+            if is_dynamic_batch:
+                input_axes[0] = 'batch'
+                output_axes[0] = 'batch'
+
+            dynamic_axes['input'] = input_axes
+            dynamic_axes['output'] = output_axes
+            ir_config['dynamic_axes'] = dynamic_axes
+
+        deploy_config['ir_config'] = ir_config
+
+        backend = get_backend(deploy_config)
+        backend_mgr = get_backend_manager(backend.value)
+
+        min_batch = 1
+        opt_batch = 1
+        max_batch = 1
+        if is_dynamic_batch:
+            max_batch = 2
+
+        min_shape = (min_batch, *input_shape)
+        opt_shape = (opt_batch, *input_shape)
+        max_shape = (max_batch, *input_shape)
+
+        if backend == Backend.SDK:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                pipeline=[
+                    dict(type='LoadImageFromFile'),
+                    dict(
+                        type='Collect',
+                        keys=['img'],
+                        meta_keys=['filename', 'ori_shape'])
+                ])
+        else:
+            deploy_config = backend_mgr.update_deploy_config(
+                deploy_config,
+                opt_shapes=dict(input=opt_shape),
+                min_shapes=dict(input=min_shape),
+                max_shapes=dict(input=max_shape),
+                dtypes=dict(input='float32'),
+                input_names=input_names,
+                mean=mean,
+                std=std)
+
+        return deploy_config
