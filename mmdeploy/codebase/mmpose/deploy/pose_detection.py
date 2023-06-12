@@ -121,6 +121,9 @@ class MMPose(MMCodebase):
     def register_deploy_modules(cls):
         """register rewritings."""
         import mmdeploy.codebase.mmpose.models  # noqa: F401
+        import mmdeploy.codebase.mmdet.models
+        import mmdeploy.codebase.mmdet.ops
+        import mmdeploy.codebase.mmdet.structures
 
     @classmethod
     def register_all_modules(cls):
@@ -197,6 +200,7 @@ class PoseDetection(BaseTask):
         from mmcv.transforms import Compose
         from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
+        img_path = [imgs]
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')
@@ -245,7 +249,8 @@ class PoseDetection(BaseTask):
                 data = {
                     'img': imgs[i],
                     'bbox_score': bbox_score,
-                    'bbox': bbox[None],  # shape (1, 4)
+                    'bbox': [],  # shape (1, 4)
+                    'img_path': img_path[i]
                 }
                 data.update(meta_data)
                 data = test_pipeline(data)

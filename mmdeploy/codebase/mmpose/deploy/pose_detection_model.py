@@ -54,7 +54,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             **kwargs)
         # create head for decoding heatmap
-        self.head = builder.build_head(model_cfg.model.head)
+        self.head = builder.build_head(model_cfg.model.bbox_head)
+        # self.head = builder.build_head(model_cfg.model.head)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -97,18 +98,33 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        codec = self.model_cfg.codec
-        if isinstance(codec, (list, tuple)):
-            codec = codec[-1]
-        if codec.type == 'SimCCLabel':
-            batch_pred_x, batch_pred_y = batch_outputs
-            preds = self.head.decode((batch_pred_x, batch_pred_y))
-        elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
-            preds = self.head.decode(batch_outputs)
-        else:
-            preds = self.head.decode(batch_outputs[0])
-        results = self.pack_result(preds, data_samples)
+        # codec = self.model_cfg.codec
+        # if isinstance(codec, (list, tuple)):
+        #     codec = codec[-1]
+        # if codec.type == 'SimCCLabel':
+        #     batch_pred_x, batch_pred_y = batch_outputs
+        #     preds = self.head.decode((batch_pred_x, batch_pred_y))
+        # elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
+        #     preds = self.head.decode(batch_outputs)
+        # else:
+        #     preds = self.head.decode(batch_outputs[0])
+        results = self.pack_result_(batch_outputs, data_samples)
         return results
+
+    def pack_result_(self,
+                     preds: Sequence[InstanceData],
+                     data_samples: List[BaseDataElement],
+                     convert_coordinate: bool = True):
+        if not isinstance(preds[0], list):
+            preds = [preds]
+        assert len(preds) == len(data_samples)
+
+        for pred, data_sample in zip(preds, data_samples):
+            pred_instances = InstanceData()
+            pred_instances.bboxes, pred_instances.labels, pred_instances.bbox_scores, \
+                pred_instances.keypoints, pred_instances.keypoints_scores = pred
+            data_sample.pred_instances = pred_instances
+        return data_samples
 
     def pack_result(self,
                     preds: Sequence[InstanceData],
@@ -210,7 +226,7 @@ def build_pose_detection_model(
         deploy_cfg: Union[str, mmengine.Config],
         device: str,
         data_preprocessor: Optional[Union[Config,
-                                          BaseDataPreprocessor]] = None,
+        BaseDataPreprocessor]] = None,
         **kwargs):
     """Build object segmentation model for different backends.
 
@@ -227,6 +243,7 @@ def build_pose_detection_model(
         BaseBackendModel: Pose model for a configured backend.
     """
     from mmpose.models.data_preprocessors import PoseDataPreprocessor
+    from mmdet.models.data_preprocessors import DetDataPreprocessor
 
     # load cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -236,8 +253,12 @@ def build_pose_detection_model(
     if isinstance(data_preprocessor, dict):
         dp = data_preprocessor.copy()
         dp_type = dp.pop('type')
-        assert dp_type == 'PoseDataPreprocessor'
-        data_preprocessor = PoseDataPreprocessor(**dp)
+        if dp_type == 'mmdet.DetDataPreprocessor':
+            data_preprocessor = DetDataPreprocessor(**dp)
+        else:
+            assert dp_type == 'PoseDataPreprocessor'
+            data_preprocessor = PoseDataPreprocessor(**dp)
+
     backend_pose_model = __BACKEND_MODEL.build(
         dict(
             type=model_type,
