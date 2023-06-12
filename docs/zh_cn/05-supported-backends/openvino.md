@@ -8,16 +8,16 @@ It is recommended to create a virtual environment for the project.
 
 ### Install python package
 
-Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
+Install [OpenVINO](https://docs.openvino.ai/2022.3/get_started.html). It is recommended to use the installer or install using pip.
 Installation example using [pip](https://pypi.org/project/openvino-dev/):
 
 ```bash
 pip install openvino-dev[onnx]==2022.3.0
 ```
 
-### Download OpenVINO toolkit for SDK (Optional)
+### Download OpenVINO runtime for SDK (Optional)
 
-If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
+If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2022.3/openvino_docs_install_guides_installing_openvino_from_archive_linux.html#installing-openvino-runtime).
 Take `openvino==2022.3.0` as example:
 
 ```bash
