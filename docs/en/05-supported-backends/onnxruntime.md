@@ -1,4 +1,4 @@
-# ONNX Runtime Support
+# onnxruntime 支持情况
 
 ## Introduction of ONNX Runtime
 
@@ -6,19 +6,29 @@
 
 ## Installation
 
-*Please note that only **onnxruntime>=1.8.1** of CPU version on Linux platform is supported by now.*
+*Please note that only **onnxruntime>=1.8.1** of on Linux platform is supported by now.*
 
-- Install ONNX Runtime python package
+### Install ONNX Runtime python package
+
+- CPU Version
 
 ```bash
-pip install onnxruntime==1.8.1
+pip install onnxruntime==1.8.1 # if you want to use cpu version
+```
+
+- GPU Version
+
+```bash
+pip install onnxruntime-gpu==1.8.1 # if you want to use cpu version
 ```
 
 ## Build custom ops
 
-### Prerequisite
+### Download ONNXRuntime Library
 
-- Download `onnxruntime-linux` from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
+Download `onnxruntime-linux-*.tgz` library from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
+
+- CPU Version
 
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -29,12 +39,34 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
+- GPU Version
+
+```bash
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-gpu-1.8.1.tgz
+
+tar -zxvf onnxruntime-linux-x64-gpu-1.8.1.tgz
+cd onnxruntime-linux-x64-gpu-1.8.1
+export ONNXRUNTIME_DIR=$(pwd)
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+```
+
 ### Build on Linux
+
+- CPU Version
 
 ```bash
 cd ${MMDEPLOY_DIR} # To MMDeploy root directory
 mkdir -p build && cd build
-cmake -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+cmake -DMMDEPLOY_TARGET_DEVICES='cpu' -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
+make -j$(nproc) && make install
+```
+
+- GPU Version
+
+```bash
+cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+mkdir -p build && cd build
+cmake -DMMDEPLOY_TARGET_DEVICES='cuda' -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc) && make install
 ```
 

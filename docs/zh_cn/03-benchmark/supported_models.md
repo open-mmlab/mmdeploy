@@ -17,11 +17,11 @@
 | [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)                                    | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [Cascade R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn)                 | MMDetection      |      N      |      Y      |    Y     |  N   |   Y   |    Y     |   N    |  N   |
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn)            | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
-| [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)[\*](#note)           | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
+| [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)[\*](#note)           | MMDetection      |      N      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
 | [VFNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/vfnet)                                | MMDetection      |      N      |      N      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)                        | MMDetection      |      N      |      N      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)                                  | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
-| [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                        | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    N     |   N    |  N   |
+| [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)                        | MMDetection      |      N      |      Y      |    Y     |  N   |   ?   |    Y     |   N    |  N   |
 | [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)                                  | MMDetection      |      N      |      Y      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [SOLOv2](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solov2)                              | MMDetection      |      N      |      Y      |    N     |  N   |   N   |    Y     |   N    |  N   |
 | [ResNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnet)                              | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
@@ -85,9 +85,9 @@
 | [SimCC](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#simcc-eccv-2022)        | MMPose           |      N      |      Y      |    Y     |  Y   |   N   |    N     |   N    |  N   |
 | [PointPillars](https://github.com/open-mmlab/mmdetection3d/tree/main/configs/pointpillars)               | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
 | [CenterPoint (pillar)](https://github.com/open-mmlab/mmdetection3d/tree/main/configs/centerpoint)        | MMDetection3d    |      ?      |      Y      |    Y     |  N   |   N   |    Y     |   N    |  N   |
-| [RotatedRetinaNet](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/rotated_retinanet/README.md)  | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
-| [Oriented RCNN](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/oriented_rcnn/README.md)         | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
-| [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/1.x/configs/gliding_vertex/README.md)       | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |
+| [RotatedRetinaNet](https://github.com/open-mmlab/mmrotate/blob/main/configs/rotated_retinanet/README.md) | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
+| [Oriented RCNN](https://github.com/open-mmlab/mmrotate/blob/main/configs/oriented_rcnn/README.md)        | RotatedDetection |      N      |      Y      |    Y     |  N   |   N   |    N     |   N    |  N   |
+| [Gliding Vertex](https://github.com/open-mmlab/mmrotate/blob/main/configs/gliding_vertex/README.md)      | RotatedDetection |      N      |      N      |    Y     |  N   |   N   |    N     |   N    |  N   |
 
 ## Note
 

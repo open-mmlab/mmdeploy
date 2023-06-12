@@ -158,5 +158,5 @@ TODO
 | [MSPN](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/backbones.html#mspn-arxiv-2019)           | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [LiteHRNet](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/backbones.html#litehrnet-cvpr-2021)  | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [Hourglass](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
-| [SimCC](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    N     |
+| [SimCC](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [RTMPose](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose)                                | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
