@@ -36,7 +36,10 @@ def test_encoderdecoder_predict(backend):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    assert torch.allclose(model_outputs, rewrite_outputs[0].squeeze(0))
+    rewrite_outputs = segmentor.postprocess_result(rewrite_outputs[0],
+                                                   data_samples)
+    rewrite_outputs = rewrite_outputs[0].pred_sem_seg.data
+    assert torch.allclose(model_outputs, rewrite_outputs)
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
