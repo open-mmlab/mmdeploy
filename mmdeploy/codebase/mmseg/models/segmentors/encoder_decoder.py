@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from mmdeploy.core import FUNCTION_REWRITER, mark
-from mmdeploy.utils import get_codebase_config
+from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -18,24 +17,11 @@ def encoder_decoder__predict(self, inputs, data_samples, **kwargs):
         data_samples (SampleList): The seg data samples.
 
     Returns:
-        torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
+        torch.Tensor: Output segmentation logits of shape [N, C, H, W].
     """
     batch_img_metas = []
     for data_sample in data_samples:
         batch_img_metas.append(data_sample.metainfo)
     x = self.extract_feat(inputs)
     seg_logit = self.decode_head.predict(x, batch_img_metas, self.test_cfg)
-
-    ctx = FUNCTION_REWRITER.get_context()
-    if get_codebase_config(ctx.cfg).get('with_argmax', True) is False:
-        return seg_logit
-
-    # mark seg_head
-    @mark('decode_head', outputs=['output'])
-    def __mark_seg_logit(seg_logit):
-        return seg_logit
-
-    seg_logit = __mark_seg_logit(seg_logit)
-
-    seg_pred = seg_logit.argmax(dim=1, keepdim=True)
-    return seg_pred
+    return seg_logit

@@ -17,7 +17,7 @@ def cascade_encoder_decoder__predict(self, inputs, data_samples, **kwargs):
         data_samples (SampleList): The seg data samples.
 
     Returns:
-        torch.Tensor: Output segmentation map pf shape [N, 1, H, W].
+        torch.Tensor: Output segmentation logits of shape [N, C, H, W].
     """
     batch_img_metas = []
     for data_sample in data_samples:
@@ -28,5 +28,4 @@ def cascade_encoder_decoder__predict(self, inputs, data_samples, **kwargs):
         out = self.decode_head[i].forward(x, out)
     seg_logit = self.decode_head[-1].predict(x, out, batch_img_metas,
                                              self.test_cfg)
-    seg_pred = seg_logit.argmax(dim=1, keepdim=True)
-    return seg_pred
+    return seg_logit
