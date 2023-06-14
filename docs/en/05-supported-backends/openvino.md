@@ -6,20 +6,44 @@ This tutorial is based on Linux systems like Ubuntu-18.04.
 
 It is recommended to create a virtual environment for the project.
 
-1. Install [OpenVINO](https://docs.openvino.ai/2021.4/get_started.html). It is recommended to use the installer or install using pip.
-   Installation example using [pip](https://pypi.org/project/openvino-dev/):
+### Install python package
+
+Install [OpenVINO](https://docs.openvino.ai/2022.3/get_started.html). It is recommended to use the installer or install using pip.
+Installation example using [pip](https://pypi.org/project/openvino-dev/):
 
 ```bash
-pip install openvino-dev
+pip install openvino-dev[onnx]==2022.3.0
 ```
 
-2. \*`Optional` If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2021.4/openvino_docs_install_guides_installing_openvino_linux.html#install-openvino).
+### Download OpenVINO runtime for SDK (Optional)
 
-3. Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
+If you want to use OpenVINO in SDK, you need install OpenVINO with [install_guides](https://docs.openvino.ai/2022.3/openvino_docs_install_guides_installing_openvino_from_archive_linux.html#installing-openvino-runtime).
+Take `openvino==2022.3.0` as example:
+
+```bash
+wget https://storage.openvinotoolkit.org/repositories/openvino/packages/2022.3/linux/l_openvino_toolkit_ubuntu20_2022.3.0.9052.9752fafe8eb_x86_64.tgz
+tar xzf ./l_openvino_toolkit*.tgz
+cd l_openvino*
+export InferenceEngine_DIR=$pwd/runtime/cmake
+bash ./install_dependencies/install_openvino_dependencies.sh
+```
+
+### Build mmdeploy SDK with OpenVINO (Optional)
+
+Install MMDeploy following the [instructions](../01-how-to-build/build_from_source.md).
+
+```bash
+cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+mkdir -p build && cd build
+cmake -DMMDEPLOY_TARGET_DEVICES='cpu' -DMMDEPLOY_TARGET_BACKENDS=openvino -DInferenceEngine_DIR=${InferenceEngine_DIR} ..
+make -j$(nproc) && make install
+```
 
 To work with models from [MMDetection](https://mmdetection.readthedocs.io/en/3.x/get_started.html), you may need to install it additionally.
 
 ## Usage
+
+You could follow the instructions of tutorial [How to convert model](../02-how-to-run/convert_model.md)
 
 Example:
 
