@@ -54,8 +54,7 @@ class End2EndModel(BaseBackendModel):
             device=device,
             **kwargs)
         # create head for decoding heatmap
-        self.head = builder.build_head(model_cfg.model.bbox_head)
-        # self.head = builder.build_head(model_cfg.model.head)
+        self.head = builder.build_head(model_cfg.model.head)
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -98,33 +97,18 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        # codec = self.model_cfg.codec
-        # if isinstance(codec, (list, tuple)):
-        #     codec = codec[-1]
-        # if codec.type == 'SimCCLabel':
-        #     batch_pred_x, batch_pred_y = batch_outputs
-        #     preds = self.head.decode((batch_pred_x, batch_pred_y))
-        # elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
-        #     preds = self.head.decode(batch_outputs)
-        # else:
-        #     preds = self.head.decode(batch_outputs[0])
-        results = self.pack_result_(batch_outputs, data_samples)
+        codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[-1]
+        if codec.type == 'SimCCLabel':
+            batch_pred_x, batch_pred_y = batch_outputs
+            preds = self.head.decode((batch_pred_x, batch_pred_y))
+        elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
+            preds = self.head.decode(batch_outputs)
+        else:
+            preds = self.head.decode(batch_outputs[0])
+        results = self.pack_result(preds, data_samples)
         return results
-
-    def pack_result_(self,
-                     preds: Sequence[InstanceData],
-                     data_samples: List[BaseDataElement],
-                     convert_coordinate: bool = True):
-        if not isinstance(preds[0], list):
-            preds = [preds]
-        assert len(preds) == len(data_samples)
-
-        for pred, data_sample in zip(preds, data_samples):
-            pred_instances = InstanceData()
-            pred_instances.bboxes, pred_instances.labels, pred_instances.bbox_scores, \
-                pred_instances.keypoints, pred_instances.keypoints_scores = pred
-            data_sample.pred_instances = pred_instances
-        return data_samples
 
     def pack_result(self,
                     preds: Sequence[InstanceData],
@@ -172,6 +156,103 @@ class End2EndModel(BaseBackendModel):
             if pred_fields is not None:
                 data_sample.pred_fields = pred_fields
 
+        return data_samples
+
+
+@__BACKEND_MODEL.register_module('yolox-pose_end2end')
+class End2EndModel(BaseBackendModel):
+    """End to end model for inference of pose detection.
+
+    Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files(e.g.
+            '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string represents device type.
+        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
+            Config object.
+        model_cfg (str | mmengine.Config): Model config file or loaded Config
+            object.
+        data_preprocessor (dict | nn.Module | None): Input data pre-
+                processor. Default is ``None``.
+    """
+
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 deploy_cfg: Union[str, mmengine.Config] = None,
+                 model_cfg: Union[str, mmengine.Config] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 **kwargs):
+        super(End2EndModel, self).__init__(
+            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
+        self.deploy_cfg = deploy_cfg
+        self.model_cfg = model_cfg
+        self.device = device
+        self._init_wrapper(
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            **kwargs)
+
+    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
+                      device: str, **kwargs):
+        """Initialize backend wrapper.
+
+        Args:
+            backend (Backend): The backend enum, specifying backend type.
+            backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+            device (str): A string specifying device type.
+        """
+        output_names = self.output_names
+        self.wrapper = BaseBackendModel._build_wrapper(
+            backend=backend,
+            backend_files=backend_files,
+            device=device,
+            input_names=[self.input_name],
+            output_names=output_names,
+            deploy_cfg=self.deploy_cfg,
+            **kwargs)
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs):
+        """Run forward inference.
+
+        Args:
+            inputs (torch.Tensor): Input image(s) in [N x C x H x W]
+                format.
+            data_samples (List[BaseDataElement]): A list of meta info for
+                image(s).
+
+        Returns:
+            list: A list contains predictions.
+        """
+        assert mode == 'predict', \
+            'Backend model only support mode==predict,' f' but get {mode}'
+        inputs = inputs.contiguous().to(self.device)
+        batch_outputs = self.wrapper({self.input_name: inputs})
+        batch_outputs = self.wrapper.output_to_list(batch_outputs)
+        batch_outputs = [batch_output.cpu() for batch_output in batch_outputs]
+        results = self.pack_result(batch_outputs, data_samples)
+        return results
+
+    def pack_result(self,
+                     preds: Sequence[InstanceData],
+                     data_samples: List[BaseDataElement],
+                     convert_coordinate: bool = True):
+        if not isinstance(preds[0], list):
+            preds = [preds]
+        assert len(preds) == len(data_samples)
+
+        for pred, data_sample in zip(preds, data_samples):
+            pred_instances = InstanceData()
+            pred_instances.bboxes, pred_instances.labels, pred_instances.bbox_scores, \
+                pred_instances.keypoints, pred_instances.keypoints_scores = pred
+            data_sample.pred_instances = pred_instances
         return data_samples
 
 
@@ -226,7 +307,7 @@ def build_pose_detection_model(
         deploy_cfg: Union[str, mmengine.Config],
         device: str,
         data_preprocessor: Optional[Union[Config,
-        BaseDataPreprocessor]] = None,
+                                          BaseDataPreprocessor]] = None,
         **kwargs):
     """Build object segmentation model for different backends.
 
@@ -243,6 +324,53 @@ def build_pose_detection_model(
         BaseBackendModel: Pose model for a configured backend.
     """
     from mmpose.models.data_preprocessors import PoseDataPreprocessor
+
+    # load cfg if necessary
+    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
+
+    backend = get_backend(deploy_cfg)
+    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
+    if isinstance(data_preprocessor, dict):
+        dp = data_preprocessor.copy()
+        dp_type = dp.pop('type')
+        assert dp_type == 'PoseDataPreprocessor'
+        data_preprocessor = PoseDataPreprocessor(**dp)
+    backend_pose_model = __BACKEND_MODEL.build(
+        dict(
+            type=model_type,
+            backend=backend,
+            backend_files=model_files,
+            device=device,
+            deploy_cfg=deploy_cfg,
+            model_cfg=model_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs))
+
+    return backend_pose_model
+
+
+def build_yolox_pose_model(
+        model_files: Sequence[str],
+        model_cfg: Union[str, mmengine.Config],
+        deploy_cfg: Union[str, mmengine.Config],
+        device: str,
+        data_preprocessor: Optional[Union[Config,
+        BaseDataPreprocessor]] = None,
+        **kwargs):
+    """Build object segmentation model for different backends.
+
+    Args:
+        model_files (Sequence[str]): Input model file(s).
+        model_cfg (str | mmengine.Config): Input model config file or Config
+            object.
+        deploy_cfg (str | mmengine.Config): Input deployment config file or
+            Config object.
+        device (str):  Device to input model.
+        data_preprocessor (Config | BaseDataPreprocessor | None): Input data
+            pre-processor. Default is ``None``.
+    Returns:
+        BaseBackendModel: Pose model for a configured backend.
+    """
     from mmdet.models.data_preprocessors import DetDataPreprocessor
 
     # load cfg if necessary
@@ -253,11 +381,8 @@ def build_pose_detection_model(
     if isinstance(data_preprocessor, dict):
         dp = data_preprocessor.copy()
         dp_type = dp.pop('type')
-        if dp_type == 'mmdet.DetDataPreprocessor':
-            data_preprocessor = DetDataPreprocessor(**dp)
-        else:
-            assert dp_type == 'PoseDataPreprocessor'
-            data_preprocessor = PoseDataPreprocessor(**dp)
+        assert dp_type == 'mmdet.DetDataPreprocessor'
+        data_preprocessor = DetDataPreprocessor(**dp)
 
     backend_pose_model = __BACKEND_MODEL.build(
         dict(

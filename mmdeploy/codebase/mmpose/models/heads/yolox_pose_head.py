@@ -12,6 +12,64 @@ from mmdet.models.utils import filter_scores_and_topk
 from mmdeploy.core import FUNCTION_REWRITER
 
 
+def yolox_pose_head_nms(boxes: Tensor,
+                        scores: Tensor,
+                        max_output_boxes_per_class: int = 1000,
+                        iou_threshold: float = 0.5,
+                        score_threshold: float = 0.05,
+                        pre_top_k: int = -1,
+                        keep_top_k: int = -1,
+                        output_index: bool = True):
+    from mmdeploy.mmcv.ops.nms import ONNXNMSop
+    from packaging import version
+
+    if version.parse(torch.__version__) < version.parse('1.13.0'):
+        max_output_boxes_per_class = torch.LongTensor(
+            [max_output_boxes_per_class])
+    iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
+    score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
+
+    # pre topk
+    if pre_top_k > 0:
+        max_scores, _ = scores.max(-1)
+        _, topk_inds = max_scores.squeeze(0).topk(pre_top_k)
+        boxes = boxes[:, topk_inds, :]
+        scores = scores[:, topk_inds, :]
+
+    scores = scores.permute(0, 2, 1)
+    selected_indices = ONNXNMSop.apply(boxes, scores,
+                                       max_output_boxes_per_class,
+                                       iou_threshold, score_threshold)
+
+    cls_inds = selected_indices[:, 1]
+    box_inds = selected_indices[:, 2]
+
+    scores = scores[:, cls_inds, box_inds].unsqueeze(2)
+    boxes = boxes[:, box_inds, ...]
+    dets = torch.cat([boxes, scores], dim=2)
+    labels = cls_inds.unsqueeze(0)
+
+    # pad
+    dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
+    labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
+
+    # topk or sort
+    is_use_topk = keep_top_k > 0 and \
+                  (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
+    if is_use_topk:
+        _, topk_inds = dets[:, :, -1].topk(keep_top_k, dim=1)
+    else:
+        _, topk_inds = dets[:, :, -1].sort(dim=1, descending=True)
+    topk_inds = topk_inds.squeeze(0)
+    dets = dets[:, topk_inds, ...]
+    labels = labels[:, topk_inds, ...]
+
+    if output_index:
+        return dets, labels, box_inds
+    else:
+        return dets, labels
+
+
 @FUNCTION_REWRITER.register_rewriter(
     func_name='models.yolox_pose_head.'
               'YOLOXPoseHead.predict')
@@ -126,84 +184,26 @@ def yolox_pose_head__predict_by_feat(self,
     ],
         dim=1).sigmoid()
 
-    nms_pre = cfg.get('nms_pre', 100000)
-    score_thr = cfg.get('score_thr', -1)
     result_list = []
     for batch_idx in range(len(batch_img_metas)):
-        if cfg.multi_label is False:
-            pred_scores, pred_labels = scores[batch_idx].max(1, keepdim=True)
-            pred_score, _, keep_idxs, results = filter_scores_and_topk(
-                scores[batch_idx],
-                score_thr,
-                nms_pre,
-                results=dict(labels=pred_labels[:, 0]))
-            pred_label = results['labels']
-        else:
-            pred_score, pred_label, keep_idxs, _ = filter_scores_and_topk(scores[batch_idx], score_thr, nms_pre)
+        # if cfg.multi_label is False:
+        #     pred_scores, pred_labels = scores[batch_idx].max(1, keepdim=True)
+        #     pred_score, _, keep_idxs, results = filter_scores_and_topk(
+        #         scores[batch_idx],
+        #         score_thr,
+        #         nms_pre,
+        #         results=dict(labels=pred_labels[:, 0]))
+        #     pred_label = results['labels']
+        # else:
+        #     pred_score, pred_label, keep_idxs, _ = filter_scores_and_topk(scores[batch_idx], score_thr, nms_pre)
 
-        pred_bbox = bboxes[batch_idx][keep_idxs]
-        kpts = flatten_decoded_kpts[batch_idx, keep_idxs]
-        kpts_vis = vis_preds[batch_idx, keep_idxs]
-
-        from mmdeploy.mmcv.ops.nms import ONNXNMSop
-        from packaging import version
-
-        def yolox_pose_head_nms(boxes: Tensor,
-                                scores: Tensor,
-                                max_output_boxes_per_class: int = 1000,
-                                iou_threshold: float = 0.5,
-                                score_threshold: float = 0.05,
-                                pre_top_k: int = -1,
-                                keep_top_k: int = -1,
-                                output_index: bool = True):
-            if version.parse(torch.__version__) < version.parse('1.13.0'):
-                max_output_boxes_per_class = torch.LongTensor(
-                    [max_output_boxes_per_class])
-            iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
-            score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
-
-            # pre topk
-            if pre_top_k > 0:
-                max_scores, _ = scores.max(-1)
-                _, topk_inds = max_scores.squeeze(0).topk(pre_top_k)
-                boxes = boxes[:, topk_inds, :]
-                scores = scores[:, topk_inds, :]
-
-            scores = scores.permute(0, 2, 1)
-            selected_indices = ONNXNMSop.apply(boxes, scores,
-                                               max_output_boxes_per_class,
-                                               iou_threshold, score_threshold)
-
-            cls_inds = selected_indices[:, 1]
-            box_inds = selected_indices[:, 2]
-
-            scores = scores[:, cls_inds, box_inds].unsqueeze(2)
-            boxes = boxes[:, box_inds, ...]
-            dets = torch.cat([boxes, scores], dim=2)
-            labels = cls_inds.unsqueeze(0)
-
-            # pad
-            dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
-            labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
-
-            # topk or sort
-            is_use_topk = keep_top_k > 0 and \
-                          (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
-            if is_use_topk:
-                _, topk_inds = dets[:, :, -1].topk(keep_top_k, dim=1)
-            else:
-                _, topk_inds = dets[:, :, -1].sort(dim=1, descending=True)
-            topk_inds = topk_inds.squeeze(0)
-            dets = dets[:, topk_inds, ...]
-            labels = labels[:, topk_inds, ...]
-
-            if output_index:
-                return dets, labels, box_inds
-            else:
-                return dets, labels
+        pred_bbox = bboxes[batch_idx][:]
+        kpts = flatten_decoded_kpts[batch_idx, :]
+        kpts_vis = vis_preds[batch_idx, :]
+        pred_score, pred_label = scores[batch_idx].max(1, keepdim=True)
 
         nms_result = yolox_pose_head_nms(pred_bbox.unsqueeze(0), pred_score.reshape(-1, 1).unsqueeze(0),
-                                         max_output_boxes_per_class, iou_threshold, score_threshold)
+                                         max_output_boxes_per_class, iou_threshold)
         keep_indices_nms = [nms_result[2]]
 
         img_meta = batch_img_metas[batch_idx]

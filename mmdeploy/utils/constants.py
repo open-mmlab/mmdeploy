@@ -26,6 +26,7 @@ class Task(AdvancedEnum):
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
     VOXEL_DETECTION = 'VoxelDetection'
     POSE_DETECTION = 'PoseDetection'
+    YOLOX_POSE_DETECTION = 'YoloXPoseDetection'
     ROTATED_DETECTION = 'RotatedDetection'
     VIDEO_RECOGNITION = 'VideoRecognition'
     ModelCompress = 'ModelCompress'
