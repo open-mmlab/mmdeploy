@@ -160,7 +160,7 @@ class End2EndModel(BaseBackendModel):
 
 
 @__BACKEND_MODEL.register_module('yolox-pose_end2end')
-class End2EndModel(BaseBackendModel):
+class YoloXPoseEnd2EndModel(End2EndModel):
     """End to end model for inference of pose detection.
 
     Args:
@@ -195,26 +195,6 @@ class End2EndModel(BaseBackendModel):
             device=device,
             **kwargs)
 
-    def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
-                      device: str, **kwargs):
-        """Initialize backend wrapper.
-
-        Args:
-            backend (Backend): The backend enum, specifying backend type.
-            backend_files (Sequence[str]): Paths to all required backend files
-                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
-            device (str): A string specifying device type.
-        """
-        output_names = self.output_names
-        self.wrapper = BaseBackendModel._build_wrapper(
-            backend=backend,
-            backend_files=backend_files,
-            device=device,
-            input_names=[self.input_name],
-            output_names=output_names,
-            deploy_cfg=self.deploy_cfg,
-            **kwargs)
-
     def forward(self,
                 inputs: torch.Tensor,
                 data_samples: List[BaseDataElement],
@@ -241,17 +221,18 @@ class End2EndModel(BaseBackendModel):
         return results
 
     def pack_result(self,
-                     preds: Sequence[InstanceData],
-                     data_samples: List[BaseDataElement],
-                     convert_coordinate: bool = True):
+                    preds: Sequence[InstanceData],
+                    data_samples: List[BaseDataElement],
+                    convert_coordinate: bool = True):
         if not isinstance(preds[0], list):
             preds = [preds]
         assert len(preds) == len(data_samples)
 
         for pred, data_sample in zip(preds, data_samples):
             pred_instances = InstanceData()
-            pred_instances.bboxes, pred_instances.labels, pred_instances.bbox_scores, \
-                pred_instances.keypoints, pred_instances.keypoints_scores = pred
+            pred_instances.bboxes, pred_instances.labels, \
+                pred_instances.bbox_scores, pred_instances.keypoints, \
+                pred_instances.keypoints_scores = pred
             data_sample.pred_instances = pred_instances
         return data_samples
 
@@ -355,7 +336,7 @@ def build_yolox_pose_model(
         deploy_cfg: Union[str, mmengine.Config],
         device: str,
         data_preprocessor: Optional[Union[Config,
-        BaseDataPreprocessor]] = None,
+                                          BaseDataPreprocessor]] = None,
         **kwargs):
     """Build object segmentation model for different backends.
 

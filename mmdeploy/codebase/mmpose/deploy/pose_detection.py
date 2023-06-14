@@ -120,10 +120,10 @@ class MMPose(MMCodebase):
     @classmethod
     def register_deploy_modules(cls):
         """register rewritings."""
-        import mmdeploy.codebase.mmpose.models  # noqa: F401
         import mmdeploy.codebase.mmdet.models
         import mmdeploy.codebase.mmdet.ops
         import mmdeploy.codebase.mmdet.structures
+        import mmdeploy.codebase.mmpose.models  # noqa: F401
 
     @classmethod
     def register_all_modules(cls):

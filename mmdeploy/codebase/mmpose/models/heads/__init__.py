@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from . import mspn_head
-from . import yolox_pose_head
+from . import mspn_head, yolox_pose_head  # noqa: F401,F403
 
 __all__ = ['mspn_head']

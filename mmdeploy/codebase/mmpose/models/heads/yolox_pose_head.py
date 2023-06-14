@@ -1,14 +1,13 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-from typing import List, Optional, Tuple
-
 import copy
-from mmdeploy.codebase.mmdet import get_post_processing_params
+from typing import List, Optional, Tuple
 
 import torch
 from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData
 from torch import Tensor
-from mmdet.models.utils import filter_scores_and_topk
+
+from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -20,8 +19,9 @@ def yolox_pose_head_nms(boxes: Tensor,
                         pre_top_k: int = -1,
                         keep_top_k: int = -1,
                         output_index: bool = True):
-    from mmdeploy.mmcv.ops.nms import ONNXNMSop
     from packaging import version
+
+    from mmdeploy.mmcv.ops.nms import ONNXNMSop
 
     if version.parse(torch.__version__) < version.parse('1.13.0'):
         max_output_boxes_per_class = torch.LongTensor(
@@ -54,8 +54,8 @@ def yolox_pose_head_nms(boxes: Tensor,
     labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
 
     # topk or sort
-    is_use_topk = keep_top_k > 0 and \
-                  (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
+    is_use_topk = keep_top_k > 0 and (torch.onnx.is_in_onnx_export()
+                                      or keep_top_k < dets.shape[1])
     if is_use_topk:
         _, topk_inds = dets[:, :, -1].topk(keep_top_k, dim=1)
     else:
@@ -70,13 +70,9 @@ def yolox_pose_head_nms(boxes: Tensor,
         return dets, labels
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='models.yolox_pose_head.'
-              'YOLOXPoseHead.predict')
-def predict(self,
-            x: Tuple[Tensor],
-            batch_data_samples,
-            rescale: bool = False):
+@FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
+                                     'YOLOXPoseHead.predict')
+def predict(self, x: Tuple[Tensor], batch_data_samples, rescale: bool = False):
     batch_img_metas = [
         data_samples.metainfo for data_samples in batch_data_samples
     ]
@@ -88,21 +84,21 @@ def predict(self,
     return predictions
 
 
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='models.yolox_pose_head.'
-              'YOLOXPoseHead.predict_by_feat')
-def yolox_pose_head__predict_by_feat(self,
-                                     cls_scores: List[Tensor],
-                                     bbox_preds: List[Tensor],
-                                     objectnesses: Optional[List[Tensor]] = None,
-                                     kpt_preds: Optional[List[Tensor]] = None,
-                                     vis_preds: Optional[List[Tensor]] = None,
-                                     batch_img_metas: Optional[List[dict]] = None,
-                                     cfg: Optional[ConfigDict] = None,
-                                     rescale: bool = True,
-                                     with_nms: bool = True) -> List[InstanceData]:
-    """Transform a batch of output features extracted by the head into bbox
-    and keypoint results.
+@FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
+                                     'YOLOXPoseHead.predict_by_feat')
+def yolox_pose_head__predict_by_feat(
+        self,
+        cls_scores: List[Tensor],
+        bbox_preds: List[Tensor],
+        objectnesses: Optional[List[Tensor]] = None,
+        kpt_preds: Optional[List[Tensor]] = None,
+        vis_preds: Optional[List[Tensor]] = None,
+        batch_img_metas: Optional[List[dict]] = None,
+        cfg: Optional[ConfigDict] = None,
+        rescale: bool = True,
+        with_nms: bool = True) -> List[InstanceData]:
+    """Transform a batch of output features extracted by the head into bbox and
+    keypoint results.
 
     In addition to the base class method, keypoint predictions are also
     calculated in this method.
@@ -127,7 +123,7 @@ def yolox_pose_head__predict_by_feat(self,
 
     mlvl_strides = [
         flatten_priors.new_full(
-            (featmap_size[0] * featmap_size[1] * self.num_base_priors,),
+            (featmap_size[0] * featmap_size[1] * self.num_base_priors, ),
             stride)
         for featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
     ]
@@ -162,48 +158,38 @@ def yolox_pose_head__predict_by_feat(self,
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
 
     priors = torch.cat(self.mlvl_priors)
     strides = [
-        priors.new_full((featmap_size.numel() * self.num_base_priors,),
-                        stride) for featmap_size, stride in zip(
-            featmap_sizes, self.featmap_strides)
+        priors.new_full((featmap_size.numel() * self.num_base_priors, ),
+                        stride)
+        for featmap_size, stride in zip(featmap_sizes, self.featmap_strides)
     ]
     strides = torch.cat(strides)
     kpt_preds = torch.cat([
         kpt_pred.permute(0, 2, 3, 1).reshape(
             num_imgs, -1, self.num_keypoints * 2) for kpt_pred in kpt_preds
     ],
-        dim=1)
+                          dim=1)
     flatten_decoded_kpts = self.decode_pose(priors, kpt_preds, strides)
 
     vis_preds = torch.cat([
-        vis_pred.permute(0, 2, 3, 1).reshape(
-            num_imgs, -1, self.num_keypoints) for vis_pred in vis_preds
+        vis_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_keypoints)
+        for vis_pred in vis_preds
     ],
-        dim=1).sigmoid()
+                          dim=1).sigmoid()
 
     result_list = []
     for batch_idx in range(len(batch_img_metas)):
-        # if cfg.multi_label is False:
-        #     pred_scores, pred_labels = scores[batch_idx].max(1, keepdim=True)
-        #     pred_score, _, keep_idxs, results = filter_scores_and_topk(
-        #         scores[batch_idx],
-        #         score_thr,
-        #         nms_pre,
-        #         results=dict(labels=pred_labels[:, 0]))
-        #     pred_label = results['labels']
-        # else:
-        #     pred_score, pred_label, keep_idxs, _ = filter_scores_and_topk(scores[batch_idx], score_thr, nms_pre)
-
         pred_bbox = bboxes[batch_idx][:]
         kpts = flatten_decoded_kpts[batch_idx, :]
         kpts_vis = vis_preds[batch_idx, :]
         pred_score, pred_label = scores[batch_idx].max(1, keepdim=True)
 
-        nms_result = yolox_pose_head_nms(pred_bbox.unsqueeze(0), pred_score.reshape(-1, 1).unsqueeze(0),
-                                         max_output_boxes_per_class, iou_threshold)
+        nms_result = yolox_pose_head_nms(
+            pred_bbox.unsqueeze(0),
+            pred_score.reshape(-1, 1).unsqueeze(0), max_output_boxes_per_class,
+            iou_threshold)
         keep_indices_nms = [nms_result[2]]
 
         img_meta = batch_img_metas[batch_idx]
@@ -225,6 +211,9 @@ def yolox_pose_head__predict_by_feat(self,
         pred_keypoints = kpts
         pred_keypoint_scores = kpts_vis
 
-        result_list.append([pred_bbox, pred_label, pred_score, pred_keypoints, pred_keypoint_scores])
+        result_list.append([
+            pred_bbox, pred_label, pred_score, pred_keypoints,
+            pred_keypoint_scores
+        ])
 
     return result_list
