@@ -10,7 +10,8 @@ from mmdeploy.codebase import import_codebase
 from mmdeploy.core import RewriterContext, patch_model
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.config_utils import load_config
-from mmdeploy.utils.test import (WrapModel, check_backend, get_model_outputs,
+from mmdeploy.utils.test import (WrapModel, check_backend, get_backend_outputs,
+                                 get_model_outputs, get_onnx_model,
                                  get_rewrite_outputs)
 
 try:
@@ -153,6 +154,85 @@ def test_bidirectionallstm(backend: Backend):
         assert np.allclose(model_output, rewrite_output, rtol=1e-3, atol=1e-4)
     else:
         assert rewrite_outputs is not None
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_nrtr_decoder__get_source_mask(backend: Backend):
+    from mmocr.models.textrecog import NRTRDecoder
+    deploy_cfg = mmengine.Config(
+        dict(
+            onnx_config=dict(
+                input_names=['input'],
+                output_names=['output'],
+                input_shape=None,
+                dynamic_axes={
+                    'input': {
+                        0: 'batch',
+                    },
+                    'output': {
+                        0: 'batch',
+                    }
+                }),
+            backend_config=dict(type=backend.value, model_inputs=None),
+            codebase_config=dict(type='mmocr', task='TextRecognition')))
+    src_seq = torch.rand(1, 200, 256)
+    batch_src_seq = src_seq.expand(3, 200, 256)
+    decoder = NRTRDecoder(
+        dictionary=dict(
+            type='Dictionary',
+            dict_file='tests/test_codebase/test_mmocr/'
+            'data/lower_english_digits.txt',
+            with_start=True,
+            with_end=True,
+            same_start_end=True,
+            with_padding=True,
+            with_unknown=True))
+
+    wrapped_model = WrapModel(decoder, '_get_source_mask')
+    model_inputs = {'src_seq': src_seq, 'valid_ratios': torch.Tensor([1.0])}
+    batch_model_inputs = {'input': batch_src_seq}
+    ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
+    backend_outputs = get_backend_outputs(ir_file_path, batch_model_inputs,
+                                          deploy_cfg)[0].numpy()
+    num_elements = np.prod(backend_outputs.shape[1:])
+    # batch results should be same
+    assert np.sum(backend_outputs[0] == backend_outputs[1]) == num_elements \
+        and np.sum(backend_outputs[1] == backend_outputs[2]) == num_elements
+
+
+@pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
+def test_satrn_encoder__get_source_mask(backend: Backend):
+    from mmocr.models.textrecog import SATRNEncoder
+
+    deploy_cfg = mmengine.Config(
+        dict(
+            onnx_config=dict(
+                input_names=['input'],
+                output_names=['output'],
+                input_shape=None,
+                dynamic_axes={
+                    'input': {
+                        0: 'batch',
+                    },
+                    'output': {
+                        0: 'batch',
+                    }
+                }),
+            backend_config=dict(type=backend.value, model_inputs=None),
+            codebase_config=dict(type='mmocr', task='TextRecognition')))
+    encoder = SATRNEncoder(d_k=4, d_v=4, d_model=32, d_inner=32 * 4)
+    feat = torch.randn(1, 32, 32, 32)
+    batch_feat = feat.expand(3, 32, 32, 32)
+    wrapped_model = WrapModel(encoder, 'forward')
+    model_inputs = {'feat': feat}
+    batch_model_inputs = {'input': batch_feat}
+    ir_file_path = get_onnx_model(wrapped_model, model_inputs, deploy_cfg)
+    backend_outputs = get_backend_outputs(ir_file_path, batch_model_inputs,
+                                          deploy_cfg)[0].numpy()
+    num_elements = np.prod(backend_outputs.shape[1:])
+    # batch results should be same
+    assert np.sum(backend_outputs[0] == backend_outputs[1]) == num_elements \
+        and np.sum(backend_outputs[1] == backend_outputs[2]) == num_elements
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])

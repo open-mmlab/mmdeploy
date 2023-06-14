@@ -237,3 +237,13 @@ models:
     pipelines:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp32
+
+  - name: EfficientFormer
+    metafile: configs/efficientformer/metafile.yml
+    model_configs:
+      - configs/efficientformer/efficientformer-l1_8xb128_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
+      - *pipeline_openvino_dynamic_fp32

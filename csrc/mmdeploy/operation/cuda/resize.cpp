@@ -78,6 +78,8 @@ static auto Create(const string_view& interp) {
     type = ppl::cv::InterpolationType::INTERPOLATION_LINEAR;
   } else if (interp == "nearest") {
     type = ppl::cv::InterpolationType::INTERPOLATION_NEAREST_POINT;
+  } else if (interp == "area") {
+    type = ppl::cv::InterpolationType::INTERPOLATION_AREA;
   } else {
     MMDEPLOY_ERROR("unsupported interpolation method: {}", interp);
     throw_exception(eNotSupported);
