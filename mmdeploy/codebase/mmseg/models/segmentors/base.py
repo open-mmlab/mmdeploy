@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import torch
 from mmseg.structures import SegDataSample
 
 from mmdeploy.core import FUNCTION_REWRITER, mark
@@ -58,9 +59,8 @@ def base_segmentor__forward(self,
     with_argmax = get_codebase_config(ctx.cfg).get('with_argmax', True)
     # deal with out_channels=1 with two classes
     if seg_logit.shape[1] == 1:
-        seg_logit = seg_logit.sigmoid()
         seg_pred = seg_logit > self.decode_head.threshold
-        seg_pred = seg_pred.to(seg_logit.device)
+        seg_pred = seg_pred.to(torch.int64)
     else:
         seg_pred = __mark_seg_logit(seg_logit)
         if with_argmax:
