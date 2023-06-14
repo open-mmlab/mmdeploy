@@ -44,7 +44,7 @@ jobs:
         run: |
           echo $MMDEPLOY_VERSION
           echo $TAG
-          docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
+          docker build docker/Release/ -t ${TAG} --no-cache --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
       - name: Push Docker image
         continue-on-error: true
         run: |
