@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os
 import os.path as osp
+import subprocess
 import tempfile
 
 import numpy as np
@@ -107,17 +108,10 @@ def test_onnx2openvino(get_deploy_cfg):
 def test_can_not_run_onnx2openvino_without_mo():
     current_environ = dict(os.environ)
     os.environ.clear()
-
-    is_error = False
-    try:
+    with pytest.raises(subprocess.CalledProcessError):
         from mmdeploy.apis.openvino import from_onnx
         from_onnx('tmp.onnx', '/tmp', {}, ['output'])
-    except Exception:
-        is_error = True
-
     os.environ.update(current_environ)
-    assert is_error, \
-        'The onnx2openvino script was launched without checking for MO.'
 
 
 @backend_checker(Backend.OPENVINO)
