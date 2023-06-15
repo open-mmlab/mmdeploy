@@ -314,56 +314,12 @@ def build_pose_detection_model(
     if isinstance(data_preprocessor, dict):
         dp = data_preprocessor.copy()
         dp_type = dp.pop('type')
-        assert dp_type == 'PoseDataPreprocessor'
-        data_preprocessor = PoseDataPreprocessor(**dp)
-    backend_pose_model = __BACKEND_MODEL.build(
-        dict(
-            type=model_type,
-            backend=backend,
-            backend_files=model_files,
-            device=device,
-            deploy_cfg=deploy_cfg,
-            model_cfg=model_cfg,
-            data_preprocessor=data_preprocessor,
-            **kwargs))
-
-    return backend_pose_model
-
-
-def build_yolox_pose_model(
-        model_files: Sequence[str],
-        model_cfg: Union[str, mmengine.Config],
-        deploy_cfg: Union[str, mmengine.Config],
-        device: str,
-        data_preprocessor: Optional[Union[Config,
-                                          BaseDataPreprocessor]] = None,
-        **kwargs):
-    """Build object segmentation model for different backends.
-
-    Args:
-        model_files (Sequence[str]): Input model file(s).
-        model_cfg (str | mmengine.Config): Input model config file or Config
-            object.
-        deploy_cfg (str | mmengine.Config): Input deployment config file or
-            Config object.
-        device (str):  Device to input model.
-        data_preprocessor (Config | BaseDataPreprocessor | None): Input data
-            pre-processor. Default is ``None``.
-    Returns:
-        BaseBackendModel: Pose model for a configured backend.
-    """
-    from mmdet.models.data_preprocessors import DetDataPreprocessor
-
-    # load cfg if necessary
-    deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
-
-    backend = get_backend(deploy_cfg)
-    model_type = get_codebase_config(deploy_cfg).get('model_type', 'end2end')
-    if isinstance(data_preprocessor, dict):
-        dp = data_preprocessor.copy()
-        dp_type = dp.pop('type')
-        assert dp_type == 'mmdet.DetDataPreprocessor'
-        data_preprocessor = DetDataPreprocessor(**dp)
+        if dp_type == 'mmdet.DetDataPreprocessor':
+            from mmdet.models.data_preprocessors import DetDataPreprocessor
+            data_preprocessor = DetDataPreprocessor(**dp)
+        else:
+            assert dp_type == 'PoseDataPreprocessor'
+            data_preprocessor = PoseDataPreprocessor(**dp)
 
     backend_pose_model = __BACKEND_MODEL.build(
         dict(
