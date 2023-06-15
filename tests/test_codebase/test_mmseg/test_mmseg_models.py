@@ -2,6 +2,7 @@
 import mmengine
 import pytest
 import torch
+from packaging import version
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task
@@ -51,6 +52,9 @@ def test_basesegmentor_forward(backend: Backend, with_argmax: bool,
     config_path = 'tests/test_codebase/test_mmseg/data/model.py'
     model_cfg = mmengine.Config.fromfile(config_path)
     if use_sigmoid:
+        import mmseg
+        if version.parse(mmseg.__version__) <= version.parse('1.0.0'):
+            pytest.skip('ignore mmseg<=1.0.0')
         model_cfg.model.decode_head.num_classes = 2
         model_cfg.model.decode_head.out_channels = 1
         model_cfg.model.decode_head.threshold = 0.3
@@ -73,7 +77,7 @@ def test_basesegmentor_forward(backend: Backend, with_argmax: bool,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
     rewrite_outputs = rewrite_outputs[0]
-    if not (with_argmax or use_sigmoid):
+    if rewrite_outputs.shape[1] != 1:
         rewrite_outputs = rewrite_outputs.argmax(dim=1, keepdim=True)
     rewrite_outputs = rewrite_outputs.squeeze(0).to(model_outputs)
     assert torch.allclose(model_outputs, rewrite_outputs)
