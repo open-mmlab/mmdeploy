@@ -247,10 +247,15 @@ class PoseDetection(BaseTask):
                 bbox_score = np.array([bbox[4] if len(bbox) == 5 else 1
                                        ])  # shape (1,)
                 data = {
-                    'img': imgs[i],
-                    'bbox_score': bbox_score,
-                    'bbox': [] if cfg.model.bbox_head.type == 'YOLOXPoseHead' else bbox[None],
-                    'img_path': img_path[i]
+                    'img':
+                    imgs[i],
+                    'bbox_score':
+                    bbox_score,
+                    'bbox': [] if hasattr(cfg.model, 'bbox_head')
+                    and cfg.model.bbox_head.type == 'YOLOXPoseHead' else
+                    bbox[None],
+                    'img_path':
+                    img_path[i]
                 }
                 data.update(meta_data)
                 data = test_pipeline(data)
