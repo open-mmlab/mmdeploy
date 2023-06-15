@@ -193,7 +193,27 @@ def test_scale_forward(backend_type: Backend):
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def get_yolox_pose_head():
     from mmdeploy.apis.utils import build_task_processor
-    task_processor = build_task_processor('/home/runner/work/mmpose/projects/yolox-pose/configsyolox-pose_s_8xb32-300e_coco.py', 'configs/mmpose/yolox-pose_onnxruntime_static.py', device='cpu')
+    from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
+    deploy_cfg, model_cfg = load_config('configs/mmpose/yolox-pose_onnxruntime_static.py', '/home/runner/work/mmpose/projects/yolox-pose/configsyolox-pose_s_8xb32-300e_coco.py')
+    task_processor = build_task_processor(model_cfg, deploy_cfg, device='cpu')
     model = task_processor.build_pytorch_model()
-    print(model)
+    model.cpu().eval()
+    input_shape = get_input_shape(deploy_cfg)
+    model_inputs, _ = task_processor.create_input('/home/runner/work/mmpose/tests/data/coco/000000197388.jpg',
+                                                  input_shape,
+                                                  data_preprocessor=getattr(model, 'data_preprocessor', None))
+    pytorch_output = model(model_inputs)
+    wrapped_model = WrapModel(model, 'forward')
+    if isinstance(model_inputs, list) and len(model_inputs) == 1:
+        model_inputs = model_inputs[0]
+    rewrite_inputs = {'inputs': model_inputs}
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        run_with_backend=False,
+        deploy_cfg=deploy_cfg)
+    print(f'rewrite_inputs: {rewrite_inputs}')
+    print(f'torch_output: {pytorch_output}')
+    print(f'onnx_output: {rewrite_outputs}')
+    torch_assert_close(rewrite_outputs, pytorch_output)
 
