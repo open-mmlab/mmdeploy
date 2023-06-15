@@ -54,6 +54,10 @@ jobs:
         run: |
           git clone -b dev --depth 1 https://github.com/open-mmlab/mmyolo.git /home/runner/work/mmyolo
           python -m pip install -v -e /home/runner/work/mmyolo
+      - name: Install mmpose
+        run: |
+          git clone --depth 1 https://github.com/open-mmlab/mmpose.git /home/runner/work/mmpose
+          python -m pip install -v -e /home/runner/work/mmpose
       - name: Build and install
         run: |
           rm -rf .eggs && python -m pip install -e .
