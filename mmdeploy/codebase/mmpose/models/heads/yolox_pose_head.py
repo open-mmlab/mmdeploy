@@ -158,7 +158,8 @@ def yolox_pose_head__predict_by_feat(
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    score_threshold = cfg.nms.get('score_threshold', post_params.score_threshold)
+    score_threshold = cfg.nms.get('score_threshold',
+                                  post_params.score_threshold)
 
     priors = torch.cat(self.mlvl_priors)
     strides = [
@@ -186,7 +187,9 @@ def yolox_pose_head__predict_by_feat(
     pred_kpts = flatten_decoded_kpts
     pred_kpts_score = vis_preds
     pred_score, pred_label = scores.max(2, keepdim=True)
-    nms_result = yolox_pose_head_nms(pred_bbox, pred_score, max_output_boxes_per_class, iou_threshold, score_threshold)
+    nms_result = yolox_pose_head_nms(pred_bbox, pred_score,
+                                     max_output_boxes_per_class, iou_threshold,
+                                     score_threshold)
     keep_indices_nms = [nms_result[2]]
 
     for batch_idx in range(batch_size):

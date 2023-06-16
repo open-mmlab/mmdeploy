@@ -195,15 +195,18 @@ def test_yolox_pose_head(backend_type: Backend):
     from mmdeploy.apis.utils import build_task_processor
     from mmdeploy.utils import get_input_shape, load_config
     check_backend(backend_type, True)
-    deploy_cfg, model_cfg = load_config('configs/mmpose/yolox-pose_onnxruntime_static.py',
-                                        '../mmpose/projects/yolox-pose/configs/yolox-pose_s_8xb32-300e_coco.py')
+    deploy_cfg, model_cfg = load_config(
+        'configs/mmpose/yolox-pose_onnxruntime_static.py',
+        '../mmpose/projects/yolox-pose/configs/yolox-pose_s_8xb32-300e_coco.py'
+    )
     task_processor = build_task_processor(model_cfg, deploy_cfg, device='cpu')
     model = task_processor.build_pytorch_model()
     model.cpu().eval()
     input_shape = get_input_shape(deploy_cfg)
-    model_inputs, _ = task_processor.create_input('../mmpose/tests/data/coco/000000197388.jpg',
-                                                  input_shape,
-                                                  data_preprocessor=getattr(model, 'data_preprocessor', None))
+    model_inputs, _ = task_processor.create_input(
+        '../mmpose/tests/data/coco/000000197388.jpg',
+        input_shape,
+        data_preprocessor=getattr(model, 'data_preprocessor', None))
     pytorch_output = model(model_inputs)
     wrapped_model = WrapModel(model, 'forward')
     if isinstance(model_inputs, list) and len(model_inputs) == 1:
@@ -215,4 +218,3 @@ def test_yolox_pose_head(backend_type: Backend):
         run_with_backend=False,
         deploy_cfg=deploy_cfg)
     torch_assert_close(rewrite_outputs, pytorch_output)
-

@@ -1,7 +1,11 @@
 _base_ = ['./pose-detection_static.py', '../_base_/backends/tensorrt.py']
 
-onnx_config = dict(input_shape=None,
-                   output_names=['pred_bbox', 'pred_label', 'pred_score', 'pred_keypoints', 'pred_keypoint_scores'])
+onnx_config = dict(
+    input_shape=None,
+    output_names=[
+        'pred_bbox', 'pred_label', 'pred_score', 'pred_keypoints',
+        'pred_keypoint_scores'
+    ])
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 30),
     model_inputs=[
