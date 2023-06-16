@@ -191,9 +191,10 @@ def test_scale_forward(backend_type: Backend):
 
 
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
-def get_yolox_pose_head():
+def test_yolox_pose_head(backend_type: Backend):
     from mmdeploy.apis.utils import build_task_processor
-    from mmdeploy.utils import Backend, get_backend, get_input_shape, load_config
+    from mmdeploy.utils import get_input_shape, load_config
+    check_backend(backend_type, True)
     deploy_cfg, model_cfg = load_config('configs/mmpose/yolox-pose_onnxruntime_static.py',
                                         '../mmpose/projects/yolox-pose/configs/yolox-pose_s_8xb32-300e_coco.py')
     task_processor = build_task_processor(model_cfg, deploy_cfg, device='cpu')
@@ -213,8 +214,5 @@ def get_yolox_pose_head():
         model_inputs=rewrite_inputs,
         run_with_backend=False,
         deploy_cfg=deploy_cfg)
-    print(f'rewrite_inputs: {rewrite_inputs}')
-    print(f'torch_output: {pytorch_output}')
-    print(f'onnx_output: {rewrite_outputs}')
     torch_assert_close(rewrite_outputs, pytorch_output)
 
