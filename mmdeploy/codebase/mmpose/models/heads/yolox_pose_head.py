@@ -158,6 +158,7 @@ def yolox_pose_head__predict_by_feat(
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+    score_threshold = cfg.nms.get('score_threshold', post_params.score_threshold)
 
     priors = torch.cat(self.mlvl_priors)
     strides = [
@@ -180,40 +181,21 @@ def yolox_pose_head__predict_by_feat(
                           dim=1).sigmoid()
 
     result_list = []
-    for batch_idx in range(len(batch_img_metas)):
-        pred_bbox = bboxes[batch_idx][:]
-        kpts = flatten_decoded_kpts[batch_idx, :]
-        kpts_vis = vis_preds[batch_idx, :]
-        pred_score, pred_label = scores[batch_idx].max(1, keepdim=True)
+    batch_size = len(batch_img_metas)
+    pred_bbox = bboxes
+    pred_kpts = flatten_decoded_kpts
+    pred_kpts_score = vis_preds
+    pred_score, pred_label = scores.max(2, keepdim=True)
+    nms_result = yolox_pose_head_nms(pred_bbox, pred_score, max_output_boxes_per_class, iou_threshold, score_threshold)
+    keep_indices_nms = [nms_result[2]]
 
-        nms_result = yolox_pose_head_nms(
-            pred_bbox.unsqueeze(0),
-            pred_score.reshape(-1, 1).unsqueeze(0), max_output_boxes_per_class,
-            iou_threshold)
-        keep_indices_nms = [nms_result[2]]
+    for batch_idx in range(batch_size):
+        bbox = pred_bbox[batch_idx][keep_indices_nms]
+        label = pred_label[batch_idx][keep_indices_nms]
+        score = pred_score[batch_idx][keep_indices_nms]
+        kpts = pred_kpts[batch_idx][keep_indices_nms]
+        kpts_score = pred_kpts_score[batch_idx][keep_indices_nms]
 
-        img_meta = batch_img_metas[batch_idx]
-        if rescale:
-            pad_param = img_meta.get('pad_param', None)
-            scale_factor = img_meta['scale_factor']
-            if pad_param is not None:
-                kpts -= kpts.new_tensor([pad_param[2], pad_param[0]])
-            kpts /= kpts.new_tensor(scale_factor).repeat(
-                (1, self.num_keypoints, 1))
-
-        keep_idxs_nms = keep_indices_nms[0]
-        pred_bbox = pred_bbox[keep_idxs_nms]
-        pred_label = pred_label[keep_idxs_nms]
-        pred_score = pred_score[keep_idxs_nms]
-        kpts = kpts[keep_idxs_nms]
-        kpts_vis = kpts_vis[keep_idxs_nms]
-
-        pred_keypoints = kpts
-        pred_keypoint_scores = kpts_vis
-
-        result_list.append([
-            pred_bbox, pred_label, pred_score, pred_keypoints,
-            pred_keypoint_scores
-        ])
+        result_list.append([bbox, label, score, kpts, kpts_score])
 
     return result_list
