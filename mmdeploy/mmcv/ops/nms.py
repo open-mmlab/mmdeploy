@@ -345,7 +345,8 @@ def _multiclass_nms_single(boxes: Tensor,
     labels = labels[:, topk_inds, ...]
 
     if output_index:
-        bbox_index = pre_topk_inds[None, topk_inds]
+        bbox_index = pre_topk_inds[box_inds]
+        bbox_index = bbox_index[None, topk_inds[:-1]]
         return dets, labels, bbox_index
     else:
         return dets, labels
