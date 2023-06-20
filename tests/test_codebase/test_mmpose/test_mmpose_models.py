@@ -204,7 +204,7 @@ def test_yolox_pose_head(backend_type: Backend):
     model.cpu().eval()
     input_shape = get_input_shape(deploy_cfg)
     model_inputs, _ = task_processor.create_input(
-        '../mmpose/tests/data/coco/000000197388.jpg',
+        './demo/resources/human-pose.jpg',
         input_shape,
         data_preprocessor=getattr(model, 'data_preprocessor', None))
     pytorch_output = model(model_inputs)
