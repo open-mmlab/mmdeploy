@@ -4,7 +4,6 @@ from typing import List, Optional, Tuple
 
 import torch
 from mmengine.config import ConfigDict
-from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
