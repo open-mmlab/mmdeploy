@@ -193,17 +193,18 @@ def test_scale_forward(backend_type: Backend):
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_yolox_pose_head(backend_type: Backend):
     try:
-        import models.yolox_pose_head
+        import models.yolox_pose_head  # noqa: F401,F403
     except ImportError:
-        pytest.skip('mmpose/projects/yolox-pose is not installed.', allow_module_level=True)
+        pytest.skip(
+            'mmpose/projects/yolox-pose is not installed.',
+            allow_module_level=True)
 
     from mmdeploy.apis.utils import build_task_processor
     from mmdeploy.utils import get_input_shape, load_config
     check_backend(backend_type, True)
     deploy_cfg, model_cfg = load_config(
         'configs/mmpose/yolox-pose_onnxruntime_static.py',
-        'tests/test_codebase/test_mmpose/yolox-pose_s_8xb32-300e_coco.py'
-    )
+        'tests/test_codebase/test_mmpose/yolox-pose_s_8xb32-300e_coco.py')
     task_processor = build_task_processor(model_cfg, deploy_cfg, device='cpu')
     model = task_processor.build_pytorch_model()
     model.cpu().eval()
