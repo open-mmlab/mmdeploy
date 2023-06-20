@@ -229,16 +229,19 @@ class YoloXPoseEnd2EndModel(End2EndModel):
         for data_sample_idx, data_sample in enumerate(data_samples):
             pred = [preds[i][data_sample_idx] for i in range(5)]
             pred_instances = InstanceData()
-            pred_instances.bboxes, pred_instances.labels, \
-                pred_instances.bbox_scores, pred_instances.keypoints, \
-                pred_instances.keypoint_scores = pred
+            bboxes, labels, bbox_scores, keypoints, keypoint_scores = pred
 
             # rescale
-            keypoints = pred_instances.keypoints
             scale_factor = data_sample.metainfo['scale_factor']
             keypoints /= keypoints.new_tensor(scale_factor)\
                 .repeat((1, keypoints.shape[-2], 1))
-            pred_instances.keypoints = keypoints
+
+            pred_instances.bboxes = bboxes
+            pred_instances.labels = labels
+            pred_instances.bbox_scores = bbox_scores
+            # the precision test requires keypoints to be np.ndarray
+            pred_instances.keypoints = keypoints.numpy()
+            pred_instances.keypoint_scores = keypoint_scores
 
             data_sample.pred_instances = pred_instances
         return data_samples
