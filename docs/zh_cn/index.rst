@@ -30,6 +30,12 @@
 
 .. toctree::
    :maxdepth: 1
+   :caption: SDK 使用
+
+   sdk_usage/index.rst
+
+.. toctree::
+   :maxdepth: 1
    :caption: Benchmark
 
    03-benchmark/supported_models.md
