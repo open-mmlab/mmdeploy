@@ -430,6 +430,7 @@ def test_forward_of_fpnc(backend: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
+        run_with_backend=False,
         deploy_cfg=deploy_cfg)
 
     if is_backend_output:
