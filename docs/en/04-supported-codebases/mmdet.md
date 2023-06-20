@@ -206,10 +206,10 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 |             [GFL](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/gfl)             |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
 |       [RepPoints](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/reppoints)       |   Object Detection    |      N      |    Y     |  N   |   ?   |    Y     |
 |            [DETR](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/detr)            |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
-|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection    |      Y      |    Y     |  N   |   ?   |    ?     |
-|          [RTMDet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/rtmdet)          |   Object Detection    |      Y      |    Y     |  N   |   ?   |    ?     |
+|       [CenterNet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/centernet)       |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
+|          [RTMDet](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/rtmdet)          |   Object Detection    |      Y      |    Y     |  N   |   ?   |    Y     |
 | [Cascade Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/cascade_rcnn) | Instance Segmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |      [Mask R-CNN](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/mask_rcnn)       | Instance Segmentation |      Y      |    Y     |  N   |   N   |    Y     |
-|      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |
+|      [Swin Transformer](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/swin)      | Instance Segmentation |      Y      |    Y     |  N   |   N   |    Y     |
 |            [SOLO](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solo)            | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
 |          [SOLOv2](https://github.com/open-mmlab/mmdetection/tree/3.x/configs/solov2)          | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |

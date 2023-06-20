@@ -169,3 +169,6 @@ csrc/mmdeploy/preprocess/elena/cuda_kernel/*
 
 # c#
 demo/csharp/*/Properties
+
+# doxygen
+docs/cppapi/docs

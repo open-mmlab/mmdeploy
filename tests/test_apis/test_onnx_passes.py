@@ -164,7 +164,7 @@ def test_flatten_cls_head():
             batch = x.size(0)
             gap = nn.functional.adaptive_avg_pool2d(x, (1, 1))
             gap = gap.reshape(batch, -1)
-            return gap + 0  # gap should not be the output
+            return gap + 1  # gap should not be the output
 
     model = TestModel()
     x = torch.rand(1, 4, 8, 8)
