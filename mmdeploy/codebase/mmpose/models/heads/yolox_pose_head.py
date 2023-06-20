@@ -126,7 +126,6 @@ def yolox_pose_head__predict_by_feat(
                           dim=1).sigmoid()
 
     result_list = []
-    batch_size = len(batch_img_metas)
     pred_bbox = bboxes
     pred_kpts = flatten_decoded_kpts
     pred_kpts_score = vis_preds
@@ -141,14 +140,13 @@ def yolox_pose_head__predict_by_feat(
         keep_top_k,
         output_index=True)
 
-    for batch_idx in range(batch_size):
-        keep_indices_nms = [nms_result[2][batch_idx]]
-        bbox = pred_bbox[batch_idx][keep_indices_nms]
-        label = pred_label[batch_idx][keep_indices_nms]
-        score = pred_score[batch_idx][keep_indices_nms]
-        kpts = pred_kpts[batch_idx][keep_indices_nms]
-        kpts_score = pred_kpts_score[batch_idx][keep_indices_nms]
+    keep_indices_nms = nms_result[2]
+    bbox = pred_bbox[:, keep_indices_nms].squeeze(1)
+    label = pred_label[:, keep_indices_nms].squeeze(1)
+    score = pred_score[:, keep_indices_nms].squeeze(1)
+    kpts = pred_kpts[:, keep_indices_nms].squeeze(1)
+    kpts_score = pred_kpts_score[:, keep_indices_nms].squeeze(1)
 
-        result_list.append([bbox, label, score, kpts, kpts_score])
+    result_list.append([bbox, label, score, kpts, kpts_score])
 
     return result_list

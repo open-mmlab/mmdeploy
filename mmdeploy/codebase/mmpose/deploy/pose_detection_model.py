@@ -221,14 +221,13 @@ class YoloXPoseEnd2EndModel(End2EndModel):
         return results
 
     def pack_result(self,
-                    preds: Sequence[InstanceData],
+                    preds: List[torch.Tensor],
                     data_samples: List[BaseDataElement],
                     convert_coordinate: bool = True):
-        if not isinstance(preds[0], list):
-            preds = [preds]
-        assert len(preds) == len(data_samples)
+        assert preds[0].shape[0] == len(data_samples)
 
-        for pred, data_sample in zip(preds, data_samples):
+        for data_sample_idx, data_sample in enumerate(data_samples):
+            pred = [preds[i][data_sample_idx] for i in range(5)]
             pred_instances = InstanceData()
             pred_instances.bboxes, pred_instances.labels, \
                 pred_instances.bbox_scores, pred_instances.keypoints, \
