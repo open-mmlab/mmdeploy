@@ -38,7 +38,7 @@ def yolox_pose_head__predict_by_feat(
         batch_img_metas: Optional[List[dict]] = None,
         cfg: Optional[ConfigDict] = None,
         rescale: bool = True,
-        with_nms: bool = True) -> List[InstanceData]:
+        with_nms: bool = True) -> Tuple[Tensor]:
     """Transform a batch of output features extracted by the head into bbox and
     keypoint results.
 
