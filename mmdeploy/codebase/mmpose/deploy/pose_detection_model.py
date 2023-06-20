@@ -232,6 +232,14 @@ class YoloXPoseEnd2EndModel(End2EndModel):
             pred_instances.bboxes, pred_instances.labels, \
                 pred_instances.bbox_scores, pred_instances.keypoints, \
                 pred_instances.keypoints_scores = pred
+
+            # rescale
+            keypoints = pred_instances.keypoints
+            scale_factor = data_sample.metainfo['scale_factor']
+            keypoints /= keypoints.new_tensor(scale_factor)\
+                .repeat((1, keypoints.shape[-2], 1))
+            pred_instances.keypoints = keypoints
+
             data_sample.pred_instances = pred_instances
         return data_samples
 

@@ -13,7 +13,7 @@ from mmdeploy.mmcv.ops.nms import multiclass_nms
 
 @FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
                                      'YOLOXPoseHead.predict')
-def predict(self, x: Tuple[Tensor], batch_data_samples, rescale: bool = False):
+def predict(self, x: Tuple[Tensor], batch_data_samples, rescale: bool = True):
     batch_img_metas = [
         data_samples.metainfo for data_samples in batch_data_samples
     ]
@@ -99,8 +99,7 @@ def yolox_pose_head__predict_by_feat(
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    score_threshold = cfg.nms.get('score_threshold',
-                                  post_params.score_threshold)
+    score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.get('pre_top_k', -1)
     keep_top_k = post_params.get('keep_top_k', -1)
 
@@ -145,6 +144,13 @@ def yolox_pose_head__predict_by_feat(
     score = pred_score[:, keep_indices_nms].squeeze(1)
     kpts = pred_kpts[:, keep_indices_nms].squeeze(1)
     kpts_score = pred_kpts_score[:, keep_indices_nms].squeeze(1)
+
+    # pad_param = batch_img_metas[0].get('img_meta', None)
+    # scale_factor = batch_img_metas[0]['scale_factor']
+    # if pad_param is not None:
+    #     kpts -= kpts.new_tensor([pad_param[2], pad_param[0]])
+    # kpts /= kpts.new_tensor(scale_factor).repeat(
+    #     (1, self.num_keypoints, 1))
 
     result_list.append([bbox, label, score, kpts, kpts_score])
 
