@@ -231,7 +231,7 @@ class YoloXPoseEnd2EndModel(End2EndModel):
             pred_instances = InstanceData()
             pred_instances.bboxes, pred_instances.labels, \
                 pred_instances.bbox_scores, pred_instances.keypoints, \
-                pred_instances.keypoints_scores = pred
+                pred_instances.keypoint_scores = pred
 
             # rescale
             keypoints = pred_instances.keypoints
