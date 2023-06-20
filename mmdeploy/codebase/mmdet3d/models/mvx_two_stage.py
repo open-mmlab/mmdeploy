@@ -82,5 +82,7 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
         dir_scores = torch.cat(dir_scores, dim=1)
         return scores, bbox_preds, dir_scores
     else:
-        cls_score, bbox_pred, dir_cls_pred = outs[0][0], outs[1][0], outs[2][0]
-        return cls_score, bbox_pred, dir_cls_pred
+        preds = []
+        for i in range(len(outs[0])):
+            preds += [outs[0][i], outs[1][i], outs[2][i]]
+        return tuple(preds)
