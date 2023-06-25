@@ -266,8 +266,10 @@ class TextRecognition(BaseTask):
         import shutil
         shutil.copy(self.model_cfg.dictionary.dict_file,
                     f'{work_dir}/dict_file.txt')
-        params = deepcopy(self.model_cfg.dictionary)
+        params = deepcopy(self.model_cfg.model.decoder.dictionary)
         params.update(dict(dict_file='dict_file.txt'))
+        params.update(
+            dict(ignore_chars=postprocess.get('ignore_chars', ['padding'])))
         postprocess['params'] = params
         return postprocess
 
