@@ -73,6 +73,25 @@ const Skeleton& gSkeletonCocoWholeBody() {
   return inst;
 }
 
+const Skeleton& gSkeletonCocoWholeBodyHand() {
+  static const Skeleton inst{
+      {
+          {0, 1},  {1, 2},   {2, 3},   {3, 4},
+          {0, 5},  {5, 6},   {6, 7},   {7, 8},
+          {0, 9},  {9, 10},  {10, 11}, {11, 12},
+          {0, 13}, {13, 14}, {14, 15}, {15, 16},
+          {0, 17}, {17, 18}, {18, 19}, {19, 20},
+      },
+      {
+          {255, 255, 255}, {255, 128, 0}, {255, 153, 255},
+          {102, 178, 255}, {255, 51, 51}, {0, 255, 0},
+      },
+      {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,},
+      {0, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,},
+  };
+  return inst;
+}
+
 // n_links
 // u0, v0, u1, v1, ..., un-1, vn-1
 // n_palette
@@ -86,6 +105,8 @@ inline Skeleton Skeleton::get(const std::string& path) {
     return gSkeletonCoco();
   } else if (path == "coco-wholebody") {
     return gSkeletonCocoWholeBody();
+  } else if (path == "coco-wholebody-hand") {
+    return gSkeletonCocoWholeBodyHand();
   }
   std::ifstream ifs(path);
   if (!ifs.is_open()) {

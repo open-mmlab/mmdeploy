@@ -2,6 +2,7 @@
 import mmengine
 import pytest
 import torch
+from packaging import version
 
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase, Task
@@ -36,14 +37,31 @@ def test_encoderdecoder_predict(backend):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    assert torch.allclose(model_outputs, rewrite_outputs[0].squeeze(0))
+    rewrite_outputs = segmentor.postprocess_result(rewrite_outputs[0],
+                                                   data_samples)
+    rewrite_outputs = rewrite_outputs[0].pred_sem_seg.data
+    assert torch.allclose(model_outputs, rewrite_outputs)
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])
-def test_basesegmentor_forward(backend):
+@pytest.mark.parametrize('with_argmax,use_sigmoid', [(True, False),
+                                                     (False, True)])
+def test_basesegmentor_forward(backend: Backend, with_argmax: bool,
+                               use_sigmoid: bool):
     check_backend(backend)
+    config_path = 'tests/test_codebase/test_mmseg/data/model.py'
+    model_cfg = mmengine.Config.fromfile(config_path)
+    if use_sigmoid:
+        import mmseg
+        if version.parse(mmseg.__version__) <= version.parse('1.0.0'):
+            pytest.skip('ignore mmseg<=1.0.0')
+        model_cfg.model.decode_head.num_classes = 2
+        model_cfg.model.decode_head.out_channels = 1
+        model_cfg.model.decode_head.threshold = 0.3
     deploy_cfg = generate_mmseg_deploy_config(backend.value)
-    task_processor = generate_mmseg_task_processor(deploy_cfg=deploy_cfg)
+    deploy_cfg.codebase_config.with_argmax = with_argmax
+    task_processor = generate_mmseg_task_processor(
+        deploy_cfg=deploy_cfg, model_cfg=model_cfg)
     segmentor = task_processor.build_pytorch_model()
     size = 256
     inputs = torch.randn(1, 3, size, size)
@@ -58,7 +76,11 @@ def test_basesegmentor_forward(backend):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    assert torch.allclose(model_outputs, rewrite_outputs[0].squeeze(0))
+    rewrite_outputs = rewrite_outputs[0]
+    if rewrite_outputs.shape[1] != 1:
+        rewrite_outputs = rewrite_outputs.argmax(dim=1, keepdim=True)
+    rewrite_outputs = rewrite_outputs.squeeze(0).to(model_outputs)
+    assert torch.allclose(model_outputs, rewrite_outputs)
 
 
 @pytest.mark.parametrize('backend', [Backend.ONNXRUNTIME])

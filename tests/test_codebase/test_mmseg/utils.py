@@ -24,7 +24,8 @@ def generate_mmseg_deploy_config(backend='onnxruntime'):
     deploy_cfg = mmengine.Config(
         dict(
             backend_config=dict(type=backend),
-            codebase_config=dict(type='mmseg', task='Segmentation'),
+            codebase_config=dict(
+                type='mmseg', task='Segmentation', with_argmax=False),
             onnx_config=dict(
                 type='onnx',
                 export_params=True,
