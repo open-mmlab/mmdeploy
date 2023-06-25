@@ -68,7 +68,7 @@ BaseConvertor::BaseConvertor(const Value& cfg) : MMOCR(cfg) {
     string padding_token = _cfg.value("padding_token", string("<PAD>"));
     idx2char_.emplace_back(std::move(padding_token));
   }
-  if (with_unknown) {
+  if (with_unknown && _cfg.contains("unknown_token") && !_cfg["unknown_token"].is_null()) {
     unknown_idx_ = static_cast<int>(idx2char_.size());
     string unknown_token = _cfg.value("unknown_token", string("<UKN>"));
     idx2char_.emplace_back(unknown_token);
