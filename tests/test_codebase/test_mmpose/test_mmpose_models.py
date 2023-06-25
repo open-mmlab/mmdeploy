@@ -203,7 +203,7 @@ def test_yolox_pose_head(backend_type: Backend):
     from mmdeploy.utils import get_input_shape, load_config
     check_backend(backend_type, True)
     deploy_cfg, model_cfg = load_config(
-        'configs/mmpose/yolox-pose_onnxruntime_static.py',
+        'configs/mmpose/pose-detection_yolox-pose_onnxruntime_dynamic.py',
         'tests/test_codebase/test_mmpose/yolox-pose_s_8xb32-300e_coco.py')
     task_processor = build_task_processor(model_cfg, deploy_cfg, device='cpu')
     model = task_processor.build_pytorch_model()

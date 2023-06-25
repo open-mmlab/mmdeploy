@@ -186,7 +186,9 @@ def _select_nms_index(scores: torch.Tensor,
                       boxes: torch.Tensor,
                       nms_index: torch.Tensor,
                       batch_size: int,
-                      keep_top_k: int = -1):
+                      keep_top_k: int = -1,
+                      pre_inds: torch.Tensor = None,
+                      output_index: bool = False):
     """Transform NMS output.
 
     Args:
@@ -197,6 +199,10 @@ def _select_nms_index(scores: torch.Tensor,
         batch_size (int): Batch size of the input image.
         keep_top_k (int): Number of top K boxes to keep after nms.
             Defaults to -1.
+        pre_inds (Tensor): The pre-topk indices of boxes before nms.
+            Defaults to None.
+        return_index (bool): Whether to return indices of original bboxes.
+            Defaults to False.
 
     Returns:
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
@@ -230,7 +236,13 @@ def _select_nms_index(scores: torch.Tensor,
                              1)
     batched_labels = torch.cat((batched_labels, batched_labels.new_zeros(
         (N, 1))), 1)
-
+    if output_index and pre_inds is not None:
+        # batch all
+        pre_inds = pre_inds[batch_inds, box_inds]
+        pre_inds = pre_inds.unsqueeze(0).repeat(batch_size, 1)
+        pre_inds = pre_inds.where((batch_inds == batch_template.unsqueeze(1)),
+                                  pre_inds.new_zeros(1))
+        pre_inds = torch.cat((pre_inds, pre_inds.new_zeros((N, 1))), 1)
     # sort
     is_use_topk = keep_top_k > 0 and \
         (torch.onnx.is_in_onnx_export() or keep_top_k < batched_dets.shape[1])
@@ -243,7 +255,10 @@ def _select_nms_index(scores: torch.Tensor,
         device=topk_inds.device).view(-1, 1)
     batched_dets = batched_dets[topk_batch_inds, topk_inds, ...]
     batched_labels = batched_labels[topk_batch_inds, topk_inds, ...]
-
+    if output_index:
+        if pre_inds is not None:
+            topk_inds = pre_inds[topk_batch_inds, topk_inds, ...]
+        return batched_dets, batched_labels, topk_inds
     # slice and recover the tensor
     return batched_dets, batched_labels
 
@@ -263,7 +278,6 @@ def _multiclass_nms(boxes: Tensor,
     shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
     4).
     """
-    assert not output_index, 'output_index is not supported on this backend.'
     if version.parse(torch.__version__) < version.parse('1.13.0'):
         max_output_boxes_per_class = torch.LongTensor(
             [max_output_boxes_per_class])
@@ -274,7 +288,8 @@ def _multiclass_nms(boxes: Tensor,
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
-        batch_inds = torch.arange(batch_size).view(-1, 1).long()
+        batch_inds = torch.arange(
+            batch_size, device=scores.device).view(-1, 1).long()
         boxes = boxes[batch_inds, topk_inds, :]
         scores = scores[batch_inds, topk_inds, :]
 
@@ -283,10 +298,14 @@ def _multiclass_nms(boxes: Tensor,
                                        max_output_boxes_per_class,
                                        iou_threshold, score_threshold)
 
-    dets, labels = _select_nms_index(
-        scores, boxes, selected_indices, batch_size, keep_top_k=keep_top_k)
-
-    return dets, labels
+    return _select_nms_index(
+        scores,
+        boxes,
+        selected_indices,
+        batch_size,
+        keep_top_k=keep_top_k,
+        pre_inds=topk_inds,
+        output_index=output_index)
 
 
 def _multiclass_nms_single(boxes: Tensor,

@@ -1,16 +1,21 @@
 _base_ = ['./pose-detection_static.py', '../_base_/backends/onnxruntime.py']
 
 onnx_config = dict(
-    input_shape=None,
-    output_names=[
-        'pred_bbox', 'pred_label', 'pred_score', 'pred_keypoints',
-        'pred_keypoint_scores'
-    ])
+    output_names=['dets', 'keypoints'],
+    dynamic_axes={
+        'input': {
+            0: 'batch',
+        },
+        'dets': {
+            0: 'batch',
+        },
+        'keypoints': {
+            0: 'batch'
+        }
+    })
 
 codebase_config = dict(
-    type='mmpose',
-    task='PoseDetection',
-    model_type='yolox-pose_end2end',
+    # model_type='yolox-pose_end2end',
     post_processing=dict(
         score_threshold=0.05,
         confidence_threshold=0.005,  # for YOLOv3

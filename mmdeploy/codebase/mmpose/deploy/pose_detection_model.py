@@ -54,7 +54,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             **kwargs)
         # create head for decoding heatmap
-        self.head = builder.build_head(model_cfg.model.head)
+        self.head = builder.build_head(model_cfg.model.head) if hasattr(
+            model_cfg.model, 'head') else None
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -97,6 +98,9 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
+        if self.model_cfg.model.type == 'YOLODetector':
+            return self.pack_yolox_pose_result(batch_outputs, data_samples)
+
         codec = self.model_cfg.codec
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
@@ -158,89 +162,35 @@ class End2EndModel(BaseBackendModel):
 
         return data_samples
 
-
-@__BACKEND_MODEL.register_module('yolox-pose_end2end')
-class YoloXPoseEnd2EndModel(End2EndModel):
-    """End to end model for inference of pose detection.
-
-    Args:
-        backend (Backend): The backend enum, specifying backend type.
-        backend_files (Sequence[str]): Paths to all required backend files(e.g.
-            '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
-        device (str): A string represents device type.
-        deploy_cfg (str | mmengine.Config): Deployment config file or loaded
-            Config object.
-        model_cfg (str | mmengine.Config): Model config file or loaded Config
-            object.
-        data_preprocessor (dict | nn.Module | None): Input data pre-
-                processor. Default is ``None``.
-    """
-
-    def __init__(self,
-                 backend: Backend,
-                 backend_files: Sequence[str],
-                 device: str,
-                 deploy_cfg: Union[str, mmengine.Config] = None,
-                 model_cfg: Union[str, mmengine.Config] = None,
-                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
-                 **kwargs):
-        super(End2EndModel, self).__init__(
-            deploy_cfg=deploy_cfg, data_preprocessor=data_preprocessor)
-        self.deploy_cfg = deploy_cfg
-        self.model_cfg = model_cfg
-        self.device = device
-        self._init_wrapper(
-            backend=backend,
-            backend_files=backend_files,
-            device=device,
-            **kwargs)
-
-    def forward(self,
-                inputs: torch.Tensor,
-                data_samples: List[BaseDataElement],
-                mode: str = 'predict',
-                **kwargs):
-        """Run forward inference.
-
+    def pack_yolox_pose_result(self, preds: List[torch.Tensor],
+                               data_samples: List[BaseDataElement]):
+        """Pack yolox-pose prediction results to mmpose format
         Args:
-            inputs (torch.Tensor): Input image(s) in [N x C x H x W]
-                format.
+            preds (List[Tensor]): Prediction of bboxes and key-points.
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
-
         Returns:
-            list: A list contains predictions.
+            data_samples (List[BaseDataElement])：
+                updated data_samples with predictions.
         """
-        assert mode == 'predict', \
-            'Backend model only support mode==predict,' f' but get {mode}'
-        inputs = inputs.contiguous().to(self.device)
-        batch_outputs = self.wrapper({self.input_name: inputs})
-        batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        batch_outputs = [batch_output.cpu() for batch_output in batch_outputs]
-        results = self.pack_result(batch_outputs, data_samples)
-        return results
-
-    def pack_result(self,
-                    preds: List[torch.Tensor],
-                    data_samples: List[BaseDataElement],
-                    convert_coordinate: bool = True):
         assert preds[0].shape[0] == len(data_samples)
-
+        batched_dets, batched_kpts = preds
         for data_sample_idx, data_sample in enumerate(data_samples):
-            pred = [preds[i][data_sample_idx] for i in range(5)]
+            bboxes = batched_dets[data_sample_idx, :, :4]
+            bbox_scores = batched_dets[data_sample_idx, :, 4]
+            keypoints = batched_kpts[data_sample_idx, :, :, :2]
+            keypoint_scores = batched_kpts[data_sample_idx, :, :, 2]
+
             pred_instances = InstanceData()
-            bboxes, labels, bbox_scores, keypoints, keypoint_scores = pred
-
             # rescale
-            scale_factor = data_sample.metainfo['scale_factor']
-            keypoints /= keypoints.new_tensor(scale_factor)\
-                .repeat((1, keypoints.shape[-2], 1))
-
-            pred_instances.bboxes = bboxes
-            pred_instances.labels = labels
+            scale_factor = data_sample.scale_factor
+            scale_factor = keypoints.new_tensor(scale_factor)
+            keypoints /= keypoints.new_tensor(scale_factor).reshape(1, 1, 2)
+            bboxes /= keypoints.new_tensor(scale_factor).repeat(1, 2)
+            pred_instances.bboxes = bboxes.cpu().numpy()
             pred_instances.bbox_scores = bbox_scores
             # the precision test requires keypoints to be np.ndarray
-            pred_instances.keypoints = keypoints.numpy()
+            pred_instances.keypoints = keypoints.cpu().numpy()
             pred_instances.keypoint_scores = keypoint_scores
 
             data_sample.pred_instances = pred_instances

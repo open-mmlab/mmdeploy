@@ -206,9 +206,11 @@ class PoseDetection(BaseTask):
                 raise AssertionError('imgs must be strings or numpy arrays')
         elif isinstance(imgs, (np.ndarray, str)):
             imgs = [imgs]
+            img_path = [imgs]
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
         if isinstance(imgs, (list, tuple)) and isinstance(imgs[0], str):
+            img_path = imgs
             img_data = [mmcv.imread(img) for img in imgs]
             imgs = img_data
         person_results = []
@@ -224,7 +226,7 @@ class PoseDetection(BaseTask):
             TRANSFORMS.build(c) for c in cfg.test_dataloader.dataset.pipeline
         ]
         test_pipeline = Compose(test_pipeline)
-        if input_shape is not None:
+        if input_shape is not None and hasattr(cfg, 'codec'):
             if isinstance(cfg.codec, dict):
                 codec = cfg.codec
             elif isinstance(cfg.codec, list):
@@ -298,11 +300,13 @@ class PoseDetection(BaseTask):
 
         if isinstance(image, str):
             image = mmcv.imread(image, channel_order='rgb')
+        draw_bbox = result.pred_instances.bboxes is not None
         visualizer.add_datasample(
             name,
             image,
             data_sample=result,
             draw_gt=False,
+            draw_bbox=draw_bbox,
             show=show_result,
             out_file=output_file)
 

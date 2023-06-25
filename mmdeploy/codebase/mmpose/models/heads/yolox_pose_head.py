@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 from typing import List, Optional, Tuple
 
 import torch
@@ -13,15 +12,13 @@ from mmdeploy.mmcv.ops.nms import multiclass_nms
 
 @FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
                                      'YOLOXPoseHead.predict')
-def predict(self, x: Tuple[Tensor], batch_data_samples, rescale: bool = True):
-    batch_img_metas = [
-        data_samples.metainfo for data_samples in batch_data_samples
-    ]
-
+def predict(self,
+            x: Tuple[Tensor],
+            batch_data_samples=None,
+            rescale: bool = True):
     outs = self(x)
-
     predictions = self.predict_by_feat(
-        *outs, batch_img_metas=batch_img_metas, rescale=rescale)
+        *outs, batch_img_metas=batch_data_samples, rescale=rescale)
     return predictions
 
 
@@ -52,7 +49,6 @@ def yolox_pose_head__predict_by_feat(
 
     assert len(cls_scores) == len(bbox_preds)
     cfg = self.test_cfg if cfg is None else cfg
-    cfg = copy.deepcopy(cfg)
 
     num_imgs = cls_scores[0].shape[0]
     featmap_sizes = [cls_score.shape[2:] for cls_score in cls_scores]
@@ -92,17 +88,10 @@ def yolox_pose_head__predict_by_feat(
         cls_scores = cls_scores * (flatten_objectness.unsqueeze(-1))
 
     scores = cls_scores
-
     bboxes = bbox_decoder(flatten_priors[None], flatten_bbox_preds,
                           flatten_stride)
 
-    post_params = get_post_processing_params(deploy_cfg)
-    max_output_boxes_per_class = post_params.max_output_boxes_per_class
-    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
-    score_threshold = cfg.get('score_thr', post_params.score_threshold)
-    pre_top_k = post_params.get('pre_top_k', -1)
-    keep_top_k = post_params.get('keep_top_k', -1)
-
+    # deal with key-poinsts
     priors = torch.cat(self.mlvl_priors)
     strides = [
         priors.new_full((featmap_size.numel() * self.num_base_priors, ),
@@ -118,40 +107,35 @@ def yolox_pose_head__predict_by_feat(
     flatten_decoded_kpts = self.decode_pose(priors, kpt_preds, strides)
 
     vis_preds = torch.cat([
-        vis_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_keypoints)
-        for vis_pred in vis_preds
+        vis_pred.permute(0, 2, 3, 1).reshape(num_imgs, -1, self.num_keypoints,
+                                             1) for vis_pred in vis_preds
     ],
                           dim=1).sigmoid()
 
-    result_list = []
-    pred_bbox = bboxes
-    pred_kpts = flatten_decoded_kpts
-    pred_kpts_score = vis_preds
-    pred_score, pred_label = scores.max(2, keepdim=True)
-    nms_result = multiclass_nms(
-        pred_bbox,
-        pred_score,
+    pred_kpts = torch.cat([flatten_decoded_kpts, vis_preds], dim=3)
+
+    # nms
+    post_params = get_post_processing_params(deploy_cfg)
+    max_output_boxes_per_class = post_params.max_output_boxes_per_class
+    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+    score_threshold = cfg.get('score_thr', post_params.score_threshold)
+    pre_top_k = post_params.get('pre_top_k', -1)
+    keep_top_k = post_params.get('keep_top_k', -1)
+    # do nms
+    _, _, nms_indices = multiclass_nms(
+        bboxes,
+        scores,
         max_output_boxes_per_class,
         iou_threshold,
         score_threshold,
-        pre_top_k,
-        keep_top_k,
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k,
         output_index=True)
 
-    keep_indices_nms = nms_result[2]
-    bbox = pred_bbox[:, keep_indices_nms].squeeze(1)
-    label = pred_label[:, keep_indices_nms].squeeze(1)
-    score = pred_score[:, keep_indices_nms].squeeze(1)
-    kpts = pred_kpts[:, keep_indices_nms].squeeze(1)
-    kpts_score = pred_kpts_score[:, keep_indices_nms].squeeze(1)
+    batch_inds = torch.arange(num_imgs, device=scores.device).view(-1, 1)
+    bboxes = bboxes[batch_inds, nms_indices, ...]
+    scores = scores[batch_inds, nms_indices, ...]
+    dets = torch.cat([bboxes, scores], dim=2)
+    pred_kpts = pred_kpts[batch_inds, nms_indices, ...]
 
-    # pad_param = batch_img_metas[0].get('img_meta', None)
-    # scale_factor = batch_img_metas[0]['scale_factor']
-    # if pad_param is not None:
-    #     kpts -= kpts.new_tensor([pad_param[2], pad_param[0]])
-    # kpts /= kpts.new_tensor(scale_factor).repeat(
-    #     (1, self.num_keypoints, 1))
-
-    result_list.append([bbox, label, score, kpts, kpts_score])
-
-    return result_list
+    return dets, pred_kpts
