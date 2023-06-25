@@ -301,6 +301,8 @@ class PoseDetection(BaseTask):
         if isinstance(image, str):
             image = mmcv.imread(image, channel_order='rgb')
         draw_bbox = result.pred_instances.bboxes is not None
+        if draw_bbox and isinstance(result.pred_instances.bboxes, torch.Tensor):
+            result.pred_instances.bboxes = result.pred_instances.bboxes.cpu().numpy()
         visualizer.add_datasample(
             name,
             image,

@@ -258,6 +258,7 @@ def _select_nms_index(scores: torch.Tensor,
     if output_index:
         if pre_inds is not None:
             topk_inds = pre_inds[topk_batch_inds, topk_inds, ...]
+        topk_inds = topk_inds[:, :-1]
         return batched_dets, batched_labels, topk_inds
     # slice and recover the tensor
     return batched_dets, batched_labels
