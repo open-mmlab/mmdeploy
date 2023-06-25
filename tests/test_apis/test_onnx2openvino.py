@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import os
 import os.path as osp
 import subprocess
 import tempfile
@@ -106,12 +105,9 @@ def test_onnx2openvino(get_deploy_cfg):
 
 @backend_checker(Backend.OPENVINO)
 def test_can_not_run_onnx2openvino_without_mo():
-    current_environ = dict(os.environ)
-    os.environ.clear()
     with pytest.raises(subprocess.CalledProcessError):
         from mmdeploy.apis.openvino import from_onnx
         from_onnx('tmp.onnx', '/tmp', {}, ['output'])
-    os.environ.update(current_environ)
 
 
 @backend_checker(Backend.OPENVINO)
