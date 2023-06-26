@@ -53,9 +53,18 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
         inputs (list): input list comprises voxels, num_points and coors
 
     Returns:
-        bbox (Tensor): Decoded bbox after nms
-        scores (Tensor): bbox scores
-        labels (Tensor): bbox labels
+        tuple: A tuple of classification scores, bbox and direction
+            classification prediction.
+
+            - cls_scores (list[Tensor]): Classification scores for all
+                scale levels, each is a 4D-tensor, the channels number
+                is num_base_priors * num_classes.
+            - bbox_preds (list[Tensor]): Box energies / deltas for all
+                scale levels, each is a 4D-tensor, the channels number
+                is num_base_priors * C.
+            - dir_cls_preds (list[Tensor|None]): Direction classification
+                predictions for all scale levels, each is a 4D-tensor,
+                the channels number is num_base_priors * 2.
     """
     ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
@@ -86,12 +95,17 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
         return scores, bbox_preds, dir_scores
     else:
         preds = []
+        expect_names = []
         for i in range(len(outs[0])):
             preds += [outs[0][i], outs[1][i], outs[2][i]]
+            expect_names += [
+                f'cls_score{i}', f'bbox_pred{i}', f'dir_cls_pred{i}'
+            ]
+        # check if output_names is set correctly.
         onnx_cfg = get_ir_config(deploy_cfg)
         output_names = onnx_cfg['output_names']
-        if len(output_names) != len(preds):
-            raise RuntimeError(
-                f'`output_names`={output_names} should have '
-                f'{len(preds)} elements, but given {len(output_names)}')
+        if output_names != list(expect_names):
+            raise RuntimeError(f'`output_names` should be {expect_names} '
+                               f'but given {output_names}\n'
+                               f'Deploy config:\n{deploy_cfg.pretty_text}')
         return tuple(preds)
