@@ -83,6 +83,7 @@ TRTNet::~TRTNet() {
   CudaDeviceGuard guard(device_);
   context_.reset();
   engine_.reset();
+  runtime_.reset();
 }
 
 static Result<DataType> MapDataType(nvinfer1::DataType dtype) {
@@ -121,10 +122,10 @@ Result<void> TRTNet::Init(const Value& args) {
 
   OUTCOME_TRY(auto plan, model.ReadFile(config.net));
 
-  TRTWrapper runtime = nvinfer1::createInferRuntime(TRTLogger::get());
-  TRT_TRY(!!runtime, "failed to create TRT infer runtime");
+  runtime_ = nvinfer1::createInferRuntime(TRTLogger::get());
+  TRT_TRY(!!runtime_, "failed to create TRT infer runtime");
 
-  engine_ = runtime->deserializeCudaEngine(plan.data(), plan.size());
+  engine_ = runtime_->deserializeCudaEngine(plan.data(), plan.size());
   TRT_TRY(!!engine_, "failed to deserialize TRT CUDA engine");
 
   TRT_TRY(engine_->getNbOptimizationProfiles() == 1, "only 1 optimization profile supported",

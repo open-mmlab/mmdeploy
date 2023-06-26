@@ -64,6 +64,7 @@ class TRTNet : public Net {
  private:
   trt_detail::TRTWrapper<nvinfer1::ICudaEngine> engine_;
   trt_detail::TRTWrapper<nvinfer1::IExecutionContext> context_;
+  trt_detail::TRTWrapper<nvinfer1::IRuntime> runtime_;
   std::vector<int> input_ids_;
   std::vector<int> output_ids_;
   std::vector<std::string> input_names_;
