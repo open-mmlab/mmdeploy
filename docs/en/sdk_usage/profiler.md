@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 The performance data can be visualized using a script.
 
 ```bash
-python tools/sdk_analyze.py profiler_data.bin
+python tools/sdk_analyze.py profiler_data.txt
 ```
 
 The parsing results are as follows: "name" represents the name of the node, "n_call" represents the number of calls, "t_mean" represents the average time consumption, "t_50%" and "t_90%" represent the percentiles of the time consumption.

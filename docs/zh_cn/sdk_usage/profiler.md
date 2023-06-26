@@ -1,6 +1,6 @@
 # Pipeline 速度分析 (profiler)
 
-sdk 提供 pipeline 各模块耗时统计功能，默认关系，若要使用该功能，需要两部步骤：
+sdk 提供 pipeline 各模块耗时统计功能，默认关闭，若要使用该功能，需要两个步骤：
 
 - 生成性能数据
 - 分析性能数据
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
 使用脚本可对性能数据进行解析。
 
 ```bash
-python tools/sdk_analyze.py profiler_data.bin
+python tools/sdk_analyze.py profiler_data.txt
 ```
 
 解析结果如下，其中 name 表示节点的名称，n_call表示调用的次数，t_mean 表示平均耗时，t_50% t_90% 表示耗时的百分位数。
