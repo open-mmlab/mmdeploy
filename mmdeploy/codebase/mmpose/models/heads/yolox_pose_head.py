@@ -16,6 +16,22 @@ def predict(self,
             x: Tuple[Tensor],
             batch_data_samples=None,
             rescale: bool = True):
+    """Get predictions and transform to bbox and keypoints results.
+    Args:
+        x (Tuple[Tensor]): The input tensor from upstream network.
+        batch_data_samples: Batch image meta info. Defaults to None.
+        rescale: If True, return boxes in original image space.
+            Defaults to False.
+
+    Returns:
+        Tuple[Tensor]: Predict bbox and keypoint results.
+        - dets (Tensor): Predict bboxes and scores, which is a 3D Tensor,
+            has shape (batch_size, num_instances, 5), the last dimension 5
+            arrange as (x1, y1, x2, y2, score).
+        - pred_kpts (Tensor): Predict keypoints and scores, which is a 4D
+            Tensor, has shape (batch_size, num_instances, num_keypoints, 5),
+            the last dimension 3 arrange as (x, y, score).
+    """
     outs = self(x)
     predictions = self.predict_by_feat(
         *outs, batch_img_metas=batch_data_samples, rescale=rescale)
@@ -40,6 +56,40 @@ def yolox_pose_head__predict_by_feat(
 
     In addition to the base class method, keypoint predictions are also
     calculated in this method.
+
+    Args:
+        cls_scores (List[Tensor]): Classification scores for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * num_classes, H, W).
+        bbox_preds (List[Tensor]): Box energies / deltas for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_priors * 4, H, W).
+        objectnesses (Optional[List[Tensor]]): Score factor for
+            all scale level, each is a 4D-tensor, has shape
+            (batch_size, 1, H, W).
+        kpt_preds (Optional[List[Tensor]]): Keypoints for all
+            scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_keypoints * 2, H, W)
+        vis_preds (Optional[List[Tensor]]): Keypoints scores for
+            all scale levels, each is a 4D-tensor, has shape
+            (batch_size, num_keypoints, H, W)
+        batch_img_metas (Optional[List[dict]]): Batch image meta
+            info. Defaults to None.
+        cfg (Optional[ConfigDict]): Test / postprocessing
+            configuration, if None, test_cfg would be used.
+            Defaults to None.
+        rescale (bool): If True, return boxes in original image space.
+            Defaults to False.
+        with_nms (bool): If True, do nms before return boxes.
+            Defaults to True.
+    Returns:
+        Tuple[Tensor]: Predict bbox and keypoint results.
+        - dets (Tensor): Predict bboxes and scores, which is a 3D Tensor,
+            has shape (batch_size, num_instances, 5), the last dimension 5
+            arrange as (x1, y1, x2, y2, score).
+        - pred_kpts (Tensor): Predict keypoints and scores, which is a 4D
+            Tensor, has shape (batch_size, num_instances, num_keypoints, 5),
+            the last dimension 3 arrange as (x, y, score).
     """
     ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg

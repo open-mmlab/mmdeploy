@@ -200,7 +200,6 @@ class PoseDetection(BaseTask):
         from mmcv.transforms import Compose
         from mmpose.registry import TRANSFORMS
         cfg = self.model_cfg
-        img_path = [imgs]
         if isinstance(imgs, (list, tuple)):
             if not isinstance(imgs[0], (np.ndarray, str)):
                 raise AssertionError('imgs must be strings or numpy arrays')

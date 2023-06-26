@@ -192,6 +192,7 @@ class End2EndModel(BaseBackendModel):
             # the precision test requires keypoints to be np.ndarray
             pred_instances.keypoints = keypoints.cpu().numpy()
             pred_instances.keypoint_scores = keypoint_scores
+            pred_instances.lebels = torch.zeros(bboxes.shape[0])
 
             data_sample.pred_instances = pred_instances
         return data_samples
