@@ -2,6 +2,7 @@
 import torch
 
 from mmdeploy.core import FUNCTION_REWRITER
+from mmdeploy.utils import get_ir_config
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -56,6 +57,8 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
         scores (Tensor): bbox scores
         labels (Tensor): bbox labels
     """
+    ctx = FUNCTION_REWRITER.get_context()
+    deploy_cfg = ctx.cfg
     batch_inputs_dict = {
         'voxels': {
             'voxels': inputs[0],
@@ -85,4 +88,10 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
         preds = []
         for i in range(len(outs[0])):
             preds += [outs[0][i], outs[1][i], outs[2][i]]
+        onnx_cfg = get_ir_config(deploy_cfg)
+        output_names = onnx_cfg['output_names']
+        if len(output_names) != len(preds):
+            raise RuntimeError(
+                f'`output_names`={output_names} should have '
+                f'{len(preds)} elements, but given {len(output_names)}')
         return tuple(preds)

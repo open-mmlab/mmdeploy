@@ -90,10 +90,13 @@ class VoxelDetectionModel(BaseBackendModel):
         }
 
         outputs = self.wrapper(input_dict)
+        num_level = len(outputs) // 3
         new_outputs = dict(
-            cls_score=[outputs[f'cls_score{i}'] for i in range(3)],
-            bbox_pred=[outputs[f'bbox_pred{i}'] for i in range(3)],
-            dir_cls_pred=[outputs[f'dir_cls_pred{i}'] for i in range(3)])
+            cls_score=[outputs[f'cls_score{i}'] for i in range(num_level)],
+            bbox_pred=[outputs[f'bbox_pred{i}'] for i in range(num_level)],
+            dir_cls_pred=[
+                outputs[f'dir_cls_pred{i}'] for i in range(num_level)
+            ])
         outputs = new_outputs
         if data_samples is None:
             return outputs
