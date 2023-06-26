@@ -167,18 +167,19 @@ jobs:
       - name: Install PyTorch
         run: |
           python -V
-          python -m pip install --upgrade pip
-          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+          python -m pip uninstall torch torchvision -y
+          python -m pip install --no-cache-dir --upgrade pip
+          python -m pip install --no-cache-dir torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
-          python -m pip install openmim
-          python -m pip install -r requirements.txt
-          python -m pip install -r requirements/backends.txt
+          python -m pip install --no-cache-dir openmim
+          python -m pip install --no-cache-dir -r requirements.txt
+          python -m pip install --no-cache-dir -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install -U pycuda numpy clip numba transformers
+          python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
@@ -222,8 +223,8 @@ jobs:
       - name: Install PyTorch
         run: |
           python -V
-          python -m pip list
-          python -m pip install --upgrade pip
+          python -m pip uninstall torch torchvision -y
+          python -m pip install --no-cache-dir --upgrade pip
           python -m pip install --no-cache-dir torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
