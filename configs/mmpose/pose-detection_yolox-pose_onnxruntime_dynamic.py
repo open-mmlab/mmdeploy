@@ -15,7 +15,6 @@ onnx_config = dict(
     })
 
 codebase_config = dict(
-    # model_type='yolox-pose_end2end',
     post_processing=dict(
         score_threshold=0.05,
         confidence_threshold=0.005,  # for YOLOv3
