@@ -149,13 +149,6 @@ jobs:
       image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
     env:
       FORCE_CUDA: 1
-    strategy:
-      matrix:
-        torch: [1.9.0+cu102]
-        include:
-          - torch: 1.9.0+cu102
-            torch_version: torch1.9
-            torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -164,14 +157,10 @@ jobs:
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
-      - name: Install PyTorch
-        run: |
-          python -V
-          python -m pip install --upgrade pip
-          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
+          python -m pip show torch torchvision
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install openmim
           python -m pip install -r requirements.txt
@@ -204,13 +193,6 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
-    strategy:
-      matrix:
-        torch: [1.12.0+cu113]
-        include:
-          - torch: 1.12.0+cu113
-            torch_version: torch1.12
-            torchvision: 0.13.0+cu113
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -219,15 +201,10 @@ jobs:
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
-      - name: Install PyTorch
-        run: |
-          python -V
-          python -m pip list
-          python -m pip install --upgrade pip
-          python -m pip install --no-cache-dir torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
+          python -m pip show torch torchvision
           export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install --no-cache-dir openmim
           python -m pip install --no-cache-dir -r requirements.txt
