@@ -4,6 +4,10 @@ if (NOT DEFINED CMAKE_INSTALL_PREFIX)
 endif ()
 message(STATUS "CMAKE_INSTALL_PREFIX: ${CMAKE_INSTALL_PREFIX}")
 
+if (NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
+endif ()
+
 cmake_minimum_required(VERSION 3.14)
 project(MMDeploy VERSION 1.1.0)
 
@@ -43,10 +47,6 @@ set(MMDEPLOY_CODEBASES "all" CACHE STRING "select OpenMMLab codebases")
 
 if ((NOT MMDEPLOY_BUILD_SDK_MONOLITHIC) AND MMDEPLOY_DYNAMIC_BACKEND)
     set(MMDEPLOY_DYNAMIC_BACKEND OFF)
-endif ()
-
-if (NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "choose 'Release' as default build type" FORCE)
 endif ()
 
 if (MMDEPLOY_SHARED_LIBS)

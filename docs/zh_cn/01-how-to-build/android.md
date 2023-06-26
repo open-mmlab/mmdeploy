@@ -89,7 +89,7 @@ export ANDROID_ABI=arm64-v8a
 mkdir -p build_${ANDROID_ABI}
 cd build_${ANDROID_ABI}
 
-cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="${ANDROID_ABI}" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF ..
+cmake -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake -DANDROID_ABI="${ANDROID_ABI}" -DANDROID_PLATFORM=android-30 -DNCNN_VULKAN=ON -DNCNN_DISABLE_EXCEPTION=OFF -DNCNN_DISABLE_RTTI=OFF -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=False ..
 make -j$(nproc) install
 </code></pre>
 
@@ -124,6 +124,7 @@ make -j$(nproc) install
       -DMMDEPLOY_TARGET_BACKENDS=ncnn \
       -DMMDEPLOY_SHARED_LIBS=OFF \
       -DCMAKE_TOOLCHAIN_FILE=${NDK_PATH}/build/cmake/android.toolchain.cmake \
+      -DANDROID_USE_LEGACY_TOOLCHAIN_FILE=False \
       -DANDROID_ABI=${ANDROID_ABI} \
       -DANDROID_PLATFORM=android-30 \
       -DANDROID_CPP_FEATURES="rtti exceptions"
