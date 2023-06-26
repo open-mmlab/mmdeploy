@@ -28,10 +28,8 @@ jobs:
         torch: [1.8.0, 1.9.0]
         include:
           - torch: 1.8.0
-            torch_version: torch1.8
             torchvision: 0.9.0
           - torch: 1.9.0
-            torch_version: torch1.9
             torchvision: 0.10.0
     steps:
       - uses: actions/checkout@v2
@@ -143,19 +141,12 @@ jobs:
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build_cuda102:
+  build_cuda116:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
+      image: pytorch/pytorch:1.13.0-cuda11.6-cudnn8-devel
     env:
       FORCE_CUDA: 1
-    strategy:
-      matrix:
-        torch: [1.9.0+cu102]
-        include:
-          - torch: 1.9.0+cu102
-            torch_version: torch1.9
-            torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -167,9 +158,8 @@ jobs:
       - name: Install PyTorch
         run: |
           python -V
-          python -m pip uninstall torch torchvision -y
+          python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
-          python -m pip install --no-cache-dir torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
@@ -195,7 +185,7 @@ jobs:
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
         with:
-          NAME: build_cuda102
+          NAME: build_cuda116
           LABEL: 'build'
           STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
@@ -205,13 +195,6 @@ jobs:
     runs-on: ubuntu-20.04
     container:
       image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
-    strategy:
-      matrix:
-        torch: [1.12.0+cu113]
-        include:
-          - torch: 1.12.0+cu113
-            torch_version: torch1.12
-            torchvision: 0.13.0+cu113
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -223,9 +206,8 @@ jobs:
       - name: Install PyTorch
         run: |
           python -V
-          python -m pip uninstall torch torchvision -y
+          python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
-          python -m pip install --no-cache-dir torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
