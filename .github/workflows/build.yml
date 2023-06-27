@@ -141,10 +141,10 @@ jobs:
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build_cuda116:
+  build_cuda111:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.13.0-cuda11.6-cudnn8-devel
+      image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
     env:
       FORCE_CUDA: 1
     steps:
@@ -185,7 +185,7 @@ jobs:
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
         with:
-          NAME: build_cuda116
+          NAME: build_cuda111
           LABEL: 'build'
           STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
@@ -194,7 +194,7 @@ jobs:
   build_cuda113:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
+      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -217,7 +217,7 @@ jobs:
           python -m pip install --no-cache-dir -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0rc1"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install --no-cache-dir -U pycuda numpy==1.23 clip numba transformers
+          python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers
           python -m pip list
       - name: Build and install
         run: |
