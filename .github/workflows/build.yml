@@ -141,12 +141,18 @@ jobs:
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build_cuda111:
+  build_cuda102:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.9.0-cuda11.1-cudnn8-runtime
+      image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
     env:
       FORCE_CUDA: 1
+    strategy:
+      matrix:
+        torch: [1.9.0+cu102]
+        include:
+          - torch: 1.9.0+cu102
+            torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
@@ -160,6 +166,7 @@ jobs:
           python -V
           python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
+          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
       - name: Install dependencies
         run: |
           python -V
@@ -194,7 +201,7 @@ jobs:
   build_cuda113:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
+      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
