@@ -8,6 +8,7 @@ SDK 使用说明
    :maxdepth: 1
 
    quick_start
+   profiler
 
 
 API Reference

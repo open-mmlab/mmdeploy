@@ -8,6 +8,7 @@ Setup & Usage
    :maxdepth: 1
 
    quick_start
+   profiler
 
 
 API Reference
