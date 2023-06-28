@@ -164,3 +164,4 @@ task_processor.visualize(
 | [Hourglass](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#hourglass-eccv-2016) | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [SimCC](https://mmpose.readthedocs.io/en/latest/model_zoo_papers/algorithms.html#simcc-eccv-2022)         | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
 | [RTMPose](https://github.com/open-mmlab/mmpose/tree/main/projects/rtmpose)                                | PoseDetection |      Y       |    Y     |  Y   |   N   |    Y     |
+| [YoloX-Pose](https://github.com/open-mmlab/mmpose/tree/main/projects/yolox-pose)                          | PoseDetection |      Y       |    Y     |  N   |   N   |    Y     |
