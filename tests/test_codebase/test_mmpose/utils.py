@@ -1,5 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import mmengine
+import numpy
 import torch
 from mmengine.structures import InstanceData, PixelData
 
@@ -16,7 +17,7 @@ def generate_datasample(img_size, heatmap_size=(64, 48)):
         input_size=(h, w),
         heatmap_size=heatmap_size)
     pred_instances = InstanceData()
-    pred_instances.bboxes = torch.rand((1, 4)).numpy()
+    pred_instances.bboxes = numpy.array([[0.0, 0.0, 1.0, 1.0]])
     pred_instances.bbox_scales = torch.ones(1, 2).numpy()
     pred_instances.bbox_scores = torch.ones(1).numpy()
     pred_instances.bbox_centers = torch.ones(1, 2).numpy()

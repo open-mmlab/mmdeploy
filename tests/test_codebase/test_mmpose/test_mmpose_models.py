@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import mmengine
 import pytest
 import torch
 
@@ -188,3 +189,45 @@ def test_scale_forward(backend_type: Backend):
         deploy_cfg=deploy_cfg,
         run_with_backend=False)
     torch_assert_close(rewrite_outputs, model_outputs)
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_yolox_pose_head(backend_type: Backend):
+    try:
+        from models import yolox_pose_head  # noqa: F401,F403
+    except ImportError:
+        pytest.skip(
+            'mmpose/projects/yolox-pose is not installed.',
+            allow_module_level=True)
+    deploy_cfg = mmengine.Config.fromfile(
+        'configs/mmpose/pose-detection_yolox-pose_onnxruntime_dynamic.py')
+    check_backend(backend_type, True)
+    model = yolox_pose_head.YOLOXPoseHead(
+        head_module=dict(
+            type='YOLOXPoseHeadModule',
+            num_classes=1,
+            in_channels=256,
+            feat_channels=256,
+            widen_factor=0.5,
+            stacked_convs=2,
+            num_keypoints=17,
+            featmap_strides=(8, 16, 32),
+            use_depthwise=False,
+            norm_cfg=dict(type='BN', momentum=0.03, eps=0.001),
+            act_cfg=dict(type='SiLU', inplace=True),
+        ))
+    model.cpu().eval()
+    model_inputs = [
+        torch.randn(2, 128, 80, 80),
+        torch.randn(2, 128, 40, 40),
+        torch.randn(2, 128, 20, 20)
+    ]
+    pytorch_output = model(model_inputs)
+    wrapped_model = WrapModel(model, 'forward')
+    rewrite_inputs = {'inputs': model_inputs}
+    rewrite_outputs, _ = get_rewrite_outputs(
+        wrapped_model=wrapped_model,
+        model_inputs=rewrite_inputs,
+        run_with_backend=False,
+        deploy_cfg=deploy_cfg)
+    torch_assert_close(rewrite_outputs, pytorch_output)

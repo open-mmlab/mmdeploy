@@ -54,7 +54,8 @@ class End2EndModel(BaseBackendModel):
             device=device,
             **kwargs)
         # create head for decoding heatmap
-        self.head = builder.build_head(model_cfg.model.head)
+        self.head = builder.build_head(model_cfg.model.head) if hasattr(
+            model_cfg.model, 'head') else None
 
     def _init_wrapper(self, backend: Backend, backend_files: Sequence[str],
                       device: str, **kwargs):
@@ -97,6 +98,9 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
+        if self.model_cfg.model.type == 'YOLODetector':
+            return self.pack_yolox_pose_result(batch_outputs, data_samples)
+
         codec = self.model_cfg.codec
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
@@ -156,6 +160,48 @@ class End2EndModel(BaseBackendModel):
             if pred_fields is not None:
                 data_sample.pred_fields = pred_fields
 
+        return data_samples
+
+    def pack_yolox_pose_result(self, preds: List[torch.Tensor],
+                               data_samples: List[BaseDataElement]):
+        """Pack yolox-pose prediction results to mmpose format
+        Args:
+            preds (List[Tensor]): Prediction of bboxes and key-points.
+            data_samples (List[BaseDataElement]): A list of meta info for
+                image(s).
+        Returns:
+            data_samples (List[BaseDataElement])：
+                updated data_samples with predictions.
+        """
+        assert preds[0].shape[0] == len(data_samples)
+        batched_dets, batched_kpts = preds
+        for data_sample_idx, data_sample in enumerate(data_samples):
+            bboxes = batched_dets[data_sample_idx, :, :4]
+            bbox_scores = batched_dets[data_sample_idx, :, 4]
+            keypoints = batched_kpts[data_sample_idx, :, :, :2]
+            keypoint_scores = batched_kpts[data_sample_idx, :, :, 2]
+
+            # filter zero or negative scores
+            inds = bbox_scores > 0.0
+            bboxes = bboxes[inds, :]
+            bbox_scores = bbox_scores[inds]
+            keypoints = keypoints[inds, :]
+            keypoint_scores = keypoint_scores[inds]
+
+            pred_instances = InstanceData()
+            # rescale
+            scale_factor = data_sample.scale_factor
+            scale_factor = keypoints.new_tensor(scale_factor)
+            keypoints /= keypoints.new_tensor(scale_factor).reshape(1, 1, 2)
+            bboxes /= keypoints.new_tensor(scale_factor).repeat(1, 2)
+            pred_instances.bboxes = bboxes.cpu().numpy()
+            pred_instances.bbox_scores = bbox_scores
+            # the precision test requires keypoints to be np.ndarray
+            pred_instances.keypoints = keypoints.cpu().numpy()
+            pred_instances.keypoint_scores = keypoint_scores
+            pred_instances.lebels = torch.zeros(bboxes.shape[0])
+
+            data_sample.pred_instances = pred_instances
         return data_samples
 
 
@@ -236,8 +282,13 @@ def build_pose_detection_model(
     if isinstance(data_preprocessor, dict):
         dp = data_preprocessor.copy()
         dp_type = dp.pop('type')
-        assert dp_type == 'PoseDataPreprocessor'
-        data_preprocessor = PoseDataPreprocessor(**dp)
+        if dp_type == 'mmdet.DetDataPreprocessor':
+            from mmdet.models.data_preprocessors import DetDataPreprocessor
+            data_preprocessor = DetDataPreprocessor(**dp)
+        else:
+            assert dp_type == 'PoseDataPreprocessor'
+            data_preprocessor = PoseDataPreprocessor(**dp)
+
     backend_pose_model = __BACKEND_MODEL.build(
         dict(
             type=model_type,
