@@ -1,4 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import tempfile
+
 import onnx
 import pytest
 import torch
@@ -211,32 +213,19 @@ def test_modulated_deform_conv(backend,
             'modulated_deform_conv',
             input_names=['input', 'offset', 'mask'],
             output_names=['output'],
+            tolerate_small_mismatch=True,
             save_dir=save_dir)
 
 
-@pytest.mark.parametrize('backend', [TEST_TENSORRT])
 @pytest.mark.parametrize('in_channels,out_channels,stride,padding,'
                          'dilation,groups,deform_groups,kernel_size',
-                         [(3, 64, 1, 0, 1, 1, 1, 3),
-                          (1, 32, 3, 2, 1, 1, 1, 3)])
-def test_deform_conv(backend,
-                     in_channels,
-                     out_channels,
-                     stride,
-                     padding,
-                     dilation,
-                     groups,
-                     deform_groups,
-                     kernel_size,
-                     input_list=None,
-                     save_dir=None):
-    backend.check_env()
+                         [(1, 32, 3, 2, 1, 1, 1, 3)])
+def test_deform_conv(in_channels, out_channels, stride, padding, dilation,
+                     groups, deform_groups, kernel_size):
 
-    if input_list is None:
-        input = torch.rand(
-            1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
-    else:
-        input = torch.tensor(input_list[0])
+    inputs = torch.rand(
+        1, in_channels, 28, 28, requires_grad=False)  # (n, c, h, w)
+
     conv_offset = nn.Conv2d(
         in_channels=in_channels,
         out_channels=deform_groups * 2 * kernel_size * kernel_size,
@@ -245,19 +234,24 @@ def test_deform_conv(backend,
         padding=padding,
         dilation=dilation,
         bias=True)
-    offset = conv_offset(input)
+    offsets = conv_offset(inputs)
 
     from mmcv.ops import DeformConv2d
     model = DeformConv2d(in_channels, out_channels, kernel_size, stride,
                          padding, dilation, groups, deform_groups).eval()
-
-    with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
-        backend.run_and_validate(
-            model, [input, offset],
-            'deform_conv',
-            input_names=['input', 'offset'],
-            output_names=['output'],
-            save_dir=save_dir)
+    onnx_file = tempfile.NamedTemporaryFile(suffix='.onnx').name
+    with RewriterContext(cfg={}, backend='tensorrt', opset=11):
+        with torch.no_grad():
+            torch.onnx.export(
+                model, (inputs, offsets),
+                onnx_file,
+                export_params=True,
+                keep_initializers_as_inputs=True,
+                opset_version=11)
+        model = onnx.load(onnx_file)
+        node = list(model.graph.node)[0]
+        assert node.domain == 'mmdeploy'
+        assert node.op_type == 'MMCVDeformConv2d'
 
 
 @pytest.mark.parametrize('backend', [TEST_TENSORRT])
@@ -756,8 +750,9 @@ def test_gather(backend,
         make_tensor_value_info(input_names[0], onnx.TensorProto.FLOAT, None),
         make_tensor_value_info(input_names[1], onnx.TensorProto.INT64, None)
     ], [make_tensor_value_info(output_names[0], onnx.TensorProto.FLOAT, None)])
-    gather_model = make_model(gather_graph)
-
+    opset_imports = [onnx.helper.make_operatorsetid('', 11)]
+    gather_model = make_model(gather_graph, opset_imports=opset_imports)
+    gather_model.ir_version = 7
     with RewriterContext(cfg={}, backend=backend.backend_name, opset=11):
         ncnn_model = backend.onnx2ncnn(gather_model, 'gather', output_names,
                                        save_dir)

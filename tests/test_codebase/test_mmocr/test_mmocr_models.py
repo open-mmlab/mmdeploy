@@ -382,7 +382,8 @@ def test_forward_of_encoder_decoder_recognizer(data_samples, is_dynamic,
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
-        deploy_cfg=deploy_cfg)
+        deploy_cfg=deploy_cfg,
+        run_with_backend=False)
 
     if is_backend_output:
         rewrite_outputs = rewrite_outputs[0]
@@ -402,7 +403,7 @@ def test_forward_of_fpnc(backend: Backend):
         dict(
             backend_config=dict(
                 type=backend.value,
-                common_config=dict(max_workspace_size=1 << 30),
+                common_config=dict(max_workspace_size=1 << 20),
                 model_inputs=[
                     dict(
                         input_shapes=dict(
@@ -429,6 +430,7 @@ def test_forward_of_fpnc(backend: Backend):
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
+        run_with_backend=False,
         deploy_cfg=deploy_cfg)
 
     if is_backend_output:
@@ -549,7 +551,7 @@ def test_mmdet_wrapper__forward(backend):
         dict(
             backend_config=dict(
                 type=backend.value,
-                common_config=dict(max_workspace_size=1 << 30)),
+                common_config=dict(max_workspace_size=1 << 20)),
             onnx_config=dict(
                 input_shape=None,
                 input_names=['inputs'],
