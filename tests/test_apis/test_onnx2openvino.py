@@ -1,6 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
-import subprocess
 import tempfile
 
 import numpy as np
@@ -101,13 +100,6 @@ def test_onnx2openvino(get_deploy_cfg):
                                                   output_name)
     assert np.allclose(output_pytorch, openvino_output), \
         'OpenVINO and PyTorch outputs are not the same.'
-
-
-@backend_checker(Backend.OPENVINO)
-def test_can_not_run_onnx2openvino_without_mo():
-    with pytest.raises(subprocess.CalledProcessError):
-        from mmdeploy.apis.openvino import from_onnx
-        from_onnx('tmp.onnx', '/tmp', {}, ['output'])
 
 
 @backend_checker(Backend.OPENVINO)

@@ -192,7 +192,7 @@ jobs:
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
         with:
-          NAME: build_cuda111
+          NAME: build_cuda102
           LABEL: 'build'
           STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
