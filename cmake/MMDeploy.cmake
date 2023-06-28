@@ -12,9 +12,25 @@ function (mmdeploy_export_impl NAME)
             RUNTIME DESTINATION bin)
 endfunction ()
 
+function (mmdeploy_add_rpath NAME)
+    if (MSVC)
+        return()
+    elseif(APPLE)
+        set_target_properties(${NAME} PROPERTIES
+                INSTALL_RPATH "@loader_path"
+                BUILD_RPATH "@loader_path")
+    else ()
+        set_target_properties(${NAME} PROPERTIES
+                INSTALL_RPATH "\$ORIGIN"
+                BUILD_RPATH "\$ORIGIN")
+        target_link_libraries(${NAME} PRIVATE -Wl,--disable-new-dtags)
+    endif ()
+endfunction ()
+
 macro(mmdeploy_add_net NAME)
     if (MMDEPLOY_DYNAMIC_BACKEND)
         mmdeploy_add_library(${NAME} SHARED ${ARGN})
+        mmdeploy_add_rpath(${NAME})
         # DYNAMIC_BACKEND implies BUILD_SDK_MONOLITHIC
         mmdeploy_export_impl(${NAME})
         target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy)

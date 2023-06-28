@@ -3,6 +3,7 @@
 project(mmdeploy_onnxruntime_ops)
 
 include(${CMAKE_SOURCE_DIR}/cmake/modules/FindONNXRUNTIME.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/MMDeploy.cmake)
 
 # add plugin source
 file(GLOB_RECURSE ORT_OPS_SRCS *.cpp)
@@ -22,15 +23,7 @@ target_link_libraries(${PROJECT_NAME}_obj PUBLIC onnxruntime)
 
 mmdeploy_add_library(${PROJECT_NAME} SHARED EXCLUDE "")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PROJECT_NAME}_obj)
-if (APPLE)
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-                BUILD_RPATH "@loader_path"
-                INSTALL_RPATH "@loader_path")
-else ()
-        set_target_properties(${PROJECT_NAME} PROPERTIES
-                BUILD_RPATH "\$ORIGIN"
-                INSTALL_RPATH "\$ORIGIN")
-endif ()
+mmdeploy_add_rpath(${PROJECT_NAME})
 add_library(mmdeploy::onnxruntime::ops ALIAS ${PROJECT_NAME})
 
 set(_ORT_OPS_DIR ${CMAKE_SOURCE_DIR}/mmdeploy/lib)

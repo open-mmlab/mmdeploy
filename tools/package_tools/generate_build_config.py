@@ -121,6 +121,7 @@ def generate_config(args):
         cmake_cfg[
             'MMDEPLOY_DYNAMIC_BACKEND'] = 'ON' \
             if args.sdk_dynamic_net else 'OFF'
+        cmake_cfg['MMDEPLOY_ZIP_MODEL'] = 'ON'
 
         if args.opencv_dir:
             cmake_cfg['OpenCV_DIR'] = args.opencv_dir
