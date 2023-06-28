@@ -164,6 +164,20 @@ def yolox_pose_head__predict_by_feat(
 
     pred_kpts = torch.cat([flatten_decoded_kpts, vis_preds], dim=3)
 
+    # pad
+    bboxes = torch.cat(
+        [bboxes,
+         bboxes.new_zeros((bboxes.shape[0], 1, bboxes.shape[2]))],
+        dim=1)
+    scores = torch.cat(
+        [scores, scores.new_zeros((scores.shape[0], 1, 1))], dim=1)
+    pred_kpts = torch.cat([
+        pred_kpts,
+        pred_kpts.new_zeros(
+            (pred_kpts.shape[0], 1, pred_kpts.shape[2], pred_kpts.shape[3]))
+    ],
+                          dim=1)
+
     # nms
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class

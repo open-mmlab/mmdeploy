@@ -50,7 +50,7 @@ __launch_bounds__(nthds_per_cta) __global__
                             bboxOffset) *
                            5;
         if (nmsedIndex != nullptr) {
-          nmsedIndex[i] = bboxId / 5;
+          nmsedIndex[i] = bboxId / 5 - bboxOffset;
         }
         // clipped bbox xmin
         nmsedDets[i * 6] =
@@ -74,7 +74,7 @@ __launch_bounds__(nthds_per_cta) __global__
                             bboxOffset) *
                            4;
         if (nmsedIndex != nullptr) {
-          nmsedIndex[i] = bboxId / 4;
+          nmsedIndex[i] = bboxId / 4 - bboxOffset;
         }
         // clipped bbox xmin
         nmsedDets[i * 5] =

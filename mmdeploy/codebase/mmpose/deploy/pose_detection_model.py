@@ -181,6 +181,13 @@ class End2EndModel(BaseBackendModel):
             keypoints = batched_kpts[data_sample_idx, :, :, :2]
             keypoint_scores = batched_kpts[data_sample_idx, :, :, 2]
 
+            # filter zero or negative scores
+            inds = bbox_scores > 0.0
+            bboxes = bboxes[inds, :]
+            bbox_scores = bbox_scores[inds]
+            keypoints = keypoints[inds, :]
+            keypoint_scores = keypoint_scores[inds]
+
             pred_instances = InstanceData()
             # rescale
             scale_factor = data_sample.scale_factor
