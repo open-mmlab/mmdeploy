@@ -8,6 +8,8 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmcv.ops.nms import multiclass_nms
+from mmdeploy.utils import Backend
+from mmdeploy.utils.config_utils import get_backend_config
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
@@ -164,19 +166,21 @@ def yolox_pose_head__predict_by_feat(
 
     pred_kpts = torch.cat([flatten_decoded_kpts, vis_preds], dim=3)
 
-    # pad
-    bboxes = torch.cat(
-        [bboxes,
-         bboxes.new_zeros((bboxes.shape[0], 1, bboxes.shape[2]))],
-        dim=1)
-    scores = torch.cat(
-        [scores, scores.new_zeros((scores.shape[0], 1, 1))], dim=1)
-    pred_kpts = torch.cat([
-        pred_kpts,
-        pred_kpts.new_zeros(
-            (pred_kpts.shape[0], 1, pred_kpts.shape[2], pred_kpts.shape[3]))
-    ],
-                          dim=1)
+    backend_config = get_backend_config(deploy_cfg)
+    if backend_config.type == Backend.TENSORRT.value:
+        # pad
+        bboxes = torch.cat(
+            [bboxes,
+             bboxes.new_zeros((bboxes.shape[0], 1, bboxes.shape[2]))],
+            dim=1)
+        scores = torch.cat(
+            [scores, scores.new_zeros((scores.shape[0], 1, 1))], dim=1)
+        pred_kpts = torch.cat([
+            pred_kpts,
+            pred_kpts.new_zeros((pred_kpts.shape[0], 1, pred_kpts.shape[2],
+                                 pred_kpts.shape[3]))
+        ],
+                              dim=1)
 
     # nms
     post_params = get_post_processing_params(deploy_cfg)
@@ -197,9 +201,8 @@ def yolox_pose_head__predict_by_feat(
         output_index=True)
 
     batch_inds = torch.arange(num_imgs, device=scores.device).view(-1, 1)
-    bboxes = bboxes[batch_inds, nms_indices, ...]
-    scores = scores[batch_inds, nms_indices, ...]
     dets = torch.cat([bboxes, scores], dim=2)
+    dets = dets[batch_inds, nms_indices, ...]
     pred_kpts = pred_kpts[batch_inds, nms_indices, ...]
 
     return dets, pred_kpts
