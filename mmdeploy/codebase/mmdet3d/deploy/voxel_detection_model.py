@@ -90,7 +90,14 @@ class VoxelDetectionModel(BaseBackendModel):
         }
 
         outputs = self.wrapper(input_dict)
-
+        num_level = len(outputs) // 3
+        new_outputs = dict(
+            cls_score=[outputs[f'cls_score{i}'] for i in range(num_level)],
+            bbox_pred=[outputs[f'bbox_pred{i}'] for i in range(num_level)],
+            dir_cls_pred=[
+                outputs[f'dir_cls_pred{i}'] for i in range(num_level)
+            ])
+        outputs = new_outputs
         if data_samples is None:
             return outputs
 
@@ -239,9 +246,9 @@ class VoxelDetectionModel(BaseBackendModel):
 
         if not hasattr(head, 'task_heads'):
             data_instances_3d = head.predict_by_feat(
-                cls_scores=[cls_score],
-                bbox_preds=[bbox_pred],
-                dir_cls_preds=[dir_cls_pred],
+                cls_scores=cls_score,
+                bbox_preds=bbox_pred,
+                dir_cls_preds=dir_cls_pred,
                 batch_input_metas=batch_input_metas,
                 cfg=cfg)
 

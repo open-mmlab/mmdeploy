@@ -3,4 +3,5 @@ codebase_config = dict(
     type='mmdet3d', task='VoxelDetection', model_type='end2end')
 onnx_config = dict(
     input_names=['voxels', 'num_points', 'coors'],
-    output_names=['cls_score', 'bbox_pred', 'dir_cls_pred'])
+    # need to change output_names for head with multi-level features
+    output_names=['cls_score0', 'bbox_pred0', 'dir_cls_pred0'])
