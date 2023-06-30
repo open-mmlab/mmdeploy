@@ -281,7 +281,8 @@ def test_yolox_pose_head(backend_type: Backend):
         torch.randn(1, 128, 2, 2)
     ]
 
-    pytorch_output = model(*model_inputs)[0]
+    with torch.no_grad():
+        pytorch_output = model(*model_inputs)[0]
     pred_bboxes = torch.from_numpy(pytorch_output.bboxes).unsqueeze(0)
     pred_bboxes_scores = torch.from_numpy(pytorch_output.scores).reshape(
         1, -1, 1)
