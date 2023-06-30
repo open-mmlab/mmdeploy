@@ -17,6 +17,7 @@ class ResizeInstanceMask : public ResizeBBox {
     if (cfg.contains("params")) {
       mask_thr_binary_ = cfg["params"].value("mask_thr_binary", mask_thr_binary_);
       is_rcnn_ = cfg["params"].contains("rcnn");
+      is_resize_mask_ = cfg["params"].value("is_resize_mask", is_resize_mask_);
     }
     operation::Context ctx(device_, stream_);
     warp_affine_ = operation::Managed<operation::WarpAffine>::Create("bilinear");
@@ -95,44 +96,47 @@ class ResizeInstanceMask : public ResizeBBox {
       auto mask = d_mask.Slice(det.index);
       auto mask_height = (int)mask.shape(1);
       auto mask_width = (int)mask.shape(2);
-      auto& bbox = det.bbox;
-      // same as mmdet with skip_empty = True
-      auto x0 = std::max(std::floor(bbox[0]) - 1, 0.f);
-      auto y0 = std::max(std::floor(bbox[1]) - 1, 0.f);
-      auto x1 = std::min(std::ceil(bbox[2]) + 1, (float)img_w);
-      auto y1 = std::min(std::ceil(bbox[3]) + 1, (float)img_h);
-      auto width = static_cast<int>(x1 - x0);
-      auto height = static_cast<int>(y1 - y0);
-      // params align_corners = False
-      float fx;
-      float fy;
-      float tx;
-      float ty;
-      if (is_rcnn_) {  // mask r-cnn
-        fx = (float)mask_width / (bbox[2] - bbox[0]);
-        fy = (float)mask_height / (bbox[3] - bbox[1]);
-        tx = (x0 + .5f - bbox[0]) * fx - .5f;
-        ty = (y0 + .5f - bbox[1]) * fy - .5f;
-      } else {  // rtmdet-ins
-        auto raw_bbox = cpu_dets.Slice(det.index);
-        auto raw_bbox_data = raw_bbox.data<float>();
-        fx = (raw_bbox_data[2] - raw_bbox_data[0]) / (bbox[2] - bbox[0]);
-        fy = (raw_bbox_data[3] - raw_bbox_data[1]) / (bbox[3] - bbox[1]);
-        tx = (x0 + .5f - bbox[0]) * fx - .5f + raw_bbox_data[0];
-        ty = (y0 + .5f - bbox[1]) * fy - .5f + raw_bbox_data[1];
+      mask.Reshape({1, mask_height, mask_width, 1});
+      if (is_resize_mask_) {
+        auto& bbox = det.bbox;
+        // same as mmdet with skip_empty = True
+        auto x0 = std::max(std::floor(bbox[0]) - 1, 0.f);
+        auto y0 = std::max(std::floor(bbox[1]) - 1, 0.f);
+        auto x1 = std::min(std::ceil(bbox[2]) + 1, (float)img_w);
+        auto y1 = std::min(std::ceil(bbox[3]) + 1, (float)img_h);
+        auto width = static_cast<int>(x1 - x0);
+        auto height = static_cast<int>(y1 - y0);
+        // params align_corners = False
+        float fx;
+        float fy;
+        float tx;
+        float ty;
+        if (is_rcnn_) {  // mask r-cnn
+          fx = (float)mask_width / (bbox[2] - bbox[0]);
+          fy = (float)mask_height / (bbox[3] - bbox[1]);
+          tx = (x0 + .5f - bbox[0]) * fx - .5f;
+          ty = (y0 + .5f - bbox[1]) * fy - .5f;
+        } else {  // rtmdet-ins
+          auto raw_bbox = cpu_dets.Slice(det.index);
+          auto raw_bbox_data = raw_bbox.data<float>();
+          fx = (raw_bbox_data[2] - raw_bbox_data[0]) / (bbox[2] - bbox[0]);
+          fy = (raw_bbox_data[3] - raw_bbox_data[1]) / (bbox[3] - bbox[1]);
+          tx = (x0 + .5f - bbox[0]) * fx - .5f + raw_bbox_data[0];
+          ty = (y0 + .5f - bbox[1]) * fy - .5f + raw_bbox_data[1];
+        }
+
+        float affine_matrix[] = {fx, 0, tx, 0, fy, ty};
+
+        cv::Mat_<float> m(2, 3, affine_matrix);
+        cv::invertAffineTransform(m, m);
+        Tensor& warped_mask = warped_masks.emplace_back();
+        OUTCOME_TRY(warp_affine_.Apply(mask, warped_mask, affine_matrix, height, width));
+        OUTCOME_TRY(CopyToHost(warped_mask, h_warped_masks.emplace_back()));
+
+      } else {
+        OUTCOME_TRY(CopyToHost(mask, h_warped_masks.emplace_back()));
       }
 
-      float affine_matrix[] = {fx, 0, tx, 0, fy, ty};
-
-      cv::Mat_<float> m(2, 3, affine_matrix);
-      cv::invertAffineTransform(m, m);
-
-      mask.Reshape({1, mask_height, mask_width, 1});
-
-      Tensor& warped_mask = warped_masks.emplace_back();
-      OUTCOME_TRY(warp_affine_.Apply(mask, warped_mask, affine_matrix, height, width));
-
-      OUTCOME_TRY(CopyToHost(warped_mask, h_warped_masks.emplace_back()));
     }
 
     OUTCOME_TRY(stream_.Wait());
@@ -165,6 +169,7 @@ class ResizeInstanceMask : public ResizeBBox {
   operation::Managed<operation::WarpAffine> warp_affine_;
   float mask_thr_binary_{.5f};
   bool is_rcnn_{true};
+  bool is_resize_mask_{true};
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeInstanceMask);
