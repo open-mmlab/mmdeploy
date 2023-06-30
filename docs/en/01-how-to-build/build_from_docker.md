@@ -5,7 +5,7 @@ This document guides how to install mmdeploy with [Docker](https://docs.docker.c
 ## Get prebuilt docker images
 
 MMDeploy provides prebuilt docker images for the convenience of its users on [Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy). The docker images are built on
-the latest and released versions. For instance, the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy` is built on the latest mmdeploy and the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0` is for `mmdeploy==1.1.0`.
+the latest and released versions. For instance, the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy` is built on the latest mmdeploy and the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.2.0` is for `mmdeploy==1.2.0`.
 The specifications of the Docker Image are shown below.
 
 |    Item     |   Version   |

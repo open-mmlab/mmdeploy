@@ -4,8 +4,8 @@
 
 ## 获取镜像
 
-为了方便用户，mmdeploy在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了多个版本的镜像，例如对于`mmdeploy==1.1.0`，
-其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.1.0`，而最新的镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy`。
+为了方便用户，mmdeploy在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了多个版本的镜像，例如对于`mmdeploy==1.2.0`，
+其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.2.0`，而最新的镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy`。
 镜像相关规格信息如下表所示：
 
 |    Item     |   Version   |
