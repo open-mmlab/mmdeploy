@@ -304,8 +304,9 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
         task_name = metafile_metric['Task']
         dataset = metafile_metric['Dataset']
 
-        # check if metafile use the same metric on several datasets
-        if len(metafile_metric_info) > 1:
+        # check if metafile use the same metric on several datasets for mmagic
+        task_info = set([_['Task'] for _ in metafile_metric_info])
+        if len(metafile_metric_info) > 1 and len(task_info) == 1:
             for k, v in metafile_metric['Metrics'].items():
                 pytorch_metric[f'{dataset} {k}'] = v
         else:
