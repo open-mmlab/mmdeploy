@@ -4,6 +4,7 @@ import pytest
 import torch
 from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData
+
 from mmdeploy.codebase import import_codebase
 from mmdeploy.utils import Backend, Codebase
 from mmdeploy.utils.test import WrapModel, check_backend, get_rewrite_outputs
@@ -195,8 +196,8 @@ def test_scale_forward(backend_type: Backend):
 @pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_yolox_pose_head(backend_type: Backend):
     try:
-        from models.yolox_pose_head import YOLOXPoseHead, YOLOXPoseHeadModule  # noqa: F401,F403
         from mmyolo.utils.setup_env import register_all_modules
+        from models.yolox_pose_head import YOLOXPoseHead  # noqa: F401,F403
         register_all_modules(True)
     except ImportError:
         pytest.skip(
@@ -248,7 +249,8 @@ def test_yolox_pose_head(backend_type: Backend):
                 center_radius=2.5,
                 iou_calculator=dict(type='mmdet.BboxOverlaps2D'),
                 oks_calculator=dict(
-                    type='OksLoss', metainfo='configs/_base_/datasets/coco.py'))),
+                    type='OksLoss',
+                    metainfo='configs/_base_/datasets/coco.py'))),
         test_cfg=ConfigDict(
             yolox_style=True,
             multi_label=False,
@@ -257,6 +259,7 @@ def test_yolox_pose_head(backend_type: Backend):
             nms=dict(type='nms', iou_threshold=0.65)))
 
     class TestYOLOXPoseHeadModel(torch.nn.Module):
+
         def __init__(self, yolox_pose_head):
             super(TestYOLOXPoseHeadModel, self).__init__()
             self.yolox_pose_head = yolox_pose_head
@@ -264,9 +267,10 @@ def test_yolox_pose_head(backend_type: Backend):
         def forward(self, x1, x2, x3):
             inputs = [x1, x2, x3]
             data_sample = InstanceData()
-            data_sample.set_metainfo(dict(ori_shape=(640, 640),
-                                          scale_factor=(1.0, 1.0)))
-            return self.yolox_pose_head.predict(inputs, batch_data_samples=[data_sample])
+            data_sample.set_metainfo(
+                dict(ori_shape=(640, 640), scale_factor=(1.0, 1.0)))
+            return self.yolox_pose_head.predict(
+                inputs, batch_data_samples=[data_sample])
 
     model = TestYOLOXPoseHeadModel(head)
     model.cpu().eval()
@@ -279,17 +283,23 @@ def test_yolox_pose_head(backend_type: Backend):
 
     pytorch_output = model(*model_inputs)[0]
     pred_bboxes = torch.from_numpy(pytorch_output.bboxes).unsqueeze(0)
-    pred_bboxes_scores = torch.from_numpy(pytorch_output.scores).reshape(1, -1, 1)
+    pred_bboxes_scores = torch.from_numpy(pytorch_output.scores).reshape(
+        1, -1, 1)
     pred_kpts = torch.from_numpy(pytorch_output.keypoints).unsqueeze(0)
-    pred_kpts_scores = torch.from_numpy(pytorch_output.keypoint_scores).unsqueeze(0).unsqueeze(-1)
+    pred_kpts_scores = torch.from_numpy(
+        pytorch_output.keypoint_scores).unsqueeze(0).unsqueeze(-1)
 
-    pytorch_output = [torch.cat([pred_bboxes, pred_bboxes_scores], dim=-1),
-                      torch.cat([pred_kpts, pred_kpts_scores], dim=-1)]
+    pytorch_output = [
+        torch.cat([pred_bboxes, pred_bboxes_scores], dim=-1),
+        torch.cat([pred_kpts, pred_kpts_scores], dim=-1)
+    ]
 
     wrapped_model = WrapModel(model, 'forward')
-    rewrite_inputs = {'x1': model_inputs[0],
-                      'x2': model_inputs[1],
-                      'x3': model_inputs[2]}
+    rewrite_inputs = {
+        'x1': model_inputs[0],
+        'x2': model_inputs[1],
+        'x3': model_inputs[2]
+    }
     deploy_cfg.onnx_config.input_names = ['x1', 'x2', 'x3']
 
     rewrite_outputs, _ = get_rewrite_outputs(
