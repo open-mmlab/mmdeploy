@@ -169,7 +169,7 @@ class ResizeInstanceMask : public ResizeBBox {
   operation::Managed<operation::WarpAffine> warp_affine_;
   float mask_thr_binary_{.5f};
   bool is_rcnn_{true};
-  bool is_resize_mask_{true};
+  bool is_resize_mask_{false};
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeInstanceMask);
