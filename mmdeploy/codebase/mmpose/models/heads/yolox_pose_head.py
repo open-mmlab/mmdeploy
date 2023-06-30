@@ -188,7 +188,7 @@ def yolox_pose_head__predict_by_feat(
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.get('pre_top_k', -1)
-    keep_top_k = post_params.get('keep_top_k', -1)
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     # do nms
     _, _, nms_indices = multiclass_nms(
         bboxes,
