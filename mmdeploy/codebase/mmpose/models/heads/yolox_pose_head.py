@@ -8,8 +8,7 @@ from torch import Tensor
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
 from mmdeploy.mmcv.ops.nms import multiclass_nms
-from mmdeploy.utils import Backend
-from mmdeploy.utils.config_utils import get_backend_config
+from mmdeploy.utils import Backend, get_backend
 
 
 @FUNCTION_REWRITER.register_rewriter(func_name='models.yolox_pose_head.'
@@ -166,9 +165,9 @@ def yolox_pose_head__predict_by_feat(
 
     pred_kpts = torch.cat([flatten_decoded_kpts, vis_preds], dim=3)
 
-    backend_config = get_backend_config(deploy_cfg)
-    if backend_config.type == Backend.TENSORRT.value:
-        # pad
+    backend = get_backend(deploy_cfg)
+    if backend == Backend.TENSORRT:
+        # pad for batched_nms because its output index is filled with -1
         bboxes = torch.cat(
             [bboxes,
              bboxes.new_zeros((bboxes.shape[0], 1, bboxes.shape[2]))],
@@ -188,7 +187,7 @@ def yolox_pose_head__predict_by_feat(
     iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
     score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.get('pre_top_k', -1)
-    keep_top_k = post_params.get('keep_top_k', -1)
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
     # do nms
     _, _, nms_indices = multiclass_nms(
         bboxes,
