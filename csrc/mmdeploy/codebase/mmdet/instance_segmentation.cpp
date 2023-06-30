@@ -136,7 +136,6 @@ class ResizeInstanceMask : public ResizeBBox {
       } else {
         OUTCOME_TRY(CopyToHost(mask, h_warped_masks.emplace_back()));
       }
-
     }
 
     OUTCOME_TRY(stream_.Wait());
