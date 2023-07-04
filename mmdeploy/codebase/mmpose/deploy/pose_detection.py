@@ -36,14 +36,20 @@ def process_model_config(
     cfg = copy.deepcopy(model_cfg)
     test_pipeline = cfg.test_dataloader.dataset.pipeline
     data_preprocessor = cfg.model.data_preprocessor
-    codec = cfg.codec
-    if isinstance(codec, list):
-        codec = codec[-1]
-    input_size = codec['input_size'] if input_shape is None else input_shape
+    codec = getattr(cfg, 'codec', None)
+    if codec is not None:
+        if isinstance(codec, list):
+            codec = codec[-1]
+        input_size = codec['input_size'] if input_shape is None \
+            else input_shape
+    else:
+        input_size = cfg.img_scale
+
     test_pipeline[0] = dict(type='LoadImageFromFile')
     for i in reversed(range(len(test_pipeline))):
         trans = test_pipeline[i]
-        if trans['type'] == 'PackPoseInputs':
+        if trans['type'] == 'PackPoseInputs' or trans[
+                'type'] == 'PackDetPoseInputs':
             test_pipeline.pop(i)
         elif trans['type'] == 'GetBBoxCenterScale':
             trans['type'] = 'TopDownGetBboxCenterScale'
@@ -53,22 +59,37 @@ def process_model_config(
             trans['type'] = 'TopDownAffine'
             trans['image_size'] = input_size
             trans.pop('input_size')
+        elif trans['type'][:6] == 'mmdet.':
+            trans['type'] = trans['type'][6:]
 
-    test_pipeline.append(
-        dict(
-            type='Normalize',
-            mean=data_preprocessor.mean,
-            std=data_preprocessor.std,
-            to_rgb=data_preprocessor.bgr_to_rgb))
+    # DetDataPreprocessor does not have mean, std, bgr_to_rgb
+    # TODO: implement PoseToDetConverter and PackDetPoseInputs in c++
+    if data_preprocessor.type != 'mmdet.DetDataPreprocessor':
+        test_pipeline.append(
+            dict(
+                type='Normalize',
+                mean=data_preprocessor.mean,
+                std=data_preprocessor.std,
+                to_rgb=data_preprocessor.bgr_to_rgb))
     test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
-    test_pipeline.append(
-        dict(
-            type='Collect',
-            keys=['img'],
-            meta_keys=[
-                'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
-                'scale_factor', 'bbox_score', 'center', 'scale'
-            ]))
+    if data_preprocessor.type != 'mmdet.DetDataPreprocessor':
+        test_pipeline.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
+                    'scale_factor', 'bbox_score', 'center', 'scale'
+                ]))
+    else:
+        test_pipeline.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'id', 'img_id', 'img_path', 'ori_shape', 'img_shape',
+                    'scale_factor', 'flip_indices'
+                ]))
 
     cfg.test_dataloader.dataset.pipeline = test_pipeline
     return cfg
@@ -345,13 +366,19 @@ class PoseDetection(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
-        codec = self.model_cfg.codec
-        if isinstance(codec, (list, tuple)):
-            codec = codec[-1]
-        component = 'UNKNOWN'
+        codec = getattr(self.model_cfg, 'codec', None)
         params = copy.deepcopy(self.model_cfg.model.test_cfg)
-        params.update(codec)
-        if self.model_cfg.model.type == 'TopdownPoseEstimator':
+        component = 'UNKNOWN'
+        if codec is not None:
+            if isinstance(codec, (list, tuple)):
+                codec = codec[-1]
+            params.update(codec)
+        else:
+            # TODO: implement this in c++
+            component = 'YOLOXPoseHeadDecode'
+
+        if self.model_cfg.model.type == 'TopdownPoseEstimator' \
+                and codec is not None:
             component = 'TopdownHeatmapSimpleHeadDecode'
             if codec.type == 'MSRAHeatmap':
                 params['post_process'] = 'default'
