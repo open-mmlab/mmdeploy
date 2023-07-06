@@ -28,6 +28,7 @@ The table below lists the models that are guaranteed to be exportable to other b
 | [ResNeXt](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnext)                            | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [SE-ResNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/seresnet)                         | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [MobileNetV2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v2)                   | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
+| [MobileNetV3](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v3)                   | MMPretrain       |      N      |      Y      |    N     |  N   |   N   |    N     |   N    |  N   |
 | [ShuffleNetV1](https://github.com/open-mmlab/mmpretrain/tree/main/configs/shufflenet_v1)                 | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [ShuffleNetV2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/shufflenet_v2)                 | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   Y   |    Y     |   Y    |  Y   |
 | [VisionTransformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/vision_transformer)       | MMPretrain       |      Y      |      Y      |    Y     |  Y   |   ?   |    Y     |   Y    |  N   |
