@@ -189,5 +189,7 @@ for label_id, score in result:
 
 | Model                                                                                      | TorchScript | ONNX Runtime | TensorRT | ncnn | PPLNN | OpenVINO |
 | :----------------------------------------------------------------------------------------- | :---------: | :----------: | :------: | :--: | :---: | :------: |
-| [TSN](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/tsn)           |      N      |      Y       |    Y     |  N   |   N   |    N     |
-| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/slowfast) |      N      |      Y       |    Y     |  N   |   N   |    N     |
+| [TSN](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/tsn)           |      Y      |      Y       |    Y     |  N   |   N   |    N     |
+| [SlowFast](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/slowfast) |      Y      |      Y       |    Y     |  N   |   N   |    N     |
+| [TSM](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/tsm)           |      Y      |      Y       |    Y     |  N   |   N   |    N     |
+| [X3D](https://github.com/open-mmlab/mmaction2/tree/main/configs/recognition/x3d)           |      Y      |      Y       |    Y     |  N   |   N   |    N     |
