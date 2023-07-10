@@ -1,0 +1,10 @@
+backend_config = dict(
+    type='onnxruntime',
+    common_config=dict(
+        precision='fp16',
+        min_positive_val=1e-7,
+        max_finite_val=1e4,
+        keep_io_types=False,
+        disable_shape_infer=False,
+        op_block_list=None,
+        node_block_list=None))
