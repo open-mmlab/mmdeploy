@@ -42,6 +42,11 @@ onnxruntime:
     backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
 
+  pipeline_ort_dynamic_kitti_fp16: &pipeline_ort_dynamic_kitti_fp16
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime-fp16_dynamic.py
+
   pipeline_ort_dynamic_nus_fp32: &pipeline_ort_dynamic_nus_fp32
     convert_image: *convert_image_nus
     backend_test: False
@@ -86,7 +91,7 @@ models:
       - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py
       - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-car.py
     pipelines:
-      - *pipeline_ort_dynamic_kitti_fp32
+      - *pipeline_ort_dynamic_kitti_fp16
       - *pipeline_openvino_dynamic_kitti_fp32
       - *pipeline_trt_dynamic_kitti_fp32
   - name: PointPillars

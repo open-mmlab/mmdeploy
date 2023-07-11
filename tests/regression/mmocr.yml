@@ -43,6 +43,10 @@ onnxruntime:
     convert_image: *convert_image_det
     deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime_dynamic.py
 
+  pipeline_ort_detection_dynamic_fp16: &pipeline_ort_detection_dynamic_fp16
+    convert_image: *convert_image_det
+    deploy_config: configs/mmocr/text-detection/text-detection_onnxruntime-fp16_dynamic.py
+
   pipeline_ort_detection_mrcnn_dynamic_fp32: &pipeline_ort_detection_mrcnn_dynamic_fp32
     convert_image: *convert_image_det
     deploy_config: configs/mmocr/text-detection/text-detection_mrcnn_onnxruntime_dynamic.py
@@ -55,6 +59,11 @@ onnxruntime:
   pipeline_ort_recognition_dynamic_fp32: &pipeline_ort_recognition_dynamic_fp32
     convert_image: *convert_image_rec
     deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime_dynamic.py
+
+  pipeline_ort_recognition_dynamic_fp16: &pipeline_ort_recognition_dynamic_fp16
+    convert_image: *convert_image_rec
+    deploy_config: configs/mmocr/text-recognition/text-recognition_onnxruntime-fp16_dynamic.py
+
 
 tensorrt:
   # ======= detection =======
@@ -239,7 +248,7 @@ models:
       - configs/textdet/dbnet/dbnet_resnet18_fpnc_1200e_icdar2015.py
     pipelines:
       - *pipeline_ts_detection_fp32
-      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_ort_detection_dynamic_fp16
       - *pipeline_trt_detection_dynamic_fp16
       - *pipeline_ncnn_detection_static_fp32
       - *pipeline_pplnn_detection_dynamic_fp32
@@ -303,7 +312,7 @@ models:
       - configs/textrecog/crnn/crnn_mini-vgg_5e_mj.py
     pipelines:
       - *pipeline_ts_recognition_fp32
-      - *pipeline_ort_recognition_dynamic_fp32
+      - *pipeline_ort_recognition_dynamic_fp16
       - *pipeline_trt_recognition_dynamic_fp16_H32_C1
       - *pipeline_ncnn_recognition_static_fp32
       - *pipeline_pplnn_recognition_dynamic_fp32
