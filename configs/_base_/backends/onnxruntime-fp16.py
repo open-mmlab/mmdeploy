@@ -1,7 +1,7 @@
 backend_config = dict(
     type='onnxruntime',
+    precision='fp16',
     common_config=dict(
-        precision='fp16',
         min_positive_val=1e-7,
         max_finite_val=1e4,
         keep_io_types=False,

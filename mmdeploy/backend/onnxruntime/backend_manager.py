@@ -3,7 +3,7 @@ import logging
 import os.path as osp
 from typing import Any, Callable, Optional, Sequence
 
-from mmdeploy.utils import get_common_config
+from mmdeploy.utils import get_backend_config, get_common_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
@@ -142,17 +142,15 @@ class ONNXRuntimeManager(BaseBackendManager):
         Returns:
             Sequence[str]: Backend files.
         """
-        common_config = get_common_config(deploy_cfg)
-        precision = common_config.get('precision', None)
+        backend_cfg = get_backend_config(deploy_cfg)
+
+        precision = backend_cfg.get('precision', 'fp32')
         if precision == 'fp16':
             import onnx
             from onnxconverter_common import float16
+
+            common_cfg = get_common_config(deploy_cfg)
             model = onnx.load(ir_files[0])
-            precision_kwargs = {
-                k: v
-                for k, v in common_config.items() if k != 'precision'
-            }
-            model_fp16 = float16.convert_float_to_float16(
-                model, **precision_kwargs)
+            model_fp16 = float16.convert_float_to_float16(model, **common_cfg)
             onnx.save(model_fp16, ir_files[0])
         return ir_files
