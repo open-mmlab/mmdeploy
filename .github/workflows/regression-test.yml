@@ -111,7 +111,7 @@ jobs:
           apt update && apt install unzip
           python -V
           python -m pip install --upgrade pip
-          python -m pip install openmim numpy pycuda xlsxwriter packaging prettytable
+          python -m pip install openmim numpy pycuda xlsxwriter packaging prettytable onnxconverter-common
           python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python .github/scripts/prepare_reg_test.py --torch-version ${{ matrix.torch_version }} --codebases ${{ matrix.codebase}}
           python -m pip install -r requirements.txt
@@ -221,7 +221,7 @@ jobs:
           conda activate $env:TEMP_ENV
           python -V
           python -m pip install --upgrade pip
-          python -m pip install openmim numpy pycuda xlsxwriter packaging prettytable
+          python -m pip install openmim numpy pycuda xlsxwriter packaging prettytable onnxconverter-common
           python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python .github/scripts/prepare_reg_test.py --torch-version ${{ matrix.torch_version }} --codebases ${{ matrix.codebase}}
           python -m pip install -r requirements.txt
