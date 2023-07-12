@@ -83,7 +83,7 @@ Notes:
 
 - Custom operations from OpenVINO use the domain `org.openvinotoolkit`.
 - For faster work in OpenVINO in the Faster-RCNN, Mask-RCNN, Cascade-RCNN, Cascade-Mask-RCNN models
-  the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvinotoolkit.org/latest/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
+  the RoiAlign operation is replaced with the [ExperimentalDetectronROIFeatureExtractor](https://docs.openvino.ai/2022.3/openvino_docs_ops_detection_ExperimentalDetectronROIFeatureExtractor_6.html) operation in the ONNX graph.
 - Models "VFNet" and "Faster R-CNN + DCN" use the custom "DeformableConv2D" operation.
 
 ## Deployment config
