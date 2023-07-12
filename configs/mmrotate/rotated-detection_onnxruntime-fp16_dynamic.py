@@ -20,3 +20,6 @@ onnx_config = dict(
             1: 'num_dets',
         },
     })
+
+backend_config = dict(
+    common_config=dict(op_block_list=['NMSRotated', 'Resize']))

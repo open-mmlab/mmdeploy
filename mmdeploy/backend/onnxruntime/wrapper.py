@@ -2,6 +2,7 @@
 import os.path as osp
 from typing import Dict, Optional, Sequence
 
+import numpy as np
 import onnxruntime as ort
 import torch
 
@@ -102,6 +103,8 @@ class ORTWrapper(BaseWrapper):
         output_list = self.io_binding.copy_outputs_to_cpu()
         outputs = {}
         for output_name, numpy_tensor in zip(self._output_names, output_list):
+            if numpy_tensor.dtype == np.float16:
+                numpy_tensor = numpy_tensor.astype(np.float32)
             outputs[output_name] = torch.from_numpy(numpy_tensor)
 
         return outputs
