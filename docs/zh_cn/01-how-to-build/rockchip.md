@@ -63,7 +63,7 @@ MMDeploy 支持把模型部署到瑞芯微设备上。已支持的芯片：RV112
    2.2 参考表中的安装指南，安装 RKNN python 安装包。建议在安装时，使用选项 `--no-deps`，以避免依赖包的冲突。以 rknn-toolkit2 为例:
 
    ```
-   pip install packages/rknn_toolkit2-1.2.0_f7bb160f-cp36-cp36m-linux_x86_64.whl --no-deps
+   pip install packages/rknn_toolkit2-1.4.0_22dcfef4-cp36-cp36m-linux_x86_64.whl --no-deps
    ```
 
    2.3 先安装onnx==1.8.0,跟着 [instructions](../01-how-to-build/build_from_source.md)，源码安装 MMDeploy。 需要注意的是， MMDeploy 和 RKNN 依赖的安装包间有冲突的内容. 这里提供建议在 python 3.6 环境中使用的安装包版本:
@@ -88,7 +88,7 @@ git clone https://github.com/open-mmlab/mmpretrain
 # 执行转换命令
 cd /the/path/of/mmdeploy
 python tools/deploy.py \
-    configs/mmpretrain/classification_rknn_static.py \
+    configs/mmpretrain/classification_rknn-fp16_static-224x224.py \
     /the/path/of/mmpretrain/configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
     /the/path/of/mmpretrain/demo/demo.JPEG \

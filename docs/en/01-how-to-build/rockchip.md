@@ -23,7 +23,7 @@ It is recommended to create a virtual environment for the project.
 2. Install RKNN python package following [rknn-toolkit2 doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc) or [rknn-toolkit doc](https://github.com/rockchip-linux/rknn-toolkit/tree/master/doc). When installing rknn python package, it is better to append `--no-deps` after the commands to avoid dependency conflicts. RKNN-Toolkit2 package for example:
 
    ```
-   pip install packages/rknn_toolkit2-1.2.0_f7bb160f-cp36-cp36m-linux_x86_64.whl --no-deps
+   pip install packages/rknn_toolkit2-1.4.0_22dcfef4-cp36-cp36m-linux_x86_64.whl --no-deps
    ```
 
 3. Install ONNX==1.8.0 before reinstall MMDeploy from source following the [instructions](../01-how-to-build/build_from_source.md). Note that there are conflicts between the pip dependencies of MMDeploy and RKNN. Here is the suggested packages versions for python 3.6:
@@ -50,7 +50,7 @@ Example:
 
 ```bash
 python tools/deploy.py \
-    configs/mmpretrain/classification_rknn_static.py \
+    configs/mmpretrain/classification_rknn-fp16_static-224x224.py \
     /mmpretrain_dir/configs/resnet/resnet50_8xb32_in1k.py \
     https://download.openmmlab.com/mmclassification/v0/resnet/resnet50_batch256_imagenet_20200708-cfb998bf.pth \
     /mmpretrain_dir/demo/demo.JPEG \
