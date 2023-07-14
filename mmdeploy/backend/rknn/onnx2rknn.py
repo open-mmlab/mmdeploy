@@ -1,8 +1,8 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Optional, Union
-from packaging import version
 
 import mmengine
+from packaging import version
 from rknn.api import RKNN
 
 from mmdeploy.utils import (get_common_config, get_normalization,
@@ -10,7 +10,6 @@ from mmdeploy.utils import (get_common_config, get_normalization,
                             get_quantization_config, get_rknn_quantization,
                             get_root_logger, load_config)
 from mmdeploy.utils.config_utils import get_backend_config
-from mmdeploy.version import parse_version_info
 
 
 def rknn_package_info():
