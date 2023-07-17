@@ -299,7 +299,7 @@ export OpenCV_AARCH64_INSTALL_DIR=$(pwd)/install
 cd /path/to/mmdeploy
 mkdir -p build && cd build
 export LD_LIBRARY_PATH=$RKNN_TOOL_CHAIN/lib64:$LD_LIBRARY_PATH
-cmake \
+cmake ..\
     -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchains/rknpu2-linux-gnu.cmake \
     -DMMDEPLOY_BUILD_SDK=ON \
     -DMMDEPLOY_TARGET_BACKENDS="rknn" \
