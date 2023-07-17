@@ -170,7 +170,7 @@ Result<void> RKNNNet::Init(const Value& args) {
       MMDEPLOY_ERROR("rknn query 'RKNN_QUERY_INPUT_ATTR' fail! ret: {}", ret);
       return Status(eFail);
     }
-    if (attr.type != RKNN_TENSOR_UINT8) {
+    if (attr.type != RKNN_TENSOR_UINT8 || attr.type != RKNN_TENSOR_INT8) {
       MMDEPLOY_ERROR("MMDeploy SDK only supports RKNN-INT8 model");
       return Status(eInvalidArgument);
     }

@@ -130,8 +130,13 @@ git clone https://github.com/open-mmlab/mmdetection
 
 # 执行转换命令
 python tools/deploy.py \
-    configs/mmpretrain/detection_rknn_static.py \
-
+    configs/mmdet/detection/detection_rknn-int8_static-320x320.py \
+    /the/path/of/mmdet/configs/yolov3/yolov3_mobilenetv2_320_300e_coco.py \
+    https://download.openmmlab.com/mmdetection/v2.0/yolo/yolov3_mobilenetv2_320_300e_coco/yolov3_mobilenetv2_320_300e_coco_20210719_215349-d18dff72.pth \
+    /the/path/of/mmdet/demo/demo.jpg \
+    --work-dir mmdeploy_models/mmdet/yolov3 \
+    --device cpu \
+    --dump-info
 ```
 
 - RTMDet
