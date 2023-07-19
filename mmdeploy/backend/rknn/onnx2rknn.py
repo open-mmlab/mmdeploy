@@ -2,6 +2,7 @@
 from typing import Optional, Union
 
 import mmengine
+from packaging import version
 from rknn.api import RKNN
 
 from mmdeploy.utils import (get_common_config, get_normalization,
@@ -50,10 +51,16 @@ def onnx2rknn(onnx_model: str,
     onnx_params = get_onnx_config(deploy_cfg)
     quantization_cfg = get_quantization_config(deploy_cfg)
 
+    package_info = rknn_package_info()
     input_names = onnx_params.get('input_names', None)
     output_names = onnx_params.get('output_names', None)
     input_size_list = get_backend_config(deploy_cfg).get(
         'input_size_list', None)
+    # rknn-toolkit 1.5+ can not pass input output info, which is weird
+    if package_info['name'] == 'rknn-toolkit2' and version.parse(
+            package_info['version']) > version.parse('1.4'):
+        input_names, output_names, input_size_list = [None] * 3
+
     # update norm value
     if get_rknn_quantization(deploy_cfg) is True and model_cfg is not None:
         transform = get_normalization(model_cfg)
@@ -85,7 +92,7 @@ def onnx2rknn(onnx_model: str,
         if dataset_file is None:
             quantization_cfg.update(dict(do_quantization=False))
             logger.warning('no dataset passed in, quantization is skipped')
-    if rknn_package_info()['name'] == 'rknn-toolkit2':
+    if package_info['name'] == 'rknn-toolkit2':
         quantization_cfg.pop('pre_compile', None)
     ret = rknn.build(**quantization_cfg)
     if ret != 0:
