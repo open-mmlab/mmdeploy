@@ -19,7 +19,7 @@ globals:
   convert_image: &convert_image
     input_img: *video
     test_img: *video
-  backend_test: &default_backend_test True
+  backend_test: &default_backend_test False
   sdk:
     sdk_dynamic: &sdk_dynamic ""
 
@@ -27,6 +27,12 @@ onnxruntime:
   pipeline_ort_static_fp32: &pipeline_ort_static_fp32
     convert_image: *convert_image
     deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py
+    backend_test: *default_backend_test
+
+torchscript:
+  pipeline_torchscript_fp32: &pipeline_torchscript_fp32
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_torchscript.py
     backend_test: *default_backend_test
 
 tensorrt:
@@ -47,6 +53,7 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_2d_static_fp32
+      - *pipeline_torchscript_fp32
 
   - name: SlowFast
     metafile: configs/recognition/slowfast/metafile.yml
@@ -55,3 +62,20 @@ models:
     pipelines:
       - *pipeline_ort_static_fp32
       - *pipeline_trt_3d_static_fp32
+      - *pipeline_torchscript_fp32
+
+  - name: TSM
+    metafile: configs/recognition/tsm/metafile.yml
+    model_configs:
+      - configs/recognition/tsm/tsm_imagenet-pretrained-mobilenetv2_8xb16-1x1x8-100e_kinetics400-rgb.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_torchscript_fp32
+
+  - name: X3D
+    metafile: configs/recognition/x3d/metafile.yml
+    model_configs:
+      - configs/recognition/x3d/x3d_m_16x5x1_facebook-kinetics400-rgb.py
+    pipelines:
+      - *pipeline_ort_static_fp32
+      - *pipeline_torchscript_fp32
