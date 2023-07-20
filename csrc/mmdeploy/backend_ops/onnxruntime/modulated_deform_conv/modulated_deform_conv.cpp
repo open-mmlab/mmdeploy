@@ -21,8 +21,8 @@ void parallel_unroll_gemm(const float *A, const float *B, const float *V, const 
     }
     {
       int32_t remainder = K % 8;  // unroll
-      for (int64_t k = 0; k < K; k += 8) {
-        for (int64_t n = 0; n < N; n++) {
+      for (int32_t k = 0; k < K; k += 8) {
+        for (int32_t n = 0; n < N; n++) {
           tmp[n] += A[m * K + k] * B[k * N + n];
           tmp[n] += A[m * K + k + 1] * B[k * N + N + n];
           tmp[n] += A[m * K + k + 2] * B[k * N + 2 * N + n];
@@ -33,8 +33,8 @@ void parallel_unroll_gemm(const float *A, const float *B, const float *V, const 
           tmp[n] += A[m * K + k + 7] * B[k * N + 7 * N + n];
         }
       }
-      for (int64_t k = K - remainder; k < K; k++) {
-        for (int64_t n = 0; n < N; n++) {
+      for (int32_t k = K - remainder; k < K; k++) {
+        for (int32_t n = 0; n < N; n++) {
           tmp[n] += A[m * K + k] * B[k * N + n];
         }
       }
