@@ -28,6 +28,10 @@ onnxruntime:
     convert_image: *convert_image
     deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime_static.py
     backend_test: *default_backend_test
+  pipeline_ort_static_fp16: &pipeline_ort_static_fp16
+    convert_image: *convert_image
+    deploy_config: configs/mmaction/video-recognition/video-recognition_onnxruntime-fp16_static.py
+    backend_test: *default_backend_test
 
 torchscript:
   pipeline_torchscript_fp32: &pipeline_torchscript_fp32
@@ -51,7 +55,7 @@ models:
     model_configs:
       - configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py
     pipelines:
-      - *pipeline_ort_static_fp32
+      - *pipeline_ort_static_fp16
       - *pipeline_trt_2d_static_fp32
       - *pipeline_torchscript_fp32
 

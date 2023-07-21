@@ -3,6 +3,7 @@ import logging
 import os.path as osp
 from typing import Any, Callable, Optional, Sequence
 
+from mmdeploy.utils import get_backend_config, get_common_config
 from ..base import BACKEND_MANAGERS, BaseBackendManager
 
 
@@ -125,6 +126,7 @@ class ONNXRuntimeManager(BaseBackendManager):
     def to_backend(cls,
                    ir_files: Sequence[str],
                    work_dir: str,
+                   deploy_cfg: Any,
                    log_level: int = logging.INFO,
                    device: str = 'cpu',
                    **kwargs) -> Sequence[str]:
@@ -134,9 +136,21 @@ class ONNXRuntimeManager(BaseBackendManager):
             ir_files (Sequence[str]): The intermediate representation files.
             work_dir (str): The work directory, backend files and logs should
                 be saved in this directory.
+            deploy_cfg (Any): The deploy config.
             log_level (int, optional): The log level. Defaults to logging.INFO.
             device (str, optional): The device type. Defaults to 'cpu'.
         Returns:
             Sequence[str]: Backend files.
         """
+        backend_cfg = get_backend_config(deploy_cfg)
+
+        precision = backend_cfg.get('precision', 'fp32')
+        if precision == 'fp16':
+            import onnx
+            from onnxconverter_common import float16
+
+            common_cfg = get_common_config(deploy_cfg)
+            model = onnx.load(ir_files[0])
+            model_fp16 = float16.convert_float_to_float16(model, **common_cfg)
+            onnx.save(model_fp16, ir_files[0])
         return ir_files

@@ -25,6 +25,10 @@ onnxruntime:
     convert_image: *convert_image_det
     deploy_config: configs/mmrotate/rotated-detection_onnxruntime_dynamic.py
 
+  pipeline_ort_detection_dynamic_fp16: &pipeline_ort_detection_dynamic_fp16
+    convert_image: *convert_image_det
+    deploy_config: configs/mmrotate/rotated-detection_onnxruntime-fp16_dynamic.py
+
 tensorrt:
   # ======= detection =======
   pipeline_trt_detection_dynamic_fp32: &pipeline_trt_detection_dynamic_fp32
@@ -43,7 +47,7 @@ models:
     model_configs:
       - configs/rotated_retinanet/rotated-retinanet-hbox-oc_r50_fpn_1x_dota.py
     pipelines:
-      - *pipeline_ort_detection_dynamic_fp32
+      - *pipeline_ort_detection_dynamic_fp16
       - *pipeline_trt_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
 

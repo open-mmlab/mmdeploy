@@ -33,6 +33,11 @@ onnxruntime:
     backend_test: False
     deploy_config: configs/mmseg/segmentation_onnxruntime_dynamic.py
 
+  pipeline_ort_dynamic_fp16: &pipeline_ort_dynamic_fp16
+    convert_image: *convert_image
+    backend_test: False
+    deploy_config: configs/mmseg/segmentation_onnxruntime-fp16_dynamic.py
+
 tensorrt:
   pipeline_trt_static_fp32: &pipeline_trt_static_fp32
     convert_image: *convert_image
@@ -215,7 +220,7 @@ models:
     model_configs:
       - configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py
     pipelines:
-      - *pipeline_ort_dynamic_fp32
+      - *pipeline_ort_dynamic_fp16
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32

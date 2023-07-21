@@ -22,6 +22,14 @@ pip install onnxruntime==1.8.1 # if you want to use cpu version
 pip install onnxruntime-gpu==1.8.1 # if you want to use gpu version
 ```
 
+### Install float16 conversion tool (optional)
+
+If you want to use float16 precision, install the tool by running the following script:
+
+```bash
+pip install onnx onnxconverter-common
+```
+
 ## Build custom ops
 
 ### Download ONNXRuntime Library
