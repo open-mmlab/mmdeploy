@@ -40,11 +40,17 @@ def main():
         bbox = np.array(args.bbox, dtype=int)
         bbox[2:] += bbox[:2]
         result = detector(img, bbox)
-    print(result)
+    dets, points = result
+    dets = dets.reshape(-1, 5)
+    for box in dets:
+        score = box[4]
+        x1, y1, x2, y2 = [int(_) for _ in box[:4]]
+        if score < 0.3:
+            continue
+        cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0))
 
-    _, point_num, _ = result.shape
-    points = result[:, :, :2].reshape(point_num, 2)
-    for [x, y] in points.astype(int):
+    points = points[..., :2].reshape(-1, 2).astype(np.int32)
+    for [x, y] in points:
         cv2.circle(img, (x, y), 1, (0, 255, 0), 2)
 
     cv2.imwrite('output_pose.png', img)

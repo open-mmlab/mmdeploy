@@ -36,7 +36,9 @@ class DeepposeRegressionHeadDecode : public MMPose {
     }
 
     auto& img_metas = _data["img_metas"];
-
+    if (img_metas.contains("bbox")) {
+      from_value(img_metas["bbox"], bbox_);
+    }
     vector<float> center;
     vector<float> scale;
     from_value(img_metas["center"], center);
@@ -60,6 +62,7 @@ class DeepposeRegressionHeadDecode : public MMPose {
       output.key_points.push_back({{x, y}, s});
       data += 3;
     }
+    output.detections.push_back({{bbox_[0], bbox_[1], bbox_[2], bbox_[3]}, bbox_[4]});
     return to_value(std::move(output));
   }
 
@@ -106,6 +109,8 @@ class DeepposeRegressionHeadDecode : public MMPose {
     *(data + 0) = *(data + 0) * scale_x + center[0] - scale[0] * 0.5;
     *(data + 1) = *(data + 1) * scale_y + center[1] - scale[1] * 0.5;
   }
+  private:
+  vector<float> bbox_{0, 0, 1, 1, 1};
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, DeepposeRegressionHeadDecode);

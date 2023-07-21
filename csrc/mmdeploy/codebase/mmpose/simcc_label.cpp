@@ -49,7 +49,9 @@ class SimCCLabelDecode : public MMPose {
     }
 
     auto& img_metas = _data["img_metas"];
-
+    if (img_metas.contains("bbox")) {
+      from_value(img_metas["bbox"], bbox_);
+    }
     Tensor keypoints({Device{"cpu"}, DataType::kFLOAT, {simcc_x.shape(0), simcc_x.shape(1), 2}});
     Tensor scores({Device{"cpu"}, DataType::kFLOAT, {simcc_x.shape(0), simcc_x.shape(1), 1}});
     get_simcc_maximum(simcc_x, simcc_y, keypoints, scores);
@@ -73,6 +75,7 @@ class SimCCLabelDecode : public MMPose {
       keypoints_data += 2;
       scores_data += 1;
     }
+    output.detections.push_back({{bbox_[0], bbox_[1], bbox_[2], bbox_[3]}, bbox_[4]});
     return to_value(output);
   }
 
@@ -102,7 +105,8 @@ class SimCCLabelDecode : public MMPose {
     }
   }
 
- private:
+  private:
+  vector<float> bbox_{0, 0, 1, 1, 1};
   bool flip_test_{false};
   bool shift_heatmap_{false};
   float simcc_split_ratio_{2.0};

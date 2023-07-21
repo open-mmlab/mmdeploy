@@ -199,7 +199,7 @@ class End2EndModel(BaseBackendModel):
             # the precision test requires keypoints to be np.ndarray
             pred_instances.keypoints = keypoints.cpu().numpy()
             pred_instances.keypoint_scores = keypoint_scores
-            pred_instances.lebels = torch.zeros(bboxes.shape[0])
+            pred_instances.labels = torch.zeros(bboxes.shape[0])
 
             data_sample.pred_instances = pred_instances
         return data_samples
@@ -239,7 +239,9 @@ class SDKEnd2EndModel(End2EndModel):
             # inputs are c,h,w, sdk requested h,w,c
             input_img = input_img.permute(1, 2, 0)
             input_img = input_img.contiguous().detach().cpu().numpy()
-            keypoints = self.wrapper.handle(input_img, bboxes.tolist())
+            dets, keypoints = self.wrapper.handle(input_img, bboxes.tolist())
+            num_bbox = dets.shape[0]
+            keypoints = keypoints.reshape(num_bbox, -1, 3)
             pred = InstanceData(
                 keypoints=keypoints[..., :2],
                 keypoint_scores=keypoints[..., 2])
@@ -248,6 +250,51 @@ class SDKEnd2EndModel(End2EndModel):
         results = self.pack_result(
             pred_results, data_samples, convert_coordinate=False)
         return results
+
+
+@__BACKEND_MODEL.register_module('sdk_yoloxpose')
+class SDKYoloxPoseModel(End2EndModel):
+    """SDK inference class, converts SDK output to mmpose format."""
+
+    def __init__(self, *args, **kwargs):
+        kwargs['data_preprocessor'] = None
+        super(SDKYoloxPoseModel, self).__init__(*args, **kwargs)
+
+    def forward(self,
+                inputs: List[torch.Tensor],
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs) -> list:
+        """Run forward inference.
+
+        Args:
+            inputs (List[torch.Tensor]): A list contains input image(s)
+                in [H x W x C] format.
+            data_samples (List[BaseDataElement]):
+                Data samples of image metas.
+            mode (str): test mode, only support 'predict'
+            **kwargs: Other key-pair arguments.
+
+        Returns:
+            list: A list contains predictions.
+        """
+        num_pts = self.model_cfg.model.bbox_head.head_module.num_keypoints
+        for input_img, sample in zip(inputs, data_samples):
+            # inputs are c,h,w, sdk requested h,w,c
+            input_img = input_img.permute(1, 2, 0)
+            input_img = input_img.contiguous().detach().cpu().numpy()
+            dets, keypoints = self.wrapper.handle(input_img)
+            num_bbox = dets.shape[0]
+            keypoints = keypoints.reshape(num_bbox, num_pts, 3)
+            pred_instances = InstanceData()
+            pred_instances.bboxes = dets[:, :4]
+            pred_instances.bbox_scores = dets[:, 4]
+            pred_instances.keypoints = keypoints[..., :2]
+            pred_instances.keypoint_scores = keypoints[..., 2]
+            pred_instances.labels = torch.zeros(dets.shape[0])
+            sample.pred_instances = pred_instances
+
+        return data_samples
 
 
 def build_pose_detection_model(

@@ -161,6 +161,10 @@ Result<void> CpuPlatformImpl::Copy(Buffer src, Buffer dst, size_t size, size_t s
                                    size_t dst_offset, Stream stream) {
   auto src_ptr = src.GetNative();
   auto dst_ptr = dst.GetNative();
+  if (size == 0) {
+    return success();
+  }
+
   if (!src_ptr || !dst_ptr) {
     return Status(eInvalidArgument);
   }

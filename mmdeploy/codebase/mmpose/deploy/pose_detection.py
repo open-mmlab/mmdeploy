@@ -48,8 +48,12 @@ def process_model_config(
     test_pipeline[0] = dict(type='LoadImageFromFile')
     for i in reversed(range(len(test_pipeline))):
         trans = test_pipeline[i]
-        if trans['type'] == 'PackPoseInputs' or trans[
-                'type'] == 'PackDetPoseInputs':
+        if trans['type'].startswith('mmdet.'):
+            trans['type'] = trans['type'][6:]
+
+        if trans['type'] in [
+                'PackPoseInputs', 'PackDetPoseInputs', 'PoseToDetConverter'
+        ]:
             test_pipeline.pop(i)
         elif trans['type'] == 'GetBBoxCenterScale':
             trans['type'] = 'TopDownGetBboxCenterScale'
@@ -59,20 +63,31 @@ def process_model_config(
             trans['type'] = 'TopDownAffine'
             trans['image_size'] = input_size
             trans.pop('input_size')
-        elif trans['type'][:6] == 'mmdet.':
-            trans['type'] = trans['type'][6:]
+        elif trans['type'] == 'Resize':
+            trans['size'] = trans.pop('scale')
 
-    # DetDataPreprocessor does not have mean, std, bgr_to_rgb
-    # TODO: implement PoseToDetConverter and PackDetPoseInputs in c++
-    if data_preprocessor.type != 'mmdet.DetDataPreprocessor':
+    if data_preprocessor.type == 'mmdet.DetDataPreprocessor':
+        # DetDataPreprocessor does not have mean, std, bgr_to_rgb
+        test_pipeline.append(
+            dict(
+                type='Normalize', mean=[0, 0, 0], std=[1, 1, 1], to_rgb=False))
+        test_pipeline.append(dict(type='DefaultFormatBundle'))
+        test_pipeline.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'ori_shape', 'img_shape', 'pad_shape', 'scale_factor',
+                    'flip_indices'
+                ]))
+    else:
         test_pipeline.append(
             dict(
                 type='Normalize',
                 mean=data_preprocessor.mean,
                 std=data_preprocessor.std,
                 to_rgb=data_preprocessor.bgr_to_rgb))
-    test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
-    if data_preprocessor.type != 'mmdet.DetDataPreprocessor':
+        test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
         test_pipeline.append(
             dict(
                 type='Collect',
@@ -80,15 +95,6 @@ def process_model_config(
                 meta_keys=[
                     'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
                     'scale_factor', 'bbox_score', 'center', 'scale'
-                ]))
-    else:
-        test_pipeline.append(
-            dict(
-                type='Collect',
-                keys=['img'],
-                meta_keys=[
-                    'id', 'img_id', 'img_path', 'ori_shape', 'img_shape',
-                    'scale_factor', 'flip_indices'
                 ]))
 
     cfg.test_dataloader.dataset.pipeline = test_pipeline
@@ -366,19 +372,16 @@ class PoseDetection(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
-        codec = getattr(self.model_cfg, 'codec', None)
         params = copy.deepcopy(self.model_cfg.model.test_cfg)
         component = 'UNKNOWN'
-        if codec is not None:
+        model_type = self.model_cfg.model.type
+        if model_type == 'YOLODetector':
+            component = 'YOLOXPose'
+        elif model_type == 'TopdownPoseEstimator':
+            codec = self.model_cfg.codec
             if isinstance(codec, (list, tuple)):
                 codec = codec[-1]
             params.update(codec)
-        else:
-            # TODO: implement this in c++
-            component = 'YOLOXPoseHeadDecode'
-
-        if self.model_cfg.model.type == 'TopdownPoseEstimator' \
-                and codec is not None:
             component = 'TopdownHeatmapSimpleHeadDecode'
             if codec.type == 'MSRAHeatmap':
                 params['post_process'] = 'default'

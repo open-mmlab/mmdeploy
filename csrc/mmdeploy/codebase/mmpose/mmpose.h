@@ -17,9 +17,16 @@ struct PoseDetectorOutput {
     float score;
     MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
   };
+  struct BBox {
+    std::array<float, 4> boundingbox;  // x1,y1,x2,y2
+    float score;
+    MMDEPLOY_ARCHIVE_MEMBERS(boundingbox, score);
+  };
   std::vector<KeyPoint> key_points;
-  MMDEPLOY_ARCHIVE_MEMBERS(key_points);
+  std::vector<BBox> detections;
+  MMDEPLOY_ARCHIVE_MEMBERS(key_points, detections);
 };
+
 
 MMDEPLOY_DECLARE_CODEBASE(MMPose, mmpose);
 

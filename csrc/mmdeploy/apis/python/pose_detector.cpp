@@ -65,20 +65,38 @@ class PyPoseDetector {
 
     auto output = py::list{};
     auto result = detection;
+
     for (int i = 0; i < mats.size(); i++) {
-      int n_point = result->length;
-      auto pred = py::array_t<float>({bbox_count[i], n_point, 3});
-      auto dst = pred.mutable_data();
-      for (int j = 0; j < bbox_count[i]; j++) {
+      int n_point_total = result->length;
+      int n_bbox = result->num_bbox;
+      int n_point = n_bbox > 0 ? n_point_total / n_bbox : 0;
+      int pts_ind = 0;
+      auto pred_pts = py::array_t<float>({n_bbox * n_point, 3});
+      auto pred_bbox = py::array_t<float>({n_bbox, 5});
+      auto dst_pts = pred_pts.mutable_data();
+      auto dst_bbox = pred_bbox.mutable_data();
+
+      // printf("num_bbox %d num_pts %d\n", result->num_bbox, result->length);
+      for (int j = 0; j < n_bbox; j++) {
         for (int k = 0; k < n_point; k++) {
-          dst[0] = result->point[k].x;
-          dst[1] = result->point[k].y;
-          dst[2] = result->score[k];
-          dst += 3;
+          pts_ind = j * n_point + k;
+          dst_pts[0] = result->point[pts_ind].x;
+          dst_pts[1] = result->point[pts_ind].y;
+          dst_pts[2] = result->score[pts_ind];
+          dst_pts += 3;
+          // printf("pts %f %f %f\n", dst_pts[0], dst_pts[1], dst_pts[2]);
+
         }
-        result++;
+        dst_bbox[0] = result->bboxes[j].left;
+        dst_bbox[1] = result->bboxes[j].top;
+        dst_bbox[2] = result->bboxes[j].right;
+        dst_bbox[3] = result->bboxes[j].bottom;
+        dst_bbox[4] = result->bbox_score[j];
+        // printf("box %f %f %f %f %f\n", dst_bbox[0], dst_bbox[1], dst_bbox[2], dst_bbox[3], dst_bbox[4]);
+        dst_bbox += 5;
       }
-      output.append(std::move(pred));
+      result++;
+      output.append(py::make_tuple(std::move(pred_bbox), std::move(pred_pts)));
     }
 
     int total = std::accumulate(bbox_count.begin(), bbox_count.end(), 0);
@@ -101,12 +119,12 @@ static PythonBindingRegisterer register_pose_detector{[](py::module& m) {
            }),
            py::arg("model_path"), py::arg("device_name"), py::arg("device_id") = 0)
       .def("__call__",
-           [](PyPoseDetector* self, const PyImage& img) -> py::array {
+           [](PyPoseDetector* self, const PyImage& img) -> py::tuple {
              return self->Apply({img}, {})[0];
            })
       .def(
           "__call__",
-          [](PyPoseDetector* self, const PyImage& img, const Rect& box) -> py::array {
+          [](PyPoseDetector* self, const PyImage& img, const Rect& box) -> py::tuple {
             std::vector<std::vector<Rect>> bboxes;
             bboxes.push_back({box});
             return self->Apply({img}, bboxes)[0];
@@ -115,7 +133,7 @@ static PythonBindingRegisterer register_pose_detector{[](py::module& m) {
       .def(
           "__call__",
           [](PyPoseDetector* self, const PyImage& img,
-             const std::vector<Rect>& bboxes) -> py::array {
+             const std::vector<Rect>& bboxes) -> py::tuple {
             std::vector<std::vector<Rect>> _bboxes;
             _bboxes.push_back(bboxes);
             return self->Apply({img}, _bboxes)[0];
