@@ -27,7 +27,11 @@ int main(int argc, char* argv[]) {
     return -1;
   }
 
-  mmdeploy::Segmentor segmentor{mmdeploy::Model{ARGS_model}, mmdeploy::Device{FLAGS_device}};
+  mmdeploy::Profiler profiler("/tmp/profile.bin");
+  mmdeploy::Context context;
+  context.Add(mmdeploy::Device(FLAGS_device));
+  context.Add(profiler);
+  mmdeploy::Segmentor segmentor{mmdeploy::Model{ARGS_model}, context};
 
   // apply the detector, the result is an array-like class holding a reference to
   // `mmdeploy_segmentation_t`, will be released automatically on destruction
