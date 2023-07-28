@@ -92,13 +92,19 @@ class End2EndModel(BaseBackendModel):
         batch_size = len(test_outputs[0])
 
         num_outputs = len(test_outputs)
+        has_inst_seg = num_outputs >= 3
+        has_sem_seg = num_outputs == 4
         outputs = [[None for _ in range(batch_size)]
                    for _ in range(num_outputs)]
 
         for i in range(batch_size):
             inds = test_outputs[0][i, :, 4] > 0.0
-            for output_id in range(num_outputs):
-                outputs[output_id][i] = test_outputs[output_id][i, inds, ...]
+            outputs[0][i] = test_outputs[0][i, inds, ...]
+            outputs[1][i] = test_outputs[1][i, inds, ...]
+            if has_inst_seg:
+                outputs[2][i] = test_outputs[2][i, inds, ...]
+            if has_sem_seg:
+                outputs[3][i] = test_outputs[3][i]
         return outputs
 
     @staticmethod
@@ -192,10 +198,9 @@ class End2EndModel(BaseBackendModel):
         outputs = self.predict(inputs)
         outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
-        batch_masks = outputs[2] if len(outputs) == 3 else None
+        batch_masks = outputs[2] if len(outputs) >= 3 else None
         batch_size = inputs.shape[0]
         img_metas = [data_sample.metainfo for data_sample in data_samples]
-        results = []
         rescale = kwargs.get('rescale', True)
         model_type = self.model_cfg.model.type if \
             self.model_cfg is not None else None
@@ -261,7 +266,7 @@ class End2EndModel(BaseBackendModel):
                     masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
                 if export_postprocess_mask and rescale and masks.shape[0] != 0:
-                    masks = torch.nn.functional.interpolate(
+                    masks = F.interpolate(
                         masks.unsqueeze(0),
                         size=[
                             math.ceil(masks.shape[-2] /
@@ -275,9 +280,41 @@ class End2EndModel(BaseBackendModel):
                 # aligned with mmdet to easily convert to numpy
                 masks = masks.cpu()
                 result.masks = masks
+
             data_samples[i].pred_instances = result
-            results.append(data_samples[i])
-        return results
+
+        # deal with panoptic seg
+        batch_semseg = outputs[3] if len(outputs) == 4 else None
+        if batch_semseg is not None:
+            from mmdet.models.seg_heads import (HeuristicFusionHead,
+                                                MaskFormerFusionHead)
+            obj_dict = {
+                'HeuristicFusionHead': HeuristicFusionHead,
+                'MaskFormerFusionHead': MaskFormerFusionHead
+            }
+            head_args = self.model_cfg.model.panoptic_fusion_head.copy()
+            head_args['test_cfg'] = self.model_cfg.model.test_cfg.panoptic
+            fusion_head = obj_dict[head_args.pop('type')](**head_args)
+            if rescale:
+                seg_pred_list = []
+                for i in range(batch_size):
+                    h, w = img_metas[i]['img_shape']
+                    seg_pred = batch_semseg[i][:, :h, :w]
+                    h, w = img_metas[i]['ori_shape']
+                    seg_pred = F.interpolate(
+                        seg_pred[None],
+                        size=(h, w),
+                        mode='bilinear',
+                        align_corners=False)[0]
+                    seg_pred_list.append(seg_pred)
+                batch_semseg = seg_pred_list
+
+            masks_results = [ds.pred_instances for ds in data_samples]
+            semseg_results = fusion_head.predict(masks_results, batch_semseg)
+            for ds, pred_panoptic_seg in zip(data_samples, semseg_results):
+                ds.pred_panoptic_seg = pred_panoptic_seg
+
+        return data_samples
 
     def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
         """The interface for predict.
