@@ -295,19 +295,24 @@ class End2EndModel(BaseBackendModel):
             head_args = self.model_cfg.model.panoptic_fusion_head.copy()
             head_args['test_cfg'] = self.model_cfg.model.test_cfg.panoptic
             fusion_head = obj_dict[head_args.pop('type')](**head_args)
-            if rescale:
-                seg_pred_list = []
-                for i in range(batch_size):
-                    h, w = img_metas[i]['img_shape']
-                    seg_pred = batch_semseg[i][:, :h, :w]
-                    h, w = img_metas[i]['ori_shape']
-                    seg_pred = F.interpolate(
-                        seg_pred[None],
-                        size=(h, w),
-                        mode='bilinear',
-                        align_corners=False)[0]
-                    seg_pred_list.append(seg_pred)
-                batch_semseg = seg_pred_list
+            seg_pred_list = []
+            for i in range(batch_size):
+                h, w = img_metas[i]['batch_input_shape']
+                seg_pred = F.interpolate(
+                    batch_semseg[i][None],
+                    size=(h, w),
+                    mode='bilinear',
+                    align_corners=False)[0]
+                h, w = img_metas[i]['img_shape']
+                seg_pred = seg_pred[:, :h, :w]
+                h, w = img_metas[i]['ori_shape']
+                seg_pred = F.interpolate(
+                    seg_pred[None],
+                    size=(h, w),
+                    mode='bilinear',
+                    align_corners=False)[0]
+                seg_pred_list.append(seg_pred)
+            batch_semseg = seg_pred_list
 
             masks_results = [ds.pred_instances for ds in data_samples]
             semseg_results = fusion_head.predict(masks_results, batch_semseg)
