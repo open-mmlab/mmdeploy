@@ -1,42 +1,42 @@
 # onnxruntime 支持情况
 
-## Introduction of ONNX Runtime
+## ONNX Runtime 介绍
 
-**ONNX Runtime** is a cross-platform inference and training accelerator compatible with many popular ML/DNN frameworks. Check its [github](https://github.com/microsoft/onnxruntime) for more information.
+**ONNX Runtime** 是一个跨平台的推理和训练加速器，与许多流行的ML/DNN框架兼容。查看其[github](https://github.com/microsoft/onnxruntime)以获取更多信息。
 
-## Installation
+## 安装
 
-*Please note that only **onnxruntime>=1.8.1** of on Linux platform is supported by now.*
+*请注意，目前Linux平台只支持 **onnxruntime>=1.8.1** 。*
 
-### Install ONNX Runtime python package
+### 安装ONNX Runtime python包
 
-- CPU Version
-
-```bash
-pip install onnxruntime==1.8.1 # if you want to use cpu version
-```
-
-- GPU Version
+- CPU 版本
 
 ```bash
-pip install onnxruntime-gpu==1.8.1 # if you want to use gpu version
+pip install onnxruntime==1.8.1 # 如果你想用cpu版本
 ```
 
-### Install float16 conversion tool (optional)
+- GPU 版本
 
-If you want to use float16 precision, install the tool by running the following script:
+```bash
+pip install onnxruntime-gpu==1.8.1 # 如果你想用gpu版本
+```
+
+### 安装float16转换工具(可选)
+
+如果你想用float16精度，请执行以下脚本安装工具:
 
 ```bash
 pip install onnx onnxconverter-common
 ```
 
-## Build custom ops
+## 构建自定义算子
 
-### Download ONNXRuntime Library
+### 下载ONNXRuntime库
 
-Download `onnxruntime-linux-*.tgz` library from ONNX Runtime [releases](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1), extract it, expose `ONNXRUNTIME_DIR` and finally add the lib path to `LD_LIBRARY_PATH` as below:
+从ONNX Runtime[发布版本](https://github.com/microsoft/onnxruntime/releases/tag/v1.8.1)下载`onnxruntime-linux-*.tgz`库，并解压，将onnxruntime所在路径添加到`ONNXRUNTIME_DIR`环境变量，最后将lib路径添加到`LD_LIBRARY_PATH`环境变量中，操作如下：
 
-- CPU Version
+- CPU 版本
 
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
@@ -47,7 +47,7 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
-- GPU Version
+- GPU 版本
 
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-gpu-1.8.1.tgz
@@ -58,49 +58,50 @@ export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
 
-### Build on Linux
+### 在Linux上构建
 
-- CPU Version
+- CPU 版本
 
 ```bash
-cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+cd ${MMDEPLOY_DIR} # 进入MMDeploy根目录
 mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_DEVICES='cpu' -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc) && make install
 ```
 
-- GPU Version
+- GPU 版本
 
 ```bash
-cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+cd ${MMDEPLOY_DIR} # 进入MMDeploy根目录
 mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_DEVICES='cuda' -DMMDEPLOY_TARGET_BACKENDS=ort -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} ..
 make -j$(nproc) && make install
 ```
 
-## How to convert a model
+## 如何转换模型
 
-- You could follow the instructions of tutorial [How to convert model](../02-how-to-run/convert_model.md)
+- 你可以按照教程[如何转换模型](../02-how-to-run/convert_model.md)的说明去做
 
-## How to add a new custom op
+## 如何添加新的自定义算子
 
-## Reminder
+## 提示
 
-- The custom operator is not included in [supported operator list](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md) in ONNX Runtime.
-- The custom operator should be able to be exported to ONNX.
+- 自定义算子不包含在ONNX Runtime[支持的算子列表](https://github.com/microsoft/onnxruntime/blob/master/docs/OperatorKernels.md)中。
+- 自定义算子应该能够导出到ONNX。
 
-#### Main procedures
+#### 主要过程
 
-Take custom operator `roi_align` for example.
+以自定义操作符`roi_align`为例。
 
-1. Create a `roi_align` directory in ONNX Runtime source directory `${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/`
-2. Add header and source file into `roi_align` directory `${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/roi_align/`
-3. Add unit test into `tests/test_ops/test_ops.py`
-   Check [here](../../../tests/test_ops/test_ops.py) for examples.
+1. 在ONNX Runtime源目录`${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/`中创建一个`roi_align`目录
+2. 添加头文件和源文件到`roi_align`目录`${MMDEPLOY_DIR}/csrc/backend_ops/onnxruntime/roi_align/`
+3. 将单元测试添加到`tests/test_ops/test_ops.py`中。 
+   查看[这里](../../../tests/test_ops/test_ops.py)的例子。
 
-**Finally, welcome to send us PR of adding custom operators for ONNX Runtime in MMDeploy.** :nerd_face:
+**最后，欢迎发送为MMDeploy添加ONNX Runtime自定义算子的PR。* *: nerd_face:
 
-## References
+## 参考
 
-- [How to export Pytorch model with custom op to ONNX and run it in ONNX Runtime](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
-- [How to add a custom operator/kernel in ONNX Runtime](https://onnxruntime.ai/docs/reference/operators/add-custom-op.html)
+- [如何将具有自定义op的Pytorch模型导出为ONNX并在ONNX Runtime运行](https://github.com/onnx/tutorials/blob/master/PyTorchCustomOperator/README.md)
+- [如何在ONNX Runtime添加自定义算子/内核](https://onnxruntime.ai/docs/reference/operators/add-custom-op.html)
+
