@@ -17,12 +17,8 @@ onnx_config = dict(
         'masks': {
             0: 'batch',
             1: 'num_dets',
-            2: 'height',
-            3: 'width'
         },
         'semseg': {
             0: 'batch',
-            2: 'height',
-            3: 'width'
         },
     })

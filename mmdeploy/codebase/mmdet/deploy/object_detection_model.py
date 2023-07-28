@@ -310,7 +310,7 @@ class End2EndModel(BaseBackendModel):
                     seg_pred[None],
                     size=(h, w),
                     mode='bilinear',
-                    align_corners=False)[0]
+                    align_corners=False)[0].cpu()
                 seg_pred_list.append(seg_pred)
             batch_semseg = seg_pred_list
 
