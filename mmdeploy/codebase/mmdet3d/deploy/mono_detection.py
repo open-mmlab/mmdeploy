@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import os
 from copy import deepcopy
 from typing import Dict, Optional, Sequence, Tuple, Union
 
@@ -37,8 +38,8 @@ def _get_dataset_metainfo(model_cfg: Config):
     return None
 
 
-@MMDET3D_TASK.register_module(Task.VOXEL_DETECTION.value)
-class VoxelDetection(BaseTask):
+@MMDET3D_TASK.register_module(Task.MONO_DETECTION.value)
+class MonoDetection(BaseTask):
 
     def __init__(self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config,
                  device: str):
@@ -55,13 +56,13 @@ class VoxelDetection(BaseTask):
         Returns:
             nn.Module: An initialized backend model.
         """
-        from .voxel_detection_model import build_voxel_detection_model
+        from .mono_detection_model import build_mono_detection_model
 
         data_preprocessor = deepcopy(
             self.model_cfg.model.get('data_preprocessor', {}))
         data_preprocessor.setdefault('type', 'mmdet3D.Det3DDataPreprocessor')
 
-        model = build_voxel_detection_model(
+        model = build_mono_detection_model(
             model_files,
             self.model_cfg,
             self.deploy_cfg,
@@ -89,34 +90,41 @@ class VoxelDetection(BaseTask):
             tuple: (data, input), meta information for the input pcd
                 and model input.
         """
-
         cfg = self.model_cfg
         test_pipeline = deepcopy(cfg.test_dataloader.dataset.pipeline)
         test_pipeline = Compose(test_pipeline)
         box_type_3d, box_mode_3d = \
             get_box_type(cfg.test_dataloader.dataset.box_type_3d)
-        # do not support batch inference
+
         if isinstance(pcd, (list, tuple)):
             pcd = pcd[0]
+        path_prefix = os.path.dirname(pcd)
+        data_list = mmengine.load(pcd)['data_list']
+        assert 1 == len(data_list)
+        assert 'images' in data_list[0]
+
         data = []
-        data_ = dict(
-            lidar_points=dict(lidar_path=pcd),
-            timestamp=1,
-            # for ScanNet demo we need axis_align_matrix
-            axis_align_matrix=np.eye(4),
-            box_type_3d=box_type_3d,
-            box_mode_3d=box_mode_3d)
-        data_ = test_pipeline(data_)
-        data.append(data_)
+        images = data_list[0]['images']
+        for cam_type, item in images.items():
+            # avoid data_info['images'] has multiple keys and camera views.
+            # Only support one cam type here
+            if cam_type not in ['CAM_FRONT', 'CAM2']:
+                continue
+            item['img_path'] = os.path.join(path_prefix, item['img_path'])
+            mono_img_info = {f'{cam_type}': item}
+            data_ = dict(
+                images=mono_img_info,
+                box_type_3d=box_type_3d,
+                box_mode_3d=box_mode_3d)
+
+            data_ = test_pipeline(data_)
+            data.append(data_)
 
         collate_data = pseudo_collate(data)
-        data[0]['inputs']['points'] = data[0]['inputs']['points'].to(
-            self.device)
 
         if data_preprocessor is not None:
             collate_data = data_preprocessor(collate_data, False)
-            voxels = collate_data['inputs']['voxels']
-            inputs = [voxels['voxels'], voxels['num_points'], voxels['coors']]
+            inputs = collate_data['inputs']
         else:
             inputs = collate_data['inputs']
         return collate_data, inputs
@@ -142,23 +150,26 @@ class VoxelDetection(BaseTask):
                 Defaults to False.
             draw_gt (bool, optional): show gt or not. Defaults to False.
         """
+        import mmcv
+
         cfg = self.model_cfg
         visualizer = super().get_visualizer(window_name, output_file)
         visualizer.dataset_meta = _get_dataset_metainfo(cfg)
 
-        # show the results
-        collate_data, _ = self.create_input(pcd=image)
-
+        collate_data, inputs = self.create_input(pcd=image)
+        img = mmcv.imread(collate_data['data_samples'][0].img_path)
+        img = mmcv.imconvert(img, 'bgr', 'rgb')
+        data_input = dict(img=img)
         visualizer.add_datasample(
             window_name,
-            dict(points=collate_data['inputs']['points'][0]),
+            data_input,
             data_sample=result,
             draw_gt=draw_gt,
             show=show_result,
             wait_time=0,
             out_file=output_file,
             pred_score_thr=0.0,
-            vis_task='lidar_det')
+            vis_task='mono_det')
 
     def get_model_name(self, *args, **kwargs) -> str:
         """Get the model name.

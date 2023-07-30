@@ -321,7 +321,7 @@ def get_pytorch_result(model_name: str, meta_info: dict, checkpoint_path: Path,
     for metric, metric_info in test_yaml_metric_info.items():
         value = '-'
         if metric in pytorch_metric:
-            if 'dataset' in metric_info:
+            if 'dataset' in metric_info and metric_info['dataset'] in datasets:
                 idx = datasets.index(metric_info['dataset'])
                 pytorch_metric.update(metafile_metric_info[idx]['Metrics'])
             value = pytorch_metric[metric]

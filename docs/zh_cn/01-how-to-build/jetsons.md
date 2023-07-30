@@ -177,6 +177,19 @@ conda activate mmdeploy
   sudo apt-get install protobuf-compiler libprotoc-dev
   ```
 
+- 安装 ONNX Runtime [可选]
+
+访问 [Jetson_Zoo#ONNX_Runtime](https://elinux.org/Jetson_Zoo#ONNX_Runtime) 找到对应版本的 ONNX Runtime，然后下载并安装。
+
+示例：
+
+```
+# Download pip wheel from location mentioned above
+$ wget https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kccn2.whl -O onnxruntime_gpu-1.10.0-cp36-cp36m-linux_aarch64.whl
+# Install pip wheel
+$ pip3 install onnxruntime_gpu-1.10.0-cp36-cp36m-linux_aarch64.whl
+```
+
 - 安装 h5py 和 pycuda
 
   Model Converter 使用 HDF5 存储 TensorRT INT8 量化的校准数据；需要 pycuda 拷贝显存
@@ -293,3 +306,8 @@ pip install -v -e .
   1. 设置为 `MAX N` 模式并执行 `sudo nvpmodel -m 0 && sudo jetson_clocks`。
   2. 效仿 [mmdet pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13)，减少配置文件中 `pre_top_k` 的个数，例如 `1000`。
   3. 重新进行模型转换并重新运行 demo。
+
+### FAQ
+
+- 错误 `error: cannot import name 'ProcessGroup' from 'torch.distributed'.`
+  - 请访问 [pytorch-for-jetson](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048) 安装 pytorch 1.11 版本。

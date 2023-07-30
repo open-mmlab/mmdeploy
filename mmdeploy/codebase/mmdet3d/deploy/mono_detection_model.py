@@ -1,7 +1,6 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from typing import Any, Dict, List, Optional, Sequence, Union
 
-import mmcv
 import torch
 from mmdet3d.structures.det3d_data_sample import SampleList
 from mmengine import Config
@@ -13,12 +12,12 @@ from mmdeploy.codebase.base import BaseBackendModel
 from mmdeploy.utils import (Backend, get_backend, get_codebase_config,
                             load_config)
 
-__BACKEND_MODEL = Registry('backend_voxel_detectors')
+__BACKEND_MODEL = Registry('backend_mono_detectors')
 
 
 @__BACKEND_MODEL.register_module('end2end')
-class VoxelDetectionModel(BaseBackendModel):
-    """End to end model for inference of 3d voxel detection.
+class MonoDetectionModel(BaseBackendModel):
+    """End to end model for inference of monocular 3D object detection.
 
     Args:
         backend (Backend): The backend enum, specifying backend type.
@@ -74,70 +73,28 @@ class VoxelDetectionModel(BaseBackendModel):
         """Run forward inference.
 
         Args:
-            inputs (dict): A dict contains `voxels` which wrapped `voxels`,
-                `num_points` and `coors`
+            inputs (dict): A dict contains `imgs`
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
 
         Returns:
             list: A list contains predictions.
         """
-        preprocessed = inputs['voxels']
+        preprocessed = inputs['imgs']
         input_dict = {
-            'voxels': preprocessed['voxels'].to(self.device),
-            'num_points': preprocessed['num_points'].to(self.device),
-            'coors': preprocessed['coors'].to(self.device)
+            'input': preprocessed.to(self.device),
         }
-
         outputs = self.wrapper(input_dict)
-        num_level = len(outputs) // 3
-        new_outputs = dict(
-            cls_score=[outputs[f'cls_score{i}'] for i in range(num_level)],
-            bbox_pred=[outputs[f'bbox_pred{i}'] for i in range(num_level)],
-            dir_cls_pred=[
-                outputs[f'dir_cls_pred{i}'] for i in range(num_level)
-            ])
-        outputs = new_outputs
         if data_samples is None:
             return outputs
 
-        prediction = VoxelDetectionModel.postprocess(
+        prediction = MonoDetectionModel.postprocess(
             model_cfg=self.model_cfg,
             deploy_cfg=self.deploy_cfg,
             outs=outputs,
             metas=data_samples)
 
         return prediction
-
-    def show_result(self,
-                    data: Dict,
-                    result: List,
-                    out_dir: str,
-                    file_name: str,
-                    show=False,
-                    snapshot=False,
-                    **kwargs):
-        from mmcv.parallel import DataContainer as DC
-        from mmdet3d.core import show_result
-        if isinstance(data['points'][0], DC):
-            points = data['points'][0]._data[0][0].numpy()
-        elif mmcv.is_list_of(data['points'][0], torch.Tensor):
-            points = data['points'][0][0]
-        else:
-            ValueError(f"Unsupported data type {type(data['points'][0])} "
-                       f'for visualization!')
-        pred_bboxes = result[0]['boxes_3d']
-        pred_labels = result[0]['labels_3d']
-        pred_bboxes = pred_bboxes.tensor.cpu().numpy()
-        show_result(
-            points,
-            None,
-            pred_bboxes,
-            out_dir,
-            file_name,
-            show=show,
-            snapshot=snapshot,
-            pred_labels=pred_labels)
 
     @staticmethod
     def convert_to_datasample(
@@ -219,7 +176,7 @@ class VoxelDetectionModel(BaseBackendModel):
         Returns:
             DataSample3D: datatype for render
         """
-        if 'cls_score' not in outs or 'bbox_pred' not in outs or 'dir_cls_pred' not in outs:  # noqa: E501
+        if 'cls_score' not in outs or 'bbox_pred' not in outs:  # noqa: E501
             raise RuntimeError('output tensor not found')
 
         if 'test_cfg' not in model_cfg.model:
@@ -228,157 +185,30 @@ class VoxelDetectionModel(BaseBackendModel):
         from mmengine.registry import MODELS
         cls_score = outs['cls_score']
         bbox_pred = outs['bbox_pred']
-        dir_cls_pred = outs['dir_cls_pred']
         batch_input_metas = [data_samples.metainfo for data_samples in metas]
 
         head = None
-        cfg = None
         if 'bbox_head' in model_cfg.model:
-            # pointpillars postprocess
             head = MODELS.build(model_cfg.model['bbox_head'])
-            cfg = model_cfg.model.test_cfg
-        elif 'pts_bbox_head' in model_cfg.model:
-            # centerpoint postprocess
-            head = MODELS.build(model_cfg.model['pts_bbox_head'])
-            cfg = model_cfg.model.test_cfg.pts
         else:
             raise NotImplementedError('mmdet3d model bbox_head not found')
 
         if not hasattr(head, 'task_heads'):
             data_instances_3d = head.predict_by_feat(
-                cls_scores=cls_score,
-                bbox_preds=bbox_pred,
-                dir_cls_preds=dir_cls_pred,
-                batch_input_metas=batch_input_metas,
-                cfg=cfg)
+                cls_scores=[cls_score],
+                bbox_preds=[bbox_pred],
+                batch_img_metas=batch_input_metas,
+            )
 
-            data_samples = VoxelDetectionModel.convert_to_datasample(
+            data_samples = MonoDetectionModel.convert_to_datasample(
                 data_samples=metas, data_instances_3d=data_instances_3d)
-
         else:
-            cls_score = cls_score[0]
-            bbox_pred = bbox_pred[0]
-            dir_cls_pred = dir_cls_pred[0]
-
-            pts = model_cfg.model.test_cfg.pts
-
-            rets = []
-            scores_range = [0]
-            bbox_range = [0]
-            dir_range = [0]
-            for i, _ in enumerate(head.task_heads):
-                scores_range.append(scores_range[i] + head.num_classes[i])
-                bbox_range.append(bbox_range[i] + 8)
-                dir_range.append(dir_range[i] + 2)
-
-            for task_id in range(len(head.num_classes)):
-                num_class_with_bg = head.num_classes[task_id]
-
-                batch_heatmap = cls_score[:,
-                                          scores_range[task_id]:scores_range[
-                                              task_id + 1], ...].sigmoid()
-
-                batch_reg = bbox_pred[:,
-                                      bbox_range[task_id]:bbox_range[task_id] +
-                                      2, ...]
-                batch_hei = bbox_pred[:, bbox_range[task_id] +
-                                      2:bbox_range[task_id] + 3, ...]
-
-                if head.norm_bbox:
-                    batch_dim = torch.exp(bbox_pred[:, bbox_range[task_id] +
-                                                    3:bbox_range[task_id] + 6,
-                                                    ...])
-                else:
-                    batch_dim = bbox_pred[:, bbox_range[task_id] +
-                                          3:bbox_range[task_id] + 6, ...]
-
-                batch_vel = bbox_pred[:, bbox_range[task_id] +
-                                      6:bbox_range[task_id + 1], ...]
-
-                batch_rots = dir_cls_pred[:,
-                                          dir_range[task_id]:dir_range[task_id
-                                                                       + 1],
-                                          ...][:, 0].unsqueeze(1)
-                batch_rotc = dir_cls_pred[:,
-                                          dir_range[task_id]:dir_range[task_id
-                                                                       + 1],
-                                          ...][:, 1].unsqueeze(1)
-
-                temp = head.bbox_coder.decode(
-                    batch_heatmap,
-                    batch_rots,
-                    batch_rotc,
-                    batch_hei,
-                    batch_dim,
-                    batch_vel,
-                    reg=batch_reg,
-                    task_id=task_id)
-
-                assert pts['nms_type'] in ['circle', 'rotate']
-                batch_reg_preds = [box['bboxes'] for box in temp]
-                batch_cls_preds = [box['scores'] for box in temp]
-                batch_cls_labels = [box['labels'] for box in temp]
-                if pts['nms_type'] == 'circle':
-                    boxes3d = temp[0]['bboxes']
-                    scores = temp[0]['scores']
-                    labels = temp[0]['labels']
-                    centers = boxes3d[:, [0, 1]]
-                    boxes = torch.cat([centers, scores.view(-1, 1)], dim=1)
-                    from mmdet3d.models.layers import circle_nms
-                    keep = torch.tensor(
-                        circle_nms(
-                            boxes.detach().cpu().numpy(),
-                            pts['min_radius'][task_id],
-                            post_max_size=pts['post_max_size']),
-                        dtype=torch.long,
-                        device=boxes.device)
-
-                    boxes3d = boxes3d[keep]
-                    scores = scores[keep]
-                    labels = labels[keep]
-                    ret = dict(bboxes=boxes3d, scores=scores, labels=labels)
-                    ret_task = [ret]
-                    rets.append(ret_task)
-                else:
-                    rets.append(
-                        head.get_task_detections(num_class_with_bg,
-                                                 batch_cls_preds,
-                                                 batch_reg_preds,
-                                                 batch_cls_labels,
-                                                 batch_input_metas))
-
-            # Merge branches results
-            num_samples = len(rets[0])
-
-            ret_list = []
-            for i in range(num_samples):
-                temp_instances = InstanceData()
-                for k in rets[0][i].keys():
-                    if k == 'bboxes':
-                        bboxes = torch.cat([ret[i][k] for ret in rets])
-                        bboxes[:, 2] = bboxes[:, 2] - bboxes[:, 5] * 0.5
-                        bboxes = batch_input_metas[i]['box_type_3d'](
-                            bboxes, head.bbox_coder.code_size)
-                    elif k == 'scores':
-                        scores = torch.cat([ret[i][k] for ret in rets])
-                    elif k == 'labels':
-                        flag = 0
-                        for j, num_class in enumerate(head.num_classes):
-                            rets[j][i][k] += flag
-                            flag += num_class
-                        labels = torch.cat([ret[i][k].int() for ret in rets])
-                temp_instances.bboxes_3d = bboxes
-                temp_instances.scores_3d = scores
-                temp_instances.labels_3d = labels
-                ret_list.append(temp_instances)
-
-            data_samples = VoxelDetectionModel.convert_to_datasample(
-                metas, data_instances_3d=ret_list)
+            raise NotImplementedError('mmdet3d head task_heads not found')
 
         return data_samples
 
 
-def build_voxel_detection_model(
+def build_mono_detection_model(
         model_files: Sequence[str],
         model_cfg: Union[str, Config],
         deploy_cfg: Union[str, Config],
@@ -386,7 +216,7 @@ def build_voxel_detection_model(
         data_preprocessor: Optional[Union[Config,
                                           BaseDataPreprocessor]] = None,
         **kwargs):
-    """Build 3d voxel object detection model for different backends.
+    """Build monocular 3d object detection model for different backends.
 
     Args:
         model_files (Sequence[str]): Input model file(s).

@@ -5,6 +5,7 @@ globals:
   images:
     kitti_input: &kitti_input ../mmdetection3d/demo/data/kitti/000008.bin
     nus_input: &nus_input tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
+    nus_pkl_input: &nus_pkl_input tests/test_codebase/test_mmdet3d/data/nuscenes/n015-2018-07-24-11-22-45+0800.pkl
 
   metric_info: &metric_info
     AP: # named after metafile.Results.Metrics
@@ -31,55 +32,78 @@ globals:
     input_img: *kitti_input
     test_img: *kitti_input
 
-
   convert_image_nus: &convert_image_nus
     input_img: *nus_input
     test_img: *nus_input
 
+  convert_image_nus_pkl: &convert_image_nus_pkl
+    input_img: *nus_pkl_input
+    test_img: *nus_pkl_input
+
 onnxruntime:
-  pipeline_ort_dynamic_kitti_fp32: &pipeline_ort_dynamic_kitti_fp32
+  # ======= voxel-detection =======
+  pipeline_ort_voxel_dynamic_kitti_fp32: &pipeline_ort_voxel_dynamic_kitti_fp32
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
 
-  pipeline_ort_dynamic_kitti_fp16: &pipeline_ort_dynamic_kitti_fp16
+  pipeline_ort_voxel_dynamic_kitti_fp16: &pipeline_ort_voxel_dynamic_kitti_fp16
     convert_image: *convert_image
     backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime-fp16_dynamic.py
 
-  pipeline_ort_dynamic_nus_fp32: &pipeline_ort_dynamic_nus_fp32
+  pipeline_ort_voxel_dynamic_nus_fp32: &pipeline_ort_voxel_dynamic_nus_fp32
     convert_image: *convert_image_nus
     backend_test: False
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py
 
+  # ======= mono-detection =======
+  pipeline_ort_mono_dynamic_nus_fp32: &pipeline_ort_mono_dynamic_nus_fp32
+    convert_image: *convert_image_nus_pkl
+    backend_test: False
+    deploy_config: configs/mmdet3d/mono-detection/mono-detection_onnxruntime_dynamic.py
+
+  pipeline_ort_mono_dynamic_nus_fp16: &pipeline_ort_mono_dynamic_nus_fp16
+    convert_image: *convert_image_nus_pkl
+    backend_test: False
+    deploy_config: configs/mmdet3d/mono-detection/mono-detection_onnxruntime-fp16_dynamic.py
+
 tensorrt:
-  pipeline_trt_dynamic_nus_fp32_64x4: &pipeline_trt_dynamic_nus_fp32_64x4
+  # ======= voxel-detection =======
+  pipeline_trt_voxel_dynamic_nus_fp32_64x4: &pipeline_trt_voxel_dynamic_nus_fp32_64x4
     convert_image: *convert_image_nus
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-nus-64x4.py
 
-  pipeline_trt_dynamic_nus_fp32_20x5: &pipeline_trt_dynamic_nus_fp32_20x5
+  pipeline_trt_voxel_dynamic_nus_fp32_20x5: &pipeline_trt_voxel_dynamic_nus_fp32_20x5
     convert_image: *convert_image_nus
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-nus-20x5.py
 
-  pipeline_trt_dynamic_kitti_fp32: &pipeline_trt_dynamic_kitti_fp32
+  pipeline_trt_voxel_dynamic_kitti_fp32: &pipeline_trt_voxel_dynamic_kitti_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_tensorrt_dynamic-kitti-32x4.py
 
+  # ======= mono-detection =======
+  pipeline_trt_mono_dynamic_nus_fp32: &pipeline_trt_mono_dynamic_nus_fp32
+    convert_image: *convert_image_nus_pkl
+    backend_test: *default_backend_test
+    deploy_config: configs/mmdet3d/mono-detection/mono-detection_tensorrt_dynamic-320x320-1344x1344.py
+
 openvino:
-  pipeline_openvino_dynamic_kitti_fp32: &pipeline_openvino_dynamic_kitti_fp32
+  # ======= voxel-detection =======
+  pipeline_openvino_voxel_dynamic_kitti_fp32: &pipeline_openvino_voxel_dynamic_kitti_fp32
     convert_image: *convert_image
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-kitti-32x4.py
 
-  pipeline_openvino_dynamic_nus_fp32_64x4: &pipeline_openvino_dynamic_nus_fp32_64x4
+  pipeline_openvino_voxel_dynamic_nus_fp32_64x4: &pipeline_openvino_voxel_dynamic_nus_fp32_64x4
     convert_image: *convert_image_nus
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-nus-64x4.py
 
-  pipeline_openvino_dynamic_nus_fp32_20x5: &pipeline_openvino_dynamic_nus_fp32_20x5
+  pipeline_openvino_voxel_dynamic_nus_fp32_20x5: &pipeline_openvino_voxel_dynamic_nus_fp32_20x5
     convert_image: *convert_image_nus
     backend_test: *default_backend_test
     deploy_config: configs/mmdet3d/voxel-detection/voxel-detection_openvino_dynamic-nus-20x5.py
@@ -91,22 +115,29 @@ models:
       - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py
       - configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-car.py
     pipelines:
-      - *pipeline_ort_dynamic_kitti_fp16
-      - *pipeline_openvino_dynamic_kitti_fp32
-      - *pipeline_trt_dynamic_kitti_fp32
+      - *pipeline_ort_voxel_dynamic_kitti_fp16
+      - *pipeline_openvino_voxel_dynamic_kitti_fp32
+      - *pipeline_trt_voxel_dynamic_kitti_fp32
   - name: PointPillars
     metafile: configs/pointpillars/metafile.yml
     model_configs:
       - configs/pointpillars/pointpillars_hv_secfpn_sbn-all_8xb4-2x_nus-3d.py
     pipelines:
-      - *pipeline_ort_dynamic_nus_fp32
-      - *pipeline_openvino_dynamic_nus_fp32_64x4
-      - *pipeline_trt_dynamic_nus_fp32_64x4
+      - *pipeline_ort_voxel_dynamic_nus_fp32
+      - *pipeline_openvino_voxel_dynamic_nus_fp32_64x4
+      - *pipeline_trt_voxel_dynamic_nus_fp32_64x4
   - name: CenterPoint
     metafile: configs/centerpoint/metafile.yml
     model_configs:
       - configs/centerpoint/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py
     pipelines:
-      - *pipeline_ort_dynamic_nus_fp32
-      - *pipeline_openvino_dynamic_nus_fp32_20x5
-      - *pipeline_trt_dynamic_nus_fp32_20x5
+      - *pipeline_ort_voxel_dynamic_nus_fp32
+      - *pipeline_openvino_voxel_dynamic_nus_fp32_20x5
+      - *pipeline_trt_voxel_dynamic_nus_fp32_20x5
+  - name: SMOKE
+    metafile: configs/smoke/metafile.yml
+    model_configs:
+      - configs/smoke/smoke_dla34_dlaneck_gn-all_4xb8-6x_kitti-mono3d.py
+    pipelines:
+      - *pipeline_ort_mono_dynamic_nus_fp32
+      - *pipeline_trt_mono_dynamic_nus_fp32

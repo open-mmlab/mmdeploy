@@ -29,6 +29,7 @@ class Task(AdvancedEnum):
     ROTATED_DETECTION = 'RotatedDetection'
     VIDEO_RECOGNITION = 'VideoRecognition'
     ModelCompress = 'ModelCompress'
+    MONO_DETECTION = 'MonoDetection'
 
 
 class Codebase(AdvancedEnum):
