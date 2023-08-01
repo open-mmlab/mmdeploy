@@ -1,57 +1,57 @@
 # TensorRT 支持情况
 
-## Installation
+## 安装
 
-### Install TensorRT
+### 安装TensorRT
 
-Please install TensorRT 8 follow [install-guide](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing).
+请按照[安装指南](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing)安装TensorRT8。
 
-**Note**:
+**注意**:
 
-- `pip Wheel File Installation` is not supported yet in this repo.
+- 此版本不支持`pip Wheel File Installation`。
 
-- We strongly suggest you install TensorRT through [tar file](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar)
+- 我们强烈建议通过[tar包](https://docs.nvidia.com/deeplearning/tensorrt/install-guide/index.html#installing-tar)的方式安装TensorRT。
 
-- After installation, you'd better add TensorRT environment variables to bashrc by:
+- 安装完成后，最好通过以下方式将TensorRT环境变量添加到bashrc:
 
   ```bash
-  cd ${TENSORRT_DIR} # To TensorRT root directory
+  cd ${TENSORRT_DIR} # 进入TensorRT根目录
   echo '# set env for TensorRT' >> ~/.bashrc
   echo "export TENSORRT_DIR=${TENSORRT_DIR}" >> ~/.bashrc
   echo 'export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$TENSORRT_DIR' >> ~/.bashrc
   source ~/.bashrc
   ```
 
-### Build custom ops
+### 构建自定义算子
 
-Some custom ops are created to support models in OpenMMLab, and the custom ops can be built as follow:
+OpenMMLab中创建了一些自定义算子来支持模型，自定义算子可以如下构建:
 
 ```bash
-cd ${MMDEPLOY_DIR} # To MMDeploy root directory
+cd ${MMDEPLOY_DIR} # 进入TensorRT根目录
 mkdir -p build && cd build
 cmake -DMMDEPLOY_TARGET_BACKENDS=trt ..
 make -j$(nproc)
 ```
 
-If you haven't installed TensorRT in the default path, Please add `-DTENSORRT_DIR` flag in CMake.
+如果你没有在默认路径下安装TensorRT，请在CMake中添加`-DTENSORRT_DIR`标志。
 
 ```bash
  cmake -DMMDEPLOY_TARGET_BACKENDS=trt -DTENSORRT_DIR=${TENSORRT_DIR} ..
  make -j$(nproc) && make install
 ```
 
-## Convert model
+## 转换模型
 
-Please follow the tutorial in [How to convert model](../02-how-to-run/convert_model.md). **Note** that the device must be `cuda` device.
+请遵循[如何转换模型](../02-how-to-run/convert_model.md)中的教程。**注意**设备必须是`cuda` 设备。
 
-### Int8 Support
+### Int8 支持
 
-Since TensorRT supports INT8 mode, a custom dataset config can be given to calibrate the model. Following is an example for MMDetection:
+由于TensorRT支持INT8模式，因此可以提供自定义数据集配置来校准模型。MMDetection的示例如下:
 
 ```python
 # calibration_dataset.py
 
-# dataset settings, same format as the codebase in OpenMMLab
+# 数据集设置，格式与OpenMMLab中的代码库相同
 dataset_type = 'CalibrationDataset'
 data_root = 'calibration/dataset/root'
 img_norm_cfg = dict(
@@ -85,7 +85,7 @@ data = dict(
 evaluation = dict(interval=1, metric='bbox')
 ```
 
-Convert your model with this calibration dataset:
+使用此校准数据集转换您的模型:
 
 ```python
 python tools/deploy.py \
@@ -93,24 +93,24 @@ python tools/deploy.py \
     --calib-dataset-cfg calibration_dataset.py
 ```
 
-If the calibration dataset is not given, the data will be calibrated with the dataset in model config.
+如果没有提供校准数据集，则使用模型配置中的数据集进行校准。
 
 ## FAQs
 
-- Error `Cannot found TensorRT headers` or `Cannot found TensorRT libs`
+- 错误 `Cannot found TensorRT headers`或`Cannot found TensorRT libs`
 
-  Try cmake with flag `-DTENSORRT_DIR`:
+  可以尝试在cmake时使用`-DTENSORRT_DIR`标志:
 
   ```bash
   cmake -DBUILD_TENSORRT_OPS=ON -DTENSORRT_DIR=${TENSORRT_DIR} ..
   make -j$(nproc)
   ```
 
-  Please make sure there are libs and headers in `${TENSORRT_DIR}`.
+  请确保 `${TENSORRT_DIR}`中有库和头文件。
 
-- Error `error: parameter check failed at: engine.cpp::setBindingDimensions::1046, condition: profileMinDims.d[i] <= dimensions.d[i]`
+- 错误 `error: parameter check failed at: engine.cpp::setBindingDimensions::1046, condition: profileMinDims.d[i] <= dimensions.d[i]`
 
-  There is an input shape limit in deployment config:
+  在部署配置中有一个输入形状的限制:
 
   ```python
   backend_config = dict(
@@ -126,14 +126,14 @@ If the calibration dataset is not given, the data will be calibrated with the da
       # other configs
   ```
 
-  The shape of the tensor `input` must be limited between `input_shapes["input"]["min_shape"]` and `input_shapes["input"]["max_shape"]`.
+  `input` 张量的形状必须限制在`input_shapes["input"]["min_shape"]`和`input_shapes["input"]["max_shape"]`之间。
 
-- Error `error: [TensorRT] INTERNAL ERROR: Assertion failed: cublasStatus == CUBLAS_STATUS_SUCCESS`
+- 错误 `error: [TensorRT] INTERNAL ERROR: Assertion failed: cublasStatus == CUBLAS_STATUS_SUCCESS`
 
-  TRT 7.2.1 switches to use cuBLASLt (previously it was cuBLAS). cuBLASLt is the default choice for SM version >= 7.0. However, you may need CUDA-10.2 Patch 1 (Released Aug 26, 2020) to resolve some cuBLASLt issues. Another option is to use the new TacticSource API and disable cuBLASLt tactics if you don't want to upgrade.
+  TRT 7.2.1切换到使用cuBLASLt(以前是cuBLAS)。cuBLASLt是SM版本>= 7.0的默认选择。但是，您可能需要CUDA-10.2补丁1(2020年8月26日发布)来解决一些cuBLASLt问题。如果不想升级，另一个选择是使用新的TacticSource API并禁用cuBLASLt策略。
 
-  Read [this](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4) for detail.
+  请阅读[本文](https://forums.developer.nvidia.com/t/matrixmultiply-failed-on-tensorrt-7-2-1/158187/4)了解详情。
 
-- Install mmdeploy on Jetson
+- 在Jetson上安装mmdeploy
 
-  We provide a tutorial to get start on Jetsons [here](../01-how-to-build/jetsons.md).
+  我们在[这里](../01-how-to-build/jetsons.md)提供了一个Jetsons入门教程。
