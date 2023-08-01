@@ -1,4 +1,16 @@
-_base_ = ['./base_static.py']
+_base_ = ['../../_base_/onnx_config.py']
 
-onnx_config = dict(output_names=['dets', 'labels', 'masks', 'semseg'])
-codebase_config = dict(post_processing=dict(export_postprocess_mask=False))
+codebase_config = dict(
+    type='mmdet',
+    task='ObjectDetection',
+    model_type='panoptic_end2end',
+    post_processing=dict(
+        export_postprocess_mask=False,
+        score_threshold=0.05,
+        confidence_threshold=0.005,  # for YOLOv3
+        iou_threshold=0.5,
+        max_output_boxes_per_class=200,
+        pre_top_k=5000,
+        keep_top_k=100,
+        background_label_id=-1,
+    ))

@@ -1,5 +1,10 @@
-_base_ = ['./base_panoptic-seg_static.py']
+_base_ = [
+    '../_base_/base_panoptic-seg_static.py',
+    '../../_base_/backends/onnxruntime.py'
+]
 onnx_config = dict(
+    input_shape=[1344, 800],
+    output_names=['dets', 'labels', 'masks', 'semseg'],
     dynamic_axes={
         'input': {
             0: 'batch',
@@ -21,4 +26,5 @@ onnx_config = dict(
         'semseg': {
             0: 'batch',
         },
-    })
+    },
+)
