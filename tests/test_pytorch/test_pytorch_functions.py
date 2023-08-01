@@ -667,3 +667,23 @@ def test_cat__tensorrt(dtype, dynamic_axes):
         rewrite_output[0].cpu().float(),
         rtol=1e-3,
         atol=1e-5)
+
+
+@backend_checker(Backend.TENSORRT)
+def test_copy__default():
+    import copy
+    input = torch.rand(2, 4)
+    model = WrapFunction(
+        lambda input: [copy.deepcopy(input) for i in range(3)])
+    pytorch_output = model(input)
+    rewrite_output, _ = get_rewrite_outputs(
+        model,
+        model_inputs={'input': input},
+        deploy_cfg=get_trt_config(['output'], shape=[2, 4], dynamic_axes=None),
+        run_with_backend=True)
+    for pytorch_out, rewrite_out in zip(pytorch_output, rewrite_output):
+        assert torch.allclose(
+            pytorch_out.cpu().float(),
+            rewrite_out.cpu().float(),
+            rtol=1e-3,
+            atol=1e-5)
