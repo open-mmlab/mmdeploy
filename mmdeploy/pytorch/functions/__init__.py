@@ -5,6 +5,7 @@ from . import atan2  # noqa: F401,F403
 from . import cat  # noqa: F401,F403
 from . import chunk  # noqa: F401,F403
 from . import clip  # noqa: F401,F403
+from . import copy  # noqa: F401,F403
 from . import expand  # noqa: F401,F403
 from . import flatten  # noqa: F401,F403
 from . import getattribute  # noqa: F401,F403
