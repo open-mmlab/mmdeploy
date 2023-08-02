@@ -21,9 +21,13 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "failed to load image: %s\n", ARGS_image.c_str());
     return -1;
   }
+  mmdeploy::Profiler profiler("/tmp/profile.bin");
+  mmdeploy::Context context;
+  context.Add(mmdeploy::Device(FLAGS_device));
+  context.Add(profiler);
 
   // construct a detector instance
-  mmdeploy::Detector detector(mmdeploy::Model{ARGS_model}, mmdeploy::Device{FLAGS_device});
+  mmdeploy::Detector detector(mmdeploy::Model{ARGS_model}, context);
 
   // apply the detector, the result is an array-like class holding references to
   // `mmdeploy_detection_t`, will be released automatically on destruction
