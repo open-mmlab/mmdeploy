@@ -256,7 +256,7 @@ class End2EndModel(BaseBackendModel):
                 if masks.dtype != bool:
                     masks = masks >= 0.5
                 # aligned with mmdet to easily convert to numpy
-                masks = masks.cpu()
+                # masks = masks.cpu()
                 pred_instances.masks = masks
 
             data_samples[i].pred_instances = pred_instances
@@ -379,21 +379,14 @@ class PanOpticEnd2EndModel(End2EndModel):
             img_metas = [data_sample.metainfo for data_sample in data_samples]
             seg_pred_list = []
             for i in range(len(data_samples)):
-                # do resize in base_semantic_head
-                h, w = img_metas[i]['batch_input_shape']
-                seg_pred = F.interpolate(
-                    batch_semseg[i][None],
-                    size=(h, w),
-                    mode='bilinear',
-                    align_corners=False)[0]
                 h, w = img_metas[i]['img_shape']
-                seg_pred = seg_pred[:, :h, :w]
+                seg_pred = batch_semseg[i][:, :h, :w]
                 h, w = img_metas[i]['ori_shape']
                 seg_pred = F.interpolate(
                     seg_pred[None],
                     size=(h, w),
                     mode='bilinear',
-                    align_corners=False)[0].cpu()
+                    align_corners=False)[0]
                 seg_pred_list.append(seg_pred)
             semseg_results = self.fusion_head.predict(masks_results,
                                                       seg_pred_list)

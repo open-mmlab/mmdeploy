@@ -1,5 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 
+import torch.nn.functional as F
+
 from mmdeploy.core import FUNCTION_REWRITER
 
 
@@ -20,9 +22,10 @@ def base_semantic_head__predict(self, x, batch_img_metas, rescale=False):
         Tensor: `semseg` of shape [N, num_sem_class, H, W]
     """
     seg_preds = self.forward(x)['seg_preds']
-    # seg_preds = F.interpolate(
-    #     seg_preds,
-    #     size=batch_img_metas[0]['batch_input_shape'],
-    #     mode='bilinear',
-    #     align_corners=False)
+    img_shape = batch_img_metas[0]['batch_input_shape']
+    seg_preds = F.interpolate(
+        seg_preds,
+        size=(img_shape[0], img_shape[1]),
+        mode='bilinear',
+        align_corners=False)
     return seg_preds

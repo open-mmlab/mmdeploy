@@ -127,7 +127,14 @@ def export(model: torch.nn.Module,
             patched_model.forward = wrap_forward(patched_model.forward)
             patched_model.forward = partial(patched_model.forward,
                                             **input_metas)
-
+        # force to export on cpu
+        patched_model = patched_model.cpu()
+        if isinstance(args, torch.Tensor):
+            args = args.cpu()
+        elif isinstance(args, (tuple, list)):
+            args = [_.cpu() for _ in args]
+        else:
+            raise RuntimeError(f'Not supported args: {args}')
         torch.onnx.export(
             patched_model,
             args,
