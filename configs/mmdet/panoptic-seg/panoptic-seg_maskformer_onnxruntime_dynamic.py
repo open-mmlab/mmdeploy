@@ -3,7 +3,7 @@ _base_ = [
     '../../_base_/backends/onnxruntime.py'
 ]
 onnx_config = dict(
-    opset_version=12,
+    opset_version=13,
     output_names=['cls_logits', 'mask_logits'],
     dynamic_axes={
         'input': {

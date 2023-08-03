@@ -188,7 +188,8 @@ class End2EndModel(BaseBackendModel):
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
             pred_instances = InstanceData()
-
+            device = dets.device
+            labels = labels.to(device)
             bboxes = dets[:, :4]
             scores = dets[:, 4]
             scale_factor = bboxes.new_ones(1, 4)
@@ -256,7 +257,7 @@ class End2EndModel(BaseBackendModel):
                 if masks.dtype != bool:
                     masks = masks >= 0.5
                 # aligned with mmdet to easily convert to numpy
-                # masks = masks.cpu()
+                masks = masks.to(device)
                 pred_instances.masks = masks
 
             data_samples[i].pred_instances = pred_instances
