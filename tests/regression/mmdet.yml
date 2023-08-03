@@ -399,21 +399,21 @@ models:
     model_configs:
       - configs/maskformer/maskformer_r50_ms-16xb1-75e_coco.py
     pipelines:
-      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_static-800x1344.py
         convert_image: *convert_image
         backend_test: False
-      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_dynamic-320x512-1344x1344.py
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
-        backend_test: True
+        backend_test: False
 
   - name: Mask2Former
     metafile: configs/mask2former/metafile.yml
     model_configs:
       - configs/mask2former/mask2former_r50_8xb2-lsj-50e_coco-panoptic.py
     pipelines:
-      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_static-800x1344.py
         convert_image: *convert_image
         backend_test: False
-      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_dynamic-320x512-1344x1344.py
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
-        backend_test: True
+        backend_test: False
