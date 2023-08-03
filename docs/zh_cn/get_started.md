@@ -303,7 +303,7 @@ int main() {
     const auto& box = dets[i].bbox;
     fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, label=%d, score=%.4f\n",
             i, box.left, box.top, box.right, box.bottom, dets[i].label_id, dets[i].score);
-    if (bboxes[i].score < 0.3) {
+    if (dets[i].score < 0.3) {
       continue;
     }
     cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
