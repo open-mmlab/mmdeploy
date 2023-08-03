@@ -34,7 +34,7 @@ def msdeform_attn_pixel_decoder__forward(self, feats: List[torch.Tensor]):
         level_idx = self.num_input_levels - i - 1
         feat = feats[level_idx]
         feat_projected = self.input_convs[i](feat)
-        feat_hw = torch._shape_as_tensor(feat)[2:]
+        feat_hw = torch._shape_as_tensor(feat)[2:].to(feat.device)
 
         # no padding
         padding_mask_resized = feat.new_zeros(
