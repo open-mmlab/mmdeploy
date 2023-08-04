@@ -30,6 +30,8 @@ def msdeform_attn_pixel_decoder__forward(self, feats: List[torch.Tensor]):
     level_positional_encoding_list = []
     spatial_shapes = []
     reference_points_list = []
+    num_queries_per_level = []
+
     for i in range(self.num_encoder_levels):
         level_idx = self.num_input_levels - i - 1
         feat = feats[level_idx]
@@ -59,6 +61,7 @@ def msdeform_attn_pixel_decoder__forward(self, feats: List[torch.Tensor]):
         padding_mask_list.append(padding_mask_resized)
         level_positional_encoding_list.append(level_pos_embed)
         spatial_shapes.append(feat_hw)
+        num_queries_per_level.append(feat_hw[0] * feat_hw[1])
         reference_points_list.append(reference_points)
     # shape (batch_size, total_num_queries),
     # total_num_queries=sum([., h_i * w_i,.])
@@ -73,9 +76,9 @@ def msdeform_attn_pixel_decoder__forward(self, feats: List[torch.Tensor]):
 
     # shape (0, h_0*w_0, h_0*w_0+h_1*w_1, ...)
     # keep last index
-    level_start_index = torch.cat(
-        [spatial_shapes.new_zeros(1),
-         spatial_shapes.prod(1).cumsum(0)]).to(torch.long)
+    # level_start_index = torch.cat(
+    #     [spatial_shapes.new_zeros(1),
+    #      spatial_shapes.prod(1).cumsum(0)]).to(torch.long)
     reference_points = torch.cat(reference_points_list, dim=0)
     reference_points = reference_points[None, :,
                                         None].repeat(batch_size, 1,
@@ -90,18 +93,18 @@ def msdeform_attn_pixel_decoder__forward(self, feats: List[torch.Tensor]):
         key_padding_mask=padding_masks,
         spatial_shapes=spatial_shapes,
         reference_points=reference_points,
-        level_start_index=level_start_index[:-1],
+        level_start_index=None,
         valid_ratios=valid_radios)
     # (batch_size, c, num_total_queries)
     memory = memory.permute(0, 2, 1)
 
     # from low resolution to high resolution
     # num_queries_per_level = [e[0] * e[1] for e in spatial_shapes]
-    # outs = torch.split(memory, num_queries_per_level, dim=-1)
-    outs = []
-    for i in range(self.num_encoder_levels):
-        outs.append(memory[:, :,
-                           level_start_index[i]:level_start_index[i + 1]])
+    outs = torch.split(memory, num_queries_per_level, dim=-1)
+    # outs = []
+    # for i in range(self.num_encoder_levels):
+    #     outs.append(memory[:, :,
+    #                        level_start_index[i]:level_start_index[i + 1]])
 
     outs = [
         x.reshape(batch_size, -1, spatial_shapes[i][0], spatial_shapes[i][1])

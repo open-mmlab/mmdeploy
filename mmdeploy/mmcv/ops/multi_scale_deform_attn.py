@@ -57,16 +57,17 @@ def multi_scale_deformable_attn_pytorch_default(
     bs, _, num_heads, embed_dims = value.shape
     _, num_queries, num_heads, num_levels, num_points, _ =\
         sampling_locations.shape
-    indices = torch.cat((value_spatial_shapes.new_zeros(1),
-                         value_spatial_shapes.prod(1).cumsum(0)))
+    # indices = torch.cat((value_spatial_shapes.new_zeros(1),
+    #                      value_spatial_shapes.prod(1).cumsum(0)))
     # avoid split with dynamic split_sizes
-    # value_list = value.split([H_ * W_ for H_, W_ in value_spatial_shapes],
-    #                          dim=1)
+    value_list = value.split([H_ * W_ for H_, W_ in value_spatial_shapes],
+                             dim=1)
     sampling_grids = 2 * sampling_locations - 1
     sampling_value_list = []
     for i in range(num_levels):
         H_, W_ = value_spatial_shapes[i]
-        value_l_ = value[:, indices[i]:indices[i + 1], :, :]
+        # value_l_ = value[:, indices[i]:indices[i + 1], :, :]
+        value_l_ = value_list[i]
         value_l_ = value_l_.flatten(2).transpose(1, 2).reshape(
             bs * num_heads, embed_dims, H_, W_)
         sampling_grid_l_ = sampling_grids[:, :, :,
