@@ -45,12 +45,11 @@ class ScaledDotProductAttentionTRT(torch.autograd.Function):
 @FUNCTION_REWRITER.register_rewriter(
     func_name='torch.nn.functional._scaled_dot_product_attention',
     backend=Backend.TENSORRT.value)
-def _scaled_dot_product_attention__tensorrt(
-    q: Tensor,
-    k: Tensor,
-    v: Tensor,
-    attn_mask: Optional[Tensor] = None,
-    dropout_p: float = 0.0,
-) -> Tuple[Tensor, Tensor]:
+def _scaled_dot_product_attention__tensorrt(q: Tensor,
+                                            k: Tensor,
+                                            v: Tensor,
+                                            attn_mask: Optional[Tensor] = None,
+                                            dropout_p: float = 0.0,
+                                            **kwargs) -> Tuple[Tensor, Tensor]:
     """Rewrite for custom ops."""
     return ScaledDotProductAttentionTRT.apply(q, k, v, attn_mask)
