@@ -8,11 +8,9 @@ onnx_config = dict(
         },
         'cls_logits': {
             0: 'batch',
-            1: 'query',
         },
         'mask_logits': {
             0: 'batch',
-            1: 'query',
             2: 'h',
             3: 'w',
         },

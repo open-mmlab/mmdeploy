@@ -39,7 +39,8 @@ def two_stage_panoptic_segmentor__forward(self,
 
     # get origin input shape as tensor to support onnx dynamic shape
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-    img_shape = torch._shape_as_tensor(batch_inputs)[2:]
+    img_shape = torch._shape_as_tensor(batch_inputs)[2:].to(
+        batch_inputs.device)
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
     # set the metainfo
@@ -53,7 +54,10 @@ def two_stage_panoptic_segmentor__forward(self,
 
     img_metas = [data_samples.metainfo for data_samples in data_samples]
     x = self.extract_feat(batch_inputs)
-    proposals = self.rpn_head.predict(x, data_samples, rescale=False)
+    if data_samples[0].get('proposals', None) is None:
+        proposals = self.rpn_head.predict(x, data_samples, rescale=False)
+    else:
+        proposals = [data_sample.proposals for data_sample in data_samples]
 
     bboxes, labels, masks = self.roi_head.predict(
         x, proposals, data_samples, rescale=False)

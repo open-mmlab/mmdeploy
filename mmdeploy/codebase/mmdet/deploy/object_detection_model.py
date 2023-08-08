@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import math
 from functools import partial
 from typing import Any, List, Optional, Sequence, Tuple, Union
@@ -92,7 +93,6 @@ class End2EndModel(BaseBackendModel):
         batch_size = len(test_outputs[0])
 
         num_outputs = len(test_outputs)
-        has_inst_seg = num_outputs >= 3
         outputs = [[None for _ in range(batch_size)]
                    for _ in range(num_outputs)]
 
@@ -100,7 +100,7 @@ class End2EndModel(BaseBackendModel):
             inds = test_outputs[0][i, :, 4] > 0.0
             outputs[0][i] = test_outputs[0][i, inds, ...]
             outputs[1][i] = test_outputs[1][i, inds, ...]
-            if has_inst_seg:
+            if num_outputs >= 3 and test_outputs[2][i] is not None:
                 outputs[2][i] = test_outputs[2][i, inds, ...]
         return outputs
 
@@ -182,6 +182,9 @@ class End2EndModel(BaseBackendModel):
                                rescale: bool = True):
         """Post-processing dets, labels, masks."""
         batch_size = len(batch_dets)
+        tmp_outputs = [batch_dets, batch_labels, batch_masks]
+        outputs = End2EndModel.__clear_outputs(tmp_outputs)
+        batch_dets, batch_labels, batch_masks = outputs
         img_metas = [data_sample.metainfo for data_sample in data_samples]
         model_type = self.model_cfg.model.type if \
             self.model_cfg is not None else None
@@ -281,7 +284,6 @@ class End2EndModel(BaseBackendModel):
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
         inputs = inputs.contiguous()
         outputs = self.predict(inputs)
-        outputs = End2EndModel.__clear_outputs(outputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) >= 3 else None
         self.postprocessing_results(batch_dets, batch_labels, batch_masks,
@@ -374,9 +376,10 @@ class PanOpticEnd2EndModel(End2EndModel):
         if model_type == 'PanopticFPN':
             batch_dets, batch_labels, batch_masks = outputs[:3]
             batch_semseg = outputs[3]
+            tmp_data_samples = copy.deepcopy(data_samples)
             self.postprocessing_results(batch_dets, batch_labels, batch_masks,
-                                        data_samples)
-            masks_results = [ds.pred_instances for ds in data_samples]
+                                        tmp_data_samples)
+            masks_results = [ds.pred_instances for ds in tmp_data_samples]
             img_metas = [data_sample.metainfo for data_sample in data_samples]
             seg_pred_list = []
             for i in range(len(data_samples)):
