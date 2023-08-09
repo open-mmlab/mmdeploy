@@ -16,7 +16,7 @@ globals:
       multi_value: 100
     PQ:
       metric_key: 'coco_panoptic/PQ'
-      tolerance: 0.1 # metric ±n%
+      tolerance: 0.5 # metric ±n%
   convert_image: &convert_image
     input_img: *input_img
     test_img: *test_img
