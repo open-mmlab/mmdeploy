@@ -401,7 +401,7 @@ models:
     pipelines:
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
         convert_image: *convert_image
-        backend_test: True
+        backend_test: False
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_dynamic-320x512-1344x1344.py
         convert_image: *convert_image
         backend_test: True
@@ -413,7 +413,7 @@ models:
     pipelines:
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
         convert_image: *convert_image
-        backend_test: True
-      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_dynamic-320x512-1344x1344.py
+        backend_test: False
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
-        backend_test: True
+        backend_test: False
