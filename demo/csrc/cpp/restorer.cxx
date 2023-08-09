@@ -30,6 +30,11 @@ int main(int argc, char* argv[]) {
   // construct a restorer instance
   mmdeploy::Restorer restorer{mmdeploy::Model{ARGS_model}, context};
 
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    restorer.Apply(img);
+  }
+  
   // apply restorer to the image
   mmdeploy::Restorer::Result result = restorer.Apply(img);
 

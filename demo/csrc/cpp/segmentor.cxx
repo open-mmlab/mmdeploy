@@ -33,6 +33,11 @@ int main(int argc, char* argv[]) {
   context.Add(profiler);
   mmdeploy::Segmentor segmentor{mmdeploy::Model{ARGS_model}, context};
 
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    segmentor.Apply(img);
+  }
+
   // apply the detector, the result is an array-like class holding a reference to
   // `mmdeploy_segmentation_t`, will be released automatically on destruction
   mmdeploy::Segmentor::Result seg = segmentor.Apply(img);

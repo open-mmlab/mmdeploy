@@ -27,6 +27,11 @@ int main(int argc, char* argv[]) {
   context.Add(mmdeploy::Device(FLAGS_device));
   context.Add(profiler);
 
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
+  
   // construct a detector instance
   mmdeploy::RotatedDetector detector(mmdeploy::Model{ARGS_model}, context);
 
