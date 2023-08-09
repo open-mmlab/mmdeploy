@@ -375,6 +375,8 @@ class PanOpticEnd2EndModel(End2EndModel):
 
         if model_type == 'PanopticFPN':
             batch_dets, batch_labels, batch_masks = outputs[:3]
+            # fix int32 and int64 mismatch in fusion head
+            batch_labels = batch_labels.to(torch.long)
             batch_semseg = outputs[3]
             tmp_data_samples = copy.deepcopy(data_samples)
             self.postprocessing_results(batch_dets, batch_labels, batch_masks,
