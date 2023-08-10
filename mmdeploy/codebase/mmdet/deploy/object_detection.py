@@ -316,7 +316,9 @@ class ObjectDetection(BaseTask):
                 params['mask_thr_binary'] = params['rcnn']['mask_thr_binary']
         if 'mask_thr_binary' in params:
             type = 'ResizeInstanceMask'  # for instance-seg
-            params['is_resize_mask'] = False  # resize and crop mask default
+            # resize and crop mask to origin image
+            params['is_resize_mask'] = True
+
         if get_backend(self.deploy_cfg) == Backend.RKNN:
             if 'YOLO' in self.model_cfg.model.type or \
                'RTMDet' in self.model_cfg.model.type:

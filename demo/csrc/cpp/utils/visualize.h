@@ -85,8 +85,11 @@ class Visualize {
              rect.left, rect.top, rect.right, rect.bottom, label_id, score);
       if (mask) {
         fprintf(stdout, "mask %d, height=%d, width=%d\n", index, mask->height, mask->width);
-        auto x0 = (int)std::max(std::floor(rect.left) - 1, 0.f);
-        auto y0 = (int)std::max(std::floor(rect.top) - 1, 0.f);
+        int x0 = 0, y0 = 0, img_h=img_.size().height, img_w =img_.size().width ;
+        if (img_h != (int)mask->height || img_w != (int)mask->width ) { // maskrcnn
+          x0 = (int)std::max(std::floor(rect.left) - 1, 0.f);
+          y0 = (int)std::max(std::floor(rect.top) - 1, 0.f);
+        }
         add_instance_mask({x0, y0}, rand(), mask->data, mask->height, mask->width);
       }
       add_bbox(rect, label_id, score);
