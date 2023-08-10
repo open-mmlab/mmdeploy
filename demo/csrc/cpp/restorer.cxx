@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
   for (int i = 0; i < 20; ++i) {
     restorer.Apply(img);
   }
-  
+
   // apply restorer to the image
   mmdeploy::Restorer::Result result = restorer.Apply(img);
 
