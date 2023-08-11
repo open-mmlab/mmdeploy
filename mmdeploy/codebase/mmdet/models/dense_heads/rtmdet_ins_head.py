@@ -4,12 +4,11 @@ from typing import List, Optional
 import torch
 import torch.nn.functional as F
 from mmengine.config import ConfigDict
-from packaging import version
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet import get_post_processing_params
 from mmdeploy.core import FUNCTION_REWRITER
-from mmdeploy.mmcv.ops import ONNXNMSop, TRTBatchedNMSop
+from mmdeploy.mmcv.ops.nms import multiclass_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(
@@ -84,10 +83,7 @@ def rtmdet_ins_head__predict_by_feat(
     br_x = (priors[..., 0] + flatten_bbox_preds[..., 2])
     br_y = (priors[..., 1] + flatten_bbox_preds[..., 3])
     bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
-    # directly multiply score factor and feed to nms
-    max_scores, _ = torch.max(flatten_cls_scores, 1)
-    mask = max_scores >= cfg.score_thr
-    scores = flatten_cls_scores.where(mask, flatten_cls_scores.new_zeros(1))
+    scores = flatten_cls_scores
 
     ctx = FUNCTION_REWRITER.get_context()
     deploy_cfg = ctx.cfg
@@ -108,7 +104,7 @@ def rtmdet_ins_head__predict_by_feat(
 
 def _nms_with_mask_static(self,
                           priors: Tensor,
-                          boxes: Tensor,
+                          bboxes: Tensor,
                           scores: Tensor,
                           kernels: Tensor,
                           mask_feats: Tensor,
@@ -121,7 +117,7 @@ def _nms_with_mask_static(self,
     """Wrapper for `multiclass_nms` with ONNXRuntime.
     Args:
         ctx (ContextCaller): The context with additional information.
-        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
+        bboxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
         scores (Tensor): The detection scores of shape
             [N, num_boxes, num_classes].
         max_output_boxes_per_class (int): Maximum number of output
@@ -137,175 +133,79 @@ def _nms_with_mask_static(self,
         tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
             and `labels` of shape [N, num_det].
     """
-    if version.parse(torch.__version__) < version.parse('1.13.0'):
-        max_output_boxes_per_class = torch.LongTensor(
-            [max_output_boxes_per_class])
-    iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
-    score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
-
-    # pre topk
-    if pre_top_k > 0:
-        max_scores, _ = scores.max(-1)
-        _, topk_inds = max_scores.squeeze(0).topk(pre_top_k)
-        boxes = boxes[:, topk_inds, :]
-        scores = scores[:, topk_inds, :]
-        kernels = kernels[:, topk_inds, :]
-        priors = priors[topk_inds, :]
-
-    scores = scores.permute(0, 2, 1)
-    selected_indices = ONNXNMSop.apply(boxes, scores,
-                                       max_output_boxes_per_class,
-                                       iou_threshold, score_threshold)
-
-    cls_inds = selected_indices[:, 1]
-    box_inds = selected_indices[:, 2]
-
-    scores = scores[:, cls_inds, box_inds].unsqueeze(2)
-    boxes = boxes[:, box_inds, ...]
-    kernels = kernels[:, box_inds, :]
-    priors = priors[box_inds, :]
-    dets = torch.cat([boxes, scores], dim=2)
-    labels = cls_inds.unsqueeze(0)
-
-    # pad
-    dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
-    labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
-    kernels = torch.cat((kernels, kernels.new_zeros(1, 1, kernels.shape[2])),
-                        1)
-    priors = torch.cat((priors, priors.new_zeros(1, 4)), 0)
-
-    # topk or sort
-    is_use_topk = keep_top_k > 0 and \
-        (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
-    if is_use_topk:
-        _, topk_inds = dets[:, :, -1].topk(keep_top_k, dim=1)
-    else:
-        _, topk_inds = dets[:, :, -1].sort(dim=1, descending=True)
-    topk_inds = topk_inds.squeeze(0)
-    dets = dets[:, topk_inds, ...]
-    labels = labels[:, topk_inds, ...]
-    kernels = kernels[:, topk_inds, ...]
-    priors = priors[topk_inds, ...]
-    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0],
+    dets, labels, inds = multiclass_nms(
+        bboxes,
+        scores,
+        max_output_boxes_per_class,
+        iou_threshold,
+        score_threshold,
+        pre_top_k=pre_top_k,
+        keep_top_k=keep_top_k,
+        output_index=True)
+    # remove padded inds
+    inds = inds[:, :-1]
+    batch_size = bboxes.shape[0]
+    batch_inds = torch.arange(batch_size, device=bboxes.device).view(-1, 1)
+    kernels = kernels[batch_inds, inds, :]
+    priors = priors.unsqueeze(0).repeat(batch_size, 1, 1)
+    priors = priors[batch_inds, inds, :]
+    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels,
                                                priors)
     stride = self.prior_generator.strides[0][0]
     mask_logits = F.interpolate(
-        mask_logits.unsqueeze(0), scale_factor=stride, mode='bilinear')
-    masks = mask_logits.sigmoid()
-    return dets, labels, masks
-
-
-@FUNCTION_REWRITER.register_rewriter(
-    func_name='mmdeploy.codebase.mmdet.models.'
-    'dense_heads.rtmdet_ins_head._nms_with_mask_static',
-    backend='tensorrt')
-def _nms_with_mask_static__tensorrt(self,
-                                    priors: Tensor,
-                                    boxes: Tensor,
-                                    scores: Tensor,
-                                    kernels: Tensor,
-                                    mask_feats: Tensor,
-                                    max_output_boxes_per_class: int = 1000,
-                                    iou_threshold: float = 0.5,
-                                    score_threshold: float = 0.05,
-                                    pre_top_k: int = -1,
-                                    keep_top_k: int = -1,
-                                    mask_thr_binary: float = 0.5):
-    """Wrapper for `multiclass_nms` with TensorRT.
-    Args:
-        ctx (ContextCaller): The context with additional information.
-        boxes (Tensor): The bounding boxes of shape [N, num_boxes, 4].
-        scores (Tensor): The detection scores of shape
-            [N, num_boxes, num_classes].
-        max_output_boxes_per_class (int): Maximum number of output
-            boxes per class of nms. Defaults to 1000.
-        iou_threshold (float): IOU threshold of nms. Defaults to 0.5.
-        score_threshold (float): score threshold of nms.
-            Defaults to 0.05.
-        pre_top_k (int): Number of top K boxes to keep before nms.
-            Defaults to -1.
-        keep_top_k (int): Number of top K boxes to keep after nms.
-            Defaults to -1.
-    Returns:
-        tuple[Tensor, Tensor]: (dets, labels), `dets` of shape [N, num_det, 5]
-            and `labels` of shape [N, num_det].
-    """
-    boxes = boxes if boxes.dim() == 4 else boxes.unsqueeze(2)
-    keep_top_k = max_output_boxes_per_class if keep_top_k < 0 else min(
-        max_output_boxes_per_class, keep_top_k)
-    dets, labels, inds = TRTBatchedNMSop.apply(boxes, scores,
-                                               int(scores.shape[-1]),
-                                               pre_top_k, keep_top_k,
-                                               iou_threshold, score_threshold,
-                                               -1, True)
-    # inds shape: (batch, n_boxes)
-    # retain shape info
-    batch_size = boxes.size(0)
-
-    dets_shape = dets.shape
-    label_shape = labels.shape
-    dets = dets.reshape([batch_size, *dets_shape[1:]])
-    labels = labels.reshape([batch_size, *label_shape[1:]])
-    kernels = kernels[:, inds.reshape(-1), ...]
-    priors = priors[inds.reshape(-1), ...]
-    mask_logits = _mask_predict_by_feat_single(self, mask_feats, kernels[0],
-                                               priors)
-    stride = self.prior_generator.strides[0][0]
-    mask_logits = F.interpolate(
-        mask_logits.unsqueeze(0), scale_factor=stride, mode='bilinear')
+        mask_logits, scale_factor=stride, mode='bilinear')
     masks = mask_logits.sigmoid()
     return dets, labels, masks
 
 
 def _mask_predict_by_feat_single(self, mask_feat, kernels, priors):
     """decode mask with dynamic conv."""
-    num_inst = priors.shape[0]
-    h, w = mask_feat.size()[-2:]
-    if num_inst < 1:
-        return torch.empty(
-            size=(num_inst, h, w),
-            dtype=mask_feat.dtype,
-            device=mask_feat.device)
-    if len(mask_feat.shape) < 4:
-        mask_feat.unsqueeze(0)
+    num_inst = priors.shape[1]
+    batch_size = priors.shape[0]
+    hw = mask_feat.size()[-2:]
     coord = self.prior_generator.single_level_grid_priors(
-        (h, w), level_idx=0).reshape(1, -1, 2).to(mask_feat.device)
-    num_inst = priors.shape[0]
-    points = priors[:, :2].reshape(-1, 1, 2)
-    strides = priors[:, 2:].reshape(-1, 1, 2)
-    relative_coord = (points - coord).permute(0, 2, 1) / (
-        strides[..., 0].reshape(-1, 1, 1) * 8)
-    relative_coord = relative_coord.reshape(num_inst, 2, h, w)
+        hw, level_idx=0).to(mask_feat.device)
+    coord = coord.unsqueeze(0).unsqueeze(0).repeat(batch_size, 1, 1, 1)
+    priors = priors.unsqueeze(2)
+    points = priors[..., :2]
+    relative_coord = (points - coord).permute(0, 1, 3, 2) / (
+        priors[..., 2:3] * 8)
+    relative_coord = relative_coord.reshape(batch_size, num_inst, 2, hw[0],
+                                            hw[1])
 
     mask_feat = torch.cat(
-        [relative_coord, mask_feat.repeat(num_inst, 1, 1, 1)], dim=1)
+        [relative_coord,
+         mask_feat.unsqueeze(1).repeat(1, num_inst, 1, 1, 1)],
+        dim=2)
     weights, biases = _parse_dynamic_params(self, kernels)
 
     n_layers = len(weights)
-    x = mask_feat.flatten(2)
+    x = mask_feat.flatten(0, 1).flatten(2)
     for i, (weight, bias) in enumerate(zip(weights, biases)):
         # replace dynamic conv with bmm
+        weight = weight.flatten(0, 1)
+        bias = bias.flatten(0, 1).unsqueeze(2)
         x = torch.bmm(weight, x)
-        x = x + bias[:, :, None]
+        x = x + bias
         if i < n_layers - 1:
             x = x.clamp_(min=0)
-    x = x.reshape(num_inst, h, w)
+    x = x.reshape(batch_size, num_inst, hw[0], hw[1])
     return x
 
 
 def _parse_dynamic_params(self, flatten_kernels):
     """split kernel head prediction to conv weight and bias."""
-    n_inst = flatten_kernels.size(0)
+    batch_size = flatten_kernels.shape[0]
+    n_inst = flatten_kernels.shape[1]
     n_layers = len(self.weight_nums)
     params_splits = list(
         torch.split_with_sizes(
-            flatten_kernels, self.weight_nums + self.bias_nums, dim=1))
+            flatten_kernels, self.weight_nums + self.bias_nums, dim=2))
     weight_splits = params_splits[:n_layers]
     bias_splits = params_splits[n_layers:]
     for idx in range(n_layers):
-        if idx < n_layers - 1:
-            weight_splits[idx] = weight_splits[idx].reshape(
-                n_inst, self.dyconv_channels, -1)
-        else:
-            weight_splits[idx] = weight_splits[idx].reshape(n_inst, 1, -1)
+        channel = self.dyconv_channels if idx < n_layers - 1 else 1
+        weight_splits[idx] = weight_splits[idx].reshape(
+            batch_size, n_inst, channel, -1)
+
     return weight_splits, bias_splits
