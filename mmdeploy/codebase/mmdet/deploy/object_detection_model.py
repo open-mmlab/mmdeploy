@@ -254,18 +254,19 @@ class End2EndModel(BaseBackendModel):
                             dets[:, :4], masks, ori_w, ori_h, self.device)
                     else:
                         masks = masks[:, :img_h, :img_w]
-                    # avoid to resize masks with zero dim
-                    if export_postprocess_mask and rescale and masks.shape[
-                            0] != 0:
-                        masks = torch.nn.functional.interpolate(
-                            masks.unsqueeze(0),
-                            size=[
-                                math.ceil(masks.shape[-2] /
-                                          img_metas[i]['scale_factor'][0]),
-                                math.ceil(masks.shape[-1] /
-                                          img_metas[i]['scale_factor'][1])
-                            ])
-                        masks = masks.squeeze(0)
+                # avoid to resize masks with zero dim
+                is_shape_match = masks.shape[1] == ori_h and masks.shape[
+                    2] == ori_w
+                if masks.shape[0] != 0 and not is_shape_match:
+                    masks = torch.nn.functional.interpolate(
+                        masks.unsqueeze(0),
+                        size=[
+                            math.ceil(masks.shape[-2] /
+                                      img_metas[i]['scale_factor'][0]),
+                            math.ceil(masks.shape[-1] /
+                                      img_metas[i]['scale_factor'][1])
+                        ])
+                    masks = masks.squeeze(0)
                 masks = masks[..., :ori_h, :ori_w]
                 if masks.dtype != bool:
                     masks = masks >= 0.5
