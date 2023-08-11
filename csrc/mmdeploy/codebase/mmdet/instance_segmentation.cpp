@@ -67,6 +67,7 @@ class ResizeInstanceMask : public ResizeBBox {
       OUTCOME_TRY(auto result, DispatchGetBBoxes(prep_res["img_metas"], _dets, _labels));
       auto ori_w = prep_res["img_metas"]["ori_shape"][2].get<int>();
       auto ori_h = prep_res["img_metas"]["ori_shape"][1].get<int>();
+      from_value(prep_res["img_metas"]["scale_factor"], scale_factor_);
 
       ProcessMasks(result, masks, _dets, ori_w, ori_h);
 
@@ -145,6 +146,9 @@ class ResizeInstanceMask : public ResizeBBox {
       std::vector<int> axes = {1, 2, 0};
       OUTCOME_TRY(permute_.Apply(cpu_mask, cpu_mask, axes));
       cv::Mat mask_mat(mask_height, mask_width, CV_32FC(mask_channel), cpu_mask.data());
+      int resize_height = mask_height / scale_factor_[0];
+      int resize_width = mask_width / scale_factor_[1];
+      cv::resize(mask_mat, mask_mat, cv::Size(resize_height, resize_width), cv::INTER_LINEAR);
       mask_mat = mask_mat(cv::Range(0, img_h), cv::Range(0, img_w)).clone();
       for (int i=0; i < mask_channel; i++) {
         cv::Mat mask_;
@@ -187,6 +191,7 @@ class ResizeInstanceMask : public ResizeBBox {
   float mask_thr_binary_{.5f};
   bool is_rcnn_{true};
   bool is_resize_mask_{false};
+  std::vector<float> scale_factor_{1.0, 1.0, 1.0, 1.0};
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMDetection, ResizeInstanceMask);

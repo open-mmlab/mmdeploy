@@ -241,7 +241,9 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                if model_type != 'RTMDet':
+                if model_type == 'RTMDet':
+                    export_postprocess_mask = True
+                else:
                     export_postprocess_mask = False
                     if self.deploy_cfg is not None:
                         mmdet_deploy_cfg = get_post_processing_params(
@@ -255,9 +257,7 @@ class End2EndModel(BaseBackendModel):
                     else:
                         masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
-                is_shape_match = masks.shape[1] == ori_h and masks.shape[
-                    2] == ori_w
-                if masks.shape[0] != 0 and not is_shape_match:
+                if export_postprocess_mask and rescale and masks.shape[0] != 0:
                     masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0),
                         size=[
@@ -265,9 +265,8 @@ class End2EndModel(BaseBackendModel):
                                       img_metas[i]['scale_factor'][0]),
                             math.ceil(masks.shape[-1] /
                                       img_metas[i]['scale_factor'][1])
-                        ])
+                        ])[..., :ori_h, :ori_w]
                     masks = masks.squeeze(0)
-                masks = masks[..., :ori_h, :ori_w]
                 if masks.dtype != bool:
                     masks = masks >= 0.5
                 # aligned with mmdet to easily convert to numpy
