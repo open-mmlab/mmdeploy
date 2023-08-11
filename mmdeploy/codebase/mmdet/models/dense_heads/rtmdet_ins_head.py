@@ -142,8 +142,9 @@ def _nms_with_mask_static(self,
         pre_top_k=pre_top_k,
         keep_top_k=keep_top_k,
         output_index=True)
-    # remove padded inds
-    inds = inds[:, :-1]
+    # remove padded
+    dets = dets[:, :-1, :]
+    labels = labels[:, :-1]
     batch_size = bboxes.shape[0]
     batch_inds = torch.arange(batch_size, device=bboxes.device).view(-1, 1)
     kernels = kernels[batch_inds, inds, :]
