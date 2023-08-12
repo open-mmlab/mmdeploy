@@ -27,13 +27,13 @@ int main(int argc, char* argv[]) {
   context.Add(mmdeploy::Device(FLAGS_device));
   context.Add(profiler);
 
+  // construct a detector instance
+  mmdeploy::RotatedDetector detector(mmdeploy::Model{ARGS_model}, context);
+
   // warmup
   for (int i = 0; i < 20; ++i) {
     detector.Apply(img);
   }
-
-  // construct a detector instance
-  mmdeploy::RotatedDetector detector(mmdeploy::Model{ARGS_model}, context);
 
   // apply the detector, the result is an array-like class holding references to
   // `mmdeploy_rotated_detection_t`, will be released automatically on destruction

@@ -26,13 +26,12 @@ int main(int argc, char* argv[]) {
   context.Add(mmdeploy::Device(FLAGS_device));
   context.Add(profiler);
 
+  // construct a classifier instance
+  mmdeploy::Classifier classifier(mmdeploy::Model{ARGS_model}, context);
   // warmup
   for (int i = 0; i < 20; ++i) {
     classifier.Apply(img);
   }
-
-  // construct a classifier instance
-  mmdeploy::Classifier classifier(mmdeploy::Model{ARGS_model}, context);
 
   // apply the classifier; the result is an array-like class holding references to
   // `mmdeploy_classification_t`, will be released automatically on destruction
