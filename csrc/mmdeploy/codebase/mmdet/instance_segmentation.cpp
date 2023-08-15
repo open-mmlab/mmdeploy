@@ -150,7 +150,7 @@ class ResizeInstanceMask : public ResizeBBox {
       int resize_width = mask_width / scale_factor_[1];
       cv::resize(mask_mat, mask_mat, cv::Size(resize_height, resize_width), cv::INTER_LINEAR);
       mask_mat = mask_mat(cv::Range(0, img_h), cv::Range(0, img_w)).clone();
-      for (int i=0; i < mask_channel; i++) {
+      for (int i=0; i < (int)result.size(); i++) {
         cv::Mat mask_;
         cv::extractChannel(mask_mat, mask_, i);
         Tensor mask_t = cpu::CVMat2Tensor(mask_);

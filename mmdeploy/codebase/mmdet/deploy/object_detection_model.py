@@ -877,8 +877,10 @@ class SDKEnd2EndModel(End2EndModel):
             ori_h, ori_w = data_samples[0].ori_shape[:2]
             for bbox, mask in zip(dets, masks):
                 img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
-                left = int(max(np.floor(bbox[0]) - 1, 0))
-                top = int(max(np.floor(bbox[1]) - 1, 0))
+                left, top = 0, 0
+                if not (ori_h == mask.shape[0] and ori_w == mask.shape[1]):
+                    left = int(max(np.floor(bbox[0]) - 1, 0))
+                    top = int(max(np.floor(bbox[1]) - 1, 0))
                 img_mask[top:top + mask.shape[0],
                          left:left + mask.shape[1]] = mask
                 segm_results.append(torch.from_numpy(img_mask))
