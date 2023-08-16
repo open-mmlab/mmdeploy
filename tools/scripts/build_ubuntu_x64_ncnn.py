@@ -90,7 +90,7 @@ def install_pyncnn(dep_dir):
 
     # install
     os.chdir(ncnn_dir)
-    os.system('cd python && python -m pip install -e .')
+    os.system('cd python && python -m pip install -e .  --user --no-cache-dir')
     ncnn_cmake_dir = os.path.join(ncnn_dir, 'build', 'install', 'lib', 'cmake',
                                   'ncnn')
     assert (os.path.exists(ncnn_cmake_dir))
@@ -130,7 +130,7 @@ def install_mmdeploy(work_dir, dep_dir, ncnn_cmake_dir):
     os.system(cmd)
 
     os.system('cd build && make -j {} && make install'.format(g_jobs))
-    os.system('python3 -m pip install -v -e .')
+    os.system('python3 -m pip install -v -e . --user --no-cache-dir')
     os.system(""" echo 'export PATH={}:$PATH' >> ~/mmdeploy.env """.format(
         os.path.join(work_dir, 'mmdeploy', 'backend', 'ncnn')))
     try:
