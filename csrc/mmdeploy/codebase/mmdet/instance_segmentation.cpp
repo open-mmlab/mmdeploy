@@ -146,10 +146,15 @@ class ResizeInstanceMask : public ResizeBBox {
       std::vector<int> axes = {1, 2, 0};
       OUTCOME_TRY(permute_.Apply(cpu_mask, cpu_mask, axes));
       cv::Mat mask_mat(mask_height, mask_width, CV_32FC(mask_channel), cpu_mask.data());
-      int resize_height = mask_height / scale_factor_[0];
-      int resize_width = mask_width / scale_factor_[1];
-      cv::resize(mask_mat, mask_mat, cv::Size(resize_height, resize_width), cv::INTER_LINEAR);
+      int resize_height = int(mask_height / scale_factor_[0] + 0.5);
+      int resize_width = int(mask_width / scale_factor_[1] + 0.5);
+      // skip resize if scale_factor is 1.0
+      if (resize_height != mask_height || resize_width != mask_width) {
+        cv::resize(mask_mat, mask_mat, cv::Size(resize_height, resize_width), cv::INTER_LINEAR);
+      }
+      // crop masks
       mask_mat = mask_mat(cv::Range(0, img_h), cv::Range(0, img_w)).clone();
+
       for (int i=0; i < (int)result.size(); i++) {
         cv::Mat mask_;
         cv::extractChannel(mask_mat, mask_, i);
