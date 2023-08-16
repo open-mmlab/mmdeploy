@@ -27,6 +27,12 @@ int main(int argc, char *argv[]) {
   context.Add(profiler);
 
   PoseDetector detector{Model(model_path), context};
+
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
+
   auto res = detector.Apply(img);
 
   for (int i = 0; i < res[0].length; i++) {

@@ -29,6 +29,11 @@ int main(int argc, char* argv[]) {
   // construct a detector instance
   mmdeploy::Detector detector(mmdeploy::Model{ARGS_model}, context);
 
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
+
   // apply the detector, the result is an array-like class holding references to
   // `mmdeploy_detection_t`, will be released automatically on destruction
   mmdeploy::Detector::Result dets = detector.Apply(img);

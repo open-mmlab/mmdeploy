@@ -30,6 +30,11 @@ int main(int argc, char* argv[]) {
   // construct a detector instance
   mmdeploy::RotatedDetector detector(mmdeploy::Model{ARGS_model}, context);
 
+  // warmup
+  for (int i = 0; i < 20; ++i) {
+    detector.Apply(img);
+  }
+
   // apply the detector, the result is an array-like class holding references to
   // `mmdeploy_rotated_detection_t`, will be released automatically on destruction
   mmdeploy::RotatedDetector::Result dets = detector.Apply(img);
