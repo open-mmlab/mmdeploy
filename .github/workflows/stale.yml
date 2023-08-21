@@ -22,7 +22,7 @@ jobs:
           close-issue-message: 'This issue is closed because it has been stale for 5 days. Please open a new issue if you have similar issues or you have any new updates now.'
           close-pr-message: 'This PR is closed because it has been stale for 10 days. Please reopen this PR if you have any updates and want to keep contributing the code.'
           # only issues/PRS with following labels are checked
-          any-of-labels: 'invalid, awaiting response, duplicate'
+          any-of-labels: 'invalid, awaiting response, duplicate, Stale, upstream issue'
           days-before-issue-stale: 7
           days-before-pr-stale: 45
           days-before-issue-close: 5

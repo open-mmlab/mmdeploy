@@ -19,13 +19,13 @@ CONFIGS = [
         'mmpretrain/configs/resnet/resnet18_8xb32_in1k.py',
         'https://download.openmmlab.com/mmclassification/v0/resnet/resnet18_8xb32_in1k_20210831-fbbb1da6.pth',  # noqa: E501
         'resnet18.onnx',
-        'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/resnet18.onnx',  # noqa: E501
+        'https://github.com/open-mmlab/mmdeploy/releases/download/v0.1.0/resnet18.onnx',  # noqa: E501
     ),
     (
         'mmpretrain/configs/mobilenet_v2/mobilenet-v2_8xb32_in1k.py',
         'https://download.openmmlab.com/mmclassification/v0/mobilenet_v2/mobilenet_v2_batch256_imagenet_20200708-3b2dc3af.pth',  # noqa: E501
         'mobilenet-v2.onnx',
-        'https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/mobilenet-v2.onnx',  # noqa: E501
+        'https://github.com/open-mmlab/mmdeploy/releases/download/v0.1.0/mobilenet-v2.onnx',  # noqa: E501
     )
 ]
 

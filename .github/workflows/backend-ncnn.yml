@@ -123,7 +123,7 @@ jobs:
           export input_img=tests/data/tiger.jpeg
           python3 -m mim download mmpretrain --config resnet18_8xb32_in1k --dest $work_dir
           python3 tools/torch2onnx.py $deploy_cfg $model_cfg $checkpoint $input_img --work-dir $work_dir
-          wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy-onnx2ncnn-testdata/main/dataset.tar
+          wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.1.0/dataset.tar
           tar xvf dataset.tar
           python3 tools/onnx2ncnn_quant_table.py \
             --onnx $work_dir/end2end.onnx \
