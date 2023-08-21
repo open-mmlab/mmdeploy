@@ -92,7 +92,7 @@ class ResizeInstanceMask : public ResizeBBox {
     std::vector<Tensor> h_warped_masks;
     h_warped_masks.reserve(result.size());
 
-    if (is_rcnn_) { // mask r-cnn
+    if (is_rcnn_) {  // mask r-cnn
       for (auto& det : result) {
         auto mask = d_mask.Slice(det.index);
         auto mask_height = (int)mask.shape(1);
@@ -132,9 +132,7 @@ class ResizeInstanceMask : public ResizeBBox {
         }
       }
 
-    }
-    else { // rtmdet-inst
-      d_mask.Squeeze(0);
+    } else {  // rtmdet-inst
       auto mask_channel = (int)d_mask.shape(0);
       auto mask_height = (int)d_mask.shape(1);
       auto mask_width = (int)d_mask.shape(2);
@@ -155,13 +153,12 @@ class ResizeInstanceMask : public ResizeBBox {
       // crop masks
       mask_mat = mask_mat(cv::Range(0, img_h), cv::Range(0, img_w)).clone();
 
-      for (int i=0; i < (int)result.size(); i++) {
+      for (int i = 0; i < (int)result.size(); i++) {
         cv::Mat mask_;
         cv::extractChannel(mask_mat, mask_, i);
         Tensor mask_t = cpu::CVMat2Tensor(mask_);
         h_warped_masks.emplace_back(mask_t);
       }
-
     }
 
     OUTCOME_TRY(stream_.Wait());
