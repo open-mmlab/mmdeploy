@@ -136,13 +136,13 @@ class ResizeInstanceMask : public ResizeBBox {
       auto mask_channel = (int)d_mask.shape(0);
       auto mask_height = (int)d_mask.shape(1);
       auto mask_width = (int)d_mask.shape(2);
-      Device host{"cpu"};
-      OUTCOME_TRY(auto cpu_mask, MakeAvailableOnDevice(d_mask, host, stream_));
-      OUTCOME_TRY(stream().Wait());
       // (C, H, W) -> (H, W, C)
       permute_ = ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute>::Create();
       std::vector<int> axes = {1, 2, 0};
-      OUTCOME_TRY(permute_.Apply(cpu_mask, cpu_mask, axes));
+      OUTCOME_TRY(permute_.Apply(d_mask, d_mask, axes));
+      Device host{"cpu"};
+      OUTCOME_TRY(auto cpu_mask, MakeAvailableOnDevice(d_mask, host, stream_));
+      OUTCOME_TRY(stream().Wait());
       cv::Mat mask_mat(mask_height, mask_width, CV_32FC(mask_channel), cpu_mask.data());
       int resize_height = int(mask_height / scale_factor_[0] + 0.5);
       int resize_width = int(mask_width / scale_factor_[1] + 0.5);
