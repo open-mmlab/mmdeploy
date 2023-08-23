@@ -182,9 +182,13 @@ class End2EndModel(BaseBackendModel):
                                rescale: bool = True):
         """Post-processing dets, labels, masks."""
         batch_size = len(batch_dets)
-        tmp_outputs = [batch_dets, batch_labels, batch_masks]
+        tmp_outputs = [batch_dets, batch_labels]
+        has_mask = batch_masks is not None
+        if has_mask:
+            tmp_outputs.append(batch_masks)
         outputs = End2EndModel.__clear_outputs(tmp_outputs)
-        batch_dets, batch_labels, batch_masks = outputs
+        batch_dets, batch_labels = outputs[:2]
+        batch_masks = outputs[2] if has_mask else None
         img_metas = [data_sample.metainfo for data_sample in data_samples]
         model_type = self.model_cfg.model.type if \
             self.model_cfg is not None else None

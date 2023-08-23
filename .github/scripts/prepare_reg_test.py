@@ -98,6 +98,12 @@ def prepare_codebases(codebases):
                             f'{MMDEPLOY_DIR}/configs/mmyolo')
             shutil.copy(f'{target_dir}/tests/regression/mmyolo.yml',
                         f'{MMDEPLOY_DIR}/tests/regression/mmyolo.yml')
+        elif codebase == 'mmdet':
+            # for panoptic
+            run_cmd([
+                'python -m pip install ',
+                'git+https://github.com/cocodataset/panopticapi.git',
+            ])
 
 
 def install_torch(torch_version):
