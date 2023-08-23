@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 
 import torch
 
@@ -34,7 +33,6 @@ def two_stage_panoptic_segmentor__forward(self,
             `semseg` of shape [N, num_sem_class, sem_H, sem_W].
     """
     ctx = FUNCTION_REWRITER.get_context()
-    data_samples = copy.deepcopy(data_samples)
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape
