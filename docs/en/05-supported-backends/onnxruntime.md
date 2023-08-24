@@ -49,6 +49,8 @@ export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 
 - GPU Version
 
+In X64 GPU:
+
 ```bash
 wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-gpu-1.8.1.tgz
 
@@ -57,6 +59,20 @@ cd onnxruntime-linux-x64-gpu-1.8.1
 export ONNXRUNTIME_DIR=$(pwd)
 export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
 ```
+
+In Arm GPU:
+
+```bash
+# Arm not have 1.8.1 version package
+wget https://github.com/microsoft/onnxruntime/releases/download/v1.10.0/onnxruntime-linux-aarch64-1.10.0.tgz
+
+tar -zxvf onnxruntime-linux-aarch64-1.10.0.tgz
+cd onnxruntime-linux-aarch64-1.10.0
+export ONNXRUNTIME_DIR=$(pwd)
+export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+```
+
+You can also go to [ONNX Runtime Release](https://github.com/microsoft/onnxruntime/releases) to find corresponding release version package.
 
 ### Build on Linux
 

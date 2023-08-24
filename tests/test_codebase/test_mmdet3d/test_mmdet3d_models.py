@@ -206,3 +206,40 @@ def test_centerpoint(backend_type: Backend):
             opset=deploy_cfg.onnx_config.opset_version):
         outputs = model.forward(data)
     assert outputs is not None
+
+
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
+def test_smoke(backend_type: Backend):
+    from mmdeploy.core import RewriterContext
+    check_backend(backend_type, True)
+
+    model_cfg = load_config(
+        'tests/test_codebase/test_mmdet3d/data/smoke_dla34_dlaneck_gn-all_4xb8-6x_kitti-mono3d.py'  # noqa: E501
+    )[0]  # noqa: E501
+    deploy_cfg = mmengine.Config(
+        dict(
+            backend_config=dict(type=backend_type.value),
+            onnx_config=dict(
+                input_shape=None,
+                opset_version=11,
+                input_names=['input'],
+                output_names=['cls_score', 'bbox_pred']),
+            codebase_config=dict(
+                type=Codebase.MMDET3D.value, task=Task.MONO_DETECTION.value)))
+
+    task_processor = build_task_processor(model_cfg, deploy_cfg, 'cpu')
+    model = task_processor.build_pytorch_model(None)
+    model.eval()
+
+    preproc = task_processor.build_data_preprocessor()
+    _, data = task_processor.create_input(
+        pcd=  # noqa: E251
+        'tests/test_codebase/test_mmdet3d/data/nuscenes/n015-2018-07-24-11-22-45+0800.pkl',  # noqa: E501
+        data_preprocessor=preproc)
+
+    with RewriterContext(
+            cfg=deploy_cfg,
+            backend=deploy_cfg.backend_config.type,
+            opset=deploy_cfg.onnx_config.opset_version):
+        cls_score, bbox_pred = model.forward(data)
+        assert len(cls_score) == 1 and len(bbox_pred) == 1

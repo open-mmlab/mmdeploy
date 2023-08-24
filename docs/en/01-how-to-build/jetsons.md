@@ -194,6 +194,20 @@ Please install dependencies:
 sudo apt-get install protobuf-compiler libprotoc-dev
 ```
 
+#### Install ONNX Runtime [Optional]
+
+Go to [Jetson_Zoo#ONNX_Runtime](https://elinux.org/Jetson_Zoo#ONNX_Runtime) to find **right version** of onnx runtime. Then download and install package.
+
+For example:
+
+```
+# Download pip wheel from location mentioned above
+$ wget https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kccn2.whl -O onnxruntime_gpu-1.10.0-cp36-cp36m-linux_aarch64.whl
+
+# Install pip wheel
+$ pip3 install onnxruntime_gpu-1.10.0-cp36-cp36m-linux_aarch64.whl
+```
+
 #### Install h5py and pycuda
 
 Model Converter employs HDF5 to save the calibration data for TensorRT INT8 quantization and needs `pycuda` to copy device memory.
@@ -352,3 +366,8 @@ The above inference is done on a [Seeed reComputer built with Jetson Nano module
   1. Set `MAX N` mode and perform `sudo nvpmodel -m 0 && sudo jetson_clocks`.
   2. Reduce the number of `pre_top_k` in deploy config file like [mmdet pre_top_k](https://github.com/open-mmlab/mmdeploy/blob/34879e638cc2db511e798a376b9a4b9932660fe1/configs/mmdet/_base_/base_static.py#L13) does, e.g., `1000`.
   3. Convert the model again and try SDK demo again.
+
+### FAQ
+
+- Error `error: cannot import name 'ProcessGroup' from 'torch.distributed'.`
+  - Please try install pytorch 1.11 version from [pytorch-for-jetson](https://forums.developer.nvidia.com/t/pytorch-for-jetson/72048).
