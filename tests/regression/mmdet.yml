@@ -15,8 +15,8 @@ globals:
       tolerance: 1 # metric ±n%
       multi_value: 100
     PQ:
-      metric_key: '?'
-      tolerance: 0.1 # metric ±n%
+      metric_key: 'coco_panoptic/PQ'
+      tolerance: 0.5 # metric ±n%
   convert_image: &convert_image
     input_img: *input_img
     test_img: *test_img
@@ -381,3 +381,39 @@ models:
       - *pipeline_seg_ort_dynamic_fp32
       - *pipeline_seg_trt_dynamic_fp32
       - *pipeline_seg_openvino_dynamic_fp32
+
+  - name: PanopticFPN
+    metafile: configs/panoptic_fpn/metafile.yml
+    model_configs:
+      - configs/panoptic_fpn/panoptic-fpn_r50_fpn_1x_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_panoptic-fpn_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: False
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_panoptic-fpn_tensorrt_dynamic-352x512-1344x1344.py
+        convert_image: *convert_image
+        backend_test: True
+
+  - name: MaskFormer
+    metafile: configs/maskformer/metafile.yml
+    model_configs:
+      - configs/maskformer/maskformer_r50_ms-16xb1-75e_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: False
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_dynamic-320x512-1344x1344.py
+        convert_image: *convert_image
+        backend_test: True
+
+  - name: Mask2Former
+    metafile: configs/mask2former/metafile.yml
+    model_configs:
+      - configs/mask2former/mask2former_r50_8xb2-lsj-50e_coco-panoptic.py
+    pipelines:
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: False
+      - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
+        convert_image: *convert_image
+        backend_test: False

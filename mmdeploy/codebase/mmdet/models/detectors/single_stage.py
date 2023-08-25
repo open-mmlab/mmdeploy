@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 
 import torch
 from mmdet.models.detectors.base import ForwardResults
@@ -31,9 +30,6 @@ def _set_metainfo(data_samples, img_shape):
 
     Code in this function cannot be traced by fx.
     """
-
-    # fx can not trace deepcopy correctly
-    data_samples = copy.deepcopy(data_samples)
     if data_samples is None:
         data_samples = [DetDataSample()]
 

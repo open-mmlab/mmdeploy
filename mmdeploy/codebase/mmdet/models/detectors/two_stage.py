@@ -1,5 +1,4 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
 
 import torch
 from mmdet.models.detectors.base import ForwardResults
@@ -63,7 +62,6 @@ def two_stage_detector__forward(self,
                 (num_instances, ).
     """
     ctx = FUNCTION_REWRITER.get_context()
-    data_samples = copy.deepcopy(data_samples)
     deploy_cfg = ctx.cfg
 
     # get origin input shape as tensor to support onnx dynamic shape

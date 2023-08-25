@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import copy
 import math
 from functools import partial
 from typing import Any, List, Optional, Sequence, Tuple, Union
@@ -97,8 +98,10 @@ class End2EndModel(BaseBackendModel):
 
         for i in range(batch_size):
             inds = test_outputs[0][i, :, 4] > 0.0
-            for output_id in range(num_outputs):
-                outputs[output_id][i] = test_outputs[output_id][i, inds, ...]
+            outputs[0][i] = test_outputs[0][i, inds, ...]
+            outputs[1][i] = test_outputs[1][i, inds, ...]
+            if num_outputs >= 3 and test_outputs[2][i] is not None:
+                outputs[2][i] = test_outputs[2][i, inds, ...]
         return outputs
 
     @staticmethod
@@ -171,42 +174,34 @@ class End2EndModel(BaseBackendModel):
         result_masks = torch.cat(result_masks, 1)
         return result_masks.squeeze(0)
 
-    def forward(self,
-                inputs: torch.Tensor,
-                data_samples: Optional[List[BaseDataElement]] = None,
-                mode: str = 'predict',
-                **kwargs) -> Any:
-        """The model forward.
-
-        Args:
-            inputs (torch.Tensor): The input tensors
-            data_samples (List[BaseDataElement], optional): The data samples.
-                Defaults to None.
-            mode (str, optional): forward mode, only support `predict`.
-
-        Returns:
-            Any: Model output.
-        """
-        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
-        inputs = inputs.contiguous()
-        outputs = self.predict(inputs)
-        outputs = End2EndModel.__clear_outputs(outputs)
+    def postprocessing_results(self,
+                               batch_dets: torch.Tensor,
+                               batch_labels: torch.Tensor,
+                               batch_masks: torch.Tensor,
+                               data_samples: List[BaseDataElement],
+                               rescale: bool = True):
+        """Post-processing dets, labels, masks."""
+        batch_size = len(batch_dets)
+        tmp_outputs = [batch_dets, batch_labels]
+        has_mask = batch_masks is not None
+        if has_mask:
+            tmp_outputs.append(batch_masks)
+        outputs = End2EndModel.__clear_outputs(tmp_outputs)
         batch_dets, batch_labels = outputs[:2]
-        batch_masks = outputs[2] if len(outputs) == 3 else None
-        batch_size = inputs.shape[0]
+        batch_masks = outputs[2] if has_mask else None
         img_metas = [data_sample.metainfo for data_sample in data_samples]
-        results = []
-        rescale = kwargs.get('rescale', True)
         model_type = self.model_cfg.model.type if \
             self.model_cfg is not None else None
         for i in range(batch_size):
             dets, labels = batch_dets[i], batch_labels[i]
-            result = InstanceData()
-
+            pred_instances = InstanceData()
+            device = dets.device
+            labels = labels.to(device)
             bboxes = dets[:, :4]
             scores = dets[:, 4]
-            # perform rescale
-            if rescale and 'scale_factor' in img_metas[i]:
+            scale_factor = bboxes.new_ones(1, 4)
+            # get scale_factor
+            if 'scale_factor' in img_metas[i]:
                 scale_factor = img_metas[i]['scale_factor']
                 if isinstance(scale_factor, (list, tuple, np.ndarray)):
                     if len(scale_factor) == 2:
@@ -215,6 +210,7 @@ class End2EndModel(BaseBackendModel):
                             [scale_factor, scale_factor])
                     scale_factor = np.array(scale_factor)[None, :]  # [1,4]
                 scale_factor = torch.from_numpy(scale_factor).to(dets)
+            if rescale:
                 bboxes /= scale_factor
 
             # Most of models in mmdetection 3.x use `pad_param`, but some
@@ -228,19 +224,17 @@ class End2EndModel(BaseBackendModel):
             elif 'border' in img_metas[i]:
                 pad_key = 'border'
             if pad_key is not None:
-                scale_factor = img_metas[i].get('scale_factor',
-                                                np.array([1., 1.]))
                 x_off = img_metas[i][pad_key][2] / scale_factor[1]
                 y_off = img_metas[i][pad_key][0] / scale_factor[0]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)
 
-            result.scores = scores
-            result.bboxes = bboxes
+            pred_instances.scores = scores
+            pred_instances.bboxes = bboxes
             if model_type in ['SOLO', 'SOLOv2']:
-                result.bboxes = bboxes.new_zeros(bboxes.shape)
-            result.labels = labels
+                pred_instances.bboxes = bboxes.new_zeros(bboxes.shape)
+            pred_instances.labels = labels
 
             if batch_masks is not None:
                 masks = batch_masks[i]
@@ -248,7 +242,6 @@ class End2EndModel(BaseBackendModel):
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
                 export_postprocess_mask = False
                 if self.deploy_cfg is not None:
-
                     mmdet_deploy_cfg = get_post_processing_params(
                         self.deploy_cfg)
                     # this flag enable postprocess when export.
@@ -261,23 +254,45 @@ class End2EndModel(BaseBackendModel):
                     masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
                 if export_postprocess_mask and rescale and masks.shape[0] != 0:
-                    masks = torch.nn.functional.interpolate(
+                    masks = F.interpolate(
                         masks.unsqueeze(0),
                         size=[
-                            math.ceil(masks.shape[-2] /
-                                      img_metas[i]['scale_factor'][0]),
-                            math.ceil(masks.shape[-1] /
-                                      img_metas[i]['scale_factor'][1])
+                            math.ceil(masks.shape[-2] / scale_factor[0]),
+                            math.ceil(masks.shape[-1] / scale_factor[1])
                         ])[..., :ori_h, :ori_w]
                     masks = masks.squeeze(0)
                 if masks.dtype != bool:
                     masks = masks >= 0.5
                 # aligned with mmdet to easily convert to numpy
-                masks = masks.cpu()
-                result.masks = masks
-            data_samples[i].pred_instances = result
-            results.append(data_samples[i])
-        return results
+                masks = masks.to(device)
+                pred_instances.masks = masks
+
+            data_samples[i].pred_instances = pred_instances
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement]): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+
+        Returns:
+            Any: Model output.
+        """
+        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
+        inputs = inputs.contiguous()
+        outputs = self.predict(inputs)
+        batch_dets, batch_labels = outputs[:2]
+        batch_masks = outputs[2] if len(outputs) >= 3 else None
+        self.postprocessing_results(batch_dets, batch_labels, batch_masks,
+                                    data_samples)
+        return data_samples
 
     def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
         """The interface for predict.
@@ -292,6 +307,155 @@ class End2EndModel(BaseBackendModel):
         outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
+
+
+@__BACKEND_MODEL.register_module('panoptic_end2end')
+class PanOpticEnd2EndModel(End2EndModel):
+    """End to end model for inference of PanOptic Segmentation.
+
+    Args:
+        backend (Backend): The backend enum, specifying backend type.
+        backend_files (Sequence[str]): Paths to all required backend files
+                (e.g. '.onnx' for ONNX Runtime, '.param' and '.bin' for ncnn).
+        device (str): A string specifying device type.
+        deploy_cfg (str|Config): Deployment config file or loaded Config
+            object.
+        data_preprocessor (dict|nn.Module): The data preprocessor.
+    """
+
+    def __init__(self,
+                 backend: Backend,
+                 backend_files: Sequence[str],
+                 device: str,
+                 deploy_cfg: Union[str, Config],
+                 model_cfg: Optional[Union[str, Config]] = None,
+                 data_preprocessor: Optional[Union[dict, nn.Module]] = None,
+                 **kwargs):
+        super(PanOpticEnd2EndModel, self).__init__(
+            backend,
+            backend_files,
+            device,
+            deploy_cfg,
+            model_cfg=model_cfg,
+            data_preprocessor=data_preprocessor,
+            **kwargs)
+        from mmdet.models.seg_heads import (HeuristicFusionHead,
+                                            MaskFormerFusionHead)
+        obj_dict = {
+            'HeuristicFusionHead': HeuristicFusionHead,
+            'MaskFormerFusionHead': MaskFormerFusionHead
+        }
+        head_args = self.model_cfg.model.panoptic_fusion_head.copy()
+        test_cfg = self.model_cfg.model.test_cfg
+        # deal with PanopticFPN
+        if 'panoptic' in test_cfg:
+            test_cfg = test_cfg['panoptic']
+        head_args['test_cfg'] = test_cfg
+        self.fusion_head_type = head_args.pop('type')
+        self.fusion_head = obj_dict[self.fusion_head_type](**head_args)
+
+    def forward(self,
+                inputs: torch.Tensor,
+                data_samples: List[BaseDataElement],
+                mode: str = 'predict',
+                **kwargs) -> Any:
+        """The model forward.
+
+        Args:
+            inputs (torch.Tensor): The input tensors
+            data_samples (List[BaseDataElement], optional): The data samples.
+                Defaults to None.
+            mode (str, optional): forward mode, only support `predict`.
+
+        Returns:
+            Any: Model output.
+        """
+        assert mode == 'predict', 'Deploy model only allow mode=="predict".'
+        model_type = self.model_cfg.model.type
+
+        inputs = inputs.contiguous()
+        outputs = self.predict(inputs)
+        rescale = kwargs.get('rescale', True)
+
+        if model_type == 'PanopticFPN':
+            batch_dets, batch_labels, batch_masks = outputs[:3]
+            # fix int32 and int64 mismatch in fusion head
+            batch_labels = batch_labels.to(torch.long)
+            batch_semseg = outputs[3]
+            tmp_data_samples = copy.deepcopy(data_samples)
+            self.postprocessing_results(batch_dets, batch_labels, batch_masks,
+                                        tmp_data_samples)
+            masks_results = [ds.pred_instances for ds in tmp_data_samples]
+            img_metas = [data_sample.metainfo for data_sample in data_samples]
+            seg_pred_list = []
+            for i in range(len(data_samples)):
+                h, w = img_metas[i]['img_shape']
+                seg_pred = batch_semseg[i][:, :h, :w]
+                h, w = img_metas[i]['ori_shape']
+                seg_pred = F.interpolate(
+                    seg_pred[None],
+                    size=(h, w),
+                    mode='bilinear',
+                    align_corners=False)[0]
+                seg_pred_list.append(seg_pred)
+            semseg_results = self.fusion_head.predict(masks_results,
+                                                      seg_pred_list)
+            results_list = [dict(pan_results=res) for res in semseg_results]
+        elif model_type in ['MaskFormer', 'Mask2Former']:
+            batch_cls_logits = outputs[0]
+            batch_mask_logits = outputs[1]
+
+            results_list = self.fusion_head.predict(
+                batch_cls_logits,
+                batch_mask_logits,
+                data_samples,
+                rescale=rescale)
+
+        data_samples = self.add_pred_to_datasample(data_samples, results_list)
+        return data_samples
+
+    @staticmethod
+    def add_pred_to_datasample(
+            data_samples: List[BaseDataElement],
+            results_list: List[dict]) -> List[BaseDataElement]:
+        """Add predictions to `DetDataSample`.
+
+        Args:
+            data_samples (list[:obj:`DetDataSample`], optional): A batch of
+                data samples that contain annotations and predictions.
+            results_list (List[dict]): Instance segmentation, segmantic
+                segmentation and panoptic segmentation results.
+
+        Returns:
+            list[:obj:`DetDataSample`]: Detection results of the
+            input images. Each DetDataSample usually contain
+            'pred_instances' and `pred_panoptic_seg`. And the
+            ``pred_instances`` usually contains following keys.
+
+                - scores (Tensor): Classification scores, has a shape
+                    (num_instance, )
+                - labels (Tensor): Labels of bboxes, has a shape
+                    (num_instances, ).
+                - bboxes (Tensor): Has a shape (num_instances, 4),
+                    the last dimension 4 arrange as (x1, y1, x2, y2).
+                - masks (Tensor): Has a shape (num_instances, H, W).
+
+            And the ``pred_panoptic_seg`` contains the following key
+
+                - sem_seg (Tensor): panoptic segmentation mask, has a
+                    shape (1, h, w).
+        """
+        for data_sample, pred_results in zip(data_samples, results_list):
+            if 'pan_results' in pred_results:
+                data_sample.pred_panoptic_seg = pred_results['pan_results']
+
+            if 'ins_results' in pred_results:
+                data_sample.pred_instances = pred_results['ins_results']
+
+            assert 'sem_results' not in pred_results, 'segmantic ' \
+                'segmentation results are not supported yet.'
+
+        return data_samples
 
 
 @__BACKEND_MODEL.register_module('single_stage')
