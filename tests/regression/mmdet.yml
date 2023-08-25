@@ -379,7 +379,6 @@ models:
     pipelines:
       - *pipeline_seg_ts_fp32
       - *pipeline_seg_ort_dynamic_fp32
-      - *pipeline_seg_trt_dynamic_fp32
       - *pipeline_seg_openvino_dynamic_fp32
 
   - name: PanopticFPN
