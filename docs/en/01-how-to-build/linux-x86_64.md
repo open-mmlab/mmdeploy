@@ -395,3 +395,27 @@ You can also activate other engines after the model.
 
   make -j$(nproc) && make install
   ```
+
+- cuda + TensorRT + onnxruntime + openvino + ncnn
+
+  If the [ncnn auto-install script](../../../tools/scripts/build_ubuntu_x64_ncnn.py) is used, protobuf will be installed in mmdeploy-dep/pbinstall in the same directory as mmdeploy.
+
+  ```Bash
+  export PROTO_DIR=/path/to/mmdeploy-dep/pbinstall
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
+      -DTENSORRT_DIR=${TENSORRT_DIR} \
+      -DCUDNN_DIR=${CUDNN_DIR} \
+      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+      -DInferenceEngine_DIR=${InferenceEngine_DIR} \
+      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
+      -DProtobuf_LIBRARIES=${PROTO_DIR}/lib/libprotobuf.so \
+      -DProtobuf_PROTOC_EXECUTABLE=${PROTO_DIR}/bin/protoc \
+      -DProtobuf_INCLUDE_DIR=${PROTO_DIR}/pbinstall/include
+```

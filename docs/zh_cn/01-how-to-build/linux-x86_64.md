@@ -335,7 +335,7 @@ mim install -e .
 
 #### 编译 SDK 和 Demos
 
-下文展示2个构建SDK的样例，分别用 ONNXRuntime 和 TensorRT 作为推理引擎。您可以参考它们，激活其他的推理引擎。
+下文展示一些构建 SDK 的样例。您可以参考它们，激活其他的推理引擎。
 
 - cpu + ONNXRuntime
 
@@ -390,3 +390,27 @@ mim install -e .
 
   make -j$(nproc) && make install
   ```
+
+- cuda + TensorRT + onnxruntime + openvino + ncnn
+
+  如果使用了 [ncnn 自动安装脚本](../../../tools/scripts/build_ubuntu_x64_ncnn.py), protobuf 会安装在 mmdeploy 同级目录的 mmdeploy-dep/pbinstall 中。
+
+  ```Bash
+  export PROTO_DIR=/path/to/mmdeploy-dep/pbinstall
+  cmake .. \
+      -DCMAKE_CXX_COMPILER=g++-7 \
+      -DMMDEPLOY_BUILD_SDK=ON \
+      -DMMDEPLOY_BUILD_EXAMPLES=ON \
+      -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON \
+      -DMMDEPLOY_TARGET_DEVICES="cuda;cpu" \
+      -DMMDEPLOY_TARGET_BACKENDS="trt;ort;ncnn" \
+      -Dpplcv_DIR=${PPLCV_DIR}/cuda-build/install/lib/cmake/ppl \
+      -DTENSORRT_DIR=${TENSORRT_DIR} \
+      -DCUDNN_DIR=${CUDNN_DIR} \
+      -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
+      -DInferenceEngine_DIR=${InferenceEngine_DIR} \
+      -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
+      -DProtobuf_LIBRARIES=${PROTO_DIR}/lib/libprotobuf.so \
+      -DProtobuf_PROTOC_EXECUTABLE=${PROTO_DIR}/bin/protoc \
+      -DProtobuf_INCLUDE_DIR=${PROTO_DIR}/pbinstall/include
+```
