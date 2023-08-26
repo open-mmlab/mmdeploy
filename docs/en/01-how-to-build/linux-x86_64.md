@@ -418,4 +418,7 @@ You can also activate other engines after the model.
       -DProtobuf_LIBRARIES=${PROTO_DIR}/lib/libprotobuf.so \
       -DProtobuf_PROTOC_EXECUTABLE=${PROTO_DIR}/bin/protoc \
       -DProtobuf_INCLUDE_DIR=${PROTO_DIR}/pbinstall/include
+  ```
+
+```
 ```
