@@ -62,7 +62,6 @@ jobs:
           python tools/check_env.py
       - name: Run python unittests and generate coverage report
         run: |
-          pytest tests/test_mmcv/test_mmcv_ops.py::test_ONNXNMSop
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
@@ -190,7 +189,6 @@ jobs:
       - name: Run unittests and generate coverage report
         id: badge_status
         run: |
-          pytest tests/test_mmcv/test_mmcv_ops.py::test_ONNXNMSop
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
@@ -245,7 +243,6 @@ jobs:
           python tools/check_env.py
       - name: Run unittests and generate coverage report
         run: |
-          pytest tests/test_mmcv/test_mmcv_ops.py::test_ONNXNMSop
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
