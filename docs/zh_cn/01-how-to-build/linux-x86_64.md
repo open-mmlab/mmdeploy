@@ -394,7 +394,7 @@ mim install -e .
 - cuda + TensorRT + onnxruntime + openvino + ncnn
 
   如果使用了 [ncnn 自动安装脚本](../../../tools/scripts/build_ubuntu_x64_ncnn.py), protobuf 会安装在 mmdeploy 同级目录的 mmdeploy-dep/pbinstall 中。
-
+  
   ```Bash
   export PROTO_DIR=/path/to/mmdeploy-dep/pbinstall
   cmake .. \
@@ -408,7 +408,7 @@ mim install -e .
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR} \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-      -DInferenceEngine_DIR=${InferenceEngine_DIR} \
+      -DInferenceEngine_DIR=${OPENVINO_DIR}/runtime/cmake \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DProtobuf_LIBRARIES=${PROTO_DIR}/lib/libprotobuf.so \
       -DProtobuf_PROTOC_EXECUTABLE=${PROTO_DIR}/bin/protoc \
