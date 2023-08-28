@@ -220,7 +220,6 @@ jobs:
           python -m pip install --no-cache-dir --upgrade pip
       - name: Check disk space
         run: |
-          df -h
           rm -rf ${GITHUB_WORKSPACE}/.git
           rm -rf /usr/share/dotnet
           cat /proc/cpuinfo  | grep -ic proc
@@ -317,7 +316,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_windows:
-    needs: build_cuda113_linux
+    needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda117]
     runs-on: [self-hosted, win10-3080]
     env:
       BASE_ENV: cuda11.3-cudnn8.2-py3.8-torch1.10
