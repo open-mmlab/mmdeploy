@@ -168,6 +168,7 @@ jobs:
           df -h
           rm -rf ${GITHUB_WORKSPACE}/.git
           rm -rf /usr/share/dotnet
+          rm -rf /opt/hostedtoolcache
           cat /proc/cpuinfo  | grep -ic proc
           free
           df -h
@@ -222,6 +223,7 @@ jobs:
         run: |
           rm -rf ${GITHUB_WORKSPACE}/.git
           rm -rf /usr/share/dotnet
+          rm -rf /opt/hostedtoolcache
           cat /proc/cpuinfo  | grep -ic proc
           free
           df -h
