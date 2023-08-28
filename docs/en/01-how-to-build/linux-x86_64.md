@@ -413,7 +413,7 @@ You can also activate other engines after the model.
       -DTENSORRT_DIR=${TENSORRT_DIR} \
       -DCUDNN_DIR=${CUDNN_DIR} \
       -DONNXRUNTIME_DIR=${ONNXRUNTIME_DIR} \
-      -DInferenceEngine_DIR=${InferenceEngine_DIR} \
+      -DInferenceEngine_DIR=${OPENVINO_DIR}/runtime/cmake \
       -Dncnn_DIR=${NCNN_DIR}/build/install/lib/cmake/ncnn \
       -DProtobuf_LIBRARIES=${PROTO_DIR}/lib/libprotobuf.so \
       -DProtobuf_PROTOC_EXECUTABLE=${PROTO_DIR}/bin/protoc \
