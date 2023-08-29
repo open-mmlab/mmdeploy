@@ -188,11 +188,19 @@ jobs:
           rm -rf .eggs && python -m pip install -e .
           python tools/check_env.py
       - name: Run unittests and generate coverage report
-        id: badge_status
         run: |
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
+      - name: Upload coverage to Codecov
+        id: badge_status
+        uses: codecov/codecov-action@v2
+        with:
+          file: ./coverage.xml,./coverage.info
+          flags: unittests
+          env_vars: OS,PYTHON,CPLUS
+          name: codecov-umbrella
+          fail_ci_if_error: false
       - name: create badge
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
@@ -247,15 +255,6 @@ jobs:
           coverage run --branch --source mmdeploy -m pytest -rsE tests
           coverage xml
           coverage report -m
-      - name: Upload coverage to Codecov
-        id: badge_status
-        uses: codecov/codecov-action@v2
-        with:
-          file: ./coverage.xml,./coverage.info
-          flags: unittests
-          env_vars: OS,PYTHON,CPLUS
-          name: codecov-umbrella
-          fail_ci_if_error: false
       - name: create badge
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
@@ -267,7 +266,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_linux:
-    needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda113]
+    needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda117]
     runs-on: [self-hosted, linux-3090]
     container:
       image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
