@@ -164,15 +164,16 @@ jobs:
           python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
       - name: Check disk space
+        continue-on-error: true
         run: |
           df -h
-          rm -rf ${GITHUB_WORKSPACE}/.git
-          rm -rf /usr/share/dotnet
-          rm -rf /opt/hostedtoolcache
+          rm -rf /__t/go
+          rm -rf /__t/node
+          rm -rf /__t/Ruby
+          rm -rf /__t/CodeQL
           cat /proc/cpuinfo  | grep -ic proc
           free
           df -h
-          df . -h
       - name: Install dependencies
         run: |
           python -V
@@ -228,14 +229,16 @@ jobs:
           python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
       - name: Check disk space
+        continue-on-error: true
         run: |
-          rm -rf ${GITHUB_WORKSPACE}/.git
-          rm -rf /usr/share/dotnet
-          rm -rf /opt/hostedtoolcache
+          df -h
+          rm -rf /__t/go
+          rm -rf /__t/node
+          rm -rf /__t/Ruby
+          rm -rf /__t/CodeQL
           cat /proc/cpuinfo  | grep -ic proc
           free
           df -h
-          df . -h
       - name: Install dependencies
         run: |
           python -V
