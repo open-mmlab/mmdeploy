@@ -85,14 +85,14 @@ class PyPoseDetector {
           dst_pts[2] = result->score[pts_ind];
           dst_pts += 3;
           // printf("pts %f %f %f\n", dst_pts[0], dst_pts[1], dst_pts[2]);
-
         }
         dst_bbox[0] = result->bboxes[j].left;
         dst_bbox[1] = result->bboxes[j].top;
         dst_bbox[2] = result->bboxes[j].right;
         dst_bbox[3] = result->bboxes[j].bottom;
         dst_bbox[4] = result->bbox_score[j];
-        // printf("box %f %f %f %f %f\n", dst_bbox[0], dst_bbox[1], dst_bbox[2], dst_bbox[3], dst_bbox[4]);
+        // printf("box %f %f %f %f %f\n", dst_bbox[0], dst_bbox[1], dst_bbox[2], dst_bbox[3],
+        // dst_bbox[4]);
         dst_bbox += 5;
       }
       result++;

@@ -109,7 +109,8 @@ class DeepposeRegressionHeadDecode : public MMPose {
     *(data + 0) = *(data + 0) * scale_x + center[0] - scale[0] * 0.5;
     *(data + 1) = *(data + 1) * scale_y + center[1] - scale[1] * 0.5;
   }
-  private:
+
+ private:
   vector<float> bbox_{0, 0, 1, 1, 1};
 };
 

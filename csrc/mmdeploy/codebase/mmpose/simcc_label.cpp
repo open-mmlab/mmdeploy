@@ -105,7 +105,7 @@ class SimCCLabelDecode : public MMPose {
     }
   }
 
-  private:
+ private:
   vector<float> bbox_{0, 0, 1, 1, 1};
   bool flip_test_{false};
   bool shift_heatmap_{false};

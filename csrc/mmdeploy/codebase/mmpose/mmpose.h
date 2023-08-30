@@ -27,7 +27,6 @@ struct PoseDetectorOutput {
   MMDEPLOY_ARCHIVE_MEMBERS(key_points, detections);
 };
 
-
 MMDEPLOY_DECLARE_CODEBASE(MMPose, mmpose);
 
 }  // namespace mmdeploy::mmpose

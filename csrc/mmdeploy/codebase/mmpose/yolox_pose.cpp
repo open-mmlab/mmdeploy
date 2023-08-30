@@ -1,9 +1,9 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
 #include <cctype>
-#include <opencv2/imgproc.hpp>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <opencv2/imgproc.hpp>
 
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/registry.h"
@@ -64,36 +64,35 @@ class YOLOXPose : public MMPose {
     float* keypoints_data = keypoints.data<float>();
     float* dets_data = dets.data<float>();
     int num_dets = dets.shape(1), num_pts = keypoints.shape(2);
-    float s = 0, x1=0, y1=0, x2=0, y2=0;
+    float s = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 
     // fprintf(stdout, "num_dets= %d num_pts = %d\n", num_dets, num_pts);
-    for (int i = 0; i < dets.shape(0) * num_dets; i++){
-        x1 = (*(dets_data++)) / scale_factor[0];
-        y1 = (*(dets_data++)) / scale_factor[1];
-        x2 = (*(dets_data++)) / scale_factor[2];
-        y2 = (*(dets_data++)) / scale_factor[3];
-        s  = *(dets_data++);
-        // fprintf(stdout, "box %.2f %.2f %.2f %.2f %.6f\n", i, x1,y1,x2,y2,s);
+    for (int i = 0; i < dets.shape(0) * num_dets; i++) {
+      x1 = (*(dets_data++)) / scale_factor[0];
+      y1 = (*(dets_data++)) / scale_factor[1];
+      x2 = (*(dets_data++)) / scale_factor[2];
+      y2 = (*(dets_data++)) / scale_factor[3];
+      s = *(dets_data++);
+      // fprintf(stdout, "box %.2f %.2f %.2f %.2f %.6f\n", i, x1,y1,x2,y2,s);
 
-        if (s <= score_thr_) {
-          keypoints_data += num_pts * 3;
-          continue;
-        }
-        output.detections.push_back({{x1, y1, x2, y2}, s});
-        for (int k = 0; k < num_pts; k++) {
-          x1 = (*(keypoints_data++)) / scale_factor[0];
-          y1 = (*(keypoints_data++)) / scale_factor[1];
-          s = *(keypoints_data++);
-          // fprintf(stdout, "point %d, index %d, %.2f %.2f %.6f\n", k, x1, y1, s);
-          output.key_points.push_back({{x1, y1}, s});
-        }
+      if (s <= score_thr_) {
+        keypoints_data += num_pts * 3;
+        continue;
+      }
+      output.detections.push_back({{x1, y1, x2, y2}, s});
+      for (int k = 0; k < num_pts; k++) {
+        x1 = (*(keypoints_data++)) / scale_factor[0];
+        y1 = (*(keypoints_data++)) / scale_factor[1];
+        s = *(keypoints_data++);
+        // fprintf(stdout, "point %d, index %d, %.2f %.2f %.6f\n", k, x1, y1, s);
+        output.key_points.push_back({{x1, y1}, s});
+      }
     }
     return to_value(output);
   }
 
  protected:
   float score_thr_ = 0.001;
-
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, YOLOXPose);

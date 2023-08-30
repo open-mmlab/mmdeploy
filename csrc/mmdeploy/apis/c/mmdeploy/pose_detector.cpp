@@ -179,7 +179,6 @@ int mmdeploy_pose_detector_get_result(mmdeploy_value_t output,
         res.bboxes[k].bottom = bbox_result.detections[k].boundingbox[3];
         res.bbox_score[k] = bbox_result.detections[k].score;
       }
-
     }
 
     *results = _results.release();
