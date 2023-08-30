@@ -34,7 +34,7 @@ jobs:
           sudo apt install libopencv-dev
       - name: Install snpe
         run: |
-          wget https://media.githubusercontent.com/media/tpoisonooo/mmdeploy_snpe_testdata/main/snpe-1.59.tar.gz
+          wget https://github.com/open-mmlab/mmdeploy/releases/download/v0.1.0/snpe-1.59.tar.gz
           tar xf snpe-1.59.tar.gz
           pushd snpe-1.59.0.3230
           pwd

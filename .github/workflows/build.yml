@@ -46,7 +46,7 @@ jobs:
           python -m pip install -r requirements/backends.txt
           python -m mim install "mmcv>=2.0.0"
           python -m mim install -r requirements/codebases.txt
-          python -m pip install clip numba transformers numpy==1.23
+          python -m pip install clip numba transformers numpy==1.23 albumentations
           python -m pip list
       - name: Install mmyolo
         run: |
@@ -145,23 +145,16 @@ jobs:
           COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build_cuda102:
+  build_cuda117:
     runs-on: ubuntu-20.04
     container:
-      image: pytorch/pytorch:1.9.0-cuda10.2-cudnn7-devel
+      image: pytorch/pytorch:2.0.0-cuda11.7-cudnn8-devel
     env:
       FORCE_CUDA: 1
-    strategy:
-      matrix:
-        torch: [1.9.0+cu102]
-        include:
-          - torch: 1.9.0+cu102
-            torchvision: 0.10.0+cu102
     steps:
       - uses: actions/checkout@v2
       - name: Install system dependencies
         run: |
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
           apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
           apt-get clean
           rm -rf /var/lib/apt/lists/*
@@ -170,65 +163,26 @@ jobs:
           python -V
           python -m pip show torch torchvision
           python -m pip install --no-cache-dir --upgrade pip
-          python -m pip install torch==${{matrix.torch}} torchvision==${{matrix.torchvision}} -f https://download.pytorch.org/whl/torch_stable.html
+      - name: Check disk space
+        continue-on-error: true
+        run: |
+          df -h
+          rm -rf /__t/go
+          rm -rf /__t/node
+          rm -rf /__t/Ruby
+          rm -rf /__t/CodeQL
+          cat /proc/cpuinfo  | grep -ic proc
+          free
+          df -h
       - name: Install dependencies
         run: |
           python -V
-          export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
           python -m pip install --no-cache-dir openmim
           python -m pip install --no-cache-dir -r requirements.txt
           python -m pip install --no-cache-dir -r requirements/backends.txt
-          python -m mim install "mmcv>=2.0.0rc1"
-          CFLAGS=$CFLAGS python -m mim install -r requirements/codebases.txt
-          python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers
-          python -m pip list
-      - name: Build and install
-        run: |
-          rm -rf .eggs && python -m pip install -e .
-          python tools/check_env.py
-      - name: Run unittests and generate coverage report
-        id: badge_status
-        run: |
-          coverage run --branch --source mmdeploy -m pytest -rsE tests
-          coverage xml
-          coverage report -m
-      - name: create badge
-        if: always()
-        uses: RubbaBoy/BYOB@v1.2.1
-        with:
-          NAME: build_cuda102
-          LABEL: 'build'
-          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
-          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build_cuda113:
-    runs-on: ubuntu-20.04
-    container:
-      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install system dependencies
-        run: |
-          apt-key adv --keyserver keyserver.ubuntu.com --recv-keys A4B469963BF863CC
-          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
-          apt-get clean
-          rm -rf /var/lib/apt/lists/*
-      - name: Install PyTorch
-        run: |
-          python -V
-          python -m pip show torch torchvision
-          python -m pip install --no-cache-dir --upgrade pip
-      - name: Install dependencies
-        run: |
-          python -V
-          export CFLAGS=`python -c 'import sysconfig;print("-I"+sysconfig.get_paths()["include"])'`
-          python -m pip install --no-cache-dir openmim
-          python -m pip install --no-cache-dir -r requirements.txt
-          python -m pip install --no-cache-dir -r requirements/backends.txt
-          python -m mim install "mmcv>=2.0.0rc1"
-          python -m mim install -r requirements/codebases.txt
-          python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers
+          python -m mim install "mmcv>=2.0.0"
+          python -m pip install --no-cache-dir -r requirements/codebases.txt
+          python -m pip install --no-cache-dir -U pycuda numpy==1.23 clip numba transformers albumentations
           python -m pip list
       - name: Build and install
         run: |
@@ -252,6 +206,62 @@ jobs:
         if: always()
         uses: RubbaBoy/BYOB@v1.2.1
         with:
+          NAME: build_cuda117
+          LABEL: 'build'
+          STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
+          COLOR: ${{ steps.badge_status.conclusion == 'success' && 'green' || 'red' }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_cuda113:
+    runs-on: ubuntu-20.04
+    container:
+      image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-devel
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install system dependencies
+        run: |
+          apt-get update && apt-get install -y ffmpeg libsm6 libxext6 git ninja-build libglib2.0-0 libxrender-dev
+          apt-get clean
+          rm -rf /var/lib/apt/lists/*
+      - name: Install PyTorch
+        run: |
+          python -V
+          python -m pip show torch torchvision
+          python -m pip install --no-cache-dir --upgrade pip
+      - name: Check disk space
+        continue-on-error: true
+        run: |
+          df -h
+          rm -rf /__t/go
+          rm -rf /__t/node
+          rm -rf /__t/Ruby
+          rm -rf /__t/CodeQL
+          cat /proc/cpuinfo  | grep -ic proc
+          free
+          df -h
+      - name: Install dependencies
+        run: |
+          python -V
+          python -m pip install --no-cache-dir openmim
+          python -m pip install --no-cache-dir -r requirements.txt
+          python -m pip install --no-cache-dir -r requirements/backends.txt
+          python -m mim install --no-cache-dir "mmcv>=2.0.0"
+          python -m pip install --no-cache-dir -r requirements/codebases.txt
+          python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers albumentations
+          python -m pip list
+      - name: Build and install
+        run: |
+          rm -rf .eggs && python -m pip install -e .
+          python tools/check_env.py
+      - name: Run unittests and generate coverage report
+        run: |
+          coverage run --branch --source mmdeploy -m pytest -rsE tests
+          coverage xml
+          coverage report -m
+      - name: create badge
+        if: always()
+        uses: RubbaBoy/BYOB@v1.2.1
+        with:
           NAME: build_cuda113
           LABEL: 'build'
           STATUS: ${{ steps.badge_status.conclusion == 'success' && 'passing' || 'failing' }}
@@ -259,6 +269,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_linux:
+    needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda117]
     runs-on: [self-hosted, linux-3090]
     container:
       image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
@@ -309,6 +320,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build_cuda113_windows:
+    needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda117]
     runs-on: [self-hosted, win10-3080]
     env:
       BASE_ENV: cuda11.3-cudnn8.2-py3.8-torch1.10

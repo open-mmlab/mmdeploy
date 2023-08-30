@@ -52,7 +52,7 @@ on:
         required: false
         description: 'Do not change it unless you know what you are doing!'
         type: string
-        default: 'https://8d17-103-108-182-56.ngrok-free.app'
+        default: 'https://e2e1-14-136-99-158.ngrok-free.app'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
