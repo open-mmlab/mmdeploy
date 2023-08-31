@@ -4,7 +4,7 @@
 
 ## 安装
 
-转换 mmdet 中的模型，需要编译 libtorch 支持 nms 等自定义算子
+转换 mmdet 中的模型，需要安装 libtorch 支持 nms 等自定义算子（仅转换，推理时不需要）。MacOS 12 的用户，请安装 Pytorch 1.8.0，MacOS 13+ 的用户，请安装 Pytorch 2.0.0+。
 
 ```bash
 cd ${PYTORCH_DIR}
@@ -13,7 +13,7 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPYTHON_EXECUTABLE=`which python` \
     -DCMAKE_INSTALL_PREFIX=install \
-    -DDISABLE_SVE=ON # 低版本比如1.8.0需要加上这个参数
+    -DDISABLE_SVE=ON
 make install
 ```
 

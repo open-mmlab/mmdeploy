@@ -87,7 +87,7 @@ The TorchScript model is used as the IR in the conversion process of the Core ML
     <td>coremltools</td>
     <td>
 <pre><code>
-pip install coremltools==6.0b2
+pip install coremltools==6.3
 </code></pre>
     </td>
   </tr>

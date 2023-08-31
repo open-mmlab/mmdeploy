@@ -86,7 +86,7 @@ Core ML 模型的转化过程中使用 TorchScript 模型作为IR，为了支持
     <td>coremltools</td>
     <td>
 <pre><code>
-pip install coremltools==6.0b2
+pip install coremltools==6.3
 </code></pre>
     </td>
   </tr>
