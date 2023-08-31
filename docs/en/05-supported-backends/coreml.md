@@ -4,7 +4,7 @@ MMDeploy support convert Pytorch model to Core ML and inference.
 
 ## Installation
 
-To convert the model in mmdet, you need to compile libtorch to support custom operators such as nms (only needed in convertion stage). For MacOS 12 users, please install Pytorch 1.8.0, for MacOS 13 users, please install Pytorch 2.0.0+.
+To convert the model in mmdet, you need to compile libtorch to support custom operators such as nms (only needed in conversion stage). For MacOS 12 users, please install Pytorch 1.8.0, for MacOS 13 users, please install Pytorch 2.0.0+.
 
 ```bash
 cd ${PYTORCH_DIR}
