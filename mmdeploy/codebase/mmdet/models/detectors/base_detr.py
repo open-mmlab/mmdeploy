@@ -2,6 +2,7 @@
 import copy
 
 import torch
+import torch.nn.functional as F
 from mmdet.models.detectors.base import ForwardResults
 from mmdet.structures import DetDataSample
 from mmdet.structures.det_data_sample import OptSampleList
@@ -47,9 +48,10 @@ def _set_metainfo(data_samples, img_shape):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.base_detr.DetectionTransformer.predict')
-def detection_transformer__predict(self,
+    'mmdet.models.detectors.base_detr.DetectionTransformer.forward')
+def detection_transformer__forward(self,
                                    batch_inputs: torch.Tensor,
+                                   shape_info: torch.Tensor = None,
                                    data_samples: OptSampleList = None,
                                    rescale: bool = True,
                                    **kwargs) -> ForwardResults:
@@ -79,11 +81,68 @@ def detection_transformer__predict(self,
 
     # get origin input shape as tensor to support onnx dynamic shape
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-    img_shape = torch._shape_as_tensor(batch_inputs)[2:]
+    img_shape = torch._shape_as_tensor(batch_inputs)[2:].to(
+        batch_inputs.device)
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
 
     # set the metainfo
     data_samples = _set_metainfo(data_samples, img_shape)
-
+    if shape_info is not None:
+        data_samples[0].set_field(
+            name='shape_info', value=shape_info, field_type='metainfo')
     return __predict_impl(self, batch_inputs, data_samples, rescale)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.detectors.detr.DETR.pre_transformer')
+def detection_transformer__pre_transformer(
+        self, img_feats, batch_data_samples: OptSampleList = None):
+
+    feat = img_feats[-1]  # NOTE img_feats contains only one feature.
+    batch_size, feat_dim, _, _ = feat.shape
+    # construct binary masks which for the transformer.
+    assert batch_data_samples is not None
+    # masks = batch_data_samples[0].masks.to(torch.float32)
+    batch_input_shape = batch_data_samples[0].img_shape
+    if 'shape_info' in batch_data_samples[0]:
+        batch_shape_info = batch_data_samples[0].shape_info
+        masks_h = torch.arange(
+            batch_input_shape[0],
+            device=feat.device).reshape(1, -1,
+                                        1).expand(batch_size, -1,
+                                                  batch_input_shape[1])
+        masks_w = torch.arange(
+            batch_input_shape[1],
+            device=feat.device).reshape(1, 1,
+                                        -1).expand(batch_size,
+                                                   batch_input_shape[0], -1)
+        masks_h = masks_h >= batch_shape_info[:, 0].view(-1, 1, 1)
+        masks_w = masks_w >= batch_shape_info[:, 1].view(-1, 1, 1)
+        masks = torch.logical_or(masks_h, masks_w).to(torch.float32)
+    else:
+        masks = torch.zeros(
+            batch_size,
+            batch_input_shape[0],
+            batch_input_shape[1],
+            device=feat.device)
+
+    # NOTE following the official DETR repo, non-zero values represent
+    # ignored positions, while zero values mean valid positions.
+
+    masks = F.interpolate(
+        masks.unsqueeze(1), size=feat.shape[-2:]).to(torch.bool).squeeze(1)
+    # [batch_size, embed_dim, h, w]
+    pos_embed = self.positional_encoding(masks)
+
+    # use `view` instead of `flatten` for dynamically exporting to ONNX
+    # [bs, c, h, w] -> [bs, h*w, c]
+    feat = feat.view(batch_size, feat_dim, -1).permute(0, 2, 1)
+    pos_embed = pos_embed.view(batch_size, feat_dim, -1).permute(0, 2, 1)
+    # [bs, h, w] -> [bs, h*w]
+    masks = masks.view(batch_size, -1)
+
+    # prepare transformer_inputs_dict
+    encoder_inputs_dict = dict(feat=feat, feat_mask=masks, feat_pos=pos_embed)
+    decoder_inputs_dict = dict(memory_mask=masks, memory_pos=pos_embed)
+    return encoder_inputs_dict, decoder_inputs_dict

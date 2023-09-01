@@ -9,6 +9,8 @@ from mmdeploy.core import FUNCTION_REWRITER
 
 
 @FUNCTION_REWRITER.register_rewriter(
+    'mmdet.models.dense_heads.DeformableDETRHead.predict_by_feat')
+@FUNCTION_REWRITER.register_rewriter(
     'mmdet.models.dense_heads.DETRHead.predict_by_feat')
 def detrhead__predict_by_feat__default(self,
                                        all_cls_scores_list: List[Tensor],
@@ -17,10 +19,18 @@ def detrhead__predict_by_feat__default(self,
                                        rescale: bool = True):
     """Rewrite `predict_by_feat` of `FoveaHead` for default backend."""
     from mmdet.structures.bbox import bbox_cxcywh_to_xyxy
+
     cls_scores = all_cls_scores_list[-1]
     bbox_preds = all_bbox_preds_list[-1]
+    if 'shape_info' in batch_img_metas[0]:
+        img_shape = batch_img_metas[0]['shape_info']
+    else:
+        img_shape = batch_img_metas[0]['img_shape']
+        if isinstance(img_shape, list):
+            img_shape = torch.tensor(
+                img_shape, dtype=torch.long, device=cls_scores.device)
+        img_shape = img_shape.unsqueeze(0)
 
-    img_shape = batch_img_metas[0]['img_shape']
     max_per_img = self.test_cfg.get('max_per_img', len(cls_scores[0]))
     batch_size = cls_scores.size(0)
     # `batch_index_offset` is used for the gather of concatenated tensor
@@ -49,19 +59,9 @@ def detrhead__predict_by_feat__default(self,
                                               ...].squeeze(-1)
 
     det_bboxes = bbox_cxcywh_to_xyxy(bbox_preds)
-
-    if isinstance(img_shape, torch.Tensor):
-        hw = img_shape.flip(0).to(det_bboxes.device)
-    else:
-        hw = det_bboxes.new_tensor([img_shape[1], img_shape[0]])
-    shape_scale = torch.cat([hw, hw])
-    shape_scale = shape_scale.view(1, 1, -1)
+    shape_scale = img_shape.flip(1).repeat(1, 2).unsqueeze(1)
     det_bboxes = det_bboxes * shape_scale
-    # dynamically clip bboxes
-    x1, y1, x2, y2 = det_bboxes.split((1, 1, 1, 1), dim=-1)
-    from mmdeploy.codebase.mmdet.deploy import clip_bboxes
-    x1, y1, x2, y2 = clip_bboxes(x1, y1, x2, y2, img_shape)
-    det_bboxes = torch.cat([x1, y1, x2, y2], dim=-1)
+    det_bboxes.clamp_(min=0)
     det_bboxes = torch.cat((det_bboxes, scores.unsqueeze(-1)), -1)
 
     return det_bboxes, det_labels

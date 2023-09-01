@@ -245,7 +245,7 @@ def is_dynamic_shape(deploy_cfg: Union[str, mmengine.Config],
         return False
 
     # check if 2 (height) and 3 (width) in input axes
-    if 2 in input_axes and 3 in input_axes:
+    if 2 in input_axes or 3 in input_axes:
         return True
 
     return False
