@@ -21,6 +21,7 @@ class ResizeInstanceMask : public ResizeBBox {
     }
     operation::Context ctx(device_, stream_);
     warp_affine_ = operation::Managed<operation::WarpAffine>::Create("bilinear");
+    permute_ = operation::Managed<::mmdeploy::operation::Permute>::Create();
   }
 
   // TODO: remove duplication
@@ -137,7 +138,6 @@ class ResizeInstanceMask : public ResizeBBox {
       auto mask_height = (int)d_mask.shape(1);
       auto mask_width = (int)d_mask.shape(2);
       // (C, H, W) -> (H, W, C)
-      permute_ = ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute>::Create();
       std::vector<int> axes = {1, 2, 0};
       OUTCOME_TRY(permute_.Apply(d_mask, d_mask, axes));
       Device host{"cpu"};
