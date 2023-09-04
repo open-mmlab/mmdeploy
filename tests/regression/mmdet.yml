@@ -312,7 +312,7 @@ models:
     pipelines:
       - deploy_config: configs/mmdet/detection/detection_detr_onnxruntime_dynamic.py
         convert_image: *convert_image
-        backend_test: False
+        backend_test: True
       - deploy_config: configs/mmdet/detection/detection_detr_tensorrt_dynamic-320x320-1344x1344.py
         convert_image: *convert_image
         backend_test: True
@@ -425,7 +425,43 @@ models:
     pipelines:
       - deploy_config: configs/mmdet/detection/detection_detr_onnxruntime_dynamic.py
         convert_image: *convert_image
-        backend_test: False
+        backend_test: True
+      - deploy_config: configs/mmdet/detection/detection_detr_tensorrt_dynamic-320x320-1344x1344.py
+        convert_image: *convert_image
+        backend_test: True
+
+  - name: ConditionalDETR
+    metafile: configs/conditional_detr/metafile.yml
+    model_configs:
+      - configs/conditional_detr/conditional-detr_r50_8xb2-50e_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/detection/detection_detr_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: True
+      - deploy_config: configs/mmdet/detection/detection_detr_tensorrt_dynamic-320x320-1344x1344.py
+        convert_image: *convert_image
+        backend_test: True
+
+  - name: DAB-DETR
+    metafile: configs/dab_detr/metafile.yml
+    model_configs:
+      - configs/dab_detr/dab-detr_r50_8xb2-50e_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/detection/detection_detr_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: True
+      - deploy_config: configs/mmdet/detection/detection_detr_tensorrt_dynamic-320x320-1344x1344.py
+        convert_image: *convert_image
+        backend_test: True
+
+  - name: DeformableDETR
+    metafile: configs/deformable_detr/metafile.yml
+    model_configs:
+      - configs/deformable_detr/deformable-detr_r50_16xb2-50e_coco.py
+    pipelines:
+      - deploy_config: configs/mmdet/detection/detection_detr_onnxruntime_dynamic.py
+        convert_image: *convert_image
+        backend_test: True
       - deploy_config: configs/mmdet/detection/detection_detr_tensorrt_dynamic-320x320-1344x1344.py
         convert_image: *convert_image
         backend_test: True

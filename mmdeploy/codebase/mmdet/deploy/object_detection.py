@@ -221,7 +221,8 @@ class ObjectDetection(BaseTask):
             model_type = self.model_cfg.model.type
             inputs = data['inputs']
             if dynamic_flag and is_dynamic_batch(
-                    self.deploy_cfg) and model_type in ['DETR']:
+                    self.deploy_cfg) and ('DETR' in model_type
+                                          or model_type == 'DINO'):
                 shape_info = torch._shape_as_tensor(inputs)[2:].unsqueeze(
                     0).to(torch.long).to(inputs.device)
                 inputs = (inputs, shape_info)
