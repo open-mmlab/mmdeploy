@@ -37,10 +37,12 @@ def main():
         if masks[index].size:
             mask = masks[index]
             blue, green, red = cv2.split(img)
-
-            x0 = int(max(math.floor(bbox[0]) - 1, 0))
-            y0 = int(max(math.floor(bbox[1]) - 1, 0))
-            mask_img = blue[y0:y0 + mask.shape[0], x0:x0 + mask.shape[1]]
+            if mask.shape == img.shape[:2]:  # rtmdet-inst
+                mask_img = blue
+            else:  # maskrcnn
+                x0 = int(max(math.floor(bbox[0]) - 1, 0))
+                y0 = int(max(math.floor(bbox[1]) - 1, 0))
+                mask_img = blue[y0:y0 + mask.shape[0], x0:x0 + mask.shape[1]]
             cv2.bitwise_or(mask, mask_img, mask_img)
             img = cv2.merge([blue, green, red])
 

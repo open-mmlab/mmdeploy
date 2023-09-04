@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
     fprintf(stderr, "failed to load image: %s\n", image_path);
     return 1;
   }
-
+  cv::Size img_size = img.size();
   mmdeploy_detector_t detector{};
   int status{};
   status = mmdeploy_detector_create_by_path(model_path, device_name, 0, &detector);
@@ -60,17 +60,22 @@ int main(int argc, char* argv[]) {
     // generate mask overlay if model exports masks
     if (mask != nullptr) {
       fprintf(stdout, "mask %d, height=%d, width=%d\n", i, mask->height, mask->width);
-
-      cv::Mat imgMask(mask->height, mask->width, CV_8UC1, &mask->data[0]);
-      auto x0 = std::max(std::floor(box.left) - 1, 0.f);
-      auto y0 = std::max(std::floor(box.top) - 1, 0.f);
-      cv::Rect roi((int)x0, (int)y0, mask->width, mask->height);
-
       // split the RGB channels, overlay mask to a specific color channel
-      cv::Mat ch[3];
-      split(img, ch);
+      cv::Mat ch[3], mask_img;
       int col = 0;  // int col = i % 3;
-      cv::bitwise_or(imgMask, ch[col](roi), ch[col](roi));
+      split(img, ch);
+      cv::Mat imgMask(mask->height, mask->width, CV_8UC1, &mask->data[0]);
+      // rtmdet-inst
+      if (img_size.height == mask->height && img_size.width == mask->width) {
+        mask_img = ch[col];
+      }
+      else {
+        auto x0 = std::max(std::floor(box.left) - 1, 0.f);
+        auto y0 = std::max(std::floor(box.top) - 1, 0.f);
+        cv::Rect roi((int)x0, (int)y0, mask->width, mask->height);
+        mask_img = ch[col](roi);
+      }
+      cv::bitwise_or(imgMask, mask_img, mask_img);
       merge(ch, 3, img);
     }
 

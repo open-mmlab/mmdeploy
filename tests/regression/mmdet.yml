@@ -375,11 +375,10 @@ models:
   - name: RTMDetInst
     metafile: configs/rtmdet/metafile.yml
     model_configs:
-      - configs/rtmdet/rtmdet-ins_tiny_8xb32-300e_coco.py
+      - configs/rtmdet/rtmdet-ins_s_8xb32-300e_coco.py
     pipelines:
       - *pipeline_seg_ts_fp32
       - *pipeline_seg_ort_dynamic_fp32
-      - *pipeline_seg_trt_dynamic_fp32
       - *pipeline_seg_openvino_dynamic_fp32
 
   - name: PanopticFPN
@@ -413,7 +412,7 @@ models:
     pipelines:
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_onnxruntime_dynamic.py
         convert_image: *convert_image
-        backend_test: False
+        backend_test: *default_backend_test
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
-        backend_test: False
+        backend_test: *default_backend_test

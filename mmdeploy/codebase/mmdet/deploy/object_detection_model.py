@@ -241,25 +241,30 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                export_postprocess_mask = False
-                if self.deploy_cfg is not None:
-                    mmdet_deploy_cfg = get_post_processing_params(
-                        self.deploy_cfg)
-                    # this flag enable postprocess when export.
-                    export_postprocess_mask = mmdet_deploy_cfg.get(
-                        'export_postprocess_mask', False)
-                if not export_postprocess_mask:
-                    masks = End2EndModel.postprocessing_masks(
-                        dets[:, :4], masks, ori_w, ori_h, self.device)
+                if model_type == 'RTMDet':
+                    export_postprocess_mask = True
                 else:
-                    masks = masks[:, :img_h, :img_w]
+                    export_postprocess_mask = False
+                    if self.deploy_cfg is not None:
+                        mmdet_deploy_cfg = get_post_processing_params(
+                            self.deploy_cfg)
+                        # this flag enable postprocess when export.
+                        export_postprocess_mask = mmdet_deploy_cfg.get(
+                            'export_postprocess_mask', False)
+                    if not export_postprocess_mask:
+                        masks = End2EndModel.postprocessing_masks(
+                            dets[:, :4], masks, ori_w, ori_h, self.device)
+                    else:
+                        masks = masks[:, :img_h, :img_w]
                 # avoid to resize masks with zero dim
                 if export_postprocess_mask and rescale and masks.shape[0] != 0:
-                    masks = F.interpolate(
+                    masks = torch.nn.functional.interpolate(
                         masks.unsqueeze(0),
                         size=[
-                            math.ceil(masks.shape[-2] / scale_factor[0]),
-                            math.ceil(masks.shape[-1] / scale_factor[1])
+                            math.ceil(masks.shape[-2] /
+                                      img_metas[i]['scale_factor'][0]),
+                            math.ceil(masks.shape[-1] /
+                                      img_metas[i]['scale_factor'][1])
                         ])[..., :ori_h, :ori_w]
                     masks = masks.squeeze(0)
                 if masks.dtype != bool:
@@ -872,8 +877,10 @@ class SDKEnd2EndModel(End2EndModel):
             ori_h, ori_w = data_samples[0].ori_shape[:2]
             for bbox, mask in zip(dets, masks):
                 img_mask = np.zeros((ori_h, ori_w), dtype=np.uint8)
-                left = int(max(np.floor(bbox[0]) - 1, 0))
-                top = int(max(np.floor(bbox[1]) - 1, 0))
+                left, top = 0, 0
+                if not (ori_h == mask.shape[0] and ori_w == mask.shape[1]):
+                    left = int(max(np.floor(bbox[0]) - 1, 0))
+                    top = int(max(np.floor(bbox[1]) - 1, 0))
                 img_mask[top:top + mask.shape[0],
                          left:left + mask.shape[1]] = mask
                 segm_results.append(torch.from_numpy(img_mask))
