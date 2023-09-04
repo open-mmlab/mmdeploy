@@ -192,7 +192,7 @@ class ResizeInstanceMask : public ResizeBBox {
   ::mmdeploy::operation::Managed<::mmdeploy::operation::Permute> permute_;
   float mask_thr_binary_{.5f};
   bool is_rcnn_{true};
-  bool is_resize_mask_{false};
+  bool is_resize_mask_{true};
   std::vector<float> scale_factor_{1.0, 1.0, 1.0, 1.0};
 };
 
