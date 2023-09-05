@@ -183,6 +183,7 @@ for label_id, score in result:
 | [ResNeXt](https://github.com/open-mmlab/mmpretrain/tree/main/configs/resnext)                      |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [SE-ResNet](https://github.com/open-mmlab/mmpretrain/tree/main/configs/seresnet)                   |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [MobileNetV2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v2)             |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
+| [MobileNetV3](https://github.com/open-mmlab/mmpretrain/tree/main/configs/mobilenet_v3)             |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |
 | [ShuffleNetV1](https://github.com/open-mmlab/mmpretrain/tree/main/configs/shufflenet_v1)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [ShuffleNetV2](https://github.com/open-mmlab/mmpretrain/tree/main/configs/shufflenet_v2)           |      Y      |      Y       |    Y     |  Y   |   Y   |    Y     |
 | [VisionTransformer](https://github.com/open-mmlab/mmpretrain/tree/main/configs/vision_transformer) |      Y      |      Y       |    Y     |  Y   |   ?   |    Y     |

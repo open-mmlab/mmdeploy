@@ -251,3 +251,14 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp32
       - *pipeline_openvino_dynamic_fp32
+
+  - name: MobileNetV3
+    metafile: configs/mobilenet_v3/metafile.yml
+    model_configs:
+      - configs/mobilenet_v3/mobilenet-v3-small_8xb128_in1k.py
+    pipelines:
+      - *pipeline_ts_fp32
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp16
+      - *pipeline_ncnn_static_fp32
+      - *pipeline_openvino_dynamic_fp32
