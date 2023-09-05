@@ -12,7 +12,7 @@ from mmengine.registry import Registry
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
 from mmdeploy.utils import Backend, Codebase, Task
 from mmdeploy.utils.config_utils import (get_backend, get_input_shape,
-                                         is_dynamic_batch, is_dynamic_shape)
+                                         is_dynamic_shape)
 
 MMDET_TASK = Registry('mmdet_tasks')
 
@@ -218,15 +218,7 @@ class ObjectDetection(BaseTask):
         data = pseudo_collate(data)
         if data_preprocessor is not None:
             data = data_preprocessor(data, False)
-            model_type = self.model_cfg.model.type
-            inputs = data['inputs']
-            if dynamic_flag and is_dynamic_batch(
-                    self.deploy_cfg) and ('DETR' in model_type
-                                          or model_type == 'DINO'):
-                shape_info = torch._shape_as_tensor(inputs)[2:].unsqueeze(
-                    0).to(torch.long).to(inputs.device)
-                inputs = (inputs, shape_info)
-            return data, inputs
+            return data, data['inputs']
         else:
             return data, BaseTask.get_tensor_from_input(data)
 

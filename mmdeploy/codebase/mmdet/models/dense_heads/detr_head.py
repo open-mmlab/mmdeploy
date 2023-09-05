@@ -22,14 +22,11 @@ def detrhead__predict_by_feat__default(self,
 
     cls_scores = all_cls_scores_list[-1]
     bbox_preds = all_bbox_preds_list[-1]
-    if 'shape_info' in batch_img_metas[0]:
-        img_shape = batch_img_metas[0]['shape_info']
-    else:
-        img_shape = batch_img_metas[0]['img_shape']
-        if isinstance(img_shape, list):
-            img_shape = torch.tensor(
-                img_shape, dtype=torch.long, device=cls_scores.device)
-        img_shape = img_shape.unsqueeze(0)
+    img_shape = batch_img_metas[0]['img_shape']
+    if isinstance(img_shape, list):
+        img_shape = torch.tensor(
+            img_shape, dtype=torch.long, device=cls_scores.device)
+    img_shape = img_shape.unsqueeze(0)
 
     max_per_img = self.test_cfg.get('max_per_img', len(cls_scores[0]))
     batch_size = cls_scores.size(0)

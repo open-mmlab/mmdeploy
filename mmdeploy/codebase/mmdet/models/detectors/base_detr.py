@@ -52,7 +52,6 @@ def _set_metainfo(data_samples, img_shape):
     'mmdet.models.detectors.base_detr.DetectionTransformer.forward')
 def detection_transformer__forward(self,
                                    batch_inputs: torch.Tensor,
-                                   shape_info: torch.Tensor = None,
                                    data_samples: OptSampleList = None,
                                    rescale: bool = True,
                                    **kwargs) -> ForwardResults:
@@ -89,9 +88,6 @@ def detection_transformer__forward(self,
 
     # set the metainfo
     data_samples = _set_metainfo(data_samples, img_shape)
-    if shape_info is not None:
-        data_samples[0].set_field(
-            name='shape_info', value=shape_info, field_type='metainfo')
     return __predict_impl(self, batch_inputs, data_samples, rescale)
 
 
@@ -127,7 +123,12 @@ def detr__pre_transformer(self, img_feats, batch_data_samples: OptSampleList):
     batch_size, feat_dim, _, _ = feat.shape
     # construct binary masks which for the transformer.
     assert batch_data_samples is not None
-    masks = _generate_masks(batch_size, batch_data_samples, feat.device)
+    batch_input_shape = batch_data_samples[0].img_shape
+    masks = torch.zeros(
+        batch_size,
+        batch_input_shape[0],
+        batch_input_shape[1],
+        device=feat.device)
 
     # NOTE following the official DETR repo, non-zero values represent
     # ignored positions, while zero values mean valid positions.
@@ -186,8 +187,12 @@ def deformable_detr__pre_transformer(
 
     # construct binary masks for the transformer.
     assert batch_data_samples is not None
-    masks = _generate_masks(batch_size, batch_data_samples,
-                            mlvl_feats[0].device)
+    batch_input_shape = batch_data_samples[0].img_shape
+    masks = torch.zeros(
+        batch_size,
+        batch_input_shape[0],
+        batch_input_shape[1],
+        device=mlvl_feats[0].device)
     # NOTE following the official DETR repo, non-zero values representing
     # ignored positions, while zero values means valid positions.
 

@@ -293,15 +293,7 @@ class End2EndModel(BaseBackendModel):
         """
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
         inputs = inputs.contiguous()
-        ir_config = get_ir_config(self.deploy_cfg)
-        input_names = ir_config['input_names']
-        if len(input_names) == 2 and 'shape' in input_names:
-            shape_info = [d.img_shape for d in data_samples]
-            shape_info = torch.tensor(
-                shape_info, dtype=torch.long, device=inputs.device)
-        else:
-            shape_info = None
-        outputs = self.predict(inputs, shape_info)
+        outputs = self.predict(inputs)
         batch_dets, batch_labels = outputs[:2]
         batch_masks = outputs[2] if len(outputs) >= 3 else None
         self.postprocessing_results(batch_dets, batch_labels, batch_masks,
@@ -322,10 +314,7 @@ class End2EndModel(BaseBackendModel):
             tuple[np.ndarray, np.ndarray]: dets of shape [N, num_det, 5]
                 and class labels of shape [N, num_det].
         """
-        inputs = {self.input_name: imgs}
-        if shape_info is not None:
-            inputs['shape'] = shape_info
-        outputs = self.wrapper(inputs)
+        outputs = self.wrapper({self.input_name: imgs})
         outputs = self.wrapper.output_to_list(outputs)
         return outputs
 
