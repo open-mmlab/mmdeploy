@@ -358,6 +358,10 @@ void NMSRotatedKernel::Compute(OrtKernelContext* context) {
   int64_t* res_data = ort_.GetTensorMutableData<int64_t>(res);
 
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
+
+  allocator_.Free(tmp_boxes);
+  allocator_.Free(sc);
+  allocator_.Free(select);
 }
 
 REGISTER_ONNXRUNTIME_OPS(mmdeploy, NMSRotatedOp);
