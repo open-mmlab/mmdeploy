@@ -190,6 +190,8 @@ void MMCVModulatedDeformConvKernel::Compute(OrtKernelContext *context) {
                              group, deformable_group, channels, num_output, kernel_height,
                              kernel_width, stride_height, stride_width, padding_height,
                              padding_width, dilation_height, dilation_width, columns, out_ptr);
+
+  allocator_.Free(columns);
 }
 REGISTER_ONNXRUNTIME_OPS(mmdeploy, MMCVModulatedDeformConvOp);
 REGISTER_ONNXRUNTIME_OPS(mmcv, MMCVModulatedDeformConvOp);
