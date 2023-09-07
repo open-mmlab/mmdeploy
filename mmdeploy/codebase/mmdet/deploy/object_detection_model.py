@@ -300,11 +300,7 @@ class End2EndModel(BaseBackendModel):
                                     data_samples)
         return data_samples
 
-    def predict(
-        self,
-        imgs: Tensor,
-        shape_info: Optional[torch.Tensor] = None
-    ) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(self, imgs: Tensor) -> Tuple[np.ndarray, np.ndarray]:
         """The interface for predict.
 
         Args:
