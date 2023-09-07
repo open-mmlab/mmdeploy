@@ -12,12 +12,9 @@ import os.path as osp
 import mmcv
 from typing import List
 from mmengine.dataset import Compose
-from mmengine.structures import BaseDataElement
-from mmagic.structures import DataSample
 
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.codebase.mmagic.deploy.super_resolution import SuperResolution
 from mmdeploy.codebase.mmagic.deploy.mmediting import MMAGIC_TASK
 from mmdeploy.utils import Task, get_input_shape, get_root_logger
 from mmagic.apis.inferencers.base_mmagic_inferencer import (
@@ -36,7 +33,7 @@ from .super_resolution import process_model_config
 
 
 @MMAGIC_TASK.register_module(Task.VIDEO_SUPER_RESOLUTION.value)
-class VideoSuperResolution(SuperResolution):
+class VideoSuperResolution(BaseTask):
     """BaseTask class of video super resolution task.
 
     Args:
@@ -53,6 +50,30 @@ class VideoSuperResolution(SuperResolution):
         self, model_cfg: mmengine.Config, deploy_cfg: mmengine.Config, device: str
     ):
         super(VideoSuperResolution, self).__init__(model_cfg, deploy_cfg, device)
+
+    def build_backend_model(self,
+                            model_files: Sequence[str] = None,
+                            **kwargs) -> torch.nn.Module:
+        """Initialize backend model.
+
+        Args:
+            model_files (Sequence[str]): Input model files. Default is None.
+
+        Returns:
+            nn.Module: An initialized backend model.
+        """
+        from .super_resolution_model import build_super_resolution_model
+        data_preprocessor = deepcopy(
+            self.model_cfg.model.get('data_preprocessor', {}))
+        data_preprocessor.setdefault('type', 'mmagic.EditDataPreprocessor')
+        model = build_super_resolution_model(
+            model_files,
+            self.model_cfg,
+            self.deploy_cfg,
+            device=self.device,
+            data_preprocessor=data_preprocessor,
+            **kwargs)
+        return model
 
     def preprocess(self, video: InputsType) -> Dict:
         """Process the inputs into a model-feedable format.
@@ -139,66 +160,6 @@ class VideoSuperResolution(SuperResolution):
         data = self.preprocess(video)
         return data, BaseTask.get_tensor_from_input(data)
 
-    def forward(
-        self,
-        inputs: torch.Tensor,
-        data_samples: Optional[List[BaseDataElement]] = None,
-        mode: str = "predict",
-        *args,
-        **kwargs,
-    ) -> list:
-        """Run test inference for restorer.
-
-        We want forward() to output an image or a evaluation result.
-        When test_mode is set, the output is evaluation result. Otherwise
-        it is an image.
-
-        Args:
-            inputs (torch.Tensor): A list contains input image(s)
-                in [C x H x W] format.
-            data_samples (List[BaseDataElement], optional): The data samples.
-                Defaults to None.
-            mode (str, optional): forward mode, only support `predict`.
-            *args: Other arguments.
-            **kwargs: Other key-pair arguments.
-
-        Returns:
-            list | dict: High resolution image or a evaluation results.
-        """
-        outputs = []
-
-        if self.extra_parameters["window_size"] > 0:  # sliding window framework
-            data = pad_sequence(inputs, self.extra_parameters["window_size"])
-            # yapf: disable
-            for i in range(0, data.size(1) - 2 * (self.extra_parameters['window_size'] // 2)):  # noqa
-                # yapf: enable
-                data_i = data[:, i:i +
-                                self.extra_parameters['window_size']].to(
-                                    self.device)
-                outputs.append(
-                    self.wrapper.invoke(
-                data_i.permute(1, 2, 0).contiguous().detach().cpu().numpy()))
-        else:  # recurrent framework
-            if self.extra_parameters["max_seq_len"] is None:
-                outputs = self.model(inputs=inputs.to(self.device), mode="tensor").cpu()
-            else:
-                for i in range(0, inputs.size(1), self.extra_parameters["max_seq_len"]):
-                    data_i = inputs[:, i : i + self.extra_parameters["max_seq_len"]].to(
-                        self.device
-                    )
-                    outputs.append(
-                        self.wrapper.invoke(
-                            data_i.permute(1, 2, 0).contiguous().detach().cpu().numpy()
-                        )
-                    )
-
-        outputs = torch.stack(outputs, 0)
-        outputs = DataSample(pred_img=outputs.cpu()).split()
-
-        for data_sample, pred in zip(data_samples, outputs):
-            data_sample.output = pred
-        return data_samples
-
     def visualize(self, preds: PredType, result_out_dir: str = "") -> List[np.ndarray]:
         """Visualize result of a model. mmagic does not have visualizer, so
         write visualize function directly.
@@ -242,3 +203,87 @@ class VideoSuperResolution(SuperResolution):
         logger: MMLogger = MMLogger.get_current_instance()
         logger.info(f"Output video is save at {result_out_dir}.")
         return []
+
+    @staticmethod
+    def get_partition_cfg(partition_type: str, **kwargs) -> Dict:
+        """Get a certain partition config for mmagic.
+
+        Args:
+            partition_type (str): A string specifying partition type.
+
+        Returns:
+            dict: A dictionary of partition config.
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def get_tensor_from_input(input_data: Dict[str, Any]) -> torch.Tensor:
+        """Get input tensor from input data.
+
+        Args:
+            input_data (dict): Input data containing meta info
+            and image tensor.
+        Returns:
+            torch.Tensor: An image in `Tensor`.
+        """
+        return input_data['img']
+
+    def get_preprocess(self, *args, **kwargs) -> Dict:
+        """Get the preprocess information for SDK.
+
+        Return:
+            dict: Composed of the preprocess information.
+        """
+        input_shape = get_input_shape(self.deploy_cfg)
+        model_cfg = process_model_config(self.model_cfg, [''], input_shape)
+        meta_keys = [
+            'filename', 'ori_filename', 'ori_shape', 'img_shape', 'pad_shape',
+            'scale_factor', 'flip', 'flip_direction', 'img_norm_cfg',
+            'valid_ratio'
+        ]
+        preprocess = model_cfg.test_pipeline
+
+        preprocess.insert(1, model_cfg.model.data_preprocessor)
+        preprocess.insert(2, dict(type='ImageToTensor', keys=['img']))
+        transforms = preprocess
+        for i, transform in enumerate(transforms):
+            if 'keys' in transform and transform['keys'] == ['lq']:
+                transform['keys'] = ['img']
+            if 'key' in transform and transform['key'] == 'lq':
+                transform['key'] = 'img'
+            if transform['type'] == 'DataPreprocessor':
+                transform['type'] = 'Normalize'
+                transform['to_rgb'] = transform.get('to_rgb', False)
+            if transform['type'] == 'PackInputs':
+                meta_keys += transform[
+                    'meta_keys'] if 'meta_keys' in transform else []
+                transform['meta_keys'] = list(set(meta_keys))
+                transform['keys'] = ['img']
+                transforms[i]['type'] = 'Collect'
+        return transforms
+
+    def get_postprocess(self, *args, **kwargs) -> Dict:
+        """Get the postprocess information for SDK.
+
+        Return:
+            dict: Postprocess config for super resolution.
+        """
+        from mmdeploy.utils import get_task_type
+        from mmdeploy.utils.constants import SDK_TASK_MAP as task_map
+        task = get_task_type(self.deploy_cfg)
+        component = task_map[task]['component']
+        post_processor = {'type': component}
+        return post_processor
+
+    def get_model_name(self, *args, **kwargs) -> str:
+        """Get the model name.
+
+        Return:
+            str: the name of the model.
+        """
+        assert 'generator' in self.model_cfg.model, 'generator not in model '
+        'config'
+        assert 'type' in self.model_cfg.model.generator, 'generator contains '
+        'no type'
+        name = self.model_cfg.model.generator.type.lower()
+        return name
