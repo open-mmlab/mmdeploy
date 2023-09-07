@@ -13,7 +13,6 @@ import mmcv
 from typing import List
 from mmengine.dataset import Compose
 
-
 from mmdeploy.codebase.base import BaseTask
 from mmdeploy.codebase.mmagic.deploy.mmediting import MMAGIC_TASK
 from mmdeploy.utils import Task, get_input_shape, get_root_logger
@@ -29,8 +28,55 @@ from mmagic.utils import tensor2img
 import cv2
 from mmengine.utils import ProgressBar
 from mmengine.logging import MMLogger
-from .super_resolution import process_model_config
 
+def process_model_config(model_cfg: mmengine.Config,
+                         imgs: Union[Sequence[str], Sequence[np.ndarray]],
+                         input_shape: Optional[Sequence[int]] = None):
+    """Process the model config.
+
+    Args:
+        model_cfg (mmengine.Config): The model config.
+        imgs (Sequence[str] | Sequence[np.ndarray]): Input image(s), accepted
+            data type are List[str], List[np.ndarray].
+        input_shape (list[int]): A list of two integer in (width, height)
+            format specifying input shape. Default: None.
+
+    Returns:
+        mmengine.Config: the model config after processing.
+    """
+    config = deepcopy(model_cfg)
+    if not hasattr(config, 'test_pipeline'):
+        config.__setattr__('test_pipeline', config.val_pipeline)
+    keys_to_remove = ['gt', 'gt_path']
+    # MMagic doesn't support LoadImageFromWebcam.
+    # Remove "LoadImageFromFile" and related metakeys.
+    load_from_file = isinstance(imgs[0], str)
+    is_static_cfg = input_shape is not None
+    if not load_from_file:
+        config.test_pipeline.pop(0)
+        keys_to_remove.append('lq_path')
+
+    # Fix the input shape by 'Resize'
+    if is_static_cfg:
+        resize = {
+            'type': 'Resize',
+            'scale': (input_shape[0], input_shape[1]),
+            'keys': ['img']
+        }
+        config.test_pipeline.insert(1, resize)
+    for key in keys_to_remove:
+        for pipeline in list(config.test_pipeline):
+            if 'key' in pipeline and key == pipeline['key']:
+                config.test_pipeline.remove(pipeline)
+            if 'keys' in pipeline:
+                while key in pipeline['keys']:
+                    pipeline['keys'].remove(key)
+                if len(pipeline['keys']) == 0:
+                    config.test_pipeline.remove(pipeline)
+            if 'meta_keys' in pipeline:
+                while key in pipeline['meta_keys']:
+                    pipeline['meta_keys'].remove(key)
+    return config
 
 @MMAGIC_TASK.register_module(Task.VIDEO_SUPER_RESOLUTION.value)
 class VideoSuperResolution(BaseTask):
@@ -62,7 +108,7 @@ class VideoSuperResolution(BaseTask):
         Returns:
             nn.Module: An initialized backend model.
         """
-        from .super_resolution_model import build_super_resolution_model
+        from .video_super_resolution_model import build_super_resolution_model
         data_preprocessor = deepcopy(
             self.model_cfg.model.get('data_preprocessor', {}))
         data_preprocessor.setdefault('type', 'mmagic.EditDataPreprocessor')
