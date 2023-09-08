@@ -21,6 +21,7 @@ class Task(AdvancedEnum):
     TEXT_RECOGNITION = 'TextRecognition'
     SEGMENTATION = 'Segmentation'
     SUPER_RESOLUTION = 'SuperResolution'
+    VIDEO_SUPER_RESOLUTION = 'VideoSuperResolution'
     CLASSIFICATION = 'Classification'
     OBJECT_DETECTION = 'ObjectDetection'
     INSTANCE_SEGMENTATION = 'InstanceSegmentation'
@@ -83,7 +84,9 @@ SDK_TASK_MAP = {
     Task.SEGMENTATION:
     dict(component='ResizeMask', cls_name='Segmentor'),
     Task.SUPER_RESOLUTION:
-    dict(component='TensorToImg', cls_name='Restorer'),
+    dict(component='TensorToImg', cls_name='Restorer'), 
+    Task.VIDEO_SUPER_RESOLUTION:
+    dict(component='TensorToImg', cls_name='Restorer'), 
     Task.TEXT_DETECTION:
     dict(component='TextDetHead', cls_name='TextDetector'),
     Task.TEXT_RECOGNITION:

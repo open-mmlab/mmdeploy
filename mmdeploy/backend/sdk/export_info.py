@@ -203,7 +203,7 @@ def get_preprocess(deploy_cfg: mmengine.Config, model_cfg: mmengine.Config,
                 transform['to_float'] = False
                 transform['mean'] = [0, 0, 0]
                 transform['std'] = [1, 1, 1]
-    if transforms[0]['type'] != 'Lift':
+    if transforms[0]['type'] not in ['Lift', 'GenerateSegmentIndices'] :
         assert transforms[0]['type'] == 'LoadImageFromFile', \
             'The first item type of pipeline should be LoadImageFromFile'
     return dict(
@@ -352,7 +352,6 @@ def export2SDK(deploy_cfg: Union[str, mmengine.Config],
     deploy_info = get_deploy(deploy_cfg, model_cfg, work_dir, device)
     pipeline_info = get_pipeline(deploy_cfg, model_cfg, work_dir, device)
     detail_info = get_detail(deploy_cfg, model_cfg, pth=pth)
-
     mmengine.dump(
         deploy_info,
         '{}/deploy.json'.format(work_dir),
