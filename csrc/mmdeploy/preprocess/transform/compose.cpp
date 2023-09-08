@@ -55,6 +55,7 @@ class Compose : public Transform {
     if (!hash_code_.empty()) {
       context.set_use_dummy(true);
     }
+    DeviceGuard guard(device_);
     for (size_t i = 0; i < transforms_.size(); ++i) {
       std::optional<profiler::ScopedCounter> child_counter;
       if (scope_) {

@@ -28,6 +28,7 @@ class ResizeInstanceMask : public ResizeBBox {
   Result<Value> operator()(const Value& prep_res, const Value& infer_res) {
     MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
     try {
+      DeviceGuard guard(device_);
       auto dets = infer_res["dets"].get<Tensor>();
       auto labels = infer_res["labels"].get<Tensor>();
       auto masks = infer_res["masks"].get<Tensor>();
