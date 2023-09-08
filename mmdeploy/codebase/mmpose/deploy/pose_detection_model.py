@@ -101,12 +101,20 @@ class End2EndModel(BaseBackendModel):
         if self.model_cfg.model.type == 'YOLODetector':
             return self.pack_yolox_pose_result(batch_outputs, data_samples)
 
+        codebase_cfg = get_codebase_config(self.deploy_cfg)
         codec = self.model_cfg.codec
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
         if codec.type == 'SimCCLabel':
-            batch_pred_x, batch_pred_y = batch_outputs
-            preds = self.head.decode((batch_pred_x, batch_pred_y))
+            export_postprocess = codebase_cfg.get('export_postprocess', False)
+            if export_postprocess:
+                keypoints, scores = [_.cpu().numpy() for _ in batch_outputs]
+                preds = [
+                    InstanceData(keypoints=keypoints, keypoint_scores=scores)
+                ]
+            else:
+                batch_pred_x, batch_pred_y = batch_outputs
+                preds = self.head.decode((batch_pred_x, batch_pred_y))
         elif codec.type in ['RegressionLabel', 'IntegralRegressionLabel']:
             preds = self.head.decode(batch_outputs)
         else:

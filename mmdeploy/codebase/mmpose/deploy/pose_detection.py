@@ -13,7 +13,8 @@ from mmengine.model import BaseDataPreprocessor
 from mmengine.registry import Registry
 
 from mmdeploy.codebase.base import CODEBASE, BaseTask, MMCodebase
-from mmdeploy.utils import Codebase, Task, get_input_shape, get_root_logger
+from mmdeploy.utils import (Codebase, Task, get_codebase_config,
+                            get_input_shape, get_root_logger)
 
 
 def process_model_config(
@@ -362,6 +363,9 @@ class PoseDetection(BaseTask):
                 params['post_process'] = 'megvii'
                 params['modulate_kernel'] = self.model_cfg.kernel_sizes[-1]
             elif codec.type == 'SimCCLabel':
+                export_postprocess = get_codebase_config(self.deploy_cfg).get(
+                    'export_postprocess', False)
+                params['export_postprocess'] = export_postprocess
                 component = 'SimCCLabelDecode'
             elif codec.type == 'RegressionLabel':
                 component = 'DeepposeRegressionHeadDecode'
