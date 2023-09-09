@@ -10,7 +10,7 @@ from mmengine.dataset import pseudo_collate
 from mmengine.model import BaseDataPreprocessor
 
 from mmdeploy.codebase.base import BaseTask
-from mmdeploy.codebase.mmagic.deploy.mmediting import MMAGIC_TASK
+from mmdeploy.codebase.mmagic.deploy.mmagic import MMAGIC_TASK
 from mmdeploy.utils import Task, get_input_shape
 
 

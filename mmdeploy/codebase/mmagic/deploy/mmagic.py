@@ -8,8 +8,8 @@ MMAGIC_TASK = Registry('mmagic_tasks')
 
 
 @CODEBASE.register_module(Codebase.MMAGIC.value)
-class MMEditing(MMCodebase):
-    """mmediting codebase class."""
+class MMagic(MMCodebase):
+    """mmagic codebase class."""
 
     task_registry = MMAGIC_TASK
 
