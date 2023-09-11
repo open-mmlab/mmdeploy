@@ -56,9 +56,9 @@ def detrhead__predict_by_feat__default(self,
                                               ...].squeeze(-1)
 
     det_bboxes = bbox_cxcywh_to_xyxy(bbox_preds)
+    det_bboxes.clamp_(min=0., max=1.)
     shape_scale = img_shape.flip(1).repeat(1, 2).unsqueeze(1)
     det_bboxes = det_bboxes * shape_scale
-    det_bboxes.clamp_(min=0)
     det_bboxes = torch.cat((det_bboxes, scores.unsqueeze(-1)), -1)
 
     return det_bboxes, det_labels
