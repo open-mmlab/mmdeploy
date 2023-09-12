@@ -311,10 +311,7 @@ models:
       - configs/detr/detr_r50_8xb2-150e_coco.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - deploy_config: configs/mmdet/detection/detection_tensorrt-fp16_dynamic-64x64-800x800.py
-        convert_image: *convert_image
-        backend_test: *default_backend_test
-        sdk_config: *sdk_dynamic
+      - *pipeline_trt_dynamic_fp32
 
   - name: CenterNet
     metafile: configs/centernet/metafile.yml
@@ -416,3 +413,35 @@ models:
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
         backend_test: *default_backend_test
+
+  - name: DINO
+    metafile: configs/dino/metafile.yml
+    model_configs:
+      - configs/dino/dino-4scale_r50_8xb2-12e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
+
+  - name: ConditionalDETR
+    metafile: configs/conditional_detr/metafile.yml
+    model_configs:
+      - configs/conditional_detr/conditional-detr_r50_8xb2-50e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
+
+  - name: DAB-DETR
+    metafile: configs/dab_detr/metafile.yml
+    model_configs:
+      - configs/dab_detr/dab-detr_r50_8xb2-50e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
+
+  - name: DeformableDETR
+    metafile: configs/deformable_detr/metafile.yml
+    model_configs:
+      - configs/deformable_detr/deformable-detr_r50_16xb2-50e_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32

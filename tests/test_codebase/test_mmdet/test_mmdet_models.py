@@ -727,7 +727,7 @@ def test_predict_of_detr_detector(model_cfg_path, backend):
     from mmdet.structures import DetDataSample
     data_sample = DetDataSample(metainfo=dict(batch_input_shape=(64, 64)))
     rewrite_inputs = {'batch_inputs': img}
-    wrapped_model = WrapModel(model, 'predict', data_samples=[data_sample])
+    wrapped_model = WrapModel(model, 'forward', data_samples=[data_sample])
     rewrite_outputs, _ = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,

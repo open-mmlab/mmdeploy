@@ -47,8 +47,8 @@ def _set_metainfo(data_samples, img_shape):
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    'mmdet.models.detectors.base_detr.DetectionTransformer.predict')
-def detection_transformer__predict(self,
+    'mmdet.models.detectors.base_detr.DetectionTransformer.forward')
+def detection_transformer__forward(self,
                                    batch_inputs: torch.Tensor,
                                    data_samples: OptSampleList = None,
                                    rescale: bool = True,
@@ -79,11 +79,11 @@ def detection_transformer__predict(self,
 
     # get origin input shape as tensor to support onnx dynamic shape
     is_dynamic_flag = is_dynamic_shape(deploy_cfg)
-    img_shape = torch._shape_as_tensor(batch_inputs)[2:]
+    img_shape = torch._shape_as_tensor(batch_inputs)[2:].to(
+        batch_inputs.device)
     if not is_dynamic_flag:
         img_shape = [int(val) for val in img_shape]
 
     # set the metainfo
     data_samples = _set_metainfo(data_samples, img_shape)
-
     return __predict_impl(self, batch_inputs, data_samples, rescale)
