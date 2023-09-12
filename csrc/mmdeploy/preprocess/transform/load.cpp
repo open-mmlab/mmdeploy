@@ -22,6 +22,7 @@ class PrepareImage : public Transform {
   explicit PrepareImage(const Value& args) {
     to_float32_ = args.value("to_float32", to_float32_);
     color_type_ = args.value("color_type", color_type_);
+    channel_order_ = args.value("channel_order", channel_order_);
 
     cvt_color_ = operation::Managed<CvtColor>::Create();
     to_float_ = operation::Managed<ToFloat>::Create();
@@ -59,7 +60,11 @@ class PrepareImage : public Transform {
     Mat src_mat = data["ori_img"].get<Mat>();
     Mat dst_mat;
     if (color_type_ == "color" || color_type_ == "color_ignore_orientation") {
-      OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
+      if (channel_order_ == "bgr") {
+        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
+      } else {
+	OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kRGB));
+      }
     } else {
       OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kGRAYSCALE));
     }
@@ -93,6 +98,7 @@ class PrepareImage : public Transform {
   operation::Managed<ToFloat> to_float_;
   bool to_float32_{false};
   std::string color_type_{"color"};
+  std::string channel_order_{"bgr"};
 };
 
 MMDEPLOY_REGISTER_TRANSFORM2(PrepareImage, (LoadImageFromFile, 0));
