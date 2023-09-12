@@ -63,7 +63,7 @@ class PrepareImage : public Transform {
       if (channel_order_ == "bgr") {
         OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kBGR));
       } else {
-	OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kRGB));
+        OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kRGB));
       }
     } else {
       OUTCOME_TRY(cvt_color_.Apply(src_mat, dst_mat, PixelFormat::kGRAYSCALE));
