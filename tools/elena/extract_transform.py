@@ -22,7 +22,7 @@ logger = get_root_logger()
 
 CODEBASE = [
     'mmpretrain', 'mmdetection', 'mmpose', 'mmrotate', 'mmocr',
-    'mmsegmentation', 'mmediting'
+    'mmsegmentation', 'mmagic'
 ]
 
 DEPLOY_CFG = {
