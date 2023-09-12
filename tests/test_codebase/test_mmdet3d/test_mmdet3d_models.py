@@ -157,7 +157,7 @@ def test_pointpillars(backend_type: Backend):
             cfg=deploy_cfg,
             backend=deploy_cfg.backend_config.type,
             opset=deploy_cfg.onnx_config.opset_version):
-        outputs = model.forward(data)
+        outputs = model.forward(*data)
         assert len(outputs) == 3
 
 

@@ -10,16 +10,18 @@ from mmdeploy.core import FUNCTION_REWRITER
     'mmdet3d.models.detectors.Base3DDetector.forward'  # noqa: E501
 )
 def basedetector__forward(self,
-                          inputs: list,
+                          voxels: torch.Tensor,
+                          num_points: torch.Tensor,
+                          coors: torch.Tensor,
                           data_samples=None,
                           **kwargs) -> Tuple[List[torch.Tensor]]:
     """Extract features of images."""
 
     batch_inputs_dict = {
         'voxels': {
-            'voxels': inputs[0],
-            'num_points': inputs[1],
-            'coors': inputs[2]
+            'voxels': voxels,
+            'num_points': num_points,
+            'coors': coors
         }
     }
     return self._forward(batch_inputs_dict, data_samples, **kwargs)
