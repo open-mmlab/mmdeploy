@@ -14,7 +14,7 @@ void parallel_unroll_gemm(const float *A, const float *B, const float *V, const 
                           const int32_t M, const int32_t N, const int32_t K, const float alpha,
                           const float beta, float *Y, const int32_t start_row,
                           const int32_t end_row) {
-  float tmp[N];  // tmp
+  std::vector<float> tmp(N);
   for (int32_t m = start_row; m < end_row; ++m) {
     for (int32_t n = 0; n < N; n++) {
       tmp[n] = 0;
