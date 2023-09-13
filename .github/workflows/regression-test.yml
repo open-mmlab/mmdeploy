@@ -17,7 +17,7 @@ on:
         required: true
         description: 'Whether to start regression test on Linux x86_64'
         type: boolean
-        default: false
+        default: true
       test_windows:
         required: true
         description: 'Whether to start regression test on Windows'
@@ -52,7 +52,7 @@ on:
         required: false
         description: 'Do not change it unless you know what you are doing!'
         type: string
-        default: 'https://e2e1-14-136-99-158.ngrok-free.app'
+        default: 'https://4ec1-14-136-99-158.ngrok-free.app'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
