@@ -352,6 +352,8 @@ models:
         convert_image: *convert_image
         backend_test: *default_backend_test
         sdk_config: *sdk_dynamic
+      - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-320x320.py
+        convert_image: *convert_image
 
   - name: SOLO
     metafile: configs/solo/metafile.yml
