@@ -70,8 +70,10 @@ def process_model_config(model_cfg: Config,
             if transform.type == 'Resize':
                 pipeline[i].keep_ratio = False
                 pipeline[i].scale = tuple(input_shape)
-            if transform.type in ('YOLOv5KeepRatioResize', 'LetterResize'):
+            elif transform.type in ('YOLOv5KeepRatioResize', 'LetterResize'):
                 pipeline[i].scale = tuple(input_shape)
+            elif transform.type == 'Pad' and 'size' in transform:
+                pipeline[i].size = tuple(input_shape)
 
     pipeline = [
         transform for transform in pipeline
