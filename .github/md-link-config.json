@@ -15,6 +15,9 @@
     },
     {
       "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "^https://openmmlab.com"
     }
   ],
   "httpHeaders": [

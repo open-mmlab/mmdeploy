@@ -12,37 +12,12 @@ ______________________________________________________________________
 
 ## Install mmdet3d
 
-These branches are required for mmdet3d deployment
-
-| codebase |  commit   |
-| :------: | :-------: |
-| mmdet3d  | v1.1.0rc1 |
-|   mmcv   | v2.0.0rc1 |
-|  mmdet   | v3.0.0rc1 |
-|  mmseg   | v1.0.0rc0 |
-
-First checkout and install mmcv/mmdet/mmseg/mmdet3d
+We could install mmdet3d through [mim](https://github.com/open-mmlab/mim).
+For other ways of installation, please refer to [here](https://mmdetection3d.readthedocs.io/en/latest/get_started.html#installation)
 
 ```bash
-python3 -m pip install openmim --user
-python3 -m mim install mmcv==2.0.0rc1 mmdet==3.0.0rc1 mmseg==1.0.0rc0 --user
-
-git clone https://github.com/open-mmlab/mmdetection3d --branch v1.1.0rc1
-cd mmdetection3d
-python3 -m pip install .
-cd -
-```
-
-After installation, `tools/check_env.py` should display mmdet3d version normally
-
-```bash
-python3 tools/check_env.py
-..
-11/11 13:56:19 - mmengine - INFO - **********Codebase information**********
-11/11 13:56:19 - mmengine - INFO - mmdet:       3.0.0rc1
-11/11 13:56:19 - mmengine - INFO - mmseg:       1.0.0rc0
-..
-11/11 13:56:19 - mmengine - INFO - mmdet3d:     1.1.0rc1
+python3 -m pip install -U openmim
+python3 -m mim install "mmdet3d>=1.1.0"
 ```
 
 ## Convert model
@@ -50,11 +25,15 @@ python3 tools/check_env.py
 For example, use `tools/deploy.py` to convert centerpoint to onnxruntime format
 
 ```bash
-export MODEL_CONFIG=/path/to/mmdetection3d/configs/centerpoint/centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py
+# cd to mmdeploy root directory
+# download config and model
+mim download mmdet3d --config centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d --dest .
 
-export MODEL_PATH=https://download.openmmlab.com/mmdetection3d/v1.0.0_models/centerpoint/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus/centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20210816_064624-0f3299c0.pth
+export MODEL_CONFIG=centerpoint_pillar02_second_secfpn_head-circlenms_8xb4-cyclic-20e_nus-3d.py
 
-export TEST_DATA=/path/to/mmdetection3d/tests/data/nuscenes/sweeps/LIDAR_TOP/n008-2018-09-18-12-07-26-0400__LIDAR_TOP__1537287083900561.pcd.bin
+export MODEL_PATH=centerpoint_02pillar_second_secfpn_circlenms_4x8_cyclic_20e_nus_20220811_031844-191a3822.pth
+
+export TEST_DATA=tests/data/n008-2018-08-01-15-16-36-0400__LIDAR_TOP__1533151612397179.pcd.bin
 
 python3 tools/deploy.py configs/mmdet3d/voxel-detection/voxel-detection_onnxruntime_dynamic.py $MODEL_CONFIG $MODEL_PATH $TEST_DATA --work-dir centerpoint
 ```
@@ -82,4 +61,4 @@ The caller needs to refer to the corresponding [python implementation](../../../
 |            [pointpillars](https://github.com/open-mmlab/mmdetection3d/blob/main/configs/pointpillars/pointpillars_hv_secfpn_8xb6-160e_kitti-3d-3class.py)            |   voxel detection   |  KITTI   |     ✔️      |    ✔️    |     ✔️     |
 |                   [smoke](https://github.com/open-mmlab/mmdetection3d/blob/main/configs/smoke/smoke_dla34_dlaneck_gn-all_4xb8-6x_kitti-mono3d.py)                    | monocular detection |  KITTI   |     ✔️      |    x     |     ✔️     |
 
-- Make sure trt >= 8.4 for some bug fixed, such as ScatterND, dynamic shape crash and so on.
+- Make sure trt >= 8.6 for some bug fixed, such as ScatterND, dynamic shape crash and so on.

@@ -348,10 +348,11 @@ models:
       - configs/rtmdet/rtmdet_s_8xb32-300e_coco.py
     pipelines:
       - *pipeline_ort_dynamic_fp32
-      - deploy_config: configs/mmdet/detection/detection_tensorrt_dynamic-64x64-800x800.py
+      - deploy_config: configs/mmdet/detection/detection_tensorrt_static-640x640.py
         convert_image: *convert_image
         backend_test: *default_backend_test
-        sdk_config: *sdk_dynamic
+      - deploy_config: configs/mmdet/detection/single-stage_ncnn_static-640x640.py
+        convert_image: *convert_image
 
   - name: SOLO
     metafile: configs/solo/metafile.yml

@@ -124,7 +124,8 @@ class MonoDetection(BaseTask):
 
         if data_preprocessor is not None:
             collate_data = data_preprocessor(collate_data, False)
-            inputs = collate_data['inputs']
+            assert 'inputs' in collate_data
+            inputs = collate_data['inputs']['imgs']
         else:
             inputs = collate_data['inputs']
         return collate_data, inputs

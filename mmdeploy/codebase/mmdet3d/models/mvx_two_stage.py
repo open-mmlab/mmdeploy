@@ -46,11 +46,15 @@ def mvxtwostagedetector__extract_feat(self, batch_inputs_dict: dict) -> tuple:
 
 @FUNCTION_REWRITER.register_rewriter(
     'mmdet3d.models.detectors.mvx_two_stage.MVXTwoStageDetector.forward')
-def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
+def mvxtwostagedetector__forward(self, voxels: torch.Tensor,
+                                 num_points: torch.Tensor, coors: torch.Tensor,
+                                 **kwargs):
     """Rewrite this func to remove voxelize op.
 
     Args:
-        inputs (list): input list comprises voxels, num_points and coors
+        voxels (Tensor): input voxels
+        num_points (Tensor): input num_points
+        coors (Tensor): input coors
 
     Returns:
         tuple: A tuple of classification scores, bbox and direction
@@ -70,9 +74,9 @@ def mvxtwostagedetector__forward(self, inputs: list, **kwargs):
     deploy_cfg = ctx.cfg
     batch_inputs_dict = {
         'voxels': {
-            'voxels': inputs[0],
-            'num_points': inputs[1],
-            'coors': inputs[2]
+            'voxels': voxels,
+            'num_points': num_points,
+            'coors': coors
         }
     }
 
