@@ -16,7 +16,8 @@ def cascade_roi_head__predict_bbox(self,
                                    batch_img_metas: List[dict],
                                    rpn_results_list: List[Tensor],
                                    rcnn_test_cfg: ConfigType,
-                                   rescale: bool = False) -> List[Tensor]:
+                                   rescale: bool = False,
+                                   **kwargs) -> List[Tensor]:
     """Rewrite `predict_bbox` of `CascadeRoIHead` for default backend.
 
     Args:
@@ -52,8 +53,7 @@ def cascade_roi_head__predict_bbox(self,
     ms_scores = []
     max_shape = batch_img_metas[0]['img_shape']
     for i in range(self.num_stages):
-        bbox_results = self._bbox_forward(i, x, rois)
-
+        bbox_results = self._bbox_forward(i, x, rois, **kwargs)
         cls_score = bbox_results['cls_score']
         bbox_pred = bbox_results['bbox_pred']
         # Recover the batch dimension

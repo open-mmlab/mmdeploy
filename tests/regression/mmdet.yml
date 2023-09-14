@@ -456,3 +456,11 @@ models:
         backend_test: *default_backend_test
       - deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt_dynamic-320x320-1344x1344.py
         backend_test: *default_backend_test
+
+  - name: HTC
+    metafile: configs/htc/metafile.yml
+    model_configs:
+      - configs/htc/htc_r50_fpn_1x_coco.py
+    pipelines:
+      - *pipeline_ort_dynamic_fp32
+      - *pipeline_trt_dynamic_fp32
