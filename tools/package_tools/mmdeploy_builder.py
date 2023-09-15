@@ -329,7 +329,7 @@ def create_mmdeploy_runtime(cfg: Dict, work_dir: str):
         logging.info('Skip build mmdeploy sdk python api')
         return
 
-    for python_version in ['3.6', '3.7', '3.8', '3.9', '3.10']:
+    for python_version in ['3.6', '3.7', '3.8', '3.9', '3.10', '3.11']:
         _version = version.parse(python_version)
         python_major = _version.major
         python_minor = _version.minor

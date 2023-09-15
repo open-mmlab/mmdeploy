@@ -65,7 +65,7 @@ jobs:
     timeout-minutes: 4320 # 72hours
     environment: 'prod'
     container:
-      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.8
       options: "--gpus=all --ipc=host"
       volumes:
         - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
@@ -173,7 +173,7 @@ jobs:
     environment: 'prod'
     runs-on: [self-hosted, win10-3080]
     env:
-      BASE_ENV: cuda11.3-cudnn8.2-py3.8-torch1.10
+      BASE_ENV: cuda11.8-cudnn8.2-py3.8-torch1.10
       DATASET_DIR: D:\reg-test\data
       REGRESSION_DIR: D:\reg-test\regression_log
       CHECKPOINT_DIR: D:\reg-test\checkpoints
