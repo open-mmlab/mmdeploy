@@ -28,7 +28,7 @@ float nms_match_iou(Box box1, Box box2) {
     auto h = std::max(static_cast<float>(0), max_y2 - max_y1);
 
     auto area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
-    auto area2 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
+    auto area2 = (box2.x2 - box1.x1) * (box2.y2 - box1.y1);
     auto inter = w * h;
     auto ovr = inter / (area1 + area2 - inter);
 
