@@ -1,0 +1,30 @@
+pytorch1.11.0:¨
+^
+boxes
+scores
+mmdeploy::NMSMatch_2
+mmdeploy::NMSMatch_34
+NMSMatch_0"NMSMatch:mmdeploytorch-jit-exportZ
+boxes
+
+
+
+Z
+scores
+
+
+
+Z"
+mmdeploy::NMSMatch_2
+
+
+Z"
+mmdeploy::NMSMatch_3
+
+
+b1
+4,
+*&
+NMSMatch4_dim_0
+NMSMatch4_dim_1B	B
+mmdeploy
