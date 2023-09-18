@@ -48,6 +48,6 @@ ort_output = sess.run(
         'mmdeploy::NMSMatch_2': iou_threshold.numpy(),
         'mmdeploy::NMSMatch_3': score_threshold.numpy()
     })
-print(torch_output)
-print(ort_output)
-print(ort_output == torch_output)
+assert numpy.array_equal(
+    numpy.array(torch_output),
+    numpy.array(ort_output[0])), 'list are not equal'
