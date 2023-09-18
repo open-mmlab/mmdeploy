@@ -292,7 +292,6 @@ class End2EndModel(BaseBackendModel):
             Any: Model output.
         """
         assert mode == 'predict', 'Deploy model only allow mode=="predict".'
-        print("\033[1;31;33m" + "data_samples:" + "\033[0m", data_samples)
         inputs = inputs.contiguous()
         outputs = self.predict(inputs)
         batch_dets, batch_labels = outputs[:2]
