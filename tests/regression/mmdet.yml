@@ -415,7 +415,6 @@ models:
         convert_image: *convert_image
         backend_test: *default_backend_test
 
-<<<<<<< HEAD
   - name: DINO
     metafile: configs/dino/metafile.yml
     model_configs:
@@ -448,8 +447,6 @@ models:
       - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp32
 
-=======
->>>>>>> ecec42498f1f73e01fd931f10d6cc2b27af823a1
   - name: CondInst
     metafile: ../mmdetection/configs/condinst/metafile.yml
     model_configs:
