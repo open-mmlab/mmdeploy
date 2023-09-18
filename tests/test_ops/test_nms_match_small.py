@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 import onnxruntime
 import torch
-
+from mmdeploy.backend.onnxruntime.init_plugins import get_ops_path
 from mmdeploy.mmcv.ops import ONNXNMSMatchOp
 
 boxes = torch.tensor([[[291.1746, 316.2263, 343.5029, 347.7312],
@@ -36,8 +36,7 @@ torch_output = model(boxes, scores, iou_threshold,
                      score_threshold).detach().numpy()
 
 options = onnxruntime.SessionOptions()
-options.register_custom_ops_library(
-    'F:\\yyfanforstudy\\mmdeploy\\mmdeploy\\lib\\mmdeploy_onnxruntime_ops.dll')
+options.register_custom_ops_library(get_ops_path())
 
 sess = onnxruntime.InferenceSession(
     'test_onnx_match.onnx', options, providers=['CPUExecutionProvider'])
