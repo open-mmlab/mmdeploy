@@ -241,7 +241,7 @@ class End2EndModel(BaseBackendModel):
                 masks = batch_masks[i]
                 img_h, img_w = img_metas[i]['img_shape'][:2]
                 ori_h, ori_w = img_metas[i]['ori_shape'][:2]
-                if model_type == 'RTMDet':
+                if model_type in ['RTMDet', 'CondInst']:
                     export_postprocess_mask = True
                 else:
                     export_postprocess_mask = False
