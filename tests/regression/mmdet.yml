@@ -416,3 +416,13 @@ models:
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
         backend_test: *default_backend_test
+
+  - name: CondInst
+    metafile: ../mmdetection/configs/condinst/metafile.yml
+    model_configs:
+      - configs/condinst/condinst_r50_fpn_ms-poly-90k_coco_instance.py
+    pipelines:
+      - deploy_config: configs/mmdet/instance-seg/condinst_onnxruntime_dynamic.py
+        backend_test: *default_backend_test
+      - deploy_config: configs/mmdet/instance-seg/condinst_tensorrt_dynamic-320x320-1344x1344.py
+        backend_test: *default_backend_test

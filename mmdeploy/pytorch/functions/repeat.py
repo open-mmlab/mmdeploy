@@ -19,6 +19,8 @@ def tensor__repeat__tensorrt(input: torch.Tensor, *size: Union[torch.Size,
 
     origin_func = ctx.origin_func
     if input.dim() == 1 and len(size) == 1:
+        if isinstance(*size, tuple):
+            return origin_func(input.unsqueeze(0), *([1] + list(*size))).squeeze(0)
         return origin_func(input.unsqueeze(0), *([1] + list(size))).squeeze(0)
     else:
         return origin_func(input, *size)
