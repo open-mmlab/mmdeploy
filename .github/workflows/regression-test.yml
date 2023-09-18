@@ -240,7 +240,7 @@ jobs:
           echo "BACKENDS=$env:BACKENDS" >> $env:GITHUB_ENV
           New-Item -Path build -ItemType Directory -Force
           cd build
-          cmake ..  -A x64 -T v142 `
+          cmake ..  -A x64 -T v142,cuda=$env:CUDA_PATH `
             -DMMDEPLOY_BUILD_TEST=OFF `
             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `

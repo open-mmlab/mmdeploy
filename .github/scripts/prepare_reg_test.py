@@ -112,8 +112,12 @@ def install_torch(torch_version):
     tv = version.parse(torch_version)
     if tv < version.parse('1.10.0'):
         cuda_int = '111'
-    elif tv >= version.parse('1.13.0'):
+    elif tv < version.parse('1.13.0'):
+        cuda_int = '113'
+    elif tv < version.parse('2.0.0'):
         cuda_int = '117'
+    else:
+        cuda_int = '118'
 
     is_torch_v2 = tv >= version.parse('2.0.0')
     if is_torch_v2:
