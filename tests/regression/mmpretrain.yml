@@ -118,7 +118,7 @@ models:
       - configs/resnet/resnet18_8xb32_in1k.py # TODO Not benchmark config
     pipelines:
       - *pipeline_ts_fp32
-      - *pipeline_ort_dynamic_fp16
+      - *pipeline_ort_dynamic_fp32
 #      - *pipeline_trt_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
 #      - *pipeline_trt_dynamic_int8
