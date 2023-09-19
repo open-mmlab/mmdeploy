@@ -20,34 +20,47 @@ on:
 
 jobs:
   publish_docker_image:
-    runs-on: [self-hosted, linux-3090]
+    runs-on: ubuntu-latest
     environment: 'prod'
     env:
-      TAG_PREFIX: openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
+      TAG_PREFIX: openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Get mmdeploy version
-        if: startsWith(github.ref, 'refs/tags/') == false
+      - name: Check disk space
         run: |
-          echo "MMDEPLOY_VERSION=main"  >> $GITHUB_ENV
-          echo "TAG=$TAG_PREFIX"  >> $GITHUB_ENV
-      - name: Get mmdeploy tag
+          df -h
+          ls /opt/hostedtoolcache
+          rm -rf ${GITHUB_WORKSPACE}/.git
+          rm -rf  /opt/hostedtoolcache/go
+          rm -rf  /opt/hostedtoolcache/node
+          rm -rf  /opt/hostedtoolcache/Ruby
+          rm -rf  /opt/hostedtoolcache/CodeQL
+          cat /proc/cpuinfo  | grep -ic proc
+          free
+          df -h
+          df . -h
+      - name: Get docker info
+        run: |
+          docker info
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push the latest Docker image
+        run: |
+          export TAG=$TAG_PREFIX
+          echo "TAG=${TAG}" >> $GITHUB_ENV
+          echo $TAG
+          docker ./docker/Release/ -t ${TAG} --no-cache
+          docker push $TAG
+      - name: Push docker image with released tag
         if: startsWith(github.ref, 'refs/tags/') == true
         run: |
           export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
           echo $MMDEPLOY_VERSION
-          echo "TAG=${TAG_PREFIX}${MMDEPLOY_VERSION}"  >> $GITHUB_ENV
-          echo "MMDEPLOY_VERSION=v$MMDEPLOY_VERSION"  >> $GITHUB_ENV
-      - name: Build Docker image
-        continue-on-error: true
-        run: |
-          echo $MMDEPLOY_VERSION
-          echo $TAG
-          docker build docker/Release/ -t ${TAG} --no-cache --build-arg MMDEPLOY_VERSION=${MMDEPLOY_VERSION}
-      - name: Push Docker image
-        continue-on-error: true
-        run: |
-          echo $MMDEPLOY_VERSION
-          echo $TAG
-          docker push $TAG
+          export RELEASE_TAG=${TAG_PREFIX}${MMDEPLOY_VERSION}
+          echo $RELEASE_TAG
+          docker tag $TAG $RELEASE_TAG
+          docker push $RELEASE_TAG

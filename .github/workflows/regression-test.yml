@@ -27,7 +27,7 @@ on:
         required: true
         description: 'Tested torch versions. Default is ["1.10.0"]'
         type: string
-        default: "['1.10.0']"
+        default: "['2.0.0']"
       models:
         required: true
         description: 'Tested model list, eg: "resnet yolov3". Default is "all".\r\n Example: resnet ssd yolov5 maskrcnn srcnn pointpillars dbnet crnn hrnet fastscnn slowfast RotatedRetinanet'
