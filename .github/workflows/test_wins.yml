@@ -6,7 +6,7 @@ jobs:
   build_cuda118_windows:
     runs-on: [self-hosted, win10-3080]
     env:
-      BASE_ENV: mmdeploy-cuda11.8-torch2.0-py38
+      BASE_ENV: mmdeploy-cuda11.8-torch2.0
     defaults:
       run:
         shell: powershell

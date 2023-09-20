@@ -1,0 +1,51 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Manually publish'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  publish:
+    if: inputs.publish == true || ${{ github.event_name == 'push' }}
+    runs-on: [self-hosted, linux-3090]
+    environment: 'prod'
+    env:
+      PREBUILD_DIR: /data2/actions-runner/prebuild
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Get mmdeploy version
+        run: |
+          export MMDEPLOY_VERSION=$(python3 -c "import sys; sys.path.append('mmdeploy');from version import __version__;print(__version__)")
+          echo $MMDEPLOY_VERSION
+          echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
+          echo "OUTPUT_DIR=$PREBUILD_DIR/$MMDEPLOY_VERSION" >> $GITHUB_ENV
+          pip install twine
+      - name: Upload mmdeploy
+        continue-on-error: true
+        run: |
+          cd $OUTPUT_DIR/mmdeploy
+          ls -sha *.whl
+          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Upload mmdeploy_runtime
+        continue-on-error: true
+        run: |
+          cd $OUTPUT_DIR/mmdeploy_runtime
+          ls -sha *.whl
+          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+      - name: Check assets
+        run: |
+          ls -sha $OUTPUT_DIR/sdk
+      - name: Upload mmdeploy sdk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload v${MMDEPLOY_VERSION} ${OUTPUT_DIR}/sdk/*.zip ${OUTPUT_DIR}/sdk/*.tar.gz --clobber

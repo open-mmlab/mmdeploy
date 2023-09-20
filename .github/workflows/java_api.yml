@@ -1,0 +1,79 @@
+name: java_api
+
+on:
+  push:
+    paths-ignore:
+      - "tools/**"
+
+  pull_request:
+    paths-ignore:
+      - "tools/**"
+      - "docs/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test_java_api:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+      - name: Install unittest dependencies
+        run: |
+          python -m pip install cmake onnx
+      - name: update
+        run: sudo apt update
+      - name: Install OpenJDK
+        run: |
+          wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz
+          tar xvf openjdk-18_linux-x64_bin.tar.gz
+          export JAVA_HOME=${PWD}/jdk-18
+          export PATH=${JAVA_HOME}/bin:${PATH}
+      - name: Install onnxruntime
+        run: |
+          wget https://github.com/microsoft/onnxruntime/releases/download/v1.8.1/onnxruntime-linux-x64-1.8.1.tgz
+          tar -zxvf onnxruntime-linux-x64-1.8.1.tgz
+          export ONNXRUNTIME_DIR=${PWD}/onnxruntime-linux-x64-1.8.1
+          export LD_LIBRARY_PATH=$ONNXRUNTIME_DIR/lib:$LD_LIBRARY_PATH
+      - name: Install OpenCV
+        run: |
+          sudo apt-get install libopencv-dev
+          sudo apt-get install ffmpeg libgstreamer1.0-0 libgstreamer-plugins-base1.0-0 libavcodec-dev libavformat-dev libswscale-dev
+      - name: Install ant
+        run: |
+          sudo apt-get install ant
+      - name: Build Java class
+        run: |
+          pushd csrc/mmdeploy/apis/java
+          javac mmdeploy/*.java
+          popd
+      - name: Install mmdeploy with onnxruntime backend and Java API
+        run: |
+          mkdir -p build && pushd build
+          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/onnxruntime-linux-x64-1.8.1/lib/:$LD_LIBRARY_PATH
+          cmake -DMMDEPLOY_BUILD_SDK=ON -DMMDEPLOY_BUILD_SDK_JAVA_API=ON -DMMDEPLOY_TARGET_BACKENDS=ort -DMMDEPLOY_CODEBASES=all -DONNXRUNTIME_DIR=$GITHUB_WORKSPACE/onnxruntime-linux-x64-1.8.1  ..
+          make -j$(nproc) && make install
+          popd
+      - name: Prepare OpenCV Java and test Java demo
+        run: |
+          export JAVA_AWT_INCLUDE_PATH=${JAVA_HOME}
+          export JAVA_AWT_LIBRARY=${JAVA_HOME}
+          export JAVA_INCLUDE_PATH=${JAVA_HOME}/include
+          export JAVA_INCLUDE_PATH2=${JAVA_HOME}/include/darwin
+          export JAVA_JVM_LIBRARY=${JAVA_HOME}
+
+          mkdir -p opencv/build/bin
+          wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv-470.jar -P opencv/build/bin
+          wget https://media.githubusercontent.com/media/hanrui1sensetime/mmdeploy-javaapi-testdata/master/opencv470-lib.tar -P opencv/build
+          tar -xf opencv/build/opencv470-lib.tar -C opencv/build
+          export OPENCV_DIR=$GITHUB_WORKSPACE/opencv
+          export LD_LIBRARY_PATH=$GITHUB_WORKSPACE/build/lib:${OPENCV_DIR}/build/lib:$LD_LIBRARY_PATH
+          python .github/scripts/test_java_demo.py
