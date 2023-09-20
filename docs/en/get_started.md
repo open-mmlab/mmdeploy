@@ -230,9 +230,9 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.3.0/mmdeploy-1.3.0-linux-x86_64-cuda11.3.tar.gz
-tar xf mmdeploy-1.3.0-linux-x86_64-cuda11.3
-cd mmdeploy-1.3.0-linux-x86_64-cuda11.3
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.3.0/mmdeploy-1.3.0-linux-x86_64-cuda11.8.tar.gz
+tar xf mmdeploy-1.3.0-linux-x86_64-cuda11.8
+cd mmdeploy-1.3.0-linux-x86_64-cuda11.8
 # run python demo
 python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
