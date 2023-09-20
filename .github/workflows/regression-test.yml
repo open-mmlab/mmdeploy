@@ -173,7 +173,7 @@ jobs:
     environment: 'prod'
     runs-on: [self-hosted, win10-3080]
     env:
-      BASE_ENV: mmdeploy-cuda11.8-torch2.0
+      BASE_ENV: mmdeploy-cuda11.8-torch2.0-py38
       DATASET_DIR: D:\reg-test\data
       REGRESSION_DIR: D:\reg-test\regression_log
       CHECKPOINT_DIR: D:\reg-test\checkpoints

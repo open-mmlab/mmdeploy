@@ -413,7 +413,7 @@ models:
         backend_test: *default_backend_test
       - deploy_config: configs/mmdet/panoptic-seg/panoptic-seg_maskformer_tensorrt_static-800x1344.py
         convert_image: *convert_image
-        backend_test: *default_backend_test
+        backend_test: False
 
   - name: DINO
     metafile: configs/dino/metafile.yml

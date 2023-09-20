@@ -325,7 +325,7 @@ jobs:
     needs: [build_cpu_model_convert, build_cpu_sdk, build_cuda117]
     runs-on: [self-hosted, win10-3080]
     env:
-      BASE_ENV: mmdeploy-cuda11.8-torch2.0
+      BASE_ENV: mmdeploy-cuda11.8-torch2.0-py38
     defaults:
       run:
         shell: powershell
