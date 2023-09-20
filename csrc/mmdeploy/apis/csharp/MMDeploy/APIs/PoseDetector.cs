@@ -8,7 +8,10 @@ namespace MMDeploy
     {
         public Pointf* Point;
         public float* Score;
+        public Rect* BBox;
+        public float* BBoxScore;
         public int Length;
+        public int BBoxNum;
     }
 #pragma warning restore 0649
 
@@ -29,6 +32,16 @@ namespace MMDeploy
         public List<float> Scores;
 
         /// <summary>
+        /// BBox.
+        /// </summary>
+        public Rect BBox;
+
+        /// <summary>
+        /// BBoxScore.
+        /// </summary>
+        public float BBoxScore;
+
+        /// <summary>
         /// Init points and scores if empty.
         /// </summary>
         private void Init()
@@ -38,6 +51,17 @@ namespace MMDeploy
                 Points = new List<Pointf>();
                 Scores = new List<float>();
             }
+        }
+
+        /// <summary>
+        /// Set bounding box and score.
+        /// </summary>
+        /// <param name="bbox">BBox.</param>
+        /// <param name="score">BBox score.</param>
+        public void SetBBox(Rect bbox, float score)
+        {
+            BBox = bbox;
+            BBoxScore = score;
         }
 
         /// <summary>
@@ -170,13 +194,26 @@ namespace MMDeploy
                 PoseDetectorOutput outi = default;
                 for (int j = 0; j < bboxCount[i]; j++)
                 {
-                    PoseDetect boxRes = default;
-                    for (int k = 0; k < results->Length; k++)
+                    int bbox_num = results->BBoxNum;
+                    int num_point_each_bbox = results->Length / results->BBoxNum;
+                    for (int box_id = 0; box_id < bbox_num; box_id++)
                     {
-                        boxRes.Add(results->Point[k], results->Score[k]);
+                        PoseDetect boxRes = default;
+                        Rect bbox = default;
+                        float score = results->BBoxScore[box_id];
+                        bbox.Left = results->BBox[box_id].Left;
+                        bbox.Top = results->BBox[box_id].Top;
+                        bbox.Right = results->BBox[box_id].Right;
+                        bbox.Bottom = results->BBox[box_id].Bottom;
+                        boxRes.SetBBox(bbox, score);
+                        for (int kp_id = 0; kp_id < num_point_each_bbox; kp_id++)
+                        {
+                            boxRes.Add(results->Point[(box_id * num_point_each_bbox) + kp_id], results->Score[(box_id * num_point_each_bbox) + kp_id]);
+                        }
+
+                        outi.Add(boxRes);
                     }
 
-                    outi.Add(boxRes);
                     results++;
                     total++;
                 }

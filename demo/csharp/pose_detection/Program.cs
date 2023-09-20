@@ -71,10 +71,13 @@ namespace pose_detection
             int index = 0;
             foreach (var box in output[0].Results)
             {
-                for (int i = 0; i < box.Points.Count; i++)
+                var pt1 = new OpenCvSharp.Point((int)box.BBox.Left, (int)box.BBox.Top);
+                var pt2 = new OpenCvSharp.Point((int)box.BBox.Right, (int)box.BBox.Bottom);
+                var color = new Scalar(palette[index][0], palette[index][1], palette[index][2]);
+                Cv2.Rectangle(imgs[0], pt1, pt2, color, 2);
+                foreach (var point in box.Points)
                 {
-                    Cv2.Circle(imgs[0], (int)box.Points[i].X, (int)box.Points[i].Y, 1,
-                        new Scalar(palette[index][0], palette[index][1], palette[index][2]), 2);
+                    Cv2.Circle(imgs[0], (int)point.X, (int)point.Y, 1,color, 2);
                 }
                 index++;
             }
