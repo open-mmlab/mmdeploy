@@ -15,3 +15,16 @@ def get_ops_path() -> str:
         '../../lib/mmdeploy_onnxruntime_ops.dll',
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
+
+
+def get_lib_path() -> str:
+    """Get the library path of onnxruntime.
+
+    Returns:
+        str: The library path to onnxruntime.
+    """
+    candidates = [
+        '../../lib/libonnxruntime_ops.so*',
+        '../../lib/onnxruntime.dll',
+    ]
+    return get_file_path(os.path.dirname(__file__), candidates)

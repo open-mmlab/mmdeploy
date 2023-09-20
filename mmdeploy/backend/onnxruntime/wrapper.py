@@ -1,4 +1,5 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+import ctypes
 import os.path as osp
 from typing import Dict, Optional, Sequence
 
@@ -9,7 +10,7 @@ import torch
 from mmdeploy.utils import Backend, get_root_logger, parse_device_id
 from mmdeploy.utils.timer import TimeCounter
 from ..base import BACKEND_WRAPPER, BaseWrapper
-from .init_plugins import get_ops_path
+from .init_plugins import get_lib_path, get_ops_path
 
 
 @BACKEND_WRAPPER.register_module(Backend.ONNXRUNTIME.value)
@@ -44,6 +45,11 @@ class ORTWrapper(BaseWrapper):
         # register custom op for onnxruntime
         logger = get_root_logger()
         if osp.exists(ort_custom_op_path):
+            # load ort lib before custom ops lib
+            lib_path = get_lib_path()
+            if osp.exists(lib_path):
+                ctypes.DLL(lib_path)
+
             session_options.register_custom_ops_library(ort_custom_op_path)
             logger.info('Successfully loaded onnxruntime custom ops from '
                         f'{ort_custom_op_path}')
