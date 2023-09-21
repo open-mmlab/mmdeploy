@@ -78,7 +78,7 @@ def process_model_config(
                 keys=['img'],
                 meta_keys=[
                     'ori_shape', 'img_shape', 'pad_shape', 'scale_factor',
-                    'flip_indices'
+                    'flip_indices', 'bbox'
                 ]))
     else:
         test_pipeline.append(
@@ -94,7 +94,7 @@ def process_model_config(
                 keys=['img'],
                 meta_keys=[
                     'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
-                    'scale_factor', 'bbox_score', 'center', 'scale'
+                    'scale_factor', 'bbox_score', 'center', 'scale', 'bbox'
                 ]))
 
     cfg.test_dataloader.dataset.pipeline = test_pipeline
