@@ -1,22 +1,24 @@
-ARG CUDA_INT=113
+ARG CUDA_INT=118
 
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 AS cuda-118
 FROM nvidia/cuda:11.3.0-cudnn8-devel-ubuntu20.04 AS cuda-113
-FROM nvidia/cuda:10.2-cudnn8-devel-ubuntu18.04 AS cuda-102
 
 FROM cuda-${CUDA_INT} AS final
 
-ARG TORCH_VERSION=1.10.0
-ARG TORCHVISION_VERSION=0.11.0
+ARG TORCH_VERSION=2.0.0
+ARG TORCHVISION_VERSION=0.15.1
 
 # important dependencies
 ARG OPENCV_VERSION==4.5.4.60
 ARG PPLCV_VERSION=0.7.0
 
 # backends
-ARG ONNXRUNTIME_VERSION=1.8.1
+ARG ONNXRUNTIME_VERSION=1.15.1
 ARG PPLNN_VERSION=0.8.1
-ARG NCNN_VERSION=20221128
-ARG TENSORRT_VERSION=8.2.3.0
+ARG NCNN_VERSION=20230816
+ARG TENSORRT_VERSION=8.6.1.6
+ARG OPENVINO_VERSION=2022.3.0
+
 # tensorrt tar file url
 ARG TENSORRT_URL
 
@@ -47,21 +49,23 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 RUN wget https://download.java.net/java/GA/jdk18/43f95e8614114aeaa8e8a5fcf20a682d/36/GPL/openjdk-18_linux-x64_bin.tar.gz &&\
     tar xvf openjdk-18_linux-x64_bin.tar.gz && rm -rf openjdk-18_linux-x64_bin.tar.gz && \
     wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
-    tar -xzvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz && rm onnxruntime-*.tgz &&\
+    tar -xzvf onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
+    wget https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-gpu-${ONNXRUNTIME_VERSION}.tgz &&\
+    tar -xzvf onnxruntime-linux-x64-gpu-${ONNXRUNTIME_VERSION}.tgz && rm onnxruntime-*.tgz &&\
     wget https://github.com/Kitware/CMake/releases/download/v3.25.2/cmake-3.25.2-linux-x86_64.tar.gz &&\
     tar -xzvf cmake-3.25.2-linux-x86_64.tar.gz && rm cmake-*.tar.gz && mv cmake-* cmake &&\
     export CUDA_INT=$(echo $CUDA_VERSION | awk '{split($0, a, "."); print a[1]a[2]}') &&\
     python3 -m pip install --no-cache-dir --upgrade pip setuptools wheel &&\
     python3 -m pip install --no-cache-dir onnxruntime-gpu==${ONNXRUNTIME_VERSION} &&\
-    python3 -m pip install --no-cache-dir openvino openvino-dev[onnx] &&\
+    python3 -m pip install --no-cache-dir openvino openvino-dev[onnx]==${OPENVINO_VERSION} &&\
     python3 -m pip install --no-cache-dir opencv-python==${OPENCV_VERSION} opencv-python-headless==${OPENCV_VERSION} opencv-contrib-python==${OPENCV_VERSION} &&\
     python3 -m pip install --no-cache-dir torch==${TORCH_VERSION}+cu${CUDA_INT} torchvision==${TORCHVISION_VERSION}+cu${CUDA_INT} -f https://download.pytorch.org/whl/torch_stable.html
 
 # create env
 ENV JAVA_HOME=/root/workspace/jdk-18
 ENV PATH=$JAVA_HOME/bin:/root/workspace/cmake/bin:$PATH
-ENV ONNXRUNTIME_VERSION=${ONNXRUNTIME_VERSION}
 ENV ONNXRUNTIME_DIR=/root/workspace/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}
+ENV ONNXRUNTIME_GPU_DIR=/root/workspace/onnxruntime-linux-x64-gpu-${ONNXRUNTIME_VERSION}
 ENV LD_LIBRARY_PATH=${ONNXRUNTIME_DIR}/lib:$LD_LIBRARY_PATH
 
 ### install ppl.nn

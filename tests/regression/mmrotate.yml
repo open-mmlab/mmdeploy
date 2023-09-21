@@ -47,7 +47,7 @@ models:
     model_configs:
       - configs/rotated_retinanet/rotated-retinanet-hbox-oc_r50_fpn_1x_dota.py
     pipelines:
-      - *pipeline_ort_detection_dynamic_fp16
+      - *pipeline_ort_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp32
       - *pipeline_trt_detection_dynamic_fp16
 

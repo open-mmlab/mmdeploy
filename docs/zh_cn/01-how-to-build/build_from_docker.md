@@ -5,28 +5,28 @@
 ## 获取镜像
 
 为了方便用户，mmdeploy在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了多个版本的镜像，例如对于`mmdeploy==1.2.0`，
-其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.2.0`，而最新的镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy`。
+其镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy1.2.0`，而最新的镜像标签为`openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy`。
 镜像相关规格信息如下表所示：
 
 |    Item     |   Version   |
 | :---------: | :---------: |
 |     OS      | Ubuntu20.04 |
-|    CUDA     |    11.3     |
-|    CUDNN    |     8.2     |
+|    CUDA     |    11.8     |
+|    CUDNN    |     8.9     |
 |   Python    |   3.8.10    |
-|    Torch    |   1.10.0    |
-| TorchVision |   0.11.0    |
-| TorchScript |   1.10.0    |
-|  TensorRT   |   8.2.3.0   |
-| ONNXRuntime |    1.8.1    |
+|    Torch    |    2.0.0    |
+| TorchVision |   0.15.0    |
+| TorchScript |    2.0.0    |
+|  TensorRT   |   8.6.1.6   |
+| ONNXRuntime |   1.15.1    |
 |  OpenVINO   |  2022.3.0   |
-|    ncnn     |  20221128   |
+|    ncnn     |  20230816   |
 |   openppl   |    0.8.1    |
 
 用户可选择一个[镜像](https://hub.docker.com/r/openmmlab/mmdeploy/tags)并运行`docker pull`拉取镜像到本地：
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy
 docker pull $TAG
 ```
 
@@ -45,7 +45,7 @@ docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_V
 当拉取或构建 docker 镜像后，用户可使用 `docker run` 启动 docker 服务：
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy
 docker run --gpus=all -it --rm $TAG
 ```
 

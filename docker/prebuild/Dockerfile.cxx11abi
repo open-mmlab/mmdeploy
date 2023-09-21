@@ -1,0 +1,101 @@
+FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu16.04
+
+ARG CUDA_URL
+ARG CUDNN_URL
+ARG TENSORRT_URL
+
+ARG CUDA_VERSION=11.8
+
+ARG OPENCV_VERSION=4.5.5
+ARG PPLCV_VERSION=0.7.0
+ARG TENSORRT_VERSION=8.6.1.6
+ARG ONNXRUNTIME_VERSION=1.15.1
+
+USER root
+ENV WORK_DIR=/root/workspace
+WORKDIR $WORK_DIR
+
+RUN apt-get update && apt-get install software-properties-common -y &&\
+    add-apt-repository ppa:git-core/ppa -y &&\
+    add-apt-repository ppa:ubuntu-toolchain-r/test -y &&\
+    apt-get update && apt-get install git wget curl g++-7 -y &&\
+    update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 10 &&\
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 10 &&\
+    apt-get clean
+
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.25.3/cmake-3.25.3-linux-x86_64.sh &&\
+    bash cmake-3.25.3-linux-x86_64.sh --skip-license --prefix=/usr &&\
+    rm -rf cmake-3.25.3-linux-x86_64.sh
+
+# install cuda cudnn
+RUN curl -fsSL -v -o ./cuda_install.run -O $CUDA_URL &&\
+    chmod +x ./cuda_install.run &&\
+    ./cuda_install.run --silent --toolkit &&\
+    rm -f ./cuda_install.run &&\
+    curl -fsSL -v -o ./cudnn.tgz -O $CUDNN_URL &&\
+    tar -xvf ./cudnn.tgz &&\
+    rm -f ./cudnn.tgz &&\
+    mv cu* /opt/cudnn
+
+# install ort, trt
+RUN curl -fsSL -v -o ./onnxruntime.tgz -O https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-${ONNXRUNTIME_VERSION}.tgz &&\
+    tar -xzvf onnxruntime.tgz &&\
+    rm onnxruntime.tgz &&\
+    mv onnxruntime* /opt/onnxruntime &&\
+    curl -fsSL -v -o ./onnxruntime.tgz -O https://github.com/microsoft/onnxruntime/releases/download/v${ONNXRUNTIME_VERSION}/onnxruntime-linux-x64-gpu-${ONNXRUNTIME_VERSION}.tgz &&\
+    tar -xzvf onnxruntime.tgz &&\
+    rm onnxruntime.tgz &&\
+    mv onnxruntime* /opt/onnxruntime-gpu &&\
+    curl -fsSL -v -o ./tensorrt.tgz -O $TENSORRT_URL &&\
+    tar -xzvf ./tensorrt.tgz &&\
+    rm -f ./tensorrt.tgz &&\
+    mv ./TensorRT* /opt/TensorRT &&\
+    cd /opt/TensorRT &&\
+    rm -rf data doc samples uff
+
+ENV CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-${CUDA_VERSION}
+ENV CUDNN_DIR=/opt/cudnn
+ENV ONNXRUNTIME_DIR=/opt/onnxruntime
+ENV ONNXRUNTIME_GPU_DIR=/opt/onnxruntime-gpu
+ENV TENSORRT_DIR=/opt/TensorRT
+
+ENV LD_LIBRARY_PATH=$CUDA_TOOLKIT_ROOT_DIR/lib64:$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=${ONNXRUNTIME_GPU_DIR}/lib:$TENSORRT_DIR/lib:$LD_LIBRARY_PATH
+ENV PATH=$TENSORRT_DIR/bin:$PATH
+
+RUN wget https://github.com/opencv/opencv/archive/refs/tags/${OPENCV_VERSION}.tar.gz -O ./opencv.tgz &&\
+    tar -xzvf ./opencv.tgz &&\
+    rm -f ./opencv.tgz &&\
+    cd opencv-${OPENCV_VERSION} &&\
+    mkdir build && cd build &&\
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=../install \
+        -DOPENCV_FORCE_3RDPARTY_BUILD=ON \
+        -DBUILD_TESTS=OFF \
+        -DBUILD_PERF_TESTS=OFF \
+        -DBUILD_opencv_python2=OFF \
+        -DBUILD_opencv_python3=OFF \
+        -DBUILD_SHARED_LIBS=OFF &&\
+    make -j$(nproc) && make install &&\
+    cd ../ && rm -rf build
+
+ENV OpenCV_DIR=/root/workspace/opencv-${OPENCV_VERSION}/install/lib/cmake/opencv4
+
+RUN git clone --depth 1 --branch v${PPLCV_VERSION} https://github.com/openppl-public/ppl.cv.git  &&\
+    cd ppl.cv &&\
+    ./build.sh cuda &&\
+    mv cuda-build/install ./ &&\
+    rm -rf cuda-build
+ENV pplcv_DIR=/root/workspace/ppl.cv/install/lib/cmake/ppl
+
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py38_23.1.0-1-Linux-x86_64.sh -O ~/miniconda.sh &&\
+    chmod +x ~/miniconda.sh &&\
+    bash ~/miniconda.sh -b -p /opt/conda &&\
+    rm ~/miniconda.sh
+
+ENV PATH=/opt/conda/bin:$PATH
+
+RUN pip install packaging pyyaml
+
+ENTRYPOINT ["/bin/bash"]

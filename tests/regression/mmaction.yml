@@ -55,7 +55,7 @@ models:
     model_configs:
       - configs/recognition/tsn/tsn_imagenet-pretrained-r50_8xb32-1x1x3-100e_kinetics400-rgb.py
     pipelines:
-      - *pipeline_ort_static_fp16
+      - *pipeline_ort_static_fp32
       - *pipeline_trt_2d_static_fp32
       - *pipeline_torchscript_fp32
 

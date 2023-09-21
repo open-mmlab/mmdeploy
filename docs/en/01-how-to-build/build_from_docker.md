@@ -5,28 +5,28 @@ This document guides how to install mmdeploy with [Docker](https://docs.docker.c
 ## Get prebuilt docker images
 
 MMDeploy provides prebuilt docker images for the convenience of its users on [Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy). The docker images are built on
-the latest and released versions. For instance, the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy` is built on the latest mmdeploy and the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy1.2.0` is for `mmdeploy==1.2.0`.
+the latest and released versions. For instance, the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy` is built on the latest mmdeploy and the image with tag `openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy1.2.0` is for `mmdeploy==1.2.0`.
 The specifications of the Docker Image are shown below.
 
 |    Item     |   Version   |
 | :---------: | :---------: |
 |     OS      | Ubuntu20.04 |
-|    CUDA     |    11.3     |
-|    CUDNN    |     8.2     |
+|    CUDA     |    11.8     |
+|    CUDNN    |     8.9     |
 |   Python    |   3.8.10    |
-|    Torch    |   1.10.0    |
-| TorchVision |   0.11.0    |
-| TorchScript |   1.10.0    |
-|  TensorRT   |   8.2.3.0   |
-| ONNXRuntime |    1.8.1    |
+|    Torch    |    2.0.0    |
+| TorchVision |   0.15.0    |
+| TorchScript |    2.0.0    |
+|  TensorRT   |   8.6.1.6   |
+| ONNXRuntime |   1.15.1    |
 |  OpenVINO   |  2022.3.0   |
-|    ncnn     |  20221128   |
+|    ncnn     |  20230816   |
 |   openppl   |    0.8.1    |
 
 You can select a [tag](https://hub.docker.com/r/openmmlab/mmdeploy/tags) and run `docker pull` to get the docker image:
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy
 docker pull $TAG
 ```
 
@@ -48,7 +48,7 @@ docker build docker/Release/ -t ${TAG} --build-arg MMDEPLOY_VERSION=${MMDEPLOY_V
 After pulling or building the docker image, you can use `docker run` to launch the docker service:
 
 ```shell
-export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.3-mmdeploy
+export TAG=openmmlab/mmdeploy:ubuntu20.04-cuda11.8-mmdeploy
 docker run --gpus=all -it --rm $TAG
 ```
 

@@ -27,7 +27,7 @@ on:
         required: true
         description: 'Tested torch versions. Default is ["1.10.0"]'
         type: string
-        default: "['1.10.0']"
+        default: "['2.0.0']"
       models:
         required: true
         description: 'Tested model list, eg: "resnet yolov3". Default is "all".\r\n Example: resnet ssd yolov5 maskrcnn srcnn pointpillars dbnet crnn hrnet fastscnn slowfast RotatedRetinanet'
@@ -65,8 +65,8 @@ jobs:
     timeout-minutes: 4320 # 72hours
     environment: 'prod'
     container:
-      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.3
-      options: "--gpus=all --ipc=host"
+      image: openmmlab/mmdeploy:ubuntu20.04-cuda11.8
+      options: "--gpus=all --ipc=host -e NVIDIA_DRIVER_CAPABILITIES=all -e DISPLAY"
       volumes:
         - /data2/checkpoints:/__w/mmdeploy/mmdeploy_checkpoints
         - /data2/benchmark:/__w/mmdeploy/data
@@ -173,7 +173,7 @@ jobs:
     environment: 'prod'
     runs-on: [self-hosted, win10-3080]
     env:
-      BASE_ENV: cuda11.3-cudnn8.2-py3.8-torch1.10
+      BASE_ENV: mmdeploy-cuda11.8-torch2.0-py38
       DATASET_DIR: D:\reg-test\data
       REGRESSION_DIR: D:\reg-test\regression_log
       CHECKPOINT_DIR: D:\reg-test\checkpoints
@@ -240,7 +240,7 @@ jobs:
           echo "BACKENDS=$env:BACKENDS" >> $env:GITHUB_ENV
           New-Item -Path build -ItemType Directory -Force
           cd build
-          cmake ..  -A x64 -T v142 `
+          cmake ..  -A x64 -T v142,cuda=$env:CUDA_PATH `
             -DMMDEPLOY_BUILD_TEST=OFF `
             -DMMDEPLOY_BUILD_SDK_CSHARP_API=ON `
             -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `

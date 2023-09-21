@@ -5,19 +5,19 @@ ARG CUDA_URL
 ARG CUDNN_URL
 ARG TENSORRT_URL
 
-ARG CUDA_VERSION=11.3
+ARG CUDA_VERSION=11.8
 
 # important dependencies
 ARG OPENCV_VERSION=4.5.5
 ARG PPLCV_VERSION=0.7.0
 
 # backends
-ARG ONNXRUNTIME_VERSION=1.8.1
-ARG TENSORRT_VERSION=8.2.3.0
+ARG ONNXRUNTIME_VERSION=1.15.1
+ARG TENSORRT_VERSION=8.6.1.6
 
 # torch
-ARG TORCH_VERSION=1.10.0
-ARG TORCHVISION_VERSION=0.11.0
+ARG TORCH_VERSION=2.0.0
+ARG TORCHVISION_VERSION=0.15.0
 
 ARG TOOLSET_VERSION=7
 
@@ -105,6 +105,7 @@ RUN curl -fsSL -v -o ~/miniconda.sh -O  https://repo.anaconda.com/miniconda/Mini
     /opt/conda/bin/conda create -n mmdeploy-3.8 python=3.8 -y &&\
     /opt/conda/bin/conda create -n mmdeploy-3.9 python=3.9 -y &&\
     /opt/conda/bin/conda create -n mmdeploy-3.10 python=3.10 -y &&\
+    /opt/conda/bin/conda create -n mmdeploy-3.11 python=3.11 -y &&\
     export CUDA_INT=$(echo $CUDA_VERSION | awk '{split($0, a, "."); print a[1]a[2]}') &&\
     /opt/conda/bin/conda create -n torch${TORCH_VERSION} python=3.8 -y &&\
     /opt/conda/envs/mmdeploy-3.6/bin/pip install --no-cache-dir setuptools wheel pyyaml packaging &&\
