@@ -17,13 +17,21 @@ public class PoseDetector {
         /** Scores of points */
         public float[] score;
 
+        /** BBox */
+        public Rect [] bbox;
+
+        /** BBox score */
+        public float[] bboxScore;
+
         /** Initializes a new instance of the Result class.
          * @param point: points.
          * @param score: scores of points.
         */
-        public Result(PointF[] point, float [] score) {
+        public Result(PointF[] point, float[] score, Rect[] bbox, float[] bboxScore) {
             this.point = point;
             this.score = score;
+            this.bbox = bbox;
+            this.bboxScore = bboxScore;
         }
     }
 
