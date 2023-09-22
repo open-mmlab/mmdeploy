@@ -29,19 +29,19 @@ jobs:
           echo $MMDEPLOY_VERSION
           echo "MMDEPLOY_VERSION=$MMDEPLOY_VERSION"  >> $GITHUB_ENV
           echo "OUTPUT_DIR=$PREBUILD_DIR/$MMDEPLOY_VERSION" >> $GITHUB_ENV
-          pip install twine
+          python3 -m pip install twine --user
       - name: Upload mmdeploy
         continue-on-error: true
         run: |
           cd $OUTPUT_DIR/mmdeploy
           ls -sha *.whl
-          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+          python3 -m twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Upload mmdeploy_runtime
         continue-on-error: true
         run: |
           cd $OUTPUT_DIR/mmdeploy_runtime
           ls -sha *.whl
-          twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
+          python3 -m twine upload *.whl -u __token__ -p ${{ secrets.pypi_password }}
       - name: Check assets
         run: |
           ls -sha $OUTPUT_DIR/sdk
