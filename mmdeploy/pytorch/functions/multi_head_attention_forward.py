@@ -53,3 +53,29 @@ def _scaled_dot_product_attention__tensorrt(q: Tensor,
                                             **kwargs) -> Tuple[Tensor, Tensor]:
     """Rewrite for custom ops."""
     return ScaledDotProductAttentionTRT.apply(q, k, v, attn_mask)
+
+
+@FUNCTION_REWRITER.register_rewriter(
+    func_name='torch.nn.functional.scaled_dot_product_attention',
+    backend=Backend.DEFAULT.value)
+def scaled_dot_product_attention__default(query,
+                                          key,
+                                          value,
+                                          attn_mask=None,
+                                          dropout_p=0.,
+                                          scale=None,
+                                          is_causal=False):
+    """Rewrite to export to onnx on torch>=2.0.0."""
+    scale = scale or query.size(-1)**0.5
+    if is_causal and attn_mask is not None:
+        attn_mask = torch.ones(
+            query.size(-2), key.size(-2), dtype=torch.bool).tril(diagonal=0)
+    if attn_mask is not None and attn_mask.dtype == torch.bool:
+        attn_mask = attn_mask.masked_fill(not attn_mask, -float('inf'))
+
+    attn_weight = query @ key.transpose(-2, -1) / scale
+    if attn_mask is not None:
+        attn_weight += attn_mask
+    attn_weight = torch.softmax(attn_weight, dim=-1)
+    attn_weight = torch.dropout(attn_weight, dropout_p, True)
+    return attn_weight @ value

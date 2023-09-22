@@ -610,7 +610,6 @@ def multiclass_nms__torchscript(boxes: Tensor,
 
     Use batched_nms from torchvision instead of custom nms.
     """
-    assert not output_index, 'output_index is not supported on this backend.'
     # TODO: simplify inference for non-batch model
     from torchvision.ops import batched_nms
     batch_size = scores.shape[0]
@@ -618,11 +617,12 @@ def multiclass_nms__torchscript(boxes: Tensor,
     num_classes = scores.shape[2]
     box_per_cls = len(boxes.shape) == 4
     scores = torch.where(scores > score_threshold, scores, scores.new_zeros(1))
-
+    pre_topk_inds = None
     # pre-topk
     if pre_top_k > 0:
         max_scores, _ = scores.max(-1)
         _, topk_inds = max_scores.topk(pre_top_k)
+        pre_topk_inds = topk_inds
         batch_inds = torch.arange(batch_size).view(-1, 1).long()
         boxes = boxes[batch_inds, topk_inds, ...]
         scores = scores[batch_inds, topk_inds, :]
@@ -646,10 +646,14 @@ def multiclass_nms__torchscript(boxes: Tensor,
 
     keeps = torch.cat(keeps)
     scores = scores.permute(0, 2, 1)
-    dets, labels = _select_nms_index(
-        scores, boxes, keeps, batch_size, keep_top_k=keep_top_k)
-
-    return dets, labels
+    return _select_nms_index(
+        scores,
+        boxes,
+        keeps,
+        batch_size,
+        keep_top_k=keep_top_k,
+        pre_inds=pre_topk_inds,
+        output_index=output_index)
 
 
 class AscendBatchNMSOp(torch.autograd.Function):
