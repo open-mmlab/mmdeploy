@@ -118,14 +118,14 @@ Take the latest precompiled package as example, you can install it as follows:
 
 ```shell
 # 1. install MMDeploy model converter
-pip install mmdeploy==1.2.0
+pip install mmdeploy==1.3.0
 
 # 2. install MMDeploy sdk inference
 # you can install one to install according whether you need gpu inference
 # 2.1 support onnxruntime
-pip install mmdeploy-runtime==1.2.0
+pip install mmdeploy-runtime==1.3.0
 # 2.2 support onnxruntime-gpu, tensorrt
-pip install mmdeploy-runtime-gpu==1.2.0
+pip install mmdeploy-runtime-gpu==1.3.0
 
 # 3. install inference engine
 # 3.1 install TensorRT
@@ -230,9 +230,9 @@ result = inference_model(
 You can directly run MMDeploy demo programs in the precompiled package to get inference results.
 
 ```shell
-wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.2.0/mmdeploy-1.2.0-linux-x86_64-cuda11.3.tar.gz
-tar xf mmdeploy-1.2.0-linux-x86_64-cuda11.3
-cd mmdeploy-1.2.0-linux-x86_64-cuda11.3
+wget https://github.com/open-mmlab/mmdeploy/releases/download/v1.3.0/mmdeploy-1.3.0-linux-x86_64-cuda11.8.tar.gz
+tar xf mmdeploy-1.3.0-linux-x86_64-cuda11.8
+cd mmdeploy-1.3.0-linux-x86_64-cuda11.8
 # run python demo
 python example/python/object_detection.py cuda ../mmdeploy_model/faster-rcnn ../mmdetection/demo/demo.jpg
 # run C/C++ demo
