@@ -26,6 +26,7 @@ class SimCCLabelDecode : public MMPose {
       auto& params = config["params"];
       flip_test_ = params.value("flip_test", flip_test_);
       simcc_split_ratio_ = params.value("simcc_split_ratio", simcc_split_ratio_);
+      export_postprocess_ = params.value("export_postprocess", export_postprocess_);
       if (params.contains("input_size")) {
         from_value(params["input_size"], input_size_);
       }
@@ -52,7 +53,9 @@ class SimCCLabelDecode : public MMPose {
 
     Tensor keypoints({Device{"cpu"}, DataType::kFLOAT, {simcc_x.shape(0), simcc_x.shape(1), 2}});
     Tensor scores({Device{"cpu"}, DataType::kFLOAT, {simcc_x.shape(0), simcc_x.shape(1), 1}});
-    get_simcc_maximum(simcc_x, simcc_y, keypoints, scores);
+    if (!export_postprocess_) {
+      get_simcc_maximum(simcc_x, simcc_y, keypoints, scores);
+    }
 
     std::vector<float> center;
     std::vector<float> scale;
@@ -61,17 +64,25 @@ class SimCCLabelDecode : public MMPose {
     PoseDetectorOutput output;
 
     float* keypoints_data = keypoints.data<float>();
+    float* simcc_x_data = simcc_x.data<float>();
+    float* simcc_y_data = simcc_y.data<float>();
+
     float* scores_data = scores.data<float>();
     float scale_value = 200, x = -1, y = -1, s = 0;
     for (int i = 0; i < simcc_x.shape(1); i++) {
-      x = *(keypoints_data + 0) / simcc_split_ratio_;
-      y = *(keypoints_data + 1) / simcc_split_ratio_;
+      if (export_postprocess_) {
+        x = *(simcc_x_data++);
+        y = *(simcc_x_data++);
+        s = *(scores_data++);
+      } else {
+        x = *(keypoints_data++) / simcc_split_ratio_;
+        y = *(keypoints_data++) / simcc_split_ratio_;
+        s = *(scores_data++);
+      }
+
       x = x * scale[0] * scale_value / input_size_[0] + center[0] - scale[0] * scale_value * 0.5;
       y = y * scale[1] * scale_value / input_size_[1] + center[1] - scale[1] * scale_value * 0.5;
-      s = *(scores_data + 0);
       output.key_points.push_back({{x, y}, s});
-      keypoints_data += 2;
-      scores_data += 1;
     }
     return to_value(output);
   }
@@ -104,6 +115,7 @@ class SimCCLabelDecode : public MMPose {
 
  private:
   bool flip_test_{false};
+  bool export_postprocess_{false};
   bool shift_heatmap_{false};
   float simcc_split_ratio_{2.0};
   std::vector<int> input_size_{192, 256};
