@@ -3,7 +3,7 @@ import copy
 from typing import List, Optional
 
 import torch
-from mmdet.models.utils import aligned_bilinear, relative_coordinate_maps
+from mmdet.models.utils import aligned_bilinear
 from mmdet.utils import InstanceList
 from mmengine.config import ConfigDict
 from mmengine.structures import InstanceData
@@ -40,8 +40,8 @@ def condinst_bbox_head__predict_by_feat(
     all_level_points_strides = self.prior_generator.grid_priors(
         featmap_sizes, device=device, with_stride=True
     )
-    all_level_points = [priors[:, :2] for priors in all_level_points_strides]
-    all_level_strides = [priors[:, 2] for priors in all_level_points_strides]
+    all_level_points = [i[:, :2] for i in all_level_points_strides]
+    all_level_strides = [i[:, 2] for i in all_level_points_strides]
 
     flatten_cls_scores = [
         cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)
@@ -70,7 +70,8 @@ def condinst_bbox_head__predict_by_feat(
     tl_y = points[..., 1] - flatten_bbox_preds[..., 1]
     br_x = points[..., 0] + flatten_bbox_preds[..., 2]
     br_y = points[..., 1] + flatten_bbox_preds[..., 3]
-    bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)  # decode
+
+    bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)
     scores = flatten_cls_scores
     score_factors = flatten_score_factors
     param_preds = flatten_param_preds
@@ -151,14 +152,14 @@ def condinst_mask_head__forward(self, x: tuple, positive_infos: InstanceList):
     )
 
     weights, biases = _parse_dynamic_params(self, param_preds)
-    mask_preds = _dynamic_conv_forward(self, mask_feats, weights, biases, num_insts)
+    mask_preds = _dynamic_conv_forward(mask_feats, weights, biases)
     mask_preds = mask_preds.reshape(batch_size, num_insts, hw[0], hw[1])
     mask_preds = [
         aligned_bilinear(
-            mask_pred.unsqueeze(0),
+            mask_preds[i].unsqueeze(0),
             int(self.mask_feat_stride / self.mask_out_stride),
         ).squeeze(0)
-        for mask_pred in mask_preds
+        for i in range(batch_size)
     ]
 
     return (mask_preds,)
@@ -182,17 +183,18 @@ def condinst_mask_head__predict_by_feat(
     labels = [results.labels.unsqueeze(0) for results in results_list]
     img_hw = [img_meta["img_shape"][:2] for img_meta in batch_img_metas]
 
-    mask_preds = [mask_pred.sigmoid().unsqueeze(0) for mask_pred in mask_preds]
+    mask_preds = [mask_preds[i].sigmoid().unsqueeze(0) for i in range(len(mask_preds))]
     mask_preds = [
-        aligned_bilinear(mask_pred, self.mask_out_stride) for mask_pred in mask_preds
+        aligned_bilinear(mask_preds[i], self.mask_out_stride)
+        for i in range(len(mask_preds))
     ]
     mask_preds = [
         mask_preds[i][:, :, : img_hw[i][0], : img_hw[i][1]]
         for i in range(len(mask_preds))
     ]
 
-    masks = [mask_pred > cfg.mask_thr for mask_pred in mask_preds]
-    masks = [mask.float() for mask in masks]
+    masks = [mask_preds[i] > cfg.mask_thr for i in range(len(mask_preds))]
+    masks = [masks[i].float() for i in range(len(masks))]
 
     return dets, labels, masks
 
@@ -223,7 +225,7 @@ def _parse_dynamic_params(self, params: Tensor):
 
 
 def _dynamic_conv_forward(
-    self, features: Tensor, weights: List[Tensor], biases: List[Tensor], num_insts: int
+    features: Tensor, weights: List[Tensor], biases: List[Tensor]
 ):
     """dynamic forward, each layer follow a relu."""
     n_layers = len(weights)
