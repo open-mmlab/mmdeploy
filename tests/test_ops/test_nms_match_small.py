@@ -3,6 +3,8 @@ import onnxruntime
 import torch
 from mmdeploy.backend.onnxruntime.init_plugins import get_ops_path
 from mmdeploy.mmcv.ops import ONNXNMSMatchOp
+import numpy
+import tempfile
 
 boxes = torch.tensor([[[291.1746, 316.2263, 343.5029, 347.7312],
                        [288.4846, 315.0447, 343.7267, 346.5630],
@@ -28,18 +30,20 @@ class test_ONNX_Match(torch.nn.Module):
     def forward(self, boxes, scores, iou_threshold, score_threshold):
         return match_op(boxes, scores, iou_threshold, score_threshold)
 
-
+# here is a PyTorch test
 model = test_ONNX_Match()
-torch.onnx.export(model, (boxes, scores, iou_threshold, score_threshold),
-                  'test_onnx_match.onnx')
 torch_output = model(boxes, scores, iou_threshold,
                      score_threshold).detach().numpy()
-
+# export the onnx file with a tempfile
+temp_onnx = tempfile.NamedTemporaryFile(suffix='.onnx', delete=False)
+torch.onnx.export(model, (boxes, scores, iou_threshold, score_threshold),
+                  temp_onnx.name)
+temp_onnx.seek(0)
 options = onnxruntime.SessionOptions()
 options.register_custom_ops_library(get_ops_path())
 
 sess = onnxruntime.InferenceSession(
-    'test_onnx_match.onnx', options, providers=['CPUExecutionProvider'])
+    temp_onnx.name, options, providers=['CPUExecutionProvider'])
 ort_output = sess.run(
     None, {
         'boxes': boxes.numpy(),
@@ -50,3 +54,4 @@ ort_output = sess.run(
 assert numpy.array_equal(
     numpy.array(torch_output),
     numpy.array(ort_output[0])), 'list are not equal'
+temp_onnx.close()
