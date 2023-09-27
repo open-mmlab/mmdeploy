@@ -28,7 +28,7 @@ float nms_match_iou(Box box1, Box box2) {
     auto h = std::max(static_cast<float>(0), max_y2 - max_y1);
 
     auto area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
-    auto area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
+    auto area2 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
     auto inter = w * h;
     auto ovr = inter / (area1 + area2 - inter);
 
@@ -53,7 +53,7 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold_data = ort_.GetTensorData<float>(iou_threshold_)[0];
   const OrtValue* score_threshold_ = ort_.KernelContext_GetInput(context, 3);
   const float score_threshold_data = ort_.GetTensorData<float>(score_threshold_)[0];
-
+  
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
     // loop over batch
@@ -62,12 +62,8 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
   int64_t nclass = scores_dim[1];
   assert(boxes_dim[2] == 4);  //(x1, x2, y1, y2)
   // alloc some temp memory
-  float* tmp_boxes = (float*)allocator_.Alloc(sizeof(float) * nbatch * nboxes * 4);
-  float* sc = (float*)allocator_.Alloc(sizeof(float) * nbatch * nclass * nboxes);
   bool* select = (bool*)allocator_.Alloc(sizeof(bool) * nbatch * nboxes);
 
-  memcpy(tmp_boxes, boxes_data, sizeof(float) * nbatch * nboxes * 4);
-  memcpy(sc, scores_data, sizeof(float) * nbatch * nclass * nboxes);
   std::vector<int64_t> res_order;
   for (int64_t k = 0; k < nbatch; k++) {
     for (int64_t g = 0; g < nclass; g++) {
@@ -81,9 +77,9 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
       std::vector<float> tmp_sc;
       // get the class scores
       for (int i = 0; i < nboxes; i++) {
-        tmp_sc.push_back(sc[k * nboxes * nclass + g * nboxes + i]);
+        tmp_sc.push_back(scores_data[k * nboxes * nclass + g * nboxes + i]);
       }
-
+      
       std::vector<int64_t> order(tmp_sc.size());
       std::iota(order.begin(), order.end(), 0);
       std::sort(order.begin(), order.end(),
@@ -96,15 +92,15 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
           if (select[_j] == false) continue;
           auto j = order[_j];
           Box vbox1, vbox2;
-          vbox1.x1 = tmp_boxes[k * nboxes * 4 + i * 4];
-          vbox1.y1 = tmp_boxes[k * nboxes * 4 + i * 4 + 1];
-          vbox1.x2 = tmp_boxes[k * nboxes * 4 + i * 4 + 2];
-          vbox1.y2 = tmp_boxes[k * nboxes * 4 + i * 4 + 3];
+          vbox1.x1 = boxes_data[k * nboxes * 4 + i * 4];
+          vbox1.y1 = boxes_data[k * nboxes * 4 + i * 4 + 1];
+          vbox1.x2 = boxes_data[k * nboxes * 4 + i * 4 + 2];
+          vbox1.y2 = boxes_data[k * nboxes * 4 + i * 4 + 3];
 
-          vbox2.x1 = tmp_boxes[k * nboxes * 4 + j * 4];
-          vbox2.y1 = tmp_boxes[k * nboxes * 4 + j * 4 + 1];
-          vbox2.x2 = tmp_boxes[k * nboxes * 4 + j * 4 + 2];
-          vbox2.y2 = tmp_boxes[k * nboxes * 4 + j * 4 + 3];
+          vbox2.x1 = boxes_data[k * nboxes * 4 + j * 4];
+          vbox2.y1 = boxes_data[k * nboxes * 4 + j * 4 + 1];
+          vbox2.x2 = boxes_data[k * nboxes * 4 + j * 4 + 2];
+          vbox2.y2 = boxes_data[k * nboxes * 4 + j * 4 + 3];
 
           auto ovr = nms_match_iou(vbox1, vbox2);
           if (ovr > iou_threshold_data) {
@@ -130,8 +126,6 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
 
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
 
-  allocator_.Free(tmp_boxes);
-  allocator_.Free(sc);
   allocator_.Free(select);
 }
 REGISTER_ONNXRUNTIME_OPS(mmdeploy, NMSMatchOp);
