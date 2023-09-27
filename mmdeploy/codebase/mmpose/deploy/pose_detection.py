@@ -60,7 +60,7 @@ def process_model_config(
             type='Normalize',
             mean=data_preprocessor.mean,
             std=data_preprocessor.std,
-            to_rgb=data_preprocessor.bgr_to_rgb))
+            to_rgb=data_preprocessor.get('bgr_to_rgb', False)))
     test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
     test_pipeline.append(
         dict(

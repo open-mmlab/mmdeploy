@@ -98,11 +98,13 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        if self.model_cfg.model.type == 'YOLODetector':
-            return self.pack_yolox_pose_result(batch_outputs, data_samples)
 
         codebase_cfg = get_codebase_config(self.deploy_cfg)
         codec = self.model_cfg.codec
+
+        if codec.type == 'YOLOXPoseAnnotationProcessor':
+            return self.pack_yolox_pose_result(batch_outputs, data_samples)
+
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
         if codec.type == 'SimCCLabel':
@@ -197,11 +199,20 @@ class End2EndModel(BaseBackendModel):
             keypoint_scores = keypoint_scores[inds]
 
             pred_instances = InstanceData()
+
             # rescale
-            scale_factor = data_sample.scale_factor
-            scale_factor = keypoints.new_tensor(scale_factor)
-            keypoints /= keypoints.new_tensor(scale_factor).reshape(1, 1, 2)
-            bboxes /= keypoints.new_tensor(scale_factor).repeat(1, 2)
+            input_size = data_sample.metainfo['input_size']
+            input_center = data_sample.metainfo['input_center']
+            input_scale = data_sample.metainfo['input_scale']
+
+            rescale = keypoints.new_tensor(input_scale) / keypoints.new_tensor(
+                input_size)
+            translation = keypoints.new_tensor(
+                input_center) - 0.5 * keypoints.new_tensor(input_scale)
+
+            keypoints = keypoints * rescale.reshape(
+                1, 1, 2) + translation.reshape(1, 1, 2)
+            bboxes = bboxes * rescale.repeat(1, 2) + translation.repeat(1, 2)
             pred_instances.bboxes = bboxes.cpu().numpy()
             pred_instances.bbox_scores = bbox_scores
             # the precision test requires keypoints to be np.ndarray
