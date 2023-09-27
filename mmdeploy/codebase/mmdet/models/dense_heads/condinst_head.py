@@ -70,7 +70,6 @@ def condinst_bbox_head__predict_by_feat(
     tl_y = points[..., 1] - flatten_bbox_preds[..., 1]
     br_x = points[..., 0] + flatten_bbox_preds[..., 2]
     br_y = points[..., 1] + flatten_bbox_preds[..., 3]
-
     bboxes = torch.stack([tl_x, tl_y, br_x, br_y], -1)  # decode
     scores = flatten_cls_scores
     score_factors = flatten_score_factors
