@@ -1,12 +1,10 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-import copy
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import torch
 from mmdet.models.utils import aligned_bilinear
 from mmdet.utils import InstanceList
 from mmengine.config import ConfigDict
-from mmengine.structures import InstanceData
 from torch import Tensor
 
 from mmdeploy.codebase.mmdet.deploy import get_post_processing_params
@@ -15,8 +13,7 @@ from mmdeploy.mmcv.ops.nms import multiclass_nms
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    "mmdet.models.dense_heads.CondInstBboxHead.predict_by_feat"
-)
+    'mmdet.models.dense_heads.CondInstBboxHead.predict_by_feat')
 def condinst_bbox_head__predict_by_feat(
     self,
     cls_scores: List[Tensor],
@@ -38,13 +35,13 @@ def condinst_bbox_head__predict_by_feat(
     featmap_sizes = [cls_score.shape[-2:] for cls_score in cls_scores]
 
     all_level_points_strides = self.prior_generator.grid_priors(
-        featmap_sizes, device=device, with_stride=True
-    )
+        featmap_sizes, device=device, with_stride=True)
     all_level_points = [i[:, :2] for i in all_level_points_strides]
     all_level_strides = [i[:, 2] for i in all_level_points_strides]
 
     flatten_cls_scores = [
-        cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1, self.cls_out_channels)
+        cls_score.permute(0, 2, 3, 1).reshape(batch_size, -1,
+                                              self.cls_out_channels)
         for cls_score in cls_scores
     ]
     flatten_bbox_preds = [
@@ -80,10 +77,10 @@ def condinst_bbox_head__predict_by_feat(
     # get post processing config
     post_params = get_post_processing_params(deploy_cfg)
     max_output_boxes_per_class = post_params.max_output_boxes_per_class
-    iou_threshold = cfg.nms.get("iou_threshold", post_params.iou_threshold)
-    score_threshold = cfg.get("score_thr", post_params.score_threshold)
+    iou_threshold = cfg.nms.get('iou_threshold', post_params.iou_threshold)
+    score_threshold = cfg.get('score_thr', post_params.score_threshold)
     pre_top_k = post_params.pre_top_k
-    keep_top_k = cfg.get("max_per_img", post_params.keep_top_k)
+    keep_top_k = cfg.get('max_per_img', post_params.keep_top_k)
 
     dets, labels, inds = multiclass_nms(
         bboxes,
@@ -102,32 +99,24 @@ def condinst_bbox_head__predict_by_feat(
     param_preds = param_preds[batch_inds, inds, :]
     points = points[batch_inds, inds, :]
     strides = strides[batch_inds, inds]
-
-    results_list = []
-    for dets_, labels_, param_preds_, points_, strides_ in zip(
-        dets, labels, param_preds, points, strides
-    ):
-        results = InstanceData()
-        results.dets = dets_
-        results.bboxes = dets_[:, :4]
-        results.scores = dets_[:, 4]
-        results.labels = labels_
-        results.param_preds = param_preds_
-        results.points = points_
-        results.strides = strides_
-        results_list.append(results)
-    return results_list
+    results = dict(
+        dets=dets,
+        labels=labels,
+        param_preds=param_preds,
+        points=points,
+        strides=strides)
+    return results
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    "mmdet.models.dense_heads.CondInstMaskHead.forward"
-)
-def condinst_mask_head__forward(self, x: tuple, positive_infos: InstanceList):
+    'mmdet.models.dense_heads.CondInstMaskHead.forward')
+def condinst_mask_head__forward(self, x: tuple,
+                                positive_infos: Dict[str, torch.Tensor]):
     mask_feats = self.mask_feature_head(x)
 
-    param_preds = [positive_info.get("param_preds") for positive_info in positive_infos]
-    points = [positive_info.get("points") for positive_info in positive_infos]
-    strides = [positive_info.get("strides") for positive_info in positive_infos]
+    param_preds = positive_infos['param_preds']
+    points = positive_infos['points']
+    strides = positive_infos['strides']
     param_preds = torch.stack(param_preds, dim=0)
     points = torch.stack(points, dim=0)
     strides = torch.stack(strides, dim=0)
@@ -135,20 +124,20 @@ def condinst_mask_head__forward(self, x: tuple, positive_infos: InstanceList):
     batch_size = points.shape[0]
     num_insts = points.shape[1]
     hw = mask_feats.size()[-2:]
+    mask_feats = mask_feats.unsqueeze(1).repeat(1, num_insts, 1, 1, 1)
 
     points = points.reshape(-1, 1, 2).unsqueeze(0)
-    coord = self.prior_generator.single_level_grid_priors(
-        hw, level_idx=0, device=mask_feats.device
-    )
-    coord = coord.unsqueeze(0).unsqueeze(0).repeat(batch_size, 1, 1, 1)
-    relative_coord = (points - coord).permute(0, 1, 3, 2) / (
-        strides[:, :, None, None] * self.size_of_interest
-    )
-    relative_coord = relative_coord.reshape(batch_size, num_insts, 2, hw[0], hw[1])
-
-    mask_feats = torch.cat(
-        (relative_coord, mask_feats.unsqueeze(1).repeat(1, num_insts, 1, 1, 1)), dim=2
-    )
+    locations = self.prior_generator.single_level_grid_priors(
+        hw, level_idx=0, device=mask_feats.device)
+    locations = locations.unsqueeze(0).repeat(batch_size, 1,
+                                              1).reshape(batch_size, 1, -1, 2)
+    centers = points.reshape(batch_size, -1, 1, 2)
+    rel_coordinates = (centers - locations).permute(0, 1, 3, 2).float()
+    rel_coordinates /= (strides[:, :, None, None] * self.size_of_interest)
+    rel_coords = rel_coordinates.reshape(batch_size, -1, 2, hw[0], hw[1])
+    mask_head_inputs = torch.cat([rel_coords, mask_feats], dim=1)
+    mask_head_inputs = mask_head_inputs.reshape(batch_size, -1, hw[0], hw[1])
+    # TODO: change following code to support batch inference
 
     weights, biases = _parse_dynamic_params(self, param_preds)
     mask_preds = _dynamic_conv_forward(mask_feats, weights, biases)
@@ -157,38 +146,36 @@ def condinst_mask_head__forward(self, x: tuple, positive_infos: InstanceList):
         aligned_bilinear(
             mask_preds[i].unsqueeze(0),
             int(self.mask_feat_stride / self.mask_out_stride),
-        ).squeeze(0)
-        for i in range(batch_size)
+        ).squeeze(0) for i in range(batch_size)
     ]
 
-    return (mask_preds,)
+    return (mask_preds, )
 
 
 @FUNCTION_REWRITER.register_rewriter(
-    "mmdet.models.dense_heads.CondInstMaskHead.predict_by_feat"
-)
-def condinst_mask_head__predict_by_feat(
-    self,
-    mask_preds: List[Tensor],
-    results_list: InstanceList,
-    batch_img_metas: List[dict],
-    rescale: bool = True,
-    **kwargs
-):
+    'mmdet.models.dense_heads.CondInstMaskHead.predict_by_feat')
+def condinst_mask_head__predict_by_feat(self,
+                                        mask_preds: List[Tensor],
+                                        results_list: InstanceList,
+                                        batch_img_metas: List[dict],
+                                        rescale: bool = True,
+                                        **kwargs):
     assert len(mask_preds) == len(results_list) == len(batch_img_metas)
     cfg = self.test_cfg
 
     dets = [results.dets.unsqueeze(0) for results in results_list]
     labels = [results.labels.unsqueeze(0) for results in results_list]
-    img_hw = [img_meta["img_shape"][:2] for img_meta in batch_img_metas]
+    img_hw = [img_meta['img_shape'][:2] for img_meta in batch_img_metas]
 
-    mask_preds = [mask_preds[i].sigmoid().unsqueeze(0) for i in range(len(mask_preds))]
+    mask_preds = [
+        mask_preds[i].sigmoid().unsqueeze(0) for i in range(len(mask_preds))
+    ]
     mask_preds = [
         aligned_bilinear(mask_preds[i], self.mask_out_stride)
         for i in range(len(mask_preds))
     ]
     mask_preds = [
-        mask_preds[i][:, :, : img_hw[i][0], : img_hw[i][1]]
+        mask_preds[i][:, :, :img_hw[i][0], :img_hw[i][1]]
         for i in range(len(mask_preds))
     ]
 
@@ -204,28 +191,25 @@ def _parse_dynamic_params(self, params: Tensor):
     num_insts = params.shape[1]
     params = params.permute(1, 0, 2)
     params_splits = list(
-        torch.split_with_sizes(params, self.weight_nums + self.bias_nums, dim=2)
-    )
+        torch.split_with_sizes(
+            params, self.weight_nums + self.bias_nums, dim=2))
 
-    weight_splits = params_splits[: self.num_layers]
-    bias_splits = params_splits[self.num_layers :]
+    weight_splits = params_splits[:self.num_layers]
+    bias_splits = params_splits[self.num_layers:]
 
     for idx in range(self.num_layers):
         if idx < self.num_layers - 1:
             weight_splits[idx] = weight_splits[idx].reshape(
-                batch_size, num_insts, self.in_channels, -1
-            )
+                batch_size, num_insts, self.in_channels, -1)
         else:
             weight_splits[idx] = weight_splits[idx].reshape(
-                batch_size, num_insts, 1, -1
-            )
+                batch_size, num_insts, 1, -1)
 
     return weight_splits, bias_splits
 
 
-def _dynamic_conv_forward(
-    features: Tensor, weights: List[Tensor], biases: List[Tensor]
-):
+def _dynamic_conv_forward(features: Tensor, weights: List[Tensor],
+                          biases: List[Tensor]):
     """dynamic forward, each layer follow a relu."""
     n_layers = len(weights)
     x = features.flatten(0, 1).flatten(2)
