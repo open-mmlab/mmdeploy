@@ -448,11 +448,11 @@ models:
       - *pipeline_trt_dynamic_fp32
 
   - name: CondInst
-    metafile: ../mmdetection/configs/condinst/metafile.yml
+    metafile: /configs/condinst/metafile.yml
     model_configs:
       - configs/condinst/condinst_r50_fpn_ms-poly-90k_coco_instance.py
     pipelines:
-      - deploy_config: configs/mmdet/instance-seg/condinst_onnxruntime_dynamic.py
+      - deploy_config: configs/mmdet/instance-seg/instance-seg_onnxruntime_dynamic.py
         backend_test: *default_backend_test
-      - deploy_config: configs/mmdet/instance-seg/condinst_tensorrt_dynamic-320x320-1344x1344.py
+      - deploy_config: configs/mmdet/instance-seg/instance-seg_tensorrt_dynamic-320x320-1344x1344.py
         backend_test: *default_backend_test
