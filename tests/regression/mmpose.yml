@@ -140,3 +140,13 @@ models:
         sdk_config: configs/mmpose/pose-detection_simcc_sdk_static-256x192.py
       - convert_image: *convert_image
         deploy_config: configs/mmpose/pose-detection_simcc_ncnn_static-256x192.py
+
+  - name: YOLOX-Pose
+    metafile: configs/body_2d_keypoint/yoloxpose/coco/yoloxpose_coco.yml
+    model_configs:
+      - configs/body_2d_keypoint/yoloxpose/coco/yoloxpose_s_8xb32-300e_coco-640.py
+    pipelines:
+      - convert_image:
+          input_img: *img_human_pose
+          test_img: *img_human_pose
+        deploy_config: configs/mmpose/pose-detection_yolox-pose_onnxruntime_dynamic.py
