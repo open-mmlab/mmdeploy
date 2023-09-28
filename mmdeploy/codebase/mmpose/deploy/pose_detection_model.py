@@ -155,11 +155,11 @@ class End2EndModel(BaseBackendModel):
             # convert keypoint coordinates from input space to image space
             if convert_coordinate:
                 input_size = data_sample.metainfo['input_size']
-                bbox_centers = gt_instances.bbox_centers
-                bbox_scales = gt_instances.bbox_scales
+                input_center = data_sample.metainfo['input_center']
+                input_scale = data_sample.metainfo['input_scale']
                 keypoints = pred_instances.keypoints
-                keypoints = keypoints / input_size * bbox_scales
-                keypoints += bbox_centers - 0.5 * bbox_scales
+                keypoints = keypoints / input_size * input_scale
+                keypoints += input_center - 0.5 * input_scale
                 pred_instances.keypoints = keypoints
 
             pred_instances.bboxes = gt_instances.bboxes
