@@ -14,3 +14,7 @@ onnx_config = dict(
             0: 'batch'
         }
     })
+
+codebase_config = dict(
+    export_postprocess=False  # do not export get_simcc_maximum
+)
