@@ -10,8 +10,8 @@ from mmdeploy.core import mark
 class ONNXNMSMatchOp(torch.autograd.Function):
     """Create onnx::NonMaxSuppressionMatch op.
 
-    NMS_Match in mmcv only supports one class with no batch info. This class assists
-    in exporting NMS_Match of ONNX's definition.
+    NMS_Match in mmcv only supports one class with no batch info. This class
+    assists in exporting NMS_Match of ONNX's definition.
     """
 
     @staticmethod
@@ -32,7 +32,6 @@ class ONNXNMSMatchOp(torch.autograd.Function):
             (num_selected_indices, 4) with each row of
             [batch_index, class_index, box_index, suppresion_index].
         """
-
         from mmcv.ops import nms_match
         batch_size, num_class, _ = scores.shape
 
@@ -43,10 +42,7 @@ class ONNXNMSMatchOp(torch.autograd.Function):
             for cls_id in range(num_class):
                 _boxes = boxes[batch_id, ...]
                 _scores = scores[batch_id, cls_id, ...].contiguous()
-                valid_mask = _scores > score_threshold
-                filter_boxes, filter_scores = _boxes[valid_mask], _scores[valid_mask]
-                id_mapping = torch.arange(_scores.size()[0])[valid_mask]
-                _dets = torch.cat((filter_boxes, filter_scores.unsqueeze(1)), dim=1)
+                _dets = torch.cat((_boxes, _scores.unsqueeze(1)), dim=1)
                 box_inds = nms_match(_dets, iou_threshold)
                 batch_inds = torch.zeros(1) + batch_id
                 cls_inds = torch.zeros(1) + cls_id
@@ -56,10 +52,12 @@ class ONNXNMSMatchOp(torch.autograd.Function):
                         continue
                     keep = box[0]
                     box = box[1:]
+                    if _dets[keep][-1] < score_threshold:
+                        continue
                     for supp in box:
                         indices.append(
-                            torch.cat((both_inds, id_mapping[keep.unsqueeze(0)],
-                                       id_mapping[supp.unsqueeze(0)])))
+                            torch.cat((both_inds, keep.unsqueeze(0),
+                                       supp.unsqueeze(0))))
         return torch.stack(indices).to(torch.int64)
 
     @staticmethod
@@ -165,10 +163,10 @@ def _multiclass_nms_match(boxes: Tensor,
                           output_index: bool = False):
     """Create a dummy onnx::NonMaxSuppressionMatch op while exporting to ONNX.
 
-    This function helps exporting to onnx with batch and multiclass NMSMatch op. It
-    only supports class-agnostic detection results. That is, the scores is of
-    shape (N, num_bboxes, num_classes) and the boxes is of shape (N, num_boxes,
-    4).
+    This function helps exporting to onnx with batch and multiclass NMSMatch
+    op. It only supports class-agnostic detection results. That is, the scores
+    is of shape (N, num_bboxes, num_classes) and the boxes is of shape (N,
+    num_boxes, 4).
     """
     iou_threshold = torch.tensor([iou_threshold], dtype=torch.float32)
     score_threshold = torch.tensor([score_threshold], dtype=torch.float32)
