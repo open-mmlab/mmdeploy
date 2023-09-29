@@ -19,26 +19,24 @@ struct Box {
 };
 
 float nms_match_iou(Box box1, Box box2) {
-    auto max_x1 = std::max(box1.x1, box2.x1);
-    auto max_y1 = std::max(box1.y1, box2.y1);
-    auto max_x2 = std::min(box1.x2, box2.x2);
-    auto max_y2 = std::min(box1.y2, box2.y2);
+    auto inter_x1 = std::max(box1.x1, box2.x1);
+    auto inter_y1 = std::max(box1.y1, box2.y1);
+    auto inter_x2 = std::min(box1.x2, box2.x2);
+    auto inter_y2 = std::min(box1.y2, box2.y2);
 
-    auto w = std::max(static_cast<float>(0), max_x2 - max_x1);
-    auto h = std::max(static_cast<float>(0), max_y2 - max_y1);
+    auto eps = 1e-10;
+
+    auto w = std::max(static_cast<float>(0), inter_x2 - inter_x1);
+    auto h = std::max(static_cast<float>(0), inter_y2 - inter_y1);
 
     auto area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
-    auto area2 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
+    auto area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
     auto inter = w * h;
-    auto ovr = inter / (area1 + area2 - inter);
-
+    auto ovr = inter / (area1 + area2 - inter + eps);
     return ovr;
 }
 NMSMatchKernel::NMSMatchKernel(const OrtApi& api, const OrtKernelInfo* info)
     : ort_(api), info_(info) {
-  // iou_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "iou_threshold");
-  // score_threshold_ = ort_.KernelInfoGetAttribute<float>(info, "score_threshold");
-
   // create allocator
   allocator_ = Ort::AllocatorWithDefaultOptions();
 }
@@ -53,7 +51,7 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
   const float iou_threshold_data = ort_.GetTensorData<float>(iou_threshold_)[0];
   const OrtValue* score_threshold_ = ort_.KernelContext_GetInput(context, 3);
   const float score_threshold_data = ort_.GetTensorData<float>(score_threshold_)[0];
-  
+
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
     // loop over batch
@@ -79,18 +77,18 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
       for (int i = 0; i < nboxes; i++) {
         tmp_sc.push_back(scores_data[k * nboxes * nclass + g * nboxes + i]);
       }
-      
+
       std::vector<int64_t> order(tmp_sc.size());
       std::iota(order.begin(), order.end(), 0);
       std::sort(order.begin(), order.end(),
                 [&tmp_sc](int64_t id1, int64_t id2) { return tmp_sc[id1] > tmp_sc[id2]; });
       for (int64_t _i = 0; _i < nboxes; _i++) {
-        if (select[_i] == false) continue;
         auto i = order[_i];
+        if (select[i] == false) continue;
         std::vector<int64_t> v_i;
         for (int64_t _j = _i + 1; _j < nboxes; _j++) {
-          if (select[_j] == false) continue;
           auto j = order[_j];
+          if (select[j] == false) continue;
           Box vbox1, vbox2;
           vbox1.x1 = boxes_data[k * nboxes * 4 + i * 4];
           vbox1.y1 = boxes_data[k * nboxes * 4 + i * 4 + 1];
@@ -103,8 +101,8 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
           vbox2.y2 = boxes_data[k * nboxes * 4 + j * 4 + 3];
 
           auto ovr = nms_match_iou(vbox1, vbox2);
-          if (ovr > iou_threshold_data) {
-            select[_j] = false;
+          if (ovr >= iou_threshold_data) {
+            select[j] = false;
             v_i.push_back(j);
           }
         }
