@@ -199,7 +199,7 @@ cmake --build . --config Release --target install</code></pre>
 cd &ltncnn-dir>
 mkdir -p ncnn_build
 cd ncnn_build
-cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%cd%/install -Dprotobuf_DIR=<protobuf-dir>/build/install/cmake -DNCNN_VULKAN=ON ..
+cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%cd%/install -Dprotobuf_DIR=<protobuf-dir>/build/install/cmake -DNCNN_VULKAN=OFF ..
 cmake --build . --config Release -j 2
 cmake --build . --config Release --target install
 </code></pre> </td>
