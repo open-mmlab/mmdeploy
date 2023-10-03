@@ -180,7 +180,25 @@ $env:path = "$env:CUDNN_DIR\bin;" + $env:path
   <tr>
     <td>ncnn </td>
     <td>ncnn </td>
-    <td>TODO </td>
+    <td>
+    1. 下载 <a href="https://github.com/google/protobuf/archive/v3.11.2.zip">protobuf-3.11.2</a><br>
+    2. 编译protobuf
+    <pre><code>cd &ltprotobuf-dir>
+mkdir build
+cd build
+cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%cd%/install -Dbuild_TESTS=OFF -Dprotobuf_MSVC_STATIC_RUNTIME=OFF ../cmake
+cmake --build . --config Release -j 2
+cmake --build . --config Release --target install</code></pre>
+    2. 下载ncnn
+    <pre><code>git clone --recursive https://github.com/Tencent/ncnn.git
+cd &ltncnn-dir>
+mkdir -p ncnn_build
+cd ncnn_build
+cmake -G "Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%cd%/install -Dprotobuf_DIR=<protobuf-dir>/build/install/cmake -DNCNN_VULKAN=ON ..
+cmake --build . --config Release -j 2
+cmake --build . --config Release --target install
+</code></pre>
+    </td>
   </tr>
 </tbody>
 </table>
@@ -218,7 +236,18 @@ cmake --install . --config Release
 
 - **ncnn** 自定义算子
 
-  TODO
+```powershell
+mkdir build -ErrorAction SilentlyContinue
+cd build
+cmake .. -G "Visual Studio 16 2019" -A x64 -T v142
+-DMMDEPLOY_TARGET_BACKENDS="ncnn" \
+-Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"  
+-Dprotobuf_DIR="<protobuf-dir>/build/install/cmake"
+-DProtobuf_LIBRARIES="<protobuf-dir>/build\install\lib"
+-DProtobuf_INCLUDE_DIR="<protobuf-dir>/build\install\include\"
+cmake --build . --config Release -- /m
+cmake --install . --config Release
+```
 
 参考 [cmake 选项说明](cmake_option.md)
 
@@ -271,11 +300,28 @@ pip install -e .
     -Dpplcv_DIR="$env:PPLCV_DIR/pplcv-build/install/lib/cmake/ppl" `
     -DTENSORRT_DIR="$env:TENSORRT_DIR" `
     -DCUDNN_DIR="$env:CUDNN_DIR"
-
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
+- cpu + ncnn
 
+  ```PowerShell
+  cd $env:MMDEPLOY_DIR
+  mkdir build
+  cd build
+  cmake .. -G "Visual Studio 16 2019" -A x64 -T v142 `
+    -DMMDEPLOY_BUILD_SDK=ON `
+    -DMMDEPLOY_BUILD_EXAMPLES=ON `
+    -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
+    -DMMDEPLOY_TARGET_DEVICES="cpu" `
+    -DMMDEPLOY_TARGET_BACKENDS="ncnn" `
+    -Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"  
+    -Dprotobuf_DIR="<protobuf-dir>/build/install/cmake"
+    -DProtobuf_LIBRARIES="<protobuf-dir>/build\install\lib"
+    -DProtobuf_INCLUDE_DIR="<protobuf-dir>/build\install\include\"
+  cmake --build . --config Release -- /m
+  cmake --install . --config Release
+  ```
 ### 注意事项
 
 1. Release / Debug 库不能混用。MMDeploy 要是编译 Release 版本，所有第三方依赖都要是 Release 版本。反之亦然。
