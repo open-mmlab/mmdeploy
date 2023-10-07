@@ -303,6 +303,7 @@ pip install -e .
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
+
 - cpu + ncnn
 
   ```PowerShell
@@ -322,6 +323,7 @@ pip install -e .
   cmake --build . --config Release -- /m
   cmake --install . --config Release
   ```
+
 ### 注意事项
 
 1. Release / Debug 库不能混用。MMDeploy 要是编译 Release 版本，所有第三方依赖都要是 Release 版本。反之亦然。
