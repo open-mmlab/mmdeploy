@@ -15,25 +15,25 @@
 
 namespace mmdeploy {
 struct Box {
-    float x1, y1, x2, y2;
+  float x1, y1, x2, y2;
 };
 
 float nms_match_iou(Box box1, Box box2) {
-    auto inter_x1 = std::max(box1.x1, box2.x1);
-    auto inter_y1 = std::max(box1.y1, box2.y1);
-    auto inter_x2 = std::min(box1.x2, box2.x2);
-    auto inter_y2 = std::min(box1.y2, box2.y2);
+  auto inter_x1 = std::max(box1.x1, box2.x1);
+  auto inter_y1 = std::max(box1.y1, box2.y1);
+  auto inter_x2 = std::min(box1.x2, box2.x2);
+  auto inter_y2 = std::min(box1.y2, box2.y2);
 
-    auto eps = 1e-10;
+  auto eps = 1e-10;
 
-    auto w = std::max(static_cast<float>(0), inter_x2 - inter_x1);
-    auto h = std::max(static_cast<float>(0), inter_y2 - inter_y1);
+  auto w = std::max(static_cast<float>(0), inter_x2 - inter_x1);
+  auto h = std::max(static_cast<float>(0), inter_y2 - inter_y1);
 
-    auto area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
-    auto area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
-    auto inter = w * h;
-    auto ovr = inter / (area1 + area2 - inter + eps);
-    return ovr;
+  auto area1 = (box1.x2 - box1.x1) * (box1.y2 - box1.y1);
+  auto area2 = (box2.x2 - box2.x1) * (box2.y2 - box2.y1);
+  auto inter = w * h;
+  auto ovr = inter / (area1 + area2 - inter + eps);
+  return ovr;
 }
 NMSMatchKernel::NMSMatchKernel(const OrtApi& api, const OrtKernelInfo* info)
     : ort_(api), info_(info) {
@@ -42,7 +42,6 @@ NMSMatchKernel::NMSMatchKernel(const OrtApi& api, const OrtKernelInfo* info)
 }
 
 void NMSMatchKernel::Compute(OrtKernelContext* context) {
-
   const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
   const float* boxes_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
   const OrtValue* scores = ort_.KernelContext_GetInput(context, 1);
@@ -54,7 +53,7 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
 
   OrtTensorDimensions boxes_dim(ort_, boxes);
   OrtTensorDimensions scores_dim(ort_, scores);
-    // loop over batch
+  // loop over batch
   int64_t nbatch = boxes_dim[0];
   int64_t nboxes = boxes_dim[1];
   int64_t nclass = scores_dim[1];
@@ -127,4 +126,4 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
   allocator_.Free(select);
 }
 REGISTER_ONNXRUNTIME_OPS(mmdeploy, NMSMatchOp);
-}
+}  // namespace mmdeploy
