@@ -245,7 +245,7 @@ mkdir build -ErrorAction SilentlyContinue
 cd build
 cmake .. -G "Visual Studio 16 2019" -A x64 -T v142
 -DMMDEPLOY_TARGET_BACKENDS="ncnn" \
--Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"  
+-Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"
 -Dprotobuf_DIR="<protobuf-dir>/build/install/cmake"
 -DProtobuf_LIBRARIES="<protobuf-dir>/build\install\lib"
 -DProtobuf_INCLUDE_DIR="<protobuf-dir>/build\install\include\"
@@ -323,7 +323,7 @@ You can also activate other engines after the model.
     -DMMDEPLOY_BUILD_SDK_PYTHON_API=ON `
     -DMMDEPLOY_TARGET_DEVICES="cpu" `
     -DMMDEPLOY_TARGET_BACKENDS="ncnn" `
-    -Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"  
+    -Dncnn_DIR="<ncnn-dir>/ncnn_build/install/lib/cmake/ncnn"
     -Dprotobuf_DIR="<protobuf-dir>/build/install/cmake"
     -DProtobuf_LIBRARIES="<protobuf-dir>/build\install\lib"
     -DProtobuf_INCLUDE_DIR="<protobuf-dir>/build\install\include\"
