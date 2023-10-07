@@ -4,6 +4,7 @@ import tempfile
 
 import numpy
 import onnxruntime
+import pytest
 import torch
 
 from mmdeploy.backend.onnxruntime.init_plugins import get_ops_path
