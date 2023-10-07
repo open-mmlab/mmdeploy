@@ -65,7 +65,7 @@ class test_ONNX_Match(torch.nn.Module):
         return match_op(boxes, scores, iou_threshold, score_threshold)
 
 
-if os.getenv('CI') == 'true':
+if get_ops_path is None:
     print('Skipping compilation in CI environment.')
 else:
     print('Running compilation...')
