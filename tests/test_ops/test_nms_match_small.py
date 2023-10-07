@@ -65,8 +65,8 @@ class test_ONNX_Match(torch.nn.Module):
         return match_op(boxes, scores, iou_threshold, score_threshold)
 
 
-if get_ops_path is None:
-    print('Skipping compilation in CI environment.')
+if get_ops_path() == '':
+    pytest.skip('nms_match is not built', allow_module_level=True)
 else:
     print('Running compilation...')
     # here is a PyTorch test
