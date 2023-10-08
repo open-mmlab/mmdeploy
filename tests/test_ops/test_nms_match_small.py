@@ -78,9 +78,9 @@ class test_ONNX_Match(torch.nn.Module):
         return match_op(boxes, scores, iou_threshold, score_threshold)
 
 
-if get_ops_path() == '':
-    pytest.skip('nms_match is not built', allow_module_level=True)
-else:
+@pytest.mark.skipif(
+    reason='Need to build onnxrumtime custom op', condition=get_ops_path == '')
+def test_nms_match():
     print('Running compilation...')
     # here is a PyTorch test
     model = test_ONNX_Match()
