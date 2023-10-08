@@ -117,4 +117,3 @@ def test_nms_match():
         numpy.array(torch_output),
         numpy.array(ort_output[0])), 'list are not equal'
     os.remove(temp_onnx.name)
-
