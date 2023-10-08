@@ -320,6 +320,11 @@ class ObjectDetection(BaseTask):
             type = 'ResizeInstanceMask'  # for instance-seg
             # resize and crop mask to origin image
             params['is_resize_mask'] = True
+        if 'mask_thr' in params:
+            type = 'ResizeInstanceMask'  # for instance-seg
+            # resize and crop mask to origin image
+            params['mask_thr_binary'] = params['mask_thr']
+            params['is_resize_mask'] = True
 
         if get_backend(self.deploy_cfg) == Backend.RKNN:
             if 'YOLO' in self.model_cfg.model.type or \

@@ -1,6 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
 from . import base_dense_head  # noqa: F401,F403
 from . import centernet_head  # noqa: F401,F403
+from . import condinst_head  # noqa: F401,F403
 from . import detr_head  # noqa: F401,F403
 from . import fovea_head  # noqa: F401,F403
 from . import gfl_head  # noqa: F401,F403
