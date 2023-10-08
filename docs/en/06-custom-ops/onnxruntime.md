@@ -27,6 +27,12 @@
     - [Inputs](#inputs-3)
     - [Outputs](#outputs-3)
     - [Type Constraints](#type-constraints-3)
+- [NMSMatch](#nmsmatch)
+  - [Description](#description-2)
+  - [Parameters](#parameters-2)
+  - [Inputs](#inputs-2)
+  - [Outputs](#outputs-2)
+  - [Type Constraints](#type-constraints-2)
 
 <!-- TOC -->
 
@@ -169,6 +175,39 @@ Perform RoIAlignRotated on output feature, used in bbox_head of most two-stage r
 <dl>
 <dt><tt>feat</tt>: T</dt>
 <dd>RoI pooled output, 4-D tensor of shape (num_rois, C, output_height, output_width). The r-th batch element feat[r-1] is a pooled feature map corresponding to the r-th RoI RoIs[r-1].<dd>
+</dl>
+
+#### Type Constraints
+
+- T:tensor(float32)
+
+### NMSMatch
+
+#### Description
+
+Non Max Suppression with the suppression box match.
+
+#### Parameters
+
+| Type    | Parameter   | Description                       |
+| ------- | ----------- | --------------------------------- |
+| `float` | `iou_thr`   | The IoU threshold for NMSMatch.   |
+| `float` | `score_thr` | The score threshold for NMSMatch. |
+
+#### Inputs
+
+<dl>
+<dt><tt>inputs[0]</tt>: T</dt>
+<dd>Input boxes; 3-D tensor of shape (b, N, 4), where b is the batch size, N is the number of boxes and 4 means the coordinate.</dd>
+<dt><tt>inputs[1]</tt>: T</dt>
+<dd>Input scores; 3-D tensor of shape (b, c, N), where b is the batch size, c is the class size and N is the number of boxes.</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>outputs[0]</tt>: T</dt>
+<dd>Output feature; 2-D tensor of shape (K, 4), K is the number of matched boxes, 4 is batch id, class id, select boxes, suppressed boxes.</dd>
 </dl>
 
 #### Type Constraints

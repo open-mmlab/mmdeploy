@@ -7,6 +7,7 @@ from torch.onnx import symbolic_helper as sym_help
 from mmdeploy.core import FUNCTION_REWRITER, mark
 from mmdeploy.utils import IR, is_dynamic_batch
 from mmdeploy.utils.constants import Backend
+from .nms_match import multiclass_nms_match
 from .nms_rotated import multiclass_nms_rotated
 
 
@@ -522,6 +523,15 @@ def multiclass_nms(boxes: Tensor,
             output_index=output_index)
     elif nms_type == 'nms_rotated':
         return multiclass_nms_rotated(
+            boxes,
+            scores,
+            max_output_boxes_per_class=max_output_boxes_per_class,
+            iou_threshold=iou_threshold,
+            score_threshold=score_threshold,
+            pre_top_k=pre_top_k,
+            keep_top_k=keep_top_k)
+    elif nms_type == 'nms_match':
+        return multiclass_nms_match(
             boxes,
             scores,
             max_output_boxes_per_class=max_output_boxes_per_class,
