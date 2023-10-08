@@ -27,12 +27,12 @@
     - [Inputs](#inputs-3)
     - [Outputs](#outputs-3)
     - [Type Constraints](#type-constraints-3)
- - [NMSMatch](#nmsmatch)
-    - [Description](#description-2)
-    - [Parameters](#parameters-2)
-    - [Inputs](#inputs-2)
-    - [Outputs](#outputs-2)
-    - [Type Constraints](#type-constraints-2)
+- [NMSMatch](#nmsmatch)
+  - [Description](#description-2)
+  - [Parameters](#parameters-2)
+  - [Inputs](#inputs-2)
+  - [Outputs](#outputs-2)
+  - [Type Constraints](#type-constraints-2)
 
 <!-- TOC -->
 
@@ -189,9 +189,9 @@ Non Max Suppression with the suppression box match.
 
 #### Parameters
 
-| Type    | Parameter        | Description                                                                                                                               |
-| ------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `float` | `iou_thr` | The IoU threshold for NMSMatch. |
+| Type    | Parameter   | Description                       |
+| ------- | ----------- | --------------------------------- |
+| `float` | `iou_thr`   | The IoU threshold for NMSMatch.   |
 | `float` | `score_thr` | The score threshold for NMSMatch. |
 
 #### Inputs
@@ -207,7 +207,7 @@ Non Max Suppression with the suppression box match.
 
 <dl>
 <dt><tt>outputs[0]</tt>: T</dt>
-<dd>Output feature; 2-D tensor of shape (K, 4), K is the number of matched boxes, 4 is batch id, class id, select boxes, supressed boxes.</dd>
+<dd>Output feature; 2-D tensor of shape (K, 4), K is the number of matched boxes, 4 is batch id, class id, select boxes, suppressed boxes.</dd>
 </dl>
 
 #### Type Constraints
