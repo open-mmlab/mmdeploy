@@ -2440,8 +2440,7 @@ def test_condinst_bbox_head_predict_by_feat(backend_type):
                     pre_top_k=5000,
                     keep_top_k=100,
                     background_label_id=-1,
-                    export_postprocess_mask=False
-                    ))))
+                    export_postprocess_mask=False))))
 
     seed_everything(1234)
     cls_scores = [

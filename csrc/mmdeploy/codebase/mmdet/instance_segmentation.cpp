@@ -149,7 +149,7 @@ class ResizeInstanceMask : public ResizeBBox {
       int resize_width = int(mask_width / scale_factor_[1] + 0.5);
       // skip resize if scale_factor is 1.0
       if (resize_height != mask_height || resize_width != mask_width) {
-        cv::resize(mask_mat, mask_mat, cv::Size(resize_height, resize_width), cv::INTER_LINEAR);
+        cv::resize(mask_mat, mask_mat, cv::Size(resize_width, resize_height), cv::INTER_LINEAR);
       }
       // crop masks
       mask_mat = mask_mat(cv::Range(0, img_h), cv::Range(0, img_w)).clone();
