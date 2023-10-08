@@ -448,7 +448,7 @@ models:
       - *pipeline_trt_dynamic_fp32
 
   - name: CondInst
-    metafile: /configs/condinst/metafile.yml
+    metafile: configs/condinst/metafile.yml
     model_configs:
       - configs/condinst/condinst_r50_fpn_ms-poly-90k_coco_instance.py
     pipelines:

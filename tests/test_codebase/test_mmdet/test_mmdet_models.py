@@ -2487,7 +2487,7 @@ def test_condinst_bbox_head_predict_by_feat(backend_type):
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,
         deploy_cfg=deploy_cfg)
-    
+
     if is_backend_output:
         dets = rewrite_outputs[0]
         labels = rewrite_outputs[1]
@@ -2571,18 +2571,18 @@ def test_condinst_mask_head_predict_by_feat(backend_type):
                                 max_shape=[1, 3, 1344, 1344])))
                 ]),
             onnx_config=dict(output_names=output_names, input_shape=None),
-            codebase_config=dict(
-                type='mmdet',
-                task='ObjectDetection')))
-    
+            codebase_config=dict(type='mmdet', task='ObjectDetection')))
+
     class TestCondInstMaskHeadModel(torch.nn.Module):
+
         def __init__(self, condinst_mask_head):
             super(TestCondInstMaskHeadModel, self).__init__()
             self.mask_head = condinst_mask_head
 
         def predict_by_feat(self, mask_preds, det, label, batch_img_metas):
             results = dict(dets=det, labels=label)
-            return self.mask_head.predict_by_feat(mask_preds, results, batch_img_metas)
+            return self.mask_head.predict_by_feat(mask_preds, results,
+                                                  batch_img_metas)
 
     head = get_condinst_mask_head()
     condinst_mask_head = TestCondInstMaskHeadModel(head)
@@ -2597,11 +2597,7 @@ def test_condinst_mask_head_predict_by_feat(backend_type):
     # to get outputs of onnx/tensorrt model after rewrite
     wrapped_model = WrapModel(
         condinst_mask_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
-    rewrite_inputs = {
-        'mask_preds': mask_preds,
-        'det': dets,
-        'label': labels
-    }
+    rewrite_inputs = {'mask_preds': mask_preds, 'det': dets, 'label': labels}
     rewrite_outputs, is_backend_output = get_rewrite_outputs(
         wrapped_model=wrapped_model,
         model_inputs=rewrite_inputs,

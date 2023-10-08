@@ -137,8 +137,8 @@ def condinst_mask_head__forward(self, x: tuple,
     weights, biases = _parse_dynamic_params(self, param_preds)
     mask_preds = _dynamic_conv_forward(mask_head_inputs, weights, biases)
     mask_preds = mask_preds.reshape(batch_size, num_insts, hw[0], hw[1])
-    mask_preds = aligned_bilinear(mask_preds, 
-                                  int(self.mask_feat_stride / self.mask_out_stride))
+    mask_preds = aligned_bilinear(
+        mask_preds, int(self.mask_feat_stride / self.mask_out_stride))
     return (mask_preds, )
 
 
