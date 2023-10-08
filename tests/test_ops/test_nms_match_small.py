@@ -79,7 +79,8 @@ class test_ONNX_Match(torch.nn.Module):
 
 
 @pytest.mark.skipif(
-    reason='Need to build onnxrumtime custom op', condition=get_ops_path == '')
+    reason='Need to build onnxrumtime custom op',
+    condition=get_ops_path() == '')
 def test_nms_match():
     print('Running compilation...')
     # here is a PyTorch test
@@ -116,3 +117,4 @@ def test_nms_match():
         numpy.array(torch_output),
         numpy.array(ort_output[0])), 'list are not equal'
     os.remove(temp_onnx.name)
+
