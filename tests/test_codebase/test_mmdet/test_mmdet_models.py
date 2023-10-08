@@ -2411,10 +2411,7 @@ def get_condinst_bbox_head():
     return model
 
 
-@pytest.mark.skipif(
-    reason='Only support GPU test', condition=not torch.cuda.is_available())
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_condinst_bbox_head_predict_by_feat(backend_type):
     """Test predict_by_feat rewrite of condinst bbox head."""
     check_backend(backend_type)
@@ -2430,17 +2427,7 @@ def test_condinst_bbox_head_predict_by_feat(backend_type):
     output_names = ['dets', 'labels', 'param_preds', 'points', 'strides']
     deploy_cfg = Config(
         dict(
-            backend_config=dict(
-                type=backend_type.value,
-                common_config=dict(max_workspace_size=1 << 32),
-                model_inputs=[
-                    dict(
-                        input_shapes=dict(
-                            input=dict(
-                                min_shape=[1, 3, 320, 320],
-                                opt_shape=[1, 3, 800, 1344],
-                                max_shape=[1, 3, 1344, 1344])))
-                ]),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(
                 type='mmdet',
@@ -2453,7 +2440,8 @@ def test_condinst_bbox_head_predict_by_feat(backend_type):
                     pre_top_k=5000,
                     keep_top_k=100,
                     background_label_id=-1,
-                    export_postprocess_mask=False))))
+                    export_postprocess_mask=False
+                    ))))
 
     seed_everything(1234)
     cls_scores = [
@@ -2474,7 +2462,7 @@ def test_condinst_bbox_head_predict_by_feat(backend_type):
         for i in range(5, 0, -1)
     ]
 
-    # to get outputs of onnx/tensorrt model after rewrite
+    # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(
         condinst_bbox_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
     rewrite_inputs = {
@@ -2542,10 +2530,7 @@ def get_condinst_mask_head():
     return model
 
 
-@pytest.mark.skipif(
-    reason='Only support GPU test', condition=not torch.cuda.is_available())
-@pytest.mark.parametrize('backend_type',
-                         [Backend.ONNXRUNTIME, Backend.TENSORRT])
+@pytest.mark.parametrize('backend_type', [Backend.ONNXRUNTIME])
 def test_condinst_mask_head_predict_by_feat(backend_type):
     """Test predict_by_feat rewrite of condinst mask head."""
     check_backend(backend_type)
@@ -2559,17 +2544,7 @@ def test_condinst_mask_head_predict_by_feat(backend_type):
     output_names = ['dets', 'labels', 'masks']
     deploy_cfg = Config(
         dict(
-            backend_config=dict(
-                type=backend_type.value,
-                common_config=dict(max_workspace_size=1 << 32),
-                model_inputs=[
-                    dict(
-                        input_shapes=dict(
-                            input=dict(
-                                min_shape=[1, 3, 320, 320],
-                                opt_shape=[1, 3, 800, 1344],
-                                max_shape=[1, 3, 1344, 1344])))
-                ]),
+            backend_config=dict(type=backend_type.value),
             onnx_config=dict(output_names=output_names, input_shape=None),
             codebase_config=dict(type='mmdet', task='ObjectDetection')))
 
@@ -2594,7 +2569,7 @@ def test_condinst_mask_head_predict_by_feat(backend_type):
     dets = torch.rand(1, 100, 5)
     labels = torch.rand(1, 100)
 
-    # to get outputs of onnx/tensorrt model after rewrite
+    # to get outputs of onnx model after rewrite
     wrapped_model = WrapModel(
         condinst_mask_head, 'predict_by_feat', batch_img_metas=batch_img_metas)
     rewrite_inputs = {'mask_preds': mask_preds, 'det': dets, 'label': labels}

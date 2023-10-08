@@ -132,7 +132,6 @@ def condinst_mask_head__forward(self, x: tuple,
     rel_coordinates /= (strides[:, :, None, None] * self.size_of_interest)
     rel_coords = rel_coordinates.reshape(batch_size, -1, 2, hw[0], hw[1])
     mask_head_inputs = torch.cat([rel_coords, mask_feats], dim=2)
-    # TODO: change following code to support batch inference
 
     weights, biases = _parse_dynamic_params(self, param_preds)
     mask_preds = _dynamic_conv_forward(mask_head_inputs, weights, biases)
