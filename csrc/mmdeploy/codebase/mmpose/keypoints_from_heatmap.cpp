@@ -55,6 +55,9 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
     }
 
     auto& img_metas = _data["img_metas"];
+    if (img_metas.contains("bbox")) {
+      from_value(img_metas["bbox"], bbox_);
+    }
 
     vector<float> center;
     vector<float> scale;
@@ -78,6 +81,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
       output.key_points.push_back({{x, y}, s});
       data += 3;
     }
+    output.detections.push_back({{bbox_[0], bbox_[1], bbox_[2], bbox_[3]}, bbox_[4]});
     return to_value(std::move(output));
   }
 
@@ -354,6 +358,7 @@ class TopdownHeatmapBaseHeadDecode : public MMPose {
   float valid_radius_factor_{0.0546875f};
   bool use_udp_{false};
   string target_type_{"GaussianHeatmap"};
+  vector<float> bbox_{0, 0, 1, 1, 1};
 };
 
 MMDEPLOY_REGISTER_CODEBASE_COMPONENT(MMPose, TopdownHeatmapBaseHeadDecode);

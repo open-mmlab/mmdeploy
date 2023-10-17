@@ -37,14 +37,24 @@ def process_model_config(
     cfg = copy.deepcopy(model_cfg)
     test_pipeline = cfg.test_dataloader.dataset.pipeline
     data_preprocessor = cfg.model.data_preprocessor
-    codec = cfg.codec
-    if isinstance(codec, list):
-        codec = codec[-1]
-    input_size = codec['input_size'] if input_shape is None else input_shape
+    codec = getattr(cfg, 'codec', None)
+    if codec is not None:
+        if isinstance(codec, list):
+            codec = codec[-1]
+        input_size = codec['input_size'] if input_shape is None \
+            else input_shape
+    else:
+        input_size = cfg.img_scale
+
     test_pipeline[0] = dict(type='LoadImageFromFile')
     for i in reversed(range(len(test_pipeline))):
         trans = test_pipeline[i]
-        if trans['type'] == 'PackPoseInputs':
+        if trans['type'].startswith('mmdet.'):
+            trans['type'] = trans['type'][6:]
+
+        if trans['type'] in [
+                'PackPoseInputs', 'PackDetPoseInputs', 'PoseToDetConverter'
+        ]:
             test_pipeline.pop(i)
         elif trans['type'] == 'GetBBoxCenterScale':
             trans['type'] = 'TopDownGetBboxCenterScale'
@@ -54,22 +64,39 @@ def process_model_config(
             trans['type'] = 'TopDownAffine'
             trans['image_size'] = input_size
             trans.pop('input_size')
+        elif trans['type'] == 'Resize':
+            trans['size'] = trans.pop('scale')
 
-    test_pipeline.append(
-        dict(
-            type='Normalize',
-            mean=data_preprocessor.mean,
-            std=data_preprocessor.std,
-            to_rgb=data_preprocessor.bgr_to_rgb))
-    test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
-    test_pipeline.append(
-        dict(
-            type='Collect',
-            keys=['img'],
-            meta_keys=[
-                'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
-                'scale_factor', 'bbox_score', 'center', 'scale'
-            ]))
+    if data_preprocessor.type == 'mmdet.DetDataPreprocessor':
+        # DetDataPreprocessor does not have mean, std, bgr_to_rgb
+        test_pipeline.append(
+            dict(
+                type='Normalize', mean=[0, 0, 0], std=[1, 1, 1], to_rgb=False))
+        test_pipeline.append(dict(type='DefaultFormatBundle'))
+        test_pipeline.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'ori_shape', 'img_shape', 'pad_shape', 'scale_factor',
+                    'flip_indices', 'bbox'
+                ]))
+    else:
+        test_pipeline.append(
+            dict(
+                type='Normalize',
+                mean=data_preprocessor.mean,
+                std=data_preprocessor.std,
+                to_rgb=data_preprocessor.bgr_to_rgb))
+        test_pipeline.append(dict(type='ImageToTensor', keys=['img']))
+        test_pipeline.append(
+            dict(
+                type='Collect',
+                keys=['img'],
+                meta_keys=[
+                    'img_shape', 'pad_shape', 'ori_shape', 'img_norm_cfg',
+                    'scale_factor', 'bbox_score', 'center', 'scale', 'bbox'
+                ]))
 
     cfg.test_dataloader.dataset.pipeline = test_pipeline
     return cfg
@@ -346,13 +373,16 @@ class PoseDetection(BaseTask):
 
     def get_postprocess(self, *args, **kwargs) -> Dict:
         """Get the postprocess information for SDK."""
-        codec = self.model_cfg.codec
-        if isinstance(codec, (list, tuple)):
-            codec = codec[-1]
-        component = 'UNKNOWN'
         params = copy.deepcopy(self.model_cfg.model.test_cfg)
-        params.update(codec)
-        if self.model_cfg.model.type == 'TopdownPoseEstimator':
+        component = 'UNKNOWN'
+        model_type = self.model_cfg.model.type
+        if model_type == 'YOLODetector':
+            component = 'YOLOXPose'
+        elif model_type == 'TopdownPoseEstimator':
+            codec = self.model_cfg.codec
+            if isinstance(codec, (list, tuple)):
+                codec = codec[-1]
+            params.update(codec)
             component = 'TopdownHeatmapSimpleHeadDecode'
             if codec.type == 'MSRAHeatmap':
                 params['post_process'] = 'default'

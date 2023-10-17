@@ -69,6 +69,8 @@ void mmdeploy_pose_detector_release_result(mmdeploy_pose_detection_t* results, i
   for (int i = 0; i < count; ++i) {
     delete[] results[i].point;
     delete[] results[i].score;
+    delete[] results[i].bboxes;
+    delete[] results[i].bbox_score;
   }
   delete[] results;
 }
@@ -156,15 +158,26 @@ int mmdeploy_pose_detector_get_result(mmdeploy_value_t output,
     for (const auto& bbox_result : detections) {
       auto& res = _results[result_idx++];
       auto size = bbox_result.key_points.size();
+      auto num_bbox = bbox_result.detections.size();
 
       res.point = new mmdeploy_point_t[size];
       res.score = new float[size];
       res.length = static_cast<int>(size);
+      res.bboxes = new mmdeploy_rect_t[num_bbox];
+      res.bbox_score = new float[num_bbox];
+      res.num_bbox = static_cast<int>(num_bbox);
 
       for (int k = 0; k < size; k++) {
         res.point[k].x = bbox_result.key_points[k].bbox[0];
         res.point[k].y = bbox_result.key_points[k].bbox[1];
         res.score[k] = bbox_result.key_points[k].score;
+      }
+      for (int k = 0; k < num_bbox; k++) {
+        res.bboxes[k].left = bbox_result.detections[k].boundingbox[0];
+        res.bboxes[k].top = bbox_result.detections[k].boundingbox[1];
+        res.bboxes[k].right = bbox_result.detections[k].boundingbox[2];
+        res.bboxes[k].bottom = bbox_result.detections[k].boundingbox[3];
+        res.bbox_score[k] = bbox_result.detections[k].score;
       }
     }
 

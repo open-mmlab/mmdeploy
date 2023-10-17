@@ -39,8 +39,18 @@ int main(int argc, char *argv[]) {
   }
 
   for (int i = 0; i < res->length; i++) {
+    // fprintf(stdout, "point %d %.2f %.2f %.6f\n", i, res->point[i].x, res->point[i].y, res->score[i]);
     cv::circle(img, {(int)res->point[i].x, (int)res->point[i].y}, 1, {0, 255, 0}, 2);
   }
+  for (int i=0; i < res->num_bbox; i++) {
+    const auto& box = res->bboxes[i];
+    const float score = res->bbox_score[i];
+    // fprintf(stdout, "box %d, left=%.2f, top=%.2f, right=%.2f, bottom=%.2f, score=%.4f\n",
+    //        i, box.left, box.top, box.right, box.bottom, score);
+    cv::rectangle(img, cv::Point{(int)box.left, (int)box.top},
+                  cv::Point{(int)box.right, (int)box.bottom}, cv::Scalar{0, 255, 0});
+  }
+
   cv::imwrite("output_pose.png", img);
 
   mmdeploy_pose_detector_release_result(res, 1);

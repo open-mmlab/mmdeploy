@@ -37,10 +37,15 @@ jobjectArray Java_mmdeploy_PoseDetector_apply(JNIEnv *env, jobject thiz, jlong h
       return NULL;
     }
     auto result_cls = env->FindClass("mmdeploy/PoseDetector$Result");
-    auto result_ctor = env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[F)V");
+    auto result_ctor =
+        env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[F[Lmmdeploy/Rect;[F)V");
+    // auto result_ctor =
+    //     env->GetMethodID(result_cls, "<init>", "([Lmmdeploy/PointF;[F;[Lmmdeploy/Rect;[F)V");
     auto array = env->NewObjectArray(size, result_cls, nullptr);
     auto pointf_cls = env->FindClass("mmdeploy/PointF");
     auto pointf_ctor = env->GetMethodID(pointf_cls, "<init>", "(FF)V");
+    auto rect_cls = env->FindClass("mmdeploy/Rect");
+    auto rect_ctor = env->GetMethodID(rect_cls, "<init>", "(FFFF)V");
 
     for (int i = 0; i < size; ++i) {
       auto keypoint_array = env->NewObjectArray(results[i].length, pointf_cls, nullptr);
@@ -51,7 +56,19 @@ jobjectArray Java_mmdeploy_PoseDetector_apply(JNIEnv *env, jobject thiz, jlong h
       }
       auto score_array = env->NewFloatArray(results[i].length);
       env->SetFloatArrayRegion(score_array, 0, results[i].length, (jfloat *)results[i].score);
-      auto res = env->NewObject(result_cls, result_ctor, keypoint_array, score_array);
+      auto bbox_array = env->NewObjectArray(results[i].num_bbox, rect_cls, nullptr);
+      for (int j = 0; j < results[i].num_bbox; j++) {
+        auto bboxj =
+            env->NewObject(rect_cls, rect_ctor, (jfloat)results[i].bboxes[j].left,
+                           (jfloat)results[i].bboxes[j].top, (jfloat)results[i].bboxes[j].right,
+                           (jfloat)results[i].bboxes[j].bottom);
+        env->SetObjectArrayElement(bbox_array, j, bboxj);
+      }
+      auto bbox_score_array = env->NewFloatArray(results[i].num_bbox);
+      env->SetFloatArrayRegion(bbox_score_array, 0, results[i].num_bbox,
+                               (jfloat *)results[i].bbox_score);
+      auto res = env->NewObject(result_cls, result_ctor, keypoint_array, score_array, bbox_array,
+                                bbox_score_array);
       env->SetObjectArrayElement(array, i, res);
     }
     mmdeploy_pose_detector_release_result(results, size);

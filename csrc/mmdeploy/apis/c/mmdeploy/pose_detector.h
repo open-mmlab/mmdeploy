@@ -19,7 +19,10 @@ extern "C" {
 typedef struct mmdeploy_pose_detection_t {
   mmdeploy_point_t* point;  ///< keypoint
   float* score;             ///< keypoint score
+  mmdeploy_rect_t* bboxes;  ///< bboxes
+  float* bbox_score;        ///< bboxes score
   int length;               ///< number of keypoint
+  int num_bbox;             ///< number of bboxes
 } mmdeploy_pose_detection_t;
 
 typedef struct mmdeploy_pose_detector* mmdeploy_pose_detector_t;
@@ -76,6 +79,7 @@ MMDEPLOY_API int mmdeploy_pose_detector_apply(mmdeploy_pose_detector_t detector,
  * bboxes, must be release by \ref mmdeploy_pose_detector_release_result
  * @return status code of the operation
  */
+
 MMDEPLOY_API int mmdeploy_pose_detector_apply_bbox(mmdeploy_pose_detector_t detector,
                                                    const mmdeploy_mat_t* mats, int mat_count,
                                                    const mmdeploy_rect_t* bboxes,

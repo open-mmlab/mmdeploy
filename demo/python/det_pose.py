@@ -76,8 +76,8 @@ def main():
     bboxes = bboxes[keep, :4]
 
     # apply pose detector
-    poses = pose_detector(img, bboxes)
-
+    dets, poses = pose_detector(img, bboxes)
+    poses = poses.reshape(dets.shape[0], -1, poses.shape[1])
     visualize(img, poses, 'det_pose_output.jpg', 0.5, 1280)
 
 

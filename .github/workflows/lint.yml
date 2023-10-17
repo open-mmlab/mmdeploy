@@ -27,6 +27,8 @@ jobs:
           style: file
       - name: Check index.rst
         run: |
+          which clang-format
+          clang-format --version
           python .github/scripts/check_index_rst.py docs/en/index.rst
           python .github/scripts/check_index_rst.py docs/zh_cn/index.rst
       - name: Check markdown link
