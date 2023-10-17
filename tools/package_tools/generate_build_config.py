@@ -75,8 +75,10 @@ def generate_config(args):
     cmake_cfg = {}
 
     # wheel platform tag
-    if args.system in ['linux', 'jetson']:
+    if args.system in ['linux']:
         config['PLATFORM_TAG'] = 'manylinux2014_x86_64'
+    elif args.system in ['jetson']:
+        config['PLATFORM_TAG'] = 'any'
     else:
         config['PLATFORM_TAG'] = get_platform().replace('-',
                                                         '_').replace('.', '_')
