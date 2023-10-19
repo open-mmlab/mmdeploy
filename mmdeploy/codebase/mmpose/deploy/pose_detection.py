@@ -209,10 +209,13 @@ class PoseDetection(BaseTask):
             img_path = [imgs]
         else:
             raise AssertionError('imgs must be strings or numpy arrays')
-        if isinstance(imgs, (list, tuple)) and isinstance(imgs[0], str):
-            img_path = imgs
-            img_data = [mmcv.imread(img) for img in imgs]
-            imgs = img_data
+        if isinstance(imgs, (list, tuple)):
+            if isinstance(imgs[0], str):
+                img_path = imgs
+                img_data = [mmcv.imread(img) for img in imgs]
+                imgs = img_data
+            else:
+                img_path = [''] * len(imgs)
         person_results = []
         bboxes = []
         for img in imgs:
