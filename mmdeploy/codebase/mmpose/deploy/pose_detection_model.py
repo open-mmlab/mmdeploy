@@ -106,10 +106,7 @@ class End2EndModel(BaseBackendModel):
 
         if codec.type == 'YOLOXPoseAnnotationProcessor':
             return self.pack_yolox_pose_result(batch_outputs, data_samples)
-
-        if isinstance(codec, (list, tuple)):
-            codec = codec[-1]
-        if codec.type == 'SimCCLabel':
+        elif codec.type == 'SimCCLabel':
             export_postprocess = codebase_cfg.get('export_postprocess', False)
             if export_postprocess:
                 keypoints, scores = [_.cpu().numpy() for _ in batch_outputs]
