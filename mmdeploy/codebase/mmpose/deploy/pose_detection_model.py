@@ -101,6 +101,8 @@ class End2EndModel(BaseBackendModel):
 
         codebase_cfg = get_codebase_config(self.deploy_cfg)
         codec = self.model_cfg.codec
+        if isinstance(codec, (list, tuple)):
+            codec = codec[-1]
 
         if codec.type == 'YOLOXPoseAnnotationProcessor':
             return self.pack_yolox_pose_result(batch_outputs, data_samples)
@@ -136,7 +138,7 @@ class End2EndModel(BaseBackendModel):
             convert_coordinate (bool): Whether to convert keypoints
                 coordinates to original image space. Default is True.
         Returns:
-            data_samples (List[BaseDataElement])：
+            data_samples (List[BaseDataElement]):
                 updated data_samples with predictions.
         """
         if isinstance(preds, tuple):
@@ -180,7 +182,7 @@ class End2EndModel(BaseBackendModel):
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
         Returns:
-            data_samples (List[BaseDataElement])：
+            data_samples (List[BaseDataElement]):
                 updated data_samples with predictions.
         """
         assert preds[0].shape[0] == len(data_samples)
