@@ -98,14 +98,15 @@ class End2EndModel(BaseBackendModel):
         inputs = inputs.contiguous().to(self.device)
         batch_outputs = self.wrapper({self.input_name: inputs})
         batch_outputs = self.wrapper.output_to_list(batch_outputs)
-        if self.model_cfg.model.type == 'YOLODetector':
-            return self.pack_yolox_pose_result(batch_outputs, data_samples)
 
         codebase_cfg = get_codebase_config(self.deploy_cfg)
         codec = self.model_cfg.codec
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
-        if codec.type == 'SimCCLabel':
+
+        if codec.type == 'YOLOXPoseAnnotationProcessor':
+            return self.pack_yolox_pose_result(batch_outputs, data_samples)
+        elif codec.type == 'SimCCLabel':
             export_postprocess = codebase_cfg.get('export_postprocess', False)
             if export_postprocess:
                 keypoints, scores = [_.cpu().numpy() for _ in batch_outputs]
@@ -134,7 +135,7 @@ class End2EndModel(BaseBackendModel):
             convert_coordinate (bool): Whether to convert keypoints
                 coordinates to original image space. Default is True.
         Returns:
-            data_samples (List[BaseDataElement])：
+            data_samples (List[BaseDataElement]):
                 updated data_samples with predictions.
         """
         if isinstance(preds, tuple):
@@ -153,11 +154,11 @@ class End2EndModel(BaseBackendModel):
             # convert keypoint coordinates from input space to image space
             if convert_coordinate:
                 input_size = data_sample.metainfo['input_size']
-                bbox_centers = gt_instances.bbox_centers
-                bbox_scales = gt_instances.bbox_scales
+                input_center = data_sample.metainfo['input_center']
+                input_scale = data_sample.metainfo['input_scale']
                 keypoints = pred_instances.keypoints
-                keypoints = keypoints / input_size * bbox_scales
-                keypoints += bbox_centers - 0.5 * bbox_scales
+                keypoints = keypoints / input_size * input_scale
+                keypoints += input_center - 0.5 * input_scale
                 pred_instances.keypoints = keypoints
 
             pred_instances.bboxes = gt_instances.bboxes
@@ -178,7 +179,7 @@ class End2EndModel(BaseBackendModel):
             data_samples (List[BaseDataElement]): A list of meta info for
                 image(s).
         Returns:
-            data_samples (List[BaseDataElement])：
+            data_samples (List[BaseDataElement]):
                 updated data_samples with predictions.
         """
         assert preds[0].shape[0] == len(data_samples)
@@ -197,11 +198,20 @@ class End2EndModel(BaseBackendModel):
             keypoint_scores = keypoint_scores[inds]
 
             pred_instances = InstanceData()
+
             # rescale
-            scale_factor = data_sample.scale_factor
-            scale_factor = keypoints.new_tensor(scale_factor)
-            keypoints /= keypoints.new_tensor(scale_factor).reshape(1, 1, 2)
-            bboxes /= keypoints.new_tensor(scale_factor).repeat(1, 2)
+            input_size = data_sample.metainfo['input_size']
+            input_center = data_sample.metainfo['input_center']
+            input_scale = data_sample.metainfo['input_scale']
+
+            rescale = keypoints.new_tensor(input_scale) / keypoints.new_tensor(
+                input_size)
+            translation = keypoints.new_tensor(
+                input_center) - 0.5 * keypoints.new_tensor(input_scale)
+
+            keypoints = keypoints * rescale.reshape(
+                1, 1, 2) + translation.reshape(1, 1, 2)
+            bboxes = bboxes * rescale.repeat(1, 2) + translation.repeat(1, 2)
             pred_instances.bboxes = bboxes.cpu().numpy()
             pred_instances.bbox_scores = bbox_scores
             # the precision test requires keypoints to be np.ndarray
