@@ -93,7 +93,7 @@ int mmdeploy_context_add(mmdeploy_context_t context, mmdeploy_context_type_t typ
     case MMDEPLOY_TYPE_DEVICE: {
       const auto& device = *(Device*)object;
       ctx["device"] = device;
-      ctx["stream"] = Stream::GetDefault(device);
+      ctx["stream"] = Stream(device);
       break;
     }
     case MMDEPLOY_TYPE_SCHEDULER:
