@@ -162,10 +162,11 @@ def get_extensions():
         # environment, the compiler will choose the appropriate compiler
         # to compile those cpp files, so there is no need to add the
         # argument
-        if parse_version(torch.__version__) <= parse_version('1.12.1'):
-            extra_compile_args['nvcc'] += ['-std=c++14']
-        else:
-            extra_compile_args['nvcc'] += ['-std=c++17']
+        if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
+                extra_compile_args['nvcc'] += ['-std=c++14']
+            else:
+                extra_compile_args['nvcc'] += ['-std=c++17']
 
         ext_ops = extension(
             name=ext_name,

@@ -60,7 +60,7 @@ def process_model_config(model_cfg: Config,
     if isinstance(imgs[0], np.ndarray):
         cfg = cfg.copy()
         # set loading pipeline type
-        cfg.test_pipeline[0].type = 'LoadImageFromNDArray'
+        cfg.test_pipeline[0].type = 'mLoadImageFromNDArray'
 
     pipeline = cfg.test_pipeline
 
