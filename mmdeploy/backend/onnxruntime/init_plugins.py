@@ -24,7 +24,7 @@ def get_lib_path() -> str:
         str: The library path to onnxruntime.
     """
     candidates = [
-        '../../lib/libonnxruntime_ops.so*',
+        '../../lib/libonnxruntime.so*',
         '../../lib/onnxruntime.dll',
     ]
     return get_file_path(os.path.dirname(__file__), candidates)
