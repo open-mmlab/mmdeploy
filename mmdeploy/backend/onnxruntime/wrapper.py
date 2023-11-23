@@ -48,7 +48,7 @@ class ORTWrapper(BaseWrapper):
             # load ort lib before custom ops lib
             lib_path = get_lib_path()
             if osp.exists(lib_path):
-                ctypes.DLL(lib_path)
+                ctypes.CDLL(lib_path)
 
             session_options.register_custom_ops_library(ort_custom_op_path)
             logger.info('Successfully loaded onnxruntime custom ops from '
