@@ -369,7 +369,7 @@ def _multiclass_nms_single(boxes: Tensor,
         if pre_top_k > 0:
             bbox_index = pre_topk_inds[None, box_inds]
         if keep_top_k > 0:
-            bbox_index = bbox_index[:, topk_inds[:-1]]
+            bbox_index = bbox_index[:, topk_inds]
         return dets, labels, bbox_index
     else:
         return dets, labels
