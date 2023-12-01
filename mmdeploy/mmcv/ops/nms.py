@@ -349,10 +349,6 @@ def _multiclass_nms_single(boxes: Tensor,
     dets = torch.cat([boxes, scores], dim=2)
     labels = cls_inds.unsqueeze(0)
 
-    # pad
-    dets = torch.cat((dets, dets.new_zeros((1, 1, 5))), 1)
-    labels = torch.cat((labels, labels.new_zeros((1, 1))), 1)
-
     # topk or sort
     is_use_topk = keep_top_k > 0 and \
         (torch.onnx.is_in_onnx_export() or keep_top_k < dets.shape[1])
