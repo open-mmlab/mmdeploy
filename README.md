@@ -284,6 +284,7 @@ Please read [getting_started](docs/en/get_started.md) for the basic usage of MMD
   - [Build for Win10](docs/en/01-how-to-build/windows.md)
   - [Build for Android](docs/en/01-how-to-build/android.md)
   - [Build for Jetson](docs/en/01-how-to-build/jetsons.md)
+  - [BUild for Jetson Docker](docs/en/01-how-to-build/jetson_docker.md)
   - [Build for SNPE](docs/en/01-how-to-build/snpe.md)
   - [Cross Build for aarch64](docs/en/01-how-to-build/cross_build_ncnn_aarch64.md)
 - User Guide
