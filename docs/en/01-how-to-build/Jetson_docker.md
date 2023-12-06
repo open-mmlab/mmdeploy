@@ -62,7 +62,7 @@ sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetp
 ## TroubleShooting
 If you using the jetpack5, it has some question need to solve.
 1. OpenCV problem
-  if you find import cv2 wrong, cant find the libpng15.so
+  if you find import cv2 wrong, can't find the libpng15.so
 ```shell
   ln -s /usr/local/lib/python3.x/dist-packages/opencv-python.libs/* /usr/lib
 ```
@@ -83,7 +83,7 @@ if not torch.distributed.is_available():
   torch.distributed.ReduceOp = lambda: None
 ```
   and import jetson_patch at the beginning which file you want.
-  I konw is really not ellegant, but it works well...(for Jetson AGX Orin)
+  I know is not quietly ellegant, but it works well...(for Jetson AGX Orin)
 4. Jetpack with PyTorch 2.0 has some issue
   we need to modify torch.onnx._run_symbolic_method 
   **from**
