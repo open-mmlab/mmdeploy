@@ -268,7 +268,7 @@ MMDeploy 是 [OpenMMLab](https://openmmlab.com/) 模型部署工具箱，**为�
   - [Build for Win10](docs/zh_cn/01-how-to-build/windows.md)
   - [Build for Android](docs/zh_cn/01-how-to-build/android.md)
   - [Build for Jetson](docs/zh_cn/01-how-to-build/jetsons.md)
-  - [BUild for Jetson Docker](docs/en/01-how-to-build/Jetson_docker.md)
+  - [BUild for Jetson Docker](docs/zh_cn/01-how-to-build/Jetson_docker.md)
   - [Build for SNPE](docs/zh_cn/01-how-to-build/snpe.md)
   - [Cross Build for aarch64](docs/zh_cn/01-how-to-build/cross_build_ncnn_aarch64.md)
 - 使用
