@@ -6,7 +6,7 @@ This document guides how to install mmdeploy with [Docker](https://docs.docker.c
 
 MMDeploy provides prebuilt docker images for the convenience of its users on [Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy). The docker images are built on
 the latest and released versions. We release two docker version, for Jetpack=5.1 and Jetpack=4.6.1
-For instance, the image with tag `openmmlab/mmdeploy_jetpack5:v2` is built for Jetpack5.1 and the image with tag `openmmlab/mmdeploy_jetpack4.6.1:v1` is build for Jetpack 4.6.1.
+For instance, the image with tag `openmmlab/mmdeploy_jetpack5:v1` is built for Jetpack5.1 and the image with tag `openmmlab/mmdeploy_jetpack4.6.1:v1` is build for Jetpack 4.6.1.
 The specifications of the Docker Images are shown below.
 
 - jetpack5.1
@@ -44,9 +44,9 @@ then you can build your own image by running the following script.
 The docker file is `docker/jetson/jetpack5/Dockerfile` and `docker/jetson/jetpack4.6/Dockerfile`,
 
 ```shell
-sudo docker build docker/jetson/jetpack5 -t mmdeploy_jetson5:v1 .
+sudo docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
 //
-sudo docker build docker/jetson/jetpack4.6 -t mmdeploy_jetson4.6:v1 .
+sudo docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
 ```
 
 ## Run docker container
@@ -54,7 +54,7 @@ sudo docker build docker/jetson/jetpack4.6 -t mmdeploy_jetson4.6:v1 .
 After pulling or building the docker image, you can use `docker run` to launch the docker service:
 
 ```shell
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v2
+sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
 //
 sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
 ```
