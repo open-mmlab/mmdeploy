@@ -73,7 +73,7 @@ If you using the jetpack5, it has some question need to solve.
   export PYTHONPATH=$PYTHONPATH/your/mmdetection/you/git/clone
 ```
 
-3.Jetson No distributed problem
+3. Jetson No distributed problem
   if you convert the model like [Jetson.md](https://github.com/open-mmlab/mmdeploy/blob/main/docs/en/01-how-to-build/jetsons.md)
   you may find torch.distributed has no attribute ReduceOp.
   I just issue and make a simple patch, add file jetson_patch.py on ./mmdeploy/tools/
@@ -84,7 +84,7 @@ if not torch.distributed.is_available():
 ```
   and import jetson_patch at the beginning which file you want.
   I konw is really not ellegant, but it works well...(for Jetson AGX Orin)
-4.Jetpack with PyTorch 2.0 has some issue
+4. Jetpack with PyTorch 2.0 has some issue
   we need to modify torch.onnx._run_symbolic_method 
   **from**
 ```python
@@ -127,4 +127,4 @@ def _run_symbolic_method(g, op_name, symbolic_fn, args):
         e.args = (f"{e.args[0]} (occurred when translating {op_name})",)
         raise
   ```
-Finally we can use Jetpack5.1 && MMDeploy happily
+Finally we can use Jetpack5.1 && MMDeploy happily:)
