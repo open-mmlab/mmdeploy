@@ -4,7 +4,7 @@
 
 ## 获取预构建的docker镜像
 
-MMDeploy为用户在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了预构建的docker镜像。这些docker镜像基于最新和已发布的版本构建。我们发布了两个版本的docker镜像，分别为Jetpack=5.1和Jetpack=4.6.1。例如，标签为`openmmlab/mmdeploy_jetpack5:v2`的镜像是为Jetpack5.1构建的，而标签为`openmmlab/mmdeploy_jetpack4.6.1:v1`的镜像则是为Jetpack 4.6.1构建的。Docker镜像的规格如下所示。
+MMDeploy为用户在[Docker Hub](https://hub.docker.com/r/openmmlab/mmdeploy)上提供了预构建的docker镜像。这些docker镜像基于最新和已发布的版本构建。我们发布了两个版本的docker镜像，分别为Jetpack=5.1和Jetpack=4.6.1。例如，标签为`openmmlab/mmdeploy_jetpack5:v1`的镜像是为Jetpack5.1构建的，而标签为`openmmlab/mmdeploy_jetpack4.6.1:v1`的镜像则是为Jetpack 4.6.1构建的。Docker镜像的规格如下所示。
 
 - jetpack5.1
 
@@ -39,16 +39,16 @@ docker pull $TAG
 如果预构建的docker镜像不符合您的要求，您可以通过运行以下脚本来构建自己的镜像。docker文件分别为docker/jetson/jetpack5/Dockerfile和docker/jetson/jetpack4.6/Dockerfile，
 
 ```shell
-sudo docker build docker/jetson/jetpack5 -t mmdeploy_jetson5:v1 .
+sudo docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
 //
-sudo docker build docker/jetson/jetpack4.6 -t mmdeploy_jetson4.6:v1 .
+sudo docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
 ```
 
 ## 运行docker容器
 拉取或构建docker镜像后，您可以使用docker run来启动docker服务：
 
 ```shell
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v2
+sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
 //
 sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
 ```
