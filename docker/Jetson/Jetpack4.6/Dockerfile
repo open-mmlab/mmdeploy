@@ -70,4 +70,3 @@ ENV MMDeploy_DIR="/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy"
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
 ENV PATH="/root/workspace/mmdeploy/build/bin:${PATH}"
 ENV PYTHONPATH="/root/workspace/mmdeploy:${PYTHONPATH}"
-WORKDIR /root/workspace
