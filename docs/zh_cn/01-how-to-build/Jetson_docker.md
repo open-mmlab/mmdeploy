@@ -62,9 +62,9 @@ sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetp
   ln -s /usr/local/lib/python3.x/dist-packages/opencv-python.libs/* /usr/lib
 ```
 2. mmdetection问题
-如果您发现安装了mmdetection，但无法导入mmdet。您应该将mmdet路径添加到PYTHONPATH
+如果您发现安装了mmdetection，但无法导入mmdet。您可以使用以下命令来安装
 ```shell
-  export PYTHONPATH=$PYTHONPATH/your/mmdetection/you/git/clone
+  python3 -m pip install --user -e .
 ```
 3. Jetson分布式问题
 如果您按照Jetson.md中的方法转换模型，您可能会发现torch.distributed没有ReduceOp属性。我只是提出了问题并做了一个简单的补丁，在./mmdeploy/tools/下添加jetson_patch.py文件
