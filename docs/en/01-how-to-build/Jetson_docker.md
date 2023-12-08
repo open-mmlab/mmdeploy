@@ -60,6 +60,7 @@ docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.
 ```
 
 ## TroubleShooting
+update: I solved the problem 3, 4 using sed in docker.
 If you using the jetpack5, it has some question need to solve.
 1. OpenCV problem
   if you find import cv2 wrong, can't find the libpng15.so
