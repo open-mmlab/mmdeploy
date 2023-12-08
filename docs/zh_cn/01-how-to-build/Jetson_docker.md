@@ -54,6 +54,7 @@ docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.
 ```
 
 ## 故障排除
+更新：問題3和4已經在鏡像中使用sed解決過了
 如果您使用的是jetpack5，可能需要解决一些问题。
 
 1. OpenCV问题
