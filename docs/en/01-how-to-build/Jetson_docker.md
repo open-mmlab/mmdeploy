@@ -68,9 +68,9 @@ If you using the jetpack5, it has some question need to solve.
 ```
 
 2. mmdetection problem
-  if you find installed the mmdetection, but import the mmdet failed. you should add the mmdet path to PYTHONPATH
+  if you find installed the mmdetection, but import the mmdet failed. you should use this to install
 ```shell
-  export PYTHONPATH=$PYTHONPATH/your/mmdetection/you/git/clone
+  python3 -m pip install --user -e .
 ```
 
 3. Jetson No distributed problem
