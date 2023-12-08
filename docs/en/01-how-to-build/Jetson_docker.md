@@ -44,9 +44,9 @@ then you can build your own image by running the following script.
 The docker file is `docker/jetson/jetpack5/Dockerfile` and `docker/jetson/jetpack4.6/Dockerfile`,
 
 ```shell
-sudo docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
+docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
 //
-sudo docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
+docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
 ```
 
 ## Run docker container
