@@ -61,6 +61,29 @@ RUN cd mmdeploy &&\
     	-DMMDEPLOY_CODEBASES=all && \
     make -j$(nproc) && make install
 
+# add the patch to solve the torch.distributed issue in docker
+RUN cd mmdeploy/tools &&\
+    echo "import torch.distributed" > jetson_patch.py && \
+    echo "if not torch.distributed.is_available():" >> jetson_patch.py && \
+    echo "     torch.distributed.ReduceOp = lambda: None" >> jetson_patch.py && \
+    sed -i '2i import jetson_patch' deploy.py
+
+# add patch to solve the build error
+RUN sed -i '/def _run_symbolic_method(g, op_name, symbolic_fn, args):/,/except TypeError as e:/\
+   {
+       s/\
+       return symbolic_fn(g, \*args)/\
+       graph_context = jit_utils.GraphContext(\
+            graph=g,\
+            block=g.block(),\
+            opset=GLOBALS.export_onnx_opset_version,\
+            original_node=None,  # type: ignore[arg-type]\
+            params_dict=_params_dict,\
+            env={},\
+       )\
+       return symbolic_fn(graph_context, \*args)/\
+    }' /path/to/torch/onnx/symbolic_helper.py
+
 ENV MMDeploy_DIR="/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy"
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
 ENV PATH="/root/workspace/mmdeploy/build/bin:${PATH}"
