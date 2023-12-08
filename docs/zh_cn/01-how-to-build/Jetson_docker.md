@@ -39,18 +39,18 @@ docker pull $TAG
 如果预构建的docker镜像不符合您的要求，您可以通过运行以下脚本来构建自己的镜像。docker文件分别为docker/jetson/jetpack5/Dockerfile和docker/jetson/jetpack4.6/Dockerfile，
 
 ```shell
-sudo docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
+docker build docker/jetson/jetpack5 -t openmmlab/mmdeploy_jetpack5:v1 .
 //
-sudo docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
+docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
 ```
 
 ## 运行docker容器
 拉取或构建docker镜像后，您可以使用docker run来启动docker服务：
 
 ```shell
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
+docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
 //
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
+docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
 ```
 
 ## 故障排除
