@@ -54,9 +54,9 @@ sudo docker build docker/jetson/jetpack4.6 -t openmmlab/mmdeploy_jetpack4.6:v1 .
 After pulling or building the docker image, you can use `docker run` to launch the docker service:
 
 ```shell
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
+docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack5:v1
 //
-sudo docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
+docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.6:v1
 ```
 
 ## TroubleShooting
