@@ -17,10 +17,9 @@ WORKDIR /root/workspace
 # install dependencies
 RUN  apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 42D5A192B819C5DA &&\
      apt-get update &&\ 
-     apt-get install -y vim wget libspdlog-dev libssl-dev libpng-dev pkg-config libhdf5-100 libhdf5-dev --no-install-recommends
-
-RUN python3 -m pip install --upgrade pip &&\    
-    python3 -m pip install onnx==1.10 versioned-hdf5
+     apt-get install -y vim wget libspdlog-dev libssl-dev libpng-dev pkg-config libhdf5-100 libhdf5-dev --no-install-recommends &&\
+     python3 -m pip install --upgrade pip &&\    
+     python3 -m pip install onnx==1.10 versioned-hdf5
 
 # install onnxruntime
 RUN wget https://nvidia.box.com/shared/static/jy7nqva7l88mq9i8bw3g3sklzf4kcnn2.whl -O onnxruntime_gpu-1.10.0-cp36-cp36m-linux_aarch64.whl &&\
@@ -47,8 +46,7 @@ RUN cd mmdeploy &&\
     cmake .. \
     	-DMMDEPLOY_TARGET_BACKENDS="trt" \
     	-DTENSORRT_DIR=TENSORRT_DIR    &&\
-    make -j$(nproc) && make install
-RUN cd mmdeploy &&\ 
+    make -j$(nproc) && make install && cd .. &&\
     python3 -m pip install --upgrade setuptools &&\ 
     python3 -m pip install -e .
 
