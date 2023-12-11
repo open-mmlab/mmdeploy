@@ -8,39 +8,48 @@
 #include "mmdeploy/execution/schedulers/single_thread_context.h"
 #include "mmdeploy/execution/schedulers/static_thread_pool.h"
 
-namespace mmdeploy::python {
+namespace mmdeploy::python
+{
 
-struct PySender {
-  TypeErasedSender<Value> sender_;
-
-  explicit PySender(TypeErasedSender<Value> sender) : sender_(std::move(sender)) {}
-
-  struct gil_guarded_deleter {
-    void operator()(py::object* p) const {
-      py::gil_scoped_acquire _;
-      delete p;
-    }
-  };
-  using object_ptr = std::unique_ptr<py::object, gil_guarded_deleter>;
-
-  py::object __await__() {
-    auto future = py::module::import("concurrent.futures").attr("Future")();
+    struct PySender
     {
-      py::gil_scoped_release _;
-      StartDetached(std::move(sender_) |
-                    Then([future = object_ptr{new py::object(future)}](const Value& value) mutable {
+        TypeErasedSender<Value> sender_;
+
+        explicit PySender(TypeErasedSender<Value> sender)
+            : sender_(std::move(sender))
+        {
+        }
+
+        struct gil_guarded_deleter
+        {
+            void operator()(py::object* p) const
+            {
+                py::gil_scoped_acquire _;
+                delete p;
+            }
+        };
+        using object_ptr = std::unique_ptr<py::object, gil_guarded_deleter>;
+
+        py::object __await__()
+        {
+            auto future = py::module::import("concurrent.futures").attr("Future")();
+            {
+                py::gil_scoped_release _;
+                StartDetached(std::move(sender_) |
+                              Then([future = object_ptr{new py::object(future)}](const Value& value) mutable
+                                   {
                       py::gil_scoped_acquire _;
                       future->attr("set_result")(ToPyObject(value));
-                      delete future.release();
-                    }));
-    }
-    return py::module::import("asyncio").attr("wrap_future")(future).attr("__await__")();
-  }
-};
+                      delete future.release(); }));
+            }
+            return py::module::import("asyncio").attr("wrap_future")(future).attr("__await__")();
+        }
+    };
 
-static PythonBindingRegisterer register_sender{[](py::module& m) {
-  py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
-      .def("__await__", &PySender::__await__);
-}};
+    static PythonBindingRegisterer register_sender{[](py::module& m)
+                                                   {
+                                                       py::class_<PySender, std::unique_ptr<PySender>>(m, "PySender")
+                                                           .def("__await__", &PySender::__await__);
+                                                   }};
 
 }  // namespace mmdeploy::python

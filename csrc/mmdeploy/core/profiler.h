@@ -17,69 +17,86 @@
 #include "mmdeploy/core/macro.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
-namespace profiler {
+namespace mmdeploy
+{
+    namespace profiler
+    {
 
-struct Profiler;
-struct Scope;
+        struct Profiler;
+        struct Scope;
 
-using Clock = std::conditional_t<std::chrono::high_resolution_clock::is_steady,
-                                 std::chrono::high_resolution_clock, std::chrono::steady_clock>;
-using TimePoint = Clock::time_point;
-using Index = uint64_t;
+        using Clock     = std::conditional_t<std::chrono::high_resolution_clock::is_steady,
+                                         std::chrono::high_resolution_clock,
+                                         std::chrono::steady_clock>;
+        using TimePoint = Clock::time_point;
+        using Index     = uint64_t;
 
-struct Event {
-  enum Type { kStart, kEnd };
-  Scope* scope;
-  Type type;
-  Index index;
-  TimePoint time_point;
-};
+        struct Event
+        {
+            enum Type
+            {
+                kStart,
+                kEnd
+            };
+            Scope*    scope;
+            Type      type;
+            Index     index;
+            TimePoint time_point;
+        };
 
-struct MMDEPLOY_API Scope {
-  Scope() = default;
-  Scope(const Scope&) = delete;
-  Scope(Scope&&) noexcept = delete;
-  Scope& operator=(const Scope&) = delete;
-  Scope& operator=(Scope&&) noexcept = delete;
+        struct MMDEPLOY_API Scope
+        {
+            Scope()                            = default;
+            Scope(const Scope&)                = delete;
+            Scope(Scope&&) noexcept            = delete;
+            Scope& operator=(const Scope&)     = delete;
+            Scope& operator=(Scope&&) noexcept = delete;
 
-  Event* Add(Event::Type type, Index index, TimePoint time_point);
+            Event* Add(Event::Type type, Index index, TimePoint time_point);
 
-  Scope* CreateScope(std::string_view name);
+            Scope* CreateScope(std::string_view name);
 
-  void Dump(Scope* scope, std::ofstream& ofs);
-  void Dump(std::ofstream& ofs) { Dump(this, ofs); }
+            void   Dump(Scope* scope, std::ofstream& ofs);
+            void   Dump(std::ofstream& ofs)
+            {
+                Dump(this, ofs);
+            }
 
-  Profiler* profiler_{};
-  Scope* parent_{};
-  std::vector<Scope*> children_;
-  std::atomic<Index> next_{};
-  std::string name_;
-};
+            Profiler*           profiler_{};
+            Scope*              parent_{};
+            std::vector<Scope*> children_;
+            std::atomic<Index>  next_{};
+            std::string         name_;
+        };
 
-struct MMDEPLOY_API ScopedCounter {
-  explicit ScopedCounter(Scope* scope);
-  ~ScopedCounter();
+        struct MMDEPLOY_API ScopedCounter
+        {
+            explicit ScopedCounter(Scope* scope);
+            ~ScopedCounter();
 
-  Event* start_{};
-};
+            Event* start_{};
+        };
 
-struct MMDEPLOY_API Profiler {
-  explicit Profiler(std::string_view path);
-  Scope* CreateScope(std::string_view name);
-  Event* AddEvent(Event e);
-  Scope* scope() const noexcept { return root_; }
-  void Release();
+        struct MMDEPLOY_API Profiler
+        {
+            explicit Profiler(std::string_view path);
+            Scope* CreateScope(std::string_view name);
+            Event* AddEvent(Event e);
+            Scope* scope() const noexcept
+            {
+                return root_;
+            }
+            void                                                Release();
 
-  std::string path_;
-  std::deque<Scope> nodes_;
-  moodycamel::ConcurrentQueue<std::unique_ptr<Event>> events_;
-  Scope* root_{};
-};
+            std::string                                         path_;
+            std::deque<Scope>                                   nodes_;
+            moodycamel::ConcurrentQueue<std::unique_ptr<Event>> events_;
+            Scope*                                              root_{};
+        };
 
-}  // namespace profiler
+    }  // namespace profiler
 
-MMDEPLOY_REGISTER_TYPE_ID(profiler::Scope*, 10);
+    MMDEPLOY_REGISTER_TYPE_ID(profiler::Scope*, 10);
 
 }  // namespace mmdeploy
 

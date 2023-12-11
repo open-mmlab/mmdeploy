@@ -6,30 +6,32 @@
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
-jlong Java_mmdeploy_TextRecognizer_create(JNIEnv *env, jobject, jstring modelPath,
-                                          jstring deviceName, jint device_id) {
-  auto model_path = env->GetStringUTFChars(modelPath, nullptr);
-  auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mmdeploy_text_recognizer_t text_recognizer{};
-  auto ec = mmdeploy_text_recognizer_create_by_path(model_path, device_name, (int)device_id,
-                                                    &text_recognizer);
-  env->ReleaseStringUTFChars(modelPath, model_path);
-  env->ReleaseStringUTFChars(deviceName, device_name);
-  if (ec) {
-    MMDEPLOY_ERROR("failed to create text recognizer, code = {}", ec);
-    return -1;
-  }
-  return (jlong)text_recognizer;
+jlong Java_mmdeploy_TextRecognizer_create(JNIEnv* env, jobject, jstring modelPath, jstring deviceName, jint device_id)
+{
+    auto                       model_path  = env->GetStringUTFChars(modelPath, nullptr);
+    auto                       device_name = env->GetStringUTFChars(deviceName, nullptr);
+    mmdeploy_text_recognizer_t text_recognizer{};
+    auto                       ec = mmdeploy_text_recognizer_create_by_path(model_path, device_name, (int)device_id, &text_recognizer);
+    env->ReleaseStringUTFChars(modelPath, model_path);
+    env->ReleaseStringUTFChars(deviceName, device_name);
+    if (ec)
+    {
+        MMDEPLOY_ERROR("failed to create text recognizer, code = {}", ec);
+        return -1;
+    }
+    return (jlong)text_recognizer;
 }
 
-void Java_mmdeploy_TextRecognizer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_DEBUG("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
-  mmdeploy_text_recognizer_destroy((mmdeploy_text_recognizer_t)handle);
+void Java_mmdeploy_TextRecognizer_destroy(JNIEnv*, jobject, jlong handle)
+{
+    MMDEPLOY_DEBUG("Java_mmdeploy_TextRecognizer_destroy");  // maybe use info?
+    mmdeploy_text_recognizer_destroy((mmdeploy_text_recognizer_t)handle);
 }
 
-jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong handle,
-                                                jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
+jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv* env, jobject thiz, jlong handle, jobjectArray images)
+{
+    return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray
+                {
     mmdeploy_text_recognition_t *results{};
     auto ec =
         mmdeploy_text_recognizer_apply((mmdeploy_text_recognizer_t)handle, imgs, size, &results);
@@ -51,13 +53,12 @@ jobjectArray Java_mmdeploy_TextRecognizer_apply(JNIEnv *env, jobject thiz, jlong
       env->SetObjectArrayElement(array, i, res);
     }
     mmdeploy_text_recognizer_release_result(results, size);
-    return array;
-  });
+    return array; });
 }
-jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, jlong handle,
-                                                    jobjectArray images, jobjectArray bboxes,
-                                                    jintArray bbox_count) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) {
+jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv* env, jobject thiz, jlong handle, jobjectArray images, jobjectArray bboxes, jintArray bbox_count)
+{
+    return With(env, images, [&](const mmdeploy_mat_t imgs[], int size)
+                {
     mmdeploy_text_recognition_t *recog_results{};
     auto *det_results = new mmdeploy_text_detection_t[env->GetArrayLength(bboxes)];
     int *det_result_count = new int[env->GetArrayLength(bbox_count)];
@@ -100,6 +101,5 @@ jobjectArray Java_mmdeploy_TextRecognizer_applyBbox(JNIEnv *env, jobject thiz, j
     }
     mmdeploy_text_recognizer_release_result(recog_results, size);
     mmdeploy_text_detector_release_result(det_results, det_result_count, 1);
-    return array;
-  });
+    return array; });
 }

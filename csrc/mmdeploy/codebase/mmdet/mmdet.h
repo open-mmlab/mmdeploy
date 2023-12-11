@@ -12,20 +12,22 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/serialization.h"
 
-namespace mmdeploy::mmdet {
+namespace mmdeploy::mmdet
+{
 
-struct Detection {
-  int index;
-  int label_id;
-  float score;
-  std::array<float, 4> bbox;  // left, top, right, bottom
-  Mat mask;
-  MMDEPLOY_ARCHIVE_MEMBERS(index, label_id, score, bbox, mask);
-};
+    struct Detection
+    {
+        int                  index;
+        int                  label_id;
+        float                score;
+        std::array<float, 4> bbox;  // left, top, right, bottom
+        Mat                  mask;
+        MMDEPLOY_ARCHIVE_MEMBERS(index, label_id, score, bbox, mask);
+    };
 
-using Detections = std::vector<Detection>;
+    using Detections = std::vector<Detection>;
 
-MMDEPLOY_DECLARE_CODEBASE(MMDetection, mmdet);
+    MMDEPLOY_DECLARE_CODEBASE(MMDetection, mmdet);
 
 }  // namespace mmdeploy::mmdet
 

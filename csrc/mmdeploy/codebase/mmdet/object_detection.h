@@ -7,28 +7,29 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy::mmdet {
+namespace mmdeploy::mmdet
+{
 
-class ResizeBBox : public MMDetection {
- public:
-  explicit ResizeBBox(const Value& cfg);
+    class ResizeBBox : public MMDetection
+    {
+      public:
+        explicit ResizeBBox(const Value& cfg);
 
-  Result<Value> operator()(const Value& prep_res, const Value& infer_res);
+        Result<Value> operator()(const Value& prep_res, const Value& infer_res);
 
- protected:
-  Result<Detections> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets,
-                                       const Tensor& labels);
+      protected:
+        Result<Detections> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
 
-  template <typename T>
-  Result<Detections> GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
+        template<typename T>
+        Result<Detections>  GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
 
-  std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
+        std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
 
- protected:
-  constexpr static Device kHost{0, 0};
-  float score_thr_{0.f};
-  float min_bbox_size_{0.f};
-};
+      protected:
+        constexpr static Device kHost{0, 0};
+        float                   score_thr_{0.f};
+        float                   min_bbox_size_{0.f};
+    };
 
 }  // namespace mmdeploy::mmdet
 

@@ -8,33 +8,49 @@
 
 using namespace mmdeploy;
 
-using SenderType = TypeErasedSender<Value>;
+using SenderType    = TypeErasedSender<Value>;
 using SchedulerType = TypeErasedScheduler<Value>;
 
-namespace {
+namespace
+{
 
-inline SchedulerType* Cast(mmdeploy_scheduler_t s) { return reinterpret_cast<SchedulerType*>(s); }
+    inline SchedulerType* Cast(mmdeploy_scheduler_t s)
+    {
+        return reinterpret_cast<SchedulerType*>(s);
+    }
 
-inline mmdeploy_scheduler_t Cast(SchedulerType* s) {
-  return reinterpret_cast<mmdeploy_scheduler_t>(s);
-}
+    inline mmdeploy_scheduler_t Cast(SchedulerType* s)
+    {
+        return reinterpret_cast<mmdeploy_scheduler_t>(s);
+    }
 
-inline SenderType* Cast(mmdeploy_sender_t s) { return reinterpret_cast<SenderType*>(s); }
+    inline SenderType* Cast(mmdeploy_sender_t s)
+    {
+        return reinterpret_cast<SenderType*>(s);
+    }
 
-inline mmdeploy_sender_t Cast(SenderType* s) { return reinterpret_cast<mmdeploy_sender_t>(s); }
+    inline mmdeploy_sender_t Cast(SenderType* s)
+    {
+        return reinterpret_cast<mmdeploy_sender_t>(s);
+    }
 
-inline SenderType Take(mmdeploy_sender_t s) {
-  auto sender = std::move(*Cast(s));
-  mmdeploy_sender_destroy(s);
-  return sender;
-}
+    inline SenderType Take(mmdeploy_sender_t s)
+    {
+        auto sender = std::move(*Cast(s));
+        mmdeploy_sender_destroy(s);
+        return sender;
+    }
 
-inline mmdeploy_sender_t Take(SenderType s) { return Cast(new SenderType(std::move(s))); }
+    inline mmdeploy_sender_t Take(SenderType s)
+    {
+        return Cast(new SenderType(std::move(s)));
+    }
 
-template <typename T, std::enable_if_t<_is_sender<T>, int> = 0>
-inline mmdeploy_sender_t Take(T& s) {
-  return Take(SenderType(std::move(s)));
-}
+    template<typename T, std::enable_if_t<_is_sender<T>, int> = 0>
+    inline mmdeploy_sender_t Take(T& s)
+    {
+        return Take(SenderType(std::move(s)));
+    }
 
 }  // namespace
 

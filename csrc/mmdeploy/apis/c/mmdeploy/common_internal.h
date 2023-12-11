@@ -12,93 +12,152 @@
 
 using namespace mmdeploy;
 
-namespace {
+namespace
+{
 
-inline mmdeploy_value_t Cast(Value* s) { return reinterpret_cast<mmdeploy_value_t>(s); }
-
-inline Value* Cast(mmdeploy_value_t s) { return reinterpret_cast<Value*>(s); }
-
-inline Value Take(mmdeploy_value_t v) {
-  auto value = std::move(*Cast(v));
-  mmdeploy_value_destroy(v);
-  return value;
-}
-
-inline Value* Cast(mmdeploy_context_t c) { return reinterpret_cast<Value*>(c); }
-
-inline mmdeploy_value_t Take(Value v) {
-  return Cast(new Value(std::move(v)));  // NOLINT
-}
-
-inline mmdeploy_pipeline_t Cast(AsyncHandle* pipeline) {
-  return reinterpret_cast<mmdeploy_pipeline_t>(pipeline);
-}
-
-inline AsyncHandle* Cast(mmdeploy_pipeline_t pipeline) {
-  return reinterpret_cast<AsyncHandle*>(pipeline);
-}
-
-inline mmdeploy_model_t Cast(Model* model) { return reinterpret_cast<mmdeploy_model_t>(model); }
-
-inline Model* Cast(mmdeploy_model_t model) { return reinterpret_cast<Model*>(model); }
-
-inline Mat Cast(const mmdeploy_mat_t& mat) {
-  return Mat{mat.height,         mat.width, PixelFormat(mat.format),
-             DataType(mat.type), mat.data,  mat.device ? *(const Device*)mat.device : Device{0}};
-}
-
-template <typename F>
-std::invoke_result_t<F> Guard(F f) {
-  try {
-    return f();
-  } catch (const std::exception& e) {
-    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
-  } catch (...) {
-    MMDEPLOY_ERROR("unknown exception caught");
-  }
-  return nullptr;
-}
-
-template <typename T, typename SFINAE = void>
-class wrapped {};
-
-template <typename T>
-class wrapped<T, std::void_t<decltype(Cast(T{}))>> {
- public:
-  wrapped() noexcept : v_(nullptr) {}
-  explicit wrapped(T v) noexcept : v_(v) {}
-
-  void reset() {
-    if (v_) {
-      delete Cast(v_);
-      v_ = nullptr;
+    inline mmdeploy_value_t Cast(Value* s)
+    {
+        return reinterpret_cast<mmdeploy_value_t>(s);
     }
-  }
 
-  ~wrapped() { reset(); }
+    inline Value* Cast(mmdeploy_value_t s)
+    {
+        return reinterpret_cast<Value*>(s);
+    }
 
-  wrapped(const wrapped&) = delete;
-  wrapped& operator=(const wrapped&) = delete;
+    inline Value Take(mmdeploy_value_t v)
+    {
+        auto value = std::move(*Cast(v));
+        mmdeploy_value_destroy(v);
+        return value;
+    }
 
-  wrapped(wrapped&& other) noexcept : v_(other.release()) {}
-  wrapped& operator=(wrapped&& other) noexcept {
-    reset();
-    v_ = other.release();
-    return *this;
-  }
+    inline Value* Cast(mmdeploy_context_t c)
+    {
+        return reinterpret_cast<Value*>(c);
+    }
 
-  T release() noexcept { return std::exchange(v_, nullptr); }
+    inline mmdeploy_value_t Take(Value v)
+    {
+        return Cast(new Value(std::move(v)));  // NOLINT
+    }
 
-  auto operator*() { return Cast(v_); }
-  auto operator-> () { return Cast(v_); }
+    inline mmdeploy_pipeline_t Cast(AsyncHandle* pipeline)
+    {
+        return reinterpret_cast<mmdeploy_pipeline_t>(pipeline);
+    }
 
-  T* ptr() noexcept { return &v_; }
+    inline AsyncHandle* Cast(mmdeploy_pipeline_t pipeline)
+    {
+        return reinterpret_cast<AsyncHandle*>(pipeline);
+    }
 
-  operator T() const noexcept { return v_; }  // NOLINT
+    inline mmdeploy_model_t Cast(Model* model)
+    {
+        return reinterpret_cast<mmdeploy_model_t>(model);
+    }
 
- private:
-  T v_;
-};
+    inline Model* Cast(mmdeploy_model_t model)
+    {
+        return reinterpret_cast<Model*>(model);
+    }
+
+    inline Mat Cast(const mmdeploy_mat_t& mat)
+    {
+        return Mat{mat.height, mat.width, PixelFormat(mat.format), DataType(mat.type), mat.data, mat.device ? *(const Device*)mat.device : Device{0}};
+    }
+
+    template<typename F>
+    std::invoke_result_t<F> Guard(F f)
+    {
+        try
+        {
+            return f();
+        }
+        catch (const std::exception& e)
+        {
+            MMDEPLOY_ERROR("unhandled exception: {}", e.what());
+        }
+        catch (...)
+        {
+            MMDEPLOY_ERROR("unknown exception caught");
+        }
+        return nullptr;
+    }
+
+    template<typename T, typename SFINAE = void>
+    class wrapped
+    {
+    };
+
+    template<typename T>
+    class wrapped<T, std::void_t<decltype(Cast(T{}))>>
+    {
+      public:
+        wrapped() noexcept
+            : v_(nullptr)
+        {
+        }
+        explicit wrapped(T v) noexcept
+            : v_(v)
+        {
+        }
+
+        void reset()
+        {
+            if (v_)
+            {
+                delete Cast(v_);
+                v_ = nullptr;
+            }
+        }
+
+        ~wrapped()
+        {
+            reset();
+        }
+
+        wrapped(const wrapped&)            = delete;
+        wrapped& operator=(const wrapped&) = delete;
+
+        wrapped(wrapped&& other) noexcept
+            : v_(other.release())
+        {
+        }
+        wrapped& operator=(wrapped&& other) noexcept
+        {
+            reset();
+            v_ = other.release();
+            return *this;
+        }
+
+        T release() noexcept
+        {
+            return std::exchange(v_, nullptr);
+        }
+
+        auto operator*()
+        {
+            return Cast(v_);
+        }
+        auto operator->()
+        {
+            return Cast(v_);
+        }
+
+        T* ptr() noexcept
+        {
+            return &v_;
+        }
+
+        operator T() const noexcept
+        {
+            return v_;
+        }  // NOLINT
+
+      private:
+        T v_;
+    };
 
 }  // namespace
 

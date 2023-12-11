@@ -6,11 +6,12 @@
 #include "mmdeploy/core/macro.h"
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-MMDEPLOY_API OrtStatus *ORT_API_CALL RegisterCustomOps(OrtSessionOptions *options,
-                                                       const OrtApiBase *api);
+    MMDEPLOY_API OrtStatus* ORT_API_CALL RegisterCustomOps(OrtSessionOptions* options,
+                                                           const OrtApiBase*  api);
 
 #ifdef __cplusplus
 }

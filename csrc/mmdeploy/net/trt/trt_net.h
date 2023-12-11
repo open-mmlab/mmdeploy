@@ -8,73 +8,101 @@
 #include "mmdeploy/core/net.h"
 #include "mmdeploy/device/cuda/cuda_device.h"
 
-namespace mmdeploy::framework {
+namespace mmdeploy::framework
+{
 
-namespace trt_detail {
+    namespace trt_detail
+    {
 
-template <typename T>
-class TRTWrapper {
- public:
-  TRTWrapper() : ptr_(nullptr) {}
-  TRTWrapper(T* ptr) : ptr_(ptr) {}  // NOLINT
-  ~TRTWrapper() { reset(); }
-  TRTWrapper(const TRTWrapper&) = delete;
-  TRTWrapper& operator=(const TRTWrapper&) = delete;
-  TRTWrapper(TRTWrapper&& other) noexcept { *this = std::move(other); }
-  TRTWrapper& operator=(TRTWrapper&& other) noexcept {
-    reset(std::exchange(other.ptr_, nullptr));
-    return *this;
-  }
-  T& operator*() { return *ptr_; }
-  T* operator->() { return ptr_; }
-  void reset(T* p = nullptr) {
-    if (auto old = std::exchange(ptr_, p)) {  // NOLINT
+        template<typename T>
+        class TRTWrapper
+        {
+          public:
+            TRTWrapper()
+                : ptr_(nullptr)
+            {
+            }
+            TRTWrapper(T* ptr)
+                : ptr_(ptr)
+            {
+            }  // NOLINT
+            ~TRTWrapper()
+            {
+                reset();
+            }
+            TRTWrapper(const TRTWrapper&)            = delete;
+            TRTWrapper& operator=(const TRTWrapper&) = delete;
+            TRTWrapper(TRTWrapper&& other) noexcept
+            {
+                *this = std::move(other);
+            }
+            TRTWrapper& operator=(TRTWrapper&& other) noexcept
+            {
+                reset(std::exchange(other.ptr_, nullptr));
+                return *this;
+            }
+            T& operator*()
+            {
+                return *ptr_;
+            }
+            T* operator->()
+            {
+                return ptr_;
+            }
+            void reset(T* p = nullptr)
+            {
+                if (auto old = std::exchange(ptr_, p))
+                {  // NOLINT
 #if NV_TENSORRT_MAJOR < 8
-      old->destroy();
+                    old->destroy();
 #else
-      delete old;
+                    delete old;
 #endif
-    }
-  }
+                }
+            }
 
-  explicit operator bool() const noexcept { return ptr_ != nullptr; }
+            explicit operator bool() const noexcept
+            {
+                return ptr_ != nullptr;
+            }
 
- private:
-  T* ptr_;
-};
+          private:
+            T* ptr_;
+        };
 
-// clang-format off
+        // clang-format off
 template <typename T>
 explicit TRTWrapper(T*) -> TRTWrapper<T>;
-// clang-format on
-}  // namespace trt_detail
+        // clang-format on
+    }  // namespace trt_detail
 
-class TRTNet : public Net {
- public:
-  ~TRTNet() override;
-  Result<void> Init(const Value& cfg) override;
-  Result<void> Deinit() override;
-  Result<Span<Tensor>> GetInputTensors() override;
-  Result<Span<Tensor>> GetOutputTensors() override;
-  Result<void> Reshape(Span<TensorShape> input_shapes) override;
-  Result<void> Forward() override;
-  Result<void> ForwardAsync(Event* event) override;
+    class TRTNet : public Net
+    {
+      public:
+        ~TRTNet() override;
+        Result<void>         Init(const Value& cfg) override;
+        Result<void>         Deinit() override;
+        Result<Span<Tensor>> GetInputTensors() override;
+        Result<Span<Tensor>> GetOutputTensors() override;
+        Result<void>         Reshape(Span<TensorShape> input_shapes) override;
+        Result<void>         Forward() override;
+        Result<void>         ForwardAsync(Event* event) override;
 
- private:
- private:
-  trt_detail::TRTWrapper<nvinfer1::ICudaEngine> engine_;
-  trt_detail::TRTWrapper<nvinfer1::IExecutionContext> context_;
-  trt_detail::TRTWrapper<nvinfer1::IRuntime> runtime_;
-  std::vector<int> input_ids_;
-  std::vector<int> output_ids_;
-  std::vector<std::string> input_names_;
-  std::vector<std::string> output_names_;
-  std::vector<Tensor> input_tensors_;
-  std::vector<Tensor> output_tensors_;
-  Device device_;
-  Stream stream_;
-  Event event_;
-};
+      private:
+      private:
+        trt_detail::TRTWrapper<nvinfer1::ICudaEngine>       engine_;
+        trt_detail::TRTWrapper<nvinfer1::IExecutionContext> context_;
+        trt_detail::TRTWrapper<nvinfer1::IRuntime>          runtime_;
+        std::vector<int>                                    input_ids_;
+        std::vector<int>                                    output_ids_;
+        std::vector<std::string>                            input_names_;
+        std::vector<std::string>                            output_names_;
+        std::vector<Tensor>                                 input_tensors_;
+        std::vector<Tensor>                                 output_tensors_;
+        Device                                              device_;
+        Stream                                              stream_;
+        Event                                               event_;
+    };
 
 }  // namespace mmdeploy::framework
 

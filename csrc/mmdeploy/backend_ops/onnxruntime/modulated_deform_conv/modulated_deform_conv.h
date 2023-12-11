@@ -4,55 +4,74 @@
 
 #include <onnxruntime_cxx_api.h>
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-struct MMCVModulatedDeformConvKernel {
-  MMCVModulatedDeformConvKernel(const OrtApi &api, const OrtKernelInfo *info);
+    struct MMCVModulatedDeformConvKernel
+    {
+        MMCVModulatedDeformConvKernel(const OrtApi& api, const OrtKernelInfo* info);
 
-  void Compute(OrtKernelContext *context);
+        void Compute(OrtKernelContext* context);
 
- protected:
-  Ort::CustomOpApi ort_;
-  const OrtKernelInfo *info_;
-  Ort::AllocatorWithDefaultOptions allocator_;
+      protected:
+        Ort::CustomOpApi                 ort_;
+        const OrtKernelInfo*             info_;
+        Ort::AllocatorWithDefaultOptions allocator_;
 
-  int64_t stride_height_;
-  int64_t stride_width_;
-  int64_t padding_height_;
-  int64_t padding_width_;
-  int64_t dilation_height_;
-  int64_t dilation_width_;
-  int64_t deformable_group_;
-  int64_t group_;
-};
+        int64_t                          stride_height_;
+        int64_t                          stride_width_;
+        int64_t                          padding_height_;
+        int64_t                          padding_width_;
+        int64_t                          dilation_height_;
+        int64_t                          dilation_width_;
+        int64_t                          deformable_group_;
+        int64_t                          group_;
+    };
 
-struct MMCVModulatedDeformConvOp
-    : Ort::CustomOpBase<MMCVModulatedDeformConvOp, MMCVModulatedDeformConvKernel> {
-  void *CreateKernel(const OrtApi &api, const OrtKernelInfo *info) const {
-    return new MMCVModulatedDeformConvKernel(api, info);
-  }
+    struct MMCVModulatedDeformConvOp
+        : Ort::CustomOpBase<MMCVModulatedDeformConvOp, MMCVModulatedDeformConvKernel>
+    {
+        void* CreateKernel(const OrtApi& api, const OrtKernelInfo* info) const
+        {
+            return new MMCVModulatedDeformConvKernel(api, info);
+        }
 
-  const char *GetName() const { return "MMCVModulatedDeformConv2d"; };
+        const char* GetName() const
+        {
+            return "MMCVModulatedDeformConv2d";
+        };
 
-  size_t GetInputTypeCount() const { return 5; };
-  ONNXTensorElementDataType GetInputType(size_t /*index*/) const {
-    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
-  };
+        size_t GetInputTypeCount() const
+        {
+            return 5;
+        };
+        ONNXTensorElementDataType GetInputType(size_t /*index*/) const
+        {
+            return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
+        };
 
-  OrtCustomOpInputOutputCharacteristic GetInputCharacteristic(size_t index) const {
-    // The last input (index == 4) is optional, which is bias
-    if (index == 4) return OrtCustomOpInputOutputCharacteristic::INPUT_OUTPUT_OPTIONAL;
+        OrtCustomOpInputOutputCharacteristic GetInputCharacteristic(size_t index) const
+        {
+            // The last input (index == 4) is optional, which is bias
+            if (index == 4) return OrtCustomOpInputOutputCharacteristic::INPUT_OUTPUT_OPTIONAL;
 
-    return OrtCustomOpInputOutputCharacteristic::INPUT_OUTPUT_REQUIRED;
-  }
+            return OrtCustomOpInputOutputCharacteristic::INPUT_OUTPUT_REQUIRED;
+        }
 
-  size_t GetOutputTypeCount() const { return 1; };
-  ONNXTensorElementDataType GetOutputType(size_t /*index*/) const {
-    return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
-  };
+        size_t GetOutputTypeCount() const
+        {
+            return 1;
+        };
+        ONNXTensorElementDataType GetOutputType(size_t /*index*/) const
+        {
+            return ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT;
+        };
 
-  // force cpu
-  const char *GetExecutionProviderType() const { return "CPUExecutionProvider"; };
-};
+        // force cpu
+        const char* GetExecutionProviderType() const
+        {
+            return "CPUExecutionProvider";
+        };
+    };
 }  // namespace mmdeploy
 #endif

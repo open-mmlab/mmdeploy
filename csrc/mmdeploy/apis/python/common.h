@@ -13,24 +13,27 @@
 
 namespace py = pybind11;
 
-namespace mmdeploy::python {
+namespace mmdeploy::python
+{
 
-using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
+    using PyImage = py::array_t<uint8_t, py::array::c_style | py::array::forcecast>;
 
-std::vector<void (*)(py::module&)>& gPythonBindings();
+    std::vector<void (*)(py::module&)>& gPythonBindings();
 
-mmdeploy_mat_t GetMat(const PyImage& img);
+    mmdeploy_mat_t                      GetMat(const PyImage& img);
 
-py::object ToPyObject(const Value& value);
+    py::object                          ToPyObject(const Value& value);
 
-Value FromPyObject(const py::object& obj);
+    Value                               FromPyObject(const py::object& obj);
 
-class PythonBindingRegisterer {
- public:
-  explicit PythonBindingRegisterer(void (*register_fn)(py::module& m)) {
-    gPythonBindings().push_back(register_fn);
-  }
-};
+    class PythonBindingRegisterer
+    {
+      public:
+        explicit PythonBindingRegisterer(void (*register_fn)(py::module& m))
+        {
+            gPythonBindings().push_back(register_fn);
+        }
+    };
 
 }  // namespace mmdeploy::python
 

@@ -7,27 +7,34 @@
 #include "mmdeploy/core/utils/formatter.h"
 #include "mmdeploy/experimental/module_adapter.h"
 
-namespace test_module_adapter {
+namespace test_module_adapter
+{
 
-using mmdeploy::CreateTask;
-using mmdeploy::MakeTask;
-using mmdeploy::Module;
-using mmdeploy::Result;
-using mmdeploy::Value;
+    using mmdeploy::CreateTask;
+    using mmdeploy::MakeTask;
+    using mmdeploy::Module;
+    using mmdeploy::Result;
+    using mmdeploy::Value;
 
-class MyModule {
- public:
-  std::tuple<int, int> operator()(const double& a, const double& b) noexcept {
-    return {a + b, a - b};
-  }
-};
+    class MyModule
+    {
+      public:
+        std::tuple<int, int> operator()(const double& a, const double& b) noexcept
+        {
+            return {a + b, a - b};
+        }
+    };
 
-Result<std::tuple<int, int> > my_func(int x, int y) { return {x + y, x - y}; }
+    Result<std::tuple<int, int>> my_func(int x, int y)
+    {
+        return {x + y, x - y};
+    }
 
-TEST_CASE("test module adapter", "[module_adapter]") {
-  Value x{100, 200};
-  Value y;
-  // clang-format off
+    TEST_CASE("test module adapter", "[module_adapter]")
+    {
+        Value x{100, 200};
+        Value y;
+        // clang-format off
   SECTION("create") {
     std::unique_ptr<Module> task;
     SECTION("function object") {
@@ -68,9 +75,9 @@ TEST_CASE("test module adapter", "[module_adapter]") {
       y = task.Process(x).value();
     }
   }
-  // clang-format on
-  REQUIRE(y[0].get<int>() == 300);
-  REQUIRE(y[1].get<int>() == -100);
-}
+        // clang-format on
+        REQUIRE(y[0].get<int>() == 300);
+        REQUIRE(y[1].get<int>() == -100);
+    }
 
 }  // namespace test_module_adapter

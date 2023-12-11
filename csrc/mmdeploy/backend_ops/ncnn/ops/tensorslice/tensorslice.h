@@ -4,23 +4,24 @@
 
 #include "layer.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class TensorSlice : public ncnn::Layer {
- public:
-  TensorSlice();
+    class TensorSlice : public ncnn::Layer
+    {
+      public:
+        TensorSlice();
 
-  virtual int load_param(const ncnn::ParamDict& pd);
+        virtual int load_param(const ncnn::ParamDict& pd);
 
-  virtual int forward(const ncnn::Mat& bottom_blob, ncnn::Mat& top_blob,
-                      const ncnn::Option& opt) const;
+        virtual int forward(const ncnn::Mat& bottom_blob, ncnn::Mat& top_blob, const ncnn::Option& opt) const;
 
- public:
-  ncnn::Mat starts;
-  ncnn::Mat ends;
-  ncnn::Mat axes;
-  ncnn::Mat steps;
-};
+      public:
+        ncnn::Mat starts;
+        ncnn::Mat ends;
+        ncnn::Mat axes;
+        ncnn::Mat steps;
+    };
 
 }  // namespace mmdeploy
 

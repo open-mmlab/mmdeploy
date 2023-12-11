@@ -4,20 +4,21 @@
 
 #include "layer.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class Gather : public ncnn::Layer {
- public:
-  Gather();
+    class Gather : public ncnn::Layer
+    {
+      public:
+        Gather();
 
-  virtual int load_param(const ncnn::ParamDict& pd);
+        virtual int load_param(const ncnn::ParamDict& pd);
 
-  virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs, std::vector<ncnn::Mat>& top_blobs,
-                      const ncnn::Option& opt) const;
+        virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs, std::vector<ncnn::Mat>& top_blobs, const ncnn::Option& opt) const;
 
- public:
-  int axis;
-};
+      public:
+        int axis;
+    };
 
 }  // namespace mmdeploy
 

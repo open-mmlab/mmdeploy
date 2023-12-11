@@ -11,42 +11,53 @@
 #include "mmdeploy/graph/common.h"
 #include "mmdeploy/graph/static_router.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-using namespace framework;
+    using namespace framework;
 
-namespace {
+    namespace
+    {
 
-class AsyncHandle {
- public:
-  AsyncHandle(const char* device_name, int device_id, Value config)
-      : AsyncHandle(SetContext(std::move(config), device_name, device_id)) {}
+        class AsyncHandle
+        {
+          public:
+            AsyncHandle(const char* device_name, int device_id, Value config)
+                : AsyncHandle(SetContext(std::move(config), device_name, device_id))
+            {
+            }
 
-  explicit AsyncHandle(const Value& config) {
-    if (auto builder = graph::Builder::CreateFromConfig(config).value()) {
-      node_ = builder->Build().value();
-    } else {
-      MMDEPLOY_ERROR("failed to find creator for node");
-      throw_exception(eEntryNotFound);
-    }
-  }
+            explicit AsyncHandle(const Value& config)
+            {
+                if (auto builder = graph::Builder::CreateFromConfig(config).value())
+                {
+                    node_ = builder->Build().value();
+                }
+                else
+                {
+                    MMDEPLOY_ERROR("failed to find creator for node");
+                    throw_exception(eEntryNotFound);
+                }
+            }
 
-  graph::Sender<Value> Process(graph::Sender<Value> input) {
-    return node_->Process(std::move(input));
-  }
+            graph::Sender<Value> Process(graph::Sender<Value> input)
+            {
+                return node_->Process(std::move(input));
+            }
 
- private:
-  static Value SetContext(Value config, const char* device_name, int device_id) {
-    Device device(device_name, device_id);
-    Stream stream(device);
-    config["context"].update({{"device", device}, {"stream", stream}});
-    return config;
-  }
+          private:
+            static Value SetContext(Value config, const char* device_name, int device_id)
+            {
+                Device device(device_name, device_id);
+                Stream stream(device);
+                config["context"].update({{"device", device}, {"stream", stream}});
+                return config;
+            }
 
-  std::unique_ptr<graph::Node> node_;
-};
+            std::unique_ptr<graph::Node> node_;
+        };
 
-}  // namespace
+    }  // namespace
 
 }  // namespace mmdeploy
 

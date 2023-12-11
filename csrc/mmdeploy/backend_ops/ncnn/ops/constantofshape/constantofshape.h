@@ -4,20 +4,21 @@
 
 #include "layer.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class ConstantOfShape : public ncnn::Layer {
- public:
-  ConstantOfShape();
+    class ConstantOfShape : public ncnn::Layer
+    {
+      public:
+        ConstantOfShape();
 
-  virtual int load_param(const ncnn::ParamDict& pd);
+        virtual int load_param(const ncnn::ParamDict& pd);
 
-  virtual int forward(const ncnn::Mat& bottom_blob, ncnn::Mat& top_blob,
-                      const ncnn::Option& opt) const;
+        virtual int forward(const ncnn::Mat& bottom_blob, ncnn::Mat& top_blob, const ncnn::Option& opt) const;
 
- public:
-  float val;
-};
+      public:
+        float val;
+    };
 
 }  // namespace mmdeploy
 

@@ -4,21 +4,22 @@
 
 #include "layer.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class TopK : public ncnn::Layer {
- public:
-  TopK();
-  virtual int load_param(const ncnn::ParamDict& pd);
-  virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs, std::vector<ncnn::Mat>& top_blobs,
-                      const ncnn::Option& opt) const;
+    class TopK : public ncnn::Layer
+    {
+      public:
+        TopK();
+        virtual int load_param(const ncnn::ParamDict& pd);
+        virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs, std::vector<ncnn::Mat>& top_blobs, const ncnn::Option& opt) const;
 
- public:
-  int axis;
-  int largest;
-  int sorted;
-  int keep_dims;
-};
+      public:
+        int axis;
+        int largest;
+        int sorted;
+        int keep_dims;
+    };
 
 }  // namespace mmdeploy
 

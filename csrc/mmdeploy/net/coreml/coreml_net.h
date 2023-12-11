@@ -5,32 +5,35 @@
 
 #include "mmdeploy/core/net.h"
 
-namespace mmdeploy::framework {
+namespace mmdeploy::framework
+{
 
-namespace coreml {
-class Execution;
-}  // namespace coreml
+    namespace coreml
+    {
+        class Execution;
+    }  // namespace coreml
 
-class CoreMLNet : public Net {
- public:
-  ~CoreMLNet() override = default;
-  Result<void> Init(const Value& cfg) override;
-  Result<void> Deinit() override;
-  Result<Span<Tensor>> GetInputTensors() override;
-  Result<Span<Tensor>> GetOutputTensors() override;
-  Result<void> Reshape(Span<TensorShape> input_shapes) override;
-  Result<void> Forward() override;
-  Result<void> ForwardAsync(Event* event) override;
+    class CoreMLNet : public Net
+    {
+      public:
+        ~CoreMLNet() override = default;
+        Result<void>         Init(const Value& cfg) override;
+        Result<void>         Deinit() override;
+        Result<Span<Tensor>> GetInputTensors() override;
+        Result<Span<Tensor>> GetOutputTensors() override;
+        Result<void>         Reshape(Span<TensorShape> input_shapes) override;
+        Result<void>         Forward() override;
+        Result<void>         ForwardAsync(Event* event) override;
 
- private:
-  std::unique_ptr<coreml::Execution> execution_;
-  std::vector<Tensor> input_tensors_;
-  std::vector<Tensor> output_tensors_;
-  Device device_;
-  Stream stream_;
+      private:
+        std::unique_ptr<coreml::Execution> execution_;
+        std::vector<Tensor>                input_tensors_;
+        std::vector<Tensor>                output_tensors_;
+        Device                             device_;
+        Stream                             stream_;
 
-  friend class coreml::Execution;
-};
+        friend class coreml::Execution;
+    };
 
 }  // namespace mmdeploy::framework
 

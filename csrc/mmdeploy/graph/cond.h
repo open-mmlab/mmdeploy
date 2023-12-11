@@ -6,27 +6,30 @@
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/profiler.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy::graph
+{
 
-class Cond : public Node {
-  friend class CondBuilder;
+    class Cond : public Node
+    {
+        friend class CondBuilder;
 
- public:
-  Sender<Value> Process(Sender<Value> input) override;
+      public:
+        Sender<Value> Process(Sender<Value> input) override;
 
- private:
-  profiler::Scope* scope_{nullptr};
-  std::unique_ptr<Node> node_;
-  int n_output_{0};
-};
+      private:
+        profiler::Scope*      scope_{nullptr};
+        std::unique_ptr<Node> node_;
+        int                   n_output_{0};
+    };
 
-class CondBuilder : public Builder {
- public:
-  explicit CondBuilder(Value config);
+    class CondBuilder : public Builder
+    {
+      public:
+        explicit CondBuilder(Value config);
 
- protected:
-  Result<unique_ptr<Node>> BuildImpl() override;
-};
+      protected:
+        Result<unique_ptr<Node>> BuildImpl() override;
+    };
 
 }  // namespace mmdeploy::graph
 

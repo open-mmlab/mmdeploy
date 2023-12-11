@@ -7,13 +7,14 @@
 
 #include "type_traits.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-template <typename T>
-using iter_value_t = typename std::iterator_traits<uncvref_t<T> >::value_type;
+    template<typename T>
+    using iter_value_t = typename std::iterator_traits<uncvref_t<T>>::value_type;
 
-template <typename T>
-using iter_reference_t = decltype(*std::declval<T&>());
+    template<typename T>
+    using iter_reference_t = decltype(*std::declval<T&>());
 
 }  // namespace mmdeploy
 

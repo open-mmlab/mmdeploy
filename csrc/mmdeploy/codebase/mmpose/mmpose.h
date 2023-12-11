@@ -9,19 +9,22 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
 
-namespace mmdeploy::mmpose {
+namespace mmdeploy::mmpose
+{
 
-struct PoseDetectorOutput {
-  struct KeyPoint {
-    std::array<float, 2> bbox;  // x, y
-    float score;
-    MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
-  };
-  std::vector<KeyPoint> key_points;
-  MMDEPLOY_ARCHIVE_MEMBERS(key_points);
-};
+    struct PoseDetectorOutput
+    {
+        struct KeyPoint
+        {
+            std::array<float, 2> bbox;  // x, y
+            float                score;
+            MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
+        };
+        std::vector<KeyPoint> key_points;
+        MMDEPLOY_ARCHIVE_MEMBERS(key_points);
+    };
 
-MMDEPLOY_DECLARE_CODEBASE(MMPose, mmpose);
+    MMDEPLOY_DECLARE_CODEBASE(MMPose, mmpose);
 
 }  // namespace mmdeploy::mmpose
 

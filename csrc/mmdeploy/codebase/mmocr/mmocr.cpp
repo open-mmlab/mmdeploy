@@ -5,8 +5,9 @@
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy::mmocr
+{
 
-MMDEPLOY_REGISTER_CODEBASE(MMOCR);
+    MMDEPLOY_REGISTER_CODEBASE(MMOCR);
 
 }  // namespace mmdeploy::mmocr
