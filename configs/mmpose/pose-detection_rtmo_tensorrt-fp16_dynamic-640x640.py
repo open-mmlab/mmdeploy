@@ -13,6 +13,7 @@ onnx_config = dict(
             0: 'batch'
         }
     })
+
 backend_config = dict(
     common_config=dict(max_workspace_size=1 << 30),
     model_inputs=[
@@ -29,7 +30,7 @@ codebase_config = dict(
         score_threshold=0.05,
         iou_threshold=0.5,
         max_output_boxes_per_class=200,
-        pre_top_k=5000,
-        keep_top_k=100,
+        pre_top_k=2000,
+        keep_top_k=50,
         background_label_id=-1,
     ))
