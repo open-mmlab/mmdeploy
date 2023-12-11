@@ -101,6 +101,10 @@ class End2EndModel(BaseBackendModel):
 
         codebase_cfg = get_codebase_config(self.deploy_cfg)
         codec = self.model_cfg.codec
+
+        if codec.type == 'YOLOXPoseAnnotationProcessor':
+            return self.pack_yolox_pose_result(batch_outputs, data_samples)
+
         if isinstance(codec, (list, tuple)):
             codec = codec[-1]
 
@@ -184,6 +188,8 @@ class End2EndModel(BaseBackendModel):
         """
         assert preds[0].shape[0] == len(data_samples)
         batched_dets, batched_kpts = preds
+        # print(f'batched_dets:\n {batched_dets.flatten()[:10]}\n\n')
+        # print(f'batched_kpts:\n {batched_kpts.flatten()[:10]}\n\n')
         for data_sample_idx, data_sample in enumerate(data_samples):
             bboxes = batched_dets[data_sample_idx, :, :4]
             bbox_scores = batched_dets[data_sample_idx, :, 4]
