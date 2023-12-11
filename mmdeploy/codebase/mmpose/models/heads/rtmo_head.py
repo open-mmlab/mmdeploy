@@ -92,7 +92,7 @@ def predict(self,
     kpt_vis = flatten_kpt_vis[batch_inds, nms_indices, ...]
     grids = self.flatten_priors[nms_indices, ...]
 
-    # filter and decode keypoints
+    # decode keypoints
     bbox_cs = torch.cat(bbox_xyxy2cs(dets[..., :4], self.bbox_padding), dim=-1)
     keypoints = self.dcc.forward_test(pose_vecs, bbox_cs, grids)
     pred_kpts = torch.cat([keypoints, kpt_vis.unsqueeze(-1)], dim=-1)
