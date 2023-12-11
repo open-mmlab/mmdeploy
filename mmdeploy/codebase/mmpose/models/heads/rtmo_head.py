@@ -46,7 +46,7 @@ def predict(self,
     assert len(cls_scores) == len(bbox_preds)
     num_imgs = cls_scores[0].shape[0]
 
-    # flatten cls_scores, bbox_preds and objectness
+    # flatten and concat predictions
     scores = self._flatten_predictions(cls_scores).sigmoid()
     flatten_bbox_preds = self._flatten_predictions(bbox_preds)
     flatten_pose_vecs = self._flatten_predictions(pose_vecs)
@@ -85,15 +85,15 @@ def predict(self,
 
     batch_inds = torch.arange(num_imgs, device=scores.device).view(-1, 1)
 
-    # filter bounding boxes
+    # filter predictions
     dets = torch.cat([bboxes, scores], dim=2)
     dets = dets[batch_inds, nms_indices, ...]
-    bbox_cs = torch.cat(bbox_xyxy2cs(dets[..., :4], self.bbox_padding), dim=-1)
-
-    # filter and decode keypoints
     pose_vecs = flatten_pose_vecs[batch_inds, nms_indices, ...]
     kpt_vis = flatten_kpt_vis[batch_inds, nms_indices, ...]
     grids = self.flatten_priors[nms_indices, ...]
+
+    # filter and decode keypoints
+    bbox_cs = torch.cat(bbox_xyxy2cs(dets[..., :4], self.bbox_padding), dim=-1)
     keypoints = self.dcc.forward_test(pose_vecs, bbox_cs, grids)
     pred_kpts = torch.cat([keypoints, kpt_vis.unsqueeze(-1)], dim=-1)
 
