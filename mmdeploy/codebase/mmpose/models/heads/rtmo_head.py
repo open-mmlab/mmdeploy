@@ -88,7 +88,7 @@ def predict(self,
     # filter bounding boxes
     dets = torch.cat([bboxes, scores], dim=2)
     dets = dets[batch_inds, nms_indices, ...]
-    bbox_cs = torch.cat(bbox_xyxy2cs(dets[..., :4], 1.25), dim=-1)
+    bbox_cs = torch.cat(bbox_xyxy2cs(dets[..., :4], self.bbox_padding), dim=-1)
 
     # filter and decode keypoints
     pose_vecs = flatten_pose_vecs[batch_inds, nms_indices, ...]
