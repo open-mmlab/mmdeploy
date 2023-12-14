@@ -91,21 +91,16 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     cd ppl.cv &&\
     ./build.sh cuda
   
-# download mmdeploy
-RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy
-
-# build TRT custom op
-RUN cd mmdeploy &&\
+# build mmdeploy
+RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy &&\
+    cd mmdeploy &&\
     mkdir -p build && cd build &&\
     cmake .. \
     	-DMMDEPLOY_TARGET_BACKENDS="trt" \
     	-DTENSORRT_DIR=TENSORRT_DIR    &&\
     make -j$(nproc) && make install && cd .. &&\
     python3 -m pip install --upgrade setuptools &&\ 
-    python3 -m pip install -e .
-
-# build mmdeploy
-RUN cd mmdeploy &&\
+    python3 -m pip install -e . &&\
     mkdir -p build && cd build &&\
     cmake .. \
     	-DMMDEPLOY_BUILD_SDK=ON \
