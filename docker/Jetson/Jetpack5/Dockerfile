@@ -5,7 +5,7 @@ ENV NVIDIA_VISIBLE_DEVICE all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV CUDA_HOME="/usr/local/cuda"
 ENV PATH="/usr/local/cuda/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/lib/python3.8/site-packages/opencv-python.libs${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/lib/python3.8/dist-packages/opencv-python.libs${LD_LIBRARY_PATH}"
 ENV TENSORRT_DIR="/usr/include/aarch64-linux-gnu"
 
 ENV DEBIAN_FRONTEND=nointeractive
@@ -33,11 +33,9 @@ RUN git clone https://github.com/openppl-public/ppl.cv.git &&\
     echo "export PPLCV_DIR=/root/workspace/ppl.cv" >> ~/.bashrc &&\
     ./build.sh cuda
   
-# download mmdeploy
-RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy
-
-# build TRT custom op
-RUN cd mmdeploy &&\
+# build mmdeploy
+RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open-mmlab/mmdeploy &&\
+    cd mmdeploy &&\
     mkdir -p build && cd build &&\
     cmake .. \
     	-DMMDEPLOY_TARGET_BACKENDS="trt" \
@@ -45,10 +43,7 @@ RUN cd mmdeploy &&\
     make -j$(nproc) && make install && cd .. &&\
     cd mmdeploy &&\
     python3 -m pip install --upgrade setuptools &&\
-    python3 -m pip install -e .
-    
-# build mmdeploy
-RUN cd mmdeploy &&\
+    python3 -m pip install -e . &&\
     mkdir -p build && cd build &&\
     cmake .. \
     	-DMMDEPLOY_BUILD_SDK=ON \
@@ -82,7 +77,7 @@ RUN sed -i '/def _run_symbolic_method(g, op_name, symbolic_fn, args):/,/except T
             env={},\
        )\
        return symbolic_fn(graph_context, \*args)/\
-    }' /path/to/torch/onnx/symbolic_helper.py
+    }' /usr/local/lib/python3.8/dist-packages/torch/onnx/symbolic_helper.py
 
 ENV MMDeploy_DIR="/root/workspace/mmdeploy/build/install/lib/cmake/MMDeploy"
 ENV LD_LIBRARY_PATH="/root/workspace/mmdeploy/build/lib:${BACKUP_LD_LIBRARY_PATH}"
