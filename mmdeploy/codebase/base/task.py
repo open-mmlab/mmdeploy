@@ -126,6 +126,11 @@ class BaseTask(metaclass=ABCMeta):
         if hasattr(model, 'backbone') and hasattr(model.backbone,
                                                   'switch_to_deploy'):
             model.backbone.switch_to_deploy()
+
+        if hasattr(model, 'switch_to_deploy') and callable(
+                model.switch_to_deploy):
+            model.switch_to_deploy()
+
         model = model.to(self.device)
         model.eval()
         return model
