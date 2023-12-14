@@ -5,7 +5,7 @@ ENV NVIDIA_VISIBLE_DEVICE all
 ENV NVIDIA_DRIVER_CAPABILITIES all
 ENV CUDA_HOME="/usr/local/cuda"
 ENV PATH="/usr/local/cuda/bin:${PATH}"
-ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/lib/python3.8/site-packages/opencv-python.libs/${LD_LIBRARY_PATH}"
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:/usr/local/lib/python3.8/dist-packages/opencv-python.libs/${LD_LIBRARY_PATH}"
 ENV TENSORRT_DIR="/usr/include/aarch64-linux-gnu"
 
 ENV DEBIAN_FRONTEND=nointeractive
