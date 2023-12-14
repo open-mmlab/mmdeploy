@@ -160,3 +160,7 @@ models:
           input_img: *img_human_pose
           test_img: *img_human_pose
         deploy_config: configs/mmpose/pose-detection_rtmo_onnxruntime_dynamic.py
+      - convert_image:
+          input_img: *img_human_pose
+          test_img: *img_human_pose
+        deploy_config: configs/mmpose/pose-detection_rtmo_tensorrt-fp16_dynamic-640x640.py
