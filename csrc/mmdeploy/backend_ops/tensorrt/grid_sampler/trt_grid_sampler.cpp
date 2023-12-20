@@ -58,7 +58,10 @@ namespace mmdeploy
         return ret;
     }
 
-    bool TRTGridSampler::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool TRTGridSampler::supportsFormatCombination(int                               pos,
+                                                   const nvinfer1::PluginTensorDesc* ioDesc,
+                                                   int                               nbInputs,
+                                                   int                               nbOutputs) TRT_NOEXCEPT
     {
         if (pos == 0)
         {
@@ -71,12 +74,18 @@ namespace mmdeploy
         }
     }
 
-    void TRTGridSampler::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) TRT_NOEXCEPT
+    void TRTGridSampler::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                         int                                      nbInputs,
+                                         const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                         int                                      nbOutputs) TRT_NOEXCEPT
     {
         // Validate input arguments
     }
 
-    size_t TRTGridSampler::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT
+    size_t TRTGridSampler::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                            int                               nbInputs,
+                                            const nvinfer1::PluginTensorDesc* outputs,
+                                            int                               nbOutputs) const TRT_NOEXCEPT
     {
         return 0;
     }
@@ -128,7 +137,17 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                grid_sample<float>((float*)outputs[0], (float*)inputs[0], (float*)inputs[1], &(output_dims.d[0]), &(input_dims.d[0]), &(grid_dims.d[0]), input_dims.nbDims, interp_mode, padding_mode, mAlignCorners, stream);
+                grid_sample<float>((float*)outputs[0],
+                                   (float*)inputs[0],
+                                   (float*)inputs[1],
+                                   &(output_dims.d[0]),
+                                   &(input_dims.d[0]),
+                                   &(grid_dims.d[0]),
+                                   input_dims.nbDims,
+                                   interp_mode,
+                                   padding_mode,
+                                   mAlignCorners,
+                                   stream);
                 break;
             default:
                 return 1;
@@ -177,8 +196,9 @@ namespace mmdeploy
 
     TRTGridSamplerCreator::TRTGridSamplerCreator()
     {
-        mPluginAttributes = std::vector<nvinfer1::PluginField>(
-            {nvinfer1::PluginField("interpolation_mode"), nvinfer1::PluginField("padding_mode"), nvinfer1::PluginField("align_corners")});
+        mPluginAttributes = std::vector<nvinfer1::PluginField>({nvinfer1::PluginField("interpolation_mode"),
+                                                                nvinfer1::PluginField("padding_mode"),
+                                                                nvinfer1::PluginField("align_corners")});
         mFC.nbFields = mPluginAttributes.size();
         mFC.fields   = mPluginAttributes.data();
     }

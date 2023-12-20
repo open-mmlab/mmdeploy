@@ -73,7 +73,10 @@ namespace mmdeploy
         return ret;
     }
 
-    size_t TRTBatchedNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT
+    size_t TRTBatchedNMS::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                           int                               nbInputs,
+                                           const nvinfer1::PluginTensorDesc* outputs,
+                                           int                               nbOutputs) const TRT_NOEXCEPT
     {
         size_t batch_size    = inputs[0].dims.d[0];
         size_t boxes_size    = inputs[0].dims.d[1] * inputs[0].dims.d[2] * inputs[0].dims.d[3];
@@ -81,7 +84,15 @@ namespace mmdeploy
         size_t num_priors    = inputs[0].dims.d[1];
         bool   shareLocation = (inputs[0].dims.d[2] == 1);
         int    topk          = param.topK > 0 && param.topK <= inputs[1].dims.d[1] ? param.topK : inputs[1].dims.d[1];
-        return detectionInferenceWorkspaceSize(shareLocation, batch_size, boxes_size, score_size, param.numClasses, num_priors, topk, DataType::kFLOAT, DataType::kFLOAT);
+        return detectionInferenceWorkspaceSize(shareLocation,
+                                               batch_size,
+                                               boxes_size,
+                                               score_size,
+                                               param.numClasses,
+                                               num_priors,
+                                               topk,
+                                               DataType::kFLOAT,
+                                               DataType::kFLOAT);
     }
 
     int TRTBatchedNMS::enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
@@ -107,31 +118,30 @@ namespace mmdeploy
         int               topk =
             param.topK > 0 && param.topK <= inputDesc[1].dims.d[1] ? param.topK : inputDesc[1].dims.d[1];
         bool           rotated = false;
-        pluginStatus_t status  = nmsInference(
-            stream,
-            batch_size,
-            boxes_size,
-            score_size,
-            shareLocation,
-            param.backgroundLabelId,
-            num_priors,
-            param.numClasses,
-            topk,
-            param.keepTopK,
-            param.scoreThreshold,
-            param.iouThreshold,
-            DataType::kFLOAT,
-            locData,
-            DataType::kFLOAT,
-            confData,
-            nmsedDets,
-            nmsedLabels,
-            nmsedIndex,
-            workSpace,
-            param.isNormalized,
-            false,
-            mClipBoxes,
-            rotated);
+        pluginStatus_t status  = nmsInference(stream,
+                                             batch_size,
+                                             boxes_size,
+                                             score_size,
+                                             shareLocation,
+                                             param.backgroundLabelId,
+                                             num_priors,
+                                             param.numClasses,
+                                             topk,
+                                             param.keepTopK,
+                                             param.scoreThreshold,
+                                             param.iouThreshold,
+                                             DataType::kFLOAT,
+                                             locData,
+                                             DataType::kFLOAT,
+                                             confData,
+                                             nmsedDets,
+                                             nmsedLabels,
+                                             nmsedIndex,
+                                             workSpace,
+                                             param.isNormalized,
+                                             false,
+                                             mClipBoxes,
+                                             rotated);
         ASSERT(status == STATUS_SUCCESS);
 
         return 0;
@@ -150,12 +160,18 @@ namespace mmdeploy
         serialize_value(&buffer, mReturnIndex);
     }
 
-    void TRTBatchedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) TRT_NOEXCEPT
+    void TRTBatchedNMS::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                        int                                      nbInputs,
+                                        const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                        int                                      nbOutputs) TRT_NOEXCEPT
     {
         // Validate input arguments
     }
 
-    bool TRTBatchedNMS::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool TRTBatchedNMS::supportsFormatCombination(int                               pos,
+                                                  const nvinfer1::PluginTensorDesc* ioDesc,
+                                                  int                               nbInputs,
+                                                  int                               nbOutputs) TRT_NOEXCEPT
     {
         if (pos == 3 || pos == 4)
         {
@@ -184,7 +200,9 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::DataType TRTBatchedNMS::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType TRTBatchedNMS::getOutputDataType(int                       index,
+                                                        const nvinfer1::DataType* inputTypes,
+                                                        int                       nbInputs) const TRT_NOEXCEPT
     {
         ASSERT(index >= 0 && index < this->getNbOutputs());
         if (index == 1 || index == 2)
@@ -289,7 +307,9 @@ namespace mmdeploy
         return plugin;
     }
 
-    IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(const char* name, const void* serialData, size_t serialLength) TRT_NOEXCEPT
+    IPluginV2Ext* TRTBatchedNMSCreator::deserializePlugin(const char* name,
+                                                          const void* serialData,
+                                                          size_t      serialLength) TRT_NOEXCEPT
     {
         // This object will be deleted when the network is destroyed, which will
         // call NMS::destroy()

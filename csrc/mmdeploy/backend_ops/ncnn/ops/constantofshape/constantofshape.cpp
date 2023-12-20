@@ -8,6 +8,7 @@ namespace mmdeploy
     using namespace ncnn;
     DEFINE_LAYER_CREATOR(ConstantOfShape)
     DEFINE_NCNN_OPS(ConstantOfShape, ConstantOfShape)
+
     ConstantOfShape::ConstantOfShape()
     {
         one_blob_only   = true;
@@ -20,7 +21,9 @@ namespace mmdeploy
         return 0;
     }
 
-    int ConstantOfShape::forward(const Mat& bottom_blob, Mat& top_blob, const Option& opt) const
+    int ConstantOfShape::forward(const Mat&    bottom_blob,
+                                 Mat&          top_blob,
+                                 const Option& opt) const
     {
         int          dims       = bottom_blob.w - 1;
         const float* bottom_ptr = bottom_blob;

@@ -2,7 +2,11 @@
 #include <cstdint>
 
 template<typename T>
-T bilinear_interpolate_2d(const T* src, const int64_t src_h, const int64_t src_w, const T h, const T w)
+T bilinear_interpolate_2d(const T*      src,
+                          const int64_t src_h,
+                          const int64_t src_w,
+                          const T       h,
+                          const T       w)
 {
     if (h <= -1 || src_h <= h || w <= -1 || src_w <= w)
     {
@@ -36,7 +40,25 @@ T bilinear_interpolate_2d(const T* src, const int64_t src_h, const int64_t src_w
 
 // output: (channels * kernel_h * kernel_w, dst_h * dst_w)
 template<typename T>
-void deformable_im2col_2d(const T* input, const T* offset, const T* mask, const int64_t src_h, const int64_t src_w, const int64_t kernel_h, const int64_t kernel_w, const int64_t pad_h, const int64_t pad_w, const int64_t stride_h, const int64_t stride_w, const int64_t dilation_h, const int64_t dilation_w, const int64_t channels, const int64_t offset_groups, const int64_t dst_h, const int64_t dst_w, const bool use_mask, T* columns)
+void deformable_im2col_2d(const T*      input,
+                          const T*      offset,
+                          const T*      mask,
+                          const int64_t src_h,
+                          const int64_t src_w,
+                          const int64_t kernel_h,
+                          const int64_t kernel_w,
+                          const int64_t pad_h,
+                          const int64_t pad_w,
+                          const int64_t stride_h,
+                          const int64_t stride_w,
+                          const int64_t dilation_h,
+                          const int64_t dilation_w,
+                          const int64_t channels,
+                          const int64_t offset_groups,
+                          const int64_t dst_h,
+                          const int64_t dst_w,
+                          const bool    use_mask,
+                          T*            columns)
 {
     const int64_t workload = channels * dst_h * dst_w;
     for (int64_t index = 0; index != workload; ++index)

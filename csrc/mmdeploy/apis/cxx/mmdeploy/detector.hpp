@@ -46,14 +46,21 @@ namespace mmdeploy
 
                 Detection* results{};
                 int*       result_count{};
-                auto       ec = mmdeploy_detector_apply(detector_, reinterpret(images.data()), static_cast<int>(images.size()), &results, &result_count);
+                auto       ec = mmdeploy_detector_apply(detector_,
+                                                  reinterpret(images.data()),
+                                                  static_cast<int>(images.size()),
+                                                  &results,
+                                                  &result_count);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
 
-                std::shared_ptr<Detection> data(results, [result_count, count = images.size()](auto p)
-                                                { mmdeploy_detector_release_result(p, result_count, count); });
+                std::shared_ptr<Detection> data(results,
+                                                [result_count, count = images.size()](auto p)
+                                                {
+                                                    mmdeploy_detector_release_result(p, result_count, count);
+                                                });
 
                 std::vector<Result>        rets;
                 rets.reserve(images.size());

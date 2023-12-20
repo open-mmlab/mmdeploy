@@ -147,7 +147,13 @@ namespace mmdeploy::mmdet
         return objs;
     }
 
-    int RTMDetSepBNHead::RTMDetFeatDeocde(const Tensor& bbox_pred, const Tensor& cls_score, const float stride, const float offset, std::vector<float>& filter_boxes, std::vector<float>& obj_probs, std::vector<int>& class_ids) const
+    int RTMDetSepBNHead::RTMDetFeatDeocde(const Tensor&       bbox_pred,
+                                          const Tensor&       cls_score,
+                                          const float         stride,
+                                          const float         offset,
+                                          std::vector<float>& filter_boxes,
+                                          std::vector<float>& obj_probs,
+                                          std::vector<int>&   class_ids) const
     {
         int  cls_param_num = cls_score.shape(1);
         int  feat_h        = bbox_pred.shape(2);
@@ -199,7 +205,14 @@ namespace mmdeploy::mmdet
         return valid_count;
     }
 
-    std::array<float, 4> RTMDetSepBNHead::RTMDetdecode(float tl_x, float tl_y, float br_x, float br_y, float stride, float offset, int j, int i) const
+    std::array<float, 4> RTMDetSepBNHead::RTMDetdecode(float tl_x,
+                                                       float tl_y,
+                                                       float br_x,
+                                                       float br_y,
+                                                       float stride,
+                                                       float offset,
+                                                       int   j,
+                                                       int   i) const
     {
         tl_x = (offset + j) * stride - tl_x;
         tl_y = (offset + i) * stride - tl_y;

@@ -5,7 +5,15 @@
 #include "common_cuda_helper.hpp"
 
 template<typename scalar_t>
-__device__ scalar_t ms_deform_attn_im2col_bilinear(const scalar_t*& bottom_data, const int& height, const int& width, const int& nheads, const int& channels, const scalar_t& h, const scalar_t& w, const int& m, const int& c)
+__device__ scalar_t ms_deform_attn_im2col_bilinear(const scalar_t*& bottom_data,
+                                                   const int&       height,
+                                                   const int&       width,
+                                                   const int&       nheads,
+                                                   const int&       channels,
+                                                   const scalar_t&  h,
+                                                   const scalar_t&  w,
+                                                   const int&       m,
+                                                   const int&       c)
 {
     const int      h_low  = floorf(h);
     const int      w_low  = floorf(w);
@@ -56,16 +64,15 @@ __device__ scalar_t ms_deform_attn_im2col_bilinear(const scalar_t*& bottom_data,
 }
 
 template<>
-__device__ __half ms_deform_attn_im2col_bilinear<__half>(
-    const __half*& bottomData,
-    int32_t const& height,
-    int32_t const& width,
-    int32_t const& nHeads,
-    int32_t const& channels,
-    const __half&  h,
-    const __half&  w,
-    int32_t const& m,
-    int32_t const& c)
+__device__ __half ms_deform_attn_im2col_bilinear<__half>(const __half*& bottomData,
+                                                         int32_t const& height,
+                                                         int32_t const& width,
+                                                         int32_t const& nHeads,
+                                                         int32_t const& channels,
+                                                         const __half&  h,
+                                                         const __half&  w,
+                                                         int32_t const& m,
+                                                         int32_t const& c)
 {
     int32_t const hLow  = __half2int_rd(h);
     int32_t const wLow  = __half2int_rd(w);
@@ -144,21 +151,20 @@ __device__ __half ms_deform_attn_im2col_bilinear<__half>(
 
 #if 1
 template<typename scalar_t>
-__global__ void ms_deformable_im2col_gpu_kernel(
-    int32_t const   n,
-    scalar_t const* dataValue,
-    int32_t const*  dataSpatialShapes,
-    int32_t const*  dataLevelStartIndex,
-    scalar_t const* dataSamplingLoc,
-    scalar_t const* dataAttnWeight,
-    int32_t const   batchSize,
-    int32_t const   spatialSize,
-    int32_t const   numHeads,
-    int32_t const   channels,
-    int32_t const   numLevels,
-    int32_t const   numQuery,
-    int32_t const   numPoint,
-    scalar_t*       dataCol)
+__global__ void ms_deformable_im2col_gpu_kernel(int32_t const   n,
+                                                scalar_t const* dataValue,
+                                                int32_t const*  dataSpatialShapes,
+                                                int32_t const*  dataLevelStartIndex,
+                                                scalar_t const* dataSamplingLoc,
+                                                scalar_t const* dataAttnWeight,
+                                                int32_t const   batchSize,
+                                                int32_t const   spatialSize,
+                                                int32_t const   numHeads,
+                                                int32_t const   channels,
+                                                int32_t const   numLevels,
+                                                int32_t const   numQuery,
+                                                int32_t const   numPoint,
+                                                scalar_t*       dataCol)
 {
     CUDA_1D_KERNEL_LOOP(index, n)
     {
@@ -197,7 +203,15 @@ __global__ void ms_deformable_im2col_gpu_kernel(
 
                 if (hIm > -1 && wIm > -1 && hIm < spatialH && wIm < spatialW)
                 {
-                    col += ms_deform_attn_im2col_bilinear(dataValuePtr, spatialH, spatialW, numHeads, channels, hIm, wIm, mCol, cCol) *
+                    col += ms_deform_attn_im2col_bilinear(dataValuePtr,
+                                                          spatialH,
+                                                          spatialW,
+                                                          numHeads,
+                                                          channels,
+                                                          hIm,
+                                                          wIm,
+                                                          mCol,
+                                                          cCol) *
                            weight;
                 }
 
@@ -210,21 +224,20 @@ __global__ void ms_deformable_im2col_gpu_kernel(
 }
 
 template<>
-__global__ void ms_deformable_im2col_gpu_kernel<__half>(
-    int32_t const  n,
-    const __half*  dataValue,
-    int32_t const* dataSpatialShapes,
-    int32_t const* dataLevelStartIndex,
-    const __half*  dataSamplingLoc,
-    const __half*  dataAttnWeight,
-    int32_t const  batchSize,
-    int32_t const  spatialSize,
-    int32_t const  numHeads,
-    int32_t const  channels,
-    int32_t const  numLevels,
-    int32_t const  numQuery,
-    int32_t const  numPoint,
-    __half*        dataCol)
+__global__ void ms_deformable_im2col_gpu_kernel<__half>(int32_t const  n,
+                                                        const __half*  dataValue,
+                                                        int32_t const* dataSpatialShapes,
+                                                        int32_t const* dataLevelStartIndex,
+                                                        const __half*  dataSamplingLoc,
+                                                        const __half*  dataAttnWeight,
+                                                        int32_t const  batchSize,
+                                                        int32_t const  spatialSize,
+                                                        int32_t const  numHeads,
+                                                        int32_t const  channels,
+                                                        int32_t const  numLevels,
+                                                        int32_t const  numQuery,
+                                                        int32_t const  numPoint,
+                                                        __half*        dataCol)
 {
     CUDA_1D_KERNEL_LOOP(index, n)
     {
@@ -269,7 +282,15 @@ __global__ void ms_deformable_im2col_gpu_kernel<__half>(
                 if (__hgt(hIm, kMINUS_ONE) && __hgt(wIm, kMINUS_ONE) && __hlt(hIm, spatialHHalf) &&
                     __hlt(wIm, spatialWHalf))
                 {
-                    tpVal = ms_deform_attn_im2col_bilinear(dataValuePtr, spatialH, spatialW, numHeads, channels, hIm, wIm, mCol, cCol);
+                    tpVal = ms_deform_attn_im2col_bilinear(dataValuePtr,
+                                                           spatialH,
+                                                           spatialW,
+                                                           numHeads,
+                                                           channels,
+                                                           hIm,
+                                                           wIm,
+                                                           mCol,
+                                                           cCol);
                     col   = __hadd(col, __hmul(tpVal, weight));
                 }
     #else
@@ -283,7 +304,15 @@ __global__ void ms_deformable_im2col_gpu_kernel<__half>(
                     (__half2float(hIm) < __half2float(spatialHHalf)) &&
                     (__half2float(wIm) < __half2float(spatialWHalf)))
                 {
-                    tpVal = ms_deform_attn_im2col_bilinear(dataValuePtr, spatialH, spatialW, numHeads, channels, hIm, wIm, mCol, cCol);
+                    tpVal = ms_deform_attn_im2col_bilinear(dataValuePtr,
+                                                           spatialH,
+                                                           spatialW,
+                                                           numHeads,
+                                                           channels,
+                                                           hIm,
+                                                           wIm,
+                                                           mCol,
+                                                           cCol);
                     col   = __float2half(__half2float(col) + (__half2float(tpVal) * __half2float(weight)));
                 }
     #endif

@@ -69,40 +69,80 @@
 #include "trt_plugin_helper.hpp"
 
 template<typename scalar_t>
-void deform_conv_im2col(const scalar_t* input, const scalar_t* offset, scalar_t* column, const int channels, const int height, const int width, const int ksize_h, const int ksize_w, const int pad_h, const int pad_w, const int stride_h, const int stride_w, const int dilation_h, const int dilation_w, const int parallel_imgs, const int deformable_group, cudaStream_t stream)
+void deform_conv_im2col(const scalar_t* input,
+                        const scalar_t* offset,
+                        scalar_t*       column,
+                        const int       channels,
+                        const int       height,
+                        const int       width,
+                        const int       ksize_h,
+                        const int       ksize_w,
+                        const int       pad_h,
+                        const int       pad_w,
+                        const int       stride_h,
+                        const int       stride_w,
+                        const int       dilation_h,
+                        const int       dilation_w,
+                        const int       parallel_imgs,
+                        const int       deformable_group,
+                        cudaStream_t    stream)
 {
     int height_col                   = (height + 2 * pad_h - (dilation_h * (ksize_h - 1) + 1)) / stride_h + 1;
     int width_col                    = (width + 2 * pad_w - (dilation_w * (ksize_w - 1) + 1)) / stride_w + 1;
     int num_kernels                  = channels * height_col * width_col * parallel_imgs;
     int channel_per_deformable_group = channels / deformable_group;
 
-    deformable_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, stream>>>(
-        num_kernels,
-        input,
-        offset,
-        height,
-        width,
-        ksize_h,
-        ksize_w,
-        pad_h,
-        pad_w,
-        stride_h,
-        stride_w,
-        dilation_h,
-        dilation_w,
-        channel_per_deformable_group,
-        parallel_imgs,
-        channels,
-        deformable_group,
-        height_col,
-        width_col,
-        column);
+    deformable_im2col_gpu_kernel<scalar_t><<<GET_BLOCKS(num_kernels),
+                                             THREADS_PER_BLOCK,
+                                             0,
+                                             stream>>>(num_kernels,
+                                                       input,
+                                                       offset,
+                                                       height,
+                                                       width,
+                                                       ksize_h,
+                                                       ksize_w,
+                                                       pad_h,
+                                                       pad_w,
+                                                       stride_h,
+                                                       stride_w,
+                                                       dilation_h,
+                                                       dilation_w,
+                                                       channel_per_deformable_group,
+                                                       parallel_imgs,
+                                                       channels,
+                                                       deformable_group,
+                                                       height_col,
+                                                       width_col,
+                                                       column);
 
     cudaCheckError();
 }
 
 template<typename scalar_t>
-void deform_conv(const scalar_t* input, const scalar_t* weight, const scalar_t* offset, scalar_t* output, void* workspace, int batchSize, int nInputPlane, int inputHeight, int inputWidth, int nOutputPlane, int kW, int kH, int dW, int dH, int padW, int padH, int dilationW, int dilationH, int group, int deformable_group, int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream)
+void deform_conv(const scalar_t* input,
+                 const scalar_t* weight,
+                 const scalar_t* offset,
+                 scalar_t*       output,
+                 void*           workspace,
+                 int             batchSize,
+                 int             nInputPlane,
+                 int             inputHeight,
+                 int             inputWidth,
+                 int             nOutputPlane,
+                 int             kW,
+                 int             kH,
+                 int             dW,
+                 int             dH,
+                 int             padW,
+                 int             padH,
+                 int             dilationW,
+                 int             dilationH,
+                 int             group,
+                 int             deformable_group,
+                 int             im2col_step,
+                 cublasHandle_t  cublas_handle,
+                 cudaStream_t    stream)
 {
     size_t word_size = sizeof(scalar_t);
 
@@ -112,8 +152,7 @@ void deform_conv(const scalar_t* input, const scalar_t* weight, const scalar_t* 
 
     long outputHW = outputHeight * outputWidth;
     long kHW      = kH * kW;
-    long columns_size =
-        mmdeploy::getAlignedSize(nInputPlane * kHW * im2col_step * outputHW * word_size);
+    long      columns_size = mmdeploy::getAlignedSize(nInputPlane * kHW * im2col_step * outputHW * word_size);
 
     // column buffer for img2col
     char*     workspace_ptr = reinterpret_cast<char*>(workspace);
@@ -148,7 +187,23 @@ void deform_conv(const scalar_t* input, const scalar_t* weight, const scalar_t* 
         const scalar_t* input_start  = input + elt * input_elt_step;
         const scalar_t* offset_start = offset + elt * offset_elt_step;
 
-        deform_conv_im2col<scalar_t>(input_start, offset_start, columns, nInputPlane, inputHeight, inputWidth, kH, kW, padH, padW, dH, dW, dilationH, dilationW, im2col_step, deformable_group, stream);
+        deform_conv_im2col<scalar_t>(input_start,
+                                     offset_start,
+                                     columns,
+                                     nInputPlane,
+                                     inputHeight,
+                                     inputWidth,
+                                     kH,
+                                     kW,
+                                     padH,
+                                     padW,
+                                     dH,
+                                     dW,
+                                     dilationH,
+                                     dilationW,
+                                     im2col_step,
+                                     deformable_group,
+                                     stream);
 
         for (int g = 0; g < group; ++g)
         {
@@ -156,19 +211,85 @@ void deform_conv(const scalar_t* input, const scalar_t* weight, const scalar_t* 
             scalar_t*       col_start        = columns + g * col_g_step;
             scalar_t*       out_buffer_start = output_buffer + elt * out_buffer_step + g * out_buffer_g_step;
 
-            cublasGemmWrap<scalar_t>(cublas_handle, CUBLAS_OP_N, CUBLAS_OP_N, n, m, k, &alpha, col_start, n, weight_start, k, &beta, out_buffer_start, n);
+            cublasGemmWrap<scalar_t>(cublas_handle,
+                                     CUBLAS_OP_N,
+                                     CUBLAS_OP_N,
+                                     n,
+                                     m,
+                                     k,
+                                     &alpha,
+                                     col_start,
+                                     n,
+                                     weight_start,
+                                     k,
+                                     &beta,
+                                     out_buffer_start,
+                                     n);
             cudaCheckError();
         }
     }
 
     if (im2col_step != 1)
     {
-        int output_buffer_shape[5]   = {batchSize / im2col_step, nOutputPlane, im2col_step, static_cast<int>(outputHeight), static_cast<int>(outputWidth)};
+        int output_buffer_shape[5]   = {batchSize / im2col_step,
+                                        nOutputPlane,
+                                        im2col_step,
+                                        static_cast<int>(outputHeight),
+                                        static_cast<int>(outputWidth)};
         int output_buffer_permute[5] = {0, 2, 1, 3, 4};
-        memcpyPermute<scalar_t>(output, output_buffer, &output_buffer_shape[0], &output_buffer_permute[0], 5, stream);
+        memcpyPermute<scalar_t>(output,
+                                output_buffer,
+                                &output_buffer_shape[0],
+                                &output_buffer_permute[0],
+                                5,
+                                stream);
     }
 }
 
-template void deform_conv<float>(const float* input, const float* weight, const float* offset, float* output, void* workspace, int batchSize, int nInputPlane, int inputHeight, int inputWidth, int nOutputPlane, int kW, int kH, int dW, int dH, int padW, int padH, int dilationW, int dilationH, int group, int deformable_group, int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream);
+template void deform_conv<float>(const float*   input,
+                                 const float*   weight,
+                                 const float*   offset,
+                                 float*         output,
+                                 void*          workspace,
+                                 int            batchSize,
+                                 int            nInputPlane,
+                                 int            inputHeight,
+                                 int            inputWidth,
+                                 int            nOutputPlane,
+                                 int            kW,
+                                 int            kH,
+                                 int            dW,
+                                 int            dH,
+                                 int            padW,
+                                 int            padH,
+                                 int            dilationW,
+                                 int            dilationH,
+                                 int            group,
+                                 int            deformable_group,
+                                 int            im2col_step,
+                                 cublasHandle_t cublas_handle,
+                                 cudaStream_t   stream);
 
-template void deform_conv<__half>(const __half* input, const __half* weight, const __half* offset, __half* output, void* workspace, int batchSize, int nInputPlane, int inputHeight, int inputWidth, int nOutputPlane, int kW, int kH, int dW, int dH, int padW, int padH, int dilationW, int dilationH, int group, int deformable_group, int im2col_step, cublasHandle_t cublas_handle, cudaStream_t stream);
+template void deform_conv<__half>(const __half*  input,
+                                  const __half*  weight,
+                                  const __half*  offset,
+                                  __half*        output,
+                                  void*          workspace,
+                                  int            batchSize,
+                                  int            nInputPlane,
+                                  int            inputHeight,
+                                  int            inputWidth,
+                                  int            nOutputPlane,
+                                  int            kW,
+                                  int            kH,
+                                  int            dW,
+                                  int            dH,
+                                  int            padW,
+                                  int            padH,
+                                  int            dilationW,
+                                  int            dilationH,
+                                  int            group,
+                                  int            deformable_group,
+                                  int            im2col_step,
+                                  cublasHandle_t cublas_handle,
+                                  cudaStream_t   stream);

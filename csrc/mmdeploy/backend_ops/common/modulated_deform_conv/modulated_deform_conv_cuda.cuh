@@ -72,7 +72,12 @@
 #include "common_cuda_helper.cuh"
 
 template<typename T>
-__device__ float mdcn_im2col_bilinear(const T* input, const int data_width, const int height, const int width, float h, float w)
+__device__ float mdcn_im2col_bilinear(const T*  input,
+                                      const int data_width,
+                                      const int height,
+                                      const int width,
+                                      float     h,
+                                      float     w)
 {
     int h_low  = floorf(h);
     int w_low  = floorf(w);
@@ -98,7 +103,12 @@ __device__ float mdcn_im2col_bilinear(const T* input, const int data_width, cons
     return float(val);
 }
 template<>
-__device__ float mdcn_im2col_bilinear<__half>(const __half* input, const int data_width, const int height, const int width, float h, float w)
+__device__ float mdcn_im2col_bilinear<__half>(const __half* input,
+                                              const int     data_width,
+                                              const int     height,
+                                              const int     width,
+                                              float         h,
+                                              float         w)
 {
     int   h_low  = floorf(h);
     int   w_low  = floorf(w);
@@ -126,28 +136,27 @@ __device__ float mdcn_im2col_bilinear<__half>(const __half* input, const int dat
 }
 
 template<typename T>
-__global__ void modulated_deformable_im2col_gpu_kernel(
-    const int n,
-    const T*  data_im,
-    const T*  data_offset,
-    const T*  data_mask,
-    const int height,
-    const int width,
-    const int kernel_h,
-    const int kernel_w,
-    const int pad_h,
-    const int pad_w,
-    const int stride_h,
-    const int stride_w,
-    const int dilation_h,
-    const int dilation_w,
-    const int channel_per_deformable_group,
-    const int batch_size,
-    const int num_channels,
-    const int deformable_group,
-    const int height_col,
-    const int width_col,
-    T*        data_col)
+__global__ void modulated_deformable_im2col_gpu_kernel(const int n,
+                                                       const T*  data_im,
+                                                       const T*  data_offset,
+                                                       const T*  data_mask,
+                                                       const int height,
+                                                       const int width,
+                                                       const int kernel_h,
+                                                       const int kernel_w,
+                                                       const int pad_h,
+                                                       const int pad_w,
+                                                       const int stride_h,
+                                                       const int stride_w,
+                                                       const int dilation_h,
+                                                       const int dilation_w,
+                                                       const int channel_per_deformable_group,
+                                                       const int batch_size,
+                                                       const int num_channels,
+                                                       const int deformable_group,
+                                                       const int height_col,
+                                                       const int width_col,
+                                                       T*        data_col)
 {
     CUDA_1D_KERNEL_LOOP(index, n)
     {

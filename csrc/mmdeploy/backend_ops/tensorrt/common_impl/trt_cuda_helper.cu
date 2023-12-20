@@ -5,7 +5,12 @@
 using mmdeploy::TensorDesc;
 
 template<class scalar_t>
-__global__ void copy_permute_kernel(scalar_t* __restrict__ dst, const scalar_t* __restrict__ src, int n, TensorDesc ts_src_stride, TensorDesc ts_dst_stride, TensorDesc ts_permute)
+__global__ void copy_permute_kernel(scalar_t* __restrict__ dst,
+                                    const scalar_t* __restrict__ src,
+                                    int        n,
+                                    TensorDesc ts_src_stride,
+                                    TensorDesc ts_dst_stride,
+                                    TensorDesc ts_permute)
 {
     const int  src_dim    = ts_src_stride.dim;
     const auto src_stride = ts_src_stride.stride;
@@ -26,7 +31,12 @@ __global__ void copy_permute_kernel(scalar_t* __restrict__ dst, const scalar_t* 
 }
 
 template<class scalar_t>
-void memcpyPermute(scalar_t* dst, const scalar_t* src, int* src_size, int* permute, int src_dim, cudaStream_t stream)
+void memcpyPermute(scalar_t*       dst,
+                   const scalar_t* src,
+                   int*            src_size,
+                   int*            permute,
+                   int             src_dim,
+                   cudaStream_t    stream)
 {
     size_t     copy_size = 1;
     TensorDesc ts_permute;
@@ -69,8 +79,19 @@ void memcpyPermute(scalar_t* dst, const scalar_t* src, int* src_size, int* permu
         ts_permute);
 }
 
-template void memcpyPermute<float>(float* dst, const float* src, int* src_size, int* permute, int src_dim, cudaStream_t stream);
-template void memcpyPermute<half>(half* dst, const half* src, int* src_size, int* permute, int src_dim, cudaStream_t stream);
+template void memcpyPermute<float>(float*       dst,
+                                   const float* src,
+                                   int*         src_size,
+                                   int*         permute,
+                                   int          src_dim,
+                                   cudaStream_t stream);
+
+template void memcpyPermute<half>(half*        dst,
+                                  const half*  src,
+                                  int*         src_size,
+                                  int*         permute,
+                                  int          src_dim,
+                                  cudaStream_t stream);
 
 cudnnStatus_t convert_trt2cudnn_dtype(nvinfer1::DataType trt_dtype, cudnnDataType_t* cudnn_dtype)
 {
@@ -89,13 +110,39 @@ cudnnStatus_t convert_trt2cudnn_dtype(nvinfer1::DataType trt_dtype, cudnnDataTyp
 }
 
 template<>
-cublasStatus_t cublasGemmWrap<float>(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const float* alpha, const float* A, int lda, const float* B, int ldb, const float* beta, float* C, int ldc)
+cublasStatus_t cublasGemmWrap<float>(cublasHandle_t    handle,
+                                     cublasOperation_t transa,
+                                     cublasOperation_t transb,
+                                     int               m,
+                                     int               n,
+                                     int               k,
+                                     const float*      alpha,
+                                     const float*      A,
+                                     int               lda,
+                                     const float*      B,
+                                     int               ldb,
+                                     const float*      beta,
+                                     float*            C,
+                                     int               ldc)
 {
     return cublasSgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }
 
 template<>
-cublasStatus_t cublasGemmWrap<half>(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const half* alpha, const half* A, int lda, const half* B, int ldb, const half* beta, half* C, int ldc)
+cublasStatus_t cublasGemmWrap<half>(cublasHandle_t    handle,
+                                    cublasOperation_t transa,
+                                    cublasOperation_t transb,
+                                    int               m,
+                                    int               n,
+                                    int               k,
+                                    const half*       alpha,
+                                    const half*       A,
+                                    int               lda,
+                                    const half*       B,
+                                    int               ldb,
+                                    const half*       beta,
+                                    half*             C,
+                                    int               ldc)
 {
     return cublasHgemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);
 }

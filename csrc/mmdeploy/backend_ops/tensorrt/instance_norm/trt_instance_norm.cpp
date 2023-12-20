@@ -20,13 +20,16 @@ namespace mmdeploy
         constexpr const char* PLUGIN_NAME{"TRTInstanceNormalization"};
     }  // namespace
 
-    TRTInstanceNormalization::TRTInstanceNormalization(const std::string& name, float epsilon)
+    TRTInstanceNormalization::TRTInstanceNormalization(const std::string& name,
+                                                       float              epsilon)
         : TRTPluginBase(name)
         , mEpsilon(epsilon)
     {
     }
 
-    TRTInstanceNormalization::TRTInstanceNormalization(const std::string& name, void const* serialData, size_t serialLength)
+    TRTInstanceNormalization::TRTInstanceNormalization(const std::string& name,
+                                                       void const*        serialData,
+                                                       size_t             serialLength)
         : TRTPluginBase(name)
     {
         deserialize_value(&serialData, &serialLength, &mEpsilon);
@@ -40,11 +43,10 @@ namespace mmdeploy
         return 1;
     }
 
-    DimsExprs TRTInstanceNormalization::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    DimsExprs TRTInstanceNormalization::getOutputDimensions(int                        outputIndex,
+                                                            const nvinfer1::DimsExprs* inputs,
+                                                            int                        nbInputs,
+                                                            nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         nvinfer1::DimsExprs output(inputs[0]);
         return output;
@@ -101,7 +103,23 @@ namespace mmdeploy
         //       overflows (NaNs) for fp32 data in some circumstances. The lower-
         //       performance CUDNN_BATCHNORM_SPATIAL should be used if this is not
         //       acceptable.
-        cudnnBatchNormalizationForwardTraining(_cudnn_handle, CUDNN_BATCHNORM_SPATIAL_PERSISTENT, &alpha, &beta, _x_desc, x_ptr, _y_desc, y_ptr, _b_desc, n_scales, n_bias, 1., nullptr, nullptr, mEpsilon, nullptr, nullptr);
+        cudnnBatchNormalizationForwardTraining(_cudnn_handle,
+                                               CUDNN_BATCHNORM_SPATIAL_PERSISTENT,
+                                               &alpha,
+                                               &beta,
+                                               _x_desc,
+                                               x_ptr,
+                                               _y_desc,
+                                               y_ptr,
+                                               _b_desc,
+                                               n_scales,
+                                               n_bias,
+                                               1.,
+                                               nullptr,
+                                               nullptr,
+                                               mEpsilon,
+                                               nullptr,
+                                               nullptr);
         return 0;
     }
 

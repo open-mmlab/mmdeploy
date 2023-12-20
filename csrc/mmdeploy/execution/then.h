@@ -99,6 +99,7 @@ namespace mmdeploy
             {
                 return {(Sender&&)sender, std::move(func)};
             }
+
             template<typename Func>
             _BinderBack<then_t, Func> operator()(Func func) const
             {

@@ -9,7 +9,11 @@ namespace mmdeploy
 
     using at::Tensor;
 
-    std::vector<Tensor> coreml_nms_cpu(Tensor boxes, Tensor scores, double iou_threshold, double score_threshold, int64_t max_boxes)
+    std::vector<Tensor> coreml_nms_cpu(Tensor  boxes,
+                                       Tensor  scores,
+                                       double  iou_threshold,
+                                       double  score_threshold,
+                                       int64_t max_boxes)
     {
         assert(boxes.dim() == 3);  // bboxes with shape (batch_size, num_bboxes, 4)
         assert(boxes.size(2) == 4);

@@ -9,7 +9,13 @@
 #include "trt_plugin_helper.hpp"
 
 template<typename scalar_t>
-__global__ void gather_topk_kernel(const scalar_t* input, const int* indices, scalar_t* output, int batch, int num_input, int num_indices, int channel)
+__global__ void gather_topk_kernel(const scalar_t* input,
+                                   const int*      indices,
+                                   scalar_t*       output,
+                                   int             batch,
+                                   int             num_input,
+                                   int             num_indices,
+                                   int             channel)
 {
     CUDA_1D_KERNEL_LOOP(index, batch * num_indices * channel)
     {
@@ -24,7 +30,14 @@ __global__ void gather_topk_kernel(const scalar_t* input, const int* indices, sc
 }
 
 template<typename scalar_t>
-void gather_topk_impl(const scalar_t* input, const int* indices, const int* dims, int nbDims, const int* indices_dims, int indice_nbDims, scalar_t* output, cudaStream_t stream)
+void gather_topk_impl(const scalar_t* input,
+                      const int*      indices,
+                      const int*      dims,
+                      int             nbDims,
+                      const int*      indices_dims,
+                      int             indice_nbDims,
+                      scalar_t*       output,
+                      cudaStream_t    stream)
 {
     int batch = 1;
     for (int i = 0; i < indice_nbDims - 1; ++i) batch *= dims[i];
@@ -33,9 +46,29 @@ void gather_topk_impl(const scalar_t* input, const int* indices, const int* dims
     int channel     = 1;
     for (int i = indice_nbDims; i < nbDims; ++i) channel *= dims[i];
     const int col_block = DIVUP(batch * num_indices * channel, THREADS_PER_BLOCK);
-    gather_topk_kernel<<<col_block, THREADS_PER_BLOCK, 0, stream>>>(input, indices, output, batch, num_input, num_indices, channel);
+    gather_topk_kernel<<<col_block, THREADS_PER_BLOCK, 0, stream>>>(input,
+                                                                    indices,
+                                                                    output,
+                                                                    batch,
+                                                                    num_input,
+                                                                    num_indices,
+                                                                    channel);
 }
 
-template void gather_topk_impl<float>(const float* input, const int* indices, const int* dims, int nbDims, const int* indices_dims, int indice_nbDims, float* output, cudaStream_t stream);
+template void gather_topk_impl<float>(const float* input,
+                                      const int*   indices,
+                                      const int*   dims,
+                                      int          nbDims,
+                                      const int*   indices_dims,
+                                      int          indice_nbDims,
+                                      float*       output,
+                                      cudaStream_t stream);
 
-template void gather_topk_impl<int32_t>(const int32_t* input, const int* indices, const int* dims, int nbDims, const int* indices_dims, int indice_nbDims, int32_t* output, cudaStream_t stream);
+template void gather_topk_impl<int32_t>(const int32_t* input,
+                                        const int*     indices,
+                                        const int*     dims,
+                                        int            nbDims,
+                                        const int*     indices_dims,
+                                        int            indice_nbDims,
+                                        int32_t*       output,
+                                        cudaStream_t   stream);

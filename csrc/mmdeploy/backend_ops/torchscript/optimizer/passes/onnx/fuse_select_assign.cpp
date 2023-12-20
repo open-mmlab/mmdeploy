@@ -28,7 +28,10 @@ namespace mmdeploy
             return true;
         }
 
-        bool FuseSelectAssign(Node* node, std::unordered_map<std::string, Tensor>& params, std::unordered_map<std::string, Value*>& vmap, SubgraphMatcher& matcher)
+        bool FuseSelectAssign(Node*                                    node,
+                              std::unordered_map<std::string, Tensor>& params,
+                              std::unordered_map<std::string, Value*>& vmap,
+                              SubgraphMatcher&                         matcher)
         {
             auto values_map = matcher.values_map();
 
@@ -118,7 +121,10 @@ namespace mmdeploy
             return true;
         }
 
-        void FuseSelectAssign(Block* block, std::unordered_map<std::string, Tensor>& params, std::unordered_map<std::string, Value*>& vmap, SubgraphMatcher& matcher)
+        void FuseSelectAssign(Block*                                   block,
+                              std::unordered_map<std::string, Tensor>& params,
+                              std::unordered_map<std::string, Value*>& vmap,
+                              SubgraphMatcher&                         matcher)
         {
             auto graph = block->owningGraph();
             auto it    = block->nodes().begin();

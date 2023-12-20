@@ -9,6 +9,7 @@ namespace mmdeploy
     using namespace ncnn;
     DEFINE_LAYER_CREATOR(Gather)
     DEFINE_NCNN_OPS(Gather, Gather)
+
     Gather::Gather()
     {
         one_blob_only   = false;
@@ -27,7 +28,9 @@ namespace mmdeploy
     // When indices dim equals to 1, after eliminating implicit batch, the indices
     // dim still be 1. So there is only 1 implicit batch in data, this will make
     // the shape match onnx result.
-    int Gather::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_blobs, const Option& opt) const
+    int Gather::forward(const std::vector<Mat>& bottom_blobs,
+                        std::vector<Mat>&       top_blobs,
+                        const Option&           opt) const
     {
         const Mat& bottom_blob   = bottom_blobs[0];
         const Mat& indices       = bottom_blobs[1];

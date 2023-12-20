@@ -111,7 +111,15 @@ namespace mmdeploy
             {
                 if (values_map_.at(v1) != v2)
                 {
-                    GRAPH_DEBUG("Values %", v1->debugName(), " and %", v2->debugName(), " did not match because %", v1->debugName(), " has already been matched with %", values_map_.at(v1)->debugName(), ".\n");
+                    GRAPH_DEBUG("Values %",
+                                v1->debugName(),
+                                " and %",
+                                v2->debugName(),
+                                " did not match because %",
+                                v1->debugName(),
+                                " has already been matched with %",
+                                values_map_.at(v1)->debugName(),
+                                ".\n");
                     return false;
                 }
                 return true;
@@ -122,7 +130,11 @@ namespace mmdeploy
             // uses don't need to be the same.
             if (v1->uses().size() != v2->uses().size() && !isOutput(v1) && !isInput(v1))
             {
-                GRAPH_DEBUG("Values %", v1->debugName(), " and %", v2->debugName(), " did not match because number of their uses is different.\n");
+                GRAPH_DEBUG("Values %",
+                            v1->debugName(),
+                            " and %",
+                            v2->debugName(),
+                            " did not match because number of their uses is different.\n");
                 return false;
             }
 
@@ -144,7 +156,11 @@ namespace mmdeploy
             {
                 if (n1->kindOf(attr_name) != n2->kindOf(attr_name))
                 {
-                    GRAPH_DEBUG("Nodes did not match because type of attribute '", attr_name.toQualString(), "' did not match:\n", *n1, *n2);
+                    GRAPH_DEBUG("Nodes did not match because type of attribute '",
+                                attr_name.toQualString(),
+                                "' did not match:\n",
+                                *n1,
+                                *n2);
                     return false;
                 }
                 std::vector<int64_t> n1is, n2is;
@@ -154,21 +170,45 @@ namespace mmdeploy
                     case AttributeKind::s:
                         if (!std::regex_match(n2->s(attr_name), std::regex(n1->s(attr_name))))
                         {
-                            GRAPH_DEBUG("Nodes did not match because attribute '", attr_name.toQualString(), "' did not match: ", n1->s(attr_name), " != ", n2->s(attr_name), " \n", *n1, *n2);
+                            GRAPH_DEBUG("Nodes did not match because attribute '",
+                                        attr_name.toQualString(),
+                                        "' did not match: ",
+                                        n1->s(attr_name),
+                                        " != ",
+                                        n2->s(attr_name),
+                                        " \n",
+                                        *n1,
+                                        *n2);
                             return false;
                         }
                         break;
                     case AttributeKind::f:
                         if (n1->f(attr_name) != n2->f(attr_name))
                         {
-                            GRAPH_DEBUG("Nodes did not match because attribute '", attr_name.toQualString(), "' did not match:", n1->f(attr_name), " != ", n2->f(attr_name), " \n", *n1, *n2);
+                            GRAPH_DEBUG("Nodes did not match because attribute '",
+                                        attr_name.toQualString(),
+                                        "' did not match:",
+                                        n1->f(attr_name),
+                                        " != ",
+                                        n2->f(attr_name),
+                                        " \n",
+                                        *n1,
+                                        *n2);
                             return false;
                         }
                         break;
                     case AttributeKind::i:
                         if (n1->i(attr_name) != n2->i(attr_name))
                         {
-                            GRAPH_DEBUG("Nodes did not match because attribute '", attr_name.toQualString(), "' did not match:", n1->i(attr_name), " != ", n2->i(attr_name), " \n", *n1, *n2);
+                            GRAPH_DEBUG("Nodes did not match because attribute '",
+                                        attr_name.toQualString(),
+                                        "' did not match:",
+                                        n1->i(attr_name),
+                                        " != ",
+                                        n2->i(attr_name),
+                                        " \n",
+                                        *n1,
+                                        *n2);
                             return false;
                         }
                         break;
@@ -193,7 +233,11 @@ namespace mmdeploy
                     default:
                     {
                         // Other attributes types not supported yet
-                        GRAPH_DEBUG("Nodes did not match because type of attribute '", attr_name.toQualString(), "' is not supported.\n", *n1, *n2);
+                        GRAPH_DEBUG("Nodes did not match because type of attribute '",
+                                    attr_name.toQualString(),
+                                    "' is not supported.\n",
+                                    *n1,
+                                    *n2);
                         return false;
                     }
                 }

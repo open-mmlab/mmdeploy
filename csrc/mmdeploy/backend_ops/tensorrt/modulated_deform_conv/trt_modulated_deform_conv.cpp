@@ -18,13 +18,12 @@ namespace mmdeploy
         static const char* PLUGIN_NAME{"MMCVModulatedDeformConv2d"};
     }  // namespace
 
-    ModulatedDeformableConvPluginDynamic::ModulatedDeformableConvPluginDynamic(
-        const std::string&   name,
-        const nvinfer1::Dims stride,
-        const nvinfer1::Dims padding,
-        const nvinfer1::Dims dilation,
-        const int            deformableGroup,
-        const int            group)
+    ModulatedDeformableConvPluginDynamic::ModulatedDeformableConvPluginDynamic(const std::string&   name,
+                                                                               const nvinfer1::Dims stride,
+                                                                               const nvinfer1::Dims padding,
+                                                                               const nvinfer1::Dims dilation,
+                                                                               const int            deformableGroup,
+                                                                               const int            group)
         : TRTPluginBase(name)
         , mStride(stride)
         , mPadding(padding)
@@ -51,13 +50,12 @@ namespace mmdeploy
 
     nvinfer1::IPluginV2DynamicExt* ModulatedDeformableConvPluginDynamic::clone() const TRT_NOEXCEPT
     {
-        ModulatedDeformableConvPluginDynamic* plugin = new ModulatedDeformableConvPluginDynamic(
-            mLayerName,
-            mStride,
-            mPadding,
-            mDilation,
-            mDeformableGroup,
-            mGroup);
+        ModulatedDeformableConvPluginDynamic* plugin = new ModulatedDeformableConvPluginDynamic(mLayerName,
+                                                                                                mStride,
+                                                                                                mPadding,
+                                                                                                mDilation,
+                                                                                                mDeformableGroup,
+                                                                                                mGroup);
         plugin->setPluginNamespace(getPluginNamespace());
 
         return plugin;
@@ -88,11 +86,10 @@ namespace mmdeploy
         return out;
     }
 
-    nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    nvinfer1::DimsExprs ModulatedDeformableConvPluginDynamic::getOutputDimensions(int                        outputIndex,
+                                                                                  const nvinfer1::DimsExprs* inputs,
+                                                                                  int                        nbInputs,
+                                                                                  nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         using DimOp                    = nvinfer1::DimensionOperation;
         auto                weight_dim = inputs[3].d;
@@ -120,11 +117,10 @@ namespace mmdeploy
         return ret;
     }
 
-    bool ModulatedDeformableConvPluginDynamic::supportsFormatCombination(
-        int                               pos,
-        const nvinfer1::PluginTensorDesc* ioDesc,
-        int                               nbInputs,
-        int                               nbOutputs) TRT_NOEXCEPT
+    bool ModulatedDeformableConvPluginDynamic::supportsFormatCombination(int                               pos,
+                                                                         const nvinfer1::PluginTensorDesc* ioDesc,
+                                                                         int                               nbInputs,
+                                                                         int                               nbOutputs) TRT_NOEXCEPT
     {
         if (pos == 0)
         {
@@ -138,11 +134,10 @@ namespace mmdeploy
         }
     }
 
-    void ModulatedDeformableConvPluginDynamic::configurePlugin(
-        const nvinfer1::DynamicPluginTensorDesc* inputs,
-        int                                      nbInputs,
-        const nvinfer1::DynamicPluginTensorDesc* outputs,
-        int                                      nbOutputs) TRT_NOEXCEPT
+    void ModulatedDeformableConvPluginDynamic::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                                               int                                      nbInputs,
+                                                               const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                                               int                                      nbOutputs) TRT_NOEXCEPT
     {
         if (nbInputs == 5)
         {
@@ -150,11 +145,10 @@ namespace mmdeploy
         }
     }
 
-    size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(
-        const nvinfer1::PluginTensorDesc* inputs,
-        int                               nbInputs,
-        const nvinfer1::PluginTensorDesc* outputs,
-        int                               nbOutputs) const TRT_NOEXCEPT
+    size_t ModulatedDeformableConvPluginDynamic::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                                                  int                               nbInputs,
+                                                                  const nvinfer1::PluginTensorDesc* outputs,
+                                                                  int                               nbOutputs) const TRT_NOEXCEPT
     {
         int    sizeof_dtype = mmdeploy::getElementSize(outputs[0].type);
 
@@ -205,60 +199,58 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                ModulatedDeformConvForwardCUDAKernelLauncher<float>(
-                    (float*)x,
-                    (float*)weight,
-                    (float*)bias,
-                    (float*)offset,
-                    (float*)mask,
-                    (float*)output,
-                    workSpace,
-                    batch,
-                    channels,
-                    height,
-                    width,
-                    channels_out,
-                    kernel_w,
-                    kernel_h,
-                    mStride.d[0],
-                    mStride.d[1],
-                    mPadding.d[0],
-                    mPadding.d[1],
-                    mDilation.d[0],
-                    mDilation.d[1],
-                    mGroup,
-                    mDeformableGroup,
-                    im2col_step,
-                    m_cublas_handle,
-                    stream);
+                ModulatedDeformConvForwardCUDAKernelLauncher<float>((float*)x,
+                                                                    (float*)weight,
+                                                                    (float*)bias,
+                                                                    (float*)offset,
+                                                                    (float*)mask,
+                                                                    (float*)output,
+                                                                    workSpace,
+                                                                    batch,
+                                                                    channels,
+                                                                    height,
+                                                                    width,
+                                                                    channels_out,
+                                                                    kernel_w,
+                                                                    kernel_h,
+                                                                    mStride.d[0],
+                                                                    mStride.d[1],
+                                                                    mPadding.d[0],
+                                                                    mPadding.d[1],
+                                                                    mDilation.d[0],
+                                                                    mDilation.d[1],
+                                                                    mGroup,
+                                                                    mDeformableGroup,
+                                                                    im2col_step,
+                                                                    m_cublas_handle,
+                                                                    stream);
                 break;
             case nvinfer1::DataType::kHALF:
-                ModulatedDeformConvForwardCUDAKernelLauncher<half>(
-                    (half*)x,
-                    (half*)weight,
-                    (half*)bias,
-                    (half*)offset,
-                    (half*)mask,
-                    (half*)output,
-                    workSpace,
-                    batch,
-                    channels,
-                    height,
-                    width,
-                    channels_out,
-                    kernel_w,
-                    kernel_h,
-                    mStride.d[0],
-                    mStride.d[1],
-                    mPadding.d[0],
-                    mPadding.d[1],
-                    mDilation.d[0],
-                    mDilation.d[1],
-                    mGroup,
-                    mDeformableGroup,
-                    im2col_step,
-                    m_cublas_handle,
-                    stream);
+                ModulatedDeformConvForwardCUDAKernelLauncher<half>((half*)x,
+                                                                   (half*)weight,
+                                                                   (half*)bias,
+                                                                   (half*)offset,
+                                                                   (half*)mask,
+                                                                   (half*)output,
+                                                                   workSpace,
+                                                                   batch,
+                                                                   channels,
+                                                                   height,
+                                                                   width,
+                                                                   channels_out,
+                                                                   kernel_w,
+                                                                   kernel_h,
+                                                                   mStride.d[0],
+                                                                   mStride.d[1],
+                                                                   mPadding.d[0],
+                                                                   mPadding.d[1],
+                                                                   mDilation.d[0],
+                                                                   mDilation.d[1],
+                                                                   mGroup,
+                                                                   mDeformableGroup,
+                                                                   im2col_step,
+                                                                   m_cublas_handle,
+                                                                   stream);
                 break;
             default:
                 return 1;
@@ -268,10 +260,9 @@ namespace mmdeploy
         return 0;
     }
 
-    nvinfer1::DataType ModulatedDeformableConvPluginDynamic::getOutputDataType(
-        int                       index,
-        const nvinfer1::DataType* inputTypes,
-        int                       nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType ModulatedDeformableConvPluginDynamic::getOutputDataType(int                       index,
+                                                                               const nvinfer1::DataType* inputTypes,
+                                                                               int                       nbInputs) const TRT_NOEXCEPT
     {
         return inputTypes[0];
     }

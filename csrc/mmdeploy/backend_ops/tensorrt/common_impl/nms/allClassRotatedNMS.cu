@@ -21,20 +21,24 @@ struct Point
         , y(py)
     {
     }
+
     __host__ __device__ __forceinline__ Point operator+(const Point& p) const
     {
         return Point(x + p.x, y + p.y);
     }
+
     __host__ __device__ __forceinline__ Point& operator+=(const Point& p)
     {
         x += p.x;
         y += p.y;
         return *this;
     }
+
     __host__ __device__ __forceinline__ Point operator-(const Point& p) const
     {
         return Point(x - p.x, y - p.y);
     }
+
     __host__ __device__ __forceinline__ Point operator*(const T coeff) const
     {
         return Point(x * coeff, y * coeff);
@@ -354,13 +358,18 @@ __host__ __device__ __forceinline__ T single_box_iou_rotated(T const* const box1
 /********** new NMS for only score and index array **********/
 
 template<typename T_SCORE, typename T_BBOX, int TSIZE>
-__global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, const int num_preds_per_class, const int top_k, const float nms_threshold, const bool share_location, const bool isNormalized,
-                                          T_BBOX*  bbox_data,  // bbox_data should be float to
-                                                               // preserve location information
-                                          T_SCORE* beforeNMS_scores,
-                                          int*     beforeNMS_index_array,
-                                          T_SCORE* afterNMS_scores,
-                                          int*     afterNMS_index_array)
+__global__ void allClassRotatedNMS_kernel(const int   num,
+                                          const int   num_classes,
+                                          const int   num_preds_per_class,
+                                          const int   top_k,
+                                          const float nms_threshold,
+                                          const bool  share_location,
+                                          const bool  isNormalized,
+                                          T_BBOX*     bbox_data,  // bbox_data should be float to preserve location information
+                                          T_SCORE*    beforeNMS_scores,
+                                          int*        beforeNMS_index_array,
+                                          T_SCORE*    afterNMS_scores,
+                                          int*        afterNMS_index_array)
 {
     //__shared__ bool kept_bboxinfo_flag[CAFFE_CUDA_NUM_THREADS * TSIZE];
     extern __shared__ bool kept_bboxinfo_flag[];
@@ -391,7 +400,9 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, 
                 if (loc_bboxIndex[t] >= 0)
                 // if (loc_bboxIndex[t] != -1)
                 {
-                    const int bbox_data_idx = share_location ? (loc_bboxIndex[t] % num_preds_per_class + bbox_idx_offset) : loc_bboxIndex[t];
+                    const int bbox_data_idx = share_location ?
+                                                  (loc_bboxIndex[t] % num_preds_per_class + bbox_idx_offset) :
+                                                  loc_bboxIndex[t];
                     memcpy(&loc_bbox[t * 5], &bbox_data[bbox_data_idx * 5], 5 * sizeof(T_BBOX));
                     kept_bboxinfo_flag[cur_idx] = true;
                 }
@@ -408,8 +419,9 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, 
 
         // filter out overlapped boxes with lower scores
         int ref_item_idx = offset;
-        int ref_bbox_idx =
-            share_location ? (beforeNMS_index_array[ref_item_idx] % num_preds_per_class + bbox_idx_offset) : beforeNMS_index_array[ref_item_idx];
+        int ref_bbox_idx = share_location ?
+                               (beforeNMS_index_array[ref_item_idx] % num_preds_per_class + bbox_idx_offset) :
+                               beforeNMS_index_array[ref_item_idx];
 
         while ((ref_bbox_idx != -1) && ref_item_idx < max_idx)
         {
@@ -440,8 +452,9 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, 
                 ref_item_idx++;
             } while (ref_item_idx < max_idx && !kept_bboxinfo_flag[ref_item_idx - offset]);
 
-            ref_bbox_idx =
-                share_location ? (beforeNMS_index_array[ref_item_idx] % num_preds_per_class + bbox_idx_offset) : beforeNMS_index_array[ref_item_idx];
+            ref_bbox_idx = share_location ?
+                               (beforeNMS_index_array[ref_item_idx] % num_preds_per_class + bbox_idx_offset) :
+                               beforeNMS_index_array[ref_item_idx];
         }
 
         // store data
@@ -457,8 +470,9 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, 
              */
             if (read_item_idx < max_idx)
             {
-                afterNMS_scores[write_item_idx] =
-                    kept_bboxinfo_flag[cur_idx] ? beforeNMS_scores[read_item_idx] : 0.0f;
+                afterNMS_scores[write_item_idx]      = kept_bboxinfo_flag[cur_idx] ?
+                                                           beforeNMS_scores[read_item_idx] :
+                                                           0.0f;
                 afterNMS_index_array[write_item_idx] = kept_bboxinfo_flag[cur_idx] ? loc_bboxIndex[t] : -1;
             }
         }
@@ -466,11 +480,34 @@ __global__ void allClassRotatedNMS_kernel(const int num, const int num_classes, 
 }
 
 template<typename T_SCORE, typename T_BBOX>
-pluginStatus_t allClassRotatedNMS_gpu(cudaStream_t stream, const int num, const int num_classes, const int num_preds_per_class, const int top_k, const float nms_threshold, const bool share_location, const bool isNormalized, void* bbox_data, void* beforeNMS_scores, void* beforeNMS_index_array, void* afterNMS_scores, void* afterNMS_index_array)
+pluginStatus_t allClassRotatedNMS_gpu(cudaStream_t stream,
+                                      const int    num,
+                                      const int    num_classes,
+                                      const int    num_preds_per_class,
+                                      const int    top_k,
+                                      const float  nms_threshold,
+                                      const bool   share_location,
+                                      const bool   isNormalized,
+                                      void*        bbox_data,
+                                      void*        beforeNMS_scores,
+                                      void*        beforeNMS_index_array,
+                                      void*        afterNMS_scores,
+                                      void*        afterNMS_index_array)
 {
 #define P(tsize) allClassRotatedNMS_kernel<T_SCORE, T_BBOX, (tsize)>
 
-    void (*kernel[10])(const int, const int, const int, const int, const float, const bool, const bool, float*, T_SCORE*, int*, T_SCORE*, int*) = {
+    void (*kernel[10])(const int,
+                       const int,
+                       const int,
+                       const int,
+                       const float,
+                       const bool,
+                       const bool,
+                       float*,
+                       T_SCORE*,
+                       int*,
+                       T_SCORE*,
+                       int*) = {
         P(1),
         P(2),
         P(3),
@@ -488,26 +525,37 @@ pluginStatus_t allClassRotatedNMS_gpu(cudaStream_t stream, const int num, const 
     const int t_size = (top_k + BS - 1) / BS;
 
     ASSERT(t_size <= 10);
-    kernel[t_size - 1]<<<GS, BS, BS * t_size * sizeof(bool), stream>>>(
-        num,
-        num_classes,
-        num_preds_per_class,
-        top_k,
-        nms_threshold,
-        share_location,
-        isNormalized,
-        (T_BBOX*)bbox_data,
-        (T_SCORE*)beforeNMS_scores,
-        (int*)beforeNMS_index_array,
-        (T_SCORE*)afterNMS_scores,
-        (int*)afterNMS_index_array);
+    kernel[t_size - 1]<<<GS, BS, BS * t_size * sizeof(bool), stream>>>(num,
+                                                                       num_classes,
+                                                                       num_preds_per_class,
+                                                                       top_k,
+                                                                       nms_threshold,
+                                                                       share_location,
+                                                                       isNormalized,
+                                                                       (T_BBOX*)bbox_data,
+                                                                       (T_SCORE*)beforeNMS_scores,
+                                                                       (int*)beforeNMS_index_array,
+                                                                       (T_SCORE*)afterNMS_scores,
+                                                                       (int*)afterNMS_index_array);
 
     CSC(cudaGetLastError(), STATUS_FAILURE);
     return STATUS_SUCCESS;
 }
 
 // allClassNMS LAUNCH CONFIG
-typedef pluginStatus_t (*rotatedNmsFunc)(cudaStream_t, const int, const int, const int, const int, const float, const bool, const bool, void*, void*, void*, void*, void*);
+typedef pluginStatus_t (*rotatedNmsFunc)(cudaStream_t,
+                                         const int,
+                                         const int,
+                                         const int,
+                                         const int,
+                                         const float,
+                                         const bool,
+                                         const bool,
+                                         void*,
+                                         void*,
+                                         void*,
+                                         void*,
+                                         void*);
 
 struct rotatedNmsLaunchConfig
 {
@@ -536,13 +584,30 @@ static std::vector<rotatedNmsLaunchConfig> rotatedNmsFuncVec;
 
 bool                                       rotatedNmsInit()
 {
-    rotatedNmsFuncVec.push_back(rotatedNmsLaunchConfig(DataType::kFLOAT, DataType::kFLOAT, allClassRotatedNMS_gpu<float, float>));
+    rotatedNmsFuncVec.push_back(rotatedNmsLaunchConfig(DataType::kFLOAT,
+                                                       DataType::kFLOAT,
+                                                       allClassRotatedNMS_gpu<float, float>));
     return true;
 }
 
 static bool    initialized = rotatedNmsInit();
 
-pluginStatus_t allClassRotatedNMS(cudaStream_t stream, const int num, const int num_classes, const int num_preds_per_class, const int top_k, const float nms_threshold, const bool share_location, const bool isNormalized, const DataType DT_SCORE, const DataType DT_BBOX, void* bbox_data, void* beforeNMS_scores, void* beforeNMS_index_array, void* afterNMS_scores, void* afterNMS_index_array, bool)
+pluginStatus_t allClassRotatedNMS(cudaStream_t   stream,
+                                  const int      num,
+                                  const int      num_classes,
+                                  const int      num_preds_per_class,
+                                  const int      top_k,
+                                  const float    nms_threshold,
+                                  const bool     share_location,
+                                  const bool     isNormalized,
+                                  const DataType DT_SCORE,
+                                  const DataType DT_BBOX,
+                                  void*          bbox_data,
+                                  void*          beforeNMS_scores,
+                                  void*          beforeNMS_index_array,
+                                  void*          afterNMS_scores,
+                                  void*          afterNMS_index_array,
+                                  bool)
 {
     auto __cuda_arch__ = get_cuda_arch(0);  // assume there is only one arch 7.2 device
     if (__cuda_arch__ == 720 && top_k >= 1000)
@@ -557,7 +622,19 @@ pluginStatus_t allClassRotatedNMS(cudaStream_t stream, const int num, const int 
         if (lc == rotatedNmsFuncVec[i])
         {
             DEBUG_PRINTF("all class rotated nms kernel %d\n", i);
-            return rotatedNmsFuncVec[i].function(stream, num, num_classes, num_preds_per_class, top_k, nms_threshold, share_location, isNormalized, bbox_data, beforeNMS_scores, beforeNMS_index_array, afterNMS_scores, afterNMS_index_array);
+            return rotatedNmsFuncVec[i].function(stream,
+                                                 num,
+                                                 num_classes,
+                                                 num_preds_per_class,
+                                                 top_k,
+                                                 nms_threshold,
+                                                 share_location,
+                                                 isNormalized,
+                                                 bbox_data,
+                                                 beforeNMS_scores,
+                                                 beforeNMS_index_array,
+                                                 afterNMS_scores,
+                                                 afterNMS_index_array);
         }
     }
     return STATUS_BAD_PARAM;

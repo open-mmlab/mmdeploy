@@ -37,16 +37,18 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::DimsExprs TRTScatterND::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    nvinfer1::DimsExprs TRTScatterND::getOutputDimensions(int                        outputIndex,
+                                                          const nvinfer1::DimsExprs* inputs,
+                                                          int                        nbInputs,
+                                                          nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         return inputs[0];
     }
 
-    bool TRTScatterND::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool TRTScatterND::supportsFormatCombination(int                               pos,
+                                                 const nvinfer1::PluginTensorDesc* ioDesc,
+                                                 int                               nbInputs,
+                                                 int                               nbOutputs) TRT_NOEXCEPT
     {
         if (pos < nbInputs)
         {
@@ -83,9 +85,15 @@ namespace mmdeploy
         return true;
     }
 
-    void   TRTScatterND::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) TRT_NOEXCEPT {}
+    void   TRTScatterND::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                       int                                      nbInputs,
+                                       const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                       int                                      nbOutputs) TRT_NOEXCEPT {}
 
-    size_t TRTScatterND::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT
+    size_t TRTScatterND::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                          int                               nbInputs,
+                                          const nvinfer1::PluginTensorDesc* outputs,
+                                          int                               nbOutputs) const TRT_NOEXCEPT
     {
         return 0;
     }
@@ -112,11 +120,27 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                TRTONNXScatterNDKernelLauncher<float>((float*)data, (int*)indices, (float*)update, dims, nbDims, indices_dims, indice_nbDims, (float*)output, stream);
+                TRTONNXScatterNDKernelLauncher<float>((float*)data,
+                                                      (int*)indices,
+                                                      (float*)update,
+                                                      dims,
+                                                      nbDims,
+                                                      indices_dims,
+                                                      indice_nbDims,
+                                                      (float*)output,
+                                                      stream);
                 break;
 
             case nvinfer1::DataType::kINT32:
-                TRTONNXScatterNDKernelLauncher<int>((int*)data, (int*)indices, (int*)update, dims, nbDims, indices_dims, indice_nbDims, (int*)output, stream);
+                TRTONNXScatterNDKernelLauncher<int>((int*)data,
+                                                    (int*)indices,
+                                                    (int*)update,
+                                                    dims,
+                                                    nbDims,
+                                                    indices_dims,
+                                                    indice_nbDims,
+                                                    (int*)output,
+                                                    stream);
                 break;
             default:
                 break;
@@ -125,7 +149,9 @@ namespace mmdeploy
         return 0;
     }
 
-    nvinfer1::DataType TRTScatterND::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType TRTScatterND::getOutputDataType(int                       index,
+                                                       const nvinfer1::DataType* inputTypes,
+                                                       int                       nbInputs) const TRT_NOEXCEPT
     {
         return inputTypes[0];
     }

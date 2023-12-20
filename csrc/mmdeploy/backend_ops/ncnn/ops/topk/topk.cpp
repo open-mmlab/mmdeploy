@@ -17,6 +17,7 @@ namespace mmdeploy
         one_blob_only   = false;
         support_inplace = false;
     }
+
     int TopK::load_param(const ParamDict& pd)
     {
         axis      = pd.get(0, -1);
@@ -26,7 +27,10 @@ namespace mmdeploy
 
         return 0;
     }
-    int TopK::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_blobs, const Option& opt) const
+
+    int TopK::forward(const std::vector<Mat>& bottom_blobs,
+                      std::vector<Mat>&       top_blobs,
+                      const Option&           opt) const
     {
         int dims          = bottom_blobs[0].dims;
         int positive_axis = axis < 0 ? dims + axis : axis;

@@ -10,6 +10,7 @@ namespace mmdeploy
     using namespace ncnn;
     DEFINE_LAYER_CREATOR(TensorSlice)
     DEFINE_NCNN_OPS(TensorSlice, TensorSlice)
+
     TensorSlice::TensorSlice()
     {
         one_blob_only   = true;
@@ -56,7 +57,9 @@ namespace mmdeploy
         return 0;
     }
 
-    int TensorSlice::forward(const Mat& bottom_blob, Mat& top_blob, const Option& opt) const
+    int TensorSlice::forward(const Mat&    bottom_blob,
+                             Mat&          top_blob,
+                             const Option& opt) const
     {
         int        dims      = bottom_blob.dims;
         size_t     elemsize  = bottom_blob.elemsize;

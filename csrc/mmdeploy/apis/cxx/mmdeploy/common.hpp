@@ -51,6 +51,7 @@ namespace mmdeploy
                 : handle_(std::exchange(o.handle_, nullptr))
             {
             }
+
             UniqueHandle& operator=(UniqueHandle&& o) noexcept
             {
                 if (this != &o)
@@ -64,6 +65,7 @@ namespace mmdeploy
             {
                 return handle_;
             }
+
             T operator->() const noexcept
             {
                 return handle_;
@@ -84,8 +86,11 @@ namespace mmdeploy
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
-                model_.reset(model, [](auto p)
-                             { mmdeploy_model_destroy(p); });
+                model_.reset(model,
+                             [](auto p)
+                             {
+                                 mmdeploy_model_destroy(p);
+                             });
             }
 
             explicit Model(const std::string& path)
@@ -96,13 +101,19 @@ namespace mmdeploy
             Model(const void* buffer, size_t size)
             {
                 mmdeploy_model_t model{};
-                auto             ec = mmdeploy_model_create(buffer, static_cast<int>(size), &model);
+                auto             ec = mmdeploy_model_create(buffer,
+                                                static_cast<int>(size),
+                                                &model);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
-                model_.reset(model, [](auto p)
-                             { mmdeploy_model_destroy(p); });
+
+                model_.reset(model,
+                             [](auto p)
+                             {
+                                 mmdeploy_model_destroy(p);
+                             });
             }
 
             operator mmdeploy_model_t() const noexcept
@@ -122,19 +133,26 @@ namespace mmdeploy
                 , index_(index)
             {
                 mmdeploy_device_t device{};
-                auto              ec = mmdeploy_device_create(name_.c_str(), index, &device);
+                auto              ec = mmdeploy_device_create(name_.c_str(),
+                                                 index,
+                                                 &device);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
-                device_.reset(device, [](auto p)
-                              { mmdeploy_device_destroy(p); });
+
+                device_.reset(device,
+                              [](auto p)
+                              {
+                                  mmdeploy_device_destroy(p);
+                              });
             }
 
             const char* name() const noexcept
             {
                 return name_.c_str();
             }
+
             int index() const noexcept
             {
                 return index_;
@@ -163,8 +181,12 @@ namespace mmdeploy
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
-                profiler_.reset(profiler, [](auto p)
-                                { mmdeploy_profiler_destroy(p); });
+
+                profiler_.reset(profiler,
+                                [](auto p)
+                                {
+                                    mmdeploy_profiler_destroy(p);
+                                });
             };
 
             operator mmdeploy_profiler_t() const noexcept
@@ -185,8 +207,20 @@ namespace mmdeploy
             {
             }
 
-            Mat(int height, int width, int channels, mmdeploy_pixel_format_t format, mmdeploy_data_type_t type, uint8_t* data, mmdeploy_device_t device = nullptr)
-                : desc_{data, height, width, channels, format, type, device}
+            Mat(int                     height,
+                int                     width,
+                int                     channels,
+                mmdeploy_pixel_format_t format,
+                mmdeploy_data_type_t    type,
+                uint8_t*                data,
+                mmdeploy_device_t       device = nullptr)
+                : desc_{data,
+                        height,
+                        width,
+                        channels,
+                        format,
+                        type,
+                        device}
             {
             }
 
@@ -202,17 +236,24 @@ namespace mmdeploy
 
 #if MMDEPLOY_CXX_USE_OPENCV
             Mat(const cv::Mat& mat, mmdeploy_pixel_format_t pixel_format)
-                : desc_{mat.data, mat.rows, mat.cols, mat.channels(), pixel_format, GetCvType(mat.depth())}
+                : desc_{mat.data,
+                        mat.rows,
+                        mat.cols,
+                        mat.channels(),
+                        pixel_format,
+                        GetCvType(mat.depth())}
             {
                 if (pixel_format == MMDEPLOY_PIXEL_FORMAT_COUNT)
                 {
                     throw_exception(eNotSupported);
                 }
+
                 if (desc_.type == MMDEPLOY_DATA_TYPE_COUNT)
                 {
                     throw_exception(eNotSupported);
                 }
             }
+
             Mat(const cv::Mat& mat)
                 : Mat(mat, GetCvFormat(mat.channels()))
             {
@@ -230,6 +271,7 @@ namespace mmdeploy
                         return MMDEPLOY_DATA_TYPE_COUNT;
                 }
             }
+
             static mmdeploy_pixel_format_t GetCvFormat(int channels)
             {
                 switch (channels)
@@ -274,14 +316,17 @@ namespace mmdeploy
             {
                 return *(data_.get() + offset_ + index);
             }
+
             size_t size() const noexcept
             {
                 return size_;
             }
+
             T* begin() const noexcept
             {
                 return data_.get() + offset_;
             }
+
             T* end() const noexcept
             {
                 return begin() + size_;
@@ -291,6 +336,7 @@ namespace mmdeploy
             {
                 return data_.get();
             }
+
             T& operator*() const noexcept
             {
                 return *data_;
@@ -312,14 +358,18 @@ namespace mmdeploy
           public:
             explicit Scheduler(mmdeploy_scheduler_t scheduler)
             {
-                scheduler_.reset(scheduler, [](auto p)
-                                 { mmdeploy_scheduler_destroy(p); });
+                scheduler_.reset(scheduler,
+                                 [](auto p)
+                                 {
+                                     mmdeploy_scheduler_destroy(p);
+                                 });
             }
 
             static Scheduler ThreadPool(int num_threads)
             {
                 return Scheduler(mmdeploy_executor_create_thread_pool(num_threads));
             }
+
             static Scheduler Thread()
             {
                 return Scheduler(mmdeploy_executor_create_thread());
@@ -341,9 +391,13 @@ namespace mmdeploy
             {
                 mmdeploy_context_t context{};
                 mmdeploy_context_create(&context);
-                context_.reset(context, [](auto p)
-                               { mmdeploy_context_destroy(p); });
+                context_.reset(context,
+                               [](auto p)
+                               {
+                                   mmdeploy_context_destroy(p);
+                               });
             }
+
             /* implicit */ Context(const Device& device)
                 : Context()
             {
@@ -354,7 +408,6 @@ namespace mmdeploy
             {
                 mmdeploy_context_add(*this, MMDEPLOY_TYPE_SCHEDULER, name.c_str(), scheduler);
             }
-
             void Add(const std::string& name, const Model& model)
             {
                 mmdeploy_context_add(*this, MMDEPLOY_TYPE_MODEL, name.c_str(), model);

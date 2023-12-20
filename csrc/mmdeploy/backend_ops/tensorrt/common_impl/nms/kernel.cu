@@ -58,8 +58,9 @@ size_t calculateTotalWorkspaceSize(size_t* workspaces, int count)
 using nvinfer1::DataType;
 
 template<unsigned nthds_per_cta>
-__launch_bounds__(nthds_per_cta) __global__
-    void setUniformOffsets_kernel(const int num_segments, const int offset, int* d_offsets)
+__launch_bounds__(nthds_per_cta) __global__ void setUniformOffsets_kernel(const int num_segments,
+                                                                          const int offset,
+                                                                          int*      d_offsets)
 {
     const int idx = blockIdx.x * nthds_per_cta + threadIdx.x;
     if (idx <= num_segments) d_offsets[idx] = idx * offset;
@@ -105,7 +106,15 @@ size_t detectionForwardPostNMSSize(int N, int numClasses, int topK)
     return N * numClasses * topK * sizeof(float);
 }
 
-size_t detectionInferenceWorkspaceSize(bool shareLocation, int N, int C1, int C2, int numClasses, int numPredsPerClass, int topK, DataType DT_BBOX, DataType DT_SCORE)
+size_t detectionInferenceWorkspaceSize(bool     shareLocation,
+                                       int      N,
+                                       int      C1,
+                                       int      C2,
+                                       int      numClasses,
+                                       int      numPredsPerClass,
+                                       int      topK,
+                                       DataType DT_BBOX,
+                                       DataType DT_SCORE)
 {
     size_t wss[7];
     wss[0] = detectionForwardBBoxDataSize(N, C1, DT_BBOX);

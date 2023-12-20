@@ -24,9 +24,17 @@ namespace mmdeploy
 
         // IPluginV2DynamicExt Methods
         nvinfer1::IPluginV2DynamicExt* clone() const TRT_NOEXCEPT override;
-        nvinfer1::DimsExprs            getOutputDimensions(int outputIndex, const nvinfer1::DimsExprs* inputs, int nbInputs, nvinfer1::IExprBuilder& exprBuilder)
-            TRT_NOEXCEPT override;
-        bool               supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT override;
+
+        nvinfer1::DimsExprs            getOutputDimensions(int                        outputIndex,
+                                                           const nvinfer1::DimsExprs* inputs,
+                                                           int                        nbInputs,
+                                                           nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT override;
+
+        bool                           supportsFormatCombination(int                               pos,
+                                                                 const nvinfer1::PluginTensorDesc* ioDesc,
+                                                                 int                               nbInputs,
+                                                                 int                               nbOutputs) TRT_NOEXCEPT override;
+
         int                enqueue(const nvinfer1::PluginTensorDesc* inputDesc,
                                    const nvinfer1::PluginTensorDesc* outputDesc,
                                    const void* const*                inputs,
@@ -35,7 +43,9 @@ namespace mmdeploy
                                    cudaStream_t                      stream) TRT_NOEXCEPT override;
 
         // IPluginV2Ext Methods
-        nvinfer1::DataType getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT override;
+        nvinfer1::DataType             getOutputDataType(int                       index,
+                                                         const nvinfer1::DataType* inputTypes,
+                                                         int                       nbInputs) const TRT_NOEXCEPT override;
 
         // IPluginV2 Methods
         const char*        getPluginType() const TRT_NOEXCEPT override;
@@ -59,10 +69,12 @@ namespace mmdeploy
 
         const char*          getPluginVersion() const TRT_NOEXCEPT override;
 
-        nvinfer1::IPluginV2* createPlugin(const char* name, const nvinfer1::PluginFieldCollection* fc)
-            TRT_NOEXCEPT override;
+        nvinfer1::IPluginV2* createPlugin(const char*                            name,
+                                          const nvinfer1::PluginFieldCollection* fc) TRT_NOEXCEPT override;
 
-        nvinfer1::IPluginV2* deserializePlugin(const char* name, const void* serialData, size_t serialLength) TRT_NOEXCEPT override;
+        nvinfer1::IPluginV2* deserializePlugin(const char* name,
+                                               const void* serialData,
+                                               size_t      serialLength) TRT_NOEXCEPT override;
     };
 }  // namespace mmdeploy
 #endif  // TRT_GRID_PRIORS_HPP

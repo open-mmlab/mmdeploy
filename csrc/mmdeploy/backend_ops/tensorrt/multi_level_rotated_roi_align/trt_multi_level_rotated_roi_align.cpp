@@ -17,16 +17,15 @@ namespace mmdeploy
         static const char* PLUGIN_NAME{"MMCVMultiLevelRotatedRoiAlign"};
     }  // namespace
 
-    TRTMultiLevelRotatedRoiAlign::TRTMultiLevelRotatedRoiAlign(
-        const std::string&        name,
-        int                       alignedHeight,
-        int                       alignedWidth,
-        int                       clockwise,
-        int                       sampleNum,
-        const std::vector<float>& featmapStrides,
-        float                     roiScaleFactor,
-        int                       finestScale,
-        bool                      aligned)
+    TRTMultiLevelRotatedRoiAlign::TRTMultiLevelRotatedRoiAlign(const std::string&        name,
+                                                               int                       alignedHeight,
+                                                               int                       alignedWidth,
+                                                               int                       clockwise,
+                                                               int                       sampleNum,
+                                                               const std::vector<float>& featmapStrides,
+                                                               float                     roiScaleFactor,
+                                                               int                       finestScale,
+                                                               bool                      aligned)
         : TRTPluginBase(name)
         , mAlignedHeight(alignedHeight)
         , mAlignedWidth(alignedWidth)
@@ -39,7 +38,9 @@ namespace mmdeploy
     {
     }
 
-    TRTMultiLevelRotatedRoiAlign::TRTMultiLevelRotatedRoiAlign(const std::string name, const void* data, size_t length)
+    TRTMultiLevelRotatedRoiAlign::TRTMultiLevelRotatedRoiAlign(const std::string name,
+                                                               const void*       data,
+                                                               size_t            length)
         : TRTPluginBase(name)
     {
         deserialize_value(&data, &length, &mAlignedHeight);
@@ -54,26 +55,24 @@ namespace mmdeploy
 
     nvinfer1::IPluginV2DynamicExt* TRTMultiLevelRotatedRoiAlign::clone() const TRT_NOEXCEPT
     {
-        TRTMultiLevelRotatedRoiAlign* plugin = new TRTMultiLevelRotatedRoiAlign(
-            mLayerName,
-            mAlignedHeight,
-            mAlignedWidth,
-            mClockwise,
-            mSampleNum,
-            mFeatmapStrides,
-            mRoiScaleFactor,
-            mFinestScale,
-            mAligned);
+        TRTMultiLevelRotatedRoiAlign* plugin = new TRTMultiLevelRotatedRoiAlign(mLayerName,
+                                                                                mAlignedHeight,
+                                                                                mAlignedWidth,
+                                                                                mClockwise,
+                                                                                mSampleNum,
+                                                                                mFeatmapStrides,
+                                                                                mRoiScaleFactor,
+                                                                                mFinestScale,
+                                                                                mAligned);
         plugin->setPluginNamespace(getPluginNamespace());
 
         return plugin;
     }
 
-    nvinfer1::DimsExprs TRTMultiLevelRotatedRoiAlign::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    nvinfer1::DimsExprs TRTMultiLevelRotatedRoiAlign::getOutputDimensions(int                        outputIndex,
+                                                                          const nvinfer1::DimsExprs* inputs,
+                                                                          int                        nbInputs,
+                                                                          nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         // warning, nbInputs should equal to mFeatmapStrides.size() + 1
         nvinfer1::DimsExprs ret;
@@ -86,11 +85,10 @@ namespace mmdeploy
         return ret;
     }
 
-    bool TRTMultiLevelRotatedRoiAlign::supportsFormatCombination(
-        int                               pos,
-        const nvinfer1::PluginTensorDesc* ioDesc,
-        int                               nbInputs,
-        int                               nbOutputs) TRT_NOEXCEPT
+    bool TRTMultiLevelRotatedRoiAlign::supportsFormatCombination(int                               pos,
+                                                                 const nvinfer1::PluginTensorDesc* ioDesc,
+                                                                 int                               nbInputs,
+                                                                 int                               nbOutputs) TRT_NOEXCEPT
     {
         return ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
                ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
@@ -143,15 +141,31 @@ namespace mmdeploy
         const void*        rois  = inputs[0];
         const void* const* feats = inputs + 1;
 
-        multi_level_rotated_roi_align<float>((float*)outputs[0], (const float*)rois, num_rois, feats, num_feats, batch_size, channels, &heights[0], &widths[0], &strides[0], mAlignedHeight, mAlignedWidth, mClockwise, mSampleNum, mRoiScaleFactor, mFinestScale, mAligned, stream);
+        multi_level_rotated_roi_align<float>((float*)outputs[0],
+                                             (const float*)rois,
+                                             num_rois,
+                                             feats,
+                                             num_feats,
+                                             batch_size,
+                                             channels,
+                                             &heights[0],
+                                             &widths[0],
+                                             &strides[0],
+                                             mAlignedHeight,
+                                             mAlignedWidth,
+                                             mClockwise,
+                                             mSampleNum,
+                                             mRoiScaleFactor,
+                                             mFinestScale,
+                                             mAligned,
+                                             stream);
 
         return 0;
     }
 
-    nvinfer1::DataType TRTMultiLevelRotatedRoiAlign::getOutputDataType(
-        int                       index,
-        const nvinfer1::DataType* inputTypes,
-        int                       nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType TRTMultiLevelRotatedRoiAlign::getOutputDataType(int                       index,
+                                                                       const nvinfer1::DataType* inputTypes,
+                                                                       int                       nbInputs) const TRT_NOEXCEPT
     {
         return nvinfer1::DataType::kFLOAT;
     }
@@ -194,8 +208,14 @@ namespace mmdeploy
 
     TRTMultiLevelRotatedRoiAlignCreator::TRTMultiLevelRotatedRoiAlignCreator()
     {
-        mPluginAttributes = std::vector<nvinfer1::PluginField>(
-            {nvinfer1::PluginField("output_height"), nvinfer1::PluginField("output_width"), nvinfer1::PluginField("clockwise"), nvinfer1::PluginField("sampling_ratio"), nvinfer1::PluginField("featmap_strides"), nvinfer1::PluginField("roi_scale_factor"), nvinfer1::PluginField("finest_scale"), nvinfer1::PluginField("aligned")});
+        mPluginAttributes = std::vector<nvinfer1::PluginField>({nvinfer1::PluginField("output_height"),
+                                                                nvinfer1::PluginField("output_width"),
+                                                                nvinfer1::PluginField("clockwise"),
+                                                                nvinfer1::PluginField("sampling_ratio"),
+                                                                nvinfer1::PluginField("featmap_strides"),
+                                                                nvinfer1::PluginField("roi_scale_factor"),
+                                                                nvinfer1::PluginField("finest_scale"),
+                                                                nvinfer1::PluginField("aligned")});
         mFC.nbFields = mPluginAttributes.size();
         mFC.fields   = mPluginAttributes.data();
     }
@@ -270,8 +290,15 @@ namespace mmdeploy
 
         ASSERT(featmapStrides.size() != 0);
 
-        TRTMultiLevelRotatedRoiAlign* plugin =
-            new TRTMultiLevelRotatedRoiAlign(name, alignedHeight, alignedWidth, clockwise, sampleNum, featmapStrides, roiScaleFactor, finestScale, aligned);
+        TRTMultiLevelRotatedRoiAlign* plugin = new TRTMultiLevelRotatedRoiAlign(name,
+                                                                                alignedHeight,
+                                                                                alignedWidth,
+                                                                                clockwise,
+                                                                                sampleNum,
+                                                                                featmapStrides,
+                                                                                roiScaleFactor,
+                                                                                finestScale,
+                                                                                aligned);
         plugin->setPluginNamespace(getPluginNamespace());
         return plugin;
     }

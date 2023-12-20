@@ -44,14 +44,22 @@ namespace mmdeploy
             return mNamespace.c_str();
         }
 
-        virtual void   configurePlugin(const nvinfer1::DynamicPluginTensorDesc* in, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* out, int nbOutputs) TRT_NOEXCEPT override {}
+        virtual void   configurePlugin(const nvinfer1::DynamicPluginTensorDesc* in,
+                                       int                                      nbInputs,
+                                       const nvinfer1::DynamicPluginTensorDesc* out,
+                                       int                                      nbOutputs) TRT_NOEXCEPT override {}
 
-        virtual size_t getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT override
+        virtual size_t getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                        int                               nbInputs,
+                                        const nvinfer1::PluginTensorDesc* outputs,
+                                        int                               nbOutputs) const TRT_NOEXCEPT override
         {
             return 0;
         }
 
-        virtual void attachToContext(cudnnContext* cudnnContext, cublasContext* cublasContext, nvinfer1::IGpuAllocator* gpuAllocator) TRT_NOEXCEPT override {}
+        virtual void attachToContext(cudnnContext*            cudnnContext,
+                                     cublasContext*           cublasContext,
+                                     nvinfer1::IGpuAllocator* gpuAllocator) TRT_NOEXCEPT override {}
 
         virtual void detachFromContext() TRT_NOEXCEPT override {}
 

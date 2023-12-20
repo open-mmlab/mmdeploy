@@ -41,7 +41,11 @@ __device__ __forceinline__ static void get_cubic_upsample_coefficients(scalar_t 
 }
 
 template<typename scalar_t>
-__device__ __forceinline__ static scalar_t cubic_interp1d(scalar_t x0, scalar_t x1, scalar_t x2, scalar_t x3, scalar_t t)
+__device__ __forceinline__ static scalar_t cubic_interp1d(scalar_t x0,
+                                                          scalar_t x1,
+                                                          scalar_t x2,
+                                                          scalar_t x3,
+                                                          scalar_t t)
 {
     scalar_t coeffs[4];
     get_cubic_upsample_coefficients<scalar_t>(coeffs, t);
@@ -63,13 +67,16 @@ __device__ __forceinline__ static scalar_t upsample_get_value_bounded(const scal
 {
     int access_y = max(min(y, height - 1), 0);
     int access_x = max(min(x, width - 1), 0);
-    return data[batch * channels * height * width + channel * height * width + access_y * width +
+    return data[batch * channels * height * width + channel * height * width +
+                access_y * width +
                 access_x];
 }
 
 template<typename scalar_t>
-__device__ __forceinline__ scalar_t
-    area_pixel_compute_source_index(scalar_t scale, int64_t dst_index, bool align_corners, bool cubic)
+__device__ __forceinline__ scalar_t area_pixel_compute_source_index(scalar_t scale,
+                                                                    int64_t  dst_index,
+                                                                    bool     align_corners,
+                                                                    bool     cubic)
 {
     if (align_corners)
     {
@@ -96,7 +103,18 @@ __device__ __forceinline__ scalar_t
 
 // cubic interpolation pytorch
 template<typename scalar_t>
-__global__ void resize_cubic_kernel_torch(const int num_elements, const scalar_t* src, const int batchsize, const int channels, int srcWidth, int srcHeight, scalar_t* dst, int dstWidth, int dstHeight, bool align_corners, float height_scale, float width_scale)
+__global__ void resize_cubic_kernel_torch(const int       num_elements,
+                                          const scalar_t* src,
+                                          const int       batchsize,
+                                          const int       channels,
+                                          int             srcWidth,
+                                          int             srcHeight,
+                                          scalar_t*       dst,
+                                          int             dstWidth,
+                                          int             dstHeight,
+                                          bool            align_corners,
+                                          float           height_scale,
+                                          float           width_scale)
 {
     CUDA_1D_KERNEL_LOOP(index, num_elements)
     {
@@ -111,8 +129,10 @@ __global__ void resize_cubic_kernel_torch(const int num_elements, const scalar_t
                 for (int c = 0; c < channels; c++)
                 {
                     const scalar_t val = src[n * channels * dstHeight * dstWidth + c * dstHeight * dstWidth +
-                                             output_y * dstWidth + output_x];
-                    dst[n * channels * dstHeight * dstWidth + c * dstHeight * dstWidth + output_y * dstWidth +
+                                             output_y * dstWidth +
+                                             output_x];
+                    dst[n * channels * dstHeight * dstWidth + c * dstHeight * dstWidth +
+                        output_y * dstWidth +
                         output_x]      = val;
                 }
             }
@@ -145,15 +165,29 @@ __global__ void resize_cubic_kernel_torch(const int num_elements, const scalar_t
                         t_x);
                 }
 
-                dst[n * channels * dstHeight * dstWidth + c * dstHeight * dstWidth + output_y * dstWidth +
-                    output_x] = scalar_t(cubic_interp1d(coefficients[0], coefficients[1], coefficients[2], coefficients[3], t_y));
+                dst[n * channels * dstHeight * dstWidth + c * dstHeight * dstWidth +
+                    output_y * dstWidth +
+                    output_x] = scalar_t(cubic_interp1d(coefficients[0],
+                                                        coefficients[1],
+                                                        coefficients[2],
+                                                        coefficients[3],
+                                                        t_y));
             }
         }
     }
 }
 
 template<typename scalar_t>
-void resizeGPU(const scalar_t* pIn_d, scalar_t* pOut_d, int batch, int channels, int srcWidth, int srcHeight, int dstWidth, int dstHeight, bool align_corners, cudaStream_t stream)
+void resizeGPU(const scalar_t* pIn_d,
+               scalar_t*       pOut_d,
+               int             batch,
+               int             channels,
+               int             srcWidth,
+               int             srcHeight,
+               int             dstWidth,
+               int             dstHeight,
+               bool            align_corners,
+               cudaStream_t    stream)
 {
     float height_scale = float(srcHeight) / dstHeight;
     float width_scale  = float(srcWidth) / dstWidth;
@@ -163,25 +197,51 @@ void resizeGPU(const scalar_t* pIn_d, scalar_t* pOut_d, int batch, int channels,
         width_scale  = (float)(srcWidth - 1) / (dstWidth - 1);
     }
     int n = batch * dstWidth * dstHeight * channels;
-    resize_cubic_kernel_torch<<<GET_BLOCKS(n), THREADS_PER_BLOCK, 0, stream>>>(
-        dstWidth * dstHeight,
-        pIn_d,
-        batch,
-        channels,
-        srcWidth,
-        srcHeight,
-        pOut_d,
-        dstWidth,
-        dstHeight,
-        align_corners,
-        height_scale,
-        width_scale);
+    resize_cubic_kernel_torch<<<GET_BLOCKS(n), THREADS_PER_BLOCK, 0, stream>>>(dstWidth * dstHeight,
+                                                                               pIn_d,
+                                                                               batch,
+                                                                               channels,
+                                                                               srcWidth,
+                                                                               srcHeight,
+                                                                               pOut_d,
+                                                                               dstWidth,
+                                                                               dstHeight,
+                                                                               align_corners,
+                                                                               height_scale,
+                                                                               width_scale);
 }
 
 template<typename scalar_t>
-void bicubic_interpolate(const scalar_t* input, scalar_t* output, int batch, int channels, int in_height, int in_width, int out_height, int out_width, bool align_corners, cudaStream_t stream)
+void bicubic_interpolate(const scalar_t* input,
+                         scalar_t*       output,
+                         int             batch,
+                         int             channels,
+                         int             in_height,
+                         int             in_width,
+                         int             out_height,
+                         int             out_width,
+                         bool            align_corners,
+                         cudaStream_t    stream)
 {
-    resizeGPU(input, output, batch, channels, in_width, in_height, out_width, out_height, align_corners, stream);
+    resizeGPU(input,
+              output,
+              batch,
+              channels,
+              in_width,
+              in_height,
+              out_width,
+              out_height,
+              align_corners,
+              stream);
 }
 
-template void bicubic_interpolate<float>(const float* input, float* output, int batch, int channels, int in_height, int in_width, int out_height, int out_width, bool align_corners, cudaStream_t stream);
+template void bicubic_interpolate<float>(const float* input,
+                                         float*       output,
+                                         int          batch,
+                                         int          channels,
+                                         int          in_height,
+                                         int          in_width,
+                                         int          out_height,
+                                         int          out_width,
+                                         bool         align_corners,
+                                         cudaStream_t stream);

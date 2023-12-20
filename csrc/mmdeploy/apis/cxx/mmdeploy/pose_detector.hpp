@@ -60,8 +60,11 @@ namespace mmdeploy
                     throw_exception(static_cast<ErrorCode>(ec));
                 }
 
-                std::shared_ptr<PoseDetection> data(results, [count = images.size()](auto p)
-                                                    { mmdeploy_pose_detector_release_result(p, count); });
+                std::shared_ptr<PoseDetection> data(results,
+                                                    [count = images.size()](auto p)
+                                                    {
+                                                        mmdeploy_pose_detector_release_result(p, count);
+                                                    });
 
                 std::vector<Result>            rets;
                 rets.reserve(images.size());

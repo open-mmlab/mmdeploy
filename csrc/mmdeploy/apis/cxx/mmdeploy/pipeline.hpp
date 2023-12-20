@@ -19,7 +19,9 @@ namespace mmdeploy
             Pipeline(const Value& config, const Context& context)
             {
                 mmdeploy_pipeline_t pipeline{};
-                auto                ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, context, &pipeline);
+                auto                ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config,
+                                                      context,
+                                                      &pipeline);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
@@ -39,7 +41,9 @@ namespace mmdeploy
             Value Apply(const Value& inputs)
             {
                 mmdeploy_value_t tmp{};
-                auto             ec = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&inputs, &tmp);
+                auto             ec = mmdeploy_pipeline_apply(pipeline_,
+                                                  (mmdeploy_value_t)&inputs,
+                                                  &tmp);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));

@@ -6,8 +6,13 @@
 #include "nms/kernel.h"
 
 template<typename Dtype, unsigned nthds_per_cta>
-__launch_bounds__(nthds_per_cta) __global__
-    void permuteData_kernel(const int nthreads, const int num_classes, const int num_data, const int num_dim, bool confSigmoid, const Dtype* data, Dtype* new_data)
+__launch_bounds__(nthds_per_cta) __global__ void permuteData_kernel(const int    nthreads,
+                                                                    const int    num_classes,
+                                                                    const int    num_data,
+                                                                    const int    num_dim,
+                                                                    bool         confSigmoid,
+                                                                    const Dtype* data,
+                                                                    Dtype*       new_data)
 {
     // data format: [batch_size, num_data, num_classes, num_dim]
     for (int index = blockIdx.x * nthds_per_cta + threadIdx.x; index < nthreads;
@@ -27,17 +32,37 @@ __launch_bounds__(nthds_per_cta) __global__
 }
 
 template<typename Dtype>
-pluginStatus_t permuteData_gpu(cudaStream_t stream, const int nthreads, const int num_classes, const int num_data, const int num_dim, bool confSigmoid, const void* data, void* new_data)
+pluginStatus_t permuteData_gpu(cudaStream_t stream,
+                               const int    nthreads,
+                               const int    num_classes,
+                               const int    num_data,
+                               const int    num_dim,
+                               bool         confSigmoid,
+                               const void*  data,
+                               void*        new_data)
 {
     const int BS = 512;
     const int GS = (nthreads + BS - 1) / BS;
-    permuteData_kernel<Dtype, BS><<<GS, BS, 0, stream>>>(nthreads, num_classes, num_data, num_dim, confSigmoid, (const Dtype*)data, (Dtype*)new_data);
+    permuteData_kernel<Dtype, BS><<<GS, BS, 0, stream>>>(nthreads,
+                                                         num_classes,
+                                                         num_data,
+                                                         num_dim,
+                                                         confSigmoid,
+                                                         (const Dtype*)data,
+                                                         (Dtype*)new_data);
     CSC(cudaGetLastError(), STATUS_FAILURE);
     return STATUS_SUCCESS;
 }
 
 // permuteData LAUNCH CONFIG
-typedef pluginStatus_t (*pdFunc)(cudaStream_t, const int, const int, const int, const int, bool, const void*, void*);
+typedef pluginStatus_t (*pdFunc)(cudaStream_t,
+                                 const int,
+                                 const int,
+                                 const int,
+                                 const int,
+                                 bool,
+                                 const void*,
+                                 void*);
 
 struct pdLaunchConfig
 {
@@ -69,7 +94,15 @@ bool                               permuteDataInit()
 
 static bool    initialized = permuteDataInit();
 
-pluginStatus_t permuteData(cudaStream_t stream, const int nthreads, const int num_classes, const int num_data, const int num_dim, const DataType DT_DATA, bool confSigmoid, const void* data, void* new_data)
+pluginStatus_t permuteData(cudaStream_t   stream,
+                           const int      nthreads,
+                           const int      num_classes,
+                           const int      num_data,
+                           const int      num_dim,
+                           const DataType DT_DATA,
+                           bool           confSigmoid,
+                           const void*    data,
+                           void*          new_data)
 {
     pdLaunchConfig lc = pdLaunchConfig(DT_DATA);
     for (unsigned i = 0; i < pdFuncVec.size(); ++i)
@@ -77,7 +110,14 @@ pluginStatus_t permuteData(cudaStream_t stream, const int nthreads, const int nu
         if (lc == pdFuncVec[i])
         {
             DEBUG_PRINTF("permuteData kernel %d\n", i);
-            return pdFuncVec[i].function(stream, nthreads, num_classes, num_data, num_dim, confSigmoid, data, new_data);
+            return pdFuncVec[i].function(stream,
+                                         nthreads,
+                                         num_classes,
+                                         num_data,
+                                         num_dim,
+                                         confSigmoid,
+                                         data,
+                                         new_data);
         }
     }
     return STATUS_BAD_PARAM;

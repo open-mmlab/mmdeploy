@@ -59,7 +59,10 @@ namespace mmdeploy
         return ret;
     }
 
-    bool GridPriorsTRT::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool GridPriorsTRT::supportsFormatCombination(int                               pos,
+                                                  const nvinfer1::PluginTensorDesc* ioDesc,
+                                                  int                               nbInputs,
+                                                  int                               nbOutputs) TRT_NOEXCEPT
     {
         if (pos == 0)
         {
@@ -94,7 +97,14 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                trt_grid_priors_impl<float>((float*)base_anchor, (float*)output, num_base_anchors, feat_w, feat_h, mStride.d[0], mStride.d[1], stream);
+                trt_grid_priors_impl<float>((float*)base_anchor,
+                                            (float*)output,
+                                            num_base_anchors,
+                                            feat_w,
+                                            feat_h,
+                                            mStride.d[0],
+                                            mStride.d[1],
+                                            stream);
                 break;
             default:
                 return 1;
@@ -103,7 +113,9 @@ namespace mmdeploy
         return 0;
     }
 
-    nvinfer1::DataType GridPriorsTRT::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType GridPriorsTRT::getOutputDataType(int                       index,
+                                                        const nvinfer1::DataType* inputTypes,
+                                                        int                       nbInputs) const TRT_NOEXCEPT
     {
         return inputTypes[0];
     }

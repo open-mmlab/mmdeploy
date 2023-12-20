@@ -17,7 +17,9 @@ namespace mmdeploy
     namespace torch_jit
     {
 
-        void optimize_for_backend(torch::jit::Module& model, const std::string& ir = "torchscript", const std::string& backend = "torchscript")
+        void optimize_for_backend(torch::jit::Module& model,
+                                  const std::string&  ir      = "torchscript",
+                                  const std::string&  backend = "torchscript")
         {
             if (ir == "torchscript")
             {
@@ -37,7 +39,11 @@ namespace mmdeploy
         PYBIND11_MODULE(ts_optimizer, m)
         {
             namespace py = pybind11;
-            m.def("optimize_for_backend", optimize_for_backend, py::arg("module"), py::arg("ir") = std::string("torchscript"), py::arg("backend") = std::string("torchscript"));
+            m.def("optimize_for_backend",
+                  optimize_for_backend,
+                  py::arg("module"),
+                  py::arg("ir")      = std::string("torchscript"),
+                  py::arg("backend") = std::string("torchscript"));
             py::module_ onnx_module = m.def_submodule("onnx");
             onnx_module.def("_jit_pass_merge_shape_concate", MergeShapeConcate, py::arg("graph"));
             onnx_module.def("_jit_pass_onnx_peephole", ONNXPeephole, py::arg("graph"));

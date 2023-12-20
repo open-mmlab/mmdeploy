@@ -6,26 +6,25 @@
 namespace mmdeploy
 {
 
-    void modulated_deformable_im2col_cuda(
-        const at::Tensor data_im,
-        const at::Tensor data_offset,
-        const at::Tensor data_mask,
-        const int64_t    batch_size,
-        const int64_t    channels,
-        const int64_t    height_im,
-        const int64_t    width_im,
-        const int64_t    height_col,
-        const int64_t    width_col,
-        const int64_t    kernel_h,
-        const int64_t    kernel_w,
-        const int64_t    pad_h,
-        const int64_t    pad_w,
-        const int64_t    stride_h,
-        const int64_t    stride_w,
-        const int64_t    dilation_h,
-        const int64_t    dilation_w,
-        const int64_t    deformable_group,
-        at::Tensor       data_col)
+    void modulated_deformable_im2col_cuda(const at::Tensor data_im,
+                                          const at::Tensor data_offset,
+                                          const at::Tensor data_mask,
+                                          const int64_t    batch_size,
+                                          const int64_t    channels,
+                                          const int64_t    height_im,
+                                          const int64_t    width_im,
+                                          const int64_t    height_col,
+                                          const int64_t    width_col,
+                                          const int64_t    kernel_h,
+                                          const int64_t    kernel_w,
+                                          const int64_t    pad_h,
+                                          const int64_t    pad_w,
+                                          const int64_t    stride_h,
+                                          const int64_t    stride_w,
+                                          const int64_t    dilation_h,
+                                          const int64_t    dilation_w,
+                                          const int64_t    deformable_group,
+                                          at::Tensor       data_col)
     {
         // num_axes should be smaller than block size
         const int channel_per_deformable_group = channels / deformable_group;
@@ -36,19 +35,51 @@ namespace mmdeploy
             "modulated_deformable_im2col_cuda",
             ([&]
              {
-        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
-        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
-        const scalar_t *data_mask_ = data_mask.data_ptr<scalar_t>();
-        scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
-        modulated_deformable_im2col_gpu_kernel<scalar_t>
-            <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, at::cuda::getCurrentCUDAStream()>>>(
-                num_kernels, data_im_, data_offset_, data_mask_, height_im, width_im, kernel_h,
-                kernel_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w,
-                channel_per_deformable_group, batch_size, channels, deformable_group, height_col,
-                width_col, data_col_); }));
+                const scalar_t* data_im_     = data_im.data_ptr<scalar_t>();
+                const scalar_t* data_offset_ = data_offset.data_ptr<scalar_t>();
+                const scalar_t* data_mask_   = data_mask.data_ptr<scalar_t>();
+                scalar_t*       data_col_    = data_col.data_ptr<scalar_t>();
+
+                modulated_deformable_im2col_gpu_kernel<scalar_t>
+                    <<<GET_BLOCKS(num_kernels), THREADS_PER_BLOCK, 0, at::cuda::getCurrentCUDAStream()>>>(num_kernels,
+                                                                                                          data_im_,
+                                                                                                          data_offset_,
+                                                                                                          data_mask_,
+                                                                                                          height_im,
+                                                                                                          width_im,
+                                                                                                          kernel_h,
+                                                                                                          kernel_w,
+                                                                                                          pad_h,
+                                                                                                          pad_w,
+                                                                                                          stride_h,
+                                                                                                          stride_w,
+                                                                                                          dilation_h,
+                                                                                                          dilation_w,
+                                                                                                          channel_per_deformable_group,
+                                                                                                          batch_size,
+                                                                                                          channels,
+                                                                                                          deformable_group,
+                                                                                                          height_col,
+                                                                                                          width_col,
+                                                                                                          data_col_); }));
     }
 
-    at::Tensor modulated_deform_conv_forward_cuda(at::Tensor input, at::Tensor weight, at::Tensor bias, at::Tensor offset, at::Tensor mask, int64_t kernel_h, int64_t kernel_w, int64_t stride_h, int64_t stride_w, int64_t pad_h, int64_t pad_w, int64_t dilation_h, int64_t dilation_w, int64_t group, int64_t deformable_group, bool with_bias)
+    at::Tensor modulated_deform_conv_forward_cuda(at::Tensor input,
+                                                  at::Tensor weight,
+                                                  at::Tensor bias,
+                                                  at::Tensor offset,
+                                                  at::Tensor mask,
+                                                  int64_t    kernel_h,
+                                                  int64_t    kernel_w,
+                                                  int64_t    stride_h,
+                                                  int64_t    stride_w,
+                                                  int64_t    pad_h,
+                                                  int64_t    pad_w,
+                                                  int64_t    dilation_h,
+                                                  int64_t    dilation_w,
+                                                  int64_t    group,
+                                                  int64_t    deformable_group,
+                                                  bool       with_bias)
     {
         at::DeviceGuard guard(input.device());
 
@@ -83,7 +114,25 @@ namespace mmdeploy
             weight.view({group, weight.size(0) / group, weight.size(1), weight.size(2), weight.size(3)});
         for (int b = 0; b < batch; b++)
         {
-            modulated_deformable_im2col_cuda(input[b], offset[b], mask[b], 1, channels, height, width, height_out, width_out, kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w, dilation_h, dilation_w, deformable_group, columns);
+            modulated_deformable_im2col_cuda(input[b],
+                                             offset[b],
+                                             mask[b],
+                                             1,
+                                             channels,
+                                             height,
+                                             width,
+                                             height_out,
+                                             width_out,
+                                             kernel_h,
+                                             kernel_w,
+                                             pad_h,
+                                             pad_w,
+                                             stride_h,
+                                             stride_w,
+                                             dilation_h,
+                                             dilation_w,
+                                             deformable_group,
+                                             columns);
 
             for (int g = 0; g < group; g++)
             {

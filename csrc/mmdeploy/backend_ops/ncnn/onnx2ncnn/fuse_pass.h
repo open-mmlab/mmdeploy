@@ -117,7 +117,11 @@ void fuse_pixelshuffle(onnx::GraphProto*                         mutable_graph,
                        std::set<std::string>&                    blob_names,
                        int&                                      reduced_node_count);
 
-void fuse_reorg(onnx::GraphProto* mutable_graph, std::map<std::string, onnx::TensorProto>& weights, std::map<std::string, int>& node_reference, std::set<std::string>& blob_names, int& reduced_node_count);
+void fuse_reorg(onnx::GraphProto*                         mutable_graph,
+                std::map<std::string, onnx::TensorProto>& weights,
+                std::map<std::string, int>&               node_reference,
+                std::set<std::string>&                    blob_names,
+                int&                                      reduced_node_count);
 
 void fuse_expand_broadcast(onnx::GraphProto*                         mutable_graph,
                            std::map<std::string, onnx::TensorProto>& weights,
@@ -143,4 +147,8 @@ void fuse_weight_transpose(onnx::GraphProto*                         mutable_gra
                            std::set<std::string>&                    blob_names,
                            int&                                      reduced_node_count);
 
-void fuse_swish(onnx::GraphProto* mutable_graph, std::map<std::string, onnx::TensorProto>& weights, std::map<std::string, int>& node_reference, std::set<std::string>& blob_names, int& reduced_node_count);
+void fuse_swish(onnx::GraphProto*                         mutable_graph,
+                std::map<std::string, onnx::TensorProto>& weights,
+                std::map<std::string, int>&               node_reference,
+                std::set<std::string>&                    blob_names,
+                int&                                      reduced_node_count);

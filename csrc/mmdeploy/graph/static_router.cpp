@@ -122,13 +122,16 @@ namespace mmdeploy::graph
         if (scope_)
         {
             *index = scope_->next_.fetch_add(1, std::memory_order_relaxed);
-            args   = Then(std::move(args), [this, index, start](Value v) mutable
+            args   = Then(std::move(args),
+                        [this, index, start](Value v) mutable
                         {
-      if (*start == false) {
-        scope_->Add(profiler::Event::kStart, *index, profiler::Clock::now());
-        *start = true;
-      }
-      return std::move(v); });
+                            if (*start == false)
+                            {
+                                scope_->Add(profiler::Event::kStart, *index, profiler::Clock::now());
+                                *start = true;
+                            }
+                            return std::move(v);
+                        });
         }
 
         State state(use_count_, std::move(args));
@@ -138,13 +141,16 @@ namespace mmdeploy::graph
             auto output = nodes_[i]->Process(std::move(input));
             state.Write(static_cast<int>(i), std::move(output));
         }
+
         auto output = state.Collect(ret_coords_);
         if (scope_)
         {
-            output = Then(std::move(output), [this, index](Value v)
+            output = Then(std::move(output),
+                          [this, index](Value v)
                           {
-      scope_->Add(profiler::Event::kEnd, *index, profiler::Clock::now());
-      return std::move(v); });
+                              scope_->Add(profiler::Event::kEnd, *index, profiler::Clock::now());
+                              return std::move(v);
+                          });
         }
         return output;
     }

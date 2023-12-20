@@ -8,13 +8,16 @@ namespace mmdeploy
     using namespace ncnn;
     DEFINE_LAYER_CREATOR(Shape)
     DEFINE_NCNN_OPS(Shape, Shape)
+
     Shape::Shape()
     {
         one_blob_only   = true;
         support_inplace = false;
     }
 
-    int Shape::forward(const Mat& bottom_blob, Mat& top_blob, const Option& opt) const
+    int Shape::forward(const Mat&    bottom_blob,
+                       Mat&          top_blob,
+                       const Option& opt) const
     {
         int    dims     = bottom_blob.dims;
         int    w        = bottom_blob.w;

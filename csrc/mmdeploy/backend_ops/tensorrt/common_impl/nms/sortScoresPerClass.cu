@@ -9,8 +9,15 @@
 #include "trt_plugin_helper.hpp"
 
 template<typename T_SCORE, unsigned nthds_per_cta>
-__launch_bounds__(nthds_per_cta) __global__
-    void prepareSortData(const int num, const int num_classes, const int num_preds_per_class, const int background_label_id, const float confidence_threshold, T_SCORE* conf_scores_gpu, T_SCORE* temp_scores, int* temp_idx, int* d_offsets)
+__launch_bounds__(nthds_per_cta) __global__ void prepareSortData(const int   num,
+                                                                 const int   num_classes,
+                                                                 const int   num_preds_per_class,
+                                                                 const int   background_label_id,
+                                                                 const float confidence_threshold,
+                                                                 T_SCORE*    conf_scores_gpu,
+                                                                 T_SCORE*    temp_scores,
+                                                                 int*        temp_idx,
+                                                                 int*        d_offsets)
 {
     // Prepare scores data for sort
     const int cur_idx          = blockIdx.x * nthds_per_cta + threadIdx.x;
@@ -65,7 +72,15 @@ __launch_bounds__(nthds_per_cta) __global__
 }
 
 template<typename T_SCORE>
-pluginStatus_t sortScoresPerClass_gpu(cudaStream_t stream, const int num, const int num_classes, const int num_preds_per_class, const int background_label_id, const float confidence_threshold, void* conf_scores_gpu, void* index_array_gpu, void* workspace)
+pluginStatus_t sortScoresPerClass_gpu(cudaStream_t stream,
+                                      const int    num,
+                                      const int    num_classes,
+                                      const int    num_preds_per_class,
+                                      const int    background_label_id,
+                                      const float  confidence_threshold,
+                                      void*        conf_scores_gpu,
+                                      void*        index_array_gpu,
+                                      void*        workspace)
 {
     const int num_segments  = num * num_classes;
     void*     temp_scores   = workspace;
@@ -108,7 +123,15 @@ pluginStatus_t sortScoresPerClass_gpu(cudaStream_t stream, const int num, const 
 }
 
 // sortScoresPerClass LAUNCH CONFIG
-typedef pluginStatus_t (*sspcFunc)(cudaStream_t, const int, const int, const int, const int, const float, void*, void*, void*);
+typedef pluginStatus_t (*sspcFunc)(cudaStream_t,
+                                   const int,
+                                   const int,
+                                   const int,
+                                   const int,
+                                   const float,
+                                   void*,
+                                   void*,
+                                   void*);
 struct sspcLaunchConfig
 {
     DataType t_score;
@@ -138,7 +161,16 @@ bool                                 sspcInit()
 
 static bool    initialized = sspcInit();
 
-pluginStatus_t sortScoresPerClass(cudaStream_t stream, const int num, const int num_classes, const int num_preds_per_class, const int background_label_id, const float confidence_threshold, const DataType DT_SCORE, void* conf_scores_gpu, void* index_array_gpu, void* workspace)
+pluginStatus_t sortScoresPerClass(cudaStream_t   stream,
+                                  const int      num,
+                                  const int      num_classes,
+                                  const int      num_preds_per_class,
+                                  const int      background_label_id,
+                                  const float    confidence_threshold,
+                                  const DataType DT_SCORE,
+                                  void*          conf_scores_gpu,
+                                  void*          index_array_gpu,
+                                  void*          workspace)
 {
     sspcLaunchConfig lc = sspcLaunchConfig(DT_SCORE);
     for (unsigned i = 0; i < sspcFuncVec.size(); ++i)
@@ -146,13 +178,24 @@ pluginStatus_t sortScoresPerClass(cudaStream_t stream, const int num, const int 
         if (lc == sspcFuncVec[i])
         {
             DEBUG_PRINTF("sortScoresPerClass kernel %d\n", i);
-            return sspcFuncVec[i].function(stream, num, num_classes, num_preds_per_class, background_label_id, confidence_threshold, conf_scores_gpu, index_array_gpu, workspace);
+            return sspcFuncVec[i].function(stream,
+                                           num,
+                                           num_classes,
+                                           num_preds_per_class,
+                                           background_label_id,
+                                           confidence_threshold,
+                                           conf_scores_gpu,
+                                           index_array_gpu,
+                                           workspace);
         }
     }
     return STATUS_BAD_PARAM;
 }
 
-size_t sortScoresPerClassWorkspaceSize(const int num, const int num_classes, const int num_preds_per_class, const DataType DT_CONF)
+size_t sortScoresPerClassWorkspaceSize(const int      num,
+                                       const int      num_classes,
+                                       const int      num_preds_per_class,
+                                       const DataType DT_CONF)
 {
     size_t    wss[4];
     const int arrayLen = num * num_classes * num_preds_per_class;

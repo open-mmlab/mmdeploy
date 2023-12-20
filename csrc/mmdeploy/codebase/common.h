@@ -28,6 +28,7 @@ namespace mmdeploy
         {
             return device_;
         }
+
         Stream& stream()
         {
             return stream_;
@@ -46,6 +47,7 @@ namespace mmdeploy
         {
             return Tag::name;
         }
+
         std::unique_ptr<Module> Create(const Value& cfg) override
         {
             constexpr auto key{"component"};
@@ -63,7 +65,10 @@ namespace mmdeploy
             auto creator          = gRegistry<Tag>().Get(postprocess_type);
             if (creator == nullptr)
             {
-                MMDEPLOY_ERROR("Could not found entry '{}' in {}. Available components: {}", postprocess_type, Tag::name, gRegistry<Tag>().List());
+                MMDEPLOY_ERROR("Could not found entry '{}' in {}. Available components: {}",
+                               postprocess_type,
+                               Tag::name,
+                               gRegistry<Tag>().List());
                 throw_exception(eEntryNotFound);
             }
             return creator->Create(cfg);

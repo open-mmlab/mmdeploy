@@ -32,11 +32,13 @@ namespace
         {
             return sizeof(T);
         }
+
         static void serialize(void** buffer, T const& value)
         {
             ::memcpy(*buffer, &value, sizeof(T));
             reinterpret_cast<char*&>(*buffer) += sizeof(T);
         }
+
         static void deserialize(void const** buffer, size_t* buffer_size, T* value)
         {
             assert(*buffer_size >= sizeof(T));
@@ -53,11 +55,13 @@ namespace
         {
             return strlen(value) + 1;
         }
+
         static void serialize(void** buffer, const char* value)
         {
             ::strcpy(static_cast<char*>(*buffer), value);
             reinterpret_cast<char*&>(*buffer) += strlen(value) + 1;
         }
+
         static void deserialize(void const** buffer, size_t* buffer_size, const char** value)
         {
             *value           = static_cast<char const*>(*buffer);
@@ -77,6 +81,7 @@ namespace
         {
             return sizeof(value.size()) + value.size() * sizeof(T);
         }
+
         static void serialize(void** buffer, std::vector<T> const& value)
         {
             serialize_value(buffer, value.size());
@@ -84,6 +89,7 @@ namespace
             ::memcpy(*buffer, value.data(), nbyte);
             reinterpret_cast<char*&>(*buffer) += nbyte;
         }
+
         static void deserialize(void const** buffer, size_t* buffer_size, std::vector<T>* value)
         {
             size_t size;

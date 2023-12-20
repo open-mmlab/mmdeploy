@@ -15,7 +15,9 @@ namespace mmdeploy
         support_inplace = false;
     }
 
-    int Expand::forward(const std::vector<Mat>& bottom_blobs, std::vector<Mat>& top_blobs, const Option& opt) const
+    int Expand::forward(const std::vector<Mat>& bottom_blobs,
+                        std::vector<Mat>&       top_blobs,
+                        const Option&           opt) const
     {
         const Mat& bottom_blob    = bottom_blobs[0];
         size_t     elemsize       = bottom_blob.elemsize;

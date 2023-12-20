@@ -152,51 +152,66 @@ __global__ void roi_extractor_kernel(scalar_t* __restrict__ output,
 
         if (pool_mode == 0)
         {
-            const scalar_t output_val = roi_align_single<scalar_t, aligned, 0>(
-                bottom_data,
-                roi_batch_ind,
-                roi_start_w,
-                roi_start_h,
-                roi_end_w,
-                roi_end_h,
-                spatial_scale,
-                pw,
-                ph,
-                c,
-                sample_num,
-                channels,
-                height,
-                width,
-                pooled_height,
-                pooled_width);
+            const scalar_t output_val = roi_align_single<scalar_t, aligned, 0>(bottom_data,
+                                                                               roi_batch_ind,
+                                                                               roi_start_w,
+                                                                               roi_start_h,
+                                                                               roi_end_w,
+                                                                               roi_end_h,
+                                                                               spatial_scale,
+                                                                               pw,
+                                                                               ph,
+                                                                               c,
+                                                                               sample_num,
+                                                                               channels,
+                                                                               height,
+                                                                               width,
+                                                                               pooled_height,
+                                                                               pooled_width);
             output[index] = output_val;
         }
         else
         {
-            const scalar_t output_val = roi_align_single<scalar_t, aligned, 1>(
-                bottom_data,
-                roi_batch_ind,
-                roi_start_w,
-                roi_start_h,
-                roi_end_w,
-                roi_end_h,
-                spatial_scale,
-                pw,
-                ph,
-                c,
-                sample_num,
-                channels,
-                height,
-                width,
-                pooled_height,
-                pooled_width);
+            const scalar_t output_val = roi_align_single<scalar_t, aligned, 1>(bottom_data,
+                                                                               roi_batch_ind,
+                                                                               roi_start_w,
+                                                                               roi_start_h,
+                                                                               roi_end_w,
+                                                                               roi_end_h,
+                                                                               spatial_scale,
+                                                                               pw,
+                                                                               ph,
+                                                                               c,
+                                                                               sample_num,
+                                                                               channels,
+                                                                               height,
+                                                                               width,
+                                                                               pooled_height,
+                                                                               pooled_width);
             output[index] = output_val;
         }
     }
 }
 
 template<typename T>
-void multi_level_roi_align(T* output, const T* rois, int num_rois, const void* const* feats, int num_feats, int n, int c, int* h, int* w, float* strides, int aligned_height, int aligned_width, int pool_mode, int sample_num, float roi_scale_factor, int finest_scale, bool aligned, cudaStream_t stream)
+void multi_level_roi_align(T*                 output,
+                           const T*           rois,
+                           int                num_rois,
+                           const void* const* feats,
+                           int                num_feats,
+                           int                n,
+                           int                c,
+                           int*               h,
+                           int*               w,
+                           float*             strides,
+                           int                aligned_height,
+                           int                aligned_width,
+                           int                pool_mode,
+                           int                sample_num,
+                           float              roi_scale_factor,
+                           int                finest_scale,
+                           bool               aligned,
+                           cudaStream_t       stream)
 {
     FeatData feat_data;
     feat_data.batch_size  = n;
@@ -212,32 +227,47 @@ void multi_level_roi_align(T* output, const T* rois, int num_rois, const void* c
     int nThreads = num_rois * c * aligned_height * aligned_width;
     if (aligned)
     {
-        roi_extractor_kernel<T, true><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(
-            output,
-            rois,
-            feat_data,
-            pool_mode,
-            sample_num,
-            roi_scale_factor,
-            finest_scale,
-            aligned_height,
-            aligned_width,
-            nThreads);
+        roi_extractor_kernel<T, true><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(output,
+                                                                                              rois,
+                                                                                              feat_data,
+                                                                                              pool_mode,
+                                                                                              sample_num,
+                                                                                              roi_scale_factor,
+                                                                                              finest_scale,
+                                                                                              aligned_height,
+                                                                                              aligned_width,
+                                                                                              nThreads);
     }
     else
     {
-        roi_extractor_kernel<T, false><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(
-            output,
-            rois,
-            feat_data,
-            pool_mode,
-            sample_num,
-            roi_scale_factor,
-            finest_scale,
-            aligned_height,
-            aligned_width,
-            nThreads);
+        roi_extractor_kernel<T, false><<<GET_BLOCKS(nThreads), THREADS_PER_BLOCK, 0, stream>>>(output,
+                                                                                               rois,
+                                                                                               feat_data,
+                                                                                               pool_mode,
+                                                                                               sample_num,
+                                                                                               roi_scale_factor,
+                                                                                               finest_scale,
+                                                                                               aligned_height,
+                                                                                               aligned_width,
+                                                                                               nThreads);
     }
 }
 
-template void multi_level_roi_align<float>(float* output, const float* rois, int num_rois, const void* const* feats, int num_feats, int n, int c, int* h, int* w, float* strides, int aligned_height, int aligned_width, int pool_mode, int sample_num, float roi_scale_factor, int finest_scale, bool aligned, cudaStream_t stream);
+template void multi_level_roi_align<float>(float*             output,
+                                           const float*       rois,
+                                           int                num_rois,
+                                           const void* const* feats,
+                                           int                num_feats,
+                                           int                n,
+                                           int                c,
+                                           int*               h,
+                                           int*               w,
+                                           float*             strides,
+                                           int                aligned_height,
+                                           int                aligned_width,
+                                           int                pool_mode,
+                                           int                sample_num,
+                                           float              roi_scale_factor,
+                                           int                finest_scale,
+                                           bool               aligned,
+                                           cudaStream_t       stream);

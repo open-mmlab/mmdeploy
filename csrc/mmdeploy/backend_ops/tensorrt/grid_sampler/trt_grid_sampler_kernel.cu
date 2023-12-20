@@ -130,7 +130,16 @@ static __forceinline__ __device__ bool within_bounds_3d(int d, int h, int w, int
 }
 
 template<typename scalar_t>
-__global__ void grid_sampler_2d_kernel(const int nthreads, const scalar_t* input, const scalar_t* grid, scalar_t* output, TensorDesc input_desc, TensorDesc grid_desc, TensorDesc output_desc, const GridSamplerInterpolation interpolation_mode, const GridSamplerPadding padding_mode, bool align_corners)
+__global__ void grid_sampler_2d_kernel(const int                      nthreads,
+                                       const scalar_t*                input,
+                                       const scalar_t*                grid,
+                                       scalar_t*                      output,
+                                       TensorDesc                     input_desc,
+                                       TensorDesc                     grid_desc,
+                                       TensorDesc                     output_desc,
+                                       const GridSamplerInterpolation interpolation_mode,
+                                       const GridSamplerPadding       padding_mode,
+                                       bool                           align_corners)
 {
     int C          = input_desc.shape[1];
     int inp_H      = input_desc.shape[2];
@@ -230,7 +239,16 @@ __global__ void grid_sampler_2d_kernel(const int nthreads, const scalar_t* input
 }
 
 template<typename scalar_t>
-__global__ void grid_sampler_3d_kernel(const int nthreads, const scalar_t* input, const scalar_t* grid, scalar_t* output, TensorDesc input_desc, TensorDesc grid_desc, TensorDesc output_desc, const GridSamplerInterpolation interpolation_mode, const GridSamplerPadding padding_mode, bool align_corners)
+__global__ void grid_sampler_3d_kernel(const int                      nthreads,
+                                       const scalar_t*                input,
+                                       const scalar_t*                grid,
+                                       scalar_t*                      output,
+                                       TensorDesc                     input_desc,
+                                       TensorDesc                     grid_desc,
+                                       TensorDesc                     output_desc,
+                                       const GridSamplerInterpolation interpolation_mode,
+                                       const GridSamplerPadding       padding_mode,
+                                       bool                           align_corners)
 {
     int C          = input_desc.shape[1];
     int inp_D      = input_desc.shape[2];
@@ -402,7 +420,17 @@ void create_desc(const int* dims, int nb_dims, TensorDesc& desc)
 }
 
 template<typename T>
-void grid_sample(T* output, const T* input, const T* grid, int* output_dims, int* input_dims, int* grid_dims, int nb_dims, GridSamplerInterpolation interp, GridSamplerPadding padding, bool align_corners, cudaStream_t stream)
+void grid_sample(T*                       output,
+                 const T*                 input,
+                 const T*                 grid,
+                 int*                     output_dims,
+                 int*                     input_dims,
+                 int*                     grid_dims,
+                 int                      nb_dims,
+                 GridSamplerInterpolation interp,
+                 GridSamplerPadding       padding,
+                 bool                     align_corners,
+                 cudaStream_t             stream)
 {
     TensorDesc input_desc;
     create_desc(input_dims, nb_dims, input_desc);
@@ -425,31 +453,29 @@ void grid_sample(T* output, const T* input, const T* grid, int* output_dims, int
 
     if (nb_dims == 4)
     {
-        grid_sampler_2d_kernel<T><<<GET_BLOCKS(count), THREADS_PER_BLOCK, 0, stream>>>(
-            count,
-            input,
-            grid,
-            output,
-            input_desc,
-            grid_desc,
-            output_desc,
-            interp,
-            padding,
-            align_corners);
+        grid_sampler_2d_kernel<T><<<GET_BLOCKS(count), THREADS_PER_BLOCK, 0, stream>>>(count,
+                                                                                       input,
+                                                                                       grid,
+                                                                                       output,
+                                                                                       input_desc,
+                                                                                       grid_desc,
+                                                                                       output_desc,
+                                                                                       interp,
+                                                                                       padding,
+                                                                                       align_corners);
     }
     else if (nb_dims == 5)
     {
-        grid_sampler_3d_kernel<T><<<GET_BLOCKS(count), THREADS_PER_BLOCK, 0, stream>>>(
-            count,
-            input,
-            grid,
-            output,
-            input_desc,
-            grid_desc,
-            output_desc,
-            interp,
-            padding,
-            align_corners);
+        grid_sampler_3d_kernel<T><<<GET_BLOCKS(count), THREADS_PER_BLOCK, 0, stream>>>(count,
+                                                                                       input,
+                                                                                       grid,
+                                                                                       output,
+                                                                                       input_desc,
+                                                                                       grid_desc,
+                                                                                       output_desc,
+                                                                                       interp,
+                                                                                       padding,
+                                                                                       align_corners);
     }
     else
     {
@@ -457,4 +483,14 @@ void grid_sample(T* output, const T* input, const T* grid, int* output_dims, int
     }
 }
 
-template void grid_sample<float>(float* output, const float* input, const float* grid, int* output_dims, int* input_dims, int* grid_dims, int nb_dims, GridSamplerInterpolation interp, GridSamplerPadding padding, bool align_corners, cudaStream_t stream);
+template void grid_sample<float>(float*                   output,
+                                 const float*             input,
+                                 const float*             grid,
+                                 int*                     output_dims,
+                                 int*                     input_dims,
+                                 int*                     grid_dims,
+                                 int                      nb_dims,
+                                 GridSamplerInterpolation interp,
+                                 GridSamplerPadding       padding,
+                                 bool                     align_corners,
+                                 cudaStream_t             stream);

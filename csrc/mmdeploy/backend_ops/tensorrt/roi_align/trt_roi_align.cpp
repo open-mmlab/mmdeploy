@@ -17,7 +17,13 @@ namespace mmdeploy
         static const char* PLUGIN_NAME{"MMCVRoiAlign"};
     }  // namespace
 
-    TRTRoIAlign::TRTRoIAlign(const std::string& name, int outWidth, int outHeight, float spatialScale, int sampleRatio, int poolMode, bool aligned)
+    TRTRoIAlign::TRTRoIAlign(const std::string& name,
+                             int                outWidth,
+                             int                outHeight,
+                             float              spatialScale,
+                             int                sampleRatio,
+                             int                poolMode,
+                             bool               aligned)
         : TRTPluginBase(name)
         , mOutWidth(outWidth)
         , mOutHeight(outHeight)
@@ -41,17 +47,22 @@ namespace mmdeploy
 
     nvinfer1::IPluginV2DynamicExt* TRTRoIAlign::clone() const TRT_NOEXCEPT
     {
-        TRTRoIAlign* plugin = new TRTRoIAlign(mLayerName, mOutWidth, mOutHeight, mSpatialScale, mSampleRatio, mPoolMode, mAligned);
+        TRTRoIAlign* plugin = new TRTRoIAlign(mLayerName,
+                                              mOutWidth,
+                                              mOutHeight,
+                                              mSpatialScale,
+                                              mSampleRatio,
+                                              mPoolMode,
+                                              mAligned);
         plugin->setPluginNamespace(getPluginNamespace());
 
         return plugin;
     }
 
-    nvinfer1::DimsExprs TRTRoIAlign::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    nvinfer1::DimsExprs TRTRoIAlign::getOutputDimensions(int                        outputIndex,
+                                                         const nvinfer1::DimsExprs* inputs,
+                                                         int                        nbInputs,
+                                                         nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         nvinfer1::DimsExprs ret;
         ret.nbDims = 4;
@@ -63,23 +74,31 @@ namespace mmdeploy
         return ret;
     }
 
-    bool TRTRoIAlign::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool TRTRoIAlign::supportsFormatCombination(int                               pos,
+                                                const nvinfer1::PluginTensorDesc* ioDesc,
+                                                int                               nbInputs,
+                                                int                               nbOutputs) TRT_NOEXCEPT
     {
         return ioDesc[pos].type == nvinfer1::DataType::kFLOAT &&
                ioDesc[pos].format == nvinfer1::TensorFormat::kLINEAR;
     }
 
-    void   TRTRoIAlign::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) TRT_NOEXCEPT {}
+    void   TRTRoIAlign::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                      int                                      nbInputs,
+                                      const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                      int                                      nbOutputs) TRT_NOEXCEPT {}
 
-    size_t TRTRoIAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT
+    size_t TRTRoIAlign::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                         int                               nbInputs,
+                                         const nvinfer1::PluginTensorDesc* outputs,
+                                         int                               nbOutputs) const TRT_NOEXCEPT
     {
         size_t output_size = 0;
         size_t word_size   = 0;
         switch (mPoolMode)
         {
             case 0:  // max
-                output_size =
-                    outputs[0].dims.d[0] * outputs[0].dims.d[1] * outputs[0].dims.d[2] * outputs[0].dims.d[3];
+                output_size = outputs[0].dims.d[0] * outputs[0].dims.d[1] * outputs[0].dims.d[2] * outputs[0].dims.d[3];
                 word_size = mmdeploy::getElementSize(outputs[0].type);
                 return output_size * word_size * 2;
                 break;
@@ -103,7 +122,9 @@ namespace mmdeploy
         int height   = inputDesc[0].dims.d[2];
         int width    = inputDesc[0].dims.d[3];
 
-        int output_size = outputDesc[0].dims.d[0] * outputDesc[0].dims.d[1] * outputDesc[0].dims.d[2] *
+        int output_size = outputDesc[0].dims.d[0] *
+                          outputDesc[0].dims.d[1] *
+                          outputDesc[0].dims.d[2] *
                           outputDesc[0].dims.d[3];
         int         word_size = mmdeploy::getElementSize(outputDesc[0].type);
 
@@ -152,7 +173,9 @@ namespace mmdeploy
         return 0;
     }
 
-    nvinfer1::DataType TRTRoIAlign::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType TRTRoIAlign::getOutputDataType(int                       index,
+                                                      const nvinfer1::DataType* inputTypes,
+                                                      int                       nbInputs) const TRT_NOEXCEPT
     {
         return inputTypes[0];
     }
@@ -288,7 +311,9 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::IPluginV2* TRTRoIAlignCreator::deserializePlugin(const char* name, const void* serialData, size_t serialLength) TRT_NOEXCEPT
+    nvinfer1::IPluginV2* TRTRoIAlignCreator::deserializePlugin(const char* name,
+                                                               const void* serialData,
+                                                               size_t      serialLength) TRT_NOEXCEPT
     {
         auto plugin = new TRTRoIAlign(name, serialData, serialLength);
         plugin->setPluginNamespace(getPluginNamespace());

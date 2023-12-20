@@ -132,27 +132,26 @@ __device__ __forceinline__ __half deformable_im2col_bilinear(const __half* __res
 }
 
 template<typename scalar_t>
-__global__ void deformable_im2col_gpu_kernel(
-    const int n,
-    const scalar_t* __restrict__ data_im,
-    const scalar_t* __restrict__ data_offset,
-    const int height,
-    const int width,
-    const int kernel_h,
-    const int kernel_w,
-    const int pad_h,
-    const int pad_w,
-    const int stride_h,
-    const int stride_w,
-    const int dilation_h,
-    const int dilation_w,
-    const int channel_per_deformable_group,
-    const int batch_size,
-    const int num_channels,
-    const int deformable_group,
-    const int height_col,
-    const int width_col,
-    scalar_t* __restrict__ data_col)
+__global__ void deformable_im2col_gpu_kernel(const int n,
+                                             const scalar_t* __restrict__ data_im,
+                                             const scalar_t* __restrict__ data_offset,
+                                             const int height,
+                                             const int width,
+                                             const int kernel_h,
+                                             const int kernel_w,
+                                             const int pad_h,
+                                             const int pad_w,
+                                             const int stride_h,
+                                             const int stride_w,
+                                             const int dilation_h,
+                                             const int dilation_w,
+                                             const int channel_per_deformable_group,
+                                             const int batch_size,
+                                             const int num_channels,
+                                             const int deformable_group,
+                                             const int height_col,
+                                             const int width_col,
+                                             scalar_t* __restrict__ data_col)
 {
     const int hw_col        = height_col * width_col;
     const int data_col_step = batch_size * hw_col;

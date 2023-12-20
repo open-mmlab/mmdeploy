@@ -25,7 +25,9 @@ namespace mmdeploy::mmdet
                 nms_pre_       = cfg["params"].value("nms_pre", -1);
                 score_thr_     = cfg["params"].value("score_thr", 0.02f);
                 min_bbox_size_ = cfg["params"].value("min_bbox_size", 0);
-                iou_threshold_ = cfg["params"].contains("nms") ? cfg["params"]["nms"].value("iou_threshold", 0.45f) : 0.45f;
+                iou_threshold_ = cfg["params"].contains("nms") ?
+                                     cfg["params"]["nms"].value("iou_threshold", 0.45f) :
+                                     0.45f;
                 if (cfg["params"].contains("anchor_generator"))
                 {
                     from_value(cfg["params"]["anchor_generator"]["base_sizes"], anchors_);
@@ -81,7 +83,17 @@ namespace mmdeploy::mmdet
         return -1.0 * logf((1.0 / y) - 1.0);
     }
 
-    int YOLOHead::YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<float>>& anchor, int grid_h, int grid_w, int height, int width, int stride, std::vector<float>& boxes, std::vector<float>& obj_probs, std::vector<int>& class_id, float threshold) const
+    int YOLOHead::YOLOFeatDecode(const Tensor&                          feat_map,
+                                 const std::vector<std::vector<float>>& anchor,
+                                 int                                    grid_h,
+                                 int                                    grid_w,
+                                 int                                    height,
+                                 int                                    width,
+                                 int                                    stride,
+                                 std::vector<float>&                    boxes,
+                                 std::vector<float>&                    obj_probs,
+                                 std::vector<int>&                      class_id,
+                                 float                                  threshold) const
     {
         auto      input         = const_cast<float*>(feat_map.data<float>());
         auto      prop_box_size = feat_map.shape(1) / anchor.size();
@@ -89,6 +101,7 @@ namespace mmdeploy::mmdet
         int       valid_count   = 0;
         int       grid_len      = grid_h * grid_w;
         float     thres         = unsigmoid(threshold);
+
         for (int a = 0; a < anchor.size(); a++)
         {
             for (int i = 0; i < grid_h; i++)
@@ -155,7 +168,17 @@ namespace mmdeploy::mmdet
             int stride = strides_[i];
             int grid_h = model_in_h / stride;
             int grid_w = model_in_w / stride;
-            YOLOFeatDecode(pred_maps[i], anchors_[i], grid_h, grid_w, model_in_h, model_in_w, stride, filter_boxes, obj_probs, class_id, score_thr_);
+            YOLOFeatDecode(pred_maps[i],
+                           anchors_[i],
+                           grid_h,
+                           grid_w,
+                           model_in_h,
+                           model_in_w,
+                           stride,
+                           filter_boxes,
+                           obj_probs,
+                           class_id,
+                           score_thr_);
         }
 
         std::vector<int> indexArray;
@@ -165,7 +188,10 @@ namespace mmdeploy::mmdet
         }
         Sort(obj_probs, class_id, indexArray);
 
-        Tensor dets(TensorDesc{Device{0, 0}, DataType::kFLOAT, TensorShape{int(filter_boxes.size() / 4), 4}, "dets"});
+        Tensor dets(TensorDesc{Device{0, 0},
+                               DataType::kFLOAT,
+                               TensorShape{int(filter_boxes.size() / 4), 4},
+                               "dets"});
         std::copy(filter_boxes.begin(), filter_boxes.end(), dets.data<float>());
         NMS(dets, iou_threshold_, indexArray);
 
@@ -224,7 +250,15 @@ namespace mmdeploy::mmdet
         return objs;
     }
 
-    std::array<float, 4> YOLOV3Head::yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride, const std::vector<std::vector<float>>& anchor, int j, int i, int a) const
+    std::array<float, 4> YOLOV3Head::yolo_decode(float                                  box_x,
+                                                 float                                  box_y,
+                                                 float                                  box_w,
+                                                 float                                  box_h,
+                                                 float                                  stride,
+                                                 const std::vector<std::vector<float>>& anchor,
+                                                 int                                    j,
+                                                 int                                    i,
+                                                 int                                    a) const
     {
         box_x = (box_x + j) * stride;
         box_y = (box_y + i) * stride;
@@ -233,7 +267,15 @@ namespace mmdeploy::mmdet
         return std::array<float, 4>{box_x, box_y, box_w, box_h};
     }
 
-    std::array<float, 4> YOLOv5Head::yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride, const std::vector<std::vector<float>>& anchor, int j, int i, int a) const
+    std::array<float, 4> YOLOv5Head::yolo_decode(float                                  box_x,
+                                                 float                                  box_y,
+                                                 float                                  box_w,
+                                                 float                                  box_h,
+                                                 float                                  stride,
+                                                 const std::vector<std::vector<float>>& anchor,
+                                                 int                                    j,
+                                                 int                                    i,
+                                                 int                                    a) const
     {
         box_x = box_x * 2 - 0.5;
         box_y = box_y * 2 - 0.5;

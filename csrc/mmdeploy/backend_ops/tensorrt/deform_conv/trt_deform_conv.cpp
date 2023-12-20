@@ -157,10 +157,54 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                deform_conv<float>((float*)x, (float*)weight, (float*)offset, (float*)output, workSpace, batch, channels, height, width, channels_out, kernel_w, kernel_h, mStride.d[0], mStride.d[1], mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup, mDeformableGroup, im2col_step, m_cublas_handle, stream);
+                deform_conv<float>((float*)x,
+                                   (float*)weight,
+                                   (float*)offset,
+                                   (float*)output,
+                                   workSpace,
+                                   batch,
+                                   channels,
+                                   height,
+                                   width,
+                                   channels_out,
+                                   kernel_w,
+                                   kernel_h,
+                                   mStride.d[0],
+                                   mStride.d[1],
+                                   mPadding.d[0],
+                                   mPadding.d[1],
+                                   mDilation.d[0],
+                                   mDilation.d[1],
+                                   mGroup,
+                                   mDeformableGroup,
+                                   im2col_step,
+                                   m_cublas_handle,
+                                   stream);
                 break;
             case nvinfer1::DataType::kHALF:
-                deform_conv<half>((half*)x, (half*)weight, (half*)offset, (half*)output, workSpace, batch, channels, height, width, channels_out, kernel_w, kernel_h, mStride.d[0], mStride.d[1], mPadding.d[0], mPadding.d[1], mDilation.d[0], mDilation.d[1], mGroup, mDeformableGroup, im2col_step, m_cublas_handle, stream);
+                deform_conv<half>((half*)x,
+                                  (half*)weight,
+                                  (half*)offset,
+                                  (half*)output,
+                                  workSpace,
+                                  batch,
+                                  channels,
+                                  height,
+                                  width,
+                                  channels_out,
+                                  kernel_w,
+                                  kernel_h,
+                                  mStride.d[0],
+                                  mStride.d[1],
+                                  mPadding.d[0],
+                                  mPadding.d[1],
+                                  mDilation.d[0],
+                                  mDilation.d[1],
+                                  mGroup,
+                                  mDeformableGroup,
+                                  im2col_step,
+                                  m_cublas_handle,
+                                  stream);
                 break;
             default:
                 return 1;

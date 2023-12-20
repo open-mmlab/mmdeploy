@@ -12,10 +12,33 @@ namespace mmdeploy::mmdet
     {
       public:
         explicit YOLOHead(const Value& cfg);
+
         Result<Value>                operator()(const Value& prep_res, const Value& infer_res);
-        int                          YOLOFeatDecode(const Tensor& feat_map, const std::vector<std::vector<float>>& anchor, int grid_h, int grid_w, int height, int width, int stride, std::vector<float>& boxes, std::vector<float>& obj_probs, std::vector<int>& class_id, float threshold) const;
-        Result<Detections>           GetBBoxes(const Value& prep_res, const std::vector<Tensor>& pred_maps) const;
-        virtual std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride, const std::vector<std::vector<float>>& anchor, int j, int i, int a) const = 0;
+
+        int                          YOLOFeatDecode(const Tensor&                          feat_map,
+                                                    const std::vector<std::vector<float>>& anchor,
+                                                    int                                    grid_h,
+                                                    int                                    grid_w,
+                                                    int                                    height,
+                                                    int                                    width,
+                                                    int                                    stride,
+                                                    std::vector<float>&                    boxes,
+                                                    std::vector<float>&                    obj_probs,
+                                                    std::vector<int>&                      class_id,
+                                                    float                                  threshold) const;
+
+        Result<Detections>           GetBBoxes(const Value&               prep_res,
+                                               const std::vector<Tensor>& pred_maps) const;
+
+        virtual std::array<float, 4> yolo_decode(float                                  box_x,
+                                                 float                                  box_y,
+                                                 float                                  box_w,
+                                                 float                                  box_h,
+                                                 float                                  stride,
+                                                 const std::vector<std::vector<float>>& anchor,
+                                                 int                                    j,
+                                                 int                                    i,
+                                                 int                                    a) const = 0;
 
       private:
         float                                        score_thr_{0.4f};
@@ -30,14 +53,30 @@ namespace mmdeploy::mmdet
     {
       public:
         using YOLOHead::YOLOHead;
-        std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride, const std::vector<std::vector<float>>& anchor, int j, int i, int a) const override;
+        std::array<float, 4> yolo_decode(float                                  box_x,
+                                         float                                  box_y,
+                                         float                                  box_w,
+                                         float                                  box_h,
+                                         float                                  stride,
+                                         const std::vector<std::vector<float>>& anchor,
+                                         int                                    j,
+                                         int                                    i,
+                                         int                                    a) const override;
     };
 
     class YOLOv5Head : public YOLOHead
     {
       public:
         using YOLOHead::YOLOHead;
-        std::array<float, 4> yolo_decode(float box_x, float box_y, float box_w, float box_h, float stride, const std::vector<std::vector<float>>& anchor, int j, int i, int a) const override;
+        std::array<float, 4> yolo_decode(float                                  box_x,
+                                         float                                  box_y,
+                                         float                                  box_w,
+                                         float                                  box_h,
+                                         float                                  stride,
+                                         const std::vector<std::vector<float>>& anchor,
+                                         int                                    j,
+                                         int                                    i,
+                                         int                                    a) const override;
     };
 
 }  // namespace mmdeploy::mmdet

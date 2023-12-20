@@ -41,13 +41,35 @@ inline int GET_BLOCKS(const int N)
  * @param[in] stream cuda stream handle
  */
 template<class scalar_t>
-void memcpyPermute(scalar_t* dst, const scalar_t* src, int* src_size, int* permute, int src_dim, cudaStream_t stream = 0);
+void memcpyPermute(scalar_t*       dst,
+                   const scalar_t* src,
+                   int*            src_size,
+                   int*            permute,
+                   int             src_dim,
+                   cudaStream_t    stream = 0);
 
 template<typename scalar_t>
-cublasStatus_t cublasGemmWrap(cublasHandle_t handle, cublasOperation_t transa, cublasOperation_t transb, int m, int n, int k, const scalar_t* alpha, const scalar_t* A, int lda, const scalar_t* B, int ldb, const scalar_t* beta, scalar_t* C, int ldc);
+cublasStatus_t cublasGemmWrap(cublasHandle_t    handle,
+                              cublasOperation_t transa,
+                              cublasOperation_t transb,
+                              int               m,
+                              int               n,
+                              int               k,
+                              const scalar_t*   alpha,
+                              const scalar_t*   A,
+                              int               lda,
+                              const scalar_t*   B,
+                              int               ldb,
+                              const scalar_t*   beta,
+                              scalar_t*         C,
+                              int               ldc);
 
 template<typename scalar_t>
-__device__ scalar_t bilinear_interpolate(const scalar_t* input, const int height, const int width, scalar_t y, scalar_t x)
+__device__ scalar_t bilinear_interpolate(const scalar_t* input,
+                                         const int       height,
+                                         const int       width,
+                                         scalar_t        y,
+                                         scalar_t        x)
 {
     // deal with cases that inverse elements are out of feature map boundary
     if (y < -1.0 || y > height || x < -1.0 || x > width) return 0;

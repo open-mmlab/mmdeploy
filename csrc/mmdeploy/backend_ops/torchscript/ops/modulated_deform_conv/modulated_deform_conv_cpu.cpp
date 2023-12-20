@@ -6,46 +6,74 @@
 namespace mmdeploy
 {
 
-    void modulated_deformable_im2col_cpu(
-        const at::Tensor data_im,
-        const at::Tensor data_offset,
-        const at::Tensor data_mask,
-        const int64_t    batch_size,
-        const int64_t    channels,
-        const int64_t    height_im,
-        const int64_t    width_im,
-        const int64_t    height_col,
-        const int64_t    width_col,
-        const int64_t    kernel_h,
-        const int64_t    kernel_w,
-        const int64_t    pad_h,
-        const int64_t    pad_w,
-        const int64_t    stride_h,
-        const int64_t    stride_w,
-        const int64_t    dilation_h,
-        const int64_t    dilation_w,
-        int64_t          deformable_group,
-        at::Tensor       data_col)
+    void modulated_deformable_im2col_cpu(const at::Tensor data_im,
+                                         const at::Tensor data_offset,
+                                         const at::Tensor data_mask,
+                                         const int64_t    batch_size,
+                                         const int64_t    channels,
+                                         const int64_t    height_im,
+                                         const int64_t    width_im,
+                                         const int64_t    height_col,
+                                         const int64_t    width_col,
+                                         const int64_t    kernel_h,
+                                         const int64_t    kernel_w,
+                                         const int64_t    pad_h,
+                                         const int64_t    pad_w,
+                                         const int64_t    stride_h,
+                                         const int64_t    stride_w,
+                                         const int64_t    dilation_h,
+                                         const int64_t    dilation_w,
+                                         int64_t          deformable_group,
+                                         at::Tensor       data_col)
     {
         // num_axes should be smaller than block size
 
-        AT_DISPATCH_FLOATING_TYPES_AND_HALF(
-            data_im.scalar_type(),
-            "modulated_deformable_im2col_cpu",
-            ([&]
-             {
-        const scalar_t *data_im_ = data_im.data_ptr<scalar_t>();
-        const scalar_t *data_offset_ = data_offset.data_ptr<scalar_t>();
-        const scalar_t *data_mask_ = data_mask.data_ptr<scalar_t>();
-        scalar_t *data_col_ = data_col.data_ptr<scalar_t>();
+        AT_DISPATCH_FLOATING_TYPES_AND_HALF(data_im.scalar_type(),
+                                            "modulated_deformable_im2col_cpu",
+                                            ([&]
+                                             {
+                                                const scalar_t* data_im_     = data_im.data_ptr<scalar_t>();
+                                                const scalar_t* data_offset_ = data_offset.data_ptr<scalar_t>();
+                                                const scalar_t* data_mask_   = data_mask.data_ptr<scalar_t>();
+                                                scalar_t*       data_col_    = data_col.data_ptr<scalar_t>();
 
-        deformable_im2col_2d<scalar_t>(data_im_, data_offset_, data_mask_, height_im, width_im,
-                                       kernel_h, kernel_w, pad_h, pad_w, stride_h, stride_w,
-                                       dilation_h, dilation_w, channels, deformable_group,
-                                       height_col, width_col, data_mask_ != nullptr, data_col_); }));
+                                                deformable_im2col_2d<scalar_t>(data_im_,
+                                                                               data_offset_,
+                                                                               data_mask_,
+                                                                               height_im,
+                                                                               width_im,
+                                                                               kernel_h,
+                                                                               kernel_w,
+                                                                               pad_h,
+                                                                               pad_w,
+                                                                               stride_h,
+                                                                               stride_w,
+                                                                               dilation_h,
+                                                                               dilation_w,
+                                                                               channels,
+                                                                               deformable_group,
+                                                                               height_col,
+                                                                               width_col,
+                                                                               data_mask_ != nullptr,
+                                                                               data_col_); }));
     }
 
-    at::Tensor modulated_deform_conv_forward_cpu(at::Tensor input, at::Tensor weight, at::Tensor bias, at::Tensor offset, at::Tensor mask, int64_t kernel_h, int64_t kernel_w, int64_t stride_h, int64_t stride_w, int64_t pad_h, int64_t pad_w, int64_t dilation_h, int64_t dilation_w, int64_t group, int64_t deformable_group, bool with_bias)
+    at::Tensor modulated_deform_conv_forward_cpu(at::Tensor input,
+                                                 at::Tensor weight,
+                                                 at::Tensor bias,
+                                                 at::Tensor offset,
+                                                 at::Tensor mask,
+                                                 int64_t    kernel_h,
+                                                 int64_t    kernel_w,
+                                                 int64_t    stride_h,
+                                                 int64_t    stride_w,
+                                                 int64_t    pad_h,
+                                                 int64_t    pad_w,
+                                                 int64_t    dilation_h,
+                                                 int64_t    dilation_w,
+                                                 int64_t    group,
+                                                 int64_t    deformable_group,
+                                                 bool       with_bias)
     {
         at::DeviceGuard guard(input.device());
 

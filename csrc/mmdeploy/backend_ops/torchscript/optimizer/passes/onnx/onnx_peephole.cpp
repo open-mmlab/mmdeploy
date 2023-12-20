@@ -87,10 +87,9 @@ namespace mmdeploy
         void ONNXPeephole(const std::shared_ptr<Graph>& graph)
         {
             ONNXPeephole(graph->block());
-            torch::jit::EliminateDeadCode(
-                graph->block(),
-                true,
-                torch::jit::DCESideEffectPolicy::ALLOW_DELETING_NODES_WITH_SIDE_EFFECTS);
+            torch::jit::EliminateDeadCode(graph->block(),
+                                          true,
+                                          torch::jit::DCESideEffectPolicy::ALLOW_DELETING_NODES_WITH_SIDE_EFFECTS);
         }
 
     }  // namespace torch_jit

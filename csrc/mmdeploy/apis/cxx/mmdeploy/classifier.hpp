@@ -46,7 +46,11 @@ namespace mmdeploy
 
                 Classification* results{};
                 int*            result_count{};
-                auto            ec = mmdeploy_classifier_apply(classifier_, reinterpret(images.data()), static_cast<int>(images.size()), &results, &result_count);
+                auto            ec = mmdeploy_classifier_apply(classifier_,
+                                                    reinterpret(images.data()),
+                                                    static_cast<int>(images.size()),
+                                                    &results,
+                                                    &result_count);
                 if (ec != MMDEPLOY_SUCCESS)
                 {
                     throw_exception(static_cast<ErrorCode>(ec));
@@ -55,8 +59,11 @@ namespace mmdeploy
                 std::vector<Result> rets;
                 rets.reserve(images.size());
 
-                std::shared_ptr<Classification> data(results, [result_count, count = images.size()](auto p)
-                                                     { mmdeploy_classifier_release_result(p, result_count, count); });
+                std::shared_ptr<Classification> data(results,
+                                                     [result_count, count = images.size()](auto p)
+                                                     {
+                                                         mmdeploy_classifier_release_result(p, result_count, count);
+                                                     });
 
                 size_t                          offset = 0;
                 for (size_t i = 0; i < images.size(); ++i)

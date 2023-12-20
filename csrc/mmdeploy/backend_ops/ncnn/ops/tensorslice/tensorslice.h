@@ -14,7 +14,9 @@ namespace mmdeploy
 
         virtual int load_param(const ncnn::ParamDict& pd);
 
-        virtual int forward(const ncnn::Mat& bottom_blob, ncnn::Mat& top_blob, const ncnn::Option& opt) const;
+        virtual int forward(const ncnn::Mat&    bottom_blob,
+                            ncnn::Mat&          top_blob,
+                            const ncnn::Option& opt) const;
 
       public:
         ncnn::Mat starts;

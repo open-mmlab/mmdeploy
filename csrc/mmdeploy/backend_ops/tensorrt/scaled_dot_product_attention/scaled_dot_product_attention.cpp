@@ -24,7 +24,9 @@ namespace mmdeploy
     {
     }
 
-    ScaledDotProductAttentionTRT::ScaledDotProductAttentionTRT(const std::string name, const void* data, size_t length)
+    ScaledDotProductAttentionTRT::ScaledDotProductAttentionTRT(const std::string name,
+                                                               const void*       data,
+                                                               size_t            length)
         : TRTPluginBase(name)
         , mask_dim(0)
     {
@@ -156,7 +158,24 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                dot_product_attention_impl<float>((float*)query, (float*)key, (float*)value, (float*)mask, (float*)attn, (float*)output, B, Nt, Ns, E, &mask_dims[0], _x_desc, _y_desc, _mask_desc, cudnn_dtype, stream, _cublas_handle, _cudnn_handle);
+                dot_product_attention_impl<float>((float*)query,
+                                                  (float*)key,
+                                                  (float*)value,
+                                                  (float*)mask,
+                                                  (float*)attn,
+                                                  (float*)output,
+                                                  B,
+                                                  Nt,
+                                                  Ns,
+                                                  E,
+                                                  &mask_dims[0],
+                                                  _x_desc,
+                                                  _y_desc,
+                                                  _mask_desc,
+                                                  cudnn_dtype,
+                                                  stream,
+                                                  _cublas_handle,
+                                                  _cudnn_handle);
                 break;
             default:
                 return 1;

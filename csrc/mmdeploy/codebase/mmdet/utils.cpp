@@ -9,7 +9,17 @@ using mmdeploy::framework::Tensor;
 namespace mmdeploy::mmdet
 {
 
-    std::array<float, 4> MapToOriginImage(float left, float top, float right, float bottom, const float* scale_factor, float x_offset, float y_offset, int ori_width, int ori_height, int top_padding, int left_padding)
+    std::array<float, 4> MapToOriginImage(float        left,
+                                          float        top,
+                                          float        right,
+                                          float        bottom,
+                                          const float* scale_factor,
+                                          float        x_offset,
+                                          float        y_offset,
+                                          int          ori_width,
+                                          int          ori_height,
+                                          int          top_padding,
+                                          int          left_padding)
     {
         left   = std::max((left - left_padding) / scale_factor[0] + x_offset, 0.f);
         top    = std::max((top - top_padding) / scale_factor[1] + y_offset, 0.f);
@@ -18,7 +28,12 @@ namespace mmdeploy::mmdet
         return {left, top, right, bottom};
     }
 
-    void FilterScoresAndTopk(const Tensor& scores, float score_thr, int topk, std::vector<float>& probs, std::vector<int>& label_ids, std::vector<int>& anchor_idxs)
+    void FilterScoresAndTopk(const Tensor&       scores,
+                             float               score_thr,
+                             int                 topk,
+                             std::vector<float>& probs,
+                             std::vector<int>&   label_ids,
+                             std::vector<int>&   anchor_idxs)
     {
         auto kDets     = scores.shape(1);
         auto kClasses  = scores.shape(2);
@@ -38,7 +53,14 @@ namespace mmdeploy::mmdet
         }
     }
 
-    float IOU(float xmin0, float ymin0, float xmax0, float ymax0, float xmin1, float ymin1, float xmax1, float ymax1)
+    float IOU(float xmin0,
+              float ymin0,
+              float xmax0,
+              float ymax0,
+              float xmin1,
+              float ymin1,
+              float xmax1,
+              float ymax1)
     {
         auto w    = std::max(0.f, std::min(xmax0, xmax1) - std::max(xmin0, xmin1));
         auto h    = std::max(0.f, std::min(ymax0, ymax1) - std::max(ymin0, ymin1));
@@ -48,7 +70,9 @@ namespace mmdeploy::mmdet
         return iou <= 0.f ? 0.f : iou;
     }
 
-    void NMS(const Tensor& dets, float iou_threshold, std::vector<int>& keep_idxs)
+    void NMS(const Tensor&     dets,
+             float             iou_threshold,
+             std::vector<int>& keep_idxs)
     {
         auto det_ptr = dets.data<float>();
         for (auto i = 0; i < keep_idxs.size(); ++i)
@@ -79,12 +103,18 @@ namespace mmdeploy::mmdet
         }
     }
 
-    void Sort(std::vector<float>& probs, std::vector<int>& label_ids, std::vector<int>& anchor_idxs)
+    void Sort(std::vector<float>& probs,
+              std::vector<int>&   label_ids,
+              std::vector<int>&   anchor_idxs)
     {
         std::vector<int> prob_idxs(probs.size());
         std::iota(prob_idxs.begin(), prob_idxs.end(), 0);
-        std::sort(prob_idxs.begin(), prob_idxs.end(), [&](int i, int j)
-                  { return probs[i] > probs[j]; });
+        std::sort(prob_idxs.begin(),
+                  prob_idxs.end(),
+                  [&](int i, int j)
+                  {
+                      return probs[i] > probs[j];
+                  });
         std::vector<float> _probs;
         std::vector<int>   _label_ids;
         std::vector<int>   _keep_idxs;

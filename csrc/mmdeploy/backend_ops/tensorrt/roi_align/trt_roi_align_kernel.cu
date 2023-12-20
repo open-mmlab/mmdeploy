@@ -5,7 +5,16 @@
 
 /*** Forward ***/
 template<typename T>
-__global__ void roi_align_forward_cuda_kernel(const int nthreads, const T* input, const T* rois, T* output, T* argmax_y, T* argmax_x, const int pooled_height, const int pooled_width, const T spatial_scale, const int sampling_ratio,
+__global__ void roi_align_forward_cuda_kernel(const int  nthreads,
+                                              const T*   input,
+                                              const T*   rois,
+                                              T*         output,
+                                              T*         argmax_y,
+                                              T*         argmax_x,
+                                              const int  pooled_height,
+                                              const int  pooled_width,
+                                              const T    spatial_scale,
+                                              const int  sampling_ratio,
                                               const int  pool_mode,  // 0 - max pool, 1 - avg pool
                                               const bool aligned,
                                               const int  channels,
@@ -98,41 +107,54 @@ __global__ void roi_align_forward_cuda_kernel(const int nthreads, const T* input
 }
 
 template<typename scalar_t>
-void TRTRoIAlignForwardCUDAKernelLauncher(const scalar_t* input, const scalar_t* rois, scalar_t* output, scalar_t* argmax_y, scalar_t* argmax_x, int output_size, int channels, int height, int width, int aligned_height, int aligned_width, scalar_t spatial_scale, int sampling_ratio, int pool_mode, bool aligned, cudaStream_t stream)
+void TRTRoIAlignForwardCUDAKernelLauncher(const scalar_t* input,
+                                          const scalar_t* rois,
+                                          scalar_t*       output,
+                                          scalar_t*       argmax_y,
+                                          scalar_t*       argmax_x,
+                                          int             output_size,
+                                          int             channels,
+                                          int             height,
+                                          int             width,
+                                          int             aligned_height,
+                                          int             aligned_width,
+                                          scalar_t        spatial_scale,
+                                          int             sampling_ratio,
+                                          int             pool_mode,
+                                          bool            aligned,
+                                          cudaStream_t    stream)
 {
     roi_align_forward_cuda_kernel<scalar_t>
-        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(
-            output_size,
-            input,
-            rois,
-            output,
-            argmax_y,
-            argmax_x,
-            aligned_height,
-            aligned_width,
-            static_cast<scalar_t>(spatial_scale),
-            sampling_ratio,
-            pool_mode,
-            aligned,
-            channels,
-            height,
-            width);
+        <<<GET_BLOCKS(output_size), THREADS_PER_BLOCK, 0, stream>>>(output_size,
+                                                                    input,
+                                                                    rois,
+                                                                    output,
+                                                                    argmax_y,
+                                                                    argmax_x,
+                                                                    aligned_height,
+                                                                    aligned_width,
+                                                                    static_cast<scalar_t>(spatial_scale),
+                                                                    sampling_ratio,
+                                                                    pool_mode,
+                                                                    aligned,
+                                                                    channels,
+                                                                    height,
+                                                                    width);
 }
 
-template void TRTRoIAlignForwardCUDAKernelLauncher<float>(
-    const float* input,
-    const float* rois,
-    float*       output,
-    float*       argmax_y,
-    float*       argmax_x,
-    int          output_size,
-    int          channels,
-    int          height,
-    int          width,
-    int          aligned_height,
-    int          aligned_width,
-    float        spatial_scale,
-    int          sampling_ratio,
-    int          pool_mode,
-    bool         aligned,
-    cudaStream_t stream);
+template void TRTRoIAlignForwardCUDAKernelLauncher<float>(const float* input,
+                                                          const float* rois,
+                                                          float*       output,
+                                                          float*       argmax_y,
+                                                          float*       argmax_x,
+                                                          int          output_size,
+                                                          int          channels,
+                                                          int          height,
+                                                          int          width,
+                                                          int          aligned_height,
+                                                          int          aligned_width,
+                                                          float        spatial_scale,
+                                                          int          sampling_ratio,
+                                                          int          pool_mode,
+                                                          bool         aligned,
+                                                          cudaStream_t stream);

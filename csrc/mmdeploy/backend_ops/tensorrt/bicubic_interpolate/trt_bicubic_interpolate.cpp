@@ -43,11 +43,10 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::DimsExprs TRTBicubicInterpolate::getOutputDimensions(
-        int                        outputIndex,
-        const nvinfer1::DimsExprs* inputs,
-        int                        nbInputs,
-        nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
+    nvinfer1::DimsExprs TRTBicubicInterpolate::getOutputDimensions(int                        outputIndex,
+                                                                   const nvinfer1::DimsExprs* inputs,
+                                                                   int                        nbInputs,
+                                                                   nvinfer1::IExprBuilder&    exprBuilder) TRT_NOEXCEPT
     {
         nvinfer1::DimsExprs ret;
         ret.nbDims  = 4;
@@ -114,7 +113,16 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                bicubic_interpolate<float>((float*)x, (float*)output, batch, channels, height, width, height_out, width_out, mAlignCorners, stream);
+                bicubic_interpolate<float>((float*)x,
+                                           (float*)output,
+                                           batch,
+                                           channels,
+                                           height,
+                                           width,
+                                           height_out,
+                                           width_out,
+                                           mAlignCorners,
+                                           stream);
                 break;
             default:
                 return 1;
@@ -179,9 +187,8 @@ namespace mmdeploy
         return PLUGIN_VERSION;
     }
 
-    nvinfer1::IPluginV2* TRTBicubicInterpolateCreator::createPlugin(
-        const char*                            name,
-        const nvinfer1::PluginFieldCollection* fc) TRT_NOEXCEPT
+    nvinfer1::IPluginV2* TRTBicubicInterpolateCreator::createPlugin(const char*                            name,
+                                                                    const nvinfer1::PluginFieldCollection* fc) TRT_NOEXCEPT
     {
         nvinfer1::Dims     size{2, {1, 1}};
         std::vector<float> scale_factor;
@@ -218,10 +225,9 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::IPluginV2* TRTBicubicInterpolateCreator::deserializePlugin(
-        const char* name,
-        const void* serialData,
-        size_t      serialLength) TRT_NOEXCEPT
+    nvinfer1::IPluginV2* TRTBicubicInterpolateCreator::deserializePlugin(const char* name,
+                                                                         const void* serialData,
+                                                                         size_t      serialLength) TRT_NOEXCEPT
     {
         auto plugin = new TRTBicubicInterpolate(name, serialData, serialLength);
         plugin->setPluginNamespace(getPluginNamespace());

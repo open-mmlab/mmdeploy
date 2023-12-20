@@ -35,6 +35,7 @@ namespace mmdeploy::graph
                 return node->Process(std::move(sender));
             }
         };
+
         __closure::_BinderBack<process_t, Node*> Process()
         {
             return {{}, {}, {this}};
@@ -50,10 +51,12 @@ namespace mmdeploy::graph
         {
             return inputs_;
         }
+
         const vector<string>& outputs() const noexcept
         {
             return outputs_;
         }
+
         const string& name() const noexcept
         {
             return name_;

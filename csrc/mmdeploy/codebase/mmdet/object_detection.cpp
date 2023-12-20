@@ -30,7 +30,8 @@ namespace mmdeploy::mmdet
             min_bbox_size_ = cfg["params"].value("min_bbox_size", 0.f);
         }
     }
-    std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res, const Value& infer_res)
+    std::vector<Tensor> ResizeBBox::GetDetsLabels(const Value& prep_res,
+                                                  const Value& infer_res)
     {
         std::vector<Tensor> results;
         if (infer_res.contains("dets") && infer_res.contains("labels"))
@@ -79,7 +80,8 @@ namespace mmdeploy::mmdet
             return results;
         }
     }
-    Result<Value> ResizeBBox::operator()(const Value& prep_res, const Value& infer_res)
+    Result<Value> ResizeBBox::operator()(const Value& prep_res,
+                                         const Value& infer_res)
     {
         MMDEPLOY_DEBUG("prep_res: {}\ninfer_res: {}", prep_res, infer_res);
         try
@@ -118,7 +120,9 @@ namespace mmdeploy::mmdet
             return Status(eFail);
         }
     }
-    Result<Detections> ResizeBBox::DispatchGetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels)
+    Result<Detections> ResizeBBox::DispatchGetBBoxes(const Value&  prep_res,
+                                                     const Tensor& dets,
+                                                     const Tensor& labels)
     {
         auto data_type = labels.data_type();
         switch (data_type)
@@ -134,7 +138,9 @@ namespace mmdeploy::mmdet
         }
     }
     template<typename T>
-    Result<Detections> ResizeBBox::GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels)
+    Result<Detections> ResizeBBox::GetBBoxes(const Value&  prep_res,
+                                             const Tensor& dets,
+                                             const Tensor& labels)
     {
         Detections    objs;
         auto*         dets_ptr   = dets.data<float>();

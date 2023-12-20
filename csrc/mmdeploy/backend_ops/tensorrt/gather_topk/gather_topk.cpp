@@ -56,7 +56,10 @@ namespace mmdeploy
         return ret;
     }
 
-    bool GatherTopk::supportsFormatCombination(int pos, const nvinfer1::PluginTensorDesc* ioDesc, int nbInputs, int nbOutputs) TRT_NOEXCEPT
+    bool GatherTopk::supportsFormatCombination(int                               pos,
+                                               const nvinfer1::PluginTensorDesc* ioDesc,
+                                               int                               nbInputs,
+                                               int                               nbOutputs) TRT_NOEXCEPT
     {
         switch (pos)
         {
@@ -79,9 +82,15 @@ namespace mmdeploy
         return true;
     }
 
-    void   GatherTopk::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs, int nbInputs, const nvinfer1::DynamicPluginTensorDesc* outputs, int nbOutputs) TRT_NOEXCEPT {}
+    void   GatherTopk::configurePlugin(const nvinfer1::DynamicPluginTensorDesc* inputs,
+                                     int                                      nbInputs,
+                                     const nvinfer1::DynamicPluginTensorDesc* outputs,
+                                     int                                      nbOutputs) TRT_NOEXCEPT {}
 
-    size_t GatherTopk::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs, int nbInputs, const nvinfer1::PluginTensorDesc* outputs, int nbOutputs) const TRT_NOEXCEPT
+    size_t GatherTopk::getWorkspaceSize(const nvinfer1::PluginTensorDesc* inputs,
+                                        int                               nbInputs,
+                                        const nvinfer1::PluginTensorDesc* outputs,
+                                        int                               nbOutputs) const TRT_NOEXCEPT
     {
         return 0;
     }
@@ -107,11 +116,25 @@ namespace mmdeploy
         switch (data_type)
         {
             case nvinfer1::DataType::kFLOAT:
-                gather_topk_impl<float>((float*)data, (int*)indices, dims, nbDims, indices_dims, indice_nbDims, (float*)output, stream);
+                gather_topk_impl<float>((float*)data,
+                                        (int*)indices,
+                                        dims,
+                                        nbDims,
+                                        indices_dims,
+                                        indice_nbDims,
+                                        (float*)output,
+                                        stream);
                 break;
 
             case nvinfer1::DataType::kINT32:
-                gather_topk_impl<int>((int*)data, (int*)indices, dims, nbDims, indices_dims, indice_nbDims, (int*)output, stream);
+                gather_topk_impl<int>((int*)data,
+                                      (int*)indices,
+                                      dims,
+                                      nbDims,
+                                      indices_dims,
+                                      indice_nbDims,
+                                      (int*)output,
+                                      stream);
                 break;
             default:
                 break;
@@ -120,7 +143,9 @@ namespace mmdeploy
         return 0;
     }
 
-    nvinfer1::DataType GatherTopk::getOutputDataType(int index, const nvinfer1::DataType* inputTypes, int nbInputs) const TRT_NOEXCEPT
+    nvinfer1::DataType GatherTopk::getOutputDataType(int                       index,
+                                                     const nvinfer1::DataType* inputTypes,
+                                                     int                       nbInputs) const TRT_NOEXCEPT
     {
         return inputTypes[0];
     }
@@ -174,7 +199,9 @@ namespace mmdeploy
         return plugin;
     }
 
-    nvinfer1::IPluginV2* GatherTopkCreator::deserializePlugin(const char* name, const void* serialData, size_t serialLength) TRT_NOEXCEPT
+    nvinfer1::IPluginV2* GatherTopkCreator::deserializePlugin(const char* name,
+                                                              const void* serialData,
+                                                              size_t      serialLength) TRT_NOEXCEPT
     {
         auto plugin = new GatherTopk(name, serialData, serialLength);
         plugin->setPluginNamespace(getPluginNamespace());

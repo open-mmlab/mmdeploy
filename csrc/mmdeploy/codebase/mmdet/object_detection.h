@@ -15,15 +15,21 @@ namespace mmdeploy::mmdet
       public:
         explicit ResizeBBox(const Value& cfg);
 
-        Result<Value> operator()(const Value& prep_res, const Value& infer_res);
+        Result<Value> operator()(const Value& prep_res,
+                                 const Value& infer_res);
 
       protected:
-        Result<Detections> DispatchGetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
+        Result<Detections> DispatchGetBBoxes(const Value&  prep_res,
+                                             const Tensor& dets,
+                                             const Tensor& labels);
 
         template<typename T>
-        Result<Detections>  GetBBoxes(const Value& prep_res, const Tensor& dets, const Tensor& labels);
+        Result<Detections>  GetBBoxes(const Value&  prep_res,
+                                      const Tensor& dets,
+                                      const Tensor& labels);
 
-        std::vector<Tensor> GetDetsLabels(const Value& prep_res, const Value& infer_res);
+        std::vector<Tensor> GetDetsLabels(const Value& prep_res,
+                                          const Value& infer_res);
 
       protected:
         constexpr static Device kHost{0, 0};

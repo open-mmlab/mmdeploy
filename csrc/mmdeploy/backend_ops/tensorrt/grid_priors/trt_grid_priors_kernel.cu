@@ -6,7 +6,13 @@
 #include "trt_plugin_helper.hpp"
 
 template<typename scalar_t>
-__global__ void trt_grid_priors_kernel(const scalar_t* base_anchor, scalar_t* output, int num_base_anchors, int feat_w, int feat_h, int stride_w, int stride_h)
+__global__ void trt_grid_priors_kernel(const scalar_t* base_anchor,
+                                       scalar_t*       output,
+                                       int             num_base_anchors,
+                                       int             feat_w,
+                                       int             feat_h,
+                                       int             stride_w,
+                                       int             stride_h)
 {
     // load base anchor into shared memory.
     extern __shared__ scalar_t shared_base_anchor[];
@@ -31,16 +37,32 @@ __global__ void trt_grid_priors_kernel(const scalar_t* base_anchor, scalar_t* ou
 }
 
 template<typename scalar_t>
-void trt_grid_priors_impl(const scalar_t* base_anchor, scalar_t* output, int num_base_anchors, int feat_w, int feat_h, int stride_w, int stride_h, cudaStream_t stream)
+void trt_grid_priors_impl(const scalar_t* base_anchor,
+                          scalar_t*       output,
+                          int             num_base_anchors,
+                          int             feat_w,
+                          int             feat_h,
+                          int             stride_w,
+                          int             stride_h,
+                          cudaStream_t    stream)
 {
-    trt_grid_priors_kernel<<<GET_BLOCKS(num_base_anchors * feat_w * feat_h), THREADS_PER_BLOCK, DIVUP(num_base_anchors * 4, 32) * 32 * sizeof(scalar_t), stream>>>(
-        base_anchor,
-        output,
-        (int)num_base_anchors,
-        (int)feat_w,
-        (int)feat_h,
-        (int)stride_w,
-        (int)stride_h);
+    trt_grid_priors_kernel<<<GET_BLOCKS(num_base_anchors * feat_w * feat_h),
+                             THREADS_PER_BLOCK,
+                             DIVUP(num_base_anchors * 4, 32) * 32 * sizeof(scalar_t),
+                             stream>>>(base_anchor,
+                                       output,
+                                       (int)num_base_anchors,
+                                       (int)feat_w,
+                                       (int)feat_h,
+                                       (int)stride_w,
+                                       (int)stride_h);
 }
 
-template void trt_grid_priors_impl<float>(const float* base_anchor, float* output, int num_base_anchors, int feat_w, int feat_h, int stride_w, int stride_h, cudaStream_t stream);
+template void trt_grid_priors_impl<float>(const float* base_anchor,
+                                          float*       output,
+                                          int          num_base_anchors,
+                                          int          feat_w,
+                                          int          feat_h,
+                                          int          stride_w,
+                                          int          stride_h,
+                                          cudaStream_t stream);
