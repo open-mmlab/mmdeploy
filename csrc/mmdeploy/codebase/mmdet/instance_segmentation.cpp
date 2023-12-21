@@ -145,8 +145,8 @@ class ResizeInstanceMask : public ResizeBBox {
       OUTCOME_TRY(auto cpu_mask, MakeAvailableOnDevice(d_mask, host, stream_));
       OUTCOME_TRY(stream().Wait());
       cv::Mat mask_mat(mask_height, mask_width, CV_32FC(mask_channel), cpu_mask.data());
-      int resize_height = int(mask_height / scale_factor_[0] + 0.5);
-      int resize_width = int(mask_width / scale_factor_[1] + 0.5);
+      int resize_height = int(mask_height / scale_factor_[1] + 0.5);
+      int resize_width = int(mask_width / scale_factor_[0] + 0.5);
       // skip resize if scale_factor is 1.0
       if (resize_height != mask_height || resize_width != mask_width) {
         cv::resize(mask_mat, mask_mat, cv::Size(resize_width, resize_height), cv::INTER_LINEAR);
