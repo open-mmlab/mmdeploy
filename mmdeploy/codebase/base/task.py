@@ -52,7 +52,7 @@ class BaseTask(metaclass=ABCMeta):
         if not DefaultScope.check_instance_created(self.experiment_name):
             self.scope = DefaultScope.get_instance(
                 self.experiment_name,
-                scope_name=self.model_cfg.get('default_scope'))
+                scope_name=str(self.model_cfg.get('default_scope')))
         else:
             self.scope = DefaultScope.get_instance(self.experiment_name)
 
