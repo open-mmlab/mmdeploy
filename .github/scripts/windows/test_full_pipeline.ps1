@@ -56,7 +56,7 @@ python tools\deploy.py `
   --dump-info
 
 # prepare dataset
-Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/files/9401216/imagenet-val100.zip -OutFile $pwd\data\imagenet-val100.zip
+Invoke-WebRequest -Uri https://github.com/open-mmlab/mmdeploy/releases/download/v0.1.0/imagenet-val100.zip -OutFile $pwd\data\imagenet-val100.zip
 Add-Type -AssemblyName System.IO.Compression.FileSystem ; [System.IO.Compression.ZipFile]::ExtractToDirectory("$pwd\data\imagenet-val100.zip", "$pwd\data\")
 
 Write-Host "Running test with ort"

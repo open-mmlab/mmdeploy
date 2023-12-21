@@ -20,7 +20,7 @@ It is recommended to create a virtual environment for the project.
    git clone git@github.com:rockchip-linux/rknn-toolkit2.git
    ```
 
-2. Install RKNN python package following [rknn-toolkit2 doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc) or [rknn-toolkit doc](https://github.com/rockchip-linux/rknn-toolkit/tree/master/doc). When installing rknn python package, it is better to append `--no-deps` after the commands to avoid dependency conflicts. RKNN-Toolkit2 package for example:
+2. Install RKNN python package following [rknn-toolkit2 doc](https://github.com/rockchip-linux/rknn-toolkit2/tree/master/doc) or [rknn-toolkit doc](https://github.com/rockchip-linux/rknn-toolkit/tree/master/docs). When installing rknn python package, it is better to append `--no-deps` after the commands to avoid dependency conflicts. RKNN-Toolkit2 package for example:
 
    ```
    pip install packages/rknn_toolkit2-1.4.0_22dcfef4-cp36-cp36m-linux_x86_64.whl --no-deps

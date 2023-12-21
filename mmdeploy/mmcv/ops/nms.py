@@ -368,6 +368,8 @@ def _multiclass_nms_single(boxes: Tensor,
         bbox_index = box_inds.unsqueeze(0)
         if pre_top_k > 0:
             bbox_index = pre_topk_inds[None, box_inds]
+        # pad index to keep same dim as dets and labels
+        bbox_index = torch.cat([bbox_index, -bbox_index.new_ones((1, 1))], 1)
         if keep_top_k > 0:
             bbox_index = bbox_index[:, topk_inds]
         return dets, labels, bbox_index

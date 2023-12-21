@@ -1,8 +1,8 @@
-mmagic>=1.0.0
-mmdet>=3.0.0
-mmdet3d>=1.1.0rc2
-mmocr>=1.0.0
-mmpose>=1.0.0
-mmpretrain>=1.0.0rc7
-mmrotate>=1.0.0rc0
-mmsegmentation>=1.0.0
+mmagic==1.0.0
+mmdet==3.0.0
+mmdet3d==1.3.0
+mmocr==1.0.0
+mmpose==1.0.0
+mmpretrain==1.0.0
+mmrotate==1.0.0rc1
+mmsegmentation==1.0.0
