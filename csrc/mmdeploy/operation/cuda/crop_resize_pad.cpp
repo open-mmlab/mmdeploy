@@ -11,14 +11,21 @@ namespace mmdeploy::operation::cuda
       public:
         CropResizePadImpl() = default;
 
-        Result<void> apply(const Tensor& src, const std::vector<int>& crop_rect, const std::vector<int>& target_size, const std::vector<int>& pad_rect, Tensor& dst) override
+        Result<void> apply(const Tensor&           src,
+                           const std::vector<int>& crop_rect,
+                           const std::vector<int>& target_size,
+                           const std::vector<int>& pad_rect,
+                           Tensor&                 dst) override
         {
             auto       cuda_stream = GetNative<cudaStream_t>(stream());
 
             int        width  = target_size[0] + pad_rect[1] + pad_rect[3];
             int        height = target_size[1] + pad_rect[0] + pad_rect[2];
 
-            TensorDesc desc{device(), src.data_type(), {1, height, width, src.shape(3)}, src.name()};
+            TensorDesc desc{device(),
+                            src.data_type(),
+                            {1, height, width, src.shape(3)},
+                            src.name()};
             Tensor     dst_tensor(desc);
             cudaMemsetAsync(dst_tensor.data<uint8_t>(), 0, dst_tensor.byte_size(), cuda_stream);
 
@@ -30,8 +37,7 @@ namespace mmdeploy::operation::cuda
                 }
                 else if (src.data_type() == DataType::kFLOAT)
                 {
-                    OUTCOME_TRY(
-                        ResizeDispatch<float>(src, crop_rect, target_size, pad_rect, dst_tensor, cuda_stream));
+                    OUTCOME_TRY(ResizeDispatch<float>(src, crop_rect, target_size, pad_rect, dst_tensor, cuda_stream));
                 }
                 else
                 {
@@ -63,7 +69,12 @@ namespace mmdeploy::operation::cuda
         }
 
         template<class T>
-        Result<void> ResizeDispatch(const Tensor& src, const std::vector<int>& crop_rect, const std::vector<int>& target_size, const std::vector<int>& pad_rect, Tensor& dst, cudaStream_t stream)
+        Result<void> ResizeDispatch(const Tensor&           src,
+                                    const std::vector<int>& crop_rect,
+                                    const std::vector<int>& target_size,
+                                    const std::vector<int>& pad_rect,
+                                    Tensor&                 dst,
+                                    cudaStream_t            stream)
         {
             int                  in_height        = crop_rect[2] - crop_rect[0] + 1;
             int                  in_width         = crop_rect[3] - crop_rect[1] + 1;
@@ -82,7 +93,16 @@ namespace mmdeploy::operation::cuda
 
             if (auto resize = Select<T>(src.shape(3)); resize)
             {
-                ret = resize(stream, in_height, in_width, in_width_stride, input + in_offset, out_h, out_w, out_width_stride, output + out_offset, interp);
+                ret = resize(stream,
+                             in_height,
+                             in_width,
+                             in_width_stride,
+                             input + in_offset,
+                             out_h,
+                             out_w,
+                             out_width_stride,
+                             output + out_offset,
+                             interp);
             }
             else
             {
@@ -93,7 +113,11 @@ namespace mmdeploy::operation::cuda
         }
     };
 
-    MMDEPLOY_REGISTER_FACTORY_FUNC(CropResizePad, (cuda, 0), []()
-                                   { return std::make_unique<CropResizePadImpl>(); });
+    MMDEPLOY_REGISTER_FACTORY_FUNC(CropResizePad,
+                                   (cuda, 0),
+                                   []()
+                                   {
+                                       return std::make_unique<CropResizePadImpl>();
+                                   });
 
 }  // namespace mmdeploy::operation::cuda

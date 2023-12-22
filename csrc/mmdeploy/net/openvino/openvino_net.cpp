@@ -241,8 +241,13 @@ namespace mmdeploy::framework
             const auto& input_name    = tensor.desc().name;
             const auto& tensor_shape  = tensor.desc().shape;
             auto&       size_vector   = input_shapes[input_name];
-            bool        shape_changed = !std::equal(size_vector.begin(), size_vector.end(), tensor_shape.begin(), [](size_t a, int64_t b)
-                                             { return a == size_t(b); });
+            bool        shape_changed = !std::equal(size_vector.begin(),
+                                             size_vector.end(),
+                                             tensor_shape.begin(),
+                                             [](size_t a, int64_t b)
+                                             {
+                                                 return a == size_t(b);
+                                             });
             need_reshape |= shape_changed;
             if (shape_changed)
                 size_vector = InferenceEngine::SizeVector{tensor_shape.begin(), tensor_shape.end()};

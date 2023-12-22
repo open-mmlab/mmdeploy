@@ -64,7 +64,12 @@ namespace
 
     inline Mat Cast(const mmdeploy_mat_t& mat)
     {
-        return Mat{mat.height, mat.width, PixelFormat(mat.format), DataType(mat.type), mat.data, mat.device ? *(const Device*)mat.device : Device{0}};
+        return Mat{mat.height,
+                   mat.width,
+                   PixelFormat(mat.format),
+                   DataType(mat.type),
+                   mat.data,
+                   mat.device ? *(const Device*)mat.device : Device{0}};
     }
 
     template<typename F>
@@ -82,6 +87,7 @@ namespace
         {
             MMDEPLOY_ERROR("unknown exception caught");
         }
+
         return nullptr;
     }
 
@@ -124,6 +130,7 @@ namespace
             : v_(other.release())
         {
         }
+
         wrapped& operator=(wrapped&& other) noexcept
         {
             reset();
@@ -140,6 +147,7 @@ namespace
         {
             return Cast(v_);
         }
+
         auto operator->()
         {
             return Cast(v_);

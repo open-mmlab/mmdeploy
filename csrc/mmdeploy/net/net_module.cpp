@@ -393,7 +393,11 @@ namespace mmdeploy::framework
         }
     }
 
-    MMDEPLOY_REGISTER_FACTORY_FUNC(Module, (Net, 0), [](const Value& config)
-                                   { return CreateTask(NetModule{config}); });
+    MMDEPLOY_REGISTER_FACTORY_FUNC(Module,
+                                   (Net, 0),
+                                   [](const Value& config)
+                                   {
+                                       return CreateTask(NetModule{config});
+                                   });
 
 }  // namespace mmdeploy::framework

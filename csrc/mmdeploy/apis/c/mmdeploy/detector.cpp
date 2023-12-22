@@ -95,6 +95,7 @@ int mmdeploy_detector_get_result(mmdeploy_value_t output, mmdeploy_detection_t**
     {
         return MMDEPLOY_E_INVALID_ARG;
     }
+
     try
     {
         Value&      value            = Cast(output)->front();

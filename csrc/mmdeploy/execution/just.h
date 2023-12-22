@@ -21,6 +21,7 @@ namespace mmdeploy
         {
             struct type;
         };
+
         template<typename Receiver, typename... Ts>
         using operation_t = typename _Operation<remove_cvref_t<Receiver>, Ts...>::type;
 
@@ -31,10 +32,9 @@ namespace mmdeploy
             Receiver          receiver_;
             friend void       tag_invoke(start_t, type& op_state) noexcept
             {
-                std::apply(
-                    [&](Ts&... ts) -> void
-                    { SetValue(std::move(op_state.receiver_), std::move(ts)...); },
-                    op_state.values_);
+                std::apply([&](Ts&... ts) -> void
+                           { SetValue(std::move(op_state.receiver_), std::move(ts)...); },
+                           op_state.values_);
             }
         };
 

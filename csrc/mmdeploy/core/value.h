@@ -394,14 +394,16 @@ namespace mmdeploy
         {
         }
 
-        template<class T, std::enable_if_t<std::is_constructible<String, T>::value, bool> = true>
+        template<class T,
+                 std::enable_if_t<std::is_constructible<String, T>::value, bool> = true>
         Value(T&& value)
             : type_(kString)
             , data_(String{std::forward<T>(value)})
         {
         }
 
-        template<typename T, std::enable_if_t<is_cast_by_erasure<std::decay_t<T>>::value, bool> = true>
+        template<typename T,
+                 std::enable_if_t<is_cast_by_erasure<std::decay_t<T>>::value, bool> = true>
         Value(T&& value)
             : Value(cast_by_erasure(std::forward<T>(value)))
         {
@@ -414,7 +416,9 @@ namespace mmdeploy
             data_.any = create<Any>(std::forward<T>(value.value));
         }
 
-        Value(std::initializer_list<ValueRef> init, bool type_deduction = true, Type manual_type = Type::kArray);
+        Value(std::initializer_list<ValueRef> init,
+              bool                            type_deduction = true,
+              Type                            manual_type    = Type::kArray);
 
         Value(Value&& other) noexcept
             : type_(other.type_)
@@ -1510,7 +1514,9 @@ namespace mmdeploy
 
     }  // namespace detail
 
-    inline Value::Value(std::initializer_list<ValueRef> init, bool type_deduction, Type manual_type)
+    inline Value::Value(std::initializer_list<ValueRef> init,
+                        bool                            type_deduction,
+                        Type                            manual_type)
     {
         bool is_an_object = true;
         for (const auto& x : init)
@@ -1521,17 +1527,20 @@ namespace mmdeploy
                 break;
             }
         }
+
         if (!type_deduction)
         {
             if (manual_type == Type::kArray)
             {
                 is_an_object = false;
             }
+
             if (manual_type == Type::kObject && !is_an_object)
             {
                 throw_exception(eInvalidArgument);
             }
         }
+
         if (is_an_object)
         {
             type_ = Type::kObject;
@@ -1561,6 +1570,7 @@ namespace mmdeploy
         {
             return;
         }
+
         for (const auto& [key, value] : src)
         {
             auto ret = dst.insert({key, value});

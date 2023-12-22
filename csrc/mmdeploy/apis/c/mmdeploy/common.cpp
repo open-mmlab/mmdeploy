@@ -61,6 +61,7 @@ int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count, mmde
     {
         return MMDEPLOY_E_INVALID_ARG;
     }
+
     try
     {
         auto input = std::make_unique<Value>(Value{Value::kArray});
@@ -78,6 +79,7 @@ int mmdeploy_common_create_input(const mmdeploy_mat_t* mats, int mat_count, mmde
     {
         MMDEPLOY_ERROR("unknown exception caught");
     }
+
     return MMDEPLOY_SUCCESS;
 }
 

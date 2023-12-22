@@ -40,10 +40,12 @@ namespace mmdeploy::graph
                         (split ? &expr.rhs : &expr.lhs)->push_back(c);
                 }
             }
+
             if (!split)
             {
                 expr.rhs = expr.lhs;
             }
+
             return std::move(expr);
         }
 
@@ -104,6 +106,7 @@ namespace mmdeploy::graph
         {
             node = std::make_unique<Flattened>(std::move(node), flatten_, broadcast_, unflatten_);
         }
+
         return std::move(node);
     }
 
@@ -125,18 +128,21 @@ namespace mmdeploy::graph
                 }
             }
         }
+
         auto creator = gRegistry<Builder>().Get(type);
         if (!creator)
         {
             MMDEPLOY_ERROR("failed to find node creator: {}", type);
             return Status(eEntryNotFound);
         }
+
         auto builder = creator->Create(cfg);
         if (!builder)
         {
             MMDEPLOY_ERROR("failed to create node builder: {}", type);
             return Status(eFail);
         }
+
         return std::move(builder);
     }
 
@@ -150,6 +156,7 @@ namespace mmdeploy::graph
         {
             return from_value<std::vector<std::string>>(value);
         }
+
         return Status(eInvalidArgument);
     }
 

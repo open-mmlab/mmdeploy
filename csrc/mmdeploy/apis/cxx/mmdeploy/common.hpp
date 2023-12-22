@@ -408,6 +408,7 @@ namespace mmdeploy
             {
                 mmdeploy_context_add(*this, MMDEPLOY_TYPE_SCHEDULER, name.c_str(), scheduler);
             }
+
             void Add(const std::string& name, const Model& model)
             {
                 mmdeploy_context_add(*this, MMDEPLOY_TYPE_MODEL, name.c_str(), model);

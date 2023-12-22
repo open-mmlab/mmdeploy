@@ -48,6 +48,7 @@ int mmdeploy_pipeline_apply_async(mmdeploy_pipeline_t pipeline, mmdeploy_sender_
     {
         return MMDEPLOY_E_INVALID_ARG;
     }
+
     try
     {
         auto h  = Cast(pipeline);
@@ -62,6 +63,7 @@ int mmdeploy_pipeline_apply_async(mmdeploy_pipeline_t pipeline, mmdeploy_sender_
     {
         MMDEPLOY_ERROR("unknown exception caught");
     }
+
     return MMDEPLOY_E_FAIL;
 }
 
@@ -80,16 +82,19 @@ int mmdeploy_pipeline_apply(mmdeploy_pipeline_t pipeline, mmdeploy_value_t input
     {
         return MMDEPLOY_E_FAIL;
     }
+
     mmdeploy_sender_t output_sender{};
     if (auto ec = mmdeploy_pipeline_apply_async(pipeline, input_sender, &output_sender))
     {
         return ec;
     }
+
     auto _output = mmdeploy_executor_sync_wait(output_sender);
     if (!_output)
     {
         return MMDEPLOY_E_FAIL;
     }
+
     *output = _output;
     return MMDEPLOY_SUCCESS;
 }

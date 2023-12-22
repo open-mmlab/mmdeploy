@@ -10,39 +10,54 @@ namespace mmdeploy::graph
 
     Sender<Value> Task::Process(Sender<Value> input)
     {
-        return LetValue(std::move(input), [this](Value& v) -> Sender<Value>
+        return LetValue(std::move(input),
+                        [this](Value& v) -> Sender<Value>
                         {
-    assert(v.is_array());
-    // handle empty input
-    if (v.front().empty()) {
-      profiler::ScopedCounter counter(scope_);
-      return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
-    }
-    if (v.front().is_array() && !is_batched_) {
-      auto batch_size = v.front().size();
-      Value output = Value::Array(batch_size);
-      // clang-format off
-      return TransferJust(*sched_, std::move(output))
-          | Then([&](Value&& output) -> Value {
-            auto input = graph::DistribAA(v).value();
-            return Value{std::move(input), std::move(output)};
-          })
-          | Bulk(batch_size, [&](size_t index, Value& in_out) {
-            profiler::ScopedCounter counter(scope_);
-            const auto& input = in_out[0];
-            auto& output = in_out[1];
-            output[index] = module_->Process(input[index]).value();
-          })
-          | Then([](const Value& in_out) {
-            return graph::DistribAA(in_out[1]).value();
-          });
-      // clang-format on
-    } else {
-      return DynamicBatch(TransferJust(*sched_, std::move(v)), batch_context_, [&](const Value& u) {
-        profiler::ScopedCounter counter(scope_);
-        return module_->Process(u).value();
-      });
-    } });
+                            assert(v.is_array());
+                            // handle empty input
+                            if (v.front().empty())
+                            {
+                                profiler::ScopedCounter counter(scope_);
+                                return TransferJust(*sched_, Value(Value::Array(v.size(), Value::kArray)));
+                            }
+
+                            if (v.front().is_array() && !is_batched_)
+                            {
+                                auto  batch_size = v.front().size();
+                                Value output     = Value::Array(batch_size);
+
+                                // clang-format off
+                                return TransferJust(*sched_, std::move(output)) | 
+                                        Then([&](Value&& output) -> Value 
+                                        {
+                                            auto input = graph::DistribAA(v).value();
+                                            return Value{std::move(input), std::move(output)};
+                                        }) | 
+                                        Bulk(batch_size, 
+                                            [&](size_t index, Value& in_out) 
+                                            {
+                                                profiler::ScopedCounter counter(scope_);
+                                                const auto& input = in_out[0];
+                                                auto& output = in_out[1];
+                                                output[index] = module_->Process(input[index]).value();
+                                            }) | 
+                                        Then([](const Value& in_out) 
+                                            {
+                                                return graph::DistribAA(in_out[1]).value();
+                                            });
+                                // clang-format on
+                            }
+                            else
+                            {
+                                return DynamicBatch(TransferJust(*sched_, std::move(v)),
+                                                    batch_context_,
+                                                    [&](const Value& u)
+                                                    {
+                                                        profiler::ScopedCounter counter(scope_);
+                                                        return module_->Process(u).value();
+                                                    });
+                            }
+                        });
     }
 
     TaskBuilder::TaskBuilder(Value config)
@@ -119,7 +134,11 @@ namespace mmdeploy::graph
         }
     }
 
-    MMDEPLOY_REGISTER_FACTORY_FUNC(Builder, (Task, 0), [](const Value& config)
-                                   { return std::make_unique<TaskBuilder>(config); });
+    MMDEPLOY_REGISTER_FACTORY_FUNC(Builder,
+                                   (Task, 0),
+                                   [](const Value& config)
+                                   {
+                                       return std::make_unique<TaskBuilder>(config);
+                                   });
 
 }  // namespace mmdeploy::graph
