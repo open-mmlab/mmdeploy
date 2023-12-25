@@ -52,6 +52,20 @@ MMDEPLOY_API int mmdeploy_text_recognizer_create_by_path(const char* model_path,
                                                          mmdeploy_text_recognizer_t* recognizer);
 
 /**
+ * @brief Create a text recognizer instance
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] recognizer handle of the created text recognizer, which must be destroyed
+ * by \ref mmdeploy_text_recognizer_destroy
+ * @return status code of the operation
+ */
+MMDEPLOY_API int mmdeploy_text_recognizer_create_by_buffer(const void* buffer, int size,
+                                                         const char* device_name, int device_id,
+                                                         mmdeploy_text_recognizer_t* recognizer);
+
+/**
  * @brief Apply text recognizer to a batch of text images
  * @param[in] recognizer text recognizer's handle created by \ref
  * mmdeploy_text_recognizer_create_by_path

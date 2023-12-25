@@ -44,6 +44,20 @@ int mmdeploy_video_recognizer_create_by_path(const char* model_path, const char*
   mmdeploy_model_destroy(model);
   return ec;
 }
+
+int mmdeploy_video_recognizer_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                             int device_id,
+                                             mmdeploy_video_recognizer_t* recognizer) {
+  mmdeploy_model_t model{};
+
+  if (auto ec = mmdeploy_model_create(buffer, size, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_video_recognizer_create(model, device_name, device_id, recognizer);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
 int mmdeploy_video_recognizer_apply(mmdeploy_video_recognizer_t recognizer,
                                     const mmdeploy_mat_t* images,
                                     const mmdeploy_video_sample_info_t* video_info, int video_count,

@@ -50,6 +50,20 @@ MMDEPLOY_API int mmdeploy_text_detector_create_by_path(const char* model_path,
                                                        mmdeploy_text_detector_t* detector);
 
 /**
+ * @brief Create text-detector's handle
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device
+ * @param[out] detector instance of a text-detector, which must be destroyed
+ * by \ref mmdeploy_text_detector_destroy
+ * @return status of creating text-detector's handle
+ */
+MMDEPLOY_API int mmdeploy_text_detector_create_by_buffer(const void* buffer, int size,
+                                                       const char* device_name, int device_id,
+                                                       mmdeploy_text_detector_t* detector);
+
+/**
  * @brief Apply text-detector to batch images and get their inference results
  * @param[in] detector text-detector's handle created by \ref mmdeploy_text_detector_create_by_path
  * @param[in] mats a batch of images

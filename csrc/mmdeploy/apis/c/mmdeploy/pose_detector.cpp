@@ -39,6 +39,17 @@ int mmdeploy_pose_detector_create_by_path(const char* model_path, const char* de
   return ec;
 }
 
+int mmdeploy_pose_detector_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                          int device_id, mmdeploy_pose_detector_t* detector) {
+  mmdeploy_model_t model{};
+  if (auto ec = mmdeploy_model_create(buffer, size, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_pose_detector_create(model, device_name, device_id, detector);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
 int mmdeploy_pose_detector_apply(mmdeploy_pose_detector_t detector, const mmdeploy_mat_t* mats,
                                  int mat_count, mmdeploy_pose_detection_t** results) {
   return mmdeploy_pose_detector_apply_bbox(detector, mats, mat_count, nullptr, nullptr, results);

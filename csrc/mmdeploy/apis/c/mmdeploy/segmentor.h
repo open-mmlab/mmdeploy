@@ -55,6 +55,20 @@ MMDEPLOY_API int mmdeploy_segmentor_create_by_path(const char* model_path, const
                                                    int device_id, mmdeploy_segmentor_t* segmentor);
 
 /**
+ * @brief Create segmentor's handle
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] segmentor instance of a segmentor, which must be destroyed
+ * by \ref mmdeploy_segmentor_destroy
+ * @return status of creating segmentor's handle
+ */
+MMDEPLOY_API int mmdeploy_segmentor_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                                   int device_id, mmdeploy_segmentor_t* segmentor);
+
+
+/**
  * @brief Apply segmentor to batch images and get their inference results
  * @param[in] segmentor segmentor's handle created by \ref mmdeploy_segmentor_create_by_path or \ref
  * mmdeploy_segmentor_create
