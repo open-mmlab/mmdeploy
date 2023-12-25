@@ -74,7 +74,7 @@ If you using the jetpack5, it has some question need to solve.
   python3 -m pip install --user -e .
 ```
 
-3. Jetson No distributed problem
+3. Jetson No distributed problem(this is rewrited with the PR)
   if you convert the model like [Jetson.md](https://github.com/open-mmlab/mmdeploy/blob/main/docs/en/01-how-to-build/jetsons.md)
   you may find torch.distributed has no attribute ReduceOp.
   I just issue and make a simple patch, add file jetson_patch.py on ./mmdeploy/tools/
@@ -85,7 +85,10 @@ if not torch.distributed.is_available():
 ```
   and import jetson_patch at the beginning which file you want.
   I know is not quietly ellegant, but it works well...(for Jetson AGX Orin)
+  
 4. Jetpack with PyTorch 2.0 has some issue
+> If you use the docker, we help you change the PyTorch in dockerfile.
+
   we need to modify torch.onnx._run_symbolic_method 
   **from**
 ```python
