@@ -54,7 +54,6 @@ docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.
 ```
 
 ## 故障排除
-更新：問題3和4已經在鏡像中使用sed解決過了
 如果您使用的是jetpack5，可能需要解决一些问题。
 
 1. OpenCV问题
@@ -67,7 +66,7 @@ docker run -it --rm --runtime nvidia --network host openmmlab/mmdeploy_jetpack4.
 ```shell
   python3 -m pip install --user -e .
 ```
-3. Jetson分布式问题
+3. Jetson分布式问题(已在PR中重写)
 如果您按照Jetson.md中的方法转换模型，您可能会发现torch.distributed没有ReduceOp属性。我只是提出了问题并做了一个简单的补丁，在./mmdeploy/tools/下添加jetson_patch.py文件
 ```python
 import torch.distributed
@@ -75,7 +74,10 @@ if not torch.distributed.is_available():
   torch.distributed.ReduceOp = lambda: None
 ```
 并在您需要的文件开头导入jetson_patch。我知道这并不优雅，但它确实有效...(适用于Jetson AGX Orin)
+
 4. Jetpack5.1 PyTorch2.0有一些问题
+> 如果您直接使用我们的预编译docker镜像或者使用dockerfile进行构建镜像，这个问题已在dockerfile中解决
+
   我们需要修改 torch.onnx._run_symbolic_method 这个函数。
   **从**
 ```python
