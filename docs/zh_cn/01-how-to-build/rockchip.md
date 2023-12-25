@@ -53,7 +53,7 @@ MMDeploy 支持把模型部署到瑞芯微设备上。已支持的芯片：RV112
       <tr>
         <td>RK3566 / RK3568 / RK3588 / RV1103 / RV1106</td>
         <td><code>git clone https://github.com/rockchip-linux/rknn-toolkit2</code></td>
-        <td><a href="https://github.com/rockchip-linux/rknn-toolkit/tree/master/doc">安装指南</a></td>
+        <td><a href="https://github.com/rockchip-linux/rknn-toolkit/tree/master/docs">安装指南</a></td>
       </tr>
     </tbody>
     </table>

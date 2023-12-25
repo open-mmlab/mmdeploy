@@ -220,7 +220,7 @@ models:
     model_configs:
       - configs/bisenetv1/bisenetv1_r18-d32_4xb4-160k_cityscapes-1024x1024.py
     pipelines:
-      - *pipeline_ort_dynamic_fp16
+      - *pipeline_ort_dynamic_fp32
       - *pipeline_trt_dynamic_fp16
       - *pipeline_ncnn_static_fp32
       - *pipeline_openvino_dynamic_fp32

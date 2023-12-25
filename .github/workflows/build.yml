@@ -25,10 +25,8 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        torch: [1.8.0, 1.9.0]
+        torch: [1.9.0]
         include:
-          - torch: 1.8.0
-            torchvision: 0.9.0
           - torch: 1.9.0
             torchvision: 0.10.0
     steps:
@@ -44,7 +42,7 @@ jobs:
           python -m pip install openmim
           python -m pip install -r requirements.txt
           python -m pip install -r requirements/backends.txt
-          python -m mim install "mmcv>=2.0.0"
+          python -m mim install "mmcv==2.0.1"
           python -m mim install -r requirements/codebases.txt
           python -m pip install clip numba transformers numpy==1.23 albumentations
           python -m pip list
@@ -180,7 +178,7 @@ jobs:
           python -m pip install --no-cache-dir openmim
           python -m pip install --no-cache-dir -r requirements.txt
           python -m pip install --no-cache-dir -r requirements/backends.txt
-          python -m mim install "mmcv>=2.0.0"
+          python -m mim install "mmcv==2.0.1"
           python -m pip install --no-cache-dir -r requirements/codebases.txt
           python -m pip install --no-cache-dir -U pycuda numpy==1.23 clip numba transformers albumentations
           python -m pip list
@@ -245,7 +243,7 @@ jobs:
           python -m pip install --no-cache-dir openmim
           python -m pip install --no-cache-dir -r requirements.txt
           python -m pip install --no-cache-dir -r requirements/backends.txt
-          python -m mim install --no-cache-dir "mmcv>=2.0.0"
+          python -m mim install --no-cache-dir "mmcv==2.0.1"
           python -m pip install --no-cache-dir -r requirements/codebases.txt
           python -m pip install --no-cache-dir -U pycuda numpy clip numba transformers albumentations
           python -m pip list
