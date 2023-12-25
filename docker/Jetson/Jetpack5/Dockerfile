@@ -56,13 +56,6 @@ RUN git clone --recursive -b $MMDEPLOY_VERSION --depth 1 https://github.com/open
     	-DMMDEPLOY_CODEBASES=all && \
     make -j$(nproc) && make install
 
-# add the patch to solve the torch.distributed issue in docker
-RUN cd mmdeploy/tools &&\
-    echo "import torch.distributed" > jetson_patch.py && \
-    echo "if not torch.distributed.is_available():" >> jetson_patch.py && \
-    echo "     torch.distributed.ReduceOp = lambda: None" >> jetson_patch.py && \
-    sed -i '2i import jetson_patch' deploy.py
-
 # add patch to solve the build error
 RUN sed -i '/def _run_symbolic_method(g, op_name, symbolic_fn, args):/,/except TypeError as e:/\
    {
