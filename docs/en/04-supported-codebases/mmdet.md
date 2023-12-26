@@ -220,6 +220,7 @@ Besides python API, mmdeploy SDK also provides other FFI (Foreign Function Inter
 |                      [SOLO](https://github.com/open-mmlab/mmdetection/tree/main/configs/solo)                       | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
 |                    [SOLOv2](https://github.com/open-mmlab/mmdetection/tree/main/configs/solov2)                     | Instance Segmentation |      Y      |    N     |  N   |   N   |    Y     |
 |                  [CondInst](https://github.com/open-mmlab/mmdetection/tree/main/configs/condinst)                   | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |
+|                [SparseInst](https://github.com/open-mmlab/mmdetection/blob/main/projects/SparseInst)                | Instance Segmentation |      Y      |    Y     |  N   |   N   |    N     |
 |              [Panoptic FPN](https://github.com/open-mmlab/mmdetection/tree/main/configs/panoptic_fpn)               | Panoptic Segmentation |      Y      |    Y     |  N   |   N   |    N     |
 |                [MaskFormer](https://github.com/open-mmlab/mmdetection/tree/main/configs/maskformer)                 | Panoptic Segmentation |      Y      |    Y     |  N   |   N   |    N     |
 |      [Mask2Former](https://github.com/open-mmlab/mmdetection/tree/main/configs/mask2former)[\*](#mask2former)       | Panoptic Segmentation |      Y      |    Y     |  N   |   N   |    N     |

@@ -11,5 +11,6 @@ from . import rtmdet_head  # noqa: F401,F403
 from . import rtmdet_ins_head  # noqa: F401,F403
 from . import solo_head  # noqa: F401,F403
 from . import solov2_head  # noqa: F401,F403
+from . import sparseinst_head  # noqa: F401,F403
 from . import yolo_head  # noqa: F401,F403
 from . import yolox_head  # noqa: F401,F403
