@@ -115,6 +115,7 @@ jobs:
           python -m pip install opencv-python==4.5.4.60 opencv-python-headless==4.5.4.60 opencv-contrib-python==4.5.4.60
           python .github/scripts/prepare_reg_test.py --torch-version ${{ matrix.torch_version }} --codebases ${{ matrix.codebase}}
           python -m pip install -r requirements.txt
+          python -m pip install --upgrade rich
           python -m pip list
       - name: Install mmdeploy with sdk
         run: |

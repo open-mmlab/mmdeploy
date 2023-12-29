@@ -1,9 +1,11 @@
 import os
 
+from pkg_resources import parse_version
 from setuptools import find_packages, setup
 
 EXT_TYPE = ''
 try:
+    import torch
     from torch.utils.cpp_extension import BuildExtension
     cmd_class = {'build_ext': BuildExtension}
     EXT_TYPE = 'torch'
@@ -138,10 +140,11 @@ def get_extensions():
         # environment, the compiler will choose the appropriate compiler
         # to compile those cpp files, so there is no need to add the
         # argument
-        if platform.system() == 'Darwin':
-            extra_compile_args['cxx'] = ['-std=c++17']
-        elif platform.system() != 'Windows':
-            extra_compile_args['cxx'] = ['-std=c++14']
+        if platform.system() != 'Windows':
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
+                extra_compile_args['cxx'] = ['-std=c++14']
+            else:
+                extra_compile_args['cxx'] = ['-std=c++17']
 
         include_dirs = []
 
@@ -161,7 +164,10 @@ def get_extensions():
         # to compile those cpp files, so there is no need to add the
         # argument
         if 'nvcc' in extra_compile_args and platform.system() != 'Windows':
-            extra_compile_args['nvcc'] += ['-std=c++14']
+            if parse_version(torch.__version__) <= parse_version('1.12.1'):
+                extra_compile_args['nvcc'] += ['-std=c++14']
+            else:
+                extra_compile_args['nvcc'] += ['-std=c++17']
 
         ext_ops = extension(
             name=ext_name,

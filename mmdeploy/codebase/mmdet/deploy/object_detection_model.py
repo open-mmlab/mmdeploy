@@ -225,8 +225,8 @@ class End2EndModel(BaseBackendModel):
             elif 'border' in img_metas[i]:
                 pad_key = 'border'
             if pad_key is not None:
-                x_off = img_metas[i][pad_key][2] / scale_factor[1]
-                y_off = img_metas[i][pad_key][0] / scale_factor[0]
+                x_off = img_metas[i][pad_key][2] / scale_factor[0]
+                y_off = img_metas[i][pad_key][0] / scale_factor[1]
                 bboxes[:, ::2] -= x_off
                 bboxes[:, 1::2] -= y_off
                 bboxes *= (bboxes > 0)
@@ -262,9 +262,9 @@ class End2EndModel(BaseBackendModel):
                         masks.unsqueeze(0),
                         size=[
                             math.ceil(masks.shape[-2] /
-                                      img_metas[i]['scale_factor'][0]),
+                                      img_metas[i]['scale_factor'][1]),
                             math.ceil(masks.shape[-1] /
-                                      img_metas[i]['scale_factor'][1])
+                                      img_metas[i]['scale_factor'][0])
                         ])[..., :ori_h, :ori_w]
                     masks = masks.squeeze(0)
                 if masks.dtype != bool:
