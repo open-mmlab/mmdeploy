@@ -8,35 +8,43 @@
 #include "submit.h"
 #include "utility.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-namespace __start_detached {
+    namespace __start_detached
+    {
 
-struct _Receiver {
-  template <typename... As>
-  friend void tag_invoke(set_value_t, _Receiver&&, As&&...) noexcept {}
-};
+        struct _Receiver
+        {
+            template<typename... As>
+            friend void tag_invoke(set_value_t, _Receiver&&, As&&...) noexcept
+            {
+            }
+        };
 
-struct start_detached_t {
-  template <
-      typename Sender,
-      std::enable_if_t<_is_sender<Sender> && tag_invocable<start_detached_t, Sender>, int> = 0>
-  void operator()(Sender&& sender) const {
-    (void)tag_invoke(start_detached_t{}, (Sender &&) sender);
-  }
+        struct start_detached_t
+        {
+            template<
+                typename Sender,
+                std::enable_if_t<_is_sender<Sender> && tag_invocable<start_detached_t, Sender>, int> = 0>
+            void operator()(Sender&& sender) const
+            {
+                (void)tag_invoke(start_detached_t{}, (Sender&&)sender);
+            }
 
-  template <
-      typename Sender,
-      std::enable_if_t<_is_sender<Sender> && !tag_invocable<start_detached_t, Sender>, int> = 0>
-  void operator()(Sender&& sender) const {
-    __Submit((Sender &&) sender, _Receiver{});
-  }
-};
+            template<
+                typename Sender,
+                std::enable_if_t<_is_sender<Sender> && !tag_invocable<start_detached_t, Sender>, int> = 0>
+            void operator()(Sender&& sender) const
+            {
+                __Submit((Sender&&)sender, _Receiver{});
+            }
+        };
 
-}  // namespace __start_detached
+    }  // namespace __start_detached
 
-using __start_detached::start_detached_t;
-inline constexpr start_detached_t StartDetached{};
+    using __start_detached::start_detached_t;
+    inline constexpr start_detached_t StartDetached{};
 
 }  // namespace mmdeploy
 

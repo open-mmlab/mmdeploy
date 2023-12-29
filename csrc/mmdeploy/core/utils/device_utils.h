@@ -8,26 +8,25 @@
 #include "mmdeploy/core/mat.h"
 #include "mmdeploy/core/tensor.h"
 
-namespace mmdeploy::framework {
-/**
- *
- * @param src
- * @param device
- * @param stream
- * @return
- */
-MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device,
-                                               Stream& stream);
+namespace mmdeploy::framework
+{
+    /**
+     *
+     * @param src
+     * @param device
+     * @param stream
+     * @return
+     */
+    MMDEPLOY_API Result<Mat> MakeAvailableOnDevice(const Mat& src, const Device& device, Stream& stream);
 
-/**
- *
- * @param src
- * @param device
- * @param stream
- * @return
- */
-MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device,
-                                                  Stream& stream);
+    /**
+     *
+     * @param src
+     * @param device
+     * @param stream
+     * @return
+     */
+    MMDEPLOY_API Result<Tensor> MakeAvailableOnDevice(const Tensor& src, const Device& device, Stream& stream);
 
 }  // namespace mmdeploy::framework
 

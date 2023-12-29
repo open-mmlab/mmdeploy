@@ -3,34 +3,33 @@
 /* Header for class mmdeploy_PoseDetector */
 
 #ifndef _Included_mmdeploy_PoseDetector
-#define _Included_mmdeploy_PoseDetector
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_PoseDetector
- * Method:    create
- * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_PoseDetector_create(JNIEnv *, jobject, jstring, jstring,
-                                                          jint);
+    #define _Included_mmdeploy_PoseDetector
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_PoseDetector
+     * Method:    create
+     * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
+     */
+    JNIEXPORT jlong JNICALL        Java_mmdeploy_PoseDetector_create(JNIEnv*, jobject, jstring, jstring, jint);
 
-/*
- * Class:     mmdeploy_PoseDetector
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_PoseDetector_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_PoseDetector
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL         Java_mmdeploy_PoseDetector_destroy(JNIEnv*, jobject, jlong);
 
-/*
- * Class:     mmdeploy_PoseDetector
- * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/PoseDetector/Result;
- */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_PoseDetector_apply(JNIEnv *, jobject, jlong,
-                                                                jobjectArray);
+    /*
+     * Class:     mmdeploy_PoseDetector
+     * Method:    apply
+     * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/PoseDetector/Result;
+     */
+    JNIEXPORT jobjectArray JNICALL Java_mmdeploy_PoseDetector_apply(JNIEnv*, jobject, jlong, jobjectArray);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

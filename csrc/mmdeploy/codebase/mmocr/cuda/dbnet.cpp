@@ -8,72 +8,77 @@
 #include "mmdeploy/device/cuda/cuda_device.h"
 #include "opencv2/imgproc.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy::mmocr
+{
 
-class DbHeadCudaImpl : public DbHeadImpl {
- public:
-  void Init(const Stream& stream) override {
-    DbHeadImpl::Init(stream);
-    device_ = stream_.GetDevice();
+    class DbHeadCudaImpl : public DbHeadImpl
     {
-      CudaDeviceGuard device_guard(device_);
-      cc_.emplace(GetNative<cudaStream_t>(stream_));
-    }
-  }
+      public:
+        void Init(const Stream& stream) override
+        {
+            DbHeadImpl::Init(stream);
+            device_ = stream_.GetDevice();
+            {
+                CudaDeviceGuard device_guard(device_);
+                cc_.emplace(GetNative<cudaStream_t>(stream_));
+            }
+        }
 
-  ~DbHeadCudaImpl() override {
-    CudaDeviceGuard device_guard(device_);
-    cc_.reset();
-  }
+        ~DbHeadCudaImpl() override
+        {
+            CudaDeviceGuard device_guard(device_);
+            cc_.reset();
+        }
 
-  Result<void> Process(Tensor score, float mask_thr, int max_candidates,
-                       std::vector<std::vector<cv::Point>>& contours,
-                       std::vector<float>& scores) override {
-    CudaDeviceGuard device_guard(device_);
+        Result<void> Process(Tensor score, float mask_thr, int max_candidates, std::vector<std::vector<cv::Point>>& contours, std::vector<float>& scores) override
+        {
+            CudaDeviceGuard device_guard(device_);
 
-    auto height = static_cast<int>(score.shape(1));
-    auto width = static_cast<int>(score.shape(2));
+            auto            height = static_cast<int>(score.shape(1));
+            auto            width  = static_cast<int>(score.shape(2));
 
-    Buffer mask(device_, score.size() * sizeof(uint8_t));
+            Buffer          mask(device_, score.size() * sizeof(uint8_t));
 
-    auto score_data = score.data<float>();
-    auto mask_data = GetNative<uint8_t*>(mask);
+            auto            score_data = score.data<float>();
+            auto            mask_data  = GetNative<uint8_t*>(mask);
 
-    dbnet::Threshold(score_data, height * width, mask_thr, mask_data,
-                     GetNative<cudaStream_t>(stream_));
+            dbnet::Threshold(score_data, height * width, mask_thr, mask_data, GetNative<cudaStream_t>(stream_));
 
-    cc_->Resize(height, width);
-    cc_->GetComponents(mask_data, nullptr);
+            cc_->Resize(height, width);
+            cc_->GetComponents(mask_data, nullptr);
 
-    std::vector<std::vector<cv::Point>> points;
-    cc_->GetContours(points);
+            std::vector<std::vector<cv::Point>> points;
+            cc_->GetContours(points);
 
-    std::vector<float> _scores;
-    std::vector<int> _areas;
-    cc_->GetStats(mask_data, score_data, _scores, _areas);
+            std::vector<float> _scores;
+            std::vector<int>   _areas;
+            cc_->GetStats(mask_data, score_data, _scores, _areas);
 
-    if (points.size() > max_candidates) {
-      points.resize(max_candidates);
-    }
+            if (points.size() > max_candidates)
+            {
+                points.resize(max_candidates);
+            }
 
-    for (int i = 0; i < points.size(); ++i) {
-      std::vector<cv::Point> hull;
-      cv::convexHull(points[i], hull);
-      if (hull.size() < 4) {
-        continue;
-      }
-      contours.push_back(hull);
-      scores.push_back(_scores[i] / (float)_areas[i]);
-    }
-    return success();
-  }
+            for (int i = 0; i < points.size(); ++i)
+            {
+                std::vector<cv::Point> hull;
+                cv::convexHull(points[i], hull);
+                if (hull.size() < 4)
+                {
+                    continue;
+                }
+                contours.push_back(hull);
+                scores.push_back(_scores[i] / (float)_areas[i]);
+            }
+            return success();
+        }
 
- private:
-  Device device_;
-  std::optional<ConnectedComponents> cc_;
-};
+      private:
+        Device                             device_;
+        std::optional<ConnectedComponents> cc_;
+    };
 
-MMDEPLOY_REGISTER_FACTORY_FUNC(DbHeadImpl, (cuda, 0),
-                               [] { return std::make_unique<DbHeadCudaImpl>(); });
+    MMDEPLOY_REGISTER_FACTORY_FUNC(DbHeadImpl, (cuda, 0), []
+                                   { return std::make_unique<DbHeadCudaImpl>(); });
 
 }  // namespace mmdeploy::mmocr

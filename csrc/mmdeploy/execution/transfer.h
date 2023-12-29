@@ -8,47 +8,41 @@
 #include "schedule_from.h"
 #include "utility.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-namespace __transfer {
+    namespace __transfer
+    {
 
-struct transfer_t {
-  template <typename Sender, typename Scheduler,
-            std::enable_if_t<_is_sender<Sender> && _tag_invocable_with_completion_scheduler<
-                                                       transfer_t, Sender, Scheduler>,
-                             int> = 0>
-  auto operator()(Sender&& sender, Scheduler&& scheduler) const {
-    auto sched = GetCompletionScheduler(sender);
-    return tag_invoke(transfer_t{}, std::move(sched), (Sender &&) sender, (Scheduler &&) scheduler);
-  }
-  template <typename Sender, typename Scheduler,
-            std::enable_if_t<
-                _is_sender<Sender> &&
-                    !_tag_invocable_with_completion_scheduler<transfer_t, Sender, Scheduler> &&
-                    tag_invocable<transfer_t, Sender, Scheduler>,
-                int> = 0>
-  auto operator()(Sender&& sender, Scheduler&& scheduler) const {
-    return tag_invoke(transfer_t{}, (Sender &&) sender, (Scheduler &&) scheduler);
-  }
-  template <typename Sender, typename Scheduler,
-            std::enable_if_t<
-                _is_sender<Sender> &&
-                    !_tag_invocable_with_completion_scheduler<transfer_t, Sender, Scheduler> &&
-                    !tag_invocable<transfer_t, Sender, Scheduler>,
-                int> = 0>
-  auto operator()(Sender&& sender, Scheduler&& scheduler) const {
-    return ScheduleFrom((Scheduler &&) scheduler, (Sender &&) sender);
-  }
-  template <typename Scheduler>
-  _BinderBack<transfer_t, remove_cvref_t<Scheduler>> operator()(Scheduler&& scheduler) const {
-    return {{}, {}, {(Scheduler &&) scheduler}};
-  }
-};
+        struct transfer_t
+        {
+            template<typename Sender, typename Scheduler, std::enable_if_t<_is_sender<Sender> && _tag_invocable_with_completion_scheduler<transfer_t, Sender, Scheduler>, int> = 0>
+            auto operator()(Sender&& sender, Scheduler&& scheduler) const
+            {
+                auto sched = GetCompletionScheduler(sender);
+                return tag_invoke(transfer_t{}, std::move(sched), (Sender&&)sender, (Scheduler&&)scheduler);
+            }
+            template<typename Sender, typename Scheduler, std::enable_if_t<_is_sender<Sender> && !_tag_invocable_with_completion_scheduler<transfer_t, Sender, Scheduler> && tag_invocable<transfer_t, Sender, Scheduler>, int> = 0>
+            auto operator()(Sender&& sender, Scheduler&& scheduler) const
+            {
+                return tag_invoke(transfer_t{}, (Sender&&)sender, (Scheduler&&)scheduler);
+            }
+            template<typename Sender, typename Scheduler, std::enable_if_t<_is_sender<Sender> && !_tag_invocable_with_completion_scheduler<transfer_t, Sender, Scheduler> && !tag_invocable<transfer_t, Sender, Scheduler>, int> = 0>
+            auto operator()(Sender&& sender, Scheduler&& scheduler) const
+            {
+                return ScheduleFrom((Scheduler&&)scheduler, (Sender&&)sender);
+            }
+            template<typename Scheduler>
+            _BinderBack<transfer_t, remove_cvref_t<Scheduler>> operator()(Scheduler&& scheduler) const
+            {
+                return {{}, {}, {(Scheduler&&)scheduler}};
+            }
+        };
 
-}  // namespace __transfer
+    }  // namespace __transfer
 
-using __transfer::transfer_t;
-inline constexpr transfer_t Transfer{};
+    using __transfer::transfer_t;
+    inline constexpr transfer_t Transfer{};
 
 }  // namespace mmdeploy
 

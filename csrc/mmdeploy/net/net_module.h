@@ -7,20 +7,22 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy::framework {
+namespace mmdeploy::framework
+{
 
-class NetModule {
- public:
-  ~NetModule();
-  NetModule(NetModule&&) noexcept;
+    class NetModule
+    {
+      public:
+        ~NetModule();
+        NetModule(NetModule&&) noexcept;
 
-  explicit NetModule(const Value& args);
-  Result<Value> operator()(const Value& input);
+        explicit NetModule(const Value& args);
+        Result<Value> operator()(const Value& input);
 
- private:
-  struct Impl;
-  std::unique_ptr<Impl> impl_;
-};
+      private:
+        struct Impl;
+        std::unique_ptr<Impl> impl_;
+    };
 
 }  // namespace mmdeploy::framework
 

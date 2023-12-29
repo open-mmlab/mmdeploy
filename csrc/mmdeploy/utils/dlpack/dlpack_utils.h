@@ -7,11 +7,11 @@
 #include "mmdeploy/core/tensor.h"
 
 struct DLManagedTensor;
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-Result<DLManagedTensor*> ToDLPack(framework::Tensor& tensor, framework::Stream stream = {});
-Result<framework::Tensor> FromDLPack(DLManagedTensor* managed_tensor, const std::string& name = "",
-                                     framework::Stream stream = {});
+    Result<DLManagedTensor*>  ToDLPack(framework::Tensor& tensor, framework::Stream stream = {});
+    Result<framework::Tensor> FromDLPack(DLManagedTensor* managed_tensor, const std::string& name = "", framework::Stream stream = {});
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_CSRC_UTILS_DLPACK_DLPACK_UTILS_H_

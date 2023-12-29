@@ -3,33 +3,33 @@
 /* Header for class mmdeploy_Segmentor */
 
 #ifndef _Included_mmdeploy_Segmentor
-#define _Included_mmdeploy_Segmentor
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_Segmentor
- * Method:    create
- * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Segmentor_create(JNIEnv *, jobject, jstring, jstring, jint);
+    #define _Included_mmdeploy_Segmentor
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_Segmentor
+     * Method:    create
+     * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
+     */
+    JNIEXPORT jlong JNICALL        Java_mmdeploy_Segmentor_create(JNIEnv*, jobject, jstring, jstring, jint);
 
-/*
- * Class:     mmdeploy_Segmentor
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Segmentor_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_Segmentor
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL         Java_mmdeploy_Segmentor_destroy(JNIEnv*, jobject, jlong);
 
-/*
- * Class:     mmdeploy_Segmentor
- * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Segmentor/Result;
- */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Segmentor_apply(JNIEnv *, jobject, jlong,
-                                                             jobjectArray);
+    /*
+     * Class:     mmdeploy_Segmentor
+     * Method:    apply
+     * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Segmentor/Result;
+     */
+    JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Segmentor_apply(JNIEnv*, jobject, jlong, jobjectArray);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

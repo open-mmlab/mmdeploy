@@ -3,12 +3,17 @@
 #ifndef MMDEPLOY_SRC_CORE_MPL_PRIORITY_TAG_H_
 #define MMDEPLOY_SRC_CORE_MPL_PRIORITY_TAG_H_
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-template <unsigned N>
-struct priority_tag : priority_tag<N - 1> {};
-template <>
-struct priority_tag<0> {};
+    template<unsigned N>
+    struct priority_tag : priority_tag<N - 1>
+    {
+    };
+    template<>
+    struct priority_tag<0>
+    {
+    };
 
 }  // namespace mmdeploy
 

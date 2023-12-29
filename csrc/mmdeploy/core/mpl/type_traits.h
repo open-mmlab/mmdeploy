@@ -6,44 +6,55 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-template <typename T>
-struct uncvref {
-  typedef std::remove_cv_t<std::remove_reference_t<T>> type;
-};
+    template<typename T>
+    struct uncvref
+    {
+        typedef std::remove_cv_t<std::remove_reference_t<T>> type;
+    };
 
-template <typename T>
-using uncvref_t = typename uncvref<T>::type;
+    template<typename T>
+    using uncvref_t = typename uncvref<T>::type;
 
-template <class T>
-struct is_cast_by_erasure : std::false_type {};
+    template<class T>
+    struct is_cast_by_erasure : std::false_type
+    {
+    };
 
-namespace traits {
+    namespace traits
+    {
 
-using type_id_t = uint64_t;
+        using type_id_t = uint64_t;
 
-template <class T>
-struct TypeId {
-  static constexpr type_id_t value = 0;
-};
+        template<class T>
+        struct TypeId
+        {
+            static constexpr type_id_t value = 0;
+        };
 
-template <>
-struct TypeId<void> {
-  static constexpr auto value = static_cast<type_id_t>(-1);
-};
+        template<>
+        struct TypeId<void>
+        {
+            static constexpr auto value = static_cast<type_id_t>(-1);
+        };
 
 // ! This only works when calling inside mmdeploy namespace
-#define MMDEPLOY_REGISTER_TYPE_ID(type, id) \
-  namespace traits {                        \
-  template <>                               \
-  struct TypeId<type> {                     \
-    static constexpr type_id_t value = id;  \
-  };                                        \
-  }                                         \
-  template <>                               \
-  struct is_cast_by_erasure<type> : std::true_type {};
-}  // namespace traits
+#define MMDEPLOY_REGISTER_TYPE_ID(type, id)          \
+    namespace traits                                 \
+    {                                                \
+        template<>                                   \
+        struct TypeId<type>                          \
+        {                                            \
+            static constexpr type_id_t value = id;   \
+        };                                           \
+    }                                                \
+    template<>                                       \
+    struct is_cast_by_erasure<type> : std::true_type \
+    {                                                \
+    };
+    }  // namespace traits
 
 }  // namespace mmdeploy
 

@@ -6,23 +6,25 @@
 #include <memory>
 #include <string>
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class Stacktrace {
- public:
-  ~Stacktrace();
-  Stacktrace() noexcept;
-  explicit Stacktrace(int);
-  Stacktrace& operator=(const Stacktrace&);
-  Stacktrace& operator=(Stacktrace&& other) noexcept;
-  Stacktrace(const Stacktrace&);
-  Stacktrace(Stacktrace&&) noexcept;
-  std::string to_string() const;
+    class Stacktrace
+    {
+      public:
+        ~Stacktrace();
+        Stacktrace() noexcept;
+        explicit Stacktrace(int);
+        Stacktrace& operator=(const Stacktrace&);
+        Stacktrace& operator=(Stacktrace&& other) noexcept;
+        Stacktrace(const Stacktrace&);
+        Stacktrace(Stacktrace&&) noexcept;
+        std::string to_string() const;
 
- private:
-  struct Impl;
-  std::unique_ptr<Impl> impl_;
-};
+      private:
+        struct Impl;
+        std::unique_ptr<Impl> impl_;
+    };
 
 }  // namespace mmdeploy
 

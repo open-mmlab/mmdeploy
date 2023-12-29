@@ -2,8 +2,9 @@
 
 #include "mmdeploy/codebase/mmaction/mmaction.h"
 
-namespace mmdeploy::mmaction {
+namespace mmdeploy::mmaction
+{
 
-MMDEPLOY_REGISTER_CODEBASE(MMAction);
+    MMDEPLOY_REGISTER_CODEBASE(MMAction);
 
 }  // namespace mmdeploy::mmaction

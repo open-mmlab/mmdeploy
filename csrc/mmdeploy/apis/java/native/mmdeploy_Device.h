@@ -3,25 +3,26 @@
 /* Header for class mmdeploy_Device */
 
 #ifndef _Included_mmdeploy_Device
-#define _Included_mmdeploy_Device
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_Device
- * Method:    create
- * Signature: (Ljava/lang/String;I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Device_create(JNIEnv *, jobject, jstring, jint);
+    #define _Included_mmdeploy_Device
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_Device
+     * Method:    create
+     * Signature: (Ljava/lang/String;I)J
+     */
+    JNIEXPORT jlong JNICALL Java_mmdeploy_Device_create(JNIEnv*, jobject, jstring, jint);
 
-/*
- * Class:     mmdeploy_Device
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Device_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_Device
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL  Java_mmdeploy_Device_destroy(JNIEnv*, jobject, jlong);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

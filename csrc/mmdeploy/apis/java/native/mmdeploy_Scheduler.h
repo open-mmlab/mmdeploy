@@ -3,32 +3,33 @@
 /* Header for class mmdeploy_Scheduler */
 
 #ifndef _Included_mmdeploy_Scheduler
-#define _Included_mmdeploy_Scheduler
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_Scheduler
- * Method:    createThreadPool
- * Signature: (I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThreadPool(JNIEnv *, jclass, jint);
+    #define _Included_mmdeploy_Scheduler
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_Scheduler
+     * Method:    createThreadPool
+     * Signature: (I)J
+     */
+    JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThreadPool(JNIEnv*, jclass, jint);
 
-/*
- * Class:     mmdeploy_Scheduler
- * Method:    createThread
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThread(JNIEnv *, jclass);
+    /*
+     * Class:     mmdeploy_Scheduler
+     * Method:    createThread
+     * Signature: ()J
+     */
+    JNIEXPORT jlong JNICALL Java_mmdeploy_Scheduler_createThread(JNIEnv*, jclass);
 
-/*
- * Class:     mmdeploy_Scheduler
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Scheduler_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_Scheduler
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL  Java_mmdeploy_Scheduler_destroy(JNIEnv*, jobject, jlong);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

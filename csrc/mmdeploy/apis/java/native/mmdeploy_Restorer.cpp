@@ -6,29 +6,32 @@
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
-jlong Java_mmdeploy_Restorer_create(JNIEnv *env, jobject, jstring modelPath, jstring deviceName,
-                                    jint device_id) {
-  auto model_path = env->GetStringUTFChars(modelPath, nullptr);
-  auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mmdeploy_restorer_t restorer{};
-  auto ec = mmdeploy_restorer_create_by_path(model_path, device_name, (int)device_id, &restorer);
-  env->ReleaseStringUTFChars(modelPath, model_path);
-  env->ReleaseStringUTFChars(deviceName, device_name);
-  if (ec) {
-    MMDEPLOY_ERROR("failed to create restorer, code = {}", ec);
-    return -1;
-  }
-  return (jlong)restorer;
+jlong Java_mmdeploy_Restorer_create(JNIEnv* env, jobject, jstring modelPath, jstring deviceName, jint device_id)
+{
+    auto                model_path  = env->GetStringUTFChars(modelPath, nullptr);
+    auto                device_name = env->GetStringUTFChars(deviceName, nullptr);
+    mmdeploy_restorer_t restorer{};
+    auto                ec = mmdeploy_restorer_create_by_path(model_path, device_name, (int)device_id, &restorer);
+    env->ReleaseStringUTFChars(modelPath, model_path);
+    env->ReleaseStringUTFChars(deviceName, device_name);
+    if (ec)
+    {
+        MMDEPLOY_ERROR("failed to create restorer, code = {}", ec);
+        return -1;
+    }
+    return (jlong)restorer;
 }
 
-void Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_DEBUG("Java_mmdeploy_Restorer_destroy");
-  mmdeploy_restorer_destroy((mmdeploy_restorer_t)handle);
+void Java_mmdeploy_Restorer_destroy(JNIEnv*, jobject, jlong handle)
+{
+    MMDEPLOY_DEBUG("Java_mmdeploy_Restorer_destroy");
+    mmdeploy_restorer_destroy((mmdeploy_restorer_t)handle);
 }
 
-jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handle,
-                                          jobjectArray images) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
+jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv* env, jobject thiz, jlong handle, jobjectArray images)
+{
+    return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray
+                {
     mmdeploy_mat_t *results{};
     auto ec = mmdeploy_restorer_apply((mmdeploy_restorer_t)handle, imgs, size, &results);
     if (ec) {
@@ -68,6 +71,5 @@ jobjectArray Java_mmdeploy_Restorer_apply(JNIEnv *env, jobject thiz, jlong handl
       current_result++;
     }
     mmdeploy_restorer_release_result(results, size);
-    return array;
-  });
+    return array; });
 }

@@ -2,13 +2,18 @@
 
 #include "mmdeploy/core/device_impl.h"
 
-namespace mmdeploy::framework {
+namespace mmdeploy::framework
+{
 
-class AclPlatformRegisterer {
- public:
-  AclPlatformRegisterer() { gPlatformRegistry().AddAlias("npu", "cpu"); }
-};
+    class AclPlatformRegisterer
+    {
+      public:
+        AclPlatformRegisterer()
+        {
+            gPlatformRegistry().AddAlias("npu", "cpu");
+        }
+    };
 
-AclPlatformRegisterer g_acl_platform_registerer;
+    AclPlatformRegisterer g_acl_platform_registerer;
 
 }  // namespace mmdeploy::framework

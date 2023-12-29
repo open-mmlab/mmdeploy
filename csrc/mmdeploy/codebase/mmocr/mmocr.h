@@ -9,23 +9,26 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/module.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy::mmocr
+{
 
-struct TextDetection {
-  std::array<float, 8> bbox;
-  float score;
-  MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
-};
+    struct TextDetection
+    {
+        std::array<float, 8> bbox;
+        float                score;
+        MMDEPLOY_ARCHIVE_MEMBERS(bbox, score);
+    };
 
-using TextDetections = std::vector<TextDetection>;
+    using TextDetections = std::vector<TextDetection>;
 
-struct TextRecognition {
-  std::string text;
-  std::vector<float> score;
-  MMDEPLOY_ARCHIVE_MEMBERS(text, score);
-};
+    struct TextRecognition
+    {
+        std::string        text;
+        std::vector<float> score;
+        MMDEPLOY_ARCHIVE_MEMBERS(text, score);
+    };
 
-MMDEPLOY_DECLARE_CODEBASE(MMOCR, mmocr);
+    MMDEPLOY_DECLARE_CODEBASE(MMOCR, mmocr);
 
 }  // namespace mmdeploy::mmocr
 

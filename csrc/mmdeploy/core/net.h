@@ -8,21 +8,23 @@
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy::framework {
+namespace mmdeploy::framework
+{
 
-class Net {
- public:
-  virtual ~Net() = default;
-  virtual Result<void> Init(const Value& cfg) = 0;
-  virtual Result<void> Deinit() = 0;
-  virtual Result<Span<Tensor>> GetInputTensors() = 0;
-  virtual Result<Span<Tensor>> GetOutputTensors() = 0;
-  virtual Result<void> Reshape(Span<TensorShape> input_shapes) = 0;
-  virtual Result<void> Forward() = 0;
-  virtual Result<void> ForwardAsync(Event* event) = 0;
-};
+    class Net
+    {
+      public:
+        virtual ~Net()                                                       = default;
+        virtual Result<void>         Init(const Value& cfg)                  = 0;
+        virtual Result<void>         Deinit()                                = 0;
+        virtual Result<Span<Tensor>> GetInputTensors()                       = 0;
+        virtual Result<Span<Tensor>> GetOutputTensors()                      = 0;
+        virtual Result<void>         Reshape(Span<TensorShape> input_shapes) = 0;
+        virtual Result<void>         Forward()                               = 0;
+        virtual Result<void>         ForwardAsync(Event* event)              = 0;
+    };
 
-MMDEPLOY_DECLARE_REGISTRY(Net, std::unique_ptr<Net>(const Value& config));
+    MMDEPLOY_DECLARE_REGISTRY(Net, std::unique_ptr<Net>(const Value& config));
 
 }  // namespace mmdeploy::framework
 

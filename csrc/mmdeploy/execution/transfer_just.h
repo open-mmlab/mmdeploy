@@ -9,27 +9,30 @@
 #include "mmdeploy/execution/transfer.h"
 #include "mmdeploy/execution/utility.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-namespace _transfer_just {
+    namespace _transfer_just
+    {
 
-struct transfer_just_t {
-  template <typename Scheduler, typename... As,
-            std::enable_if_t<tag_invocable<transfer_just_t, Scheduler, As...>, int> = 0>
-  auto operator()(Scheduler&& scheduler, As&&... as) const {
-    return tag_invoke(transfer_just_t{}, (Scheduler &&) scheduler, (As &&) as...);
-  }
-  template <typename Scheduler, typename... As,
-            std::enable_if_t<!tag_invocable<transfer_just_t, Scheduler, As...>, int> = 0>
-  auto operator()(Scheduler&& scheduler, As&&... as) const {
-    return Transfer(Just((As &&) as...), (Scheduler &&) scheduler);
-  }
-};
+        struct transfer_just_t
+        {
+            template<typename Scheduler, typename... As, std::enable_if_t<tag_invocable<transfer_just_t, Scheduler, As...>, int> = 0>
+            auto operator()(Scheduler&& scheduler, As&&... as) const
+            {
+                return tag_invoke(transfer_just_t{}, (Scheduler&&)scheduler, (As&&)as...);
+            }
+            template<typename Scheduler, typename... As, std::enable_if_t<!tag_invocable<transfer_just_t, Scheduler, As...>, int> = 0>
+            auto operator()(Scheduler&& scheduler, As&&... as) const
+            {
+                return Transfer(Just((As&&)as...), (Scheduler&&)scheduler);
+            }
+        };
 
-}  // namespace _transfer_just
+    }  // namespace _transfer_just
 
-using _transfer_just::transfer_just_t;
-inline constexpr transfer_just_t TransferJust{};
+    using _transfer_just::transfer_just_t;
+    inline constexpr transfer_just_t TransferJust{};
 
 }  // namespace mmdeploy
 

@@ -7,12 +7,13 @@
 #include "mmdeploy/core/value.h"
 #include "mmdeploy/execution/type_erased.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-MMDEPLOY_REGISTER_TYPE_ID(TypeErasedScheduler<Value>, 8);
+    MMDEPLOY_REGISTER_TYPE_ID(TypeErasedScheduler<Value>, 8);
 
-MMDEPLOY_DECLARE_REGISTRY(TypeErasedScheduler<Value>,
-                          TypeErasedScheduler<Value>(const Value& config));
+    MMDEPLOY_DECLARE_REGISTRY(TypeErasedScheduler<Value>,
+                              TypeErasedScheduler<Value>(const Value& config));
 
 }  // namespace mmdeploy
 

@@ -4,15 +4,18 @@
 
 #include "layer.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class Expand : public ncnn::Layer {
- public:
-  Expand();
+    class Expand : public ncnn::Layer
+    {
+      public:
+        Expand();
 
-  virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs, std::vector<ncnn::Mat>& top_blobs,
-                      const ncnn::Option& opt) const;
-};
+        virtual int forward(const std::vector<ncnn::Mat>& bottom_blobs,
+                            std::vector<ncnn::Mat>&       top_blobs,
+                            const ncnn::Option&           opt) const;
+    };
 
 }  // namespace mmdeploy
 

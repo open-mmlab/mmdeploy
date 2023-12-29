@@ -9,82 +9,94 @@
 #include "mmdeploy/core/device.h"
 #include "mmdeploy/core/types.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-namespace framework {
+    namespace framework
+    {
 
-using TensorShape = std::vector<int64_t>;
-struct TensorDesc {
-  Device device;
-  DataType data_type{DataType::kFLOAT};
-  TensorShape shape;
-  std::string name;
-};
+        using TensorShape = std::vector<int64_t>;
+        struct TensorDesc
+        {
+            Device      device;
+            DataType    data_type{DataType::kFLOAT};
+            TensorShape shape;
+            std::string name;
+        };
 
-class MMDEPLOY_API Tensor {
- public:
-  Tensor() = default;
-  Tensor(const Tensor&) = default;
-  Tensor(Tensor&&) noexcept = default;
-  Tensor& operator=(const Tensor&) = default;
-  Tensor& operator=(Tensor&&) noexcept = default;
+        class MMDEPLOY_API Tensor
+        {
+          public:
+            Tensor()                             = default;
+            Tensor(const Tensor&)                = default;
+            Tensor(Tensor&&) noexcept            = default;
+            Tensor& operator=(const Tensor&)     = default;
+            Tensor& operator=(Tensor&&) noexcept = default;
 
-  Tensor(const TensorDesc& desc, Allocator allocator = {});  // NOLINT
-  Tensor(const TensorDesc& desc, Buffer buffer);
-  Tensor(const TensorDesc& desc, std::shared_ptr<void> data);
-  ~Tensor() = default;
+            Tensor(const TensorDesc& desc, Allocator allocator = {});  // NOLINT
+            Tensor(const TensorDesc& desc, Buffer buffer);
+            Tensor(const TensorDesc& desc, std::shared_ptr<void> data);
+            ~Tensor() = default;
 
-  const TensorDesc& desc() const;
-  const TensorShape& shape() const;
-  TensorShape::value_type shape(int dim) const;
-  DataType data_type() const;
-  const char* name() const;
-  int64_t size() const;
-  int64_t byte_size() const;
+            const TensorDesc&       desc() const;
+            const TensorShape&      shape() const;
+            TensorShape::value_type shape(int dim) const;
+            DataType                data_type() const;
+            const char*             name() const;
+            int64_t                 size() const;
+            int64_t                 byte_size() const;
 
-  const Buffer& buffer() const;
-  Buffer& buffer();
-  Device device() const;
+            const Buffer&           buffer() const;
+            Buffer&                 buffer();
+            Device                  device() const;
 
-  void Reshape(const TensorShape& shape);
+            void                    Reshape(const TensorShape& shape);
 
-  void Squeeze();
-  void Squeeze(int dim);
+            void                    Squeeze();
+            void                    Squeeze(int dim);
 
-  Tensor Slice(int start, int end);
-  Tensor Slice(int index) { return Slice(index, index + 1); }
+            Tensor                  Slice(int start, int end);
+            Tensor                  Slice(int index)
+            {
+                return Slice(index, index + 1);
+            }
 
-  Result<void> CopyFrom(const Tensor& tensor, Stream stream = {});
-  Result<void> CopyTo(Tensor& tensor, Stream stream = {}) const;
+            Result<void> CopyFrom(const Tensor& tensor, Stream stream = {});
+            Result<void> CopyTo(Tensor& tensor, Stream stream = {}) const;
 
-  Result<void> CopyFrom(void* host_ptr, Stream stream = {});
-  Result<void> CopyTo(void* host_ptr, Stream stream = {}) const;
+            Result<void> CopyFrom(void* host_ptr, Stream stream = {});
+            Result<void> CopyTo(void* host_ptr, Stream stream = {}) const;
 
-  Allocator allocator() { return allocator_; }
+            Allocator    allocator()
+            {
+                return allocator_;
+            }
 
-  template <typename T = void>
-  T* data() {
-    return GetNative<T*>(buffer());
-  }
+            template<typename T = void>
+            T* data()
+            {
+                return GetNative<T*>(buffer());
+            }
 
-  template <typename T = void, typename U = std::add_const_t<T> >
-  U* data() const {
-    return GetNative<U*>(buffer());
-  }
+            template<typename T = void, typename U = std::add_const_t<T>>
+            U* data() const
+            {
+                return GetNative<U*>(buffer());
+            }
 
- private:
-  void Allocate();
+          private:
+            void       Allocate();
 
-  TensorDesc desc_;
-  Allocator allocator_;
-  Buffer buffer_;
-};
+            TensorDesc desc_;
+            Allocator  allocator_;
+            Buffer     buffer_;
+        };
 
-// static_assert(sizeof(Tensor) == 80);
+        // static_assert(sizeof(Tensor) == 80);
 
-}  // namespace framework
+    }  // namespace framework
 
-MMDEPLOY_REGISTER_TYPE_ID(framework::Tensor, 6);
+    MMDEPLOY_REGISTER_TYPE_ID(framework::Tensor, 6);
 
 }  // namespace mmdeploy
 

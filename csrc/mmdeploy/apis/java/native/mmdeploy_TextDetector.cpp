@@ -6,30 +6,32 @@
 #include "mmdeploy/apis/java/native/common.h"
 #include "mmdeploy/core/logger.h"
 
-jlong Java_mmdeploy_TextDetector_create(JNIEnv *env, jobject, jstring modelPath, jstring deviceName,
-                                        jint device_id) {
-  auto model_path = env->GetStringUTFChars(modelPath, nullptr);
-  auto device_name = env->GetStringUTFChars(deviceName, nullptr);
-  mmdeploy_text_detector_t text_detector{};
-  auto ec = mmdeploy_text_detector_create_by_path(model_path, device_name, (int)device_id,
-                                                  &text_detector);
-  env->ReleaseStringUTFChars(modelPath, model_path);
-  env->ReleaseStringUTFChars(deviceName, device_name);
-  if (ec) {
-    MMDEPLOY_ERROR("failed to create text_detector, code = {}", ec);
-    return -1;
-  }
-  return (jlong)text_detector;
+jlong Java_mmdeploy_TextDetector_create(JNIEnv* env, jobject, jstring modelPath, jstring deviceName, jint device_id)
+{
+    auto                     model_path  = env->GetStringUTFChars(modelPath, nullptr);
+    auto                     device_name = env->GetStringUTFChars(deviceName, nullptr);
+    mmdeploy_text_detector_t text_detector{};
+    auto                     ec = mmdeploy_text_detector_create_by_path(model_path, device_name, (int)device_id, &text_detector);
+    env->ReleaseStringUTFChars(modelPath, model_path);
+    env->ReleaseStringUTFChars(deviceName, device_name);
+    if (ec)
+    {
+        MMDEPLOY_ERROR("failed to create text_detector, code = {}", ec);
+        return -1;
+    }
+    return (jlong)text_detector;
 }
 
-void Java_mmdeploy_TextDetector_destroy(JNIEnv *, jobject, jlong handle) {
-  MMDEPLOY_DEBUG("Java_mmdeploy_TextDetector_destroy");
-  mmdeploy_text_detector_destroy((mmdeploy_text_detector_t)handle);
+void Java_mmdeploy_TextDetector_destroy(JNIEnv*, jobject, jlong handle)
+{
+    MMDEPLOY_DEBUG("Java_mmdeploy_TextDetector_destroy");
+    mmdeploy_text_detector_destroy((mmdeploy_text_detector_t)handle);
 }
 
-jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv *env, jobject thiz, jlong handle,
-                                              jobjectArray images, jintArray counts) {
-  return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray {
+jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv* env, jobject thiz, jlong handle, jobjectArray images, jintArray counts)
+{
+    return With(env, images, [&](const mmdeploy_mat_t imgs[], int size) -> jobjectArray
+                {
     mmdeploy_text_detection_t *results{};
     int *result_count{};
     auto ec = mmdeploy_text_detector_apply((mmdeploy_text_detector_t)handle, imgs, size, &results,
@@ -61,6 +63,5 @@ jobjectArray Java_mmdeploy_TextDetector_apply(JNIEnv *env, jobject thiz, jlong h
     }
     env->ReleaseIntArrayElements(counts, counts_array, 0);
     mmdeploy_text_detector_release_result(results, result_count, size);
-    return array;
-  });
+    return array; });
 }

@@ -6,19 +6,26 @@
 
 #include <cstdlib>
 
-namespace mmdeploy {
-namespace operation {
-namespace cuda {
+namespace mmdeploy
+{
+    namespace operation
+    {
+        namespace cuda
+        {
 
-const int MAX_PERMUTE_DIM = 8;
+            const int MAX_PERMUTE_DIM = 8;
 
-struct TensorStride {
-  int v_[MAX_PERMUTE_DIM];
-  int& operator[](size_t idx) { return v_[idx]; }
-};
+            struct TensorStride
+            {
+                int  v_[MAX_PERMUTE_DIM];
+                int& operator[](size_t idx)
+                {
+                    return v_[idx];
+                }
+            };
 
-}  // namespace cuda
-}  // namespace operation
+        }  // namespace cuda
+    }      // namespace operation
 }  // namespace mmdeploy
 
 #endif  // MMDEPLOY_OPERATION_CUDA_PERMUTE_H_

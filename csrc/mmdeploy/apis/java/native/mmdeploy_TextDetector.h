@@ -3,34 +3,33 @@
 /* Header for class mmdeploy_TextDetector */
 
 #ifndef _Included_mmdeploy_TextDetector
-#define _Included_mmdeploy_TextDetector
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_TextDetector
- * Method:    create
- * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_TextDetector_create(JNIEnv *, jobject, jstring, jstring,
-                                                          jint);
+    #define _Included_mmdeploy_TextDetector
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_TextDetector
+     * Method:    create
+     * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
+     */
+    JNIEXPORT jlong JNICALL        Java_mmdeploy_TextDetector_create(JNIEnv*, jobject, jstring, jstring, jint);
 
-/*
- * Class:     mmdeploy_TextDetector
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_TextDetector_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_TextDetector
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL         Java_mmdeploy_TextDetector_destroy(JNIEnv*, jobject, jlong);
 
-/*
- * Class:     mmdeploy_TextDetector
- * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;[I)[Lmmdeploy/TextDetector/Result;
- */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_TextDetector_apply(JNIEnv *, jobject, jlong,
-                                                                jobjectArray, jintArray);
+    /*
+     * Class:     mmdeploy_TextDetector
+     * Method:    apply
+     * Signature: (J[Lmmdeploy/Mat;[I)[Lmmdeploy/TextDetector/Result;
+     */
+    JNIEXPORT jobjectArray JNICALL Java_mmdeploy_TextDetector_apply(JNIEnv*, jobject, jlong, jobjectArray, jintArray);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

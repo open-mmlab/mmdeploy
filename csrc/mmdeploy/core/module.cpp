@@ -4,8 +4,9 @@
 
 #include "registry.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-MMDEPLOY_DEFINE_REGISTRY(Module);
+    MMDEPLOY_DEFINE_REGISTRY(Module);
 
 }  // namespace mmdeploy

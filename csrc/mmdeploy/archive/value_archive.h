@@ -6,131 +6,169 @@
 #include "mmdeploy/core/archive.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-template <typename T>
-Value to_value(T&& val);
+    template<typename T>
+    Value to_value(T&& val);
 
-// save to Value
-class ValueOutputArchive : public OutputArchive<ValueOutputArchive> {
- public:
-  explicit ValueOutputArchive(Value& data) : data_(data) {}
+    // save to Value
+    class ValueOutputArchive : public OutputArchive<ValueOutputArchive>
+    {
+      public:
+        explicit ValueOutputArchive(Value& data)
+            : data_(data)
+        {
+        }
 
-  template <typename T>
-  void init(array_tag<T>) {
-    data_ = ValueType::kArray;
-  }
+        template<typename T>
+        void init(array_tag<T>)
+        {
+            data_ = ValueType::kArray;
+        }
 
-  template <typename T>
-  void init(object_tag<T>) {
-    data_ = ValueType::kObject;
-  }
+        template<typename T>
+        void init(object_tag<T>)
+        {
+            data_ = ValueType::kObject;
+        }
 
-  template <typename T>
-  void named_value(const std::string& name, T&& val) {
-    data_[name] = to_value(std::forward<T>(val));
-  }
+        template<typename T>
+        void named_value(const std::string& name, T&& val)
+        {
+            data_[name] = to_value(std::forward<T>(val));
+        }
 
-  template <typename T>
-  void item(T&& val) {
-    data_.push_back(to_value(std::forward<T>(val)));
-  }
+        template<typename T>
+        void item(T&& val)
+        {
+            data_.push_back(to_value(std::forward<T>(val)));
+        }
 
-  template <typename T, std::enable_if_t<std::is_constructible_v<Value, T>, int> = 0>
-  void native(T&& val) {
-    data_ = std::forward<T>(val);
-  };
+        template<typename T, std::enable_if_t<std::is_constructible_v<Value, T>, int> = 0>
+        void native(T&& val)
+        {
+            data_ = std::forward<T>(val);
+        };
 
- private:
-  Value& data_;
-};
+      private:
+        Value& data_;
+    };
 
-template <typename T>
-inline Value to_value(T&& val) {
-  Value value;
-  ValueOutputArchive archive(value);
-  archive(std::forward<T>(val));
-  return value;
-}
+    template<typename T>
+    inline Value to_value(T&& val)
+    {
+        Value              value;
+        ValueOutputArchive archive(value);
+        archive(std::forward<T>(val));
+        return value;
+    }
 
-// fast path
-inline Value to_value(const Value& v) { return v; }
-inline Value to_value(Value&& v) { return std::move(v); }
+    // fast path
+    inline Value to_value(const Value& v)
+    {
+        return v;
+    }
+    inline Value to_value(Value&& v)
+    {
+        return std::move(v);
+    }
 
-template <typename T>
-void from_value(const Value& value, T&& x);
+    template<typename T>
+    void from_value(const Value& value, T&& x);
 
-template <typename T>
-T from_value(const Value& value);
+    template<typename T>
+    T from_value(const Value& value);
 
-// load from Value
-class ValueInputArchive : public InputArchive<ValueInputArchive> {
- public:
-  explicit ValueInputArchive(const Value& data) : data_(data) {}
+    // load from Value
+    class ValueInputArchive : public InputArchive<ValueInputArchive>
+    {
+      public:
+        explicit ValueInputArchive(const Value& data)
+            : data_(data)
+        {
+        }
 
-  template <typename SizeType>
-  void init(SizeType& size) {
-    size = static_cast<SizeType>(data_.size());
-    iter_ = data_.begin();
-  }
+        template<typename SizeType>
+        void init(SizeType& size)
+        {
+            size  = static_cast<SizeType>(data_.size());
+            iter_ = data_.begin();
+        }
 
-  template <typename T>
-  void named_value(std::string& name, T& val) {
-    name = iter_.key();
-    from_value(*iter_, std::forward<T>(val));
-    ++iter_;
-  }
+        template<typename T>
+        void named_value(std::string& name, T& val)
+        {
+            name = iter_.key();
+            from_value(*iter_, std::forward<T>(val));
+            ++iter_;
+        }
 
-  template <typename T>
-  void named_value(const std::string& name, T&& val) {
-    from_value(data_[name], std::forward<T>(val));
-  }
+        template<typename T>
+        void named_value(const std::string& name, T&& val)
+        {
+            from_value(data_[name], std::forward<T>(val));
+        }
 
-  template <typename T>
-  void item(T&& val) {
-    from_value(*iter_, std::forward<T>(val));
-    ++iter_;
-  }
+        template<typename T>
+        void item(T&& val)
+        {
+            from_value(*iter_, std::forward<T>(val));
+            ++iter_;
+        }
 
-  template <typename T>
-  void native(T&& val) {
-    data_.get_to(val);
-  }
+        template<typename T>
+        void native(T&& val)
+        {
+            data_.get_to(val);
+        }
 
-  template <typename T>
-  void value(T&& value) {}
+        template<typename T>
+        void value(T&& value)
+        {
+        }
 
- private:
-  const Value& data_;
-  Value::const_iterator iter_;
-};
+      private:
+        const Value&          data_;
+        Value::const_iterator iter_;
+    };
 
-template <typename T>
-void from_value(const Value& value, T&& x) {
-  ValueInputArchive archive(value);
-  archive(std::forward<T>(x));
-}
+    template<typename T>
+    void from_value(const Value& value, T&& x)
+    {
+        ValueInputArchive archive(value);
+        archive(std::forward<T>(x));
+    }
 
-// Required to avoid Value::Pointer being unwrapped by Value::get_to()
-inline void from_value(const Value& value, Value& x) { x = value; }
+    // Required to avoid Value::Pointer being unwrapped by Value::get_to()
+    inline void from_value(const Value& value, Value& x)
+    {
+        x = value;
+    }
 
-template <typename T>
-inline T from_value(const Value& value) {
-  T x{};
-  from_value(value, x);
-  return x;
-}
+    template<typename T>
+    inline T from_value(const Value& value)
+    {
+        T x{};
+        from_value(value, x);
+        return x;
+    }
 
-namespace detail {
+    namespace detail
+    {
 
-inline void load(ValueInputArchive& archive, Value& v) { archive.native(v); }
+        inline void load(ValueInputArchive& archive, Value& v)
+        {
+            archive.native(v);
+        }
 
-template <class T, std::enable_if_t<std::is_same<std::decay_t<T>, Value>::value, bool> = true>
-inline void save(ValueOutputArchive& archive, T&& v) {
-  archive.native(std::forward<T>(v));
-}
+        template<class T, std::enable_if_t<std::is_same<std::decay_t<T>, Value>::value, bool> = true>
+        inline void save(ValueOutputArchive& archive, T&& v)
+        {
+            archive.native(std::forward<T>(v));
+        }
 
-}  // namespace detail
+    }  // namespace detail
 
 }  // namespace mmdeploy
 

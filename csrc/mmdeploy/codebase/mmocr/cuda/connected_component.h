@@ -10,27 +10,28 @@
 
 #include "opencv2/core.hpp"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class ConnectedComponents {
- public:
-  explicit ConnectedComponents(void* stream);
+    class ConnectedComponents
+    {
+      public:
+        explicit ConnectedComponents(void* stream);
 
-  ~ConnectedComponents();
+        ~ConnectedComponents();
 
-  void Resize(int height, int width);
+        void Resize(int height, int width);
 
-  int GetComponents(const uint8_t* d_mask, int* h_label);
+        int  GetComponents(const uint8_t* d_mask, int* h_label);
 
-  void GetContours(std::vector<std::vector<cv::Point>>& corners);
+        void GetContours(std::vector<std::vector<cv::Point>>& corners);
 
-  void GetStats(const uint8_t* d_mask, const float* d_score, std::vector<float>& scores,
-                std::vector<int>& areas);
+        void GetStats(const uint8_t* d_mask, const float* d_score, std::vector<float>& scores, std::vector<int>& areas);
 
- private:
-  struct Impl;
-  std::unique_ptr<Impl> impl_;
-};
+      private:
+        struct Impl;
+        std::unique_ptr<Impl> impl_;
+    };
 
 }  // namespace mmdeploy
 

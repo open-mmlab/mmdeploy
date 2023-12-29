@@ -9,23 +9,26 @@
 #include "mmdeploy/core/tensor.h"
 #include "opencv2/core.hpp"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy::mmocr
+{
 
-class DbHeadImpl {
- public:
-  virtual ~DbHeadImpl() = default;
+    class DbHeadImpl
+    {
+      public:
+        virtual ~DbHeadImpl() = default;
 
-  virtual void Init(const Stream& stream) { stream_ = stream; }
+        virtual void Init(const Stream& stream)
+        {
+            stream_ = stream;
+        }
 
-  virtual Result<void> Process(Tensor prob, float mask_thr, int max_candidates,
-                               std::vector<std::vector<cv::Point>>& points,
-                               std::vector<float>& scores) = 0;
+        virtual Result<void> Process(Tensor prob, float mask_thr, int max_candidates, std::vector<std::vector<cv::Point>>& points, std::vector<float>& scores) = 0;
 
- protected:
-  Stream stream_;
-};
+      protected:
+        Stream stream_;
+    };
 
-MMDEPLOY_DECLARE_REGISTRY(DbHeadImpl, std::unique_ptr<DbHeadImpl>());
+    MMDEPLOY_DECLARE_REGISTRY(DbHeadImpl, std::unique_ptr<DbHeadImpl>());
 
 }  // namespace mmdeploy::mmocr
 

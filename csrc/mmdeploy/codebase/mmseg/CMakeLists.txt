@@ -4,9 +4,10 @@ project(mmdeploy_mmseg)
 
 file(GLOB_RECURSE SRCS ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
 mmdeploy_add_module(${PROJECT_NAME} "${SRCS}")
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    mmdeploy_opencv_utils
-    mmdeploy_operation)
+target_link_libraries(${PROJECT_NAME} PRIVATE mmdeploy_opencv_utils
+                                              mmdeploy_operation)
 add_library(mmdeploy::mmseg ALIAS ${PROJECT_NAME})
 
-set(MMDEPLOY_TASKS ${MMDEPLOY_TASKS} segmentor CACHE INTERNAL "")
+set(MMDEPLOY_TASKS
+    ${MMDEPLOY_TASKS} segmentor
+    CACHE INTERNAL "")

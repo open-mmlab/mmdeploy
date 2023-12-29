@@ -15,44 +15,46 @@
 #include "mmdeploy/experimental/module_adapter.h"
 #include "mmocr.h"
 
-namespace mmdeploy::mmocr {
+namespace mmdeploy::mmocr
+{
 
-using std::string;
-using std::unordered_map;
-using std::unordered_set;
-using std::vector;
+    using std::string;
+    using std::unordered_map;
+    using std::unordered_set;
+    using std::vector;
 
-class BaseConvertor : public MMOCR {
- public:
-  explicit BaseConvertor(const Value& cfg);
+    class BaseConvertor : public MMOCR
+    {
+      public:
+        explicit BaseConvertor(const Value& cfg);
 
-  string Idx2Str(const vector<int>& indexes);
+        string                Idx2Str(const vector<int>& indexes);
 
-  virtual Result<Value> operator()(const Value& _data, const Value& _prob) = 0;
+        virtual Result<Value> operator()(const Value& _data, const Value& _prob) = 0;
 
- protected:
-  static vector<string> SplitLines(const string& s);
+      protected:
+        static vector<string>       SplitLines(const string& s);
 
-  static vector<string> SplitChars(const string& s);
+        static vector<string>       SplitChars(const string& s);
 
-  static constexpr const auto DICT36 = R"(0123456789abcdefghijklmnopqrstuvwxyz)";
-  static constexpr const auto DICT90 = R"(0123456789abcdefghijklmnopqrstuvwxyz)"
-                                       R"(ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'())"
-                                       R"(*+,-./:;<=>?@[\]_`~)";
+        static constexpr const auto DICT36 = R"(0123456789abcdefghijklmnopqrstuvwxyz)";
+        static constexpr const auto DICT90 = R"(0123456789abcdefghijklmnopqrstuvwxyz)"
+                                             R"(ABCDEFGHIJKLMNOPQRSTUVWXYZ!"#$%&'())"
+                                             R"(*+,-./:;<=>?@[\]_`~)";
 
-  static constexpr const auto kHost = Device(0);
+        static constexpr const auto kHost = Device(0);
 
-  Model model_;
+        Model                       model_;
 
-  int padding_idx_{-1};
-  int end_idx_{-1};
-  int start_idx_{-1};
-  int unknown_idx_{-1};
+        int                         padding_idx_{-1};
+        int                         end_idx_{-1};
+        int                         start_idx_{-1};
+        int                         unknown_idx_{-1};
 
-  unordered_set<int> ignore_indexes_;
-  unordered_map<string, int> char2idx_;
-  vector<string> idx2char_;
+        unordered_set<int>          ignore_indexes_;
+        unordered_map<string, int>  char2idx_;
+        vector<string>              idx2char_;
 
-};  // class BaseConvertor
+    };  // class BaseConvertor
 
 }  // namespace mmdeploy::mmocr
