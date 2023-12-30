@@ -96,6 +96,7 @@ Result<unique_ptr<Node>> TaskBuilder::BuildImpl() {
     task->is_thread_safe_ = config_.value("is_thread_safe", false);
     return std::move(task);
   } catch (const std::exception& e) {
+    MMDEPLOY_ERROR("unhandled exception: {}", e.what());
     MMDEPLOY_ERROR("error parsing config: {}", config_);
     return nullptr;
   }

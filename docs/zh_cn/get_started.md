@@ -331,6 +331,10 @@ target_link_libraries(${name} PRIVATE mmdeploy ${OpenCV_LIBS})
 
 若要对预处理进行加速，请查阅[此处](./02-how-to-run/fuse_transform.md)
 
+## 服务端部署 (triton)
+
+若需要进行服务端部署，请阅读 [服务端部署](02-how-to-run/triton_server.md) 了解更多细节
+
 ## 模型精度评估
 
 为了测试部署模型的精度，推理效率，我们提供了 `tools/test.py` 来帮助完成相关工作。以上文中的部署模型为例：

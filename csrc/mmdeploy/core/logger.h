@@ -47,7 +47,7 @@ MMDEPLOY_API void SetLogger(spdlog::logger *logger);
 #endif
 
 #ifdef SPDLOG_LOGGER_CALL
-#define MMDEPLOY_LOG(level, ...) SPDLOG_LOGGER_CALL(mmdeploy::GetLogger(), level, __VA_ARGS__)
+#define MMDEPLOY_LOG(level, ...) SPDLOG_LOGGER_CALL(::mmdeploy::GetLogger(), level, __VA_ARGS__)
 #else
 #define MMDEPLOY_LOG(level, ...) mmdeploy::GetLogger()->log(level, __VA_ARGS__)
 #endif

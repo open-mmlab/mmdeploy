@@ -30,8 +30,9 @@ struct model_meta_info_t {
 
 struct deploy_meta_info_t {
   std::string version;
+  std::string task;
   std::vector<model_meta_info_t> models;
-  MMDEPLOY_ARCHIVE_MEMBERS(version, models);
+  MMDEPLOY_ARCHIVE_MEMBERS(version, task, models);
 };
 
 class ModelImpl;

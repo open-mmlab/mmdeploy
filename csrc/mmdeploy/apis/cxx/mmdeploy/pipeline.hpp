@@ -11,27 +11,28 @@ namespace mmdeploy {
 
 namespace cxx {
 
-class Pipeline : public NonMovable {
+class Pipeline : public UniqueHandle<mmdeploy_pipeline_t> {
  public:
   Pipeline(const Value& config, const Context& context) {
-    mmdeploy_pipeline_t pipeline{};
-    auto ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, context, &pipeline);
+    auto ec = mmdeploy_pipeline_create_v3((mmdeploy_value_t)&config, context, &handle_);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
-    pipeline_ = pipeline;
   }
 
   ~Pipeline() {
-    if (pipeline_) {
-      mmdeploy_pipeline_destroy(pipeline_);
-      pipeline_ = nullptr;
+    if (handle_) {
+      mmdeploy_pipeline_destroy(handle_);
+      handle_ = nullptr;
     }
   }
 
+  Pipeline(Pipeline&&) noexcept = default;
+  Pipeline& operator=(Pipeline&&) noexcept = default;
+
   Value Apply(const Value& inputs) {
     mmdeploy_value_t tmp{};
-    auto ec = mmdeploy_pipeline_apply(pipeline_, (mmdeploy_value_t)&inputs, &tmp);
+    auto ec = mmdeploy_pipeline_apply(handle_, (mmdeploy_value_t)&inputs, &tmp);
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
@@ -50,7 +51,7 @@ class Pipeline : public NonMovable {
     if (ec != MMDEPLOY_SUCCESS) {
       throw_exception(static_cast<ErrorCode>(ec));
     }
-    auto outputs = Apply(*reinterpret_cast<Value*>(inputs));
+    auto outputs = this->Apply(*reinterpret_cast<Value*>(inputs));
     mmdeploy_value_destroy(inputs);
 
     return outputs;
@@ -65,9 +66,6 @@ class Pipeline : public NonMovable {
     }
     return rets;
   }
-
- private:
-  mmdeploy_pipeline_t pipeline_{};
 };
 
 }  // namespace cxx
