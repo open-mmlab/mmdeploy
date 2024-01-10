@@ -4,7 +4,7 @@ from typing import Any, Optional, Union
 
 import mmengine
 
-from .core import PIPELINE_MANAGER
+from mmdeploy.apis.core import PIPELINE_MANAGER
 
 
 @PIPELINE_MANAGER.register_pipeline()
@@ -14,6 +14,7 @@ def torch2onnx(img: Any,
                deploy_cfg: Union[str, mmengine.Config],
                model_cfg: Union[str, mmengine.Config],
                model_checkpoint: Optional[str] = None,
+               append_input: list = None,
                device: str = 'cuda:0'):
     """Convert PyTorch model to ONNX model.
 
@@ -42,13 +43,14 @@ def torch2onnx(img: Any,
         model_cfg (str | mmengine.Config): Model config file or Config object.
         model_checkpoint (str): A checkpoint path of PyTorch model,
             defaults to `None`.
+        append_input (list): Additional inputs other than images, suitable for multimodal models such as text features of Grounded DINO.
         device (str): A string specifying device type, defaults to 'cuda:0'.
     """
 
     from mmdeploy.apis.core.pipeline_manager import no_mp
     from mmdeploy.utils import (Backend, get_backend, get_dynamic_axes,
                                 get_input_shape, get_onnx_config, load_config)
-    from .onnx import export
+    from mmdeploy.apis.onnx import export
 
     # load deploy_cfg if necessary
     deploy_cfg, model_cfg = load_config(deploy_cfg, model_cfg)
@@ -68,6 +70,10 @@ def torch2onnx(img: Any,
 
     if isinstance(model_inputs, list) and len(model_inputs) == 1:
         model_inputs = model_inputs[0]
+    if isinstance(append_input, list):
+        temp = [model_inputs]
+        temp.extend(append_input)
+        model_inputs = temp
     data_samples = data['data_samples']
     input_metas = {'data_samples': data_samples, 'mode': 'predict'}
 
