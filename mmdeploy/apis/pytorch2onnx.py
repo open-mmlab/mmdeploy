@@ -6,6 +6,7 @@ import mmengine
 
 from mmdeploy.apis.core import PIPELINE_MANAGER
 
+print('ok')
 
 @PIPELINE_MANAGER.register_pipeline()
 def torch2onnx(img: Any,
