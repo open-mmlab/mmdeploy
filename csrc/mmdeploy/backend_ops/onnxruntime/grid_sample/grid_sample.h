@@ -12,7 +12,7 @@ struct GridSampleKernel {
   void Compute(OrtKernelContext *context);
 
  protected:
-  Ort::CustomOpApi ort_;
+  const OrtApi& ort_;
   const OrtKernelInfo *info_;
   Ort::AllocatorWithDefaultOptions allocator_;
 
