@@ -190,7 +190,7 @@ def select_rnms_index(scores: torch.Tensor,
     batched_labels = cls_inds.unsqueeze(0).repeat(batch_size, 1)
     batched_labels = batched_labels.where(
         (batch_inds == batch_template.unsqueeze(1)),
-        batched_labels.new_ones(1) * -1)
+        (batched_labels.new_ones(1) * -1).to(dtype=batched_labels.dtype))
 
     N = batched_dets.shape[0]
 

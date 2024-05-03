@@ -344,7 +344,8 @@ def get_onnx_model(wrapped_model: nn.Module,
             output_names=output_names,
             opset_version=11,
             dynamic_axes=dynamic_axes,
-            keep_initializers_as_inputs=False)
+            keep_initializers_as_inputs=False,
+            autograd_inlining=False)
     return onnx_file_path
 
 
