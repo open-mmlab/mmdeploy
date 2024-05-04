@@ -2,7 +2,6 @@
 #include "modulated_deform_conv.h"
 
 #include <cmath>
-#include <iostream>
 #include <thread>
 #include <vector>
 
@@ -21,8 +20,9 @@ void parallel_unroll_gemm(const float *A, const float *B, const float *V, const 
       tmp[n] = 0;
     }
     {
-      int32_t remainder = K % 8;  // unroll
-      for (int32_t k = 0; k < K; k += 8) {
+      const int32_t num_unroll = 8;
+      const int32_t remainder = K % num_unroll;  // unroll
+      for (int32_t k = 0; k < K - num_unroll; k += num_unroll) {
         for (int32_t n = 0; n < N; n++) {
           tmp[n] += A[m * K + k] * B[k * N + n];
           tmp[n] += A[m * K + k + 1] * B[k * N + N + n];
