@@ -151,7 +151,10 @@ class Segmentation(BaseTask):
         """
         from .segmentation_model import build_segmentation_model
 
-        data_preprocessor = self.model_cfg.model.data_preprocessor
+        try:
+            data_preprocessor = self.model_cfg.model.data_preprocessor
+        except AttributeError:
+            data_preprocessor = self.model_cfg.data_preprocessor
         if data_preprocessor_updater is not None:
             data_preprocessor = data_preprocessor_updater(data_preprocessor)
         model = build_segmentation_model(
