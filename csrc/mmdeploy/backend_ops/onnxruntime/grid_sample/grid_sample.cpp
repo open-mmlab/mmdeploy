@@ -14,10 +14,19 @@ namespace mmdeploy {
 #define CLIP_COORDINATES(in, out, clip_limit) out = MIN((clip_limit - 1), MAX(in, 0))
 
 GridSampleKernel::GridSampleKernel(const OrtApi &api, const OrtKernelInfo *info)
-    : ort_(api), info_(info) {
-  align_corners_ = ort_.KernelInfoGetAttribute<int64_t>(info, "align_corners");
-  interpolation_mode_ = ort_.KernelInfoGetAttribute<int64_t>(info, "interpolation_mode");
-  padding_mode_ = ort_.KernelInfoGetAttribute<int64_t>(info, "padding_mode");
+    : ort_(api), info_(info){
+
+#if ORT_API_VERSION >= 14
+  const auto kernel_info = Ort::ConstKernelInfo(info);
+  align_corners_ = kernel_info.GetAttribute<int64_t>("align_corners");
+  interpolation_mode_ = kernel_info.GetAttribute<int64_t>("interpolation_mode");
+  padding_mode_ = kernel_info.GetAttribute<int64_t>("padding_mode");
+#else
+  Ort::CustomOpApi custom_api{api};
+  align_corners_ = custom_api.KernelInfoGetAttribute<int64_t>(info, "align_corners");
+  interpolation_mode_ = custom_api.KernelInfoGetAttribute<int64_t>(info, "interpolation_mode");
+  padding_mode_ = custom_api.KernelInfoGetAttribute<int64_t>(info, "padding_mode");
+#endif
 
   allocator_ = Ort::AllocatorWithDefaultOptions();
 }
@@ -144,14 +153,22 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
   const int64_t padding_mode = padding_mode_;
   const int64_t interpolation_mode = interpolation_mode_;
 
-  const OrtValue *input = ort_.KernelContext_GetInput(context, 0);
-  const float *input_data = reinterpret_cast<const float *>(ort_.GetTensorData<float>(input));
+#if ORT_API_VERSION >= 14
+  const Ort::KernelContext ctx(context);
+  const auto input = ctx.GetInput(0);
+  const auto grid = ctx.GetInput(1);
+#else
+  Ort::CustomOpApi api{ort_};
+  const Ort::Unowned<Ort::Value> input = const_cast<OrtValue*>(api.KernelContext_GetInput(context, 0));
+  const Ort::Unowned<Ort::Value> grid = const_cast<OrtValue*>(api.KernelContext_GetInput(context, 1));
+#endif
 
-  const OrtValue *grid = ort_.KernelContext_GetInput(context, 1);
-  const float *grid_data = reinterpret_cast<const float *>(ort_.GetTensorData<float>(grid));
+  const auto* input_data = input.GetTensorData<float>();
+  const auto* grid_data = grid.GetTensorData<float>();
 
-  OrtTensorDimensions input_dims(ort_, input);
-  OrtTensorDimensions grid_dims(ort_, grid);
+  std::vector<int64_t> input_dims = input.GetTensorTypeAndShapeInfo().GetShape();
+  std::vector<int64_t> grid_dims = grid.GetTensorTypeAndShapeInfo().GetShape();
+
   int64_t N = input_dims[0];
   int64_t C = input_dims[1];
   int64_t inp_H = input_dims[2];
@@ -160,9 +177,14 @@ void GridSampleKernel::Compute(OrtKernelContext *context) {
   int64_t out_W = grid_dims[2];
 
   std::vector<int64_t> output_dims = {N, C, out_H, out_W};
-  OrtValue *output =
-      ort_.KernelContext_GetOutput(context, 0, output_dims.data(), output_dims.size());
-  float *out_ptr = ort_.GetTensorMutableData<float>(output);
+
+#if ORT_API_VERSION >= 14
+  auto output = ctx.GetOutput(0, output_dims.data(), output_dims.size());
+#else
+  Ort::Unowned<Ort::Value> output = api.KernelContext_GetOutput(context, 0, output_dims.data(), output_dims.size());
+#endif
+
+  auto* out_ptr = output.GetTensorMutableData<float>();
 
   int64_t inp_sN = input_dims[1] * input_dims[2] * input_dims[3];
   int64_t inp_sC = input_dims[2] * input_dims[3];

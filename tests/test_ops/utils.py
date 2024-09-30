@@ -50,7 +50,8 @@ class TestOnnxRTExporter:
                 output_names=output_names,
                 do_constant_folding=do_constant_folding,
                 dynamic_axes=dynamic_axes,
-                opset_version=11)
+                opset_version=11,
+                autograd_inlining=False)
         if expected_result is None:
             with torch.no_grad():
                 model_outputs = model(*input_list)

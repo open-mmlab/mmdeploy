@@ -42,17 +42,32 @@ NMSMatchKernel::NMSMatchKernel(const OrtApi& api, const OrtKernelInfo* info)
 }
 
 void NMSMatchKernel::Compute(OrtKernelContext* context) {
-  const OrtValue* boxes = ort_.KernelContext_GetInput(context, 0);
-  const float* boxes_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(boxes));
-  const OrtValue* scores = ort_.KernelContext_GetInput(context, 1);
-  const float* scores_data = reinterpret_cast<const float*>(ort_.GetTensorData<float>(scores));
-  const OrtValue* iou_threshold_ = ort_.KernelContext_GetInput(context, 2);
-  const float iou_threshold_data = ort_.GetTensorData<float>(iou_threshold_)[0];
-  const OrtValue* score_threshold_ = ort_.KernelContext_GetInput(context, 3);
-  const float score_threshold_data = ort_.GetTensorData<float>(score_threshold_)[0];
+#if ORT_API_VERSION >= 14
+  const Ort::KernelContext ctx(context);
+  const auto boxes = ctx.GetInput(0);
+  const auto scores = ctx.GetInput(1);
+  const auto iou_threshold = ctx.GetInput(2);
+  const auto score_threshold = ctx.GetInput(3);
+#else
+  Ort::CustomOpApi api{ort_};
+  const Ort::Unowned<Ort::Value> boxes =
+      const_cast<OrtValue*>(api.KernelContext_GetInput(context, 0));
+  const Ort::Unowned<Ort::Value> scores =
+      const_cast<OrtValue*>(api.KernelContext_GetInput(context, 1));
+  const Ort::Unowned<Ort::Value> iou_threshold =
+      const_cast<OrtValue*>(api.KernelContext_GetInput(context, 2));
+  const Ort::Unowned<Ort::Value> score_threshold =
+      const_cast<OrtValue*>(api.KernelContext_GetInput(context, 3));
+#endif
 
-  OrtTensorDimensions boxes_dim(ort_, boxes);
-  OrtTensorDimensions scores_dim(ort_, scores);
+  const float* boxes_data = boxes.GetTensorData<float>();
+  const float* scores_data = scores.GetTensorData<float>();
+  const float iou_threshold_data = iou_threshold.GetTensorData<float>()[0];
+  const float score_threshold_data = score_threshold.GetTensorData<float>()[0];
+
+  std::vector<int64_t> boxes_dim = boxes.GetTensorTypeAndShapeInfo().GetShape();
+  std::vector<int64_t> scores_dim = scores.GetTensorTypeAndShapeInfo().GetShape();
+
   // loop over batch
   int64_t nbatch = boxes_dim[0];
   int64_t nboxes = boxes_dim[1];
@@ -118,8 +133,14 @@ void NMSMatchKernel::Compute(OrtKernelContext* context) {
   }
   std::vector<int64_t> inds_dims({(int64_t)res_order.size() / 4, 4});
 
-  OrtValue* res = ort_.KernelContext_GetOutput(context, 0, inds_dims.data(), inds_dims.size());
-  int64_t* res_data = ort_.GetTensorMutableData<int64_t>(res);
+#if ORT_API_VERSION >= 14
+  auto res = ctx.GetOutput(0, inds_dims.data(), inds_dims.size());
+#else
+  Ort::Unowned<Ort::Value> res =
+      api.KernelContext_GetOutput(context, 0, inds_dims.data(), inds_dims.size());
+#endif
+
+  int64_t* res_data = res.GetTensorMutableData<int64_t>();
 
   memcpy(res_data, res_order.data(), sizeof(int64_t) * res_order.size());
 

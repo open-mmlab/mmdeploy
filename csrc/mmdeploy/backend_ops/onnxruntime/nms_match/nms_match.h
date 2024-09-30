@@ -17,7 +17,7 @@ struct NMSMatchKernel {
   void Compute(OrtKernelContext* context);
 
  private:
-  Ort::CustomOpApi ort_;
+  const OrtApi& ort_;
   const OrtKernelInfo* info_;
   Ort::AllocatorWithDefaultOptions allocator_;
 };
