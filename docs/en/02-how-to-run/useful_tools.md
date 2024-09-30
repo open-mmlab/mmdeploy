@@ -203,6 +203,23 @@ And the output look like this:
 +--------+------------+---------+
 ```
 
+## visualize
+
+This tool can be used to visualize model inference results in different backend.
+
+### Usage
+
+```bash
+python tools/visualize.py \
+    --deploy-cfg {DEPLOY_CFG} \
+    --model-cfg {MODEL_CFG} \
+    --deploy-path {DEPLOY_PATH} \
+    --test-img {TEST_IMGS} \
+    --checkpoint {CHECKPOINTS} \
+    --save-dir {SAVE_DIR} \
+    --device {DEVICE}
+```
+
 ## generate_md_table
 
 This tool can be used to generate supported-backends markdown table.
@@ -244,3 +261,32 @@ And the output look like this:
 | [SAR](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/sar)           | TextRecognition |      Y      |    N     |      Y      |   N   |    N     |  N   |
 | [SATRN](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/satrn)       | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |
 | [ABINet](https://github.com/open-mmlab/mmocr/tree/main/configs/textrecog/abinet)     | TextRecognition |      Y      |    Y     |      Y      |   N   |    N     |  N   |
+
+## visualize
+
+This tool can be used to visualize model inference results in different backend.
+
+### Usage
+
+```bash
+python tools/visualize.py \
+    --deploy-cfg {DEPLOY_CFG} \
+    --model-cfg {MODEL_CFG} \
+    --deploy-path {DEPLOY_PATH} \
+    --test-img {TEST_IMGS} \
+    --checkpoint {CHECKPOINTS} \
+    --batch {BATCH}
+    --save-dir {SAVE_DIR} \
+    --device {DEVICE}
+```
+
+### Description of all arguments
+
+- `deploy-cfg` : The path of the deploy config file in MMDeploy codebase.
+- `model-cfg` : The path of model config file in OpenMMLab codebase.
+- `deploy-path` : The path of the model to be tested, if the backend contains multiple files, you can use it multiple times.
+- `test-img` : The path of the images to be tested, you can use it multiple times.
+- `checkpoint` : The path of the checkpoint to be tested, if it is used, the result will be cancated to right part.
+- `batch` : The batch size of the visual result, if not specified, it will be set to 1.
+- `save-dir` : The path to save the visualization results, if it not specified, it will be set to '.'.
+- `device` : The device type. If not specified, it will be set to `cpu`.
