@@ -113,7 +113,7 @@ def base_dense_head__predict_by_feat(
         if self.use_sigmoid_cls:
             scores = scores.sigmoid()
         else:
-            scores = scores.softmax(-1)[:, :, :-1]
+            scores = scores.softmax(-1)
         if with_score_factors:
             score_factors = score_factors.permute(0, 2, 3,
                                                   1).reshape(batch_size,
