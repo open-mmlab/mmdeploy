@@ -43,6 +43,8 @@ def detrhead__predict_by_feat__default(self,
         det_labels = indexes % self.num_classes
         bbox_index = indexes // self.num_classes
         bbox_index = (bbox_index + batch_index_offset).view(-1)
+        # if max_per_img is smaller than num_quries
+        bbox_preds = bbox_preds[:, bbox_index[-1], :]
         bbox_preds = bbox_preds.view(-1, 4)[bbox_index]
         bbox_preds = bbox_preds.view(batch_size, -1, 4)
     else:
