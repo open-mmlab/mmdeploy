@@ -39,6 +39,17 @@ int mmdeploy_restorer_create_by_path(const char* model_path, const char* device_
   return ec;
 }
 
+int mmdeploy_restorer_create_by_buffer(const void* buffer , int size , const char* device_name, int device_id,
+                                     mmdeploy_restorer_t* restorer) {
+  mmdeploy_model_t model{};
+  if (auto ec = mmdeploy_model_create(buffer, size, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_restorer_create(model, device_name, device_id, restorer);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
 int mmdeploy_restorer_apply(mmdeploy_restorer_t restorer, const mmdeploy_mat_t* images, int count,
                             mmdeploy_mat_t** results) {
   wrapped<mmdeploy_value_t> input;

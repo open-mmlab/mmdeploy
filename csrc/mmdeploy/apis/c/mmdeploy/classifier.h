@@ -50,6 +50,20 @@ MMDEPLOY_API int mmdeploy_classifier_create_by_path(const char* model_path, cons
                                                     mmdeploy_classifier_t* classifier);
 
 /**
+ * @brief Create classifier's handle
+ * @param[in] buffer a linear buffer contains the model information
+ * @param[in] size size of \p buffer in bytes
+ * @param[in] device_name name of device, such as "cpu", "cuda", etc.
+ * @param[in] device_id id of device.
+ * @param[out] classifier instance of a classifier, which must be destroyed
+ * by \ref mmdeploy_classifier_destroy
+ * @return status of creating classifier's handle
+ */
+MMDEPLOY_API int mmdeploy_classifier_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                                    int device_id,
+                                                    mmdeploy_classifier_t* classifier);
+
+/**
  * @brief Use classifier created by  \ref mmdeploy_classifier_create_by_path to get label
  * information of each image in a batch
  * @param[in] classifier classifier's handle created by  \ref mmdeploy_classifier_create_by_path

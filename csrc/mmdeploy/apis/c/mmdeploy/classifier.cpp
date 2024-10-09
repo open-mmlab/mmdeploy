@@ -40,6 +40,18 @@ int mmdeploy_classifier_create_by_path(const char* model_path, const char* devic
   return ec;
 }
 
+int mmdeploy_classifier_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                       int device_id, mmdeploy_classifier_t* classifier) {
+  mmdeploy_model_t model{};
+
+  if (auto ec = mmdeploy_model_create(buffer, size, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_classifier_create(model, device_name, device_id, classifier);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
 int mmdeploy_classifier_create_v2(mmdeploy_model_t model, mmdeploy_context_t context,
                                   mmdeploy_classifier_t* classifier) {
   return mmdeploy_pipeline_create_from_model(model, context, (mmdeploy_pipeline_t*)classifier);

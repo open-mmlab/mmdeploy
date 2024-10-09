@@ -39,6 +39,18 @@ int mmdeploy_rotated_detector_create_by_path(const char* model_path, const char*
   return ec;
 }
 
+int mmdeploy_rotated_detector_create_by_buffer(const void* buffer, int size, const char* device_name,
+                                             int device_id, mmdeploy_rotated_detector_t* detector) {
+  mmdeploy_model_t model{};
+
+  if (auto ec = mmdeploy_model_create(buffer, size, &model)) {
+    return ec;
+  }
+  auto ec = mmdeploy_rotated_detector_create(model, device_name, device_id, detector);
+  mmdeploy_model_destroy(model);
+  return ec;
+}
+
 int mmdeploy_rotated_detector_apply(mmdeploy_rotated_detector_t detector,
                                     const mmdeploy_mat_t* mats, int mat_count,
                                     mmdeploy_rotated_detection_t** results, int** result_count) {
