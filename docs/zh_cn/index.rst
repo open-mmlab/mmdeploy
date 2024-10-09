@@ -27,6 +27,7 @@
    02-how-to-run/profile_model.md
    02-how-to-run/quantize_model.md
    02-how-to-run/useful_tools.md
+   02-how-to-run/triton_server.md
 
 .. toctree::
    :maxdepth: 1

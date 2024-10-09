@@ -14,23 +14,29 @@ using namespace framework;
 InferenceBuilder::InferenceBuilder(Value config) : Builder(std::move(config)) {}
 
 Result<unique_ptr<Node>> InferenceBuilder::BuildImpl() {
-  auto& model_config = config_["params"]["model"];
-  Model model;
-  if (model_config.is_any<Model>()) {
-    model = model_config.get<Model>();
-  } else {
-    auto model_name = model_config.get<string>();
-    if (auto m = Maybe{config_} / "context" / "model" / model_name / identity<Model>{}) {
-      model = *m;
-    } else {
-      model = Model(model_name);
-    }
-  }
-
-  OUTCOME_TRY(auto pipeline_config, model.ReadConfig("pipeline.json"));
-
+  Value pipeline_config;
   auto context = config_.value("context", Value(ValueType::kObject));
-  context["model"] = std::move(model);
+  const auto& params = config_["params"];
+  if (params.contains("model")) {
+    auto& model_config = params["model"];
+    Model model;
+    if (model_config.is_any<Model>()) {
+      model = model_config.get<Model>();
+    } else {
+      auto model_name = model_config.get<string>();
+      if (auto m = Maybe{config_} / "context" / "model" / model_name / identity<Model>{}) {
+        model = *m;
+      } else {
+        model = Model(model_name);
+      }
+    }
+    OUTCOME_TRY(pipeline_config, model.ReadConfig("pipeline.json"));
+    context["model"] = std::move(model);
+  } else if (params.contains("pipeline")) {
+    assert(context.contains("model"));
+    auto model = context["model"].get<Model>();
+    OUTCOME_TRY(pipeline_config, model.ReadConfig(params["pipeline"].get<std::string>()));
+  }
 
   if (context.contains("scope")) {
     auto name = config_.value("name", config_["type"].get<std::string>());

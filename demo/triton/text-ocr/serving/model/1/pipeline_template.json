@@ -1,0 +1,50 @@
+{
+    "model_names": [
+        "text_detection",
+        "text_recognition"
+    ],
+    "task_type": "TextOCR",
+    "type": "Pipeline",
+    "input": "img",
+    "output": [
+        "dets",
+        "texts"
+    ],
+    "tasks": [
+        {
+            "type": "Inference",
+            "input": "img",
+            "output": "dets",
+            "params": {
+                "model": "text_detection"
+            }
+        },
+        {
+            "type": "Pipeline",
+            "input": [
+                "bboxes=*dets",
+                "imgs=+img"
+            ],
+            "tasks": [
+                {
+                    "type": "Task",
+                    "module": "WarpBbox",
+                    "input": [
+                        "imgs",
+                        "bboxes"
+                    ],
+                    "output": "patches"
+                },
+                {
+                    "type": "Inference",
+                    "input": "patches",
+                    "output": "texts",
+                    "params": {
+                        "model": "text_recognition"
+                    }
+                }
+            ],
+            "output": "*texts"
+        }
+    ]
+}
