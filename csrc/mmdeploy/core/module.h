@@ -8,15 +8,17 @@
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/value.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-class MMDEPLOY_API Module {
- public:
-  virtual ~Module() = default;
-  virtual Result<Value> Process(const Value& args) = 0;
-};
+    class MMDEPLOY_API Module
+    {
+      public:
+        virtual ~Module()                                = default;
+        virtual Result<Value> Process(const Value& args) = 0;
+    };
 
-MMDEPLOY_DECLARE_REGISTRY(Module, std::unique_ptr<Module>(const Value& config));
+    MMDEPLOY_DECLARE_REGISTRY(Module, std::unique_ptr<Module>(const Value& config));
 
 }  // namespace mmdeploy
 

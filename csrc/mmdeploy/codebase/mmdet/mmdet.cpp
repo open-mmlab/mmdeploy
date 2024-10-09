@@ -2,8 +2,9 @@
 
 #include "mmdeploy/codebase/mmdet/mmdet.h"
 
-namespace mmdeploy::mmdet {
+namespace mmdeploy::mmdet
+{
 
-MMDEPLOY_REGISTER_CODEBASE(MMDetection);
+    MMDEPLOY_REGISTER_CODEBASE(MMDetection);
 
 }  // namespace mmdeploy::mmdet

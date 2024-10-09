@@ -6,30 +6,33 @@
 #include "mmdeploy/core/graph.h"
 #include "mmdeploy/core/profiler.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy::graph
+{
 
-class Task : public Node {
-  friend class TaskBuilder;
+    class Task : public Node
+    {
+        friend class TaskBuilder;
 
- public:
-  Sender<Value> Process(Sender<Value> input) override;
+      public:
+        Sender<Value> Process(Sender<Value> input) override;
 
- private:
-  std::optional<TypeErasedScheduler<Value>> sched_;
-  unique_ptr<Module> module_;
-  bool is_batched_{false};
-  bool is_thread_safe_{false};
-  dynamic_batch_t::context_t batch_context_;
-  profiler::Scope* scope_{nullptr};
-};
+      private:
+        std::optional<TypeErasedScheduler<Value>> sched_;
+        unique_ptr<Module>                        module_;
+        bool                                      is_batched_{false};
+        bool                                      is_thread_safe_{false};
+        dynamic_batch_t::context_t                batch_context_;
+        profiler::Scope*                          scope_{nullptr};
+    };
 
-class TaskBuilder : public Builder {
- public:
-  explicit TaskBuilder(Value config);
+    class TaskBuilder : public Builder
+    {
+      public:
+        explicit TaskBuilder(Value config);
 
- protected:
-  Result<unique_ptr<Node>> BuildImpl() override;
-};
+      protected:
+        Result<unique_ptr<Node>> BuildImpl() override;
+    };
 
 }  // namespace mmdeploy::graph
 

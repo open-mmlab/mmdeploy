@@ -13,7 +13,7 @@
  * @param context <tensor name, shape>
  * @return std::tuple<bool, std::vector<int>>
  */
-std::tuple<bool, std::vector<int>> query_shape(
-    onnx::GraphProto* mutable_graph, onnx::NodeProto* target,
-    const std::map<std::string, onnx::TensorProto>& weights,
-    std::map<std::string, std::vector<int>>& context);
+std::tuple<bool, std::vector<int>> query_shape(onnx::GraphProto*                               mutable_graph,
+                                               onnx::NodeProto*                                target,
+                                               const std::map<std::string, onnx::TensorProto>& weights,
+                                               std::map<std::string, std::vector<int>>&        context);

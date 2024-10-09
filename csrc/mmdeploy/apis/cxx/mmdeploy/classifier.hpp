@@ -6,68 +6,87 @@
 #include "mmdeploy/classifier.h"
 #include "mmdeploy/common.hpp"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
 
-namespace cxx {
+    namespace cxx
+    {
 
-using Classification = mmdeploy_classification_t;
+        using Classification = mmdeploy_classification_t;
 
-class Classifier : public NonMovable {
- public:
-  Classifier(const Model& model, const Context& context) {
-    auto ec = mmdeploy_classifier_create_v2(model, context, &classifier_);
-    if (ec != MMDEPLOY_SUCCESS) {
-      throw_exception(static_cast<ErrorCode>(ec));
-    }
-  }
+        class Classifier : public NonMovable
+        {
+          public:
+            Classifier(const Model& model, const Context& context)
+            {
+                auto ec = mmdeploy_classifier_create_v2(model, context, &classifier_);
+                if (ec != MMDEPLOY_SUCCESS)
+                {
+                    throw_exception(static_cast<ErrorCode>(ec));
+                }
+            }
 
-  ~Classifier() {
-    if (classifier_) {
-      mmdeploy_classifier_destroy(classifier_);
-      classifier_ = {};
-    }
-  }
+            ~Classifier()
+            {
+                if (classifier_)
+                {
+                    mmdeploy_classifier_destroy(classifier_);
+                    classifier_ = {};
+                }
+            }
 
-  using Result = Result_<Classification>;
+            using Result = Result_<Classification>;
 
-  std::vector<Result> Apply(Span<const Mat> images) {
-    if (images.empty()) {
-      return {};
-    }
+            std::vector<Result> Apply(Span<const Mat> images)
+            {
+                if (images.empty())
+                {
+                    return {};
+                }
 
-    Classification* results{};
-    int* result_count{};
-    auto ec = mmdeploy_classifier_apply(classifier_, reinterpret(images.data()),
-                                        static_cast<int>(images.size()), &results, &result_count);
-    if (ec != MMDEPLOY_SUCCESS) {
-      throw_exception(static_cast<ErrorCode>(ec));
-    }
+                Classification* results{};
+                int*            result_count{};
+                auto            ec = mmdeploy_classifier_apply(classifier_,
+                                                    reinterpret(images.data()),
+                                                    static_cast<int>(images.size()),
+                                                    &results,
+                                                    &result_count);
+                if (ec != MMDEPLOY_SUCCESS)
+                {
+                    throw_exception(static_cast<ErrorCode>(ec));
+                }
 
-    std::vector<Result> rets;
-    rets.reserve(images.size());
+                std::vector<Result> rets;
+                rets.reserve(images.size());
 
-    std::shared_ptr<Classification> data(results, [result_count, count = images.size()](auto p) {
-      mmdeploy_classifier_release_result(p, result_count, count);
-    });
+                std::shared_ptr<Classification> data(results,
+                                                     [result_count, count = images.size()](auto p)
+                                                     {
+                                                         mmdeploy_classifier_release_result(p, result_count, count);
+                                                     });
 
-    size_t offset = 0;
-    for (size_t i = 0; i < images.size(); ++i) {
-      offset += rets.emplace_back(offset, result_count[i], data).size();
-    }
+                size_t                          offset = 0;
+                for (size_t i = 0; i < images.size(); ++i)
+                {
+                    offset += rets.emplace_back(offset, result_count[i], data).size();
+                }
 
-    return rets;
-  }
+                return rets;
+            }
 
-  Result Apply(const Mat& img) { return Apply(Span{img})[0]; }
+            Result Apply(const Mat& img)
+            {
+                return Apply(Span{img})[0];
+            }
 
- private:
-  mmdeploy_classifier_t classifier_{};
-};
+          private:
+            mmdeploy_classifier_t classifier_{};
+        };
 
-}  // namespace cxx
+    }  // namespace cxx
 
-using cxx::Classification;
-using cxx::Classifier;
+    using cxx::Classification;
+    using cxx::Classifier;
 
 }  // namespace mmdeploy
 

@@ -16,369 +16,509 @@
 #include "mmdeploy/core/status_code.h"
 #include "mmdeploy/core/utils/formatter.h"
 
-namespace mmdeploy {
+namespace mmdeploy
+{
+
+    namespace framework
+    {
+
+        class Platform;
+        class Device;
+        class Stream;
+        class Event;
+        class Allocator;
+        class Buffer;
+        class Kernel;
+
+        class PlatformImpl;
+        class StreamImpl;
+        class EventImpl;
+        class AllocatorImpl;
+        class BufferImpl;
+        class KernelImpl;
+
+        template<typename T>
+        using optional = std::optional<T>;
+
+        class DeviceId
+        {
+          public:
+            using ValueType = int32_t;
+            constexpr explicit DeviceId(ValueType value)
+                : value_(value)
+            {
+            }
+            constexpr operator ValueType() const
+            {
+                return value_;
+            }  // NOLINT
+            constexpr ValueType get() const
+            {
+                return value_;
+            }
+
+          private:
+            ValueType value_;
+        };
+
+        class PlatformId
+        {
+          public:
+            using ValueType = int32_t;
+            constexpr explicit PlatformId(ValueType value)
+                : value_(value)
+            {
+            }
+            constexpr operator ValueType() const
+            {
+                return value_;
+            }  // NOLINT
+            constexpr ValueType get() const
+            {
+                return value_;
+            }
+
+          private:
+            ValueType value_;
+        };
+
+        class Device
+        {
+          public:
+            constexpr Device()
+                : platform_id_(-1)
+                , device_id_(-1)
+            {
+            }
+
+            constexpr explicit Device(DeviceId device_id, PlatformId platform_id = PlatformId(-1))
+                : Device(platform_id.get(), device_id.get())
+            {
+            }
+
+            constexpr explicit Device(PlatformId platform_id, DeviceId device_id = DeviceId(-1))
+                : Device(platform_id.get(), device_id.get())
+            {
+            }
+
+            constexpr explicit Device(int platform_id, int device_id = 0)
+                : platform_id_(platform_id)
+                , device_id_(device_id)
+            {
+            }
+
+            MMDEPLOY_API explicit Device(const char* platform_name, int device_id = 0);
+
+            constexpr int device_id() const noexcept
+            {
+                return device_id_;
+            }
+
+            constexpr int platform_id() const noexcept
+            {
+                return platform_id_;
+            }
+
+            constexpr bool is_host() const noexcept
+            {
+                return platform_id() == 0;
+            }
+
+            constexpr bool is_device() const noexcept
+            {
+                return platform_id() > 0;
+            }
+
+            constexpr bool operator==(const Device& other) const noexcept
+            {
+                return platform_id_ == other.platform_id_ && device_id_ == other.device_id_;
+            }
+
+            constexpr bool operator!=(const Device& other) const noexcept
+            {
+                return !(*this == other);
+            }
+
+            constexpr explicit operator bool() const noexcept
+            {
+                return platform_id_ >= 0 && device_id_ >= 0;
+            }
+
+            constexpr operator DeviceId() const noexcept
+            {  // NOLINT
+                return DeviceId(device_id_);
+            }
+
+            constexpr operator PlatformId() const noexcept
+            {  // NOLINT
+                return PlatformId(platform_id_);
+            }
+
+            friend std::ostream& operator<<(std::ostream& os, const Device& device)
+            {
+                os << "(" << device.platform_id_ << ", " << device.device_id_ << ")";
+                return os;
+            }
+
+          private:
+            int platform_id_{0};
+            int device_id_{0};
+        };
+
+        enum class MemcpyKind : int
+        {
+            HtoD,
+            DtoH,
+            DtoD
+        };
+
+        class MMDEPLOY_API Platform
+        {
+          public:
+            // throws if not found
+            explicit Platform(const char* platform_name);
+
+            // throws if not found
+            explicit Platform(int platform_id);
+
+            // bind device with the current thread
+            Result<void> Bind(Device device, Device* prev);
+
+            // -1 if invalid
+            int          GetPlatformId() const;
+
+            // "" if invalid
+            const char*  GetPlatformName() const;
+
+            bool         operator==(const Platform& other)
+            {
+                return impl_ == other.impl_;
+            }
+
+            bool operator!=(const Platform& other)
+            {
+                return !(*this == other);
+            }
+
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
+
+          private:
+            explicit Platform(std::shared_ptr<PlatformImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
+
+          private:
+            friend class PlatformRegistry;
+            friend class Access;
+            std::shared_ptr<PlatformImpl> impl_;
+        };
+
+        MMDEPLOY_API const char* GetPlatformName(PlatformId id);
+
+        class DeviceGuard
+        {
+          public:
+            explicit DeviceGuard(Device device)
+                : platform_(device.platform_id())
+            {
+                auto r = platform_.Bind(device, &prev_);
+                if (!r)
+                {
+                    MMDEPLOY_ERROR("failed to bind device {}: {}", device, r.error().message().c_str());
+                }
+            }
 
-namespace framework {
+            ~DeviceGuard()
+            {
+                auto r = platform_.Bind(prev_, nullptr);
+                if (!r)
+                {
+                    MMDEPLOY_ERROR("failed to unbind device {}: {}", prev_, r.error().message().c_str());
+                }
+            }
 
-class Platform;
-class Device;
-class Stream;
-class Event;
-class Allocator;
-class Buffer;
-class Kernel;
+          private:
+            Platform platform_;
+            Device   prev_;
+        };
 
-class PlatformImpl;
-class StreamImpl;
-class EventImpl;
-class AllocatorImpl;
-class BufferImpl;
-class KernelImpl;
+        class MMDEPLOY_API Stream
+        {
+          public:
+            Stream() = default;
 
-template <typename T>
-using optional = std::optional<T>;
+            explicit Stream(Device device, uint64_t flags = 0);
 
-class DeviceId {
- public:
-  using ValueType = int32_t;
-  constexpr explicit DeviceId(ValueType value) : value_(value) {}
-  constexpr operator ValueType() const { return value_; }  // NOLINT
-  constexpr ValueType get() const { return value_; }
+            explicit Stream(Device device, void* native, uint64_t flags = 0);
 
- private:
-  ValueType value_;
-};
+            explicit Stream(Device device, std::shared_ptr<void> native, uint64_t flags = 0);
 
-class PlatformId {
- public:
-  using ValueType = int32_t;
-  constexpr explicit PlatformId(ValueType value) : value_(value) {}
-  constexpr operator ValueType() const { return value_; }  // NOLINT
-  constexpr ValueType get() const { return value_; }
+            Device       GetDevice() const;
+
+            Result<void> Query();
 
- private:
-  ValueType value_;
-};
+            Result<void> Wait();
+
+            Result<void> DependsOn(Event& event);
+
+            Result<void> Submit(Kernel& kernel);
+
+            void*        GetNative(ErrorCode* ec = nullptr);
+
+            Result<void> Copy(const Buffer& src, Buffer& dst, size_t size = -1, size_t src_offset = 0, size_t dst_offset = 0);
+
+            Result<void> Copy(const void* host_ptr, Buffer& dst, size_t size = -1, size_t dst_offset = 0);
+
+            Result<void> Copy(const Buffer& src, void* host_ptr, size_t size = -1, size_t src_offset = 0);
+
+            Result<void> Fill(const Buffer& dst, void* pattern, size_t pattern_size, size_t size = -1, size_t offset = 0);
+
+            bool         operator==(const Stream& other) const
+            {
+                return impl_ == other.impl_;
+            }
+
+            bool operator!=(const Stream& other) const
+            {
+                return !(*this == other);
+            }
+
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
+
+            static Stream GetDefault(Device device);
+
+          private:
+            explicit Stream(std::shared_ptr<StreamImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
+
+          private:
+            friend class Access;
+
+            std::shared_ptr<StreamImpl> impl_;
+        };
+
+        template<typename T>
+        T GetNative(Stream& stream, ErrorCode* ec = nullptr)
+        {
+            return reinterpret_cast<T>(stream.GetNative(ec));
+        }
+
+        class MMDEPLOY_API Event
+        {
+          public:
+            Event() = default;
+
+            explicit Event(Device device, uint64_t flags = 0);
+
+            explicit Event(Device device, void* native, uint64_t flags = 0);
+
+            explicit Event(Device device, std::shared_ptr<void> native, uint64_t flags = 0);
+
+            Device       GetDevice();
+
+            Result<void> Query();
+
+            Result<void> Wait();
+
+            Result<void> Record(Stream& stream);
+
+            void*        GetNative(ErrorCode* ec = nullptr);
+
+            bool         operator==(const Event& other) const
+            {
+                return impl_ == other.impl_;
+            }
+
+            bool operator!=(const Event& other) const
+            {
+                return !(*this == other);
+            }
 
-class Device {
- public:
-  constexpr Device() : platform_id_(-1), device_id_(-1) {}
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
 
-  constexpr explicit Device(DeviceId device_id, PlatformId platform_id = PlatformId(-1))
-      : Device(platform_id.get(), device_id.get()) {}
+          private:
+            explicit Event(std::shared_ptr<EventImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
+
+          private:
+            friend class Access;
+            std::shared_ptr<EventImpl> impl_;
+        };
+
+        template<typename T>
+        T GetNative(Event& event, ErrorCode* ec = nullptr)
+        {
+            return reinterpret_cast<T>(event.GetNative(ec));
+        }
+
+        class MMDEPLOY_API Kernel
+        {
+          public:
+            Kernel() = default;
+            explicit Kernel(std::shared_ptr<KernelImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
+
+            Device   GetDevice() const;
+
+            void*    GetNative(ErrorCode* ec = nullptr);
+
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
+
+          private:
+            std::shared_ptr<KernelImpl> impl_;
+        };
+
+        template<typename T>
+        T GetNative(Kernel& kernel, ErrorCode* ec = nullptr)
+        {
+            return reinterpret_cast<T>(kernel.GetNative(ec));
+        }
 
-  constexpr explicit Device(PlatformId platform_id, DeviceId device_id = DeviceId(-1))
-      : Device(platform_id.get(), device_id.get()) {}
+        class MMDEPLOY_API Allocator
+        {
+            friend class Access;
 
-  constexpr explicit Device(int platform_id, int device_id = 0)
-      : platform_id_(platform_id), device_id_(device_id) {}
+          public:
+            Allocator() = default;
 
-  MMDEPLOY_API explicit Device(const char* platform_name, int device_id = 0);
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
 
-  constexpr int device_id() const noexcept { return device_id_; }
+          private:
+            explicit Allocator(std::shared_ptr<AllocatorImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
+            std::shared_ptr<AllocatorImpl> impl_;
+        };
 
-  constexpr int platform_id() const noexcept { return platform_id_; }
+        class MMDEPLOY_API Buffer
+        {
+          public:
+            Buffer() = default;
 
-  constexpr bool is_host() const noexcept { return platform_id() == 0; }
+            Buffer(Device device, size_t size, size_t alignment = 1, uint64_t flags = 0)
+                : Buffer(device, size, Allocator{}, alignment, flags)
+            {
+            }
 
-  constexpr bool is_device() const noexcept { return platform_id() > 0; }
+            Buffer(Device device, size_t size, Allocator allocator, size_t alignment = 1, uint64_t flags = 0);
 
-  constexpr bool operator==(const Device& other) const noexcept {
-    return platform_id_ == other.platform_id_ && device_id_ == other.device_id_;
-  }
+            Buffer(Device device, size_t size, void* native, uint64_t flags = 0);
 
-  constexpr bool operator!=(const Device& other) const noexcept { return !(*this == other); }
+            Buffer(Device device, size_t size, std::shared_ptr<void> native, uint64_t flags = 0);
+            // create sub-buffer
+            Buffer(Buffer& buffer, size_t offset, size_t size, uint64_t flags = 0);
 
-  constexpr explicit operator bool() const noexcept { return platform_id_ >= 0 && device_id_ >= 0; }
+            size_t    GetSize(ErrorCode* ec = nullptr) const;
 
-  constexpr operator DeviceId() const noexcept {  // NOLINT
-    return DeviceId(device_id_);
-  }
+            //  bool IsSubBuffer(ErrorCode* ec = nullptr);
 
-  constexpr operator PlatformId() const noexcept {  // NOLINT
-    return PlatformId(platform_id_);
-  }
+            void*     GetNative(ErrorCode* ec = nullptr) const;
 
-  friend std::ostream& operator<<(std::ostream& os, const Device& device) {
-    os << "(" << device.platform_id_ << ", " << device.device_id_ << ")";
-    return os;
-  }
+            Device    GetDevice() const;
 
- private:
-  int platform_id_{0};
-  int device_id_{0};
-};
+            Allocator GetAllocator() const;
 
-enum class MemcpyKind : int { HtoD, DtoH, DtoD };
+            bool      operator==(const Buffer& other) const
+            {
+                return impl_ == other.impl_;
+            }
 
-class MMDEPLOY_API Platform {
- public:
-  // throws if not found
-  explicit Platform(const char* platform_name);
+            bool operator!=(const Buffer& other) const
+            {
+                return !(*this == other);
+            }
 
-  // throws if not found
-  explicit Platform(int platform_id);
+            explicit operator bool() const noexcept
+            {
+                return static_cast<bool>(impl_);
+            }
 
-  // bind device with the current thread
-  Result<void> Bind(Device device, Device* prev);
+          private:
+            explicit Buffer(std::shared_ptr<BufferImpl> impl)
+                : impl_(std::move(impl))
+            {
+            }
 
-  // -1 if invalid
-  int GetPlatformId() const;
+          private:
+            friend class Access;
+            std::shared_ptr<BufferImpl> impl_;
+        };
 
-  // "" if invalid
-  const char* GetPlatformName() const;
+        template<typename T>
+        T GetNative(Buffer& buffer, ErrorCode* ec = nullptr)
+        {
+            return reinterpret_cast<T>(buffer.GetNative(ec));
+        }
 
-  bool operator==(const Platform& other) { return impl_ == other.impl_; }
+        template<typename T>
+        T GetNative(const Buffer& buffer, ErrorCode* ec = nullptr)
+        {
+            return reinterpret_cast<T>(buffer.GetNative(ec));
+        }
 
-  bool operator!=(const Platform& other) { return !(*this == other); }
+        class MMDEPLOY_API PlatformRegistry
+        {
+          public:
+            using Creator = std::function<std::shared_ptr<PlatformImpl>()>;
 
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
+            int           Register(Creator creator);
 
- private:
-  explicit Platform(std::shared_ptr<PlatformImpl> impl) : impl_(std::move(impl)) {}
+            int           AddAlias(const char* name, const char* target);
 
- private:
-  friend class PlatformRegistry;
-  friend class Access;
-  std::shared_ptr<PlatformImpl> impl_;
-};
+            int           GetPlatform(const char* name, Platform* platform);
 
-MMDEPLOY_API const char* GetPlatformName(PlatformId id);
+            int           GetPlatform(int id, Platform* platform);
 
-class DeviceGuard {
- public:
-  explicit DeviceGuard(Device device) : platform_(device.platform_id()) {
-    auto r = platform_.Bind(device, &prev_);
-    if (!r) {
-      MMDEPLOY_ERROR("failed to bind device {}: {}", device, r.error().message().c_str());
-    }
-  }
+            int           GetPlatformId(const char* name);
 
-  ~DeviceGuard() {
-    auto r = platform_.Bind(prev_, nullptr);
-    if (!r) {
-      MMDEPLOY_ERROR("failed to unbind device {}: {}", prev_, r.error().message().c_str());
-    }
-  }
+            PlatformImpl* GetPlatformImpl(PlatformId id);
 
- private:
-  Platform platform_;
-  Device prev_;
-};
+          private:
+            int  GetNextId();
 
-class MMDEPLOY_API Stream {
- public:
-  Stream() = default;
+            bool IsAvailable(int id);
 
-  explicit Stream(Device device, uint64_t flags = 0);
+          private:
+            struct Entry
+            {
+                std::string name;
+                int         id;
+                Platform    platform;
+            };
+            std::vector<Entry>                               entries_;
+            std::vector<std::pair<std::string, std::string>> aliases_;
+        };
 
-  explicit Stream(Device device, void* native, uint64_t flags = 0);
+        MMDEPLOY_API PlatformRegistry& gPlatformRegistry();
 
-  explicit Stream(Device device, std::shared_ptr<void> native, uint64_t flags = 0);
+    }  // namespace framework
 
-  Device GetDevice() const;
-
-  Result<void> Query();
-
-  Result<void> Wait();
-
-  Result<void> DependsOn(Event& event);
-
-  Result<void> Submit(Kernel& kernel);
-
-  void* GetNative(ErrorCode* ec = nullptr);
-
-  Result<void> Copy(const Buffer& src, Buffer& dst, size_t size = -1, size_t src_offset = 0,
-                    size_t dst_offset = 0);
-
-  Result<void> Copy(const void* host_ptr, Buffer& dst, size_t size = -1, size_t dst_offset = 0);
-
-  Result<void> Copy(const Buffer& src, void* host_ptr, size_t size = -1, size_t src_offset = 0);
-
-  Result<void> Fill(const Buffer& dst, void* pattern, size_t pattern_size, size_t size = -1,
-                    size_t offset = 0);
-
-  bool operator==(const Stream& other) const { return impl_ == other.impl_; }
-
-  bool operator!=(const Stream& other) const { return !(*this == other); }
-
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
-
-  static Stream GetDefault(Device device);
-
- private:
-  explicit Stream(std::shared_ptr<StreamImpl> impl) : impl_(std::move(impl)) {}
-
- private:
-  friend class Access;
-
-  std::shared_ptr<StreamImpl> impl_;
-};
-
-template <typename T>
-T GetNative(Stream& stream, ErrorCode* ec = nullptr) {
-  return reinterpret_cast<T>(stream.GetNative(ec));
-}
-
-class MMDEPLOY_API Event {
- public:
-  Event() = default;
-
-  explicit Event(Device device, uint64_t flags = 0);
-
-  explicit Event(Device device, void* native, uint64_t flags = 0);
-
-  explicit Event(Device device, std::shared_ptr<void> native, uint64_t flags = 0);
-
-  Device GetDevice();
-
-  Result<void> Query();
-
-  Result<void> Wait();
-
-  Result<void> Record(Stream& stream);
-
-  void* GetNative(ErrorCode* ec = nullptr);
-
-  bool operator==(const Event& other) const { return impl_ == other.impl_; }
-
-  bool operator!=(const Event& other) const { return !(*this == other); }
-
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
-
- private:
-  explicit Event(std::shared_ptr<EventImpl> impl) : impl_(std::move(impl)) {}
-
- private:
-  friend class Access;
-  std::shared_ptr<EventImpl> impl_;
-};
-
-template <typename T>
-T GetNative(Event& event, ErrorCode* ec = nullptr) {
-  return reinterpret_cast<T>(event.GetNative(ec));
-}
-
-class MMDEPLOY_API Kernel {
- public:
-  Kernel() = default;
-  explicit Kernel(std::shared_ptr<KernelImpl> impl) : impl_(std::move(impl)) {}
-
-  Device GetDevice() const;
-
-  void* GetNative(ErrorCode* ec = nullptr);
-
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
-
- private:
-  std::shared_ptr<KernelImpl> impl_;
-};
-
-template <typename T>
-T GetNative(Kernel& kernel, ErrorCode* ec = nullptr) {
-  return reinterpret_cast<T>(kernel.GetNative(ec));
-}
-
-class MMDEPLOY_API Allocator {
-  friend class Access;
-
- public:
-  Allocator() = default;
-
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
-
- private:
-  explicit Allocator(std::shared_ptr<AllocatorImpl> impl) : impl_(std::move(impl)) {}
-  std::shared_ptr<AllocatorImpl> impl_;
-};
-
-class MMDEPLOY_API Buffer {
- public:
-  Buffer() = default;
-
-  Buffer(Device device, size_t size, size_t alignment = 1, uint64_t flags = 0)
-      : Buffer(device, size, Allocator{}, alignment, flags) {}
-
-  Buffer(Device device, size_t size, Allocator allocator, size_t alignment = 1, uint64_t flags = 0);
-
-  Buffer(Device device, size_t size, void* native, uint64_t flags = 0);
-
-  Buffer(Device device, size_t size, std::shared_ptr<void> native, uint64_t flags = 0);
-  // create sub-buffer
-  Buffer(Buffer& buffer, size_t offset, size_t size, uint64_t flags = 0);
-
-  size_t GetSize(ErrorCode* ec = nullptr) const;
-
-  //  bool IsSubBuffer(ErrorCode* ec = nullptr);
-
-  void* GetNative(ErrorCode* ec = nullptr) const;
-
-  Device GetDevice() const;
-
-  Allocator GetAllocator() const;
-
-  bool operator==(const Buffer& other) const { return impl_ == other.impl_; }
-
-  bool operator!=(const Buffer& other) const { return !(*this == other); }
-
-  explicit operator bool() const noexcept { return static_cast<bool>(impl_); }
-
- private:
-  explicit Buffer(std::shared_ptr<BufferImpl> impl) : impl_(std::move(impl)) {}
-
- private:
-  friend class Access;
-  std::shared_ptr<BufferImpl> impl_;
-};
-
-template <typename T>
-T GetNative(Buffer& buffer, ErrorCode* ec = nullptr) {
-  return reinterpret_cast<T>(buffer.GetNative(ec));
-}
-
-template <typename T>
-T GetNative(const Buffer& buffer, ErrorCode* ec = nullptr) {
-  return reinterpret_cast<T>(buffer.GetNative(ec));
-}
-
-class MMDEPLOY_API PlatformRegistry {
- public:
-  using Creator = std::function<std::shared_ptr<PlatformImpl>()>;
-
-  int Register(Creator creator);
-
-  int AddAlias(const char* name, const char* target);
-
-  int GetPlatform(const char* name, Platform* platform);
-
-  int GetPlatform(int id, Platform* platform);
-
-  int GetPlatformId(const char* name);
-
-  PlatformImpl* GetPlatformImpl(PlatformId id);
-
- private:
-  int GetNextId();
-
-  bool IsAvailable(int id);
-
- private:
-  struct Entry {
-    std::string name;
-    int id;
-    Platform platform;
-  };
-  std::vector<Entry> entries_;
-  std::vector<std::pair<std::string, std::string>> aliases_;
-};
-
-MMDEPLOY_API PlatformRegistry& gPlatformRegistry();
-
-}  // namespace framework
-
-MMDEPLOY_REGISTER_TYPE_ID(framework::Device, 1);
-MMDEPLOY_REGISTER_TYPE_ID(framework::Buffer, 2);
-MMDEPLOY_REGISTER_TYPE_ID(framework::Stream, 3);
-MMDEPLOY_REGISTER_TYPE_ID(framework::Event, 4);
+    MMDEPLOY_REGISTER_TYPE_ID(framework::Device, 1);
+    MMDEPLOY_REGISTER_TYPE_ID(framework::Buffer, 2);
+    MMDEPLOY_REGISTER_TYPE_ID(framework::Stream, 3);
+    MMDEPLOY_REGISTER_TYPE_ID(framework::Event, 4);
 
 }  // namespace mmdeploy

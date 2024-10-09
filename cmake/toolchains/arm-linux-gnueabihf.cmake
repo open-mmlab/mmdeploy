@@ -12,5 +12,9 @@ set(CMAKE_C_FLAGS "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
 set(CMAKE_CXX_FLAGS "-march=armv7-a -mfloat-abi=hard -mfpu=neon")
 
 # cache flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING "c flags")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" CACHE STRING "c++ flags")
+set(CMAKE_C_FLAGS
+    "${CMAKE_C_FLAGS}"
+    CACHE STRING "c flags")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS}"
+    CACHE STRING "c++ flags")

@@ -3,32 +3,33 @@
 /* Header for class mmdeploy_Restorer */
 
 #ifndef _Included_mmdeploy_Restorer
-#define _Included_mmdeploy_Restorer
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_Restorer
- * Method:    create
- * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Restorer_create(JNIEnv *, jobject, jstring, jstring, jint);
+    #define _Included_mmdeploy_Restorer
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_Restorer
+     * Method:    create
+     * Signature: (Ljava/lang/String;Ljava/lang/String;I)J
+     */
+    JNIEXPORT jlong JNICALL        Java_mmdeploy_Restorer_create(JNIEnv*, jobject, jstring, jstring, jint);
 
-/*
- * Class:     mmdeploy_Restorer
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Restorer_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_Restorer
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL         Java_mmdeploy_Restorer_destroy(JNIEnv*, jobject, jlong);
 
-/*
- * Class:     mmdeploy_Restorer
- * Method:    apply
- * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Restorer/Result;
- */
-JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Restorer_apply(JNIEnv *, jobject, jlong, jobjectArray);
+    /*
+     * Class:     mmdeploy_Restorer
+     * Method:    apply
+     * Signature: (J[Lmmdeploy/Mat;)[Lmmdeploy/Restorer/Result;
+     */
+    JNIEXPORT jobjectArray JNICALL Java_mmdeploy_Restorer_apply(JNIEnv*, jobject, jlong, jobjectArray);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

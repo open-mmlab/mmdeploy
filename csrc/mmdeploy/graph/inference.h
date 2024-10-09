@@ -5,19 +5,21 @@
 
 #include "mmdeploy/core/graph.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy::graph
+{
 
-class InferenceBuilder : public Builder {
- public:
-  explicit InferenceBuilder(Value config);
+    class InferenceBuilder : public Builder
+    {
+      public:
+        explicit InferenceBuilder(Value config);
 
- protected:
-  Result<unique_ptr<Node>> BuildImpl() override;
+      protected:
+        Result<unique_ptr<Node>> BuildImpl() override;
 
- private:
-  Result<void> CheckInputs(Builder& builder);
-  Result<void> CheckOutputs(Builder& builder);
-};
+      private:
+        Result<void> CheckInputs(Builder& builder);
+        Result<void> CheckOutputs(Builder& builder);
+    };
 
 }  // namespace mmdeploy::graph
 

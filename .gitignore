@@ -113,7 +113,7 @@ venv*
 
 data/
 data
-.vscode
+# .vscode
 .idea
 .DS_Store
 
@@ -172,3 +172,5 @@ demo/csharp/*/Properties
 
 # doxygen
 docs/cppapi/docs
+
+*debug*

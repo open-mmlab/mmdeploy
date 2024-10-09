@@ -43,40 +43,43 @@ const auto config_json = R"(
 
 using namespace mmdeploy;
 
-int main(int argc, char* argv[]) {
-  if (argc != 5) {
-    fprintf(stderr,
-            "usage:\n\ttext_det_recog device_name det_model_path reg_model_path image_path\n");
-    return -1;
-  }
+int main(int argc, char* argv[])
+{
+    if (argc != 5)
+    {
+        fprintf(stderr,
+                "usage:\n\ttext_det_recog device_name det_model_path reg_model_path image_path\n");
+        return -1;
+    }
 
-  auto device_name = argv[1];
-  auto det_model_path = argv[2];
-  auto reg_model_path = argv[3];
-  auto image_path = argv[4];
+    auto    device_name    = argv[1];
+    auto    det_model_path = argv[2];
+    auto    reg_model_path = argv[3];
+    auto    image_path     = argv[4];
 
-  cv::Mat mat = cv::imread(image_path);
-  if (!mat.data) {
-    fprintf(stderr, "failed to open image %s\n", image_path);
-    return -1;
-  }
+    cv::Mat mat = cv::imread(image_path);
+    if (!mat.data)
+    {
+        fprintf(stderr, "failed to open image %s\n", image_path);
+        return -1;
+    }
 
-  auto config = from_json<Value>(config_json);
+    auto    config = from_json<Value>(config_json);
 
-  Context context(Device(device_name, 0));
+    Context context(Device(device_name, 0));
 
-  auto thread_pool = Scheduler::ThreadPool(4);
-  auto infer_thread = Scheduler::Thread();
-  context.Add("thread_pool", thread_pool);
-  context.Add("infer_thread", infer_thread);
-  context.Add("text_detection", Model(det_model_path));
-  context.Add("text_recognition", Model(reg_model_path));
+    auto    thread_pool  = Scheduler::ThreadPool(4);
+    auto    infer_thread = Scheduler::Thread();
+    context.Add("thread_pool", thread_pool);
+    context.Add("infer_thread", infer_thread);
+    context.Add("text_detection", Model(det_model_path));
+    context.Add("text_recognition", Model(reg_model_path));
 
-  Pipeline pipeline(config, context);
+    Pipeline pipeline(config, context);
 
-  auto output = pipeline.Apply(mat);
+    auto     output = pipeline.Apply(mat);
 
-  // MMDEPLOY_INFO("output:\n{}", output);
+    // MMDEPLOY_INFO("output:\n{}", output);
 
-  return 0;
+    return 0;
 }

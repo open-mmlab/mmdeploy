@@ -11,21 +11,22 @@
 using namespace mmdeploy;
 using namespace framework;
 
-TEST_CASE("test pplnn net", "[.ppl_net][resource]") {
-  auto& gResource = MMDeployTestResources::Get();
-  auto model_list = gResource.LocateModelResources(fs::path{"mmcls"} / "pplnn");
-  REQUIRE(!model_list.empty());
+TEST_CASE("test pplnn net", "[.ppl_net][resource]")
+{
+    auto& gResource  = MMDeployTestResources::Get();
+    auto  model_list = gResource.LocateModelResources(fs::path{"mmcls"} / "pplnn");
+    REQUIRE(!model_list.empty());
 
-  Model model(model_list.front());
-  REQUIRE(model);
+    Model model(model_list.front());
+    REQUIRE(model);
 
-  auto backend = "pplnn";
-  auto creator = gRegistry<Net>().Get(backend);
-  REQUIRE(creator);
+    auto backend = "pplnn";
+    auto creator = gRegistry<Net>().Get(backend);
+    REQUIRE(creator);
 
-  Device device{"cpu"};
-  auto stream = Stream::GetDefault(device);
-  // clang-format off
+    Device device{"cpu"};
+    auto   stream = Stream::GetDefault(device);
+    // clang-format off
   Value net_config{
       {"context", {
           {"device", device},

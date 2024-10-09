@@ -5,15 +5,17 @@
 
 #include "mmdeploy/core/graph.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy::graph
+{
 
-class PipelineBuilder : public Builder {
- public:
-  explicit PipelineBuilder(Value config);
+    class PipelineBuilder : public Builder
+    {
+      public:
+        explicit PipelineBuilder(Value config);
 
- protected:
-  Result<unique_ptr<Node>> BuildImpl() override;
-};
+      protected:
+        Result<unique_ptr<Node>> BuildImpl() override;
+    };
 
 }  // namespace mmdeploy::graph
 

@@ -28,19 +28,36 @@
 // clang-format on
 
 #ifndef MMDEPLOY_HAS_SOURCE_LOCATION
-#include <cstdint>
-namespace mmdeploy {
-class SourceLocation {
- public:
-  constexpr SourceLocation() noexcept = default;
-  SourceLocation(const SourceLocation&) = default;
-  SourceLocation(SourceLocation&&) noexcept = default;
-  constexpr std::uint_least32_t line() const noexcept { return 0; };
-  constexpr std::uint_least32_t column() const noexcept { return 0; }
-  constexpr const char* file_name() const noexcept { return ""; }
-  constexpr const char* function_name() const noexcept { return ""; }
-  static constexpr SourceLocation current() noexcept { return {}; }
-};
+    #include <cstdint>
+namespace mmdeploy
+{
+    class SourceLocation
+    {
+      public:
+        constexpr SourceLocation() noexcept       = default;
+        SourceLocation(const SourceLocation&)     = default;
+        SourceLocation(SourceLocation&&) noexcept = default;
+        constexpr std::uint_least32_t line() const noexcept
+        {
+            return 0;
+        };
+        constexpr std::uint_least32_t column() const noexcept
+        {
+            return 0;
+        }
+        constexpr const char* file_name() const noexcept
+        {
+            return "";
+        }
+        constexpr const char* function_name() const noexcept
+        {
+            return "";
+        }
+        static constexpr SourceLocation current() noexcept
+        {
+            return {};
+        }
+    };
 }  // namespace mmdeploy
 #endif
 

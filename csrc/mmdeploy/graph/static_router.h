@@ -13,45 +13,49 @@
 #include "mmdeploy/execution/schedulers/registry.h"
 #include "mmdeploy/execution/when_all_value.h"
 
-namespace mmdeploy::graph {
+namespace mmdeploy::graph
+{
 
-class StaticRouter : public Node {
-  friend class StaticRouterBuilder;
+    class StaticRouter : public Node
+    {
+        friend class StaticRouterBuilder;
 
- public:
-  Sender<Value> Process(Sender<Value> args) override;
+      public:
+        Sender<Value> Process(Sender<Value> args) override;
 
-  struct Coords {
-    // source node index
-    int index;
-    // source output port -> destination input port mapping
-    vector<pair<int, int>> mapping;
-  };
+        struct Coords
+        {
+            // source node index
+            int                    index;
+            // source output port -> destination input port mapping
+            vector<pair<int, int>> mapping;
+        };
 
-  class State;
+        class State;
 
- private:
-  vector<unique_ptr<Node>> nodes_;
-  vector<int> use_count_;
-  vector<vector<Coords>> input_coords_;
-  vector<Coords> ret_coords_;
-  profiler::Scope* scope_{nullptr};
-};
+      private:
+        vector<unique_ptr<Node>> nodes_;
+        vector<int>              use_count_;
+        vector<vector<Coords>>   input_coords_;
+        vector<Coords>           ret_coords_;
+        profiler::Scope*         scope_{nullptr};
+    };
 
-class StaticRouterBuilder {
- public:
-  Result<unique_ptr<StaticRouter>> Build(const Value& config);
+    class StaticRouterBuilder
+    {
+      public:
+        Result<unique_ptr<StaticRouter>> Build(const Value& config);
 
- private:
-  Result<vector<StaticRouter::Coords>> GetInputCoords(const vector<string>& names);
+      private:
+        Result<vector<StaticRouter::Coords>> GetInputCoords(const vector<string>& names);
 
-  Result<void> UpdateOutputCoords(int index, const vector<string>& names);
+        Result<void>                         UpdateOutputCoords(int index, const vector<string>& names);
 
-  // use count for each node's output
-  vector<int> use_count_;
-  // name -> (node_id, port_id)
-  std::map<string, pair<int, int>> output_name_to_coords_;
-};
+        // use count for each node's output
+        vector<int>                          use_count_;
+        // name -> (node_id, port_id)
+        std::map<string, pair<int, int>>     output_name_to_coords_;
+    };
 
 }  // namespace mmdeploy::graph
 

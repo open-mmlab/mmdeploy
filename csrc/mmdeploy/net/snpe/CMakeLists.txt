@@ -10,15 +10,15 @@ else()
   set(sub_dir "x86_64-linux-clang")
 endif()
 
-if (NOT EXISTS $ENV{SNPE_ROOT}/lib/${sub_dir}/)
-  message(ERROR "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/${sub_dir}/")
+if(NOT EXISTS $ENV{SNPE_ROOT}/lib/${sub_dir}/)
+  message(ERROR
+          "SNPE_ROOT directory not exist:  $ENV{SNPE_ROOT}/lib/${sub_dir}/")
 endif()
 message(STATUS "SNPE lib directory $ENV{SNPE_ROOT}/lib/${sub_dir}/")
 
-set_target_properties(snpe PROPERTIES
-  IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/${sub_dir}/libSNPE.so"
-  INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl"
-)
+set_target_properties(
+  snpe PROPERTIES IMPORTED_LOCATION "$ENV{SNPE_ROOT}/lib/${sub_dir}/libSNPE.so"
+                  INTERFACE_INCLUDE_DIRECTORIES "$ENV{SNPE_ROOT}/include/zdl")
 
 mmdeploy_add_module(${PROJECT_NAME} snpe_net.cpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE snpe)

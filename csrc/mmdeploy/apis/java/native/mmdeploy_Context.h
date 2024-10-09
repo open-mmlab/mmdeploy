@@ -3,32 +3,33 @@
 /* Header for class mmdeploy_Context */
 
 #ifndef _Included_mmdeploy_Context
-#define _Included_mmdeploy_Context
-#ifdef __cplusplus
-extern "C" {
-#endif
-/*
- * Class:     mmdeploy_Context
- * Method:    create
- * Signature: ()J
- */
-JNIEXPORT jlong JNICALL Java_mmdeploy_Context_create(JNIEnv *, jobject);
+    #define _Included_mmdeploy_Context
+    #ifdef __cplusplus
+extern "C"
+{
+    #endif
+    /*
+     * Class:     mmdeploy_Context
+     * Method:    create
+     * Signature: ()J
+     */
+    JNIEXPORT jlong JNICALL Java_mmdeploy_Context_create(JNIEnv*, jobject);
 
-/*
- * Class:     mmdeploy_Context
- * Method:    add
- * Signature: (JILjava/lang/String;J)I
- */
-JNIEXPORT jint JNICALL Java_mmdeploy_Context_add(JNIEnv *, jobject, jlong, jint, jstring, jlong);
+    /*
+     * Class:     mmdeploy_Context
+     * Method:    add
+     * Signature: (JILjava/lang/String;J)I
+     */
+    JNIEXPORT jint JNICALL  Java_mmdeploy_Context_add(JNIEnv*, jobject, jlong, jint, jstring, jlong);
 
-/*
- * Class:     mmdeploy_Context
- * Method:    destroy
- * Signature: (J)V
- */
-JNIEXPORT void JNICALL Java_mmdeploy_Context_destroy(JNIEnv *, jobject, jlong);
+    /*
+     * Class:     mmdeploy_Context
+     * Method:    destroy
+     * Signature: (J)V
+     */
+    JNIEXPORT void JNICALL  Java_mmdeploy_Context_destroy(JNIEnv*, jobject, jlong);
 
-#ifdef __cplusplus
+    #ifdef __cplusplus
 }
-#endif
+    #endif
 #endif

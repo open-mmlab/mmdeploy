@@ -4,8 +4,9 @@
 
 #include "mmdeploy/core/registry.h"
 
-namespace mmdeploy::mmedit {
+namespace mmdeploy::mmedit
+{
 
-MMDEPLOY_REGISTER_CODEBASE(MMEdit);
+    MMDEPLOY_REGISTER_CODEBASE(MMEdit);
 
 }  // namespace mmdeploy::mmedit
