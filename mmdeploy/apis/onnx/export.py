@@ -132,7 +132,7 @@ def export(model: torch.nn.Module,
         if isinstance(args, torch.Tensor):
             args = args.cpu()
         elif isinstance(args, (tuple, list)):
-            args = tuple([_.cpu() for _ in args])
+            args = tuple([_.cpu() if isinstance(_, torch.Tensor) else _ for _ in args])
         else:
             raise RuntimeError(f'Not supported args: {args}')
         torch.onnx.export(
