@@ -1,5 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <algorithm>
+
 #include "mmdeploy/core/registry.h"
 #include "mmdeploy/core/tensor.h"
 #include "mmdeploy/core/utils/formatter.h"

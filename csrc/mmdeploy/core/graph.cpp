@@ -1,5 +1,7 @@
 // Copyright (c) OpenMMLab. All rights reserved.
 
+#include <algorithm>
+
 #include "mmdeploy/core/graph.h"
 
 #include "mmdeploy/archive/value_archive.h"
