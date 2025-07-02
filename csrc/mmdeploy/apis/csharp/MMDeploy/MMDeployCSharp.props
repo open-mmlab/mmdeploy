@@ -8,4 +8,10 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
+	<ItemGroup>
+	<!-- 包含 targets -->
+	<None Include="build\net48\mmdeploy.targets"
+			Pack="true"
+			PackagePath="build\net48\" />
+	</ItemGroup>
 </Project>

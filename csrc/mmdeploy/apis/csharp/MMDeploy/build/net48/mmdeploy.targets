@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- 
+    MSBuildThisFileDirectory 在消费端项目里会被解析为
+    packages\<YourPackage>.<version>\build\net48\
+  -->
+  <ItemGroup>
+    <!-- 定位到包中 runtimes\win-x64\native\mmdeploy.dll -->
+    <MMDeployNativeDll Include="$(MSBuildThisFileDirectory)..\runtimes\win-x64\native\mmdeploy.dll" />
+  </ItemGroup>
+
+  <!-- 在经典 .NET Framework 项目编译完成后复制到输出目录 -->
+  <Target Name="CopyMMDeployNative" AfterTargets="Build">
+    <Message Text="Copying mmdeploy.dll to $(OutputPath)" Importance="Low" />
+    <Copy
+      SourceFiles="@(MMDeployNativeDll)"
+      DestinationFolder="$(OutputPath)"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
