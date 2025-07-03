@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net48;</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;net48;net472;</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <AssemblyName>MMDeployCSharp</AssemblyName>
@@ -27,6 +27,20 @@
       <Pack>true</Pack>
       <PackagePath>build\net48\MMDeployCSharp.props</PackagePath>
     </Content>
+    <Content Include="MMDeployCSharp.props">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Pack>true</Pack>
+      <PackagePath>build\net472\MMDeployCSharp.props</PackagePath>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <!-- 包含 targets -->
+    <None Include="build\net48\MMDeployCSharp.targets"
+          Pack="true"
+          PackagePath="build\net48\" />
+    <None Include="build\net48\MMDeployCSharp.targets"
+          Pack="true"
+          PackagePath="build\net472\" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -36,6 +50,9 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DefineConstants>TRACE</DefineConstants>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|netcoreapp3.1|x64'">
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
