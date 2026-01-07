@@ -18,7 +18,7 @@
   cd ${TENSORRT_DIR} # 进入TensorRT根目录
   echo '# set env for TensorRT' >> ~/.bashrc
   echo "export TENSORRT_DIR=${TENSORRT_DIR}" >> ~/.bashrc
-  echo 'export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$TENSORRT_DIR' >> ~/.bashrc
+  echo 'export LD_LIBRARY_PATH=$TENSORRT_DIR/lib:$LD_LIBRARY_PATH' >> ~/.bashrc
   source ~/.bashrc
   ```
 
