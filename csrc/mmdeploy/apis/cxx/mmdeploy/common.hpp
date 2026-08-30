@@ -193,8 +193,8 @@ class Result_ {
   T* begin() const noexcept { return data_.get() + offset_; }
   T* end() const noexcept { return begin() + size_; }
 
-  T* operator->() const noexcept { return data_.get(); }
-  T& operator*() const noexcept { return *data_; }
+  T* operator->() const noexcept { return data_.get() + offset_; }
+  T& operator*() const noexcept { return *(data_.get() + offset_); }
 
  private:
   size_t offset_;
