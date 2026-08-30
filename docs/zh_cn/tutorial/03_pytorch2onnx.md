@@ -44,7 +44,7 @@ for model, model_name in zip(models, model_names):
 
     # 跟踪法与直接 torch.onnx.export(model, ...)等价
     torch.onnx.export(model_trace, dummy_input, f'{model_name}_trace.onnx', example_outputs=dummy_output)
-    # 脚本化必须先调用 torch.jit.sciprt
+    # 脚本化必须先调用 torch.jit.script
     torch.onnx.export(model_script, dummy_input, f'{model_name}_script.onnx', example_outputs=dummy_output)
 ```
 
